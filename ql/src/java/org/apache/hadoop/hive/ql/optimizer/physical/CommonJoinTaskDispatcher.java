@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,7 +48,6 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -257,8 +257,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       }
     }
 
-    MapredLocalWork mapJoinLocalWork = mapJoinMapWork.getMapLocalWork();
-    MapredLocalWork childLocalWork = childMapWork.getMapLocalWork();
+    MapredLocalWork mapJoinLocalWork = mapJoinMapWork.getMapRedLocalWork();
+    MapredLocalWork childLocalWork = childMapWork.getMapRedLocalWork();
 
     if ((mapJoinLocalWork != null && mapJoinLocalWork.getBucketMapjoinContext() != null) ||
         (childLocalWork != null && childLocalWork.getBucketMapjoinContext() != null)) {
@@ -328,7 +328,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     // Step 2.3: Fill up stuff in local work
     if (mapJoinLocalWork != null) {
       if (childLocalWork == null) {
-        childMapWork.setMapLocalWork(mapJoinLocalWork);
+        childMapWork.setMapRedLocalWork(mapJoinLocalWork);
       } else {
         childLocalWork.getAliasToFetchWork().putAll(mapJoinLocalWork.getAliasToFetchWork());
         childLocalWork.getAliasToWork().putAll(mapJoinLocalWork.getAliasToWork());
@@ -391,14 +391,14 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
+    // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new HashMap<Task<? extends Serializable>, Set<String>>();
+        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     HashMap<String, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
     // get parseCtx for this Join Operator
     ParseContext parseCtx = physicalContext.getParseContext();
-    QBJoinTree joinTree = parseCtx.getJoinContext().get(joinOp);
 
     // start to generate multiple map join tasks
     JoinDesc joinDesc = joinOp.getConf();
@@ -455,8 +455,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         }
       }
 
-      currWork.setOpParseCtxMap(parseCtx.getOpParseCtx());
-      currWork.setJoinTree(joinTree);
+      currWork.setLeftInputJoin(joinOp.getConf().isLeftInputJoin());
+      currWork.setBaseSrc(joinOp.getConf().getBaseSrc());
+      currWork.setMapAliases(joinOp.getConf().getMapAliases());
 
       if (bigTablePosition >= 0) {
         // create map join task and set big table as bigTablePosition
@@ -464,7 +465,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
         newTask.setTaskTag(Task.MAPJOIN_ONLY_NOBACKUP);
         newTask.setFetchSource(currTask.isFetchSource());
-        replaceTask(currTask, newTask, physicalContext);
+        replaceTask(currTask, newTask);
 
         // Can this task be merged with the child task. This can happen if a big table is being
         // joined with multiple small tables on different keys
@@ -519,8 +520,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     listWorks.add(currTask.getWork());
     listTasks.add(currTask);
     // clear JoinTree and OP Parse Context
-    currWork.setOpParseCtxMap(null);
-    currWork.setJoinTree(null);
+    currWork.setLeftInputJoin(false);
+    currWork.setBaseSrc(null);
+    currWork.setMapAliases(null);
 
     // create conditional task and insert conditional task into task tree
     ConditionalWork cndWork = new ConditionalWork(listWorks);
@@ -539,7 +541,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     cndTsk.setResolverCtx(resolverCtx);
 
     // replace the current task with the new generated conditional task
-    replaceTaskWithConditionalTask(currTask, cndTsk, physicalContext);
+    replaceTaskWithConditionalTask(currTask, cndTsk);
     return cndTsk;
   }
 

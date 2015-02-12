@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class PartExprEvalUtils {
@@ -103,11 +104,13 @@ public class PartExprEvalUtils {
   }
 
   static synchronized public ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
-      ExprNodeGenericFuncDesc expr, List<String> partNames) throws HiveException {
+      ExprNodeGenericFuncDesc expr, List<String> partNames,
+      List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
     for (int i = 0; i < partNames.size(); i++) {
-      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      partObjectInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          partColumnTypeInfos.get(i)));
     }
     StructObjectInspector objectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);

@@ -18,8 +18,9 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -29,11 +30,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.cli.CLIService;
+import org.apache.hive.service.cli.thrift.TCLIService.Iface;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
@@ -59,16 +59,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   @Override
   public void run() {
     try {
-      // Verify config validity
-      verifyHttpConfiguration(hiveConf);
-
       // HTTP Server
       httpServer = new org.eclipse.jetty.server.Server();
 
       // Server thread pool
+      // Start with minWorkerThreads, expand till maxWorkerThreads and reject subsequent requests
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
       ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
-          workerKeepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
           new ThreadFactoryWithGarbageCleanup(threadPoolName));
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
       httpServer.setThreadPool(threadPool);
@@ -87,6 +85,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
               + " Not configured for SSL connection");
         }
         SslContextFactory sslContextFactory = new SslContextFactory();
+        String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
+        LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
+        sslContextFactory.addExcludeProtocols(excludedProtocols);
+        LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = " +
+          Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         connector = new SslSelectChannelConnector(sslContextFactory);
@@ -102,8 +105,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
 
       // Thrift configs
       hiveAuthFactory = new HiveAuthFactory(hiveConf);
-      TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
-      TProcessor processor = processorFactory.getProcessor(null);
+      TProcessor processor = new TCLIService.Processor<Iface>(this);
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       // Set during the init phase of HiveServer2 if auth mode is kerberos
       // UGI for the hive/_HOST (kerberos) principal
@@ -162,32 +164,4 @@ public class ThriftHttpCLIService extends ThriftCLIService {
     }
     return httpPath;
   }
-
-  /**
-   * Verify that this configuration is supported by transportMode of HTTP
-   * @param hiveConf
-   */
-  private static void verifyHttpConfiguration(HiveConf hiveConf) {
-    String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
-
-    // Error out if KERBEROS auth mode is being used and use SSL is also set to true
-    if(authType.equalsIgnoreCase(AuthTypes.KERBEROS.toString()) &&
-        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL)) {
-      String msg = ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting of " +
-          authType + " is not supported with " +
-          ConfVars.HIVE_SERVER2_USE_SSL + " set to true";
-      LOG.fatal(msg);
-      throw new RuntimeException(msg);
-    }
-
-    // Warn that SASL is not used in http mode
-    if(authType.equalsIgnoreCase(AuthTypes.NONE.toString())) {
-      // NONE in case of thrift mode uses SASL
-      LOG.warn(ConfVars.HIVE_SERVER2_AUTHENTICATION + " setting to " +
-          authType + ". SASL is not supported with http transport mode," +
- " so using equivalent of "
-          + AuthTypes.NOSASL);
-    }
-  }
-
 }

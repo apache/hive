@@ -70,7 +70,7 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Class<? extends InputFormat> inputFormat = parseCtx.getTopToTable().get(op)
+    Class<? extends InputFormat> inputFormat = op.getConf().getTableMetadata()
         .getInputFormatClass();
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
@@ -90,16 +90,25 @@ public class GenMRTableScan1 implements NodeProcessor {
 
         QBParseInfo parseInfo = parseCtx.getQB().getParseInfo();
         if (parseInfo.isAnalyzeCommand()) {
-          boolean partialScan = parseInfo.isPartialScanAnalyzeCommand();
-          boolean noScan = parseInfo.isNoScanAnalyzeCommand();
-          if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
-
+          if (inputFormat.equals(OrcInputFormat.class)) {
+            // For ORC, all the following statements are the same
+            // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+
             // There will not be any MR or Tez job above this task
             StatsNoJobWork snjWork = new StatsNoJobWork(parseCtx.getQB().getParseInfo().getTableSpec());
             snjWork.setStatsReliable(parseCtx.getConf().getBoolVar(
                 HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+            // If partition is specified, get pruned partition list
+            Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(parseInfo);
+            if (confirmedParts.size() > 0) {
+              Table source = parseCtx.getQB().getMetaData().getTableForAlias(alias);
+              List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
+                  partCols, false);
+              snjWork.setPrunedPartitionList(partList);
+            }
             Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseCtx.getConf());
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);

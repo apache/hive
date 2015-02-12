@@ -18,20 +18,22 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
 import java.io.IOException;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 public class DefaultHBaseKeyFactory extends AbstractHBaseKeyFactory implements HBaseKeyFactory {
 
-  protected LazySimpleSerDe.SerDeParameters serdeParams;
+  protected SerDeParameters serdeParams;
   protected HBaseRowSerializer serializer;
 
   @Override
@@ -43,8 +45,7 @@ public class DefaultHBaseKeyFactory extends AbstractHBaseKeyFactory implements H
 
   @Override
   public ObjectInspector createKeyObjectInspector(TypeInfo type) throws SerDeException {
-    return LazyFactory.createLazyObjectInspector(type, serdeParams.getSeparators(), 1,
-        serdeParams.getNullSequence(), serdeParams.isEscaped(), serdeParams.getEscapeChar());
+    return LazyFactory.createLazyObjectInspector(type, 1, serdeParams, ObjectInspectorOptions.JAVA);
   }
 
   @Override
@@ -55,5 +56,13 @@ public class DefaultHBaseKeyFactory extends AbstractHBaseKeyFactory implements H
   @Override
   public byte[] serializeKey(Object object, StructField field) throws IOException {
     return serializer.serializeKeyField(object, field, keyMapping);
+  }
+
+  @VisibleForTesting
+  static DefaultHBaseKeyFactory forTest(SerDeParameters params, ColumnMappings mappings) {
+    DefaultHBaseKeyFactory factory = new DefaultHBaseKeyFactory();
+    factory.serdeParams = params;
+    factory.keyMapping = mappings.getKeyMapping();
+    return factory;
   }
 }

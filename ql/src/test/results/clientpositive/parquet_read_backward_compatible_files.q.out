@@ -1,0 +1,55 @@
+PREHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
+-- alltypesparquet is a files written by older version of Hive
+
+CREATE TABLE alltypesparquet (
+    bo1 boolean,
+    ti1 tinyint,
+    si1 smallint,
+    i1 int,
+    bi1 bigint,
+    f1 float,
+    d1 double,
+    s1 string,
+    m1 map<string,string>,
+    l1 array<int>,
+    st1 struct<c1:int,c2:string>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesparquet
+POSTHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
+-- alltypesparquet is a files written by older version of Hive
+
+CREATE TABLE alltypesparquet (
+    bo1 boolean,
+    ti1 tinyint,
+    si1 smallint,
+    i1 int,
+    bi1 bigint,
+    f1 float,
+    d1 double,
+    s1 string,
+    m1 map<string,string>,
+    l1 array<int>,
+    st1 struct<c1:int,c2:string>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesparquet
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alltypesparquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alltypesparquet
+PREHOOK: query: SELECT * FROM alltypesparquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alltypesparquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+true	10	100	1000	10000	4.0	20.0	hello	{"k1":"v1"}	[100,200]	{"c1":10,"c2":"foo"}

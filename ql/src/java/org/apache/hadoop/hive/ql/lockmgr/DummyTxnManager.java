@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
@@ -110,6 +110,9 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     // If a lock needs to be acquired on any partition, a read lock needs to be acquired on all
     // its parents also
     for (ReadEntity input : plan.getInputs()) {
+      if (!input.needsLock()) {
+        continue;
+      }
       LOG.debug("Adding " + input.getName() + " to list of lock inputs");
       if (input.getType() == ReadEntity.Type.DATABASE) {
         lockObjects.addAll(getLockObjects(plan, input.getDatabase(), null,
@@ -125,18 +128,18 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     }
 
     for (WriteEntity output : plan.getOutputs()) {
+      HiveLockMode lockMode = getWriteEntityLockMode(output);
+      if (lockMode == null) {
+        continue;
+      }
       LOG.debug("Adding " + output.getName() + " to list of lock outputs");
       List<HiveLockObj> lockObj = null;
       if (output.getType() == WriteEntity.Type.DATABASE) {
-        lockObjects.addAll(getLockObjects(plan, output.getDatabase(), null,
-            null,
-            output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED));
+        lockObjects.addAll(getLockObjects(plan, output.getDatabase(), null, null, lockMode));
       } else if (output.getTyp() == WriteEntity.Type.TABLE) {
-        lockObj = getLockObjects(plan, null, output.getTable(), null,
-            output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED);
+        lockObj = getLockObjects(plan, null, output.getTable(), null,lockMode);
       } else if (output.getTyp() == WriteEntity.Type.PARTITION) {
-        lockObj = getLockObjects(plan, null, null, output.getPartition(),
-            HiveLockMode.EXCLUSIVE);
+        lockObj = getLockObjects(plan, null, null, output.getPartition(), lockMode);
       }
       // In case of dynamic queries, it is possible to have incomplete dummy partitions
       else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
@@ -196,7 +199,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public ValidTxnList getValidTxns() throws LockException {
-    return new ValidTxnListImpl();
+    return new ValidReadTxnList();
   }
 
   @Override
@@ -246,6 +249,26 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     lockObjects.clear();
     for (HiveLockObj lockObj : lockMap.values()) {
       lockObjects.add(lockObj);
+    }
+  }
+
+  private HiveLockMode getWriteEntityLockMode (WriteEntity we) {
+    HiveLockMode lockMode = we.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED;
+    //but the writeEntity is complete in DDL operations, instead DDL sets the writeType, so
+    //we use it to determine its lockMode, and first we check if the writeType was set
+    WriteEntity.WriteType writeType = we.getWriteType();
+    if (writeType == null) {
+      return lockMode;
+    }
+    switch (writeType) {
+      case DDL_EXCLUSIVE:
+        return HiveLockMode.EXCLUSIVE;
+      case DDL_SHARED:
+        return HiveLockMode.SHARED;
+      case DDL_NO_LOCK:
+        return null;
+      default: //other writeTypes related to DMLs
+        return lockMode;
     }
   }
 

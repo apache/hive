@@ -26,11 +26,11 @@ STAGE PLANS:
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), key (type: string)
-                outputColumnNames: value, key
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(key)
-                  keys: value (type: string)
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -47,24 +47,20 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((_col0 > 'val_200') and ((_col1 > 30) or (_col0 < 'val_400'))) (type: boolean)
-              Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Filter Operator
+            predicate: ((_col1 > 30) or (_col0 < 'val_400')) (type: boolean)
+            Statistics: Num rows: 18 Data size: 190 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 18 Data size: 190 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 18 Data size: 190 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -243,11 +239,11 @@ STAGE PLANS:
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), key (type: string)
-                outputColumnNames: value, key
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(key)
-                  keys: value (type: string)
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE

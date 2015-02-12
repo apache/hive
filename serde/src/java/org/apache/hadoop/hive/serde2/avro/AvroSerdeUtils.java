@@ -48,16 +48,47 @@ import java.util.Properties;
 public class AvroSerdeUtils {
   private static final Log LOG = LogFactory.getLog(AvroSerdeUtils.class);
 
-  public static final String SCHEMA_LITERAL = "avro.schema.literal";
-  public static final String SCHEMA_URL = "avro.schema.url";
+  /**
+   * Enum container for all avro table properties.
+   * If introducing a new avro-specific table property,
+   * add it here. Putting them in an enum rather than separate strings
+   * allows them to be programmatically grouped and referenced together.
+   */
+  public static enum AvroTableProperties {
+    SCHEMA_LITERAL("avro.schema.literal"),
+    SCHEMA_URL("avro.schema.url"),
+    SCHEMA_NAMESPACE("avro.schema.namespace"),
+    SCHEMA_NAME("avro.schema.name"),
+    SCHEMA_DOC("avro.schema.doc"),
+    AVRO_SERDE_SCHEMA("avro.serde.schema"),
+    SCHEMA_RETRIEVER("avro.schema.retriever");
+
+    private final String propName;
+
+    AvroTableProperties(String propName) {
+      this.propName = propName;
+    }
+
+    public String getPropName(){
+      return this.propName;
+    }
+  }
+
+  // Following parameters slated for removal, prefer usage of enum above, that allows programmatic access.
+  @Deprecated public static final String SCHEMA_LITERAL = "avro.schema.literal";
+  @Deprecated public static final String SCHEMA_URL = "avro.schema.url";
+  @Deprecated public static final String SCHEMA_NAMESPACE = "avro.schema.namespace";
+  @Deprecated public static final String SCHEMA_NAME = "avro.schema.name";
+  @Deprecated public static final String SCHEMA_DOC = "avro.schema.doc";
+  @Deprecated public static final String AVRO_SERDE_SCHEMA = AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName();
+  @Deprecated public static final String SCHEMA_RETRIEVER = AvroTableProperties.SCHEMA_RETRIEVER.getPropName();
+
   public static final String SCHEMA_NONE = "none";
-  public static final String SCHEMA_NAMESPACE = "avro.schema.namespace";
-  public static final String SCHEMA_NAME = "avro.schema.name";
-  public static final String SCHEMA_DOC = "avro.schema.doc";
-  public static final String EXCEPTION_MESSAGE = "Neither " + SCHEMA_LITERAL + " nor "
-          + SCHEMA_URL + " specified, can't determine table schema";
-  public static final String AVRO_SERDE_SCHEMA = "avro.serde.schema";
-  public static final String SCHEMA_RETRIEVER = "avro.schema.retriever";
+  public static final String EXCEPTION_MESSAGE = "Neither "
+      + AvroTableProperties.SCHEMA_LITERAL.getPropName() + " nor "
+      + AvroTableProperties.SCHEMA_URL.getPropName() + " specified, can't determine table schema";
+
+
 
   /**
    * Determine the schema to that's been provided for Avro serde work.
@@ -66,19 +97,19 @@ public class AvroSerdeUtils {
    * @throws IOException if error while trying to read the schema from another location
    * @throws AvroSerdeException if unable to find a schema or pointer to it in the properties
    */
-  public static Schema determineSchemaOrThrowException(Properties properties)
+  public static Schema determineSchemaOrThrowException(Configuration conf, Properties properties)
           throws IOException, AvroSerdeException {
-    String schemaString = properties.getProperty(SCHEMA_LITERAL);
+    String schemaString = properties.getProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName());
     if(schemaString != null && !schemaString.equals(SCHEMA_NONE))
       return AvroSerdeUtils.getSchemaFor(schemaString);
 
     // Try pulling directly from URL
-    schemaString = properties.getProperty(SCHEMA_URL);
+    schemaString = properties.getProperty(AvroTableProperties.SCHEMA_URL.getPropName());
     if(schemaString == null || schemaString.equals(SCHEMA_NONE))
       throw new AvroSerdeException(EXCEPTION_MESSAGE);
 
     try {
-      Schema s = getSchemaFromFS(schemaString, new Configuration());
+      Schema s = getSchemaFromFS(schemaString, conf);
       if (s == null) {
         //in case schema is not a file system
         return AvroSerdeUtils.getSchemaFor(new URL(schemaString).openStream());
@@ -91,26 +122,6 @@ public class AvroSerdeUtils {
     }
   }
 
-  /**
-   * Attempt to determine the schema via the usual means, but do not throw
-   * an exception if we fail.  Instead, signal failure via a special
-   * schema.  This is used because Hive calls init on the serde during
-   * any call, including calls to update the serde properties, meaning
-   * if the serde is in a bad state, there is no way to update that state.
-   */
-  public static Schema determineSchemaOrReturnErrorSchema(Properties props) {
-    try {
-      return determineSchemaOrThrowException(props);
-    } catch(AvroSerdeException he) {
-      LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
-              "signal schema to indicate problem", he);
-      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
-    } catch (Exception e) {
-      LOG.warn("Encountered exception determining schema. Returning signal " +
-              "schema to indicate problem", e);
-      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
-    }
-  }
   // Protected for testing and so we can pass in a conf for testing.
   protected static Schema getSchemaFromFS(String schemaFSUrl,
                           Configuration conf) throws IOException, URISyntaxException {

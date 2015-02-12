@@ -30,11 +30,11 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@alter2
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
@@ -62,11 +62,11 @@ POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
@@ -133,11 +133,11 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@alter2
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
@@ -165,11 +165,11 @@ POSTHOOK: Input: default@alter2
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
@@ -211,8 +211,14 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 alltypesorc
+cbo_t1
+cbo_t2
+cbo_t3
+lineitem
+part
 src
 src1
+src_cbo
 src_json
 src_sequencefile
 src_thrift
@@ -271,11 +277,11 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
@@ -303,11 +309,11 @@ POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2
@@ -374,11 +380,11 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/01
+#### A masked pattern was here ####
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: DESCRIBE EXTENDED alter2
@@ -406,11 +412,11 @@ POSTHOOK: Input: alter2_db@alter2
 insertdate=2008-01-01
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 PREHOOK: Output: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: 2008/01/02
+#### A masked pattern was here ####
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: DESCRIBE EXTENDED alter2

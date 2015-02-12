@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import com.google.common.collect.Interner;
@@ -44,6 +45,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * HiveStringUtils
@@ -491,6 +493,34 @@ public class HiveStringUtils {
   }
 
   /**
+   * Split a string using the default separator/escape character,
+   * then unescape the resulting array of strings
+   * @param str
+   * @return an array of unescaped strings
+   */
+  public static String[] splitAndUnEscape(String str) {
+    return splitAndUnEscape(str, ESCAPE_CHAR, COMMA);
+  }
+
+  /**
+   * Split a string using the specified separator/escape character,
+   * then unescape the resulting array of strings using the same escape/separator.
+   * @param str a string that may have escaped separator
+   * @param escapeChar a char that be used to escape the separator
+   * @param separator a separator char
+   * @return an array of unescaped strings
+   */
+  public static String[] splitAndUnEscape(String str, char escapeChar, char separator) {
+    String[] result = split(str, escapeChar, separator);
+    if (result != null) {
+      for (int idx = 0; idx < result.length; ++idx) {
+        result[idx] = unEscapeString(result[idx], escapeChar, separator);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Finds the first occurrence of the separator character ignoring the escaped
    * separators starting from the index. Note the substring between the index
    * and the position of the separator is passed.
@@ -881,5 +911,51 @@ public class HiveStringUtils {
       }
     }
     return len;
+  }
+
+  public static String normalizeIdentifier(String identifier) {
+	  return identifier.trim().toLowerCase();
+	}
+
+  public static Map getPropertiesExplain(Properties properties) {
+    if (properties != null) {
+      String value = properties.getProperty("columns.comments");
+      if (value != null) {
+        // should copy properties first
+        Map clone = new HashMap(properties);
+        clone.put("columns.comments", quoteComments(value));
+        return clone;
+      }
+    }
+    return properties;
+  }
+
+  public static String quoteComments(String value) {
+    char[] chars = value.toCharArray();
+    if (!commentProvided(chars)) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    int prev = 0;
+    for (int i = 0; i < chars.length; i++) {
+      if (chars[i] == 0x00) {
+        if (builder.length() > 0) {
+          builder.append(',');
+        }
+        builder.append('\'').append(chars, prev, i - prev).append('\'');
+        prev = i + 1;
+      }
+    }
+    builder.append(",\'").append(chars, prev, chars.length - prev).append('\'');
+    return builder.toString();
+  }
+
+  public static boolean commentProvided(char[] chars) {
+    for (char achar : chars) {
+      if (achar != 0x00) {
+        return true;
+      }
+    }
+    return false;
   }
 }

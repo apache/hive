@@ -280,7 +280,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -302,7 +302,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -316,7 +316,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [subq:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -447,7 +447,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -469,7 +469,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -483,7 +483,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [subq:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -564,11 +564,11 @@ STAGE PLANS:
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: y (type: string)
-                outputColumnNames: y
+                outputColumnNames: _col0
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: y (type: string)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -594,7 +594,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -616,7 +616,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -630,7 +630,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -639,31 +639,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types string:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -760,11 +756,11 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 484 (type: int)
-                outputColumnNames: x
+                outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: x (type: int)
+                  keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -790,7 +786,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -812,7 +808,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -826,7 +822,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [subq:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -835,31 +831,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types int:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types int:bigint
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator

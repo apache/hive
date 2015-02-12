@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,9 +44,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -151,10 +150,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       MapredWork currJoinWork = Utilities.clonePlan(currWork);
       SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(currJoinWork);
 
-      // Add the row resolver for the new operator
-      Map<Operator<? extends OperatorDesc>, OpParseContext> opParseContextMap =
-          physicalContext.getParseContext().getOpParseCtx();
-      opParseContextMap.put(newSMBJoinOp, opParseContextMap.get(oldSMBJoinOp));
       // change the newly created map-red plan as if it was a join operator
       genSMBJoinWork(currJoinWork.getMapWork(), newSMBJoinOp);
       return currJoinWork;
@@ -167,8 +162,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   // create map join task and set big table as bigTablePosition
   private MapRedTask convertSMBTaskToMapJoinTask(MapredWork origWork,
       int bigTablePosition,
-      SMBMapJoinOperator smbJoinOp,
-      QBJoinTree joinTree)
+      SMBMapJoinOperator smbJoinOp)
       throws UnsupportedEncodingException, SemanticException {
     // deep copy a new mapred work
     MapredWork newWork = Utilities.clonePlan(origWork);
@@ -177,7 +171,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
         .getParseContext().getConf());
     // generate the map join operator; already checked the map join
     MapJoinOperator newMapJoinOp =
-        getMapJoinOperator(newTask, newWork, smbJoinOp, joinTree, bigTablePosition);
+        getMapJoinOperator(newTask, newWork, smbJoinOp, bigTablePosition);
 
     // The reducer needs to be restored - Consider a query like:
     // select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key;
@@ -245,7 +239,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
     // get parseCtx for this Join Operator
     ParseContext parseCtx = physicalContext.getParseContext();
-    QBJoinTree joinTree = parseCtx.getSmbMapJoinContext().get(originalSMBJoinOp);
 
     // Convert the work containing to sort-merge join into a work, as if it had a regular join.
     // Note that the operator tree is not changed - is still contains the SMB join, but the
@@ -255,18 +248,21 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     MapredWork currJoinWork = convertSMBWorkToJoinWork(currWork, originalSMBJoinOp);
     SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(currJoinWork);
 
-    currWork.getMapWork().setOpParseCtxMap(parseCtx.getOpParseCtx());
-    currWork.getMapWork().setJoinTree(joinTree);
-    currJoinWork.getMapWork().setOpParseCtxMap(parseCtx.getOpParseCtx());
-    currJoinWork.getMapWork().setJoinTree(joinTree);
+    currWork.getMapWork().setLeftInputJoin(originalSMBJoinOp.getConf().isLeftInputJoin());
+    currWork.getMapWork().setBaseSrc(originalSMBJoinOp.getConf().getBaseSrc());
+    currWork.getMapWork().setMapAliases(originalSMBJoinOp.getConf().getMapAliases());
+    currJoinWork.getMapWork().setLeftInputJoin(originalSMBJoinOp.getConf().isLeftInputJoin());
+    currJoinWork.getMapWork().setBaseSrc(originalSMBJoinOp.getConf().getBaseSrc());
+    currJoinWork.getMapWork().setMapAliases(originalSMBJoinOp.getConf().getMapAliases());
 
     // create conditional work list and task list
     List<Serializable> listWorks = new ArrayList<Serializable>();
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
+    // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new HashMap<Task<? extends Serializable>, Set<String>>();
+        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     // Note that pathToAlias will behave as if the original plan was a join plan
     HashMap<String, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
 
@@ -294,7 +290,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
         // create map join task for the given big table position
         MapRedTask newTask = convertSMBTaskToMapJoinTask(
-            currJoinWork, bigTablePosition, newSMBJoinOp, joinTree);
+            currJoinWork, bigTablePosition, newSMBJoinOp);
 
         MapWork mapWork = newTask.getWork().getMapWork();
         Operator<?> parentOp = originalSMBJoinOp.getParentOperators().get(bigTablePosition);
@@ -331,8 +327,9 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     listWorks.add(currTask.getWork());
     listTasks.add(currTask);
     // clear JoinTree and OP Parse Context
-    currWork.getMapWork().setOpParseCtxMap(null);
-    currWork.getMapWork().setJoinTree(null);
+    currWork.getMapWork().setLeftInputJoin(false);
+    currWork.getMapWork().setBaseSrc(null);
+    currWork.getMapWork().setMapAliases(null);
 
     // create conditional task and insert conditional task into task tree
     ConditionalWork cndWork = new ConditionalWork(listWorks);
@@ -351,7 +348,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     cndTsk.setResolverCtx(resolverCtx);
 
     // replace the current task with the new generated conditional task
-    replaceTaskWithConditionalTask(currTask, cndTsk, physicalContext);
+    replaceTaskWithConditionalTask(currTask, cndTsk);
     return cndTsk;
   }
 
@@ -424,18 +421,11 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   private MapJoinOperator getMapJoinOperator(MapRedTask task,
       MapredWork work,
       SMBMapJoinOperator oldSMBJoinOp,
-      QBJoinTree joinTree,
       int mapJoinPos) throws SemanticException {
     SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(task.getWork());
 
-    // Add the row resolver for the new operator
-    Map<Operator<? extends OperatorDesc>, OpParseContext> opParseContextMap =
-        physicalContext.getParseContext().getOpParseCtx();
-    opParseContextMap.put(newSMBJoinOp, opParseContextMap.get(oldSMBJoinOp));
-
     // generate the map join operator
-    return MapJoinProcessor.convertSMBJoinToMapJoin(physicalContext.getConf(),
-        opParseContextMap, newSMBJoinOp,
-        joinTree, mapJoinPos, true);
+    return MapJoinProcessor.convertSMBJoinToMapJoin(
+        physicalContext.getConf(), newSMBJoinOp, mapJoinPos, true);
   }
 }

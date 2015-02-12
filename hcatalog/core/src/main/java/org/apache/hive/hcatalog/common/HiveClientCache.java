@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -44,6 +46,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * A thread safe time expired cache for HiveMetaStoreClient
@@ -59,7 +62,7 @@ class HiveClientCache {
 
   private static final AtomicInteger nextId = new AtomicInteger(0);
 
-  private ScheduledFuture<?> cleanupHandle; // used to cleanup cache
+  private final ScheduledFuture<?> cleanupHandle; // used to cleanup cache
 
   // Since HiveMetaStoreClient is not threadsafe, hive clients are not  shared across threads.
   // Thread local variable containing each thread's unique ID, is used as one of the keys for the cache
@@ -91,6 +94,7 @@ class HiveClientCache {
     this.timeout = timeout;
     RemovalListener<HiveClientCacheKey, CacheableHiveMetaStoreClient> removalListener =
       new RemovalListener<HiveClientCacheKey, CacheableHiveMetaStoreClient>() {
+        @Override
         public void onRemoval(RemovalNotification<HiveClientCacheKey, CacheableHiveMetaStoreClient> notification) {
           CacheableHiveMetaStoreClient hiveMetaStoreClient = notification.getValue();
           if (hiveMetaStoreClient != null) {
@@ -108,6 +112,7 @@ class HiveClientCache {
 
     // Add a maintenance thread that will attempt to trigger a cache clean continuously
     Runnable cleanupThread = new Runnable() {
+      @Override
       public void run() {
         hiveCache.cleanUp();
       }
@@ -134,7 +139,10 @@ class HiveClientCache {
      * 5 seconds after the first timeout, and then after that, it'll check for whether or not
      * it can be cleaned every max(DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS,timeout) seconds
      */
-    cleanupHandle = Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+    ThreadFactory daemonThreadFactory = (new ThreadFactoryBuilder()).setDaemon(true)
+        .setNameFormat("HiveClientCache-cleaner-%d").build();
+
+    cleanupHandle = Executors.newScheduledThreadPool(1, daemonThreadFactory).scheduleWithFixedDelay(
         cleanupThread,
         timeout + 5, cleanupInterval, TimeUnit.SECONDS);
 
@@ -247,7 +255,7 @@ class HiveClientCache {
 
     private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException, LoginException {
       this.metaStoreURIs = hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS);
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+      ugi = Utils.getUGI();
       this.hiveConf = hiveConf;
       this.threadId = threadId;
     }
@@ -285,7 +293,7 @@ class HiveClientCache {
    * Add # of current users on HiveMetaStoreClient, so that the client can be cleaned when no one is using it.
    */
   public static class CacheableHiveMetaStoreClient extends HiveMetaStoreClient {
-    private AtomicInteger users = new AtomicInteger(0);
+    private final AtomicInteger users = new AtomicInteger(0);
     private volatile boolean expiredFromCache = false;
     private boolean isClosed = false;
     private final long expiryTime;

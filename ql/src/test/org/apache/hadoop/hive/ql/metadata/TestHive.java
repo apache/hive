@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_CHECKPOINT_INTERVAL_KEY;
-import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.util.ArrayList;
@@ -28,13 +26,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -51,6 +49,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -70,8 +69,8 @@ public class TestHive extends TestCase {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
     // enable trash so it can be tested
-    hiveConf.setFloat(FS_TRASH_CHECKPOINT_INTERVAL_KEY, 30);
-    hiveConf.setFloat(FS_TRASH_INTERVAL_KEY, 30);
+    hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
+    hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     SessionState.start(hiveConf);
     try {
       hm = Hive.get(hiveConf);
@@ -89,8 +88,8 @@ public class TestHive extends TestCase {
     try {
       super.tearDown();
       // disable trash
-      hiveConf.setFloat(FS_TRASH_CHECKPOINT_INTERVAL_KEY, 30);
-      hiveConf.setFloat(FS_TRASH_INTERVAL_KEY, 30);
+      hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
+      hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
       Hive.closeCurrent();
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -355,6 +354,9 @@ public class TestHive extends TestCase {
   }
 
   public void testDropTableTrash() throws Throwable {
+    if (!ShimLoader.getHadoopShims().supportTrashFeature()) {
+      return; // it's hadoop-1
+    }
     try {
       String dbName = "db_for_testdroptable";
       hm.dropDatabase(dbName, true, true, true);
@@ -379,12 +381,9 @@ public class TestHive extends TestCase {
       FileSystem fs = path1.getFileSystem(hiveConf);
       assertTrue(fs.exists(path1));
       // drop table and check that trash works
-      TrashPolicy tp = TrashPolicy.getInstance(hiveConf, fs, fs.getHomeDirectory());
-      assertNotNull("TrashPolicy instance should not be null", tp);
-      assertTrue("TrashPolicy is not enabled for filesystem: " + fs.getUri(), tp.isEnabled());
-      Path trashDir = tp.getCurrentTrashDir();
+      Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(hiveConf, fs);
       assertNotNull("trash directory should not be null", trashDir);
-      Path trash1 = Path.mergePaths(trashDir, path1);
+      Path trash1 = mergePaths(trashDir, path1);
       Path pathglob = trash1.suffix("*");;
       FileStatus before[] = fs.globStatus(pathglob);
       hm.dropTable(dbName, ts.get(0));
@@ -399,7 +398,7 @@ public class TestHive extends TestCase {
       assertEquals(ts.get(1), table2.getTableName());
       Path path2 = table2.getPath();
       assertTrue(fs.exists(path2));
-      Path trash2 = Path.mergePaths(trashDir, path2);
+      Path trash2 = mergePaths(trashDir, path2);
       System.out.println("trashDir2 is " + trash2);
       pathglob = trash2.suffix("*");
       before = fs.globStatus(pathglob);
@@ -551,7 +550,7 @@ public class TestHive extends TestCase {
             index.getIndexName());
         assertEquals("Table names don't match for index: " + indexName, tableName,
             index.getOrigTableName());
-        assertEquals("Index table names didn't match for index: " + indexName, indexTableName,
+        assertEquals("Index table names didn't match for index: " + indexName, qIndexTableName,
             index.getIndexTableName());
         assertEquals("Index handler classes didn't match for index: " + indexName,
             indexHandlerClass, index.getIndexHandlerClass());
@@ -565,7 +564,7 @@ public class TestHive extends TestCase {
 
       // Drop index
       try {
-        hm.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, indexName, true);
+        hm.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, indexName, false, true);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to drop index: " + indexName, false);
@@ -620,5 +619,40 @@ public class TestHive extends TestCase {
         newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj != newHiveObj);
+  }
+
+  // shamelessly copied from Path in hadoop-2
+  private static final String SEPARATOR = "/";
+  private static final char SEPARATOR_CHAR = '/';
+
+  private static final String CUR_DIR = ".";
+
+  private static final boolean WINDOWS
+      = System.getProperty("os.name").startsWith("Windows");
+
+  private static final Pattern hasDriveLetterSpecifier =
+      Pattern.compile("^/?[a-zA-Z]:");
+
+  private static Path mergePaths(Path path1, Path path2) {
+    String path2Str = path2.toUri().getPath();
+    path2Str = path2Str.substring(startPositionWithoutWindowsDrive(path2Str));
+    // Add path components explicitly, because simply concatenating two path
+    // string is not safe, for example:
+    // "/" + "/foo" yields "//foo", which will be parsed as authority in Path
+    return new Path(path1.toUri().getScheme(),
+        path1.toUri().getAuthority(),
+        path1.toUri().getPath() + path2Str);
+  }
+
+  private static int startPositionWithoutWindowsDrive(String path) {
+    if (hasWindowsDrive(path)) {
+      return path.charAt(0) ==  SEPARATOR_CHAR ? 3 : 2;
+    } else {
+      return 0;
+    }
+  }
+
+  private static boolean hasWindowsDrive(String path) {
+    return (WINDOWS && hasDriveLetterSpecifier.matcher(path).find());
   }
 }

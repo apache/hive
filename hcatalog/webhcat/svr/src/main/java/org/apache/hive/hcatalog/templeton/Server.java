@@ -778,6 +778,7 @@ public class Server {
    * @param optionsFile  name of option file which contains Sqoop command to run
    * @param otherFiles   additional files to be shipped to the launcher, such as option
                          files which contain part of the Sqoop command
+   * @param libdir       dir containing JDBC jars that Sqoop will need to interact with the database
    * @param statusdir    where the stderr/stdout of templeton controller job goes
    * @param callback     URL which WebHCat will call when the sqoop job finishes
    * @param enablelog    whether to collect mapreduce log into statusdir/logs
@@ -787,12 +788,13 @@ public class Server {
   @Produces({MediaType.APPLICATION_JSON})
   public EnqueueBean sqoop(@FormParam("command") String command,
               @FormParam("optionsfile") String optionsFile,
+              @FormParam("libdir") String libdir,
               @FormParam("files") String otherFiles,
               @FormParam("statusdir") String statusdir,
               @FormParam("callback") String callback,
               @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    IOException, InterruptedException {
     verifyUser();
     if (command == null && optionsFile == null)
       throw new BadParam("Must define Sqoop command or a optionsfile contains Sqoop command to run Sqoop job.");
@@ -805,13 +807,14 @@ public class Server {
     userArgs.put("user.name", getDoAsUser());
     userArgs.put("command", command);
     userArgs.put("optionsfile", optionsFile);
+    userArgs.put("libdir", libdir);
     userArgs.put("files", otherFiles);
     userArgs.put("statusdir", statusdir);
     userArgs.put("callback", callback);
     userArgs.put("enablelog", Boolean.toString(enablelog));
     SqoopDelegator d = new SqoopDelegator(appConf);
     return d.run(getDoAsUser(), userArgs, command, optionsFile, otherFiles,
-      statusdir, callback, getCompletedUrl(), enablelog);
+      statusdir, callback, getCompletedUrl(), enablelog, libdir);
   }
 
   /**
@@ -1008,8 +1011,15 @@ public class Server {
       jobItem.id = job;
       if (showDetails) {
         StatusDelegator sd = new StatusDelegator(appConf);
-        QueueStatusBean statusBean = sd.run(getDoAsUser(), job);
-        jobItem.detail = statusBean;
+        try {
+          jobItem.detail = sd.run(getDoAsUser(), job);
+        }
+        catch(Exception ex) {
+          /*if we could not get status for some reason, log it, and send empty status back with
+          * just the ID so that caller knows to even look in the log file*/
+          LOG.info("Failed to get status detail for jobId='" + job + "'", ex);
+          jobItem.detail = new QueueStatusBean(job, "Failed to retrieve status; see WebHCat logs");
+        }
       }
       detailList.add(jobItem);
     }

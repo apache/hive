@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -141,7 +142,9 @@ public class TezSessionPoolManager {
   private TezSessionState getNewSessionState(HiveConf conf,
       String queueName, boolean doOpen) throws Exception {
     TezSessionState retTezSessionState = createSession(TezSessionState.makeSessionId());
-    retTezSessionState.setQueueName(queueName);
+    if (queueName != null) {
+      conf.set("tez.queue.name", queueName);
+    }
     String what = "Created";
     if (doOpen) {
       retTezSessionState.open(conf);
@@ -168,10 +171,10 @@ public class TezSessionPoolManager {
     // session in the SessionState
   }
 
-  public void close(TezSessionState tezSessionState) throws Exception {
+  public void close(TezSessionState tezSessionState, boolean keepTmpDir) throws Exception {
     LOG.info("Closing tez session default? " + tezSessionState.isDefault());
     if (!tezSessionState.isDefault()) {
-      tezSessionState.close(false);
+      tezSessionState.close(keepTmpDir);
     }
   }
 
@@ -210,8 +213,8 @@ public class TezSessionPoolManager {
     }
 
     try {
-      UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-      String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+      UserGroupInformation ugi = Utils.getUGI();
+      String userName = ugi.getShortUserName();
       LOG.info("The current user: " + userName + ", session user: " + session.getUser());
       if (userName.equals(session.getUser()) == false) {
         LOG.info("Different users incoming: " + userName + " existing: " + session.getUser());
@@ -221,29 +224,27 @@ public class TezSessionPoolManager {
       throw new HiveException(e);
     }
 
-    HiveConf existingConf = session.getConf();
-    if (existingConf == null) {
-      return false;
-    }
-
+    boolean doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     // either variables will never be null because a default value is returned in case of absence
-    if (existingConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS) !=
-        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+    if (doAsEnabled != conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       return false;
     }
 
     if (!session.isDefault()) {
-      if (existingConf.get("tez.queue.name") == conf.get("tez.queue.name")) {
-        // both are null
-        return true;
-      }
-      if ((existingConf.get("tez.queue.name") == null)) {
-        // doesn't matter if the other conf is null or not. if it is null, above case catches it
-        return false;
+      String queueName = session.getQueueName();
+      LOG.info("Current queue name is " + queueName + " incoming queue name is "
+          + conf.get("tez.queue.name"));
+      if (queueName == null) {
+        if (conf.get("tez.queue.name") != null) {
+          // queue names are different
+          return false;
+        } else {
+          return true;
+        }
       }
 
-      if (!existingConf.get("tez.queue.name").equals(conf.get("tez.queue.name"))) {
-        // handles the case of incoming conf having a null for tez.queue.name
+      if (!queueName.equals(conf.get("tez.queue.name"))) {
+        // the String.equals method handles the case of conf not having the queue name as well.
         return false;
       }
     } else {
@@ -262,24 +263,24 @@ public class TezSessionPoolManager {
     }
 
     if (session != null) {
-      close(session);
+      close(session, false);
     }
 
     return getSession(conf, doOpen, forceCreate);
   }
 
-  public void closeAndOpen(TezSessionState sessionState, HiveConf conf)
+  public void closeAndOpen(TezSessionState sessionState, HiveConf conf, boolean keepTmpDir)
       throws Exception {
-    closeAndOpen(sessionState, conf, null);
+    closeAndOpen(sessionState, conf, null, keepTmpDir);
   }
 
   public void closeAndOpen(TezSessionState sessionState, HiveConf conf,
-      String[] additionalFiles) throws Exception {
+      String[] additionalFiles, boolean keepTmpDir) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionConf != null && sessionConf.get("tez.queue.name") != null) {
       conf.set("tez.queue.name", sessionConf.get("tez.queue.name"));
     }
-    close(sessionState);
+    close(sessionState, keepTmpDir);
     sessionState.open(conf, additionalFiles);
   }
 }

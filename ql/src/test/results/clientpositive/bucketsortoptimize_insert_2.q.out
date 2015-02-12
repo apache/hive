@@ -97,7 +97,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -112,9 +112,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -142,7 +139,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -230,7 +227,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
-  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
@@ -252,9 +249,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -269,9 +263,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -283,11 +274,13 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -308,7 +301,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
   Stage: Stage-8
@@ -324,9 +317,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -341,9 +331,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -355,11 +342,13 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -380,9 +369,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -394,9 +380,11 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -512,7 +500,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -527,9 +515,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -557,7 +542,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -690,9 +675,6 @@ STAGE PLANS:
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -835,9 +817,6 @@ STAGE PLANS:
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -988,9 +967,6 @@ STAGE PLANS:
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 HashTable Sink Operator
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -1008,9 +984,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -1022,11 +995,13 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -1066,9 +1041,6 @@ STAGE PLANS:
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
                 HashTable Sink Operator
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -1086,9 +1058,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -1100,11 +1069,13 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -1129,9 +1100,6 @@ STAGE PLANS:
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -1143,9 +1111,11 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:

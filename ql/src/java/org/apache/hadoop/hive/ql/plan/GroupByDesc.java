@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -53,7 +54,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
   };
 
   private Mode mode;
-  private boolean groupKeyNotReductionKey;
 
   // no hash aggregations for group by
   private boolean bucketGroup;
@@ -61,7 +61,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private ArrayList<ExprNodeDesc> keys;
   private List<Integer> listGroupingSets;
   private boolean groupingSetsPresent;
-  private int groupingSetPosition;
+  private int groupingSetPosition = -1;
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
@@ -81,14 +81,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<java.lang.String> outputColumnNames,
       final ArrayList<ExprNodeDesc> keys,
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey,
       final float groupByMemoryUsage,
       final float memoryThreshold,
       final List<Integer> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
-    this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
+    this(mode, outputColumnNames, keys, aggregators,
         false, groupByMemoryUsage, memoryThreshold, listGroupingSets,
         groupingSetsPresent, groupingSetsPosition, isDistinct);
   }
@@ -98,7 +97,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<java.lang.String> outputColumnNames,
       final ArrayList<ExprNodeDesc> keys,
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey,
       final boolean bucketGroup,
       final float groupByMemoryUsage,
       final float memoryThreshold,
@@ -111,7 +109,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
     this.aggregators = aggregators;
-    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
     this.bucketGroup = bucketGroup;
     this.groupByMemoryUsage = groupByMemoryUsage;
     this.memoryThreshold = memoryThreshold;
@@ -177,6 +174,12 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return outputColumnNames;
   }
 
+  @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  public boolean pruneGroupingSetId() {
+    return groupingSetPosition >= 0 &&
+        outputColumnNames.size() != keys.size() + aggregators.size();
+  }
+
   public void setOutputColumnNames(
       ArrayList<java.lang.String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
@@ -216,14 +219,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.aggregators = aggregators;
   }
 
-  public boolean getGroupKeyNotReductionKey() {
-    return groupKeyNotReductionKey;
+  public boolean isAggregate() {
+    if (this.aggregators != null && !this.aggregators.isEmpty()) {
+      return true;
+    }
+    return false;
   }
-
-  public void setGroupKeyNotReductionKey(final boolean groupKeyNotReductionKey) {
-    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
-  }
-
+  
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
   public boolean getBucketGroup() {
     return bucketGroup;

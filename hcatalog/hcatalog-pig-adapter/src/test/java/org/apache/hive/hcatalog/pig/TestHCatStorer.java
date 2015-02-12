@@ -18,18 +18,27 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 import org.apache.hive.hcatalog.HcatTestUtils;
@@ -47,20 +56,79 @@ import org.apache.pig.impl.util.LogUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
+
+@RunWith(Parameterized.class)
 public class TestHCatStorer extends HCatBaseTest {
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatStorer.class);
 
   private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
+  private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
+    new HashMap<String, Set<String>>() {{
+      put(IOConstants.AVRO, new HashSet<String>() {{
+        add("testDateCharTypes"); // incorrect precision
+          // expected:<0      xxxxx   yyy     5.2[]> but was:<0       xxxxx   yyy     5.2[0]>
+        add("testWriteDecimalXY"); // incorrect precision
+          // expected:<1.2[]> but was:<1.2[0]>
+        add("testWriteSmallint");  // doesn't have a notion of small, and saves the full value as an int, so no overflow
+          // expected:<null> but was:<32768>
+        add("testWriteTimestamp"); // does not support timestamp
+          // TypeInfoToSchema.createAvroPrimitive : UnsupportedOperationException
+        add("testWriteTinyint"); // doesn't have a notion of tiny, and saves the full value as an int, so no overflow
+          // expected:<null> but was:<300>
+      }});
+      put(IOConstants.PARQUETFILE, new HashSet<String>() {{
+        add("testBagNStruct");
+        add("testDateCharTypes");
+        add("testDynamicPartitioningMultiPartColsInDataNoSpec");
+        add("testDynamicPartitioningMultiPartColsInDataPartialSpec");
+        add("testMultiPartColsInData");
+        add("testPartColsInData");
+        add("testStoreFuncAllSimpleTypes");
+        add("testStoreFuncSimple");
+        add("testStoreInPartiitonedTbl");
+        add("testStoreMultiTables");
+        add("testStoreWithNoCtorArgs");
+        add("testStoreWithNoSchema");
+        add("testWriteChar");
+        add("testWriteDate");
+        add("testWriteDate2");
+        add("testWriteDate3");
+        add("testWriteDecimal");
+        add("testWriteDecimalX");
+        add("testWriteDecimalXY");
+        add("testWriteSmallint");
+        add("testWriteTimestamp");
+        add("testWriteTinyint");
+        add("testWriteVarchar");
+      }});
+    }};
+
+  private String storageFormat;
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> generateParameters() {
+    return StorageFormats.names();
+  }
+
+  public TestHCatStorer(String storageFormat) {
+    this.storageFormat = storageFormat;
+  }
+
   //Start: tests that check values from Pig that are out of range for target column
   @Test
   public void testWriteTinyint() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     pigValueRangeTest("junitTypeTest1", "tinyint", "int", null, Integer.toString(1), Integer.toString(1));
     pigValueRangeTestOverflow("junitTypeTest1", "tinyint", "int", null, Integer.toString(300));
     pigValueRangeTestOverflow("junitTypeTest2", "tinyint", "int", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null,
@@ -71,6 +139,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteSmallint() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     pigValueRangeTest("junitTypeTest1", "smallint", "int", null, Integer.toString(Short.MIN_VALUE),
       Integer.toString(Short.MIN_VALUE));
     pigValueRangeTestOverflow("junitTypeTest2", "smallint", "int", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null,
@@ -81,6 +150,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteChar() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     pigValueRangeTest("junitTypeTest1", "char(5)", "chararray", null, "xxx", "xxx  ");
     pigValueRangeTestOverflow("junitTypeTest1", "char(5)", "chararray", null, "too_long");
     pigValueRangeTestOverflow("junitTypeTest2", "char(5)", "chararray", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null,
@@ -91,6 +161,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteVarchar() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     pigValueRangeTest("junitTypeTest1", "varchar(5)", "chararray", null, "xxx", "xxx");
     pigValueRangeTestOverflow("junitTypeTest1", "varchar(5)", "chararray", null, "too_long");
     pigValueRangeTestOverflow("junitTypeTest2", "varchar(5)", "chararray", HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null,
@@ -101,6 +172,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteDecimalXY() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     pigValueRangeTest("junitTypeTest1", "decimal(5,2)", "bigdecimal", null, BigDecimal.valueOf(1.2).toString(),
       BigDecimal.valueOf(1.2).toString());
     pigValueRangeTestOverflow("junitTypeTest1", "decimal(5,2)", "bigdecimal", null, BigDecimal.valueOf(12345.12).toString());
@@ -112,6 +184,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteDecimalX() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     //interestingly decimal(2) means decimal(2,0)
     pigValueRangeTest("junitTypeTest1", "decimal(2)", "bigdecimal", null, BigDecimal.valueOf(12).toString(),
       BigDecimal.valueOf(12).toString());
@@ -123,6 +196,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteDecimal() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     //decimal means decimal(10,0)
     pigValueRangeTest("junitTypeTest1", "decimal", "bigdecimal", null, BigDecimal.valueOf(1234567890).toString(),
       BigDecimal.valueOf(1234567890).toString());
@@ -137,8 +211,10 @@ public class TestHCatStorer extends HCatBaseTest {
    * include time to make sure it's 0
    */
   private static final String FORMAT_4_DATE = "yyyy-MM-dd HH:mm:ss";
+
   @Test
   public void testWriteDate() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     DateTime d = new DateTime(1991,10,11,0,0);
     pigValueRangeTest("junitTypeTest1", "date", "datetime", null, d.toString(),
       d.toString(FORMAT_4_DATE), FORMAT_4_DATE);
@@ -157,6 +233,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteDate3() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     DateTime d = new DateTime(1991,10,11,23,10,DateTimeZone.forOffsetHours(-11));
     FrontendException fe = null;
     //expect to fail since the time component is not 0
@@ -170,6 +247,7 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testWriteDate2() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     DateTime d = new DateTime(1991,11,12,0,0, DateTimeZone.forID("US/Eastern"));
     pigValueRangeTest("junitTypeTest1", "date", "datetime", null, d.toString(),
       d.toString(FORMAT_4_DATE), FORMAT_4_DATE);
@@ -193,6 +271,7 @@ public class TestHCatStorer extends HCatBaseTest {
    */
   @Test
   public void testWriteTimestamp() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     DateTime d = new DateTime(1991,10,11,14,23,30, 10);//uses default TZ
     pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(),
       d.toDateTime(DateTimeZone.getDefault()).toString());
@@ -229,13 +308,6 @@ public class TestHCatStorer extends HCatBaseTest {
   }
 
   /**
-   * this should be overridden in subclass to test with different file formats
-   */
-  String getStorageFormat() {
-    return "RCFILE";
-  }
-
-  /**
    * This is used to test how Pig values of various data types which are out of range for Hive target
    * column are handled.  Currently the options are to raise an error or write NULL.
    * 1. create a data file with 1 column, 1 row
@@ -258,7 +330,7 @@ public class TestHCatStorer extends HCatBaseTest {
     throws Exception {
     TestHCatLoader.dropTable(tblName, driver);
     final String field = "f1";
-    TestHCatLoader.createTable(tblName, field + " " + hiveType, null, driver, getStorageFormat());
+    TestHCatLoader.createTable(tblName, field + " " + hiveType, null, driver, storageFormat);
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[] {inputValue});
     LOG.debug("File=" + INPUT_FILE_NAME);
     dumpFile(INPUT_FILE_NAME);
@@ -287,11 +359,11 @@ public class TestHCatStorer extends HCatBaseTest {
           //do nothing, fall through and verify the data
           break;
         case Throw:
-          Assert.assertTrue("Expected a FrontendException", fe != null);
-          Assert.assertEquals("Expected a different FrontendException.", fe.getMessage(), "Unable to store alias A");
+          assertTrue("Expected a FrontendException", fe != null);
+          assertEquals("Expected a different FrontendException.", fe.getMessage(), "Unable to store alias A");
           return;//this test is done
         default:
-          Assert.assertFalse("Unexpected goal: " + goal, 1 == 1);
+          assertFalse("Unexpected goal: " + goal, 1 == 1);
       }
     }
     logAndRegister(server, "B = load '" + tblName + "' using " + HCatLoader.class.getName() + "();", queryNumber);
@@ -310,17 +382,17 @@ public class TestHCatStorer extends HCatBaseTest {
       Tuple t = itr.next();
       if("date".equals(hiveType)) {
         DateTime dateTime = (DateTime)t.get(0);
-        Assert.assertTrue(format != null);
-        Assert.assertEquals("Comparing Pig to Raw data for table " + tblName, expectedValue, dateTime== null ? null : dateTime.toString(format));
+        assertTrue(format != null);
+        assertEquals("Comparing Pig to Raw data for table " + tblName, expectedValue, dateTime== null ? null : dateTime.toString(format));
       }
       else {
-        Assert.assertEquals("Comparing Pig to Raw data for table " + tblName, expectedValue, t.isNull(0) ? null : t.get(0).toString());
+        assertEquals("Comparing Pig to Raw data for table " + tblName, expectedValue, t.isNull(0) ? null : t.get(0).toString());
       }
       //see comment at "Dumping rows via SQL..." for why this doesn't work
-      //Assert.assertEquals("Comparing Pig to Hive", t.get(0), l.get(0));
+      //assertEquals("Comparing Pig to Hive", t.get(0), l.get(0));
       numRowsRead++;
     }
-    Assert.assertEquals("Expected " + 1 + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME + "; table " +
+    assertEquals("Expected " + 1 + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME + "; table " +
       tblName, 1, numRowsRead);
     /* Misc notes:
     Unfortunately Timestamp.toString() adjusts the value for local TZ and 't' is a String
@@ -334,10 +406,11 @@ public class TestHCatStorer extends HCatBaseTest {
    */
   @Test
   public void testDateCharTypes() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     final String tblName = "junit_date_char";
     TestHCatLoader.dropTable(tblName, driver);
     TestHCatLoader.createTable(tblName,
-      "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver, getStorageFormat());
+      "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver, storageFormat);
     int NUM_ROWS = 5;
     String[] rows = new String[NUM_ROWS];
     for(int i = 0; i < NUM_ROWS; i++) {
@@ -376,12 +449,12 @@ public class TestHCatStorer extends HCatBaseTest {
         rowFromPig.append(t.get(i)).append("\t");
       }
       rowFromPig.setLength(rowFromPig.length() - 1);
-      Assert.assertEquals("Comparing Pig to Raw data", rows[numRowsRead], rowFromPig.toString());
+      assertEquals("Comparing Pig to Raw data", rows[numRowsRead], rowFromPig.toString());
       //see comment at "Dumping rows via SQL..." for why this doesn't work (for all types)
-      //Assert.assertEquals("Comparing Pig to Hive", rowFromPig.toString(), l.get(numRowsRead));
+      //assertEquals("Comparing Pig to Hive", rowFromPig.toString(), l.get(numRowsRead));
       numRowsRead++;
     }
-    Assert.assertEquals("Expected " + NUM_ROWS + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME, NUM_ROWS, numRowsRead);
+    assertEquals("Expected " + NUM_ROWS + " rows; got " + numRowsRead + " file=" + INPUT_FILE_NAME, NUM_ROWS, numRowsRead);
   }
 
   static void dumpFile(String fileName) throws Exception {
@@ -397,9 +470,10 @@ public class TestHCatStorer extends HCatBaseTest {
 
   @Test
   public void testPartColsInData() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -420,22 +494,23 @@ public class TestHCatStorer extends HCatBaseTest {
 
     while (itr.hasNext()) {
       Tuple t = itr.next();
-      Assert.assertEquals(2, t.size());
-      Assert.assertEquals(t.get(0), i);
-      Assert.assertEquals(t.get(1), "1");
+      assertEquals(2, t.size());
+      assertEquals(t.get(0), i);
+      assertEquals(t.get(1), "1");
       i++;
     }
 
-    Assert.assertFalse(itr.hasNext());
-    Assert.assertEquals(LOOP_SIZE, i);
+    assertFalse(itr.hasNext());
+    assertEquals(LOOP_SIZE, i);
   }
 
   @Test
   public void testMultiPartColsInData() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + storageFormat;
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -464,20 +539,21 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
     driver.getResults(results);
-    Assert.assertEquals(4, results.size());
+    assertEquals(4, results.size());
     Collections.sort(results);
-    Assert.assertEquals(inputData[0], results.get(0));
-    Assert.assertEquals(inputData[1], results.get(1));
-    Assert.assertEquals(inputData[2], results.get(2));
-    Assert.assertEquals(inputData[3], results.get(3));
+    assertEquals(inputData[0], results.get(0));
+    assertEquals(inputData[1], results.get(1));
+    assertEquals(inputData[2], results.get(2));
+    assertEquals(inputData[3], results.get(3));
     driver.run("drop table employee");
   }
 
   @Test
   public void testStoreInPartiitonedTbl() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int) partitioned by (b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -498,20 +574,21 @@ public class TestHCatStorer extends HCatBaseTest {
 
     while (itr.hasNext()) {
       Tuple t = itr.next();
-      Assert.assertEquals(2, t.size());
-      Assert.assertEquals(t.get(0), i);
-      Assert.assertEquals(t.get(1), "1");
+      assertEquals(2, t.size());
+      assertEquals(t.get(0), i);
+      assertEquals(t.get(1), "1");
       i++;
     }
 
-    Assert.assertFalse(itr.hasNext());
-    Assert.assertEquals(11, i);
+    assertFalse(itr.hasNext());
+    assertEquals(11, i);
   }
 
   @Test
   public void testNoAlias() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     driver.run("drop table junit_parted");
-    String createTable = "create table junit_parted(a int, b string) partitioned by (ds string) stored as " + getStorageFormat();
+    String createTable = "create table junit_parted(a int, b string) partitioned by (ds string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -526,12 +603,12 @@ public class TestHCatStorer extends HCatBaseTest {
       server.executeBatch();
     } catch (PigException fe) {
       PigException pe = LogUtils.getPigException(fe);
-      Assert.assertTrue(pe instanceof FrontendException);
-      Assert.assertEquals(PigHCatUtil.PIG_EXCEPTION_CODE, pe.getErrorCode());
-      Assert.assertTrue(pe.getMessage().contains("Column name for a field is not specified. Please provide the full schema as an argument to HCatStorer."));
+      assertTrue(pe instanceof FrontendException);
+      assertEquals(PigHCatUtil.PIG_EXCEPTION_CODE, pe.getErrorCode());
+      assertTrue(pe.getMessage().contains("Column name for a field is not specified. Please provide the full schema as an argument to HCatStorer."));
       errCaught = true;
     }
-    Assert.assertTrue(errCaught);
+    assertTrue(errCaught);
     errCaught = false;
     try {
       server.setBatchOn();
@@ -541,20 +618,21 @@ public class TestHCatStorer extends HCatBaseTest {
       server.executeBatch();
     } catch (PigException fe) {
       PigException pe = LogUtils.getPigException(fe);
-      Assert.assertTrue(pe instanceof FrontendException);
-      Assert.assertEquals(PigHCatUtil.PIG_EXCEPTION_CODE, pe.getErrorCode());
-      Assert.assertTrue(pe.getMessage().contains("Column names should all be in lowercase. Invalid name found: B"));
+      assertTrue(pe instanceof FrontendException);
+      assertEquals(PigHCatUtil.PIG_EXCEPTION_CODE, pe.getErrorCode());
+      assertTrue(pe.getMessage().contains("Column names should all be in lowercase. Invalid name found: B"));
       errCaught = true;
     }
     driver.run("drop table junit_parted");
-    Assert.assertTrue(errCaught);
+    assertTrue(errCaught);
   }
 
   @Test
   public void testStoreMultiTables() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -598,18 +676,19 @@ public class TestHCatStorer extends HCatBaseTest {
 
     Iterator<String> itr = res.iterator();
     for (int i = 0; i < LOOP_SIZE * LOOP_SIZE; i++) {
-      Assert.assertEquals(input[i], itr.next());
+      assertEquals(input[i], itr.next());
     }
 
-    Assert.assertFalse(itr.hasNext());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testStoreWithNoSchema() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -637,18 +716,19 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("drop table junit_unparted");
     Iterator<String> itr = res.iterator();
     for (int i = 0; i < LOOP_SIZE * LOOP_SIZE; i++) {
-      Assert.assertEquals(input[i], itr.next());
+      assertEquals(input[i], itr.next());
     }
 
-    Assert.assertFalse(itr.hasNext());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testStoreWithNoCtorArgs() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -676,18 +756,19 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("drop table junit_unparted");
     Iterator<String> itr = res.iterator();
     for (int i = 0; i < LOOP_SIZE * LOOP_SIZE; i++) {
-      Assert.assertEquals(input[i], itr.next());
+      assertEquals(input[i], itr.next());
     }
 
-    Assert.assertFalse(itr.hasNext());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testEmptyStore() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -715,15 +796,16 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.getResults(res);
     driver.run("drop table junit_unparted");
     Iterator<String> itr = res.iterator();
-    Assert.assertFalse(itr.hasNext());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testBagNStruct() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     driver.run("drop table junit_unparted");
     String createTable = "create table junit_unparted(b string,a struct<a1:int>,  arr_of_struct array<string>, " +
-      "arr_of_struct2 array<struct<s1:string,s2:string>>,  arr_of_struct3 array<struct<s3:string>>) stored as " + getStorageFormat();
+      "arr_of_struct2 array<struct<s1:string,s2:string>>,  arr_of_struct3 array<struct<s3:string>>) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -746,17 +828,18 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.getResults(res);
     driver.run("drop table junit_unparted");
     Iterator<String> itr = res.iterator();
-    Assert.assertEquals("zookeeper\t{\"a1\":2}\t[\"pig\"]\t[{\"s1\":\"pnuts\",\"s2\":\"hdfs\"}]\t[{\"s3\":\"hadoop\"},{\"s3\":\"hcat\"}]", itr.next());
-    Assert.assertEquals("chubby\t{\"a1\":2}\t[\"sawzall\"]\t[{\"s1\":\"bigtable\",\"s2\":\"gfs\"}]\t[{\"s3\":\"mapreduce\"},{\"s3\":\"hcat\"}]", itr.next());
-    Assert.assertFalse(itr.hasNext());
+    assertEquals("zookeeper\t{\"a1\":2}\t[\"pig\"]\t[{\"s1\":\"pnuts\",\"s2\":\"hdfs\"}]\t[{\"s3\":\"hadoop\"},{\"s3\":\"hcat\"}]", itr.next());
+    assertEquals("chubby\t{\"a1\":2}\t[\"sawzall\"]\t[{\"s1\":\"bigtable\",\"s2\":\"gfs\"}]\t[{\"s3\":\"mapreduce\"},{\"s3\":\"hcat\"}]", itr.next());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testStoreFuncAllSimpleTypes() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, h boolean, f binary, g binary) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, h boolean, f binary, g binary) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -783,10 +866,10 @@ public class TestHCatStorer extends HCatBaseTest {
 
     Iterator<String> itr = res.iterator();
     String next = itr.next();
-    Assert.assertEquals("0\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL", next );
-    Assert.assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\ttrue\tbinary-data\tNULL", itr.next());
-    Assert.assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tfalse\tbinary-data\tNULL", itr.next());
-    Assert.assertFalse(itr.hasNext());
+    assertEquals("0\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL", next );
+    assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\ttrue\tbinary-data\tNULL", itr.next());
+    assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tfalse\tbinary-data\tNULL", itr.next());
+    assertFalse(itr.hasNext());
 
     server.registerQuery("B = load 'junit_unparted' using " + HCatLoader.class.getName() + ";");
     Iterator<Tuple> iter = server.openIterator("B");
@@ -797,21 +880,22 @@ public class TestHCatStorer extends HCatBaseTest {
       if (t.get(6) == null) {
         num5nulls++;
       } else {
-        Assert.assertTrue(t.get(6) instanceof DataByteArray);
+        assertTrue(t.get(6) instanceof DataByteArray);
       }
-      Assert.assertNull(t.get(7));
+      assertNull(t.get(7));
       count++;
     }
-    Assert.assertEquals(3, count);
-    Assert.assertEquals(1, num5nulls);
+    assertEquals(3, count);
+    assertEquals(1, num5nulls);
     driver.run("drop table junit_unparted");
   }
 
   @Test
   public void testStoreFuncSimple() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
-    String createTable = "create table junit_unparted(a int, b string) stored as " + getStorageFormat();
+    String createTable = "create table junit_unparted(a int, b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -841,19 +925,20 @@ public class TestHCatStorer extends HCatBaseTest {
     for (int i = 1; i <= LOOP_SIZE; i++) {
       String si = i + "";
       for (int j = 1; j <= LOOP_SIZE; j++) {
-        Assert.assertEquals(si + "\t" + j, itr.next());
+        assertEquals(si + "\t" + j, itr.next());
       }
     }
-    Assert.assertFalse(itr.hasNext());
+    assertFalse(itr.hasNext());
 
   }
 
   @Test
   public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + storageFormat;
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -876,21 +961,22 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
     driver.getResults(results);
-    Assert.assertEquals(4, results.size());
+    assertEquals(4, results.size());
     Collections.sort(results);
-    Assert.assertEquals(inputData[0], results.get(0));
-    Assert.assertEquals(inputData[1], results.get(1));
-    Assert.assertEquals(inputData[2], results.get(2));
-    Assert.assertEquals(inputData[3], results.get(3));
+    assertEquals(inputData[0], results.get(0));
+    assertEquals(inputData[1], results.get(1));
+    assertEquals(inputData[2], results.get(2));
+    assertEquals(inputData[3], results.get(3));
     driver.run("drop table employee");
   }
 
   @Test
   public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + storageFormat;
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -913,21 +999,22 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
     driver.getResults(results);
-    Assert.assertEquals(4, results.size());
+    assertEquals(4, results.size());
     Collections.sort(results);
-    Assert.assertEquals(inputData[0], results.get(0));
-    Assert.assertEquals(inputData[1], results.get(1));
-    Assert.assertEquals(inputData[2], results.get(2));
-    Assert.assertEquals(inputData[3], results.get(3));
+    assertEquals(inputData[0], results.get(0));
+    assertEquals(inputData[1], results.get(1));
+    assertEquals(inputData[2], results.get(2));
+    assertEquals(inputData[3], results.get(3));
     driver.run("drop table employee");
   }
 
   @Test
   public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table if exists employee");
     String createTable = "CREATE TABLE employee (emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING ) " +
-      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + getStorageFormat();
+      " PARTITIONED BY (emp_country STRING , emp_state STRING ) STORED AS " + storageFormat;
 
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -947,15 +1034,16 @@ public class TestHCatStorer extends HCatBaseTest {
     driver.run("select * from employee");
     ArrayList<String> results = new ArrayList<String>();
     driver.getResults(results);
-    Assert.assertEquals(0, results.size());
+    assertEquals(0, results.size());
     driver.run("drop table employee");
   }
+
   @Test
-  public void testPartitionPublish()
-    throws IOException, CommandNeedRetryException {
+  public void testPartitionPublish() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table ptn_fail");
-    String createTable = "create table ptn_fail(a int, c string) partitioned by (b string) stored as " + getStorageFormat();
+    String createTable = "create table ptn_fail(a int, c string) partitioned by (b string) stored as " + storageFormat;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to create table.");
@@ -987,11 +1075,11 @@ public class TestHCatStorer extends HCatBaseTest {
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
-    Assert.assertEquals(0, res.size());
+    assertEquals(0, res.size());
 
     // Make sure the partitions directory is not in hdfs.
-    Assert.assertTrue((new File(TEST_WAREHOUSE_DIR + "/ptn_fail")).exists());
-    Assert.assertFalse((new File(TEST_WAREHOUSE_DIR + "/ptn_fail/b=math"))
+    assertTrue((new File(TEST_WAREHOUSE_DIR + "/ptn_fail")).exists());
+    assertFalse((new File(TEST_WAREHOUSE_DIR + "/ptn_fail/b=math"))
       .exists());
   }
 

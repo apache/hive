@@ -1,0 +1,116 @@
+PREHOOK: query: create table tst1(key STRING, cnt INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1
+POSTHOOK: query: create table tst1(key STRING, cnt INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tst1
+PREHOOK: query: INSERT OVERWRITE TABLE tst1
+SELECT a.key, count(1) FROM src a group by a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tst1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1
+SELECT a.key, count(1) FROM src a group by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tst1
+POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
+POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain 
+SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+                      outputColumnNames: _col1
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 170 Data size: 817 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: sum(_col1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst1
+#### A masked pattern was here ####
+500

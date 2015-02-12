@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.apache.hive</groupId>
+  <artifactId>spark-client</artifactId>
+  <packaging>jar</packaging>
+  <name>Spark Remote Client</name>
+  <version>1.2.0-SNAPSHOT</version>
+
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+    <scala.binary.version>2.10</scala.binary.version>
+    <test.redirectToFile>true</test.redirectToFile>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.esotericsoftware.kryo</groupId>
+      <artifactId>kryo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <!--
+              Spark depends on Guava 14, while Hive depends on Guava 11. The APIs used by
+              spark-client do not depend on Guava 14, but when running unit tests that
+              trigger Spark jobs, that will trigger the dependency. So, when running tests,
+              make sure Guava 14, and not Guava 11, is on the classpath.
+            -->
+            <id>copy-guava-14</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.google.guava</groupId>
+                  <artifactId>guava</artifactId>
+                  <version>14.0.1</version>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <additionalClasspathElements>
+            <!-- Note: wildcards don't work. Thankfully there's just one jar we care about. -->
+            <additionalClasspathElement>${project.build.directory}/dependency/guava-14.0.1.jar</additionalClasspathElement>
+          </additionalClasspathElements>
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>com.google.guava:guava</classpathDependencyExclude>
+          </classpathDependencyExcludes>
+          <systemPropertyVariables>
+            <java.awt.headless>true</java.awt.headless>
+            <spark.home>${spark.home}</spark.home>
+          </systemPropertyVariables>
+          <redirectTestOutputToFile>${test.redirectToFile}</redirectTestOutputToFile>
+          <useFile>${test.redirectToFile}</useFile>
+          <argLine>-Xmx4096m -XX:MaxPermSize=512m</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

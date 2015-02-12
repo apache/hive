@@ -71,40 +71,22 @@ explain
 select explode(array('a', 'b'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    expressions: array('a','b') (type: array<string>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                      function name: explode
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array('a','b') (type: array<string>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
@@ -185,40 +167,22 @@ POSTHOOK: query: explain
 select explode(array('a', 'b'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    expressions: array('a','b') (type: array<string>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                      function name: explode
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array('a','b') (type: array<string>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
@@ -239,37 +203,20 @@ explain
 select 2 + 3,x from (select 1 + 2 x) X
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    expressions: 5 (type: int), 3 (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 5 (type: int), 3 (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
 
 PREHOOK: query: select 2 + 3,x from (select 1 + 2 x) X
 PREHOOK: type: QUERY

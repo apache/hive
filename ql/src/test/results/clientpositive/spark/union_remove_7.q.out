@@ -1,0 +1,235 @@
+PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
+-- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
+-- There is no need to write the temporary results of the sub-queries, and then read them 
+-- again to process the union. The union can be removed completely.
+-- The final file format is different from the input and intermediate file format.
+-- It does not matter, whether the output is merged or not. In this case, merging is turned
+-- off
+
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- Since this test creates sub-directories for the output table outputTbl1, it might be easier
+-- to run the test only on hadoop 23
+
+create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inputTbl1
+POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
+-- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
+-- There is no need to write the temporary results of the sub-queries, and then read them 
+-- again to process the union. The union can be removed completely.
+-- The final file format is different from the input and intermediate file format.
+-- It does not matter, whether the output is merged or not. In this case, merging is turned
+-- off
+
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- Since this test creates sub-directories for the output table outputTbl1, it might be easier
+-- to run the test only on hadoop 23
+
+create table inputTbl1(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inputTbl1
+PREHOOK: query: create table outputTbl1(key string, values bigint) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1
+POSTHOOK: query: create table outputTbl1(key string, values bigint) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl1
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@inputtbl1
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@inputtbl1
+PREHOOK: query: explain
+insert overwrite table outputTbl1
+SELECT *
+FROM (
+  SELECT key, count(1) as values from inputTbl1 group by key
+  UNION ALL
+  SELECT key, count(1) as values from inputTbl1 group by key
+) a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table outputTbl1
+SELECT *
+FROM (
+  SELECT key, count(1) as values from inputTbl1 group by key
+  UNION ALL
+  SELECT key, count(1) as values from inputTbl1 group by key
+) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 4 <- Map 3 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                      name: default.outputtbl1
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                      name: default.outputtbl1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: default.outputtbl1
+
+PREHOOK: query: insert overwrite table outputTbl1
+SELECT *
+FROM (
+  SELECT key, count(1) as values from inputTbl1 group by key
+  UNION ALL
+  SELECT key, count(1) as values from inputTbl1 group by key
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1
+PREHOOK: Output: default@outputtbl1
+POSTHOOK: query: insert overwrite table outputTbl1
+SELECT *
+FROM (
+  SELECT key, count(1) as values from inputTbl1 group by key
+  UNION ALL
+  SELECT key, count(1) as values from inputTbl1 group by key
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Output: default@outputtbl1
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+PREHOOK: query: desc formatted outputTbl1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1
+POSTHOOK: query: desc formatted outputTbl1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+values              	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+	numFiles            	4                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	336                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from outputTbl1 order by key, values
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from outputTbl1 order by key, values
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+1	1
+1	1
+2	1
+2	1
+3	1
+3	1
+7	1
+7	1
+8	2
+8	2

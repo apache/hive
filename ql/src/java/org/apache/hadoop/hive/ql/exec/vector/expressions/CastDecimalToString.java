@@ -43,14 +43,13 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   @Override
   protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i) {
-    String s = inV.vector[i].getHiveDecimalString();
+    String s = inV.vector[i].getHiveDecimal().toString();
     byte[] b = null;
     try {
       b = s.getBytes("UTF-8");
     } catch (Exception e) {
-
       // This should never happen. If it does, there is a bug.
-      throw new RuntimeException("Internal error:  unable to convert decimal to string");
+      throw new RuntimeException("Internal error:  unable to convert decimal to string", e);
     }
     assign(outV, i, b, b.length);
   }

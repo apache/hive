@@ -141,7 +141,7 @@ public class TOpenSessionReq implements org.apache.thrift.TBase<TOpenSessionReq,
   }
 
   public TOpenSessionReq() {
-    this.client_protocol = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6;
+    this.client_protocol = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7;
 
   }
 
@@ -188,7 +188,7 @@ public class TOpenSessionReq implements org.apache.thrift.TBase<TOpenSessionReq,
 
   @Override
   public void clear() {
-    this.client_protocol = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6;
+    this.client_protocol = org.apache.hive.service.cli.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7;
 
     this.username = null;
     this.password = null;

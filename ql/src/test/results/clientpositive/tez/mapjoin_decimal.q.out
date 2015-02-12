@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -14,7 +16,9 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -86,23 +90,10 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: t2
-                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 58800 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: dec (type: decimal(4,0))
-                      sort order: +
-                      Map-reduce partition columns: dec (type: decimal(4,0))
-                      Statistics: Num rows: 525 Data size: 58800 Basic stats: COMPLETE Column stats: NONE
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: t1
@@ -113,15 +104,12 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {dec}
-                        1 {dec}
                       keys:
                         0 dec (type: decimal(4,2))
                         1 dec (type: decimal(4,0))
                       outputColumnNames: _col0, _col4
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 577 Data size: 64680 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: decimal(4,2)), _col4 (type: decimal(4,0))
@@ -134,6 +122,19 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: dec is not null (type: boolean)
+                    Statistics: Num rows: 525 Data size: 58800 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: dec (type: decimal(4,0))
+                      sort order: +
+                      Map-reduce partition columns: dec (type: decimal(4,0))
+                      Statistics: Num rows: 525 Data size: 58800 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -151,112 +152,112 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+45	45
+45	45
+45	45
+45	45
+45	45
+6	6
+6	6
+6	6
+6	6
+6	6
+6	6
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+79	79
+79	79
+79	79
+79	79
+79	79
+79	79
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
 PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -267,225 +268,109 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-#### A masked pattern was here ####
-POSTHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-9.00	9
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-45.00	45
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-79.00	79
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-17.00	17
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-6.00	6
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-62.00	62
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-64.00	64
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-89.00	89
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-70.00	70
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
-14.00	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+14	14
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+17	17
+45	45
+45	45
+45	45
+45	45
+45	45
+6	6
+6	6
+6	6
+6	6
+6	6
+6	6
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+62	62
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+64	64
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+70	70
+79	79
+79	79
+79	79
+79	79
+79	79
+79	79
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+89	89
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9
+9	9

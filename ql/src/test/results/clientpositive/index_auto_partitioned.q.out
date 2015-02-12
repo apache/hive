@@ -54,10 +54,10 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__srcpart_src_part_index__
-            filterExpr: ((key = 86) and (ds = '2008-04-09')) (type: boolean)
+            alias: default.default__srcpart_src_part_index__
+            filterExpr: ((UDFToDouble(key) = 86.0) and (ds = '2008-04-09')) (type: boolean)
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offsets (type: array<bigint>)
                 outputColumnNames: _col0, _col1
@@ -88,10 +88,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr: ((key = 86) and (ds = '2008-04-09')) (type: boolean)
+            filterExpr: ((UDFToDouble(key) = 86.0) and (ds = '2008-04-09')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '86' (type: string), value (type: string)

@@ -3,14 +3,14 @@ package org.apache.hadoop.hive.metastore;
 import org.junit.BeforeClass;
 
 /**
- * Test {@link TestAuthorizationApiAuthorizer} in embedded mode of metastore
+ * Test {@link AbstractTestAuthorizationApiAuthorizer} in embedded mode of metastore
  */
-public class TestAuthzApiEmbedAuthorizerInEmbed extends TestAuthorizationApiAuthorizer {
+public class TestAuthzApiEmbedAuthorizerInEmbed extends AbstractTestAuthorizationApiAuthorizer {
 
   @BeforeClass
   public static void setup() throws Exception {
     isRemoteMetastoreMode = false; // embedded metastore mode
-    TestAuthorizationApiAuthorizer.setup();
+    AbstractTestAuthorizationApiAuthorizer.setup();
   }
 
 }

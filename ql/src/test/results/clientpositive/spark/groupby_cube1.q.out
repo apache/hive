@@ -1,0 +1,665 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1
+PREHOOK: query: EXPLAIN
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string), val (type: string), '0' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	11	1
+1	NULL	1
+2	12	1
+2	NULL	1
+3	13	1
+3	NULL	1
+7	17	1
+7	NULL	1
+8	18	1
+8	28	1
+8	NULL	2
+NULL	11	1
+NULL	12	1
+NULL	13	1
+NULL	17	1
+NULL	18	1
+NULL	28	1
+NULL	NULL	6
+PREHOOK: query: EXPLAIN
+SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string), val (type: string), '0' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	11	3	1
+1	NULL	1	1
+2	12	3	1
+2	NULL	1	1
+3	13	3	1
+3	NULL	1	1
+7	17	3	1
+7	NULL	1	1
+8	18	3	1
+8	28	3	1
+8	NULL	1	2
+NULL	11	2	1
+NULL	12	2	1
+NULL	13	2	1
+NULL	17	2	1
+NULL	18	2	1
+NULL	28	2	1
+NULL	NULL	0	6
+PREHOOK: query: EXPLAIN
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT val)
+                      keys: key (type: string), '0' (type: string), val (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col2:0._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	1
+2	1
+3	1
+7	1
+8	2
+NULL	6
+PREHOOK: query: EXPLAIN
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string), val (type: string), '0' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col3 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	11	1
+1	NULL	1
+2	12	1
+2	NULL	1
+3	13	1
+3	NULL	1
+7	17	1
+7	NULL	1
+8	18	1
+8	28	1
+8	NULL	2
+NULL	11	1
+NULL	12	1
+NULL	13	1
+NULL	17	1
+NULL	18	1
+NULL	28	1
+NULL	NULL	6
+PREHOOK: query: EXPLAIN
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT val)
+                      keys: key (type: string), '0' (type: string), val (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col2:0._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: complete
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	1
+2	1
+3	1
+7	1
+8	2
+NULL	6
+PREHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
+POSTHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2
+PREHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T3
+POSTHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T3
+PREHOOK: query: EXPLAIN
+FROM T1
+INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM T1
+INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Reducer 4 (GROUP PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string), val (type: string), '0' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), val (type: string)
+                    outputColumnNames: key, val
+                    Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(1)
+                      keys: key (type: string), val (type: string), '0' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col3 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), UDFToInteger(_col3) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.t2
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  value expressions: _col3 (type: bigint)
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), UDFToInteger(_col3) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.t3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.t2
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.t3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM T1
+INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t2
+PREHOOK: Output: default@t3
+POSTHOOK: query: FROM T1
+INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t2.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.val EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: t3.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t3.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t3.val EXPRESSION [(t1)t1.null, ]

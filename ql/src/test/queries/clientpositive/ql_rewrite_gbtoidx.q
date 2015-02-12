@@ -1,8 +1,9 @@
 set hive.stats.dbclass=fs;
 set hive.stats.autogather=true;
+set hive.cbo.enable=false;
 
-DROP TABLE lineitem;
-CREATE TABLE lineitem (L_ORDERKEY      INT,
+DROP TABLE IF EXISTS lineitem_ix;
+CREATE TABLE lineitem_ix (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
                                 L_LINENUMBER    INT,
@@ -21,28 +22,28 @@ CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem;
+LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_ix;
 
-CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)");
-ALTER INDEX lineitem_lshipdate_idx ON lineitem REBUILD;
+CREATE INDEX lineitem_ix_lshipdate_idx ON TABLE lineitem_ix(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)");
+ALTER INDEX lineitem_ix_lshipdate_idx ON lineitem_ix REBUILD;
 
 explain select l_shipdate, count(l_shipdate)
-from lineitem
+from lineitem_ix
 group by l_shipdate;
 
 select l_shipdate, count(l_shipdate)
-from lineitem
+from lineitem_ix
 group by l_shipdate
 order by l_shipdate;
 
 set hive.optimize.index.groupby=true;
 
 explain select l_shipdate, count(l_shipdate)
-from lineitem
+from lineitem_ix
 group by l_shipdate;
 
 select l_shipdate, count(l_shipdate)
-from lineitem
+from lineitem_ix
 group by l_shipdate
 order by l_shipdate;
 
@@ -52,14 +53,14 @@ set hive.optimize.index.groupby=false;
 explain select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
-from lineitem
+from lineitem_ix
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month;
 
 select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
-from lineitem
+from lineitem_ix
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month;
 
@@ -68,14 +69,14 @@ set hive.optimize.index.groupby=true;
 explain select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
-from lineitem
+from lineitem_ix
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month;
 
 select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
-from lineitem
+from lineitem_ix
 group by year(l_shipdate), month(l_shipdate) 
 order by year, month;
 
@@ -86,24 +87,24 @@ lastyear.monthly_shipments as monthly_shipments_delta
    from (select year(l_shipdate) as year,
                 month(l_shipdate) as month,
                 count(l_shipdate) as monthly_shipments
-           from lineitem
+           from lineitem_ix
           where year(l_shipdate) = 1997
           group by year(l_shipdate), month(l_shipdate)
         )  lastyear join
         (select year(l_shipdate) as year,
                 month(l_shipdate) as month,
                 count(l_shipdate) as monthly_shipments
-           from lineitem
+           from lineitem_ix
           where year(l_shipdate) = 1998
           group by year(l_shipdate), month(l_shipdate)
         )  thisyear
   on lastyear.month = thisyear.month;
 
 explain  select l_shipdate, cnt
-from (select l_shipdate, count(l_shipdate) as cnt from lineitem group by l_shipdate
+from (select l_shipdate, count(l_shipdate) as cnt from lineitem_ix group by l_shipdate
 union all
 select l_shipdate, l_orderkey as cnt
-from lineitem) dummy;
+from lineitem_ix) dummy;
 
 CREATE TABLE tbl(key int, value int);
 CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)");

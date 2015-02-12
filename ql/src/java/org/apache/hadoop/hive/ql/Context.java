@@ -90,7 +90,7 @@ public class Context {
   protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
 
-  String executionId;
+  private String executionId;
 
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
@@ -112,6 +112,8 @@ public class Context {
   private final Map<WriteEntity, List<HiveLockObj>> outputLockObjects =
       new HashMap<WriteEntity, List<HiveLockObj>>();
 
+  private final String stagingDir;
+
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -129,6 +131,7 @@ public class Context {
     nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
     scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
   }
 
 
@@ -185,6 +188,65 @@ public class Context {
    */
   public String getCmd () {
     return cmd;
+  }
+
+  /**
+   * Gets a temporary staging directory related to a path.
+   * If a path already contains a staging directory, then returns the current directory; otherwise
+   * create the directory if needed.
+   *
+   * @param inputPath URI of the temporary directory
+   * @param mkdir Create the directory if True.
+   * @return A temporary path.
+   */
+  private Path getStagingDir(Path inputPath, boolean mkdir) {
+    final URI inputPathUri = inputPath.toUri();
+    final String inputPathName = inputPathUri.getPath();
+    final String fileSystem = inputPathUri.getScheme() + ":" + inputPathUri.getAuthority();
+    final FileSystem fs;
+
+    try {
+      fs = inputPath.getFileSystem(conf);
+    } catch (IOException e) {
+      throw new IllegalStateException("Error getting FileSystem for " + inputPath + ": "+ e, e);
+    }
+
+    String stagingPathName;
+    if (inputPathName.indexOf(stagingDir) == -1) {
+      stagingPathName = new Path(inputPathName, stagingDir).toString();
+    } else {
+      stagingPathName = inputPathName.substring(0, inputPathName.indexOf(stagingDir) + stagingDir.length());
+    }
+
+    final String key = fileSystem + "-" + stagingPathName + "-" + TaskRunner.getTaskRunnerID();
+
+    Path dir = fsScratchDirs.get(key);
+    if (dir == null) {
+      // Append task specific info to stagingPathName, instead of creating a sub-directory.
+      // This way we don't have to worry about deleting the stagingPathName separately at
+      // end of query execution.
+      dir = fs.makeQualified(new Path(stagingPathName + "_" + this.executionId + "-" + TaskRunner.getTaskRunnerID()));
+
+      LOG.debug("Created staging dir = " + dir + " for path = " + inputPath);
+
+      if (mkdir) {
+        try {
+          if (!FileUtils.mkdir(fs, dir, true, conf)) {
+            throw new IllegalStateException("Cannot create staging directory  '" + dir.toString() + "'");
+          }
+
+          if (isHDFSCleanup) {
+            fs.deleteOnExit(dir);
+          }
+        } catch (IOException e) {
+          throw new RuntimeException("Cannot create staging directory '" + dir.toString() + "': " + e.getMessage(), e);
+        }
+      }
+
+      fsScratchDirs.put(key, dir);
+    }
+
+    return dir;
   }
 
   /**
@@ -274,14 +336,13 @@ public class Context {
   }
 
   private Path getExternalScratchDir(URI extURI) {
-    return getScratchDir(extURI.getScheme(), extURI.getAuthority(),
-        !explain, nonLocalScratchPath.toUri().getPath());
+    return getStagingDir(new Path(extURI.getScheme(), extURI.getAuthority(), extURI.getPath()), !explain);
   }
 
   /**
    * Remove any created scratch directories.
    */
-  private void removeScratchDir() {
+  public void removeScratchDir() {
     for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
       try {
         Path p = entry.getValue();
@@ -313,6 +374,10 @@ public class Context {
         (uriStr.indexOf(MR_PREFIX) != -1);
   }
 
+  public Path getMRTmpPath(URI uri) {
+    return new Path(getStagingDir(new Path(uri), !explain), MR_PREFIX + nextPathId());
+  }
+
   /**
    * Get a path to store map-reduce intermediate data in.
    *
@@ -333,10 +398,9 @@ public class Context {
   }
 
   /**
-   * Get a path to store tmp data destined for external URI.
+   * Get a path to store tmp data destined for external Path.
    *
-   * @param extURI
-   *          external URI to which the tmp data has to be eventually moved
+   * @param path external Path to which the tmp data has to be eventually moved
    * @return next available tmp path on the file system corresponding extURI
    */
   public Path getExternalTmpPath(Path path) {
@@ -357,9 +421,7 @@ public class Context {
    * path within /tmp
    */
   public Path getExtTmpPathRelTo(Path path) {
-    URI uri = path.toUri();
-    return new Path (getScratchDir(uri.getScheme(), uri.getAuthority(), !explain,
-        uri.getPath() + Path.SEPARATOR + "_" + this.executionId), EXT_PREFIX + nextPathId());
+    return new Path(getStagingDir(path, !explain), EXT_PREFIX + nextPathId());
   }
 
   /**
@@ -437,7 +499,7 @@ public class Context {
         resFs = resDir.getFileSystem(conf);
         FileStatus status = resFs.getFileStatus(resDir);
         assert status.isDir();
-        FileStatus[] resDirFS = resFs.globStatus(new Path(resDir + "/*"));
+        FileStatus[] resDirFS = resFs.globStatus(new Path(resDir + "/*"), FileUtils.HIDDEN_FILES_PATH_FILTER);
         resDirPaths = new Path[resDirFS.length];
         int pos = 0;
         for (FileStatus resFS : resDirFS) {
@@ -539,6 +601,13 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
+    // Always allow spark to run in a cluster mode. Without this, depending on
+    // user's local hadoop settings, true may be returned, which causes plan to be
+    // stored in local path.
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      return false;
+    }
+
     return ShimLoader.getHadoopShims().isLocalMode(conf);
   }
 

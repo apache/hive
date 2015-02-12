@@ -24,10 +24,10 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * Select operator implementation.
@@ -54,12 +54,12 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
     for (int i = 0; i < colList.size(); i++) {
       assert (colList.get(i) != null);
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
-      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
-        eval[i] = ExprNodeEvaluatorFactory.toCachedEval(eval[i]);
-      }
+    }
+    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
+      eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];
-    LOG.info("SELECT " + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
+    LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
         inputObjInspectors[0]);
     initializeChildren(hconf);
@@ -125,4 +125,70 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
   public boolean acceptLimitPushdown() {
     return true;
   }
+
+  /**
+   * Checks whether this select operator does something to the
+   * input tuples.
+   *
+   * @return if it is an identity select operator or not
+   */
+  public boolean isIdentitySelect() {
+    // Safety check
+    if(this.getNumParent() != 1) {
+      return false;
+    }
+
+    if(conf.isSelStarNoCompute()) {
+      return true;
+    }
+
+    // Check whether the have the same schema
+    RowSchema orig = this.getSchema();
+    RowSchema dest = this.getParentOperators().get(0).getSchema();
+    if(orig.getSignature() == null && dest.getSignature() == null) {
+      return true;
+    }
+    if((orig.getSignature() == null && dest.getSignature() != null) ||
+        (orig.getSignature() != null && dest.getSignature() == null) ) {
+      return false;
+    }
+
+    if(orig.getSignature().size() != dest.getSignature().size() ||
+            orig.getSignature().size() != conf.getColList().size()) {
+      return false;
+    }
+
+    for(int i=0; i<orig.getSignature().size(); i++) {
+      ColumnInfo origColumn = orig.getSignature().get(i);
+      ColumnInfo destColumn = dest.getSignature().get(i);
+
+      if(origColumn == null && destColumn == null) {
+        continue;
+      }
+
+      if((origColumn == null && destColumn != null) ||
+          (origColumn != null && destColumn == null) ) {
+        return false;
+      }
+
+      if(!origColumn.internalEquals(destColumn)) {
+        return false;
+      }
+
+      // Now we check if though the schemas are the same,
+      // the operator changes the order of columns in the
+      // output
+      if(!(conf.getColList().get(i) instanceof ExprNodeColumnDesc)) {
+        return false;
+      }
+      ExprNodeColumnDesc col = (ExprNodeColumnDesc) conf.getColList().get(i);
+      if(!col.getColumn().equals(origColumn.getInternalName())) {
+        return false;
+      }
+
+    }
+
+    return true;
+  }
+
 }

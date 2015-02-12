@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URLClassLoader;
+import java.sql.Timestamp;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
@@ -42,6 +43,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
@@ -64,7 +67,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -178,6 +183,13 @@ public class SessionState {
 
   private String userIpAddress;
 
+  private SparkSession sparkSession;
+
+  /**
+   * Gets information about HDFS encryption
+   */
+  private HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+
   /**
    * Lineage state.
    */
@@ -233,12 +245,17 @@ public class SessionState {
    * Whether we are in auto-commit state or not.  Currently we are always in auto-commit,
    * so there are not setters for this yet.
    */
-  private boolean txnAutoCommit = true;
+  private final boolean txnAutoCommit = true;
 
   /**
    * store the jars loaded last time
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
+
+  /**
+   * CURRENT_TIMESTAMP value for query
+   */
+  private Timestamp queryCurrentTimestamp;
 
   /**
    * Get the lineage state stored in this session.
@@ -305,7 +322,8 @@ public class SessionState {
     this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
-    overriddenConfigurations = new HashMap<String, String>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
@@ -372,6 +390,23 @@ public class SessionState {
     return txnAutoCommit;
   }
 
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
+    if (hdfsEncryptionShim == null) {
+      try {
+        FileSystem fs = FileSystem.get(conf);
+        if ("hdfs".equals(fs.getUri().getScheme())) {
+          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        } else {
+          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
+        }
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
+
+    return hdfsEncryptionShim;
+  }
+
   /**
    * Singleton Session object per thread.
    *
@@ -404,7 +439,6 @@ public class SessionState {
    * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
-
     setCurrentSessionState(startSs);
 
     if (startSs.hiveHist == null){
@@ -423,7 +457,7 @@ public class SessionState {
       // shared with SessionState, other parts of the code might update the config, but
       // Hive.get(HiveConf) would not recognize the case when it needs refreshing
       Hive.get(new HiveConf(startSs.conf)).getMSC();
-      UserGroupInformation sessionUGI = ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
+      UserGroupInformation sessionUGI = Utils.getUGI();
       FileSystem.get(startSs.conf);
 
       // Create scratch dirs for this session
@@ -651,7 +685,7 @@ public class SessionState {
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf); 
+        authorizerV2.applyAuthorizationConfigPolicy(conf);
       }
       // create the create table grants with new config
       createTableGrants = CreateTableAutomaticGrant.create(conf);
@@ -803,6 +837,14 @@ public class SessionState {
       SessionState ss = SessionState.get();
       // use the session or the one supplied in constructor
       return (ss != null) ? ss.getIsSilent() : isSilent;
+    }
+
+    public void logInfo(String info) {
+      logInfo(info, null);
+    }
+
+    public void logInfo(String info, String detail) {
+      LOG.info(info + StringUtils.defaultString(detail));
     }
 
     public void printInfo(String info) {
@@ -1191,7 +1233,8 @@ public class SessionState {
 
   public Map<String, String> getOverriddenConfigurations() {
     if (overriddenConfigurations == null) {
-      overriddenConfigurations = new HashMap<String, String>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      overriddenConfigurations = new LinkedHashMap<String, String>();
     }
     return overriddenConfigurations;
   }
@@ -1245,12 +1288,22 @@ public class SessionState {
 
     try {
       if (tezSessionState != null) {
-        TezSessionPoolManager.getInstance().close(tezSessionState);
+        TezSessionPoolManager.getInstance().close(tezSessionState, false);
       }
     } catch (Exception e) {
       LOG.info("Error closing tez session", e);
     } finally {
       tezSessionState = null;
+    }
+
+    if (sparkSession != null) {
+      try {
+        SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
+      } catch (Exception ex) {
+        LOG.error("Error closing spark session.", ex);
+      } finally {
+        sparkSession = null;
+      }
     }
 
     dropSessionPaths(conf);
@@ -1347,6 +1400,14 @@ public class SessionState {
     this.userIpAddress = userIpAddress;
   }
 
+  public SparkSession getSparkSession() {
+    return sparkSession;
+  }
+
+  public void setSparkSession(SparkSession sparkSession) {
+    this.sparkSession = sparkSession;
+  }
+
   /**
    * Get the next suffix to use in naming a temporary table created by insert...values
    * @return suffix
@@ -1355,4 +1416,27 @@ public class SessionState {
     return Integer.toString(nextValueTempTableSuffix++);
   }
 
+  /**
+   * Initialize current timestamp, other necessary query initialization.
+   */
+  public void setupQueryCurrentTimestamp() {
+    queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+
+    // Provide a facility to set current timestamp during tests
+    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      String overrideTimestampString =
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, null);
+      if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
+        queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
+      }
+    }
+  }
+
+  /**
+   * Get query current timestamp
+   * @return
+   */
+  public Timestamp getQueryCurrentTimestamp() {
+    return queryCurrentTimestamp;
+  }
 }

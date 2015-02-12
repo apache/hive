@@ -37,29 +37,14 @@ public class FilterOperator extends Operator<FilterDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  /**
-   * Counter.
-   *
-   */
-  public static enum Counter {
-    FILTERED, PASSED
-  }
-
-  protected final transient LongWritable filtered_count;
-  protected final transient LongWritable passed_count;
   private transient ExprNodeEvaluator conditionEvaluator;
   private transient PrimitiveObjectInspector conditionInspector;
-  private transient int consecutiveFails;
   private transient int consecutiveSearches;
   private transient IOContext ioContext;
   protected transient int heartbeatInterval;
 
   public FilterOperator() {
     super();
-    filtered_count = new LongWritable();
-    passed_count = new LongWritable();
-    consecutiveFails = 0;
     consecutiveSearches = 0;
   }
 
@@ -73,10 +58,8 @@ public class FilterOperator extends Operator<FilterDesc> implements
         conditionEvaluator = ExprNodeEvaluatorFactory.toCachedEval(conditionEvaluator);
       }
 
-      statsMap.put(Counter.FILTERED, filtered_count);
-      statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;
-      ioContext = IOContext.get();
+      ioContext = IOContext.get(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }
@@ -135,17 +118,6 @@ public class FilterOperator extends Operator<FilterDesc> implements
         .getPrimitiveJavaObject(condition);
     if (Boolean.TRUE.equals(ret)) {
       forward(row, rowInspector);
-      passed_count.set(passed_count.get() + 1);
-      consecutiveFails = 0;
-    } else {
-      filtered_count.set(filtered_count.get() + 1);
-      consecutiveFails++;
-
-      // In case of a lot of consecutive failures, send a heartbeat in order to
-      // avoid timeout
-      if (((consecutiveFails % heartbeatInterval) == 0) && (reporter != null)) {
-        reporter.progress();
-      }
     }
   }
 

@@ -56,11 +56,15 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2
-PREHOOK: query: -- MR join
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- MR join
 
 explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- MR join
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- MR join
 
 explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 POSTHOOK: type: QUERY
@@ -73,6 +77,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: p1
+            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: p2
             Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -84,24 +99,13 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: int)
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 value expressions: myvalue (type: string)
-          TableScan
-            alias: p1
-            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 
-            1 {VALUE._col1}
+          keys:
+            0 key (type: int)
+            1 key (type: int)
           outputColumnNames: _col7
           Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -171,9 +175,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {myvalue}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -190,9 +191,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {myvalue}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -292,9 +290,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {value}
-                  1 {value2}
                 keys:
                   0 key (type: int)
                   1 key (type: int)

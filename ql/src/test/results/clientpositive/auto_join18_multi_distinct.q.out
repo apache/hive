@@ -38,40 +38,37 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src2
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(DISTINCT value), count(DISTINCT key)
-                keys: key (type: string), value (type: string)
+                aggregations: count(_col1)
+                keys: _col0 (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string)
-                  sort order: ++
+                  key expressions: _col0 (type: string)
+                  sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0)
+          aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint)
-            outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -81,30 +78,30 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: bigint), _col2 (type: bigint)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: bigint)
+              Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Outer Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0}
-            1 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: bigint)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            expressions: hash(_col0,_col1,_col2,_col3,_col4) (type: int)
+            outputColumnNames: _col0
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
-              aggregations: sum(hash(_col0,_col1,_col2,_col3,_col4))
+              aggregations: sum(_col0)
               mode: hash
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -129,57 +126,48 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src1
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            alias: src2
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(value)
-                keys: key (type: string)
+                aggregations: count(DISTINCT _col1), count(DISTINCT _col0)
+                keys: _col0 (type: string), _col1 (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: bigint)
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          aggregations: count(VALUE._col0)
+          aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator

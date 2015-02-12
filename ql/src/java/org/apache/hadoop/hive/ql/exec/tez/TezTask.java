@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
@@ -46,8 +48,10 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -160,14 +164,15 @@ public class TezTask extends Task<TezWork> {
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
-      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf);
+      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf, dag);
 
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
       TezSessionPoolManager.getInstance().returnSession(session);
 
-      if (LOG.isInfoEnabled() && counters != null) {
+      if (LOG.isInfoEnabled() && counters != null
+          && conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY)) {
         for (CounterGroup group: counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {
@@ -271,6 +276,7 @@ public class TezTask extends Task<TezWork> {
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
+    dag.setCredentials(conf.getCredentials());
 
     for (BaseWork w: ws) {
 
@@ -313,15 +319,16 @@ public class TezTask extends Task<TezWork> {
         for (BaseWork v: children) {
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, parentConf,
-               workToVertex.get(v), work.getEdgeProperty(w, v));
+               workToVertex.get(v), work.getEdgeProperty(w, v), work.getVertexType(v));
 
           dag.addEdge(e);
         }
       } else {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, ctx, w);
-        Vertex wx = utils.createVertex(wxConf, w, scratchDir, appJarLr,
-          additionalLr, fs, ctx, !isFinal, work);
+        Vertex wx =
+            utils.createVertex(wxConf, w, scratchDir, appJarLr, additionalLr, fs, ctx, !isFinal,
+                work, work.getVertexType(w));
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
@@ -335,7 +342,7 @@ public class TezTask extends Task<TezWork> {
 
           TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
 
-          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp);
+          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, work.getVertexType(v));
           dag.addEdge(e);
         }
       }
@@ -356,7 +363,10 @@ public class TezTask extends Task<TezWork> {
     Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
     if (additionalLr != null) {
       for (LocalResource lr: additionalLr) {
-        resourceMap.put(utils.getBaseName(lr), lr);
+        if (lr.getType() == LocalResourceType.FILE) {
+          // TEZ AM will only localize FILE (no script operators in the AM)
+          resourceMap.put(utils.getBaseName(lr), lr);
+        }
       }
     }
 
@@ -368,7 +378,7 @@ public class TezTask extends Task<TezWork> {
       console.printInfo("Tez session was closed. Reopening...");
 
       // close the old one, but keep the tmp files around
-      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars);
+      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars, true);
       console.printInfo("Session re-established.");
 
       dagClient = sessionState.getSession().submitDAG(dag);
@@ -386,6 +396,9 @@ public class TezTask extends Task<TezWork> {
     try {
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
+        if (w instanceof MergeJoinWork) {
+          w = ((MergeJoinWork) w).getMainWork();
+        }
         for (Operator<?> op: w.getAllOperators()) {
           op.jobClose(conf, rc == 0);
         }

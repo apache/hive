@@ -1,9 +1,13 @@
-PREHOOK: query: -- no input pruning, sample filter
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
 EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no input pruning, sample filter
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
 EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
@@ -55,48 +59,8 @@ POSTHOOK: Input: default@srcbucket
 0
 0
 0
-5
-5
-5
-5
 10
 10
-15
-15
-15
-15
-20
-20
-20
-30
-30
-35
-35
-35
-35
-35
-35
-40
-40
-50
-60
-65
-65
-65
-70
-70
-70
-70
-75
-80
-80
-85
-85
-90
-90
-90
-95
-95
 100
 100
 100
@@ -116,6 +80,10 @@ POSTHOOK: Input: default@srcbucket
 135
 140
 145
+15
+15
+15
+15
 150
 155
 160
@@ -134,6 +102,9 @@ POSTHOOK: Input: default@srcbucket
 190
 195
 195
+20
+20
+20
 200
 200
 205
@@ -167,6 +138,8 @@ POSTHOOK: Input: default@srcbucket
 285
 295
 295
+30
+30
 300
 300
 305
@@ -184,6 +157,12 @@ POSTHOOK: Input: default@srcbucket
 335
 340
 345
+35
+35
+35
+35
+35
+35
 355
 355
 360
@@ -204,6 +183,8 @@ POSTHOOK: Input: default@srcbucket
 395
 395
 395
+40
+40
 400
 405
 410
@@ -239,3 +220,26 @@ POSTHOOK: Input: default@srcbucket
 490
 495
 495
+5
+5
+5
+5
+50
+60
+65
+65
+65
+70
+70
+70
+70
+75
+80
+80
+85
+85
+90
+90
+90
+95
+95

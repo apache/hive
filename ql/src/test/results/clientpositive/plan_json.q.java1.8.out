@@ -1,0 +1,13 @@
+PREHOOK: query: -- explain plan json:  the query gets the formatted json output of the query plan of the hive query
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
+EXPLAIN FORMATTED SELECT count(1) FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- explain plan json:  the query gets the formatted json output of the query plan of the hive query
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
+EXPLAIN FORMATTED SELECT count(1) FROM src
+POSTHOOK: type: QUERY
+{"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"DEPENDENT STAGES":"Stage-1"}},"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE","children":{"Select Operator":{"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}},"outputColumnNames:":["_col0"],"expressions:":"_col0 (type: bigint)"}},"outputColumnNames:":["_col0"]}},"Map Operator Tree:":[{"TableScan":{"alias:":"src","Statistics:":"Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE","children":{"Select Operator":{"Statistics:":"Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE","children":{"Group By Operator":{"aggregations:":["count(_col0)"],"mode:":"hash","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE","children":{"Reduce Output Operator":{"value expressions:":"_col0 (type: bigint)","sort order:":"","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE"}},"outputColumnNames:":["_col0"]}},"outputColumnNames:":["_col0"],"expressions:":"1 (type: int)"}}}}]}},"Stage-0":{"Fetch Operator":{"Processor Tree:":{"ListSink":{}},"limit:":"-1"}}}}

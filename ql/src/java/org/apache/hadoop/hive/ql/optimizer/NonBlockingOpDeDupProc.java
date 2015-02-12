@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,6 +29,9 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -44,21 +48,19 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * merges SEL-SEL or FIL-FIL into single operator
  */
 public class NonBlockingOpDeDupProc implements Transform {
 
-  private ParseContext pctx;
-
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    this.pctx = pctx;
     String SEL = SelectOperator.getOperatorName();
     String FIL = FilterOperator.getOperatorName();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", SEL + "%" + SEL + "%"), new SelectDedup());
+    opRules.put(new RuleRegExp("R1", SEL + "%" + SEL + "%"), new SelectDedup(pctx));
     opRules.put(new RuleRegExp("R2", FIL + "%" + FIL + "%"), new FilterDedup());
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
@@ -71,6 +73,13 @@ public class NonBlockingOpDeDupProc implements Transform {
   }
 
   private class SelectDedup implements NodeProcessor {
+
+    private ParseContext pctx;
+
+    public SelectDedup (ParseContext pctx) {
+      this.pctx = pctx;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -125,12 +134,11 @@ public class NonBlockingOpDeDupProc implements Transform {
       pSEL.getConf().setSelectStar(cSEL.getConf().isSelectStar());
       // We need to use the OpParseContext of the child SelectOperator to replace the
       // the OpParseContext of the parent SelectOperator.
-      pctx.updateOpParseCtx(pSEL, pctx.removeOpParseCtx(cSEL));
       pSEL.removeChildAndAdoptItsChildren(cSEL);
       cSEL.setParentOperators(null);
       cSEL.setChildOperators(null);
+      fixContextReferences(cSEL, pSEL);
       cSEL = null;
-
       return null;
     }
 
@@ -173,9 +181,37 @@ public class NonBlockingOpDeDupProc implements Transform {
       }
       return true;
     }
+
+    /**
+     * Change existing references in the context to point from child to parent operator.
+     * @param cSEL child operator (to be removed, and merged into parent)
+     * @param pSEL parent operator
+     */
+    private void fixContextReferences(SelectOperator cSEL, SelectOperator pSEL) {
+      Collection<Map<String, Operator<? extends OperatorDesc>>> mapsAliasToOpInfo =
+              new ArrayList<Map<String, Operator<? extends OperatorDesc>>>();
+      for (JoinOperator joinOp : pctx.getJoinOps()) {
+        if (joinOp.getConf().getAliasToOpInfo() != null) {
+          mapsAliasToOpInfo.add(joinOp.getConf().getAliasToOpInfo());
+        }
+      }
+      for (MapJoinOperator mapJoinOp : pctx.getMapJoinOps()) {
+        if (mapJoinOp.getConf().getAliasToOpInfo() != null) {
+          mapsAliasToOpInfo.add(mapJoinOp.getConf().getAliasToOpInfo());
+        }
+      }
+      for (Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo : mapsAliasToOpInfo) {
+        for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToOpInfo.entrySet()) {
+          if (entry.getValue() == cSEL) {
+            aliasToOpInfo.put(entry.getKey(), pSEL);
+          }
+        }
+      }
+    }
   }
 
   private class FilterDedup implements NodeProcessor {
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {

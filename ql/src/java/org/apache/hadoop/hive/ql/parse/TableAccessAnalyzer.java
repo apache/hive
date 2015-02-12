@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,8 +140,9 @@ public class TableAccessAnalyzer {
         return null;
       }
 
-      Map<String, List<String>> tableToKeysMap = new HashMap<String, List<String>>();
-      Table tbl = pGraphContext.getTopToTable().get(tso);
+      // Must be deterministic order map for consistent q-test output across Java versions
+      Map<String, List<String>> tableToKeysMap = new LinkedHashMap<String, List<String>>();
+      Table tbl = tso.getConf().getTableMetadata();
       tableToKeysMap.put(tbl.getCompleteName(), keyColNames);
       tableAccessCtx.addOperatorTableAccess(op, tableToKeysMap);
 
@@ -165,17 +165,17 @@ public class TableAccessAnalyzer {
         Object... nodeOutputs) {
       JoinOperator op = (JoinOperator)nd;
       TableAccessCtx tableAccessCtx = (TableAccessCtx)procCtx;
-      Map<String, List<String>> tableToKeysMap = new HashMap<String, List<String>>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      Map<String, List<String>> tableToKeysMap = new LinkedHashMap<String, List<String>>();
 
       List<Operator<? extends OperatorDesc>> parentOps = op.getParentOperators();
 
       // Get the key column names for each side of the join,
       // and check if the keys are all constants
       // or columns (not expressions). If yes, proceed.
-      QBJoinTree joinTree = pGraphContext.getJoinContext().get(op);
-      assert(parentOps.size() == joinTree.getBaseSrc().length);
+      assert(parentOps.size() == op.getConf().getBaseSrc().length);
       int pos = 0;
-      for (String src : joinTree.getBaseSrc()) {
+      for (String src : op.getConf().getBaseSrc()) {
         if (src != null) {
           assert(parentOps.get(pos) instanceof ReduceSinkOperator);
           ReduceSinkOperator reduceSinkOp = (ReduceSinkOperator) parentOps.get(pos);
@@ -201,7 +201,7 @@ public class TableAccessAnalyzer {
             return null;
           }
 
-          Table tbl = pGraphContext.getTopToTable().get(tso);
+          Table tbl = tso.getConf().getTableMetadata();
           tableToKeysMap.put(tbl.getCompleteName(), keyColNames);
         } else {
           return null;

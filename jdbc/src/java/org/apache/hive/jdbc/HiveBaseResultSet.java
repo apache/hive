@@ -58,6 +58,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   protected boolean wasNull = false;
   protected Object[] row;
   protected List<String> columnNames;
+  protected List<String> normalizedColumnNames;
   protected List<String> columnTypes;
   protected List<JdbcColumnAttributes> columnAttributes;
 
@@ -84,11 +85,21 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public int findColumn(String columnName) throws SQLException {
-    int columnIndex = columnNames.indexOf(columnName);
-    if (columnIndex==-1) {
-      throw new SQLException();
+    int columnIndex = 0;
+    boolean findColumn = false;
+    for (String normalizedColumnName : normalizedColumnNames) {
+      ++columnIndex;
+      String[] names = normalizedColumnName.split("\\.");
+      String name = names[names.length -1];
+      if (name.equalsIgnoreCase(columnName) || normalizedColumnName.equalsIgnoreCase(columnName)) {
+        findColumn = true;
+        break;
+      }
+    }
+    if (!findColumn) {
+      throw new SQLException("Could not find " + columnName + " in " + normalizedColumnNames);
     } else {
-      return ++columnIndex;
+      return columnIndex;
     }
   }
 

@@ -179,21 +179,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dim_pay_date
-            Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: date is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: date (type: string)
-                sort order: +
-                Map-reduce partition columns: date (type: string)
-                Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                auto parallelism: false
-          TableScan
             alias: orderpayment
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
@@ -209,6 +194,21 @@ STAGE PLANS:
                 tag: 0
                 value expressions: dealid (type: int), cityid (type: int), userid (type: int)
                 auto parallelism: false
+          TableScan
+            alias: dim_pay_date
+            Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: date is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: date (type: string)
+                sort order: +
+                Map-reduce partition columns: date (type: string)
+                Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                tag: 1
+                auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -221,7 +221,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -241,7 +241,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -257,15 +257,15 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [dim_pay_date, orderpayment]
+        /orderpayment_small [orderpayment, dim_pay_date]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {VALUE._col3}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 date (type: string)
+            1 date (type: string)
           outputColumnNames: _col0, _col3, _col4, _col9
           Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -319,7 +319,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -346,7 +346,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -366,7 +366,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -389,9 +389,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col2} {VALUE._col3} {VALUE._col8}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 _col0 (type: int)
+            1 dealid (type: int)
           outputColumnNames: _col3, _col4, _col9, _col16
           Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -445,7 +445,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -472,7 +472,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -492,7 +492,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -515,9 +515,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col3} {VALUE._col8} {VALUE._col15}
-            1 
+          keys:
+            0 _col3 (type: int)
+            1 cityid (type: int)
           outputColumnNames: _col4, _col9, _col16
           Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -571,7 +571,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10004
+            base file name: -mr-10005
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -641,9 +641,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col8} {VALUE._col15}
-            1 
+          keys:
+            0 _col4 (type: int)
+            1 userid (type: int)
           outputColumnNames: _col9, _col16
           Statistics: Num rows: 55 Data size: 158 Basic stats: COMPLETE Column stats: NONE
           Select Operator

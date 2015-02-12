@@ -32,11 +32,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
-import org.apache.hadoop.hive.ql.exec.KeyWrapperFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -46,12 +43,9 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
 
@@ -76,13 +70,12 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    * Key vector expressions.
    */
   private VectorExpression[] keyExpressions;
+  private int outputKeyLength;
 
   private boolean isVectorOutput;
 
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext = null;
-
-  private String fileKey;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -653,6 +646,21 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   /**
    * Sorted reduce group batch processing mode. Each input VectorizedRowBatch will have the
    * same key.  On endGroup (or close), the intermediate values are flushed.
+   *
+   * We build the output rows one-at-a-time in the output vectorized row batch (outputBatch)
+   * in 2 steps:
+   *
+   *   1) Just after startGroup, we copy the group key to the next position in the output batch,
+   *      but don't increment the size in the batch (yet).  This is done with the copyGroupKey
+   *      method of VectorGroupKeyHelper.  The next position is outputBatch.size
+   *
+   *      We know the same key is used for the whole batch (i.e. repeating) since that is how
+   *      vectorized reduce-shuffle feeds the batches to us.
+   *
+   *   2) Later at endGroup after reduce-shuffle has fed us all the input batches for the group,
+   *      we fill in the aggregation columns in outputBatch at outputBatch.size.  Our method 
+   *      writeGroupRow does this and finally increments outputBatch.size.
+   *
    */
   private class ProcessingModeGroupBatches extends ProcessingModeBase {
 
@@ -745,15 +753,8 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
-    List<String> outColNames = desc.getOutputColumnNames();
-    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
-    int outColIndex = 0;
-    for(String outCol: outColNames) {
-      mapOutCols.put(outCol,  outColIndex++);
-    }
-    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/_GROUPBY_");
-    fileKey = vOutContext.getFileKey();
   }
 
   public VectorGroupByOperator() {
@@ -768,9 +769,16 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     List<ExprNodeDesc> keysDesc = conf.getKeys();
     try {
 
-      keyOutputWriters = new VectorExpressionWriter[keyExpressions.length];
+      List<String> outputFieldNames = conf.getOutputColumnNames();
 
-      for(int i = 0; i < keyExpressions.length; ++i) {
+      // grouping id should be pruned, which is the last of key columns
+      // see ColumnPrunerGroupByProc
+      outputKeyLength = 
+          conf.pruneGroupingSetId() ? keyExpressions.length - 1 : keyExpressions.length;
+      
+      keyOutputWriters = new VectorExpressionWriter[outputKeyLength];
+
+      for(int i = 0; i < outputKeyLength; ++i) {
         keyOutputWriters[i] = VectorExpressionWriterFactory.
             genVectorExpressionWritable(keysDesc.get(i));
         objectInspectors.add(keyOutputWriters[i].getObjectInspector());
@@ -788,15 +796,14 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
         aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
       }
       LOG.warn("VectorGroupByOperator is vector output " + isVectorOutput);
-      List<String> outputFieldNames = conf.getOutputColumnNames();
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
           vrbCtx = new VectorizedRowBatchCtx();
-          vrbCtx.init(hconf, fileKey, (StructObjectInspector) outputObjInspector);
+          vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
           outputBatch = vrbCtx.createVectorizedRowBatch();
           vectorColumnAssign = VectorColumnAssignFactory.buildAssigners(
-              outputBatch, outputObjInspector, vOutContext.getColumnMap(), conf.getOutputColumnNames());
+              outputBatch, outputObjInspector, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
       }
 
     } catch (HiveException he) {
@@ -807,9 +814,9 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
 
     initializeChildren(hconf);
 
-    forwardCache = new Object[keyExpressions.length + aggregators.length];
+    forwardCache = new Object[outputKeyLength + aggregators.length];
 
-    if (keyExpressions.length == 0) {
+    if (outputKeyLength == 0) {
         processingMode = this.new ProcessingModeGlobalAggregate();
     } else if (conf.getVectorDesc().isVectorGroupBatches()) {
       // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
@@ -836,11 +843,19 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   @Override
   public void startGroup() throws HiveException {
     processingMode.startGroup();
+
+    // We do not call startGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.startGroup();
   }
 
   @Override
   public void endGroup() throws HiveException {
     processingMode.endGroup();
+
+    // We do not call endGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.endGroup();
   }
 
   @Override
@@ -864,7 +879,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     int fi = 0;
     if (!isVectorOutput) {
       // Output row.
-      for (int i = 0; i < keyExpressions.length; ++i) {
+      for (int i = 0; i < outputKeyLength; ++i) {
         forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
             kw, i, keyOutputWriters[i]);
       }
@@ -878,7 +893,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       forward(forwardCache, outputObjInspector);
     } else {
       // Output keys and aggregates into the output batch.
-      for (int i = 0; i < keyExpressions.length; ++i) {
+      for (int i = 0; i < outputKeyLength; ++i) {
         vectorColumnAssign[fi++].assignObjectValue(keyWrappersBatch.getWritableKeyValue (
                   kw, i, keyOutputWriters[i]), outputBatch.size);
       }
@@ -902,7 +917,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    */
   private void writeGroupRow(VectorAggregationBufferRow agg, DataOutputBuffer buffer)
       throws HiveException {
-    int fi = keyExpressions.length;   // Start after group keys.
+    int fi = outputKeyLength;   // Start after group keys.
     for (int i = 0; i < aggregators.length; ++i) {
       vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
                 agg.getAggregationBuffer(i)), outputBatch.size);

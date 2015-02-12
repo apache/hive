@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -196,18 +197,22 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
-
-    if (!inputFormats.containsKey(inputFormatClass)) {
+    InputFormat<WritableComparable, Writable> instance = inputFormats.get(inputFormatClass);
+    if (instance == null) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
+        instance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
             .newInstance(inputFormatClass, job);
-        inputFormats.put(inputFormatClass, newInstance);
+        // HBase input formats are not thread safe today. See HIVE-8808.
+        String inputFormatName = inputFormatClass.getName().toLowerCase();
+        if (!inputFormatName.contains("hbase")) {
+          inputFormats.put(inputFormatClass, instance);
+        }
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return inputFormats.get(inputFormatClass);
+    return instance;
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,
@@ -253,8 +258,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   protected void init(JobConf job) {
-    mrwork = Utilities.getMapWork(job);
-    pathToPartitionInfo = mrwork.getPathToPartitionInfo();
+    if (mrwork == null || pathToPartitionInfo == null) {
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        mrwork = (MapWork) Utilities.getMergeWork(job);
+        if (mrwork == null) {
+          mrwork = Utilities.getMapWork(job);
+        }
+      } else {
+        mrwork = Utilities.getMapWork(job);
+      }
+      pathToPartitionInfo = mrwork.getPathToPartitionInfo();
+    }
   }
 
   /*
@@ -267,7 +281,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result) throws IOException {
 
-    Utilities.copyTableJobPropertiesToConf(table, conf);
+    Utilities.copyTablePropertiesToConf(table, conf);
 
     if (tableScan != null) {
       pushFilters(conf, tableScan);
@@ -420,6 +434,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
 
+    // ensure filters are not set from previous pushFilters
+    jobConf.unset(TableScanDesc.FILTER_TEXT_CONF_STR);
+    jobConf.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
     TableScanDesc scanDesc = tableScan.getConf();
     if (scanDesc == null) {
       return;

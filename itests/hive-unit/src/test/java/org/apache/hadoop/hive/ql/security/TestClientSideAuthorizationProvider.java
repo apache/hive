@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -82,7 +83,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
 
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(clientHiveConf);
+    ugi = Utils.getUGI();
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);

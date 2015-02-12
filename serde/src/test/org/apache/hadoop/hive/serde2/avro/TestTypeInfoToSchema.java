@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import com.google.common.io.Resources;
+
 import org.junit.Assert;
 import org.apache.avro.Schema;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -44,16 +46,30 @@ public class TestTypeInfoToSchema {
 
   private static Logger LOGGER = Logger.getLogger(TestTypeInfoToSchema.class);
   private static final List<String> COLUMN_NAMES = Arrays.asList("testCol");
-  private static final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo("string");
-  private static final TypeInfo INT = TypeInfoFactory.getPrimitiveTypeInfo("int");
-  private static final TypeInfo BOOLEAN = TypeInfoFactory.getPrimitiveTypeInfo("boolean");
-  private static final TypeInfo LONG = TypeInfoFactory.getPrimitiveTypeInfo("bigint");
-  private static final TypeInfo FLOAT = TypeInfoFactory.getPrimitiveTypeInfo("float");
-  private static final TypeInfo DOUBLE = TypeInfoFactory.getPrimitiveTypeInfo("double");
-  private static final TypeInfo BINARY = TypeInfoFactory.getPrimitiveTypeInfo("binary");
-  private static final TypeInfo BYTE = TypeInfoFactory.getPrimitiveTypeInfo("tinyint");
-  private static final TypeInfo SHORT = TypeInfoFactory.getPrimitiveTypeInfo("smallint");
-  private static final TypeInfo VOID = TypeInfoFactory.getPrimitiveTypeInfo("void");
+  private static final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.STRING_TYPE_NAME);
+  private static final TypeInfo INT = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.INT_TYPE_NAME);
+  private static final TypeInfo BOOLEAN = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.BOOLEAN_TYPE_NAME);
+  private static final TypeInfo LONG = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.BIGINT_TYPE_NAME);
+  private static final TypeInfo FLOAT = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.FLOAT_TYPE_NAME);
+  private static final TypeInfo DOUBLE = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.DOUBLE_TYPE_NAME);
+  private static final TypeInfo BINARY = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.BINARY_TYPE_NAME);
+  private static final TypeInfo BYTE = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.TINYINT_TYPE_NAME);
+  private static final TypeInfo SHORT = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.SMALLINT_TYPE_NAME);
+  private static final TypeInfo VOID = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.VOID_TYPE_NAME);
+  private static final TypeInfo DATE = TypeInfoFactory.getPrimitiveTypeInfo(
+      serdeConstants.DATE_TYPE_NAME);
+  private static final TypeInfo TIMESTAMP =
+    TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
   private static final int PRECISION = 4;
   private static final int SCALE = 2;
   private static final TypeInfo DECIMAL = TypeInfoFactory.getPrimitiveTypeInfo(
@@ -66,6 +82,7 @@ public class TestTypeInfoToSchema {
 
   private TypeInfoToSchema typeInfoToSchema;
 
+  private final String lineSeparator = System.getProperty("line.separator");
 
   private String getAvroSchemaString(TypeInfo columnType) {
     return typeInfoToSchema.convert(
@@ -205,6 +222,52 @@ public class TestTypeInfoToSchema {
   }
 
   @Test
+  public void createAvroCharSchema() {
+    final String specificSchema = "{" +
+        "\"type\":\"string\"," +
+        "\"logicalType\":\"char\"," +
+        "\"maxLength\":" + CHAR_LEN + "}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for char's avro schema failed",
+        expectedSchema, getAvroSchemaString(CHAR));
+  }
+
+  @Test
+  public void createAvroVarcharSchema() {
+    final String specificSchema = "{" +
+        "\"type\":\"string\"," +
+        "\"logicalType\":\"varchar\"," +
+        "\"maxLength\":" + CHAR_LEN + "}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for varchar's avro schema failed",
+        expectedSchema, getAvroSchemaString(VARCHAR));
+  }
+
+  @Test
+  public void createAvroDateSchema() {
+    final String specificSchema = "{" +
+        "\"type\":\"int\"," +
+        "\"logicalType\":\"date\"}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for date in avro schema failed",
+        expectedSchema, getAvroSchemaString(DATE));
+  }
+
+  @Test
+  public void createAvroTimestampSchema() {
+    final String specificSchema = "{" +
+      "\"type\":\"long\"," +
+      "\"logicalType\":\"timestamp-millis\"}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for timestamp in avro schema failed",
+      expectedSchema, getAvroSchemaString(TIMESTAMP));
+  }
+
+  @Test
   public void createAvroListSchema() {
     ListTypeInfo listTypeInfo = new ListTypeInfo();
     listTypeInfo.setListElementTypeInfo(STRING);
@@ -313,6 +376,7 @@ public class TestTypeInfoToSchema {
     names.add("field11");
     names.add("field12");
     names.add("field13");
+    names.add("field14");
     structTypeInfo.setAllStructFieldNames(names);
     ArrayList<TypeInfo> typeInfos = new ArrayList<TypeInfo>();
     typeInfos.add(STRING);
@@ -327,12 +391,13 @@ public class TestTypeInfoToSchema {
     typeInfos.add(DOUBLE);
     typeInfos.add(BOOLEAN);
     typeInfos.add(DECIMAL);
+    typeInfos.add(DATE);
     typeInfos.add(VOID);
     structTypeInfo.setAllStructFieldTypeInfos(typeInfos);
     LOGGER.info("structTypeInfo is " + structTypeInfo);
 
     final String specificSchema = IOUtils.toString(Resources.getResource("avro-struct.avsc")
-        .openStream()).replace("\n", "");
+        .openStream()).replace(lineSeparator, "");
     String expectedSchema = genSchema(
         specificSchema);
 
@@ -363,7 +428,7 @@ public class TestTypeInfoToSchema {
     superStructTypeInfo.setAllStructFieldTypeInfos(superTypeInfos);
 
     final String specificSchema = IOUtils.toString(Resources.getResource("avro-nested-struct.avsc")
-        .openStream()).replace("\n", "");
+        .openStream()).replace(lineSeparator, "");
     String expectedSchema = genSchema(
         specificSchema);
     Assert.assertEquals("Test for nested struct's avro schema failed",

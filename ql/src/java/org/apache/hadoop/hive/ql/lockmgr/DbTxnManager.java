@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -52,6 +53,14 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   private long txnId = 0;
 
   DbTxnManager() {
+  }
+
+  @Override
+  void setHiveConf(HiveConf conf) {
+    super.setHiveConf(conf);
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      throw new RuntimeException(ErrorMsg.DBTXNMGR_REQUIRES_CONCURRENCY.getMsg());
+    }
   }
 
   @Override
@@ -286,7 +295,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   public ValidTxnList getValidTxns() throws LockException {
     init();
     try {
-      return client.getValidTxns();
+      return client.getValidTxns(txnId);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);

@@ -1,0 +1,148 @@
+PREHOOK: query: explain 
+select count(*) from (select c.ctinyint 
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select count(*) from (select c.ctinyint 
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: tinyint)
+                        1 _col0 (type: tinyint)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), cint (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 13516 Data size: 414960 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join0 to 1
+                        keys:
+                          0 _col0 (type: tinyint)
+                          1 _col0 (type: tinyint)
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+            Local Work:
+              Map Reduce Local Work
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select c.ctinyint
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select c.ctinyint
+from alltypesorc c
+left outer join alltypesorc cd
+  on cd.cint = c.cint 
+left outer join alltypesorc hd
+  on hd.ctinyint = c.ctinyint
+) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+225951785

@@ -1,9 +1,13 @@
-PREHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_nontemp
-POSTHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -37,6 +41,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: src1
+            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: src2
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -48,24 +63,13 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
-          TableScan
-            alias: src1
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -125,6 +129,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: src1
+            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: src2
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -136,24 +151,13 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
-          TableScan
-            alias: src1
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -215,6 +219,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: src1
+            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: src2
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -226,24 +241,13 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
-          TableScan
-            alias: src1
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Select Operator

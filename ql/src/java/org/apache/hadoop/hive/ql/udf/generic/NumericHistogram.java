@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -42,14 +41,7 @@ public class NumericHistogram {
     double y;
 
     public int compareTo(Object other) {
-      Coord o = (Coord) other;
-      if(x < o.x) {
-        return -1;
-      }
-      if(x > o.x) {
-        return 1;
-      }
-      return 0;
+      return Double.compare(x, ((Coord) other).x);
     }
   };
 

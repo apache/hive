@@ -77,6 +77,23 @@
             shipped to the target node in the cluster to execute Pig job which uses
             HCat, Hive query, etc.</description>
     </property>
+    <property>
+        <name>templeton.sqoop.archive</name>
+        <value>hdfs:///apps/templeton/sqoop-1.4.5.bin__hadoop-2.0.4-alpha.tar.gz</value>
+        <description>This should point to Sqoop tar that will be shipped to target node executing
+        the actual sqoop command.  If not set, Sqoop is expected to be installed on every node of the
+         cluster.</description>
+    </property>
+    <property>
+        <name>templeton.sqoop.path</name>
+        <value>sqoop-1.4.5.bin__hadoop-2.0.4-alpha.tar.gz/sqoop-1.4.5.bin__hadoop-2.0.4-alpha/bin/sqoop</value>
+        <description>The path to the Sqoop executable.</description>
+    </property>
+    <property>
+        <name>templeton.sqoop.home</name>
+        <value>sqoop-1.4.5.bin__hadoop-2.0.4-alpha.tar.gz/sqoop-1.4.5.bin__hadoop-2.0.4-alpha</value>
+        <description>The path to the Sqoop home in the exploded archive.</description>
+    </property>
 
     <property>
         <name>templeton.controller.mr.child.opts</name>

@@ -20,7 +20,6 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -45,7 +44,7 @@ import org.apache.hadoop.conf.Configuration;
 public interface TempletonStorage {
   // These are the possible types referenced by 'type' below.
   public enum Type {
-    UNKNOWN, JOB, JOBTRACKING, TEMPLETONOVERHEAD
+    UNKNOWN, JOB, JOBTRACKING
   }
 
   public static final String STORAGE_CLASS    = "templeton.storage.class";
@@ -79,20 +78,6 @@ public interface TempletonStorage {
   public String getField(Type type, String id, String key);
 
   /**
-   * Get all the name/value pairs stored for this id.
-   * Be careful using getFields() -- optimistic locking will mean that
-   * your odds of a conflict are decreased if you read/write one field
-   * at a time.  getFields() is intended for read-only usage.
-   *
-   * If the type is UNKNOWN, search for the id in all types.
-   *
-   * @param type The data type (as listed above)
-   * @param id The String id of this data grouping (jobid, etc.)
-   * @return A Map of key/value pairs found for this type/id.
-   */
-  public Map<String, String> getFields(Type type, String id);
-
-  /**
    * Delete a data grouping (all data for a jobid, all tracking data
    * for a job, etc.).  If the type is UNKNOWN, search for the id
    * in all types.
@@ -105,39 +90,12 @@ public interface TempletonStorage {
   public boolean delete(Type type, String id) throws NotFoundException;
 
   /**
-   * Get the id of each data grouping in the storage system.
-   *
-   * @return An ArrayList<String> of ids.
-   */
-  public List<String> getAll();
-
-  /**
    * Get the id of each data grouping of a given type in the storage
    * system.
    * @param type The data type (as listed above)
    * @return An ArrayList<String> of ids.
    */
   public List<String> getAllForType(Type type);
-
-  /**
-   * Get the id of each data grouping that has the specific key/value
-   * pair.
-   * @param key The name of the field to search for
-   * @param value The value of the field to search for
-   * @return An ArrayList<String> of ids.
-   */
-  public List<String> getAllForKey(String key, String value);
-
-  /**
-   * Get the id of each data grouping of a given type that has the
-   * specific key/value pair.
-   * @param type The data type (as listed above)
-   * @param key The name of the field to search for
-   * @param value The value of the field to search for
-   * @return An ArrayList<String> of ids.
-   */
-  public List<String> getAllForTypeAndKey(Type type, String key,
-                      String value);
 
   /**
    * For storage methods that require a connection, this is a hint

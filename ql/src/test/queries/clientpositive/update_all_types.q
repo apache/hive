@@ -1,6 +1,5 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing=true;
 
 create table acid_uat(ti tinyint,
@@ -15,7 +14,7 @@ create table acid_uat(ti tinyint,
                  s string,
                  vc varchar(128),
                  ch char(36),
-                 b boolean) clustered by (i) into 2 buckets stored as orc;
+                 b boolean) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into table acid_uat
     select ctinyint,

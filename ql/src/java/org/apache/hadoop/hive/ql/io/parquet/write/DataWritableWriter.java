@@ -13,38 +13,32 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
-import java.sql.Timestamp;
-
-import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-
-import parquet.io.ParquetEncodingException;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+import org.apache.hadoop.hive.serde2.objectinspector.*;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import parquet.io.api.Binary;
 import parquet.io.api.RecordConsumer;
 import parquet.schema.GroupType;
+import parquet.schema.OriginalType;
 import parquet.schema.Type;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
- * DataWritableWriter is a writer,
- * that will read an ArrayWritable and give the data to parquet
- * with the expected schema
- *
+ * DataWritableWriter is a writer that reads a ParquetWritable object and send the data to the Parquet
+ * API with the expected schema. This class is only used through DataWritableWriteSupport class.
  */
 public class DataWritableWriter {
-
+  private static final Log LOG = LogFactory.getLog(DataWritableWriter.class);
   private final RecordConsumer recordConsumer;
   private final GroupType schema;
 
@@ -53,113 +47,284 @@ public class DataWritableWriter {
     this.schema = schema;
   }
 
-  public void write(final ArrayWritable arr) {
-    if (arr == null) {
-      return;
+  /**
+   * It writes all record values to the Parquet RecordConsumer.
+   * @param record Contains the record that are going to be written.
+   */
+  public void write(final ParquetHiveRecord record) {
+    if (record != null) {
+      recordConsumer.startMessage();
+      try {
+        writeGroupFields(record.getObject(), record.getObjectInspector(), schema);
+      } catch (RuntimeException e) {
+        String errorMessage = "Parquet record is malformed: " + e.getMessage();
+        LOG.error(errorMessage, e);
+        throw new RuntimeException(errorMessage, e);
+      }
+      recordConsumer.endMessage();
     }
-    recordConsumer.startMessage();
-    writeData(arr, schema);
-    recordConsumer.endMessage();
   }
 
-  private void writeData(final ArrayWritable arr, final GroupType type) {
-    if (arr == null) {
-      return;
-    }
-    final int fieldCount = type.getFieldCount();
-    Writable[] values = arr.get();
-    for (int field = 0; field < fieldCount; ++field) {
-      final Type fieldType = type.getType(field);
-      final String fieldName = fieldType.getName();
-      final Writable value = values[field];
-      if (value == null) {
-        continue;
+  /**
+   * It writes all the fields contained inside a group to the RecordConsumer.
+   * @param value The list of values contained in the group.
+   * @param inspector The object inspector used to get the correct value type.
+   * @param type Type that contains information about the group schema.
+   */
+  private void writeGroupFields(final Object value, final StructObjectInspector inspector, final GroupType type) {
+    if (value != null) {
+      List<? extends StructField> fields = inspector.getAllStructFieldRefs();
+      List<Object> fieldValuesList = inspector.getStructFieldsDataAsList(value);
+
+      for (int i = 0; i < type.getFieldCount(); i++) {
+        Type fieldType = type.getType(i);
+        String fieldName = fieldType.getName();
+        Object fieldValue = fieldValuesList.get(i);
+
+        if (fieldValue != null) {
+          ObjectInspector fieldInspector = fields.get(i).getFieldObjectInspector();
+          recordConsumer.startField(fieldName, i);
+          writeValue(fieldValue, fieldInspector, fieldType);
+          recordConsumer.endField(fieldName, i);
+        }
       }
+    }
+  }
 
-      recordConsumer.startField(fieldName, field);
+  /**
+   * It writes the field value to the Parquet RecordConsumer. It detects the field type, and calls
+   * the correct write function.
+   * @param value The writable object that contains the value.
+   * @param inspector The object inspector used to get the correct value type.
+   * @param type Type that contains information about the type schema.
+   */
+  private void writeValue(final Object value, final ObjectInspector inspector, final Type type) {
+    if (type.isPrimitive()) {
+      checkInspectorCategory(inspector, ObjectInspector.Category.PRIMITIVE);
+      writePrimitive(value, (PrimitiveObjectInspector)inspector);
+    } else {
+      GroupType groupType = type.asGroupType();
+      OriginalType originalType = type.getOriginalType();
 
-      if (fieldType.isPrimitive()) {
-        writePrimitive(value);
+      if (originalType != null && originalType.equals(OriginalType.LIST)) {
+        checkInspectorCategory(inspector, ObjectInspector.Category.LIST);
+        writeArray(value, (ListObjectInspector)inspector, groupType);
+      } else if (originalType != null && originalType.equals(OriginalType.MAP)) {
+        checkInspectorCategory(inspector, ObjectInspector.Category.MAP);
+        writeMap(value, (MapObjectInspector)inspector, groupType);
       } else {
-        recordConsumer.startGroup();
-        if (value instanceof ArrayWritable) {
-          if (fieldType.asGroupType().getRepetition().equals(Type.Repetition.REPEATED)) {
-            writeArray((ArrayWritable) value, fieldType.asGroupType());
-          } else {
-            writeData((ArrayWritable) value, fieldType.asGroupType());
-          }
-        } else if (value != null) {
-          throw new ParquetEncodingException("This should be an ArrayWritable or MapWritable: " + value);
-        }
-
-        recordConsumer.endGroup();
+        checkInspectorCategory(inspector, ObjectInspector.Category.STRUCT);
+        writeGroup(value, (StructObjectInspector)inspector, groupType);
       }
-
-      recordConsumer.endField(fieldName, field);
     }
   }
 
-  private void writeArray(final ArrayWritable array, final GroupType type) {
-    if (array == null) {
-      return;
-    }
-    final Writable[] subValues = array.get();
-    final int fieldCount = type.getFieldCount();
-    for (int field = 0; field < fieldCount; ++field) {
-      final Type subType = type.getType(field);
-      recordConsumer.startField(subType.getName(), field);
-      for (int i = 0; i < subValues.length; ++i) {
-        final Writable subValue = subValues[i];
-        if (subValue != null) {
-          if (subType.isPrimitive()) {
-            if (subValue instanceof ArrayWritable) {
-              writePrimitive(((ArrayWritable) subValue).get()[field]);// 0 ?
-            } else {
-              writePrimitive(subValue);
-            }
-          } else {
-            if (!(subValue instanceof ArrayWritable)) {
-              throw new RuntimeException("This should be a ArrayWritable: " + subValue);
-            } else {
-              recordConsumer.startGroup();
-              writeData((ArrayWritable) subValue, subType.asGroupType());
-              recordConsumer.endGroup();
-            }
-          }
-        }
-      }
-      recordConsumer.endField(subType.getName(), field);
+  /**
+   * Checks that an inspector matches the category indicated as a parameter.
+   * @param inspector The object inspector to check
+   * @param category The category to match
+   * @throws IllegalArgumentException if inspector does not match the category
+   */
+  private void checkInspectorCategory(ObjectInspector inspector, ObjectInspector.Category category) {
+    if (!inspector.getCategory().equals(category)) {
+      throw new IllegalArgumentException("Invalid data type: expected " + category
+          + " type, but found: " + inspector.getCategory());
     }
   }
 
-  private void writePrimitive(final Writable value) {
+  /**
+   * It writes a group type and all its values to the Parquet RecordConsumer.
+   * This is used only for optional and required groups.
+   * @param value Object that contains the group values.
+   * @param inspector The object inspector used to get the correct value type.
+   * @param type Type that contains information about the group schema.
+   */
+  private void writeGroup(final Object value, final StructObjectInspector inspector, final GroupType type) {
+    recordConsumer.startGroup();
+    writeGroupFields(value, inspector, type);
+    recordConsumer.endGroup();
+  }
+
+  /**
+   * It writes a list type and its array elements to the Parquet RecordConsumer.
+   * This is called when the original type (LIST) is detected by writeValue()/
+   * This function assumes the following schema:
+   *    optional group arrayCol (LIST) {
+   *      repeated group array {
+   *        optional TYPE array_element;
+   *      }
+   *    }
+   * @param value The object that contains the array values.
+   * @param inspector The object inspector used to get the correct value type.
+   * @param type Type that contains information about the group (LIST) schema.
+   */
+  private void writeArray(final Object value, final ListObjectInspector inspector, final GroupType type) {
+    // Get the internal array structure
+    GroupType repeatedType = type.getType(0).asGroupType();
+
+    recordConsumer.startGroup();
+    recordConsumer.startField(repeatedType.getName(), 0);
+
+    List<?> arrayValues = inspector.getList(value);
+    ObjectInspector elementInspector = inspector.getListElementObjectInspector();
+
+    Type elementType = repeatedType.getType(0);
+    String elementName = elementType.getName();
+
+    for (Object element : arrayValues) {
+      recordConsumer.startGroup();
+      if (element != null) {
+        recordConsumer.startField(elementName, 0);
+        writeValue(element, elementInspector, elementType);
+        recordConsumer.endField(elementName, 0);
+      }
+      recordConsumer.endGroup();
+    }
+
+    recordConsumer.endField(repeatedType.getName(), 0);
+    recordConsumer.endGroup();
+  }
+
+  /**
+   * It writes a map type and its key-pair values to the Parquet RecordConsumer.
+   * This is called when the original type (MAP) is detected by writeValue().
+   * This function assumes the following schema:
+   *    optional group mapCol (MAP) {
+   *      repeated group map (MAP_KEY_VALUE) {
+   *        required TYPE key;
+   *        optional TYPE value;
+   *      }
+   *    }
+   * @param value The object that contains the map key-values.
+   * @param inspector The object inspector used to get the correct value type.
+   * @param type Type that contains information about the group (MAP) schema.
+   */
+  private void writeMap(final Object value, final MapObjectInspector inspector, final GroupType type) {
+    // Get the internal map structure (MAP_KEY_VALUE)
+    GroupType repeatedType = type.getType(0).asGroupType();
+
+    recordConsumer.startGroup();
+    recordConsumer.startField(repeatedType.getName(), 0);
+
+    Map<?, ?> mapValues = inspector.getMap(value);
+
+    Type keyType = repeatedType.getType(0);
+    String keyName = keyType.getName();
+    ObjectInspector keyInspector = inspector.getMapKeyObjectInspector();
+
+    Type valuetype = repeatedType.getType(1);
+    String valueName = valuetype.getName();
+    ObjectInspector valueInspector = inspector.getMapValueObjectInspector();
+
+    for (Map.Entry<?, ?> keyValue : mapValues.entrySet()) {
+      recordConsumer.startGroup();
+      if (keyValue != null) {
+        // write key element
+        Object keyElement = keyValue.getKey();
+        recordConsumer.startField(keyName, 0);
+        writeValue(keyElement, keyInspector, keyType);
+        recordConsumer.endField(keyName, 0);
+
+        // write value element
+        Object valueElement = keyValue.getValue();
+        if (valueElement != null) {
+          recordConsumer.startField(valueName, 1);
+          writeValue(valueElement, valueInspector, valuetype);
+          recordConsumer.endField(valueName, 1);
+        }
+      }
+      recordConsumer.endGroup();
+    }
+
+    recordConsumer.endField(repeatedType.getName(), 0);
+    recordConsumer.endGroup();
+  }
+
+  /**
+   * It writes the primitive value to the Parquet RecordConsumer.
+   * @param value The object that contains the primitive value.
+   * @param inspector The object inspector used to get the correct value type.
+   */
+  private void writePrimitive(final Object value, final PrimitiveObjectInspector inspector) {
     if (value == null) {
       return;
     }
-    if (value instanceof DoubleWritable) {
-      recordConsumer.addDouble(((DoubleWritable) value).get());
-    } else if (value instanceof BooleanWritable) {
-      recordConsumer.addBoolean(((BooleanWritable) value).get());
-    } else if (value instanceof FloatWritable) {
-      recordConsumer.addFloat(((FloatWritable) value).get());
-    } else if (value instanceof IntWritable) {
-      recordConsumer.addInteger(((IntWritable) value).get());
-    } else if (value instanceof LongWritable) {
-      recordConsumer.addLong(((LongWritable) value).get());
-    } else if (value instanceof ShortWritable) {
-      recordConsumer.addInteger(((ShortWritable) value).get());
-    } else if (value instanceof ByteWritable) {
-      recordConsumer.addInteger(((ByteWritable) value).get());
-    } else if (value instanceof HiveDecimalWritable) {
-      throw new UnsupportedOperationException("HiveDecimalWritable writing not implemented");
-    } else if (value instanceof BytesWritable) {
-      recordConsumer.addBinary((Binary.fromByteArray(((BytesWritable) value).getBytes())));
-    } else if (value instanceof TimestampWritable) {
-      Timestamp ts = ((TimestampWritable) value).getTimestamp();
-      NanoTime nt = NanoTimeUtils.getNanoTime(ts);
-      nt.writeValue(recordConsumer);
-    } else {
-      throw new IllegalArgumentException("Unknown value type: " + value + " " + value.getClass());
+
+    switch (inspector.getPrimitiveCategory()) {
+      case VOID:
+        return;
+      case DOUBLE:
+        recordConsumer.addDouble(((DoubleObjectInspector) inspector).get(value));
+        break;
+      case BOOLEAN:
+        recordConsumer.addBoolean(((BooleanObjectInspector) inspector).get(value));
+        break;
+      case FLOAT:
+        recordConsumer.addFloat(((FloatObjectInspector) inspector).get(value));
+        break;
+      case BYTE:
+        recordConsumer.addInteger(((ByteObjectInspector) inspector).get(value));
+        break;
+      case INT:
+        recordConsumer.addInteger(((IntObjectInspector) inspector).get(value));
+        break;
+      case LONG:
+        recordConsumer.addLong(((LongObjectInspector) inspector).get(value));
+        break;
+      case SHORT:
+        recordConsumer.addInteger(((ShortObjectInspector) inspector).get(value));
+        break;
+      case STRING:
+        String v = ((StringObjectInspector) inspector).getPrimitiveJavaObject(value);
+        recordConsumer.addBinary(Binary.fromString(v));
+        break;
+      case CHAR:
+        String vChar = ((HiveCharObjectInspector) inspector).getPrimitiveJavaObject(value).getStrippedValue();
+        recordConsumer.addBinary(Binary.fromString(vChar));
+        break;
+      case VARCHAR:
+        String vVarchar = ((HiveVarcharObjectInspector) inspector).getPrimitiveJavaObject(value).getValue();
+        recordConsumer.addBinary(Binary.fromString(vVarchar));
+        break;
+      case BINARY:
+        byte[] vBinary = ((BinaryObjectInspector) inspector).getPrimitiveJavaObject(value);
+        recordConsumer.addBinary(Binary.fromByteArray(vBinary));
+        break;
+      case TIMESTAMP:
+        Timestamp ts = ((TimestampObjectInspector) inspector).getPrimitiveJavaObject(value);
+        recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, false).toBinary());
+        break;
+      case DECIMAL:
+        HiveDecimal vDecimal = ((HiveDecimal)inspector.getPrimitiveJavaObject(value));
+        DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)inspector.getTypeInfo();
+        recordConsumer.addBinary(decimalToBinary(vDecimal, decTypeInfo));
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported primitive data type: " + inspector.getPrimitiveCategory());
     }
+  }
+
+  private Binary decimalToBinary(final HiveDecimal hiveDecimal, final DecimalTypeInfo decimalTypeInfo) {
+    int prec = decimalTypeInfo.precision();
+    int scale = decimalTypeInfo.scale();
+    byte[] decimalBytes = hiveDecimal.setScale(scale).unscaledValue().toByteArray();
+
+    // Estimated number of bytes needed.
+    int precToBytes = ParquetHiveSerDe.PRECISION_TO_BYTE_COUNT[prec - 1];
+    if (precToBytes == decimalBytes.length) {
+      // No padding needed.
+      return Binary.fromByteArray(decimalBytes);
+    }
+
+    byte[] tgt = new byte[precToBytes];
+      if (hiveDecimal.signum() == -1) {
+      // For negative number, initializing bits to 1
+      for (int i = 0; i < precToBytes; i++) {
+        tgt[i] |= 0xFF;
+      }
+    }
+
+    System.arraycopy(decimalBytes, 0, tgt, precToBytes - decimalBytes.length, decimalBytes.length); // Padding leading zeroes/ones.
+    return Binary.fromByteArray(tgt);
   }
 }

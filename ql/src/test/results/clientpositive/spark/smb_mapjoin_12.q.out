@@ -1,0 +1,578 @@
+PREHOOK: query: -- This test verifies that the output of a sort merge join on 1 big partition with multiple small partitions is bucketed and sorted
+
+-- Create two bucketed and sorted tables
+CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: -- This test verifies that the output of a sort merge join on 1 big partition with multiple small partitions is bucketed and sorted
+
+-- Create two bucketed and sorted tables
+CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table1@ds=1
+PREHOOK: Output: default@test_table2@ds=1
+PREHOOK: Output: default@test_table2@ds=2
+PREHOOK: Output: default@test_table2@ds=3
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table2@ds=1
+POSTHOOK: Output: default@test_table2@ds=2
+POSTHOOK: Output: default@test_table2@ds=3
+POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Create a bucketed table
+CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table3
+POSTHOOK: query: -- Create a bucketed table
+CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table3
+PREHOOK: query: -- Insert data into the bucketed table by joining the two bucketed and sorted tables, bucketing is not enforced
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Insert data into the bucketed table by joining the two bucketed and sorted tables, bucketing is not enforced
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               test_table1
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               test_table2
+            b
+         AND
+            AND
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        a
+                     key
+                  .
+                     TOK_TABLE_OR_COL
+                        b
+                     key
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        a
+                     ds
+                  '1'
+            >=
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  ds
+               '1'
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               test_table3
+            TOK_PARTSPEC
+               TOK_PARTVAL
+                  ds
+                  '1'
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  b
+               value
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Sorted Merge Bucket Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col7
+                      Position of Big Table: 0
+                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col7 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+#### A masked pattern was here ####
+                          NumFilesPerFileSink: 1
+                          Static Partition Specification: ds=1/
+                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              properties:
+                                SORTBUCKETCOLSPREFIX TRUE
+                                bucket_count 16
+                                bucket_field_name key
+                                columns key,value
+                                columns.comments 
+                                columns.types int:string
+#### A masked pattern was here ####
+                                name default.test_table3
+                                partition_columns ds
+                                partition_columns.types string
+                                serialization.ddl struct test_table3 { i32 key, string value}
+                                serialization.format 1
+                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: default.test_table3
+                          TotalFiles: 1
+                          GatherStats: true
+                          MultiFileSpray: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 1
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count 16
+                    bucket_field_name key
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.test_table1
+                    numFiles 16
+                    numRows 500
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 5312
+                    serialization.ddl struct test_table1 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 16
+                      bucket_field_name key
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.test_table1
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct test_table1 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.test_table1
+                  name: default.test_table1
+            Truncated Path -> Alias:
+              /test_table1/ds=1 [a]
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 16
+                bucket_field_name key
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.test_table3
+                partition_columns ds
+                partition_columns.types string
+                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2@ds=1
+PREHOOK: Input: default@test_table2@ds=2
+PREHOOK: Input: default@test_table2@ds=3
+PREHOOK: Output: default@test_table3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2@ds=1
+POSTHOOK: Input: default@test_table2@ds=2
+POSTHOOK: Input: default@test_table2@ds=3
+POSTHOOK: Output: default@test_table3@ds=1
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: -- Join data from a sampled bucket to verify the data is bucketed
+SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Join data from a sampled bucket to verify the data is bucketed
+SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+879
+PREHOOK: query: -- Join data from the sampled buckets of 2 tables to verify the data is bucketed and sorted
+explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Join data from the sampled buckets of 2 tables to verify the data is bucketed and sorted
+explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_TABREF
+            TOK_TABNAME
+               test_table3
+            a
+         TOK_TABREF
+            TOK_TABNAME
+               test_table1
+            b
+         AND
+            AND
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        a
+                     key
+                  .
+                     TOK_TABLE_OR_COL
+                        b
+                     key
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        a
+                     ds
+                  '1'
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  ds
+               '1'
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               test_table3
+            TOK_PARTSPEC
+               TOK_PARTVAL
+                  ds
+                  '2'
+      TOK_SELECT
+         TOK_HINTLIST
+            TOK_HINT
+               TOK_MAPJOIN
+               TOK_HINTARGLIST
+                  b
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  a
+               key
+         TOK_SELEXPR
+            TOK_FUNCTION
+               concat
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  value
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  value
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3084 Data size: 32904 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1542 Data size: 16452 Basic stats: COMPLETE Column stats: NONE
+                    Sorted Merge Bucket Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col1, _col7
+                      Position of Big Table: 0
+                      Statistics: Num rows: 1696 Data size: 18097 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), concat(_col1, _col7) (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1696 Data size: 18097 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+#### A masked pattern was here ####
+                          NumFilesPerFileSink: 1
+                          Static Partition Specification: ds=2/
+                          Statistics: Num rows: 1696 Data size: 18097 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              properties:
+                                SORTBUCKETCOLSPREFIX TRUE
+                                bucket_count 16
+                                bucket_field_name key
+                                columns key,value
+                                columns.comments 
+                                columns.types int:string
+#### A masked pattern was here ####
+                                name default.test_table3
+                                partition_columns ds
+                                partition_columns.types string
+                                serialization.ddl struct test_table3 { i32 key, string value}
+                                serialization.format 1
+                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: default.test_table3
+                          TotalFiles: 1
+                          GatherStats: true
+                          MultiFileSpray: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 1
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count 16
+                    bucket_field_name key
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.test_table3
+                    numFiles 16
+                    numRows 3084
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 32904
+                    serialization.ddl struct test_table3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 35988
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 16
+                      bucket_field_name key
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.test_table3
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct test_table3 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.test_table3
+                  name: default.test_table3
+            Truncated Path -> Alias:
+              /test_table3/ds=1 [a]
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 16
+                bucket_field_name key
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.test_table3
+                partition_columns ds
+                partition_columns.types string
+                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Output: default@test_table3@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Output: default@test_table3@ds=2
+POSTHOOK: Lineage: test_table3 PARTITION(ds=2).key SIMPLE [(test_table3)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=2).value EXPRESSION [(test_table3)a.FieldSchema(name:value, type:string, comment:null), (test_table1)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=2
+#### A masked pattern was here ####
+879

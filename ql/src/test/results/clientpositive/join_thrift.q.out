@@ -1,7 +1,11 @@
-PREHOOK: query: DESCRIBE src_thrift
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DESCRIBE src_thrift
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
-POSTHOOK: query: DESCRIBE src_thrift
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DESCRIBE src_thrift
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 aint                	int                 	from deserializer   
@@ -35,6 +39,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: s1
+            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: aint is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 1674 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: aint (type: int)
+                sort order: +
+                Map-reduce partition columns: aint (type: int)
+                Statistics: Num rows: 6 Data size: 1674 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: s2
             Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -46,24 +61,13 @@ STAGE PLANS:
                 Map-reduce partition columns: aint (type: int)
                 Statistics: Num rows: 6 Data size: 1674 Basic stats: COMPLETE Column stats: NONE
                 value expressions: lintstring (type: array<struct<myint:int,mystring:string,underscore_int:int>>)
-          TableScan
-            alias: s1
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: aint is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 1674 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: aint (type: int)
-                sort order: +
-                Map-reduce partition columns: aint (type: int)
-                Statistics: Num rows: 6 Data size: 1674 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col3}
+          keys:
+            0 aint (type: int)
+            1 aint (type: int)
           outputColumnNames: _col0, _col17
           Statistics: Num rows: 6 Data size: 1841 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -98,14 +102,14 @@ ON s1.aint = s2.aint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
--1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
--751827638	[{"myint":4,"mystring":"8","underscore_int":2}]
+-1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -734328909	[{"myint":16,"mystring":"64","underscore_int":4}]
+-751827638	[{"myint":4,"mystring":"8","underscore_int":2}]
 0	NULL
-336964413	[{"myint":81,"mystring":"729","underscore_int":9}]
-465985200	[{"myint":1,"mystring":"1","underscore_int":1}]
-477111222	[{"myint":9,"mystring":"27","underscore_int":3}]
 1244525190	[{"myint":36,"mystring":"216","underscore_int":6}]
 1638581578	[{"myint":64,"mystring":"512","underscore_int":8}]
 1712634731	[{"myint":0,"mystring":"0","underscore_int":0}]
+336964413	[{"myint":81,"mystring":"729","underscore_int":9}]
+465985200	[{"myint":1,"mystring":"1","underscore_int":1}]
+477111222	[{"myint":9,"mystring":"27","underscore_int":3}]

@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -54,7 +53,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -139,7 +137,7 @@ public class OpProcFactory {
 
       // Table scan operator.
       TableScanOperator top = (TableScanOperator)nd;
-      org.apache.hadoop.hive.ql.metadata.Table t = pctx.getTopToTable().get(top);
+      org.apache.hadoop.hive.ql.metadata.Table t = top.getConf().getTableMetadata();
       Table tab = t.getTTable();
 
       // Generate the mappings
@@ -461,24 +459,17 @@ public class OpProcFactory {
           lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
               ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
         }
-      } else if (op instanceof ExtractOperator) {
-        ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
-        for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
-          lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
-              ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
-        }
       } else {
-        RowResolver resolver = lCtx.getParseCtx().getOpParseCtx().get(rop).getRowResolver();
+        RowSchema schema = rop.getSchema();
         ReduceSinkDesc desc = rop.getConf();
         List<ExprNodeDesc> keyCols = desc.getKeyCols();
         ArrayList<String> keyColNames = desc.getOutputKeyColumnNames();
         for (int i = 0; i < keyCols.size(); i++) {
           // order-bys, joins
-          String[] nm = resolver.reverseLookup(Utilities.ReduceField.KEY + "." + keyColNames.get(i));
-          if (nm == null) {
+          ColumnInfo column = schema.getColumnInfo(Utilities.ReduceField.KEY + "." + keyColNames.get(i));
+          if (column == null) {
             continue;   // key in values
           }
-          ColumnInfo column = resolver.get(nm[0], nm[1]);
           lCtx.getIndex().putDependency(rop, column,
               ExprProcFactory.getExprDependency(lCtx, inpOp, keyCols.get(i)));
         }
@@ -486,12 +477,11 @@ public class OpProcFactory {
         ArrayList<String> valColNames = desc.getOutputValueColumnNames();
         for (int i = 0; i < valCols.size(); i++) {
           // todo: currently, bucketing,etc. makes RS differently with those for order-bys or joins
-          String[] nm = resolver.reverseLookup(valColNames.get(i));
-          if (nm == null) {
+          ColumnInfo column = schema.getColumnInfo(valColNames.get(i));
+          if (column == null) {
             // order-bys, joins
-            nm = resolver.reverseLookup(Utilities.ReduceField.VALUE + "." + valColNames.get(i));
+            column = schema.getColumnInfo(Utilities.ReduceField.VALUE + "." + valColNames.get(i));
           }
-          ColumnInfo column = resolver.get(nm[0], nm[1]);
           lCtx.getIndex().putDependency(rop, column,
               ExprProcFactory.getExprDependency(lCtx, inpOp, valCols.get(i)));
         }

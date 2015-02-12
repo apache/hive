@@ -51,7 +51,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -67,12 +66,13 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1032,6 +1032,24 @@ public class TestInputOutputFormat {
     reader.close();
   }
 
+  static class SimpleRow implements Writable {
+    Text z;
+
+    public SimpleRow(Text t) {
+      this.z = t;
+    }
+
+    @Override
+    public void write(DataOutput dataOutput) throws IOException {
+      throw new UnsupportedOperationException("unsupported");
+    }
+
+    @Override
+    public void readFields(DataInput dataInput) throws IOException {
+      throw new UnsupportedOperationException("unsupported");
+    }
+  }
+
   static class NestedRow implements Writable {
     int z;
     MyRow r;
@@ -1266,6 +1284,8 @@ public class TestInputOutputFormat {
     }
     conf.set("hive.io.file.readcolumn.ids", columnIds.toString());
     conf.set("partition_columns", "p");
+    conf.set(serdeConstants.LIST_COLUMNS, columnNames.toString());
+    conf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypes.toString());
     MockFileSystem fs = (MockFileSystem) warehouseDir.getFileSystem(conf);
     fs.clear();
 
@@ -1295,8 +1315,8 @@ public class TestInputOutputFormat {
     }
     mapWork.setPathToAliases(aliasMap);
     mapWork.setPathToPartitionInfo(partMap);
-    mapWork.setScratchColumnMap(new HashMap<String, Map<String, Integer>>());
-    mapWork.setScratchColumnVectorTypes(new HashMap<String,
+    mapWork.setAllColumnVectorMaps(new HashMap<String, Map<String, Integer>>());
+    mapWork.setAllScratchColumnVectorTypeMaps(new HashMap<String,
         Map<Integer, String>>());
 
     // write the plan out
@@ -1463,8 +1483,8 @@ public class TestInputOutputFormat {
       assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
       assertEquals("checking string " + i, new Text(Long.toHexString(i)),
           stringColumn.getWritableObject(i));
-      assertEquals("checking decimal " + i, new Decimal128(i),
-          decimalColumn.vector[i]);
+      assertEquals("checking decimal " + i, HiveDecimal.create(i),
+          decimalColumn.vector[i].getHiveDecimal());
       assertEquals("checking date " + i, i, dateColumn.vector[i]);
       long millis = (long) i * MILLIS_IN_DAY;
       millis -= LOCAL_TIMEZONE.getOffset(millis);
@@ -1618,14 +1638,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(580, split.getLength());
+    assertEquals(607, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(601, split.getLength());
+    assertEquals(629, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -1633,7 +1653,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(225, combineSplit.getLength(bucket));
+      assertEquals(241, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -1683,4 +1703,89 @@ public class TestInputOutputFormat {
     assertEquals("cost", leaves.get(0).getColumnName());
     assertEquals(PredicateLeaf.Operator.IS_NULL, leaves.get(0).getOperator());
   }
+
+  @Test
+  @SuppressWarnings("unchecked,deprecation")
+  public void testSplitElimination() throws Exception {
+    Properties properties = new Properties();
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(NestedRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    SerDe serde = new OrcSerde();
+    OutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    conf.setInt("mapred.max.split.size", 50);
+    RecordWriter writer =
+        outFormat.getRecordWriter(fs, conf, testFilePath.toString(),
+            Reporter.NULL);
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(1,2,3), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(4,5,6), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(7,8,9), inspector));
+    writer.close(Reporter.NULL);
+    serde = new OrcSerde();
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+            .startAnd()
+            .lessThan("z", new Integer(0))
+            .end()
+            .build();
+    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("hive.io.file.readcolumn.names", "z,r");
+    properties.setProperty("columns", "z,r");
+    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    inspector = (StructObjectInspector) serde.getObjectInspector();
+    InputFormat<?,?> in = new OrcInputFormat();
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    InputSplit[] splits = in.getSplits(conf, 1);
+    assertEquals(0, splits.length);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked,deprecation")
+  public void testSplitEliminationNullStats() throws Exception {
+    Properties properties = new Properties();
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(SimpleRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    SerDe serde = new OrcSerde();
+    OutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    conf.setInt("mapred.max.split.size", 50);
+    RecordWriter writer =
+        outFormat.getRecordWriter(fs, conf, testFilePath.toString(),
+            Reporter.NULL);
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.close(Reporter.NULL);
+    serde = new OrcSerde();
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+            .startAnd()
+            .lessThan("z", new String("foo"))
+            .end()
+            .build();
+    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("hive.io.file.readcolumn.names", "z");
+    properties.setProperty("columns", "z");
+    properties.setProperty("columns.types", "string");
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    inspector = (StructObjectInspector) serde.getObjectInspector();
+    InputFormat<?,?> in = new OrcInputFormat();
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    InputSplit[] splits = in.getSplits(conf, 1);
+    assertEquals(0, splits.length);
+  }
+
 }

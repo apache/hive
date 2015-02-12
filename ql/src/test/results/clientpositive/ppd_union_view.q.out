@@ -160,30 +160,14 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: t1_mapping
-            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: keymap is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: keymap (type: string), ds (type: string)
-                sort order: ++
-                Map-reduce partition columns: keymap (type: string), ds (type: string)
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                value expressions: key (type: string)
-                auto parallelism: false
           TableScan
             alias: t1_old
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
@@ -193,12 +177,28 @@ STAGE PLANS:
               predicate: keymap is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: keymap (type: string), ds (type: string)
+                key expressions: keymap (type: string), '2011-10-13' (type: string)
                 sort order: ++
-                Map-reduce partition columns: keymap (type: string), ds (type: string)
+                Map-reduce partition columns: keymap (type: string), '2011-10-13' (type: string)
                 Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
                 value expressions: value (type: string)
+                auto parallelism: false
+          TableScan
+            alias: t1_mapping
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: keymap is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: keymap (type: string), '2011-10-13' (type: string)
+                sort order: ++
+                Map-reduce partition columns: keymap (type: string), '2011-10-13' (type: string)
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                tag: 1
+                value expressions: key (type: string)
                 auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -214,7 +214,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,keymap
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_mapping
@@ -235,7 +235,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,keymap
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_mapping
@@ -259,7 +259,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns keymap,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_old
@@ -280,7 +280,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns keymap,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_old
@@ -301,14 +301,14 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey1}
-            1 {VALUE._col0}
-          outputColumnNames: _col1, _col2, _col6
+          keys:
+            0 keymap (type: string), ds (type: string)
+            1 keymap (type: string), ds (type: string)
+          outputColumnNames: _col1, _col6
           Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col6 (type: string), _col1 (type: string), _col2 (type: string)
-            outputColumnNames: _col0, _col1, _col2
+            expressions: _col6 (type: string), _col1 (type: string)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
@@ -319,8 +319,8 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
-                    columns _col0,_col1,_col2
-                    columns.types string,string,string
+                    columns _col0,_col1
+                    columns.types string,string
                     escape.delim \
                     serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -336,7 +336,7 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                expressions: _col0 (type: string), _col1 (type: string), '2011-10-13' (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -365,12 +365,12 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col1,_col2
-              columns.types string,string,string
+              columns _col0,_col1
+              columns.types string,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
             serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -378,8 +378,8 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col1,_col2
-                columns.types string,string,string
+                columns _col0,_col1
+                columns.types string,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -458,25 +458,25 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0}
-          outputColumnNames: _col1, _col6
+          keys:
+            0 _col0 (type: string)
+            1 _col1 (type: string)
+          outputColumnNames: _col1, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: _col6 (type: string), _col1 (type: string), '2011-10-15' (type: string)
+            expressions: _col3 (type: string), _col1 (type: string), '2011-10-15' (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             File Output Operator
@@ -501,12 +501,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: t1_new
+            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Union
+            Select Operator
+              expressions: key (type: string), value (type: string), '2011-10-15' (type: string)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2
+              Union
                 Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -530,46 +532,36 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
           TableScan
-            alias: t1_new
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
-            Select Operator
-              expressions: key (type: string), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
+            Union
               Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-              Union
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
                 Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          columns _col0,_col1,_col2
-                          columns.types string:string:string
-                          escape.delim \
-                          hive.serialization.extend.nesting.levels true
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns _col0,_col1,_col2
+                      columns.types string:string:string
+                      escape.delim \
+                      hive.serialization.extend.nesting.levels true
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                TotalFiles: 1
+                GatherStats: false
+                MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -598,7 +590,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1_new
@@ -619,7 +611,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_new
@@ -633,7 +625,7 @@ STAGE PLANS:
               name: default.t1_new
             name: default.t1_new
       Truncated Path -> Alias:
-        /t1_new/ds=2011-10-15 [t1-subquery1:subq-subquery1:t1_new]
+        /t1_new/ds=2011-10-15 [null-subquery1:$hdt$_0-subquery1:t1_new]
 #### A masked pattern was here ####
 
   Stage: Stage-0

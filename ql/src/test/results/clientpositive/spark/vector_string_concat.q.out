@@ -1,0 +1,418 @@
+PREHOOK: query: DROP TABLE over1k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE over1korc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1korc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
+POSTHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k
+PREHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1korc
+PREHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1korc
+POSTHOOK: Lineage: over1korc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1korc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1korc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1korc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1korc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1korc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1korc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        TableScan
+          alias: over1korc
+          Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: s (type: string), concat(concat('      ', s), '      ') (type: string), concat(concat('|', rtrim(concat(concat('      ', s), '      '))), '|') (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+            Limit
+              Number of rows: 20
+              Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s AS `string`,
+       CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
+       CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
+       FROM over1korc LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+bob davidson	      bob davidson      	|      bob davidson|
+alice zipper	      alice zipper      	|      alice zipper|
+katie davidson	      katie davidson      	|      katie davidson|
+xavier quirinius	      xavier quirinius      	|      xavier quirinius|
+nick robinson	      nick robinson      	|      nick robinson|
+tom hernandez	      tom hernandez      	|      tom hernandez|
+ulysses hernandez	      ulysses hernandez      	|      ulysses hernandez|
+priscilla ichabod	      priscilla ichabod      	|      priscilla ichabod|
+quinn van buren	      quinn van buren      	|      quinn van buren|
+luke laertes	      luke laertes      	|      luke laertes|
+xavier polk	      xavier polk      	|      xavier polk|
+zach falkner	      zach falkner      	|      zach falkner|
+quinn davidson	      quinn davidson      	|      quinn davidson|
+priscilla van buren	      priscilla van buren      	|      priscilla van buren|
+fred king	      fred king      	|      fred king|
+calvin ellison	      calvin ellison      	|      calvin ellison|
+sarah garcia	      sarah garcia      	|      sarah garcia|
+zach young	      zach young      	|      zach young|
+david underhill	      david underhill      	|      david underhill|
+yuri carson	      yuri carson      	|      yuri carson|
+PREHOOK: query: ------------------------------------------------------------------------------------------
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: ------------------------------------------------------------------------------------------
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2korc
+PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: default@vectortab2korc
+POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN
+SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2korc
+                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date)
+                    outputColumnNames: dt
+                    Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: concat(concat(concat('Quarter ', UDFToString(UDFToInteger((((month(dt) - 1) / 3) + 1)))), '-'), UDFToString(year(dt))) (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+NULL
+Quarter 1-1970
+Quarter 1-1971
+Quarter 1-1972
+Quarter 1-1973
+Quarter 1-1974
+Quarter 1-1975
+Quarter 1-1976
+Quarter 1-1977
+Quarter 1-1978
+Quarter 1-1979
+Quarter 1-1980
+Quarter 1-1981
+Quarter 1-1982
+Quarter 1-1983
+Quarter 1-1984
+Quarter 1-1985
+Quarter 1-1986
+Quarter 1-1987
+Quarter 1-1988
+Quarter 1-1989
+Quarter 1-1990
+Quarter 1-1991
+Quarter 1-1992
+Quarter 1-1993
+Quarter 1-1994
+Quarter 1-1995
+Quarter 1-1996
+Quarter 1-1997
+Quarter 1-1998
+Quarter 1-1999
+Quarter 1-2000
+Quarter 1-2001
+Quarter 1-2002
+Quarter 1-2003
+Quarter 1-2004
+Quarter 1-2005
+Quarter 1-2006
+Quarter 1-2007
+Quarter 1-2008
+Quarter 1-2009
+Quarter 1-2010
+Quarter 1-2011
+Quarter 1-2012
+Quarter 1-2013
+Quarter 1-2014
+Quarter 1-2015
+Quarter 1-2016
+Quarter 1-2017
+Quarter 1-2018

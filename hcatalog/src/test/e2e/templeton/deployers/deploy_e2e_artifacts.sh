@@ -35,7 +35,6 @@ ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/mapreduce/hadoop-ma
 ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-${HADOOP_VERSION}.jar webhcate2e/hclient.jar
 ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-streaming-${HADOOP_VERSION}.jar  /user/templeton/hadoop-streaming.jar
 
-
 #must match config/webhcat/webhcat-stie.xml
 ${HADOOP_HOME}/bin/hdfs dfs -put ${PROJ_HOME}/packaging/target/apache-hive-${HIVE_VERSION}-bin.tar.gz /apps/templeton/apache-hive-${HIVE_VERSION}-bin.tar.gz
 # To run against Hadoop2 cluster, you have to build Pig tar yourself with 
@@ -47,7 +46,19 @@ ${HADOOP_HOME}/bin/hadoop fs -put ${PIG_PIGGYBANK_PATH}  webhcate2e/
 #${HADOOP_HOME}/bin/hadoop fs -put /Users/ekoifman/dev/data/jarsForTmplte2e/pig-0.12.0/contrib/piggybank/java/piggybank.jar  webhcate2e/
 
 
-${HADOOP_HOME}/bin/hadoop fs -put ${HIVE_HOME}/lib/zookeeper-3.4.5.jar /apps/templeton/zookeeper-3.4.5.jar
+${HADOOP_HOME}/bin/hadoop fs -put /Users/ekoifman/dev/sqoop-1.4.5.bin__hadoop-2.0.4-alpha.tar.gz /apps/templeton/sqoop-1.4.5.bin__hadoop-2.0.4-alpha.tar.gz
+${HADOOP_HOME}/bin/hadoop fs -put /Users/ekoifman/dev/mysql-connector-java-5.1.30/mysql-connector-java-5.1.30-bin.jar /apps/templeton/jdbc/mysql-connector-java.jar
+
+#Tez set up (http://tez.apache.org/install.html)
+#if not using Tez - ignore this
+${HADOOP_HOME}/bin/hdfs dfs -put /Users/ekoifman/dev/apache-tez-${TEZ_VERSION}-src/tez-dist/target/tez-${TEZ_VERSION}.tar.gz /apps/tez-${TEZ_VERSION}.tar.gz
+${HADOOP_HOME}/bin/hdfs dfs -mkdir /tmp/tezin
+${HADOOP_HOME}/bin/hdfs dfs -mkdir /tmp/tezout
+${HADOOP_HOME}/bin/hdfs dfs -put /Users/ekoifman/dev/hive/build.sh /tmp/tezin
+#Above line is for Sanity Check: this is to run #6 in http://tez.apache.org/install.html
+#$HADOOP_HOME/bin/hadoop jar tez-examples-0.5.3.jar orderedwordcount /tmp/tezin /tmp/tezout
+
+
 
 #check what got deployed
-${HADOOP_HOME}/bin/hdfs dfs -ls /apps/templeton webhcate2e /user/templeton /user/hive/warehouse
+${HADOOP_HOME}/bin/hdfs dfs -ls -R /apps webhcate2e /user/templeton /user/hive/warehouse

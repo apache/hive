@@ -1,0 +1,332 @@
+PREHOOK: query: create table store(s_store_sk int, s_city string)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store
+POSTHOOK: query: create table store(s_store_sk int, s_city string)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store
+PREHOOK: query: insert overwrite table store
+select cint, cstring1
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@store
+POSTHOOK: query: insert overwrite table store
+select cint, cstring1
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@store
+POSTHOOK: Lineage: store.s_city SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: store.s_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: create table store_sales(ss_store_sk int, ss_hdemo_sk int, ss_net_profit double)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales(ss_store_sk int, ss_hdemo_sk int, ss_net_profit double)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: insert overwrite table store_sales
+select cint, cint, cdouble
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: insert overwrite table store_sales
+select cint, cint, cdouble
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@store_sales
+POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: create table household_demographics(hd_demo_sk int)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: create table household_demographics(hd_demo_sk int)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@household_demographics
+PREHOOK: query: insert overwrite table household_demographics
+select cint
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: insert overwrite table household_demographics
+select cint
+from alltypesorc
+where cint not in (
+-3728, -563, 762, 6981, 253665376, 528534767, 626923679)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@household_demographics
+POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: explain 
+select store.s_city, ss_net_profit
+from store_sales
+JOIN store ON store_sales.ss_store_sk = store.s_store_sk
+JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select store.s_city, ss_net_profit
+from store_sales
+JOIN store ON store_sales.ss_store_sk = store.s_store_sk
+JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 3 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 6075 Data size: 72736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: ss_store_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: ss_store_sk (type: int)
+                      Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: ss_hdemo_sk (type: int), ss_net_profit (type: double)
+            Execution mode: vectorized
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  Statistics: Num rows: 6075 Data size: 615632 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: s_store_sk is not null (type: boolean)
+                    Statistics: Num rows: 3038 Data size: 307866 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 ss_store_sk (type: int)
+                        1 s_store_sk (type: int)
+                      outputColumnNames: _col1, _col2, _col7
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 3341 Data size: 338652 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: int)
+                          1 hd_demo_sk (type: int)
+                        outputColumnNames: _col2, _col7
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 3675 Data size: 372517 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col7 (type: string), _col2 (type: double)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 3675 Data size: 372517 Basic stats: COMPLETE Column stats: NONE
+                          Limit
+                            Number of rows: 100
+                            Statistics: Num rows: 100 Data size: 10100 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 100 Data size: 10100 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: household_demographics
+                  Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: hd_demo_sk is not null (type: boolean)
+                    Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: hd_demo_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: hd_demo_sk (type: int)
+                      Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select store.s_city, ss_net_profit
+from store_sales
+JOIN store ON store_sales.ss_store_sk = store.s_store_sk
+JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select store.s_city, ss_net_profit
+from store_sales
+JOIN store ON store_sales.ss_store_sk = store.s_store_sk
+JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+LFgU5WT87C2yJ4W4YU0r8Pp	NULL
+v3p153e2bSkGS70v04G	NULL
+0pOH7A4O8aQ37NuBqn	NULL
+8ShAFcD734S8Q26WjMwpq0Q	NULL
+nOF31ehjY7ULCHMf	NULL
+t32s57Cjt4a250qQgVNAB5T	NULL
+nvO822k30OaH37Il	NULL
+M152O	NULL
+FgJ7Hft6845s1766oyt82q	NULL
+0ovL2T	NULL
+3e27C1jTdTQPdvCWi4if	NULL
+XWIExC7NI3bqu6VhR14g2	NULL
+6g482F6IEbD2mKeLE153e0w	NULL
+2diFRgr78diK6rSl0J	NULL
+21UE6fJyy	NULL
+H3bTj310QaL012cPe	NULL
+7342q5oFQL8QIl7cO	NULL
+VkXY4IOSO	NULL
+4K1nnlkt7786Sq8x0ARXtr	NULL
+m4eSLx4qihVg1e32	NULL
+OSBq0b	NULL
+aKbAu2WJV8HWHU6K1Ukq	NULL
+LcfhOxSVg68ACRvw1xC7LU	NULL
+AwVW3sV2gsM	NULL
+Tqar00A	NULL
+mC4mr	NULL
+YHVB0	NULL
+2vtmB0qNlHlGV15P1p	NULL
+2wbgE0Yo1RX82H2sp4f1l5	NULL
+BSmA3fAai62QpNjmL66y8d	NULL
+314nQ6nVj	NULL
+H8mh48T7	NULL
+U616In80F54RI	NULL
+BuSLb058f2	NULL
+OSc0r	NULL
+75KN62a2iAf0j5Jol77wH7	NULL
+66Mx4v	NULL
+7SchQY2j74BW7dQNy5G5	NULL
+FEefA	NULL
+P2DNeo00PA7DJF0	NULL
+SMXqH	NULL
+6fB40r75kxeX3k10	NULL
+AmYxfSOBdJv8B48l0VAeeI	NULL
+S87OO	NULL
+0EIL81O	NULL
+dG8B5PQ3b85U362G6huu	NULL
+XOypj8	NULL
+61eT82N24	NULL
+lVfv3fD1jn532h3K67H	NULL
+J1an665U	NULL
+Y6P8Ji868U7u8W3X2GHNiOLh	NULL
+wXbLC0LS2bFf12f1ljC	NULL
+j0L50J2e82	NULL
+8EPG0Xi307qd	NULL
+04Y1mA17	NULL
+lTLWdPg0yM0IgY76s70	NULL
+KDr0tMRnCJJIBA84	NULL
+71KN0p4NhE4xm4ixm	NULL
+u6HT8fTw6IgPf2	NULL
+7WYO11kWn6fT2pOlh5sTDIwG	NULL
+Yc6gaH2OFF7cymt8q23Fr	NULL
+RQbQ5	NULL
+75Y6J	NULL
+eUx01FREb2LD4kle4dpS	NULL
+T0Y8Vi41EYW4CpQ6Hg1Xg30w	NULL
+Egf7KV7TeT	NULL
+LIJuG07tfqoLu8K	NULL
+uUTO41xk6VyqYPh	NULL
+aEvOE7hUNO0d67AM3V7BwUCK	NULL
+8AqHq	NULL
+gl03UrAU4bWrOvqwwf	NULL
+NULL	NULL
+LX6QHG6sEmBAIbA6e6Am24	NULL
+i330V4Y0Lm4ajyKqM1X2Y	NULL
+64K51WMTs	NULL
+iW12567av	NULL
+v3U315C36UQ4oEW	NULL
+niiH6MSNaSk4fRRb74o1y28c	NULL
+p4WmTkrM	NULL
+L1Q62u2	NULL
+hnrm68NiEQCL4	NULL
+fju0XS06MyUS7Nqk8P8	NULL
+0VWukLt	NULL
+642LsMiNArr0ufitL3l7RCU7	NULL
+DWNvg304j4KTMEs2174Cy1	NULL
+DU1m68i1Q7W3	NULL
+44vcS2S5wu684R05fq01fu	NULL
+eu3X5Qfp4sHv5H	NULL
+QbdFB1d7vfaM7	NULL
+s43i4lU	NULL
+0pOTqi3O44rEnGQ	NULL
+32cB3f	NULL
+c300w5	NULL
+w66f63n	NULL
+iR76SEs2C4V	NULL
+ss2PoJAipj6B1tn75O	NULL
+n3ner11ab4	NULL
+r17jGvc7gR	NULL
+5G1Xp277YJRklEO5kHx	NULL
+B78T0SnxlCe5AQ522GBUf6c6	NULL
+PREHOOK: query: drop table store
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@store
+PREHOOK: Output: default@store
+POSTHOOK: query: drop table store
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@store
+POSTHOOK: Output: default@store
+PREHOOK: query: drop table store_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: drop table store_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: drop table household_demographics
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@household_demographics
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: drop table household_demographics
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Output: default@household_demographics

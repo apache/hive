@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapred.OutputFormat;
 
 /**
  * CreateTableDesc.
@@ -420,14 +420,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       try {
         Class<?> origin = Class.forName(this.getOutputFormat(), true,
           Utilities.getSessionSpecifiedClassLoader());
-        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin,false);
-        if (replaced == null) {
+        Class<? extends OutputFormat> replaced = HiveFileFormatUtils
+          .getOutputFormatSubstitute(origin);
+        if (!HiveOutputFormat.class.isAssignableFrom(replaced)) {
           throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
             .getMsg());
         }
       } catch (ClassNotFoundException e) {
-        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
+        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(), e);
       }
     }
 

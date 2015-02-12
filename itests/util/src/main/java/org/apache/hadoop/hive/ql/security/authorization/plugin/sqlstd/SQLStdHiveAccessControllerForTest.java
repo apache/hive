@@ -39,12 +39,11 @@ public class SQLStdHiveAccessControllerForTest extends SQLStdHiveAccessControlle
 
 
   @Override
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     super.applyAuthorizationConfigPolicy(hiveConf);
 
     // remove restrictions on the variables that can be set using set command
-    hiveConf.setIsModWhiteListEnabled(false);
-
+    hiveConf.setModifiableWhiteListRegex(".*");
   }
 
 }

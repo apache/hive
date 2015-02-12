@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -84,7 +83,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     // process reduce sink added by hive.enforce.bucketing or hive.enforce.sorting
     opRules.put(new RuleRegExp("R1",
         ReduceSinkOperator.getOperatorName() + "%" +
-            ExtractOperator.getOperatorName() + "%" +
+            SelectOperator.getOperatorName() + "%" +
             FileSinkOperator.getOperatorName() + "%"),
         getBucketSortReduceSinkProc(pctx));
 
@@ -362,8 +361,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
 
       // If the reduce sink has not been introduced due to bucketing/sorting, ignore it
       FileSinkOperator fsOp = (FileSinkOperator) nd;
-      ExtractOperator exOp = (ExtractOperator) fsOp.getParentOperators().get(0);
-      ReduceSinkOperator rsOp = (ReduceSinkOperator) exOp.getParentOperators().get(0);
+      ReduceSinkOperator rsOp = (ReduceSinkOperator) fsOp.getParentOperators().get(0).getParentOperators().get(0);
 
       List<ReduceSinkOperator> rsOps = pGraphContext
           .getReduceSinkOperatorsAddedByEnforceBucketingSorting();
@@ -390,7 +388,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
         }
       }
 
-      Table destTable = pGraphContext.getFsopToTable().get(fsOp);
+      Table destTable = fsOp.getConf().getTable();
       if (destTable == null) {
         return null;
       }
@@ -465,7 +463,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
           if (op instanceof TableScanOperator) {
             assert !useBucketSortPositions;
             TableScanOperator ts = (TableScanOperator) op;
-            Table srcTable = pGraphContext.getTopToTable().get(ts);
+            Table srcTable = ts.getConf().getTableMetadata();
 
             // Find the positions of the bucketed columns in the table corresponding
             // to the select list.

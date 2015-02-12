@@ -212,14 +212,13 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // move any incompatible files to final path
         if (!incompatFileSet.isEmpty()) {
           for (Path incompatFile : incompatFileSet) {
-            String fileName = incompatFile.getName();
-            Path destFile = new Path(finalPath.getParent(), fileName);
+            Path destDir = finalPath.getParent();
             try {
-              Utilities.renameOrMoveFiles(fs, incompatFile, destFile);
+              Utilities.renameOrMoveFiles(fs, incompatFile, destDir);
               LOG.info("Moved incompatible file " + incompatFile + " to " +
-                  destFile);
+                  destDir);
             } catch (HiveException e) {
-              LOG.error("Unable to move " + incompatFile + " to " + destFile);
+              LOG.error("Unable to move " + incompatFile + " to " + destDir);
               throw new IOException(e);
             }
           }

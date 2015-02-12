@@ -36,13 +36,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.HiveServer2;
 import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 
 /**
@@ -65,18 +64,16 @@ public class SessionManager extends CompositeService {
   private long sessionTimeout;
 
   private volatile boolean shutdown;
+  // The HiveServer2 instance running this service
+  private final HiveServer2 hiveServer2;
 
-  public SessionManager() {
+  public SessionManager(HiveServer2 hiveServer2) {
     super(SessionManager.class.getSimpleName());
+    this.hiveServer2 = hiveServer2;
   }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    try {
-      applyAuthorizationConfigPolicy(hiveConf);
-    } catch (HiveException e) {
-      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
-    }
     this.hiveConf = hiveConf;
     //Create operation log root directory, if operation logging is enabled
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
@@ -110,15 +107,6 @@ public class SessionManager extends CompositeService {
         hiveConf, ConfVars.HIVE_SERVER2_SESSION_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     sessionTimeout = HiveConf.getTimeVar(
         hiveConf, ConfVars.HIVE_SERVER2_IDLE_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
-  }
-
-  private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {
-    // authorization setup using SessionState should be revisited eventually, as
-    // authorization and authentication are not session specific settings
-    SessionState ss = new SessionState(newHiveConf);
-    ss.setIsHiveServerQuery(true);
-    SessionState.start(ss);
-    ss.applyAuthorizationPolicy();
   }
 
   private void initOperationLogRootDir() {
@@ -229,6 +217,23 @@ public class SessionManager extends CompositeService {
     return openSession(protocol, username, password, ipAddress, sessionConf, false, null);
   }
 
+  /**
+   * Opens a new session and creates a session handle.
+   * The username passed to this method is the effective username.
+   * If withImpersonation is true (==doAs true) we wrap all the calls in HiveSession
+   * within a UGI.doAs, where UGI corresponds to the effective user.
+   * @see org.apache.hive.service.cli.thrift.ThriftCLIService#getUserName()
+   *
+   * @param protocol
+   * @param username
+   * @param password
+   * @param ipAddress
+   * @param sessionConf
+   * @param withImpersonation
+   * @param delegationToken
+   * @return
+   * @throws HiveSQLException
+   */
   public SessionHandle openSession(TProtocolVersion protocol, String username, String password, String ipAddress,
       Map<String, String> sessionConf, boolean withImpersonation, String delegationToken)
           throws HiveSQLException {
@@ -246,22 +251,19 @@ public class SessionManager extends CompositeService {
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
     try {
-      session.initialize(sessionConf);
-      if (isOperationLogEnabled) {
-        session.setOperationLogSessionDir(operationLogRootDir);
-      }
-      session.open();
+      session.open(sessionConf);
     } catch (Exception e) {
-      throw new HiveSQLException("Failed to open new session", e);
+      throw new HiveSQLException("Failed to open new session: " + e, e);
+    }
+    if (isOperationLogEnabled) {
+      session.setOperationLogSessionDir(operationLogRootDir);
     }
     try {
       executeSessionHooks(session);
     } catch (Exception e) {
       throw new HiveSQLException("Failed to execute session hooks", e);
     }
-
     handleToSession.put(session.getSessionHandle(), session);
-
     return session.getSessionHandle();
   }
 
@@ -271,6 +273,24 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException("Session does not exist!");
     }
     session.close();
+    // Shutdown HiveServer2 if it has been deregistered from ZooKeeper and has no active sessions
+    if (!(hiveServer2 == null) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
+        && (!hiveServer2.isRegisteredWithZooKeeper())) {
+      // Asynchronously shutdown this instance of HiveServer2,
+      // if there are no active client sessions
+      if (getOpenSessionCount() == 0) {
+        LOG.info("This instance of HiveServer2 has been removed from the list of server "
+            + "instances available for dynamic service discovery. "
+            + "The last client session has ended - will shutdown now.");
+        Thread shutdownThread = new Thread() {
+          @Override
+          public void run() {
+            hiveServer2.stop();
+          }
+        };
+        shutdownThread.start();
+      }
+    }
   }
 
   public HiveSession getSession(SessionHandle sessionHandle) throws HiveSQLException {
@@ -359,6 +379,5 @@ public class SessionManager extends CompositeService {
   public int getOpenSessionCount() {
     return handleToSession.size();
   }
-
 }
 

@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -213,6 +216,26 @@ public abstract class HCatClient {
   public abstract List<HCatPartition> deserializePartitions(List<String> hcatPartitionStringReps) throws HCatException;
 
   /**
+   * Serializer for HCatPartitionSpec.
+   * @param partitionSpec HCatPartitionSpec to be serialized.
+   * @return A list of Strings, representing the HCatPartitionSpec as a whole.
+   * @throws HCatException On failure to serialize.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract List<String> serializePartitionSpec(HCatPartitionSpec partitionSpec) throws HCatException;
+
+  /**
+   * Deserializer for HCatPartitionSpec.
+   * @param hcatPartitionSpecStrings List of strings, representing the HCatPartitionSpec as a whole.
+   * @return HCatPartitionSpec, reconstructed from the list of strings.
+   * @throws HCatException On failure to deserialize.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract HCatPartitionSpec deserializePartitionSpec(List<String> hcatPartitionSpecStrings) throws HCatException;
+
+  /**
    * Creates the table like an existing table.
    *
    * @param dbName The name of the database.
@@ -280,6 +303,21 @@ public abstract class HCatClient {
     throws HCatException;
 
   /**
+   * Gets partitions in terms of generic HCatPartitionSpec instances.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract HCatPartitionSpec getPartitionSpecs(String dbName, String tableName, int maxPartitions) throws HCatException;
+
+  /**
+   * Gets partitions in terms of generic HCatPartitionSpec instances.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract HCatPartitionSpec getPartitionSpecs(String dbName, String tableName, Map<String, String> partitionSelector, int maxPartitions)
+    throws HCatException;
+
+  /**
    * Gets the partition.
    *
    * @param dbName The database name.
@@ -309,6 +347,17 @@ public abstract class HCatClient {
    * @throws HCatException
    */
   public abstract int addPartitions(List<HCatAddPartitionDesc> partInfoList)
+    throws HCatException;
+
+  /**
+   * Adds partitions using HCatPartitionSpec.
+   * @param partitionSpec The HCatPartitionSpec representing the set of partitions added.
+   * @return The number of partitions added.
+   * @throws HCatException On failure to add partitions.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract int addPartitionSpec(HCatPartitionSpec partitionSpec)
     throws HCatException;
 
   /**
@@ -342,6 +391,14 @@ public abstract class HCatClient {
    */
   public abstract List<HCatPartition> listPartitionsByFilter(String dbName, String tblName,
                                  String filter) throws HCatException;
+
+  /**
+   * List partitions by filter, but as HCatPartitionSpecs.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract HCatPartitionSpec listPartitionSpecsByFilter(String dbName, String tblName,
+                                                               String filter, int maxPartitions) throws HCatException;
 
   /**
    * Mark partition for event.
@@ -409,6 +466,31 @@ public abstract class HCatClient {
    * By default, this is set to <db-name>.<table-name>. Returns null when not set.
    */
   public abstract String getMessageBusTopicName(String dbName, String tableName) throws HCatException;
+
+  /**
+   * Get a list of notifications
+   * @param lastEventId The last event id that was consumed by this reader.  The returned
+   *                    notifications will start at the next eventId available this eventId that
+   *                    matches the filter.
+   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   *                  be returned.
+   * @param filter Filter to determine if message should be accepted.  If null, then all
+   *               available events up to maxEvents will be returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws HCatException
+   */
+  public abstract List<HCatNotificationEvent> getNextNotification(long lastEventId,
+                                                                  int maxEvents,
+                                                                  IMetaStoreClient.NotificationFilter filter)
+      throws HCatException;
+
+  /**
+   * Get the most recently used notification id.
+   * @return
+   * @throws HCatException
+   */
+  public abstract long getCurrentNotificationEventId() throws HCatException;
 
   /**
    * Close the hcatalog client.

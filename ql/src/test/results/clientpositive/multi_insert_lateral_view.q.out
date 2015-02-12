@@ -389,8 +389,26 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col5
                   Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col5 (type: double)
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: double)
+              Select Operator
+                expressions: array((key + 1),(key + 2)) (type: array<double>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
                     outputColumnNames: _col0, _col5
                     Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -405,32 +423,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double)
-              Select Operator
-                expressions: array((key + 1),(key + 2)) (type: array<double>)
-                outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                UDTF Operator
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col5
-                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col5 (type: double)
-                      outputColumnNames: _col0, _col5
-                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(_col5)
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: double)
             Lateral View Forward
               Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -440,8 +432,26 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col5
                   Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col5 (type: double)
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              Select Operator
+                expressions: array((key + 3),(key + 4)) (type: array<double>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
                     outputColumnNames: _col0, _col5
                     Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -456,32 +466,6 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              Select Operator
-                expressions: array((key + 3),(key + 4)) (type: array<double>)
-                outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                UDTF Operator
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col5
-                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col5 (type: double)
-                      outputColumnNames: _col0, _col5
-                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(_col5)
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -489,18 +473,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv1
 
   Stage: Stage-0
     Move Operator
@@ -532,18 +512,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv2
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv2
 
   Stage: Stage-1
     Move Operator
@@ -660,8 +636,26 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col5
                   Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col5 (type: double)
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: double)
+              Select Operator
+                expressions: array((key + 1),(key + 2)) (type: array<double>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
                     outputColumnNames: _col0, _col5
                     Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -676,45 +670,15 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double)
-              Select Operator
-                expressions: array((key + 1),(key + 2)) (type: array<double>)
-                outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                UDTF Operator
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col5
-                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col5 (type: double)
-                      outputColumnNames: _col0, _col5
-                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(_col5)
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: double)
             Filter Operator
               predicate: ((key > 200) or (key < 200)) (type: boolean)
               Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: key, value
-                Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -722,18 +686,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv1
 
   Stage: Stage-0
     Move Operator
@@ -770,18 +730,14 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_lv2
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_lv2
           Filter Operator
             predicate: (KEY._col0 < 200) (type: boolean)
             Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -791,18 +747,14 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_lv3
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_lv3
 
   Stage: Stage-1
     Move Operator
@@ -1065,18 +1017,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: double), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv1
 
   Stage: Stage-0
     Move Operator
@@ -1107,18 +1055,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: double), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv2
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv2
 
   Stage: Stage-1
     Move Operator
@@ -1149,18 +1093,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv3
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv3
 
   Stage: Stage-2
     Move Operator
@@ -1326,8 +1266,25 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col5
                   Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col5 (type: double)
+                  Group By Operator
+                    aggregations: sum(DISTINCT _col5)
+                    keys: _col0 (type: string), _col5 (type: double)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: double)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: array((key + 1),(key + 2)) (type: array<double>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
                     outputColumnNames: _col0, _col5
                     Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -1341,31 +1298,6 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: array((key + 1),(key + 2)) (type: array<double>)
-                outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                UDTF Operator
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col5
-                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col5 (type: double)
-                      outputColumnNames: _col0, _col5
-                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(DISTINCT _col5)
-                        keys: _col0 (type: string), _col5 (type: double)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: double)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
               Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -1375,8 +1307,26 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col5
                   Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col5 (type: double)
+                  Group By Operator
+                    aggregations: sum(DISTINCT _col5)
+                    keys: _col0 (type: string), _col5 (type: double)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              Select Operator
+                expressions: array((key + 3),(key + 4)) (type: array<double>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
                     outputColumnNames: _col0, _col5
                     Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -1391,45 +1341,15 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              Select Operator
-                expressions: array((key + 3),(key + 4)) (type: array<double>)
-                outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                UDTF Operator
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-                  function name: explode
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col5
-                    Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col5 (type: double)
-                      outputColumnNames: _col0, _col5
-                      Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(DISTINCT _col5)
-                        keys: _col0 (type: string), _col5 (type: double)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
             Filter Operator
               predicate: ((key > 200) or (key < 200)) (type: boolean)
               Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: key, value
-                Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(DISTINCT KEY._col1:0._col0)
@@ -1437,18 +1357,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv1
 
   Stage: Stage-0
     Move Operator
@@ -1479,18 +1395,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_lv2
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_lv2
 
   Stage: Stage-1
     Move Operator
@@ -1526,18 +1438,14 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: double)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_lv3
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_lv3
           Filter Operator
             predicate: (KEY._col1:0._col0 < 200) (type: boolean)
             Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -1547,18 +1455,14 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: double)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_lv4
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_lv4
 
   Stage: Stage-2
     Move Operator

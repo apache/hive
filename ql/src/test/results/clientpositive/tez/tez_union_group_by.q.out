@@ -1,0 +1,319 @@
+PREHOOK: query: CREATE TABLE x
+(
+u bigint,
+t string,
+st string
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x
+POSTHOOK: query: CREATE TABLE x
+(
+u bigint,
+t string,
+st string
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x
+PREHOOK: query: CREATE TABLE y
+(
+u bigint
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@y
+POSTHOOK: query: CREATE TABLE y
+(
+u bigint
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@y
+PREHOOK: query: CREATE TABLE z
+(
+u bigint
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@z
+POSTHOOK: query: CREATE TABLE z
+(
+u bigint
+)
+PARTITIONED BY (date string)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@z
+PREHOOK: query: CREATE TABLE v
+(
+t string, 
+st string,
+id int
+)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: CREATE TABLE v
+(
+t string, 
+st string,
+id int
+)
+STORED AS ORC 
+TBLPROPERTIES ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+PREHOOK: query: EXPLAIN 
+SELECT o.u, n.u
+FROM 
+(
+SELECT m.u, Min(date) as ft
+FROM 
+(
+SELECT u, date FROM x WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM y WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM z WHERE date < '2014-09-02' 
+) m
+GROUP BY m.u
+) n 
+LEFT OUTER JOIN
+(
+SELECT x.u
+FROM x
+JOIN v 
+ON (x.t = v.t AND x.st <=> v.st)
+WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+GROUP BY x.u
+) o
+ON n.u = o.u 
+WHERE n.u <> 0 AND n.ft <= '2014-09-02'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT o.u, n.u
+FROM 
+(
+SELECT m.u, Min(date) as ft
+FROM 
+(
+SELECT u, date FROM x WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM y WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM z WHERE date < '2014-09-02' 
+) m
+GROUP BY m.u
+) n 
+LEFT OUTER JOIN
+(
+SELECT x.u
+FROM x
+JOIN v 
+ON (x.t = v.t AND x.st <=> v.st)
+WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+GROUP BY x.u
+) o
+ON n.u = o.u 
+WHERE n.u <> 0 AND n.ft <= '2014-09-02'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 5 <- Union 2 (CONTAINS)
+        Map 6 <- Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 8 <- Map 10 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: v
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: t is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: t (type: string), st (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: t (type: string), st (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 5 
+        Map 6 
+        Map 7 
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 <= '2014-09-02') (type: boolean)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 4 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: bigint), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 8 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 t (type: string), st (type: string)
+                  1 t (type: string), st (type: string)
+                nullSafes: [false, true]
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: bigint)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: bigint)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: bigint)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 9 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT o.u, n.u
+FROM 
+(
+SELECT m.u, Min(date) as ft
+FROM 
+(
+SELECT u, date FROM x WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM y WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM z WHERE date < '2014-09-02' 
+) m
+GROUP BY m.u
+) n 
+LEFT OUTER JOIN
+(
+SELECT x.u
+FROM x
+JOIN v 
+ON (x.t = v.t AND x.st <=> v.st)
+WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+GROUP BY x.u
+) o
+ON n.u = o.u 
+WHERE n.u <> 0 AND n.ft <= '2014-09-02'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@v
+PREHOOK: Input: default@x
+PREHOOK: Input: default@y
+PREHOOK: Input: default@z
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT o.u, n.u
+FROM 
+(
+SELECT m.u, Min(date) as ft
+FROM 
+(
+SELECT u, date FROM x WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM y WHERE date < '2014-09-02' 
+UNION ALL
+SELECT u, date FROM z WHERE date < '2014-09-02' 
+) m
+GROUP BY m.u
+) n 
+LEFT OUTER JOIN
+(
+SELECT x.u
+FROM x
+JOIN v 
+ON (x.t = v.t AND x.st <=> v.st)
+WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+GROUP BY x.u
+) o
+ON n.u = o.u 
+WHERE n.u <> 0 AND n.ft <= '2014-09-02'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@v
+POSTHOOK: Input: default@x
+POSTHOOK: Input: default@y
+POSTHOOK: Input: default@z
+#### A masked pattern was here ####

@@ -23,16 +23,14 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-
-import parquet.io.api.Binary;
 
 public class TestParquetSerDe extends TestCase {
 
@@ -47,15 +45,16 @@ public class TestParquetSerDe extends TestCase {
       SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
 
       // Data
-      final Writable[] arr = new Writable[8];
+      final Writable[] arr = new Writable[9];
 
+      //primitive types
       arr[0] = new ByteWritable((byte) 123);
       arr[1] = new ShortWritable((short) 456);
       arr[2] = new IntWritable(789);
       arr[3] = new LongWritable(1000l);
       arr[4] = new DoubleWritable((double) 5.3);
       arr[5] = new BytesWritable("hive and hadoop and parquet. Big family.".getBytes("UTF-8"));
-
+      arr[6] = new BytesWritable("parquetSerde binary".getBytes("UTF-8"));
       final Writable[] mapContainer = new Writable[1];
       final Writable[] map = new Writable[3];
       for (int i = 0; i < 3; ++i) {
@@ -65,7 +64,7 @@ public class TestParquetSerDe extends TestCase {
         map[i] = new ArrayWritable(Writable.class, pair);
       }
       mapContainer[0] = new ArrayWritable(Writable.class, map);
-      arr[6] = new ArrayWritable(Writable.class, mapContainer);
+      arr[7] = new ArrayWritable(Writable.class, mapContainer);
 
       final Writable[] arrayContainer = new Writable[1];
       final Writable[] array = new Writable[5];
@@ -73,7 +72,7 @@ public class TestParquetSerDe extends TestCase {
         array[i] = new BytesWritable(("elem_" + i).getBytes("UTF-8"));
       }
       arrayContainer[0] = new ArrayWritable(Writable.class, array);
-      arr[7] = new ArrayWritable(Writable.class, arrayContainer);
+      arr[8] = new ArrayWritable(Writable.class, arrayContainer);
 
       final ArrayWritable arrWritable = new ArrayWritable(Writable.class, arr);
       // Test
@@ -98,17 +97,18 @@ public class TestParquetSerDe extends TestCase {
     assertEquals("deserialization gives the wrong object", t, row);
 
     // Serialize
-    final ArrayWritable serializedArr = (ArrayWritable) serDe.serialize(row, oi);
-    assertEquals("size correct after serialization", serDe.getSerDeStats().getRawDataSize(), serializedArr.get().length);
-    assertTrue("serialized object should be equal to starting object", arrayWritableEquals(t, serializedArr));
+    final ParquetHiveRecord serializedArr = (ParquetHiveRecord) serDe.serialize(row, oi);
+    assertEquals("size correct after serialization", serDe.getSerDeStats().getRawDataSize(), ((ArrayWritable)serializedArr.getObject()).get().length);
+    assertTrue("serialized object should be equal to starting object", arrayWritableEquals(t, (ArrayWritable)serializedArr.getObject()));
   }
 
   private Properties createProperties() {
     final Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty("columns", "abyte,ashort,aint,along,adouble,astring,amap,alist");
-    tbl.setProperty("columns.types", "tinyint:smallint:int:bigint:double:string:map<string,int>:array<string>");
+    tbl.setProperty("columns", "abyte,ashort,aint,along,adouble,astring,abinary,amap,alist");
+    tbl.setProperty("columns.types",
+      "tinyint:smallint:int:bigint:double:string:binary:map<string,int>:array<string>");
     tbl.setProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;
   }

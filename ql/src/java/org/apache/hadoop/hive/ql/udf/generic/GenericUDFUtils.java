@@ -22,7 +22,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -100,6 +100,26 @@ public final class GenericUDFUtils {
      * @return false if there is a type mismatch
      */
     public boolean update(ObjectInspector oi) throws UDFArgumentTypeException {
+      return update(oi, false);
+    }
+
+    /**
+     * Update returnObjectInspector and valueInspectorsAreTheSame based on the
+     * ObjectInspector seen for UnionAll.
+     *
+     * @return false if there is a type mismatch
+     */
+    public boolean updateForUnionAll(ObjectInspector oi) throws UDFArgumentTypeException {
+      return update(oi, true);
+    }
+
+    /**
+     * Update returnObjectInspector and valueInspectorsAreTheSame based on the
+     * ObjectInspector seen.
+     *
+     * @return false if there is a type mismatch
+     */
+    private boolean update(ObjectInspector oi, boolean isUnionAll) throws UDFArgumentTypeException {
       if (oi instanceof VoidObjectInspector) {
         return true;
       }
@@ -137,8 +157,14 @@ public final class GenericUDFUtils {
 
       // Types are different, we need to check whether we can convert them to
       // a common base class or not.
-      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo,
+      TypeInfo commonTypeInfo = null;
+      if (isUnionAll) {
+        commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(oiTypeInfo,
           rTypeInfo);
+      } else {
+        commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo,
+          rTypeInfo);
+      }
       if (commonTypeInfo == null) {
         return false;
       }
@@ -165,7 +191,11 @@ public final class GenericUDFUtils {
      * Returns the ObjectInspector of the return value.
      */
     public ObjectInspector get() {
-      return returnObjectInspector;
+      return get(PrimitiveObjectInspectorFactory.javaVoidObjectInspector);
+    }
+
+    public ObjectInspector get(ObjectInspector defaultOI) {
+      return returnObjectInspector != null ? returnObjectInspector : defaultOI;
     }
 
     /**

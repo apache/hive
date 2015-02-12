@@ -287,77 +287,77 @@ public class PTest {
     String buildTag = System.getenv("BUILD_TAG") == null ? "undefined-"
         + System.currentTimeMillis() : System.getenv("BUILD_TAG");
         File logDir = Dirs.create(new File(executionContextConfiguration.getGlobalLogDirectory(), buildTag));
-        LogDirectoryCleaner cleaner = new LogDirectoryCleaner(new File(executionContextConfiguration.
-            getGlobalLogDirectory()), 5);
-        cleaner.setName("LogCleaner-" + executionContextConfiguration.getGlobalLogDirectory());
-        cleaner.setDaemon(true);
-        cleaner.start();
-        TestConfiguration conf = TestConfiguration.fromFile(testConfigurationFile, LOG);
-        String repository = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY)).trim();
-        if(!repository.isEmpty()) {
-          conf.setRepository(repository);
-        }
-        String repositoryName = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY_NAME)).trim();
-        if(!repositoryName.isEmpty()) {
-          conf.setRepositoryName(repositoryName);
-        }
-        String branch = Strings.nullToEmpty(commandLine.getOptionValue(BRANCH)).trim();
-        if(!branch.isEmpty()) {
-          conf.setBranch(branch);
-        }
-        String patch = Strings.nullToEmpty(commandLine.getOptionValue(PATCH)).trim();
-        if(!patch.isEmpty()) {
-          conf.setPatch(patch);
-        }
-        String javaHome = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME)).trim();
-        if(!javaHome.isEmpty()) {
-          conf.setJavaHome(javaHome);
-        }
-        String javaHomeForTests = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME_TEST)).trim();
-        if(!javaHomeForTests.isEmpty()) {
-          conf.setJavaHomeForTests(javaHomeForTests);
-        }
-        String antTestArgs = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_ARGS)).trim();
-        if(!antTestArgs.isEmpty()) {
-          conf.setAntTestArgs(antTestArgs);
-        }
-        String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
-        if(!antEnvOpts.isEmpty()) {
-          conf.setAntEnvOpts(antEnvOpts);
-        }
-        String antTestTarget = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_TARGET)).trim();
-        if(!antTestTarget.isEmpty()) {
-          conf.setAntTestTarget(antTestTarget);
-        }
-        String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
-        if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {
-          String antArgs = Strings.nullToEmpty(conf.getAntArgs());
-          if(!(antArgs.isEmpty() || antArgs.endsWith(" "))) {
-            antArgs += " ";
-          }
-          antArgs += "-" + ANT_ARG + Joiner.on(" -" + ANT_ARG).join(supplementalAntArgs);
-          conf.setAntArgs(antArgs);
-        }
-        ExecutionContextProvider executionContextProvider = null;
-        ExecutionContext executionContext = null;
-        int exitCode = 0;
-        try {
-          executionContextProvider = executionContextConfiguration
-              .getExecutionContextProvider();
-          executionContext = executionContextProvider.createExecutionContext();
-          LocalCommandFactory localCommandFactory = new LocalCommandFactory(LOG);
-          PTest ptest = new PTest(conf, executionContext, buildTag, logDir,
-              localCommandFactory, new SSHCommandExecutor(LOG, localCommandFactory, conf.getSshOpts()),
-              new RSyncCommandExecutor(LOG, 10, localCommandFactory), LOG);
-          exitCode = ptest.run();
-        } finally {
-          if(executionContext != null) {
-            executionContext.terminate();
-          }
-          if(executionContextProvider != null) {
-            executionContextProvider.close();
-          }
-        }
-        System.exit(exitCode);
+    LogDirectoryCleaner cleaner = new LogDirectoryCleaner(new File(executionContextConfiguration.
+        getGlobalLogDirectory()), 5);
+    cleaner.setName("LogCleaner-" + executionContextConfiguration.getGlobalLogDirectory());
+    cleaner.setDaemon(true);
+    cleaner.start();
+    TestConfiguration conf = TestConfiguration.fromFile(testConfigurationFile, LOG);
+    String repository = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY)).trim();
+    if(!repository.isEmpty()) {
+      conf.setRepository(repository);
+    }
+    String repositoryName = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY_NAME)).trim();
+    if(!repositoryName.isEmpty()) {
+      conf.setRepositoryName(repositoryName);
+    }
+    String branch = Strings.nullToEmpty(commandLine.getOptionValue(BRANCH)).trim();
+    if(!branch.isEmpty()) {
+      conf.setBranch(branch);
+    }
+    String patch = Strings.nullToEmpty(commandLine.getOptionValue(PATCH)).trim();
+    if(!patch.isEmpty()) {
+      conf.setPatch(patch);
+    }
+    String javaHome = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME)).trim();
+    if(!javaHome.isEmpty()) {
+      conf.setJavaHome(javaHome);
+    }
+    String javaHomeForTests = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME_TEST)).trim();
+    if(!javaHomeForTests.isEmpty()) {
+      conf.setJavaHomeForTests(javaHomeForTests);
+    }
+    String antTestArgs = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_ARGS)).trim();
+    if(!antTestArgs.isEmpty()) {
+      conf.setAntTestArgs(antTestArgs);
+    }
+    String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
+    if(!antEnvOpts.isEmpty()) {
+      conf.setAntEnvOpts(antEnvOpts);
+    }
+    String antTestTarget = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_TARGET)).trim();
+    if(!antTestTarget.isEmpty()) {
+      conf.setAntTestTarget(antTestTarget);
+    }
+    String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
+    if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {
+      String antArgs = Strings.nullToEmpty(conf.getAntArgs());
+      if(!(antArgs.isEmpty() || antArgs.endsWith(" "))) {
+        antArgs += " ";
+      }
+      antArgs += "-" + ANT_ARG + Joiner.on(" -" + ANT_ARG).join(supplementalAntArgs);
+      conf.setAntArgs(antArgs);
+    }
+    ExecutionContextProvider executionContextProvider = null;
+    ExecutionContext executionContext = null;
+    int exitCode = 0;
+    try {
+      executionContextProvider = executionContextConfiguration
+          .getExecutionContextProvider();
+      executionContext = executionContextProvider.createExecutionContext();
+      LocalCommandFactory localCommandFactory = new LocalCommandFactory(LOG);
+      PTest ptest = new PTest(conf, executionContext, buildTag, logDir,
+          localCommandFactory, new SSHCommandExecutor(LOG, localCommandFactory, conf.getSshOpts()),
+          new RSyncCommandExecutor(LOG, 10, localCommandFactory), LOG);
+      exitCode = ptest.run();
+    } finally {
+      if(executionContext != null) {
+        executionContext.terminate();
+      }
+      if(executionContextProvider != null) {
+        executionContextProvider.close();
+      }
+    }
+    System.exit(exitCode);
   }
 }

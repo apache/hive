@@ -28,9 +28,9 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.hooks.TestHs2Hooks.PostExecHook;
+import org.apache.hadoop.hive.hooks.TestHs2Hooks.PreExecHook;
+import org.apache.hadoop.hive.hooks.TestHs2Hooks.SemanticAnalysisHook;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,43 +42,18 @@ import org.junit.Test;
  * Tests information retrieved from hooks, in Kerberos mode.
  */
 public class TestHs2HooksWithMiniKdc {
-  public static class PostExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
-
-    public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
-      }
-    }
-  }
-
-  public static class PreExecHook implements ExecuteWithHookContext {
-    public static String userName = null;
-    public static String ipAddress = null;
-
-    public void run(HookContext hookContext) {
-      if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
-        Assert.assertNotNull(hookContext.getIpAddress(), "IP Address is null");
-        ipAddress = hookContext.getIpAddress();
-        Assert.assertNotNull(hookContext.getUserName(), "Username is null");
-        userName = hookContext.getUserName();
-      }
-    }
-  }
   private static MiniHS2 miniHS2 = null;
   private static MiniHiveKdc miniHiveKdc = null;
   private static Map<String, String> confOverlay = new HashMap<String, String>();
   private Connection hs2Conn;
 
   @BeforeClass
-  public static void beforeTest() throws Exception {
+  public static void setUpBeforeClass() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
     confOverlay.put(ConfVars.POSTEXECHOOKS.varname, PostExecHook.class.getName());
     confOverlay.put(ConfVars.PREEXECHOOKS.varname, PreExecHook.class.getName());
+    confOverlay.put(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
+        SemanticAnalysisHook.class.getName());
 
     HiveConf hiveConf = new HiveConf();
     miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
@@ -86,12 +61,30 @@ public class TestHs2HooksWithMiniKdc {
     miniHS2.start(confOverlay);
   }
 
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception {
+    miniHS2.stop();
+  }
+
   @Before
-  public void setUp() throws Exception {
+  public void setUpTest() throws Exception {
+    PreExecHook.userName = null;
+    PreExecHook.ipAddress = null;
+    PreExecHook.operation = null;
+    PreExecHook.error = null;
+    PostExecHook.userName = null;
+    PostExecHook.ipAddress = null;
+    PostExecHook.operation = null;
+    PostExecHook.error = null;
+    SemanticAnalysisHook.userName = null;
+    SemanticAnalysisHook.ipAddress = null;
+    SemanticAnalysisHook.command = null;
+    SemanticAnalysisHook.preAnalyzeError = null;
+    SemanticAnalysisHook.postAnalyzeError = null;
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDownTest() throws Exception {
     if (hs2Conn != null) {
       try {
         hs2Conn.close();
@@ -101,29 +94,57 @@ public class TestHs2HooksWithMiniKdc {
     }
   }
 
-  @AfterClass
-  public static void afterTest() throws Exception {
-    miniHS2.stop();
-  }
-
   /**
-   * Test get IpAddress and username from hook.
-   * @throws Exception
+   * Test that hook context properties are correctly set.
    */
   @Test
-  public void testIpUserName() throws Exception {
+  public void testHookContexts() throws Throwable {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_USER_1);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
 
     Statement stmt = hs2Conn.createStatement();
+    stmt.executeQuery("show databases");
     stmt.executeQuery("show tables");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
 
+    Assert.assertNotNull(PostExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PostExecHook.userName, "userName is null");
+    Assert.assertNotNull(PostExecHook.operation , "operation is null");
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PostExecHook.userName);
-    Assert.assertNotNull(PostExecHook.ipAddress);
-    Assert.assertTrue(PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
+    Assert.assertNotNull(PreExecHook.ipAddress, "ipaddress is null");
+    Assert.assertNotNull(PreExecHook.userName, "userName is null");
+    Assert.assertNotNull(PreExecHook.operation , "operation is null");
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PreExecHook.userName);
-    Assert.assertNotNull(PreExecHook.ipAddress);
-    Assert.assertTrue(PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
+
+    error = SemanticAnalysisHook.preAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    error = SemanticAnalysisHook.postAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+
+    Assert.assertNotNull(SemanticAnalysisHook.ipAddress,
+        "semantic hook context ipaddress is null");
+    Assert.assertNotNull(SemanticAnalysisHook.userName,
+        "semantic hook context userName is null");
+    Assert.assertNotNull(SemanticAnalysisHook.command ,
+        "semantic hook context command is null");
+    Assert.assertTrue(SemanticAnalysisHook.ipAddress,
+        SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertEquals("show tables", SemanticAnalysisHook.command);
   }
 }

@@ -1,0 +1,160 @@
+PREHOOK: query: DROP TABLE parquet_array_null_element_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_array_null_element_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_array_null_element
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_array_null_element
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_array_null_element_staging (
+    id int,
+    lstint ARRAY<INT>,
+    lststr ARRAY<STRING>,
+    mp  MAP<STRING,STRING>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+NULL DEFINED AS ''
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_null_element_staging
+POSTHOOK: query: CREATE TABLE parquet_array_null_element_staging (
+    id int,
+    lstint ARRAY<INT>,
+    lststr ARRAY<STRING>,
+    mp  MAP<STRING,STRING>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+NULL DEFINED AS ''
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_null_element_staging
+PREHOOK: query: CREATE TABLE parquet_array_null_element (
+    id int,
+    lstint ARRAY<INT>,
+    lststr ARRAY<STRING>,
+    mp  MAP<STRING,STRING>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_null_element
+POSTHOOK: query: CREATE TABLE parquet_array_null_element (
+    id int,
+    lstint ARRAY<INT>,
+    lststr ARRAY<STRING>,
+    mp  MAP<STRING,STRING>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_null_element
+PREHOOK: query: DESCRIBE FORMATTED parquet_array_null_element
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_array_null_element
+POSTHOOK: query: DESCRIBE FORMATTED parquet_array_null_element
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_array_null_element
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+lstint              	array<int>          	                    
+lststr              	array<string>       	                    
+mp                  	map<string,string>  	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_array_null_element.txt' OVERWRITE INTO TABLE parquet_array_null_element_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_array_null_element_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_array_null_element.txt' OVERWRITE INTO TABLE parquet_array_null_element_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_array_null_element_staging
+PREHOOK: query: SELECT * FROM parquet_array_null_element_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element_staging
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_array_null_element_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element_staging
+#### A masked pattern was here ####
+1	[null,7]	["CARRELAGE","MOQUETTE"]	{"key11":"value11","key12":"value12","key13":"value13"}
+2	[null,null]	["CAILLEBOTIS",null]	NULL
+3	[null,42,null]	NULL	{"key11":"value11","key12":null,"key13":null}
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_array_null_element SELECT * FROM parquet_array_null_element_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element_staging
+PREHOOK: Output: default@parquet_array_null_element
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_array_null_element SELECT * FROM parquet_array_null_element_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element_staging
+POSTHOOK: Output: default@parquet_array_null_element
+POSTHOOK: Lineage: parquet_array_null_element.id SIMPLE [(parquet_array_null_element_staging)parquet_array_null_element_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_array_null_element.lstint SIMPLE [(parquet_array_null_element_staging)parquet_array_null_element_staging.FieldSchema(name:lstint, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: parquet_array_null_element.lststr SIMPLE [(parquet_array_null_element_staging)parquet_array_null_element_staging.FieldSchema(name:lststr, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: parquet_array_null_element.mp SIMPLE [(parquet_array_null_element_staging)parquet_array_null_element_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+PREHOOK: query: SELECT lstint from parquet_array_null_element
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lstint from parquet_array_null_element
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+[null,7]
+[null,null]
+[null,42,null]
+PREHOOK: query: SELECT lststr from parquet_array_null_element
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lststr from parquet_array_null_element
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+["CARRELAGE","MOQUETTE"]
+["CAILLEBOTIS",null]
+NULL
+PREHOOK: query: SELECT mp from parquet_array_null_element
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mp from parquet_array_null_element
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+{"key11":"value11","key12":"value12","key13":"value13"}
+NULL
+{"key11":"value11","key12":null,"key13":null}
+PREHOOK: query: SELECT * FROM parquet_array_null_element
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_array_null_element
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_null_element
+#### A masked pattern was here ####
+1	[null,7]	["CARRELAGE","MOQUETTE"]	{"key11":"value11","key12":"value12","key13":"value13"}
+2	[null,null]	["CAILLEBOTIS",null]	NULL
+3	[null,42,null]	NULL	{"key11":"value11","key12":null,"key13":null}

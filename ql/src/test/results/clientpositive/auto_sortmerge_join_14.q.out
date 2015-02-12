@@ -64,9 +64,6 @@ STAGE PLANS:
           TableScan
             alias: b
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -79,20 +76,16 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -100,15 +93,12 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
     Map Reduce
@@ -119,34 +109,27 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -205,9 +188,6 @@ STAGE PLANS:
           TableScan
             alias: a
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -220,20 +200,16 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -241,15 +217,12 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
     Map Reduce
@@ -260,34 +233,27 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
-              Select Operator
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    value expressions: _col0 (type: bigint)
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

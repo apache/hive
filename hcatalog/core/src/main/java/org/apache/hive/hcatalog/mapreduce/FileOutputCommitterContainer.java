@@ -75,6 +75,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   static final String DYNTEMP_DIR_NAME = "_DYN";
   static final String SCRATCH_DIR_NAME = "_SCRATCH";
   private static final String APPEND_SUFFIX = "_a_";
+  private static final int APPEND_COUNTER_WARN_THRESHOLD = 1000;
+  private final int maxAppendAttempts;
 
   private static final Logger LOG = LoggerFactory.getLogger(FileOutputCommitterContainer.class);
   private final boolean dynamicPartitioningUsed;
@@ -112,12 +114,21 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     } else {
       customDynamicLocationUsed = false;
     }
+
+    this.maxAppendAttempts = context.getConfiguration().getInt(HCatConstants.HCAT_APPEND_LIMIT, APPEND_COUNTER_WARN_THRESHOLD);
   }
 
   @Override
   public void abortTask(TaskAttemptContext context) throws IOException {
     if (!dynamicPartitioningUsed) {
       getBaseOutputCommitter().abortTask(HCatMapRedUtil.createTaskAttemptContext(context));
+    } else {
+      try {
+        TaskCommitContextRegistry.getInstance().abortTask(context);
+      }
+      finally {
+        TaskCommitContextRegistry.getInstance().discardCleanupFor(context);
+      }
     }
   }
 
@@ -127,6 +138,13 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
          //See HCATALOG-499
       FileOutputFormatContainer.setWorkOutputPath(context);
       getBaseOutputCommitter().commitTask(HCatMapRedUtil.createTaskAttemptContext(context));
+    } else {
+      try {
+        TaskCommitContextRegistry.getInstance().commitTask(context);
+      }
+      finally {
+        TaskCommitContextRegistry.getInstance().discardCleanupFor(context);
+      }
     }
   }
 
@@ -136,7 +154,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       return getBaseOutputCommitter().needsTaskCommit(HCatMapRedUtil.createTaskAttemptContext(context));
     } else {
       // called explicitly through FileRecordWriterContainer.close() if dynamic - return false by default
-      return false;
+      return true;
     }
   }
 
@@ -632,19 +650,23 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           filetype = "";
         }
 
-        // Attempt to find COUNTER_MAX possible alternatives to a filename by
+        // Attempt to find maxAppendAttempts possible alternatives to a filename by
         // appending _a_N and seeing if that destination also clashes. If we're
         // still clashing after that, give up.
-        final int COUNTER_MAX = 1000;
         int counter = 1;
-        for (; fs.exists(itemDest) && counter < COUNTER_MAX ; counter++) {
+        for (; fs.exists(itemDest) && counter < maxAppendAttempts; counter++) {
           itemDest = new Path(dest, name + (APPEND_SUFFIX + counter) + filetype);
         }
 
-        if (counter == COUNTER_MAX){
+        if (counter == maxAppendAttempts){
           throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
               "Could not find a unique destination path for move: file = "
                   + file + " , src = " + src + ", dest = " + dest);
+        } else if (counter > APPEND_COUNTER_WARN_THRESHOLD) {
+          LOG.warn("Append job used filename clash counter [" + counter
+              +"] which is greater than warning limit [" + APPEND_COUNTER_WARN_THRESHOLD
+              +"]. Please compact this table so that performance is not impacted."
+              + " Please see HIVE-9381 for details.");
         }
 
       }
@@ -682,7 +704,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       //      LOG.info("Searching for "+dynPathSpec);
       Path pathPattern = new Path(dynPathSpec);
-      FileStatus[] status = fs.globStatus(pathPattern);
+      FileStatus[] status = fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
       partitionsDiscoveredByPath = new LinkedHashMap<String, Map<String, String>>();
       contextDiscoveredByPath = new LinkedHashMap<String, JobContext>();

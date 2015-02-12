@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -152,6 +154,11 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
 
   private void checkMapJoins(TezWork tzWrk) throws SemanticException {
     for(BaseWork wrk : tzWrk.getAllWork() ) {
+
+      if ( wrk instanceof MergeJoinWork ) {
+        wrk = ((MergeJoinWork)wrk).getMainWork();
+      }
+
       List<String> warnings = new MapJoinCheck(wrk.getName()).analyze(wrk);
       if ( !warnings.isEmpty() ) {
         for(String w : warnings) {
@@ -163,12 +170,17 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
 
   private void checkTezReducer(TezWork tzWrk) throws SemanticException {
     for(BaseWork wrk : tzWrk.getAllWork() ) {
-      if ( !(wrk instanceof ReduceWork) ) {
+
+      if ( wrk instanceof MergeJoinWork ) {
+        wrk = ((MergeJoinWork)wrk).getMainWork();
+      }
+
+      if ( !(wrk instanceof ReduceWork ) ) {
         continue;
       }
       ReduceWork rWork = (ReduceWork) wrk;
       Operator<? extends OperatorDesc> reducer = ((ReduceWork)wrk).getReducer();
-      if ( reducer instanceof JoinOperator ) {
+      if ( reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator ) {
         Map<Integer, ExtractReduceSinkInfo.Info> rsInfo =
             new HashMap<Integer, ExtractReduceSinkInfo.Info>();
         for(Map.Entry<Integer, String> e : rWork.getTagToInput().entrySet()) {
@@ -185,7 +197,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
       return;
     }
     Operator<? extends OperatorDesc> reducer = rWrk.getReducer();
-    if ( reducer instanceof JoinOperator ) {
+    if ( reducer instanceof JoinOperator|| reducer instanceof CommonMergeJoinOperator ) {
       BaseWork prntWork = mrWrk.getMapWork();
       checkForCrossProduct(taskName, reducer,
           new ExtractReduceSinkInfo(null).analyze(prntWork));
@@ -229,7 +241,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
    * <p>
    * For MR the taskname is the StageName, for Tez it is the vertex name.
    */
-  class MapJoinCheck implements NodeProcessor, NodeProcessorCtx {
+  public static class MapJoinCheck implements NodeProcessor, NodeProcessorCtx {
 
     final List<String> warnings;
     final String taskName;
@@ -290,7 +302,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
    * in the Work. For Tez, you can restrict it to ReduceSinks for a particular output
    * vertex.
    */
-  static class ExtractReduceSinkInfo implements NodeProcessor, NodeProcessorCtx {
+  public static class ExtractReduceSinkInfo implements NodeProcessor, NodeProcessorCtx {
 
     static class Info {
       List<ExprNodeDesc> keyCols;

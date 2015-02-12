@@ -75,7 +75,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     TableScanOperator tableScan = (TableScanOperator) nd;
 
     ParseContext parseContext = context.parseContext;
-    Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
+    Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
         .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
@@ -95,16 +95,25 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       assert alias != null;
 
       TezWork tezWork = context.currentTask.getWork();
-      boolean partialScan = parseInfo.isPartialScanAnalyzeCommand();
-      boolean noScan = parseInfo.isNoScanAnalyzeCommand();
-      if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
-
+      if (inputFormat.equals(OrcInputFormat.class)) {
+        // For ORC, all the following statements are the same
+        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+
         // There will not be any Tez job above this task
         StatsNoJobWork snjWork = new StatsNoJobWork(parseContext.getQB().getParseInfo().getTableSpec());
         snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
             HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+        // If partition is specified, get pruned partition list
+        Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(parseInfo);
+        if (confirmedParts.size() > 0) {
+          Table source = parseContext.getQB().getMetaData().getTableForAlias(alias);
+          List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+          PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
+              partCols, false);
+          snjWork.setPrunedPartitionList(partList);
+        }
         Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseContext.getConf());
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);

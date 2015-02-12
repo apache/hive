@@ -35,17 +35,27 @@ import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.*;
+import org.apache.hive.service.cli.FetchOrientation;
+import org.apache.hive.service.cli.FetchType;
+import org.apache.hive.service.cli.GetInfoType;
+import org.apache.hive.service.cli.GetInfoValue;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.SessionHandle;
+import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -64,27 +74,20 @@ import org.apache.hive.service.server.ThreadWithGarbageCleanup;
  *
  */
 public class HiveSessionImpl implements HiveSession {
-
   private final SessionHandle sessionHandle;
-
   private String username;
   private final String password;
   private HiveConf hiveConf;
-  private final SessionState sessionState;
+  private SessionState sessionState;
   private String ipAddress;
-
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
   private static final Log LOG = LogFactory.getLog(HiveSessionImpl.class);
-
-
   private SessionManager sessionManager;
   private OperationManager operationManager;
-  private IMetaStoreClient metastoreClient = null;
   private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
-
   private volatile long lastAccessTime;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
@@ -95,6 +98,16 @@ public class HiveSessionImpl implements HiveSession {
     this.hiveConf = new HiveConf(serverhiveConf);
     this.ipAddress = ipAddress;
 
+    try {
+      // In non-impersonation mode, map scheduler queue to current user
+      // if fair scheduler is configured.
+      if (! hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
+        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
+        ShimLoader.getHadoopShims().refreshDefaultQueue(hiveConf, username);
+      }
+    } catch (IOException e) {
+      LOG.warn("Error setting scheduler queue: " + e, e);
+    }
     // Set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
@@ -102,37 +115,36 @@ public class HiveSessionImpl implements HiveSession {
     hiveConf.set(ListSinkOperator.OUTPUT_FORMATTER,
         FetchFormatter.ThriftFormatter.class.getName());
     hiveConf.setInt(ListSinkOperator.OUTPUT_PROTOCOL, protocol.getValue());
-
-    /**
-     * Create a new SessionState object that will be associated with this HiveServer2 session.
-     * When the server executes multiple queries in the same session,
-     * this SessionState object is reused across multiple queries.
-     */
-    sessionState = new SessionState(hiveConf, username);
-    sessionState.setUserIpAddress(ipAddress);
-    sessionState.setIsHiveServerQuery(true);
-
-    lastAccessTime = System.currentTimeMillis();
-    SessionState.start(sessionState);
   }
 
   @Override
-  public void initialize(Map<String, String> sessionConfMap) throws Exception {
-    // Process global init file: .hiverc
-    processGlobalInitFile();
+  /**
+   * Opens a new HiveServer2 session for the client connection.
+   * Creates a new SessionState object that will be associated with this HiveServer2 session.
+   * When the server executes multiple queries in the same session,
+   * this SessionState object is reused across multiple queries.
+   * Note that if doAs is true, this call goes through a proxy object,
+   * which wraps the method logic in a UserGroupInformation#doAs.
+   * That's why it is important to create SessionState here rather than in the constructor.
+   */
+  public void open(Map<String, String> sessionConfMap) throws HiveSQLException {
+    sessionState = new SessionState(hiveConf, username);
+    sessionState.setUserIpAddress(ipAddress);
+    sessionState.setIsHiveServerQuery(true);
+    SessionState.start(sessionState);
     try {
       sessionState.reloadAuxJars();
     } catch (IOException e) {
-      String msg = "fail to load reloadable jar file path" + e;
+      String msg = "Failed to load reloadable jar file path: " + e;
       LOG.error(msg, e);
-      throw new Exception(msg, e);
+      throw new HiveSQLException(msg, e);
     }
-    SessionState.setCurrentSessionState(sessionState);
-
-    // Set conf properties specified by user from client side
+    // Process global init file: .hiverc
+    processGlobalInitFile();
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
     }
+    lastAccessTime = System.currentTimeMillis();
   }
 
   /**
@@ -187,12 +199,16 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
-  private void configureSession(Map<String, String> sessionConfMap) throws Exception {
+  private void configureSession(Map<String, String> sessionConfMap) throws HiveSQLException {
     SessionState.setCurrentSessionState(sessionState);
     for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
       String key = entry.getKey();
       if (key.startsWith("set:")) {
-        SetProcessor.setVariable(key.substring(4), entry.getValue());
+        try {
+          SetProcessor.setVariable(key.substring(4), entry.getValue());
+        } catch (Exception e) {
+          throw new HiveSQLException(e);
+        }
       } else if (key.startsWith("use:")) {
         SessionState.get().setCurrentDatabase(entry.getValue());
       } else {
@@ -205,7 +221,6 @@ public class HiveSessionImpl implements HiveSession {
   public void setOperationLogSessionDir(File operationLogRootDir) {
     sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
     isOperationLogEnabled = true;
-
     if (!sessionLogDir.exists()) {
       if (!sessionLogDir.mkdir()) {
         LOG.warn("Unable to create operation log session directory: " +
@@ -213,7 +228,6 @@ public class HiveSessionImpl implements HiveSession {
         isOperationLogEnabled = false;
       }
     }
-
     if (isOperationLogEnabled) {
       LOG.info("Operation log session directory is created: " + sessionLogDir.getAbsolutePath());
     }
@@ -253,19 +267,8 @@ public class HiveSessionImpl implements HiveSession {
     this.operationManager = operationManager;
   }
 
-  @Override
-  /**
-   * Opens a new HiveServer2 session for the client connection.
-   * Note that if doAs is true, this call goes through a proxy object,
-   * which wraps the method logic in a UserGroupInformation#doAs.
-   * That is why it is important to call SessionState#start here rather than the constructor.
-   */
-  public void open() {
-    SessionState.start(sessionState);
-  }
-
   protected synchronized void acquire(boolean userAccess) {
-    // Need to make sure that the this HiveServer2's session's session state is
+    // Need to make sure that the this HiveServer2's session's SessionState is
     // stored in the thread local for the handler thread.
     SessionState.setCurrentSessionState(sessionState);
     if (userAccess) {
@@ -315,14 +318,13 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public IMetaStoreClient getMetaStoreClient() throws HiveSQLException {
-    if (metastoreClient == null) {
-      try {
-        metastoreClient = new HiveMetaStoreClient(getHiveConf());
-      } catch (MetaException e) {
-        throw new HiveSQLException(e);
-      }
+    try {
+      return Hive.get(getHiveConf()).getMSC();
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to get metastore connection", e);
+    } catch (MetaException e) {
+      throw new HiveSQLException("Failed to get metastore connection", e);
     }
-    return metastoreClient;
   }
 
   @Override
@@ -538,14 +540,6 @@ public class HiveSessionImpl implements HiveSession {
   public void close() throws HiveSQLException {
     try {
       acquire(true);
-      /**
-       * For metadata operations like getTables(), getColumns() etc,
-       * the session allocates a private metastore handler which should be
-       * closed at the end of the session
-       */
-      if (metastoreClient != null) {
-        metastoreClient.close();
-      }
       // Iterate through the opHandles and close their operations
       for (OperationHandle opHandle : opHandleSet) {
         operationManager.closeOperation(opHandle);
@@ -553,7 +547,6 @@ public class HiveSessionImpl implements HiveSession {
       opHandleSet.clear();
       // Cleanup session log directory.
       cleanupSessionLogDir();
-
       HiveHistory hiveHist = sessionState.getHiveHistory();
       if (null != hiveHist) {
         hiveHist.closeStream();

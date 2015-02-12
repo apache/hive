@@ -41,6 +41,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) = 0;
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
   virtual void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context) = 0;
+  virtual void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void add_partition_with_environment_context(Partition& _return, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual int32_t add_partitions(const std::vector<Partition> & new_parts) = 0;
@@ -132,6 +133,9 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void heartbeat_txn_range(HeartbeatTxnRangeResponse& _return, const HeartbeatTxnRangeRequest& txns) = 0;
   virtual void compact(const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
+  virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
+  virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
+  virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -236,6 +240,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_table_with_environment_context(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */, const EnvironmentContext& /* environment_context */) {
+    return;
+  }
+  void alter_table_with_cascade(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */, const bool /* cascade */) {
     return;
   }
   void add_partition(Partition& /* _return */, const Partition& /* new_part */) {
@@ -530,6 +537,15 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
+    return;
+  }
+  void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
+    return;
+  }
+  void get_current_notificationEventId(CurrentNotificationEventId& /* _return */) {
+    return;
+  }
+  void fire_listener_event(FireEventResponse& /* _return */, const FireEventRequest& /* rqst */) {
     return;
   }
 };
@@ -3853,6 +3869,151 @@ class ThriftHiveMetastore_alter_table_with_environment_context_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_alter_table_with_environment_context_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_args__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_args__isset() : dbname(false), tbl_name(false), new_tbl(false), cascade(false) {}
+  bool dbname;
+  bool tbl_name;
+  bool new_tbl;
+  bool cascade;
+} _ThriftHiveMetastore_alter_table_with_cascade_args__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_args {
+ public:
+
+  ThriftHiveMetastore_alter_table_with_cascade_args() : dbname(), tbl_name(), cascade(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_args() throw() {}
+
+  std::string dbname;
+  std::string tbl_name;
+  Table new_tbl;
+  bool cascade;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_args__isset __isset;
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tbl_name(const std::string& val) {
+    tbl_name = val;
+  }
+
+  void __set_new_tbl(const Table& val) {
+    new_tbl = val;
+  }
+
+  void __set_cascade(const bool val) {
+    cascade = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_table_with_cascade_args & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(new_tbl == rhs.new_tbl))
+      return false;
+    if (!(cascade == rhs.cascade))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_with_cascade_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_with_cascade_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_table_with_cascade_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_pargs() throw() {}
+
+  const std::string* dbname;
+  const std::string* tbl_name;
+  const Table* new_tbl;
+  const bool* cascade;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_result__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_table_with_cascade_result__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_result {
+ public:
+
+  ThriftHiveMetastore_alter_table_with_cascade_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_result() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_result__isset __isset;
+
+  void __set_o1(const InvalidOperationException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const MetaException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_table_with_cascade_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_with_cascade_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_with_cascade_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_presult__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_table_with_cascade_presult__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_presult() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -16418,6 +16579,316 @@ class ThriftHiveMetastore_show_compact_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
+  _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_get_next_notification_args__isset;
+
+class ThriftHiveMetastore_get_next_notification_args {
+ public:
+
+  ThriftHiveMetastore_get_next_notification_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_next_notification_args() throw() {}
+
+  NotificationEventRequest rqst;
+
+  _ThriftHiveMetastore_get_next_notification_args__isset __isset;
+
+  void __set_rqst(const NotificationEventRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_next_notification_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_next_notification_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_next_notification_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_next_notification_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_next_notification_pargs() throw() {}
+
+  const NotificationEventRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_next_notification_result__isset {
+  _ThriftHiveMetastore_get_next_notification_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_next_notification_result__isset;
+
+class ThriftHiveMetastore_get_next_notification_result {
+ public:
+
+  ThriftHiveMetastore_get_next_notification_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_next_notification_result() throw() {}
+
+  NotificationEventResponse success;
+
+  _ThriftHiveMetastore_get_next_notification_result__isset __isset;
+
+  void __set_success(const NotificationEventResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_next_notification_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_next_notification_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_next_notification_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_next_notification_presult__isset {
+  _ThriftHiveMetastore_get_next_notification_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_next_notification_presult__isset;
+
+class ThriftHiveMetastore_get_next_notification_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_next_notification_presult() throw() {}
+
+  NotificationEventResponse* success;
+
+  _ThriftHiveMetastore_get_next_notification_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_current_notificationEventId_args {
+ public:
+
+  ThriftHiveMetastore_get_current_notificationEventId_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_current_notificationEventId_args() throw() {}
+
+
+  bool operator == (const ThriftHiveMetastore_get_current_notificationEventId_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_current_notificationEventId_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_current_notificationEventId_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_current_notificationEventId_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_current_notificationEventId_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_current_notificationEventId_result__isset {
+  _ThriftHiveMetastore_get_current_notificationEventId_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_current_notificationEventId_result__isset;
+
+class ThriftHiveMetastore_get_current_notificationEventId_result {
+ public:
+
+  ThriftHiveMetastore_get_current_notificationEventId_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_current_notificationEventId_result() throw() {}
+
+  CurrentNotificationEventId success;
+
+  _ThriftHiveMetastore_get_current_notificationEventId_result__isset __isset;
+
+  void __set_success(const CurrentNotificationEventId& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_current_notificationEventId_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_current_notificationEventId_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_current_notificationEventId_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_current_notificationEventId_presult__isset {
+  _ThriftHiveMetastore_get_current_notificationEventId_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_get_current_notificationEventId_presult__isset;
+
+class ThriftHiveMetastore_get_current_notificationEventId_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_current_notificationEventId_presult() throw() {}
+
+  CurrentNotificationEventId* success;
+
+  _ThriftHiveMetastore_get_current_notificationEventId_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_fire_listener_event_args__isset {
+  _ThriftHiveMetastore_fire_listener_event_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_fire_listener_event_args__isset;
+
+class ThriftHiveMetastore_fire_listener_event_args {
+ public:
+
+  ThriftHiveMetastore_fire_listener_event_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_fire_listener_event_args() throw() {}
+
+  FireEventRequest rqst;
+
+  _ThriftHiveMetastore_fire_listener_event_args__isset __isset;
+
+  void __set_rqst(const FireEventRequest& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_fire_listener_event_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_fire_listener_event_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_fire_listener_event_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_fire_listener_event_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_fire_listener_event_pargs() throw() {}
+
+  const FireEventRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_fire_listener_event_result__isset {
+  _ThriftHiveMetastore_fire_listener_event_result__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_fire_listener_event_result__isset;
+
+class ThriftHiveMetastore_fire_listener_event_result {
+ public:
+
+  ThriftHiveMetastore_fire_listener_event_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_fire_listener_event_result() throw() {}
+
+  FireEventResponse success;
+
+  _ThriftHiveMetastore_fire_listener_event_result__isset __isset;
+
+  void __set_success(const FireEventResponse& val) {
+    success = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_fire_listener_event_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_fire_listener_event_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_fire_listener_event_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_fire_listener_event_presult__isset {
+  _ThriftHiveMetastore_fire_listener_event_presult__isset() : success(false) {}
+  bool success;
+} _ThriftHiveMetastore_fire_listener_event_presult__isset;
+
+class ThriftHiveMetastore_fire_listener_event_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_fire_listener_event_presult() throw() {}
+
+  FireEventResponse* success;
+
+  _ThriftHiveMetastore_fire_listener_event_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -16505,6 +16976,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context);
   void send_alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context);
   void recv_alter_table_with_environment_context();
+  void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
+  void send_alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
+  void recv_alter_table_with_cascade();
   void add_partition(Partition& _return, const Partition& new_part);
   void send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return);
@@ -16778,6 +17252,15 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
   void send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return);
+  void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
+  void send_get_next_notification(const NotificationEventRequest& rqst);
+  void recv_get_next_notification(NotificationEventResponse& _return);
+  void get_current_notificationEventId(CurrentNotificationEventId& _return);
+  void send_get_current_notificationEventId();
+  void recv_get_current_notificationEventId(CurrentNotificationEventId& _return);
+  void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst);
+  void send_fire_listener_event(const FireEventRequest& rqst);
+  void recv_fire_listener_event(FireEventResponse& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -16813,6 +17296,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_table_names_by_filter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_table_with_cascade(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -16904,6 +17388,9 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_heartbeat_txn_range(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -16933,6 +17420,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_table_names_by_filter"] = &ThriftHiveMetastoreProcessor::process_get_table_names_by_filter;
     processMap_["alter_table"] = &ThriftHiveMetastoreProcessor::process_alter_table;
     processMap_["alter_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_environment_context;
+    processMap_["alter_table_with_cascade"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_cascade;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["add_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_add_partition_with_environment_context;
     processMap_["add_partitions"] = &ThriftHiveMetastoreProcessor::process_add_partitions;
@@ -17024,6 +17512,9 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["heartbeat_txn_range"] = &ThriftHiveMetastoreProcessor::process_heartbeat_txn_range;
     processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
+    processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
+    processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
+    processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -17293,6 +17784,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context);
     }
     ifaces_[i]->alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context);
+  }
+
+  void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
+    }
+    ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
   }
 
   void add_partition(Partition& _return, const Partition& new_part) {
@@ -18166,6 +18666,36 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->show_compact(_return, rqst);
     }
     ifaces_[i]->show_compact(_return, rqst);
+    return;
+  }
+
+  void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_next_notification(_return, rqst);
+    }
+    ifaces_[i]->get_next_notification(_return, rqst);
+    return;
+  }
+
+  void get_current_notificationEventId(CurrentNotificationEventId& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_current_notificationEventId(_return);
+    }
+    ifaces_[i]->get_current_notificationEventId(_return);
+    return;
+  }
+
+  void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->fire_listener_event(_return, rqst);
+    }
+    ifaces_[i]->fire_listener_event(_return, rqst);
     return;
   }
 

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.mr.Throttle;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -86,7 +87,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
         ctxCreated = true;
       }
 
-      ShimLoader.getHadoopShims().prepareJobOutput(job);
+      HiveFileFormatUtils.prepareJobOutput(job);
       job.setInputFormat(work.getInputformatClass());
       job.setOutputFormat(HiveOutputFormatImpl.class);
       job.setMapperClass(MergeFileMapper.class);

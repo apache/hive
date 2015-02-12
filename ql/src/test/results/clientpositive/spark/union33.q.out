@@ -1,0 +1,308 @@
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- This tests that a union all with a map only subquery on one side and a 
+-- subquery involving two map reduce jobs on the other runs correctly.
+
+CREATE TABLE test_src (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_src
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- This tests that a union all with a map only subquery on one side and a 
+-- subquery involving two map reduce jobs on the other runs correctly.
+
+CREATE TABLE test_src (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_src
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, value FROM src 
+	WHERE key = 0
+UNION ALL
+ 	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+)a
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, value FROM src 
+	WHERE key = 0
+UNION ALL
+ 	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+)a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Reducer 3 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Filter Operator
+                    predicate: (key = 0) (type: boolean)
+                    Select Operator
+                      expressions: '0' (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.test_src
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: partials
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test_src
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_src
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, value FROM src 
+	WHERE key = 0
+UNION ALL
+ 	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+)a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src
+POSTHOOK: query: INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, value FROM src 
+	WHERE key = 0
+UNION ALL
+ 	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+)a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src
+POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
+PREHOOK: query: SELECT COUNT(*) FROM test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src
+#### A masked pattern was here ####
+312
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+UNION ALL
+ 	SELECT key, value FROM src 
+	WHERE key = 0
+)a
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+UNION ALL
+ 	SELECT key, value FROM src 
+	WHERE key = 0
+)a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: rand() (type: double)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Filter Operator
+                    predicate: (key = 0) (type: boolean)
+                    Select Operator
+                      expressions: '0' (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.test_src
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: partials
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test_src
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_src
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+UNION ALL
+ 	SELECT key, value FROM src 
+	WHERE key = 0
+)a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src
+POSTHOOK: query: INSERT OVERWRITE TABLE test_src 
+SELECT key, value FROM (
+	SELECT key, COUNT(*) AS value FROM src
+ 	GROUP BY key
+UNION ALL
+ 	SELECT key, value FROM src 
+	WHERE key = 0
+)a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src
+POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.null, (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) FROM test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src
+#### A masked pattern was here ####
+312

@@ -38,6 +38,11 @@ public abstract class PreEventContext {
     DROP_DATABASE,
     LOAD_PARTITION_DONE,
     AUTHORIZATION_API_CALL,
+    READ_TABLE,
+    READ_DATABASE,
+    ADD_INDEX,
+    ALTER_INDEX,
+    DROP_INDEX
   }
 
   private final PreEventType eventType;

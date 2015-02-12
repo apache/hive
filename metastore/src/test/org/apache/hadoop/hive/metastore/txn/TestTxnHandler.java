@@ -20,16 +20,22 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.*;
 
@@ -1080,6 +1086,115 @@ public class TestTxnHandler {
       }
     }
     for (int i = 0; i < saw.length; i++) assertTrue("Didn't see lock id " + i, saw[i]);
+  }
+
+  @Test
+  @Ignore
+  public void deadlockDetected() throws Exception {
+    Connection conn = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+    Statement stmt = conn.createStatement();
+    long now = txnHandler.getDbTime(conn);
+    stmt.executeUpdate("insert into TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, " +
+        "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
+        "'scooby.com')");
+    stmt.executeUpdate("insert into HIVE_LOCKS (hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
+        "hl_db, hl_table, hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, " +
+        "hl_user, hl_host) values (1, 1, 1, 'mydb', 'mytable', 'mypartition', '" +
+        txnHandler.LOCK_WAITING + "', '" + txnHandler.LOCK_EXCLUSIVE + "', " + now + ", 'fred', " +
+        "'scooby.com')");
+    conn.commit();
+    txnHandler.closeDbConn(conn);
+
+    final AtomicBoolean sawDeadlock = new AtomicBoolean();
+
+    final Connection conn1 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+    final Connection conn2 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+    try {
+
+      for (int i = 0; i < 5; i++) {
+        Thread t1 = new Thread() {
+          @Override
+          public void run() {
+            try {
+              try {
+                updateTxns(conn1);
+                updateLocks(conn1);
+                Thread.sleep(1000);
+                conn1.commit();
+                LOG.debug("no exception, no deadlock");
+              } catch (SQLException e) {
+                try {
+                  txnHandler.checkRetryable(conn1, e, "thread t1");
+                  LOG.debug("Got an exception, but not a deadlock, SQLState is " +
+                      e.getSQLState() + " class of exception is " + e.getClass().getName() +
+                      " msg is <" + e.getMessage() + ">");
+                } catch (TxnHandler.RetryException de) {
+                  LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
+                      "exception is " + e.getClass().getName() + " msg is <" + e
+                      .getMessage() + ">");
+                  sawDeadlock.set(true);
+                }
+              }
+              conn1.rollback();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        };
+
+        Thread t2 = new Thread() {
+          @Override
+          public void run() {
+            try {
+              try {
+                updateLocks(conn2);
+                updateTxns(conn2);
+                Thread.sleep(1000);
+                conn2.commit();
+                LOG.debug("no exception, no deadlock");
+              } catch (SQLException e) {
+                try {
+                  txnHandler.checkRetryable(conn2, e, "thread t2");
+                  LOG.debug("Got an exception, but not a deadlock, SQLState is " +
+                      e.getSQLState() + " class of exception is " + e.getClass().getName() +
+                      " msg is <" + e.getMessage() + ">");
+                } catch (TxnHandler.RetryException de) {
+                  LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
+                      "exception is " + e.getClass().getName() + " msg is <" + e
+                      .getMessage() + ">");
+                  sawDeadlock.set(true);
+                }
+              }
+              conn2.rollback();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        };
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        if (sawDeadlock.get()) break;
+      }
+      assertTrue(sawDeadlock.get());
+    } finally {
+      conn1.rollback();
+      txnHandler.closeDbConn(conn1);
+      conn2.rollback();
+      txnHandler.closeDbConn(conn2);
+    }
+  }
+
+  private void updateTxns(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    stmt.executeUpdate("update TXNS set txn_last_heartbeat = txn_last_heartbeat + 1");
+  }
+
+  private void updateLocks(Connection conn) throws SQLException {
+    Statement stmt = conn.createStatement();
+    stmt.executeUpdate("update HIVE_LOCKS set hl_last_heartbeat = hl_last_heartbeat + 1");
   }
 
   @Before

@@ -29,18 +29,40 @@ public enum HiveCommand {
   SET(),
   RESET(),
   DFS(),
+  CRYPTO(true),
   ADD(),
   LIST(),
   RELOAD(),
   DELETE(),
   COMPILE();
+
+  public static boolean ONLY_FOR_TESTING = true;
+  private boolean usedOnlyForTesting;
+
+  HiveCommand() {
+    this(false);
+  }
+
+  HiveCommand(boolean onlyForTesting) {
+    this.usedOnlyForTesting = onlyForTesting;
+  }
+
+  public boolean isOnlyForTesting() {
+    return this.usedOnlyForTesting;
+  }
+
   private static final Set<String> COMMANDS = new HashSet<String>();
   static {
     for (HiveCommand command : HiveCommand.values()) {
       COMMANDS.add(command.name());
     }
   }
+
   public static HiveCommand find(String[] command) {
+    return find(command, false);
+  }
+
+  public static HiveCommand find(String[] command, boolean findOnlyForTesting) {
     if (null == command){
       return null;
     }
@@ -54,7 +76,13 @@ public enum HiveCommand {
         //special handling for SQL "delete from <table> where..."
         return null;
       } else if (COMMANDS.contains(cmd)) {
-        return HiveCommand.valueOf(cmd);
+        HiveCommand hiveCommand = HiveCommand.valueOf(cmd);
+
+        if (findOnlyForTesting == hiveCommand.isOnlyForTesting()) {
+          return hiveCommand;
+        }
+
+        return null;
       }
     }
     return null;

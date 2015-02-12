@@ -1,0 +1,756 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table alter_partition_change_col0 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_change_col0
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table alter_partition_change_col0 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_change_col0
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_partition_change_col0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_partition_change_col0
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_partition_change_col0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_partition_change_col0
+PREHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string, p2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by (p1 string, p2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: insert overwrite table alter_partition_change_col1 partition (p1, p2)
+  select c1, c2, 'abc', '123' from alter_partition_change_col0
+  union all
+  select c1, c2, null, '123' from alter_partition_change_col0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col0
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: insert overwrite table alter_partition_change_col1 partition (p1, p2)
+  select c1, c2, 'abc', '123' from alter_partition_change_col0
+  union all
+  select c1, c2, null, '123' from alter_partition_change_col0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col0
+POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
+PREHOOK: query: show partitions alter_partition_change_col1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: show partitions alter_partition_change_col1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter_partition_change_col1
+p1=__HIVE_DEFAULT_PARTITION__/p2=123
+p1=abc/p2=123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0.0	abc	123
+Beck	77.341	abc	123
+Beck	79.9	abc	123
+Cluck	5.96	abc	123
+Mary	33.33	abc	123
+Mary	4.329	abc	123
+Snow	55.71	abc	123
+Tom	-12.25	abc	123
+Tom	19.00	abc	123
+Tom	234.79	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0.0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- Change c2 to decimal(10,0)
+alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: -- Change c2 to decimal(10,0)
+alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77	abc	123
+Beck	80	abc	123
+Cluck	6	abc	123
+Mary	33	abc	123
+Mary	4	abc	123
+Snow	56	abc	123
+Tom	-12	abc	123
+Tom	19	abc	123
+Tom	235	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77	__HIVE_DEFAULT_PARTITION__	123
+Beck	80	__HIVE_DEFAULT_PARTITION__	123
+Cluck	6	__HIVE_DEFAULT_PARTITION__	123
+Mary	33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4	__HIVE_DEFAULT_PARTITION__	123
+Snow	56	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	235	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- Change the column type at the table level. Table-level describe shows the new type, but the existing partition does not.
+alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: -- Change the column type at the table level. Table-level describe shows the new type, but the existing partition does not.
+alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: describe alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(10,0)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77	abc	123
+Beck	80	abc	123
+Cluck	6	abc	123
+Mary	33	abc	123
+Mary	4	abc	123
+Snow	56	abc	123
+Tom	-12	abc	123
+Tom	19	abc	123
+Tom	235	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77	__HIVE_DEFAULT_PARTITION__	123
+Beck	80	__HIVE_DEFAULT_PARTITION__	123
+Cluck	6	__HIVE_DEFAULT_PARTITION__	123
+Mary	33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4	__HIVE_DEFAULT_PARTITION__	123
+Snow	56	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	235	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- now change the column type of the existing partition
+alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: query: -- now change the column type of the existing partition
+alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77.341	abc	123
+Beck	79.9	abc	123
+Cluck	5.96	abc	123
+Mary	33.33	abc	123
+Mary	4.329	abc	123
+Snow	55.71	abc	123
+Tom	-12.25	abc	123
+Tom	19	abc	123
+Tom	234.79	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77	__HIVE_DEFAULT_PARTITION__	123
+Beck	80	__HIVE_DEFAULT_PARTITION__	123
+Cluck	6	__HIVE_DEFAULT_PARTITION__	123
+Mary	33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4	__HIVE_DEFAULT_PARTITION__	123
+Snow	56	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	235	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- change column for default partition value
+alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: query: -- change column for default partition value
+alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77.341	abc	123
+Beck	79.9	abc	123
+Cluck	5.96	abc	123
+Mary	33.33	abc	123
+Mary	4.329	abc	123
+Snow	55.71	abc	123
+Tom	-12.25	abc	123
+Tom	19	abc	123
+Tom	234.79	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- Try out replace columns
+alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: query: -- Try out replace columns
+alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+PREHOOK: query: describe alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_partition_change_col1 replace columns (c1 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: alter table alter_partition_change_col1 replace columns (c1 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: describe alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	abc	123
+Beck	abc	123
+Beck	abc	123
+Cluck	abc	123
+Mary	abc	123
+Mary	abc	123
+Snow	abc	123
+Tom	abc	123
+Tom	abc	123
+Tom	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Cluck	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Snow	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- Try add columns
+alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: -- Try add columns
+alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: describe alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') add columns (c2 decimal(14,4))
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') add columns (c2 decimal(14,4))
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77.341	abc	123
+Beck	79.9	abc	123
+Cluck	5.96	abc	123
+Mary	33.33	abc	123
+Mary	4.329	abc	123
+Snow	55.71	abc	123
+Tom	-12.25	abc	123
+Tom	19	abc	123
+Tom	234.79	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: -- Try changing column for all partitions at once
+alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: query: -- Try changing column for all partitions at once
+alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(10,0)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	decimal(10,0)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	0	abc	123
+Beck	77	abc	123
+Beck	80	abc	123
+Cluck	6	abc	123
+Mary	33	abc	123
+Mary	4	abc	123
+Snow	56	abc	123
+Tom	-12	abc	123
+Tom	19	abc	123
+Tom	235	abc	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77	__HIVE_DEFAULT_PARTITION__	123
+Beck	80	__HIVE_DEFAULT_PARTITION__	123
+Cluck	6	__HIVE_DEFAULT_PARTITION__	123
+Mary	33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4	__HIVE_DEFAULT_PARTITION__	123
+Snow	56	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	235	__HIVE_DEFAULT_PARTITION__	123

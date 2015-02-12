@@ -51,11 +51,14 @@ class SeparatedValuesOutputFormat implements OutputFormat {
       char newDel = beeLine.getOpts().getDelimiterForDSV();
       // if delimiter changed, rebuild the csv preference
       if (newDel != curDel) {
+        // "" is passed as the end of line symbol in following function, as
+        // beeline itself adds newline
         csvPreference = new CsvPreference.Builder('"', newDel, "").build();
       }
     }
   }
 
+  @Override
   public int print(Rows rows) {
     updateCsvPreference();
 

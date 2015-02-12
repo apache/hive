@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
+import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
@@ -147,6 +150,7 @@ public class TezCompiler extends TaskCompiler {
           LOG.info("Found cycle in operator plan...");
           cycleFree = false;
           removeEventOperator(component);
+          break;
         }
       }
       LOG.info("Cycle free: " + cycleFree);
@@ -224,7 +228,7 @@ public class TezCompiler extends TaskCompiler {
     for (Operator<?> child : children) {
       if (!indexes.containsKey(child)) {
         connect(child, index, nodes, indexes, lowLinks, components);
-        lowLinks.put(child, Math.min(lowLinks.get(o), lowLinks.get(child)));
+        lowLinks.put(o, Math.min(lowLinks.get(o), lowLinks.get(child)));
       } else if (nodes.contains(child)) {
         lowLinks.put(o, Math.min(lowLinks.get(o), indexes.get(child)));
       }
@@ -303,7 +307,9 @@ public class TezCompiler extends TaskCompiler {
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
-    new ConstantPropagate().transform(procCtx.parseContext);
+    if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate().transform(procCtx.parseContext);
+    }
   }
 
   @Override
@@ -330,9 +336,16 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
         MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
 
+    opRules.put(new RuleRegExp("Recoginze a Sorted Merge Join operator to setup the right edge and"
+        + " stop traversing the DummyStore-MapJoin", CommonMergeJoinOperator.getOperatorName()
+        + "%"), new MergeJoinProc());
+
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
         FileSinkOperator.getOperatorName() + "%"),
         new CompositeProcessor(new FileSinkProcessor(), genTezWork));
+
+    opRules.put(new RuleRegExp("Split work - DummyStore", DummyStoreOperator.getOperatorName()
+        + "%"), genTezWork);
 
     opRules.put(new RuleRegExp("Handle Potential Analyze Command",
         TableScanOperator.getOperatorName() + "%"),

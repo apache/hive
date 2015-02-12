@@ -16,12 +16,18 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -32,6 +38,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
+import parquet.filter2.predicate.FilterPredicate;
 import parquet.hadoop.ParquetFileReader;
 import parquet.hadoop.ParquetInputFormat;
 import parquet.hadoop.ParquetInputSplit;
@@ -83,6 +90,8 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       taskAttemptID = new TaskAttemptID();
     }
 
+    setFilter(oldJobConf);
+
     // create a TaskInputOutputContext
     final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(oldJobConf, taskAttemptID);
 
@@ -107,6 +116,27 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     }
     if (valueObj == null) { // Should initialize the value for createValue
       valueObj = new ArrayWritable(Writable.class, new Writable[schemaSize]);
+    }
+  }
+
+  public void setFilter(final JobConf conf) {
+    String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+    String columnNamesString =
+      conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    if (serializedPushdown == null || columnNamesString == null || serializedPushdown.isEmpty() ||
+      columnNamesString.isEmpty()) {
+      return;
+    }
+
+    FilterPredicate p =
+      SearchArgumentFactory.create(Utilities.deserializeExpression(serializedPushdown))
+        .toFilterPredicate();
+    if (p != null) {
+      LOG.debug("Predicate filter for parquet is " + p.toString());
+      ParquetInputFormat.setFilterPredicate(conf, p);
+    } else {
+      LOG.debug("No predicate filter can be generated for " + TableScanDesc.FILTER_EXPR_CONF_STR +
+        " with the value of " + serializedPushdown);
     }
   }
 
@@ -218,6 +248,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
         LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
         split = null;
       } else {
+        populateReadMetadata(readContext.getReadSupportMetadata(), fileMetaData, conf);
         split = new ParquetInputSplit(finalPath,
                 splitStart,
                 splitLength,
@@ -232,5 +263,17 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       throw new IllegalArgumentException("Unknown split type: " + oldSplit);
     }
     return split;
+  }
+
+  /**
+   * Method populates the read metadata, using filemetadata and Hive configuration.
+   * @param metadata read metadata to populate
+   * @param fileMetaData parquet file metadata
+   * @param conf hive configuration
+   */
+  private void populateReadMetadata(Map<String, String> metadata, FileMetaData fileMetaData, JobConf conf) {
+    metadata.put("createdBy", fileMetaData.getCreatedBy());
+    metadata.put(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname,
+      String.valueOf(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
   }
 }

@@ -39,15 +39,22 @@
         <exclude>**/.classpath</exclude>
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
       </excludes>
 
       <includes>
+        <include>.arcconfig</include>
+        <include>.checkstyle</include>
+        <include>.gitattributes</include>
+        <include>.gitignore</include>
+        <include>.reviewboardrc</include>
         <include>DEVNOTES</include>
         <include>README.txt</include>
         <include>LICENSE</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>
         <include>RELEASE_NOTES.txt</include>
+        <include>accumulo-handler/**/*</include>
         <include>ant/**/*</include>
         <include>beeline/**/*</include>
         <include>bin/**/*</include>
@@ -57,7 +64,9 @@
         <include>conf/**/*</include>
         <include>contrib/**/*</include>
         <include>data/**/*</include>
+        <include>dev-support/**/*</include>
         <include>docs/**/*</include>
+        <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
         <include>hwi/**/*</include>
@@ -73,6 +82,8 @@
         <include>serde/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
+        <include>spark-client/**/*</include>
+        <include>testlibs/**/*</include>
         <include>testutils/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>

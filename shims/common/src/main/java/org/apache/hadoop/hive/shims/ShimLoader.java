@@ -33,6 +33,7 @@ public abstract class ShimLoader {
   private static JettyShims jettyShims;
   private static AppenderSkeleton eventCounter;
   private static HadoopThriftAuthBridge hadoopThriftAuthBridge;
+  private static SchedulerShim schedulerShim;
 
   /**
    * The names of the classes for shimming Hadoop for each major version.
@@ -41,7 +42,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Hadoop20Shims");
     HADOOP_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Hadoop20SShims");
     HADOOP_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Hadoop23Shims");
   }
@@ -54,7 +54,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
     JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
     JETTY_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
@@ -66,7 +65,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    EVENT_COUNTER_SHIM_CLASSES.put("0.20", "org.apache.hadoop.metrics.jvm.EventCounter");
     EVENT_COUNTER_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.log.metrics.EventCounter");
     EVENT_COUNTER_SHIM_CLASSES.put("0.23", "org.apache.hadoop.log.metrics.EventCounter");
   }
@@ -78,14 +76,15 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put("0.20",
-        "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge");
     HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put("0.20S",
-        "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge20S");
+        "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge");
     HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put("0.23",
         "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
   }
 
+
+  private static final String SCHEDULER_SHIM_CLASSE =
+    "org.apache.hadoop.hive.schshim.FairSchedulerShim";
 
   /**
    * Factory method to get an instance of HadoopShims based on the
@@ -124,6 +123,13 @@ public abstract class ShimLoader {
     return hadoopThriftAuthBridge;
   }
 
+  public static synchronized SchedulerShim getSchedulerShims() {
+    if (schedulerShim == null) {
+      schedulerShim = createShim(SCHEDULER_SHIM_CLASSE, SchedulerShim.class);
+    }
+    return schedulerShim;
+  }
+
   private static <T> T loadShims(Map<String, String> classMap, Class<T> xface) {
     String vers = getMajorVersion();
     String className = classMap.get(vers);
@@ -141,9 +147,7 @@ public abstract class ShimLoader {
 
   /**
    * Return the "major" version of Hadoop currently on the classpath.
-   * For releases in the 0.x series this is simply the first two
-   * components of the version, e.g. "0.20" or "0.23". Releases in
-   * the 1.x and 2.x series are mapped to the appropriate
+   * Releases in the 1.x and 2.x series are mapped to the appropriate
    * 0.x release series, e.g. 1.x is mapped to "0.20S" and 2.x
    * is mapped to "0.23".
    */
@@ -156,10 +160,7 @@ public abstract class ShimLoader {
           " (expected A.B.* format)");
     }
 
-    // Special handling for Hadoop 1.x and 2.x
     switch (Integer.parseInt(parts[0])) {
-    case 0:
-      break;
     case 1:
       return "0.20S";
     case 2:
@@ -167,19 +168,6 @@ public abstract class ShimLoader {
     default:
       throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }
-
-    String majorVersion = parts[0] + "." + parts[1];
-
-    // If we are running a security release, we won't have UnixUserGroupInformation
-    // (removed by HADOOP-6299 when switching to JAAS for Login)
-    try {
-      Class.forName("org.apache.hadoop.security.UnixUserGroupInformation");
-    } catch (ClassNotFoundException cnf) {
-      if ("0.20".equals(majorVersion)) {
-        majorVersion += "S";
-      }
-    }
-    return majorVersion;
   }
 
   private ShimLoader() {

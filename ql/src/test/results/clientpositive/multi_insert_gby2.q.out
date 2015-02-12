@@ -99,18 +99,14 @@ STAGE PLANS:
             mode: complete
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: double)
-              outputColumnNames: _col0
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e2
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.e2
 
   Stage: Stage-0
     Move Operator

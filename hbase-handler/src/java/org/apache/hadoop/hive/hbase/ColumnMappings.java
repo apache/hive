@@ -34,7 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import com.google.common.collect.Iterators;
@@ -42,11 +44,17 @@ import com.google.common.collect.Iterators;
 public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
 
   private final int keyIndex;
+  private final int timestampIndex;
   private final ColumnMapping[] columnsMapping;
 
   public ColumnMappings(List<ColumnMapping> columnMapping, int keyIndex) {
+    this(columnMapping, keyIndex, -1);
+  }
+
+  public ColumnMappings(List<ColumnMapping> columnMapping, int keyIndex, int timestampIndex) {
     this.columnsMapping = columnMapping.toArray(new ColumnMapping[columnMapping.size()]);
     this.keyIndex = keyIndex;
+    this.timestampIndex = timestampIndex;
   }
 
   @Override
@@ -109,7 +117,9 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     // where key extends LazyPrimitive<?, ?> and thus has type Category.PRIMITIVE
     for (int i = 0; i < columnNames.size(); i++) {
       ColumnMapping colMap = columnsMapping[i];
-      if (colMap.qualifierName == null && !colMap.hbaseRowKey) {
+      colMap.columnName = columnNames.get(i);
+      colMap.columnType = columnTypes.get(i);
+      if (colMap.qualifierName == null && !colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
         TypeInfo typeInfo = columnTypes.get(i);
         if ((typeInfo.getCategory() != ObjectInspector.Category.MAP) ||
             (((MapTypeInfo) typeInfo).getMapKeyTypeInfo().getCategory()
@@ -122,8 +132,14 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
                   + typeInfo.getTypeName());
         }
       }
-      colMap.columnName = columnNames.get(i);
-      colMap.columnType = columnTypes.get(i);
+      if (colMap.hbaseTimestamp) {
+        TypeInfo typeInfo = columnTypes.get(i);
+        if (!colMap.isCategory(PrimitiveCategory.TIMESTAMP) &&
+            !colMap.isCategory(PrimitiveCategory.LONG)) {
+          throw new SerDeException(serdeName + ": timestamp columns should be of " +
+              "timestamp or bigint type, but is mapped to " + typeInfo.getTypeName());
+        }
+      }
     }
   }
 
@@ -299,8 +315,16 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     return columnsMapping[keyIndex];
   }
 
+  public ColumnMapping getTimestampMapping() {
+    return timestampIndex < 0 ? null : columnsMapping[timestampIndex];
+  }
+
   public int getKeyIndex() {
     return keyIndex;
+  }
+
+  public int getTimestampIndex() {
+    return timestampIndex;
   }
 
   public ColumnMapping[] getColumnsMapping() {
@@ -326,6 +350,7 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
     byte[] qualifierNameBytes;
     List<Boolean> binaryStorage;
     boolean hbaseRowKey;
+    boolean hbaseTimestamp;
     String mappingSpec;
     String qualifierPrefix;
     byte[] qualifierPrefixBytes;
@@ -376,6 +401,15 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
 
     public boolean isCategory(ObjectInspector.Category category) {
       return columnType.getCategory() == category;
+    }
+
+    public boolean isCategory(PrimitiveCategory category) {
+      return columnType.getCategory() == ObjectInspector.Category.PRIMITIVE &&
+          ((PrimitiveTypeInfo)columnType).getPrimitiveCategory() == category;
+    }
+
+    public boolean isComparable() {
+      return binaryStorage.get(0) || isCategory(PrimitiveCategory.STRING);
     }
   }
 }

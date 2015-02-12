@@ -69,6 +69,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   // Hash table memory usage allowed; used in case of non-staged mapjoin.
   private float hashtableMemoryUsage;
+  protected boolean genJoinKeys = true;
 
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
@@ -97,7 +98,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       final List<TableDesc> valueTblDescs,final List<TableDesc> valueFilteredTblDescs,  List<String> outputColumnNames,
       final int posBigTable, final JoinCondDesc[] conds,
       final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix) {
-    super(values, outputColumnNames, noOuterJoin, conds, filters);
+    super(values, outputColumnNames, noOuterJoin, conds, filters, null);
     this.keys = keys;
     this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
@@ -191,6 +192,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   /**
    * @return the keys in string form
    */
+  @Override
   @Explain(displayName = "keys")
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
@@ -199,7 +201,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
     return keyMap;
   }
-   
+
   /**
    * @return the keys
    */
@@ -324,12 +326,24 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   public float getHashTableMemoryUsage() {
     return hashtableMemoryUsage;
   }
-  
+
   public void setCustomBucketMapJoin(boolean customBucketMapJoin) {
     this.customBucketMapJoin = customBucketMapJoin;
   }
-  
+
   public boolean getCustomBucketMapJoin() {
     return this.customBucketMapJoin;
+  }
+
+  public boolean isMapSideJoin() {
+    return true;
+  }
+
+  public void setGenJoinKeys(boolean genJoinKeys) {
+    this.genJoinKeys = genJoinKeys;
+  }
+
+  public boolean getGenJoinKeys() {
+    return genJoinKeys;
   }
 }

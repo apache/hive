@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,10 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
 
@@ -166,7 +170,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (joinConf.isBucketMapJoin()) {
 
       // disable auto parallelism for bucket map joins
-      parentRS.getConf().setAutoParallel(false);
+      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
 
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
       if (joinConf.getCustomBucketMapJoin()) {
@@ -183,13 +187,18 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         TezWork tezWork = context.currentTask.getWork();
         LOG.debug("connecting "+parentWork.getName()+" with "+myWork.getName());
         tezWork.connect(parentWork, myWork, edgeProp);
-        
+        if (edgeType == EdgeType.CUSTOM_EDGE) {
+          tezWork.setVertexType(myWork, VertexType.INITIALIZED_EDGES);
+        }
+
         ReduceSinkOperator r = null;
         if (parentRS.getConf().getOutputName() != null) {
           LOG.debug("Cloning reduce sink for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-              (ReduceSinkDesc) parentRS.getConf().clone(), parentRS.getParentOperators());
+              (ReduceSinkDesc) parentRS.getConf().clone(),
+              new RowSchema(parentRS.getSchema()),
+              parentRS.getParentOperators());
           context.clonedReduceSinks.add(r);
         } else {
           r = parentRS;

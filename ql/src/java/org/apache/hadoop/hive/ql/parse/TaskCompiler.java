@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,6 +58,9 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 /**
  * TaskCompiler is a the base class for classes that compile
@@ -277,6 +281,15 @@ public abstract class TaskCompiler {
       for (ExecDriver tsk : mrTasks) {
         tsk.setRetryCmdWhenFail(true);
       }
+      List<SparkTask> sparkTasks = Utilities.getSparkTasks(rootTasks);
+      for (SparkTask sparkTask : sparkTasks) {
+        sparkTask.setRetryCmdWhenFail(true);
+      }
+    }
+
+    Interner<TableDesc> interner = Interners.newStrongInterner();
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      GenMapRedUtils.internTableDesc(rootTask, interner);
     }
   }
 
@@ -377,14 +390,12 @@ public abstract class TaskCompiler {
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
     ParseContext clone = new ParseContext(conf,
-        pCtx.getQB(), pCtx.getParseTree(),
+        pCtx.getQB(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
-        pCtx.getTopSelOps(), pCtx.getOpParseCtx(), pCtx.getJoinContext(),
-        pCtx.getSmbMapJoinContext(), pCtx.getTopToTable(), pCtx.getTopToProps(),
-        pCtx.getFsopToTable(),
+        pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
-        pCtx.getListMapJoinOpsNoReducer(), pCtx.getGroupOpToInputTables(),
+        pCtx.getListMapJoinOpsNoReducer(),
         pCtx.getPrunedPartitions(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
@@ -392,7 +403,7 @@ public abstract class TaskCompiler {
         pCtx.getQueryProperties());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
-    clone.setMapJoinContext(pCtx.getMapJoinContext());
+    clone.setMapJoinOps(pCtx.getMapJoinOps());
     return clone;
   }
 }

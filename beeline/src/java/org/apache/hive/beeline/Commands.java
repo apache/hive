@@ -38,6 +38,7 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.SQLWarning;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -47,10 +48,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
+import org.apache.hive.jdbc.HiveStatement;
 
 
 public class Commands {
   private final BeeLine beeLine;
+  private static final int DEFAULT_QUERY_PROGRESS_INTERVAL = 1000;
+  private static final int DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT = 10 * 1000;
 
   /**
    * @param beeLine
@@ -124,11 +128,11 @@ public class Commands {
 
 
   public boolean history(String line) {
-    List hist = beeLine.getConsoleReader().getHistory().getHistoryList();
+    Iterator hist = beeLine.getConsoleReader().getHistory().entries();
     int index = 1;
-    for (Iterator i = hist.iterator(); i.hasNext(); index++) {
+    while(hist.hasNext()){
       beeLine.output(beeLine.getColorBuffer().pad(index + ".", 6)
-          .append(i.next().toString()));
+          .append(hist.next().toString()));
     }
     return true;
   }
@@ -721,14 +725,14 @@ public class Commands {
 
         String extra = beeLine.getConsoleReader().readLine(prompt.toString());
         if (!beeLine.isComment(extra)) {
-          line += " " + extra;
+          line += "\n" + extra;
         }
       }
     } catch (Exception e) {
       beeLine.handleException(e);
     }
 
-
+    line = line.trim();
     if (line.endsWith(";")) {
       line = line.substring(0, line.length() - 1);
     }
@@ -758,6 +762,7 @@ public class Commands {
     try {
       Statement stmnt = null;
       boolean hasResults;
+      Thread logThread = null;
 
       try {
         long start = System.currentTimeMillis();
@@ -767,7 +772,16 @@ public class Commands {
           hasResults = ((CallableStatement) stmnt).execute();
         } else {
           stmnt = beeLine.createStatement();
-          hasResults = stmnt.execute(sql);
+          if (beeLine.getOpts().isSilent()) {
+            hasResults = stmnt.execute(sql);
+          } else {
+            logThread = new Thread(createLogRunnable(stmnt));
+            logThread.setDaemon(true);
+            logThread.start();
+            hasResults = stmnt.execute(sql);
+            logThread.interrupt();
+            logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+          }
         }
 
         beeLine.showWarnings();
@@ -782,6 +796,11 @@ public class Commands {
               beeLine.info(beeLine.loc("rows-selected", count) + " "
                   + beeLine.locElapsedTime(end - start));
             } finally {
+              if (logThread != null) {
+                logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+                showRemainingLogsIfAny(stmnt);
+                logThread = null;
+              }
               rs.close();
             }
           } while (BeeLine.getMoreResults(stmnt));
@@ -792,6 +811,13 @@ public class Commands {
               + " " + beeLine.locElapsedTime(end - start));
         }
       } finally {
+        if (logThread != null) {
+          if (!logThread.isInterrupted()) {
+            logThread.interrupt();
+          }
+          logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+          showRemainingLogsIfAny(stmnt);
+        }
         if (stmnt != null) {
           stmnt.close();
         }
@@ -803,6 +829,62 @@ public class Commands {
     return true;
   }
 
+  private Runnable createLogRunnable(Statement statement) {
+    if (statement instanceof HiveStatement) {
+      final HiveStatement hiveStatement = (HiveStatement) statement;
+
+      Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+          while (hiveStatement.hasMoreLogs()) {
+            try {
+              // fetch the log periodically and output to beeline console
+              for (String log : hiveStatement.getQueryLog()) {
+                beeLine.info(log);
+              }
+              Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
+            } catch (SQLException e) {
+              beeLine.error(new SQLWarning(e));
+              return;
+            } catch (InterruptedException e) {
+              beeLine.debug("Getting log thread is interrupted, since query is done!");
+              showRemainingLogsIfAny(hiveStatement);
+              return;
+            }
+          }
+        }
+      };
+      return runnable;
+    } else {
+      beeLine.debug("The statement instance is not HiveStatement type: " + statement.getClass());
+      return new Runnable() {
+        @Override
+        public void run() {
+          // do nothing.
+        }
+      };
+    }
+  }
+
+  private void showRemainingLogsIfAny(Statement statement) {
+    if (statement instanceof HiveStatement) {
+      HiveStatement hiveStatement = (HiveStatement) statement;
+      List<String> logs;
+      do {
+        try {
+          logs = hiveStatement.getQueryLog();
+        } catch (SQLException e) {
+          beeLine.error(new SQLWarning(e));
+          return;
+        }
+        for (String log : logs) {
+          beeLine.info(log);
+        }
+      } while (logs.size() > 0);
+    } else {
+      beeLine.debug("The statement instance is not HiveStatement type: " + statement.getClass());
+    }
+  }
 
   public boolean quit(String line) {
     beeLine.setExit(true);

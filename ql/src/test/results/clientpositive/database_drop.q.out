@@ -352,6 +352,42 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@extab1
+PREHOOK: query: -- add a table, create index (give a name for index table)
+CREATE TABLE temp_tbl3 (id INT, name STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db5
+PREHOOK: Output: db5@temp_tbl3
+POSTHOOK: query: -- add a table, create index (give a name for index table)
+CREATE TABLE temp_tbl3 (id INT, name STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db5
+POSTHOOK: Output: db5@temp_tbl3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: db5@temp_tbl3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: db5@temp_tbl3
+PREHOOK: query: CREATE INDEX temp_tbl3_idx ON TABLE temp_tbl3(id) AS 'COMPACT' with DEFERRED REBUILD IN TABLE temp_tbl3_idx_tbl
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: db5@temp_tbl3
+POSTHOOK: query: CREATE INDEX temp_tbl3_idx ON TABLE temp_tbl3(id) AS 'COMPACT' with DEFERRED REBUILD IN TABLE temp_tbl3_idx_tbl
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: db5@temp_tbl3
+POSTHOOK: Output: db5@temp_tbl3_idx_tbl
+PREHOOK: query: ALTER INDEX temp_tbl3_idx ON temp_tbl3 REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@temp_tbl3
+PREHOOK: Output: db5@temp_tbl3_idx_tbl
+POSTHOOK: query: ALTER INDEX temp_tbl3_idx ON temp_tbl3 REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@temp_tbl3
+POSTHOOK: Output: db5@temp_tbl3_idx_tbl
+POSTHOOK: Lineage: temp_tbl3_idx_tbl._bucketname SIMPLE [(temp_tbl3)temp_tbl3.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: temp_tbl3_idx_tbl._offsets EXPRESSION [(temp_tbl3)temp_tbl3.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: temp_tbl3_idx_tbl.id SIMPLE [(temp_tbl3)temp_tbl3.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
 PREHOOK: type: DROPDATABASE
@@ -369,6 +405,8 @@ PREHOOK: Output: db5@part_tab3
 PREHOOK: Output: db5@temp_tbl
 PREHOOK: Output: db5@temp_tbl2
 PREHOOK: Output: db5@temp_tbl2_view
+PREHOOK: Output: db5@temp_tbl3
+PREHOOK: Output: db5@temp_tbl3_idx_tbl
 PREHOOK: Output: db5@temp_tbl_view
 POSTHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
@@ -387,5 +425,7 @@ POSTHOOK: Output: db5@part_tab3
 POSTHOOK: Output: db5@temp_tbl
 POSTHOOK: Output: db5@temp_tbl2
 POSTHOOK: Output: db5@temp_tbl2_view
+POSTHOOK: Output: db5@temp_tbl3
+POSTHOOK: Output: db5@temp_tbl3_idx_tbl
 POSTHOOK: Output: db5@temp_tbl_view
 #### A masked pattern was here ####

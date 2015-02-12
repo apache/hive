@@ -19,9 +19,12 @@
 package org.apache.hive.beeline;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -31,14 +34,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
-import org.apache.hive.beeline.HiveSchemaHelper;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
-import org.apache.hive.beeline.HiveSchemaTool;
+import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
 
 public class TestSchemaTool extends TestCase {
   private HiveSchemaTool schemaTool;
   private HiveConf hiveConf;
   private String testMetastoreDB;
+  private PrintStream errStream;
+  private PrintStream outStream;
 
   @Override
   protected void setUp() throws Exception {
@@ -48,8 +52,11 @@ public class TestSchemaTool extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveConf = new HiveConf(this.getClass());
-    schemaTool = new HiveSchemaTool(System.getProperty("test.tmp.dir"), hiveConf, "derby");
+    schemaTool = new HiveSchemaTool(
+        System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby");
     System.setProperty("beeLine.system.exit", "true");
+    errStream = System.err;
+    outStream = System.out;
   }
 
   @Override
@@ -58,6 +65,8 @@ public class TestSchemaTool extends TestCase {
     if (metaStoreDir.exists()) {
       FileUtils.forceDeleteOnExit(metaStoreDir);
     }
+    System.setOut(outStream);
+    System.setErr(errStream);
   }
 
   /**
@@ -121,12 +130,42 @@ public class TestSchemaTool extends TestCase {
       foundException = true;
     }
     if (!foundException) {
-      throw new Exception("Hive operations shouldn't pass with older version schema");
+      throw new Exception(
+          "Hive operations shouldn't pass with older version schema");
     }
 
-    // upgrade schema from 0.7.0 to latest
+    // Generate dummy pre-upgrade script with errors
+    String invalidPreUpgradeScript = writeDummyPreUpgradeScript(
+        0, "upgrade-0.11.0-to-0.12.0.derby.sql", "foo bar;");
+    // Generate dummy pre-upgrade scripts with valid SQL
+    String validPreUpgradeScript0 = writeDummyPreUpgradeScript(
+        0, "upgrade-0.12.0-to-0.13.0.derby.sql",
+        "CREATE TABLE schema_test0 (id integer);");
+    String validPreUpgradeScript1 = writeDummyPreUpgradeScript(
+        1, "upgrade-0.12.0-to-0.13.0.derby.sql",
+        "CREATE TABLE schema_test1 (id integer);");
+
+    // Capture system out and err
+    schemaTool.setVerbose(true);
+    OutputStream stderr = new ByteArrayOutputStream();
+    PrintStream errPrintStream = new PrintStream(stderr);
+    System.setErr(errPrintStream);
+    OutputStream stdout = new ByteArrayOutputStream();
+    PrintStream outPrintStream = new PrintStream(stdout);
+    System.setOut(outPrintStream);
+
+    // Upgrade schema from 0.7.0 to latest
     schemaTool.doUpgrade("0.7.0");
-    // verify that driver works fine with latest schema
+
+    // Verify that the schemaTool ran pre-upgrade scripts and ignored errors
+    assertTrue(stderr.toString().contains(invalidPreUpgradeScript));
+    assertTrue(stderr.toString().contains("foo"));
+    assertFalse(stderr.toString().contains(validPreUpgradeScript0));
+    assertFalse(stderr.toString().contains(validPreUpgradeScript1));
+    assertTrue(stdout.toString().contains(validPreUpgradeScript0));
+    assertTrue(stdout.toString().contains(validPreUpgradeScript1));
+
+    // Verify that driver works fine with latest schema
     schemaTool.verifySchemaVersion();
   }
 
@@ -152,9 +191,9 @@ public class TestSchemaTool extends TestCase {
     String expectedSQL = StringUtils.join(resultScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    String flattenedSql = HiveSchemaTool.buildCommand(
-        HiveSchemaHelper.getDbCommandParser("derby"),
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby")
+        .buildCommand(testScriptFile.getParentFile().getPath(),
+            testScriptFile.getName());
 
     assertEquals(expectedSQL, flattenedSql);
   }
@@ -194,9 +233,9 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaTool.buildCommand(
-        HiveSchemaHelper.getDbCommandParser("derby"),
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby")
+        .buildCommand(testScriptFile.getParentFile().getPath(),
+            testScriptFile.getName());
     assertFalse(flattenedSql.contains("RUN"));
     assertFalse(flattenedSql.contains("comment"));
     assertTrue(flattenedSql.contains(childTab1));
@@ -239,9 +278,9 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaTool.buildCommand(
-        HiveSchemaHelper.getDbCommandParser("mysql"),
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("mysql")
+        .buildCommand(testScriptFile.getParentFile().getPath(),
+            testScriptFile.getName());
     assertFalse(flattenedSql.contains("RUN"));
     assertFalse(flattenedSql.contains("comment"));
     assertTrue(flattenedSql.contains(childTab1));
@@ -282,8 +321,8 @@ public class TestSchemaTool extends TestCase {
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
     NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql");
-    String flattenedSql = HiveSchemaTool.buildCommand(testDbParser,
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
+        testScriptFile.getName());
 
     assertEquals(expectedSQL, flattenedSql);
   }
@@ -317,8 +356,8 @@ public class TestSchemaTool extends TestCase {
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
     NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql");
-    String flattenedSql = HiveSchemaTool.buildCommand(testDbParser,
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
+        testScriptFile.getName());
 
     assertEquals(expectedSQL, flattenedSql);
   }
@@ -358,14 +397,64 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaTool.buildCommand(
-        HiveSchemaHelper.getDbCommandParser("oracle"),
-        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("oracle")
+        .buildCommand(testScriptFile.getParentFile().getPath(),
+            testScriptFile.getName());
     assertFalse(flattenedSql.contains("@"));
     assertFalse(flattenedSql.contains("comment"));
     assertTrue(flattenedSql.contains(childTab1));
     assertTrue(flattenedSql.contains(childTab2));
     assertTrue(flattenedSql.contains(parentTab));
+  }
+
+  /**
+   * Test script formatting
+   * @throws Exception
+   */
+  public void testPostgresFilter() throws Exception {
+    String testScript[] = {
+        "-- this is a comment",
+        "DROP TABLE IF EXISTS fooTab;",
+        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT + ";",
+        "CREATE TABLE fooTab(id INTEGER);",
+        "DROP TABLE footab;",
+        "-- ending comment"
+    };
+
+    String expectedScriptWithOptionPresent[] = {
+        "DROP TABLE IF EXISTS fooTab",
+        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT,
+        "CREATE TABLE fooTab(id INTEGER)",
+        "DROP TABLE footab",
+    };
+
+    NestedScriptParser noDbOptParser = HiveSchemaHelper
+        .getDbCommandParser("postgres");
+    String expectedSQL = StringUtils.join(
+        expectedScriptWithOptionPresent, System.getProperty("line.separator")) +
+            System.getProperty("line.separator");
+    File testScriptFile = generateTestScript(testScript);
+    String flattenedSql = noDbOptParser.buildCommand(
+        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    assertEquals(expectedSQL, flattenedSql);
+
+    String expectedScriptWithOptionAbsent[] = {
+        "DROP TABLE IF EXISTS fooTab",
+        "CREATE TABLE fooTab(id INTEGER)",
+        "DROP TABLE footab",
+    };
+
+    NestedScriptParser dbOptParser = HiveSchemaHelper.getDbCommandParser(
+        "postgres",
+        PostgresCommandParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT,
+        null, null, null);
+    expectedSQL = StringUtils.join(
+        expectedScriptWithOptionAbsent, System.getProperty("line.separator")) +
+            System.getProperty("line.separator");
+    testScriptFile = generateTestScript(testScript);
+    flattenedSql = dbOptParser.buildCommand(
+        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    assertEquals(expectedSQL, flattenedSql);
   }
 
   private File generateTestScript(String [] stmts) throws IOException {
@@ -379,5 +468,22 @@ public class TestSchemaTool extends TestCase {
     }
     out.close();
     return testScriptFile;
+  }
+
+  /**
+   * Write out a dummy pre-upgrade script with given SQL statement.
+   */
+  private String writeDummyPreUpgradeScript(int index, String upgradeScriptName,
+      String sql) throws Exception {
+    String preUpgradeScript = "pre-" + index + "-" + upgradeScriptName;
+    String dummyPreScriptPath = System.getProperty("test.tmp.dir", "target/tmp") +
+        File.separatorChar + "scripts" + File.separatorChar + "metastore" +
+        File.separatorChar + "upgrade" + File.separatorChar + "derby" +
+        File.separatorChar + preUpgradeScript;
+    FileWriter fstream = new FileWriter(dummyPreScriptPath);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write(sql + System.getProperty("line.separator") + ";");
+    out.close();
+    return preUpgradeScript;
   }
 }

@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,6 +77,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import javax.annotation.Nullable;
 
 public class MetaStoreUtils {
 
@@ -258,7 +262,7 @@ public class MetaStoreUtils {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
-          if (oldStat != newStat) {
+          if (!oldStat.equals(newStat)) {
             return true;
           }
         }
@@ -357,15 +361,21 @@ public class MetaStoreUtils {
    *
    */
   static public Deserializer getDeserializer(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
+      org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError) throws
+          MetaException {
     String lib = table.getSd().getSerdeInfo().getSerializationLib();
     if (lib == null) {
       return null;
     }
     try {
       Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
-        asSubclass(Deserializer.class), conf);
-      SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
+              asSubclass(Deserializer.class), conf);
+      if (skipConfError) {
+        SerDeUtils.initializeSerDeWithoutErrorCheck(deserializer, conf,
+                MetaStoreUtils.getTableMetadata(table), null);
+      } else {
+        SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table), null);
+      }
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -374,6 +384,12 @@ public class MetaStoreUtils {
           + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
+  }
+
+  public static Class<? extends Deserializer> getDeserializerClass(
+      Configuration conf, org.apache.hadoop.hive.metastore.api.Table table) throws Exception {
+    String lib = table.getSd().getSerdeInfo().getSerializationLib();
+    return lib == null ? null : conf.getClassByName(lib).asSubclass(Deserializer.class);
   }
 
   /**
@@ -540,6 +556,26 @@ public class MetaStoreUtils {
           StringUtils.join(incompatibleCols, ',')
         );
     }
+  }
+
+  static boolean isCascadeNeededInAlterTable(Table oldTable, Table newTable) {
+    List<FieldSchema> oldCols = oldTable.getSd().getCols();
+    List<FieldSchema> newCols = newTable.getSd().getCols();
+
+    //currently cascade only supports add/replace columns and
+    //changing column type/position/name/comments
+    if (oldCols.size() != newCols.size()) {
+      return true;
+    } else {
+      for (int i = 0; i < oldCols.size(); i++) {
+        FieldSchema oldCol = oldCols.get(i);
+        FieldSchema newCol = newCols.get(i);
+        if(!oldCol.equals(newCol)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -993,7 +1029,7 @@ public class MetaStoreUtils {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
       partTypesString = partTypesString.concat(partTypesStringSep);
-      partTypesString = partTypesString.concat(partKey.getType());      
+      partTypesString = partTypesString.concat(partKey.getType());
       if (partStringSep.length() == 0) {
         partStringSep = "/";
         partTypesStringSep = ":";
@@ -1007,7 +1043,7 @@ public class MetaStoreUtils {
       schema
       .setProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
-          partTypesString);      
+          partTypesString);
     }
 
     if (parameters != null) {
@@ -1577,4 +1613,44 @@ public class MetaStoreUtils {
     }
     return new String[] {names[0], names[1]};
   }
+
+  /**
+   * Helper function to transform Nulls to empty strings.
+   */
+  private static final com.google.common.base.Function<String,String> transFormNullsToEmptyString
+      = new com.google.common.base.Function<String, String>() {
+    @Override
+    public java.lang.String apply(@Nullable java.lang.String string) {
+      if (string == null){
+        return "";
+      } else {
+        return string;
+      }
+    }
+  };
+
+  /**
+   * We have aneed to sanity-check the map before conversion from persisted objects to
+   * metadata thrift objects because null values in maps will cause a NPE if we send
+   * across thrift. Pruning is appropriate for most cases except for databases such as
+   * Oracle where Empty strings are stored as nulls, in which case we need to handle that.
+   * See HIVE-8485 for motivations for this.
+   */
+  public static Map<String,String> trimMapNulls(
+      Map<String,String> dnMap, boolean retrieveMapNullsAsEmptyStrings){
+    if (dnMap == null){
+      return null;
+    }
+    // Must be deterministic order map - see HIVE-8707
+    //   => we use Maps.newLinkedHashMap instead of Maps.newHashMap
+    if (retrieveMapNullsAsEmptyStrings) {
+      // convert any nulls present in map values to empty strings - this is done in the case
+      // of backing dbs like oracle which persist empty strings as nulls.
+      return Maps.newLinkedHashMap(Maps.transformValues(dnMap, transFormNullsToEmptyString));
+    } else {
+      // prune any nulls present in map values - this is the typical case.
+      return Maps.newLinkedHashMap(Maps.filterValues(dnMap, Predicates.notNull()));
+    }
+  }
+
 }

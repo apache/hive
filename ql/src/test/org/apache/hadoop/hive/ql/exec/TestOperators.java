@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +29,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
@@ -41,7 +37,6 @@ import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -49,8 +44,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -60,12 +53,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.junit.Test;
 
@@ -106,55 +96,6 @@ public class TestOperators extends TestCase {
       } catch (Throwable e) {
         throw new RuntimeException(e);
       }
-    }
-  }
-
-  public void testBaseFilterOperator() throws Throwable {
-    try {
-      System.out.println("Testing Filter Operator");
-      ExprNodeDesc col0 = TestExecDriver.getStringColumn("col0");
-      ExprNodeDesc col1 = TestExecDriver.getStringColumn("col1");
-      ExprNodeDesc col2 = TestExecDriver.getStringColumn("col2");
-      ExprNodeDesc zero = new ExprNodeConstantDesc("0");
-      ExprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc(">", col2, col1);
-      ExprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("==", col0, zero);
-      ExprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("and", func1, func2);
-      assert (func3 != null);
-      FilterDesc filterCtx = new FilterDesc(func3, false);
-
-      // Configuration
-      Operator<FilterDesc> op = OperatorFactory.get(FilterDesc.class);
-      op.setConf(filterCtx);
-
-      // runtime initialization
-      op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] {r[0].oi});
-
-      for (InspectableObject oner : r) {
-        op.processOp(oner.o, 0);
-      }
-
-      Map<Enum<?>, Long> results = op.getStats();
-      System.out.println("filtered = "
-          + results.get(FilterOperator.Counter.FILTERED));
-      assertEquals(Long.valueOf(4), results
-          .get(FilterOperator.Counter.FILTERED));
-      System.out.println("passed = "
-          + results.get(FilterOperator.Counter.PASSED));
-      assertEquals(Long.valueOf(1), results.get(FilterOperator.Counter.PASSED));
-
-      /*
-       * for(Enum e: results.keySet()) { System.out.println(e.toString() + ":" +
-       * results.get(e)); }
-       */
-      System.out.println("Filter Operator ok");
-
-    } catch (Throwable e) {
-      e.printStackTrace();
-      throw e;
     }
   }
 
@@ -328,10 +269,11 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing Map Operator");
       // initialize configuration
-      Configuration hconf = new JobConf(TestOperators.class);
+      JobConf hconf = new JobConf(TestOperators.class);
       HiveConf.setVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME,
           "hdfs:///testDir/testFile");
-      IOContext.get().setInputPath(new Path("hdfs:///testDir/testFile"));
+      IOContext.get(hconf).setInputPath(
+          new Path("hdfs:///testDir/testFile"));
 
       // initialize pathToAliases
       ArrayList<String> aliases = new ArrayList<String>();

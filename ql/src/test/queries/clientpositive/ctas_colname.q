@@ -3,9 +3,11 @@
 -- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
 
 -- group by
+
+
 explain
-create table summary as select *, sum(key), count(value) from src;
-create table summary as select *, sum(key), count(value) from src;
+create table summary as select *, key + 1, concat(value, value) from src limit 20;
+create table summary as select *, key + 1, concat(value, value) from src limit 20;
 describe formatted summary;
 select * from summary;
 
@@ -24,20 +26,20 @@ select * from x5;
 
 -- sub queries
 explain
-create table x6 as select * from (select *, max(key) from src1) a;
-create table x6 as select * from (select *, max(key) from src1) a;
+create table x6 as select * from (select *, key + 1 from src1) a;
+create table x6 as select * from (select *, key + 1 from src1) a;
 describe formatted x6;
 select * from x6;
 
 explain
-create table x7 as select * from (select * from src group by key) a;
-create table x7 as select * from (select * from src group by key) a;
+create table x7 as select * from (select *, count(value) from src group by key, value) a;
+create table x7 as select * from (select *, count(value) from src group by key, value) a;
 describe formatted x7;
 select * from x7;
 
 explain
-create table x8 as select * from (select * from src group by key having key < 9) a;
-create table x8 as select * from (select * from src group by key having key < 9) a;
+create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a;
+create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a;
 describe formatted x8;
 select * from x8;
 

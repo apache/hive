@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -53,13 +54,15 @@ public class QBMetaData {
   private static final Log LOG = LogFactory.getLog(QBMetaData.class.getName());
 
   public QBMetaData() {
-    aliasToTable = new HashMap<String, Table>();
+    // Must be deterministic order map - see HIVE-8707
+    aliasToTable = new LinkedHashMap<String, Table>();
     nameToDestTable = new HashMap<String, Table>();
     nameToDestPartition = new HashMap<String, Partition>();
     nameToDestFile = new HashMap<String, String>();
     nameToDestType = new HashMap<String, Integer>();
-    aliasToPartSpec = new HashMap<String, Map<String, String>>();
-    aliasToDPCtx  = new HashMap<String, DynamicPartitionCtx>();
+    // Must be deterministic order maps - see HIVE-8707
+    aliasToPartSpec = new LinkedHashMap<String, Map<String, String>>();
+    aliasToDPCtx  = new LinkedHashMap<String, DynamicPartitionCtx>();
   }
 
   // All getXXX needs toLowerCase() because they are directly called from
@@ -104,8 +107,16 @@ public class QBMetaData {
     return nameToDestTable.get(alias.toLowerCase());
   }
 
+  public Map<String, Table> getNameToDestTable() {
+    return nameToDestTable;
+  }
+
   public Partition getDestPartitionForAlias(String alias) {
     return nameToDestPartition.get(alias.toLowerCase());
+  }
+
+  public Map<String, Partition> getNameToDestPartition() {
+    return nameToDestPartition;
   }
 
   public String getDestFileForAlias(String alias) {

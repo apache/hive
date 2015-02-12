@@ -1,0 +1,303 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_6_1_txt(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_1_txt
+POSTHOOK: query: CREATE TABLE DECIMAL_6_1_txt(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_1_txt
+PREHOOK: query: CREATE TABLE DECIMAL_6_2_txt(key decimal(17,4), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_2_txt
+POSTHOOK: query: CREATE TABLE DECIMAL_6_2_txt(key decimal(17,4), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_2_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_6_1_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_6_1_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_2_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_6_2_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_2_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_6_2_txt
+PREHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_1
+POSTHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_1
+PREHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_2
+POSTHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_2
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_6_1 SELECT * FROM DECIMAL_6_1_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1_txt
+PREHOOK: Output: default@decimal_6_1
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_6_1 SELECT * FROM DECIMAL_6_1_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1_txt
+POSTHOOK: Output: default@decimal_6_1
+POSTHOOK: Lineage: decimal_6_1.key SIMPLE [(decimal_6_1_txt)decimal_6_1_txt.FieldSchema(name:key, type:decimal(10,5), comment:null), ]
+POSTHOOK: Lineage: decimal_6_1.value SIMPLE [(decimal_6_1_txt)decimal_6_1_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_6_2 SELECT * FROM DECIMAL_6_2_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_2_txt
+PREHOOK: Output: default@decimal_6_2
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_6_2 SELECT * FROM DECIMAL_6_2_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_2_txt
+POSTHOOK: Output: default@decimal_6_2
+POSTHOOK: Lineage: decimal_6_2.key SIMPLE [(decimal_6_2_txt)decimal_6_2_txt.FieldSchema(name:key, type:decimal(17,4), comment:null), ]
+POSTHOOK: Lineage: decimal_6_2.value SIMPLE [(decimal_6_2_txt)decimal_6_2_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM DECIMAL_6_1 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_6_1 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1
+#### A masked pattern was here ####
+NULL	-1234567890
+NULL	0
+NULL	3
+NULL	4
+NULL	1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-1
+-0.333	0
+-0.3	0
+0	0
+0	0
+0.333	0
+1	1
+1	1
+1.12	1
+1.122	1
+2	2
+3.14	3
+3.14	3
+3.14	4
+10	10
+10.73433	5
+124	124
+125.2	125
+23232.23435	2
+PREHOOK: query: SELECT * FROM DECIMAL_6_2 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_6_2 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+NULL	0
+-1234567890.1235	-1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-1
+-0.333	0
+-0.3	0
+0	0
+0	0
+0.333	0
+1	1
+1	1
+1.12	1
+1.122	1
+2	2
+3.14	3
+3.14	3
+3.14	4
+10	10
+10.7343	5
+124	124
+125.2	125
+23232.2344	2
+2389432.2375	3
+2389432.2375	4
+1234567890.1235	1234567890
+PREHOOK: query: SELECT T.key from (
+  SELECT key, value from DECIMAL_6_1
+  UNION ALL
+  SELECT key, value from DECIMAL_6_2
+) T order by T.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1
+PREHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT T.key from (
+  SELECT key, value from DECIMAL_6_1
+  UNION ALL
+  SELECT key, value from DECIMAL_6_2
+) T order by T.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+-1234567890.1235
+-4400
+-4400
+-1255.49
+-1255.49
+-1.122
+-1.122
+-1.12
+-1.12
+-0.333
+-0.333
+-0.3
+-0.3
+0
+0
+0
+0
+0.333
+0.333
+1
+1
+1
+1
+1.12
+1.12
+1.122
+1.122
+2
+2
+3.14
+3.14
+3.14
+3.14
+3.14
+3.14
+10
+10
+10.7343
+10.73433
+124
+124
+125.2
+125.2
+23232.23435
+23232.2344
+2389432.2375
+2389432.2375
+1234567890.1235
+PREHOOK: query: CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@decimal_6_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_3
+POSTHOOK: query: CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_3
+PREHOOK: query: desc DECIMAL_6_3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_6_3
+POSTHOOK: query: desc DECIMAL_6_3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_6_3
+k                   	double              	                    
+v                   	int                 	                    
+PREHOOK: query: SELECT * FROM DECIMAL_6_3 ORDER BY k, v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_6_3 ORDER BY k, v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_3
+#### A masked pattern was here ####
+NULL	-695344902
+NULL	0
+NULL	33
+NULL	44
+NULL	695344902
+-4394.5	48400
+-1249.99	-13805
+4.378	-121
+4.38	-11
+5.167	0
+5.2	0
+5.5	0
+5.5	0
+5.833	0
+6.5	11
+6.5	11
+6.62	11
+6.622	11
+7.5	22
+8.64	33
+8.64	33
+8.64	44
+15.5	110
+16.23433	55
+129.5	1364
+130.7	1375
+23237.73435	22

@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -195,8 +194,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
         //authorize against the table operation so that location permissions can be checked if any
 
-        if (HiveConf.getBoolVar(context.getConf(),
-          HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+        if (HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
           authorize(table, Privilege.CREATE);
         }
       } catch (HiveException ex) {

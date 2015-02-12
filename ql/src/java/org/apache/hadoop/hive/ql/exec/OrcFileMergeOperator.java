@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Fast file merge operator for ORC files.
@@ -47,7 +46,7 @@ public class OrcFileMergeOperator extends
   // not be merged.
   CompressionKind compression = null;
   long compressBuffSize = 0;
-  List<Integer> version;
+  OrcFile.Version version;
   int columnCount = 0;
   int rowIndexStride = 0;
 
@@ -64,6 +63,7 @@ public class OrcFileMergeOperator extends
 
   private void processKeyValuePairs(Object key, Object value)
       throws HiveException {
+    String filePath = "";
     try {
       OrcFileValueWrapper v;
       OrcFileKeyWrapper k;
@@ -72,6 +72,7 @@ public class OrcFileMergeOperator extends
       } else {
         k = (OrcFileKeyWrapper) key;
       }
+      filePath = k.getInputPath().toUri().getPath();
 
       fixTmpPath(k.getInputPath().getParent());
 
@@ -88,13 +89,16 @@ public class OrcFileMergeOperator extends
       if (outWriter == null) {
         compression = k.getCompression();
         compressBuffSize = k.getCompressBufferSize();
-        version = k.getVersionList();
+        version = k.getVersion();
         columnCount = k.getTypes().get(0).getSubtypesCount();
         rowIndexStride = k.getRowIndexStride();
 
         // block size and stripe size will be from config
         outWriter = OrcFile.createWriter(outPath,
-            OrcFile.writerOptions(jc).compress(compression)
+            OrcFile.writerOptions(jc)
+                .compress(compression)
+                .version(version)
+                .rowIndexStride(rowIndexStride)
                 .inspector(reader.getObjectInspector()));
         LOG.info("ORC merge file output path: " + outPath);
       }
@@ -131,6 +135,16 @@ public class OrcFileMergeOperator extends
       this.exception = true;
       closeOp(true);
       throw new HiveException(e);
+    } finally {
+      if (fdis != null) {
+        try {
+          fdis.close();
+        } catch (IOException e) {
+          throw new HiveException(String.format("Unable to close file %s", filePath), e);
+        } finally {
+          fdis = null;
+        }
+      }
     }
   }
 
@@ -155,7 +169,7 @@ public class OrcFileMergeOperator extends
 
     }
 
-    if (!k.getVersionList().equals(version)) {
+    if (!k.getVersion().equals(version)) {
       LOG.info("Incompatible ORC file merge! Version does not match for "
           + k.getInputPath());
       return false;

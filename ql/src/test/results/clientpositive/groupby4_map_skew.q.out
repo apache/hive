@@ -44,10 +44,10 @@ STAGE PLANS:
           Select Operator
             expressions: UDFToInteger(_col0) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -75,7 +75,7 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT count(1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.key EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

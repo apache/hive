@@ -50,6 +50,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.thrift.TException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -167,6 +168,11 @@ public class TestStreaming {
 
     dropDB(msClient, dbName2);
     createDbAndTable(msClient, dbName2, tblName2, partitionVals);
+  }
+
+  @After
+  public void cleanup() throws Exception {
+    msClient.close();
   }
 
   private static List<FieldSchema> getPartitionKeys() {
@@ -664,7 +670,7 @@ public class TestStreaming {
     public void run() {
       TransactionBatch txnBatch = null;
       try {
-        txnBatch =  conn.fetchTransactionBatch(1000, writer);
+        txnBatch =  conn.fetchTransactionBatch(10, writer);
         while (txnBatch.remainingTransactions() > 0) {
           txnBatch.beginNextTransaction();
           txnBatch.write(data.getBytes());
@@ -731,7 +737,7 @@ public class TestStreaming {
           throws Exception {
     Database db = new Database();
     db.setName(databaseName);
-    String dbLocation = "raw://" + dbFolder.newFolder(databaseName + ".db").getCanonicalPath();
+    String dbLocation = "raw://" + dbFolder.newFolder(databaseName + ".db").toURI().getPath();
     db.setLocationUri(dbLocation);
     client.createDatabase(db);
 

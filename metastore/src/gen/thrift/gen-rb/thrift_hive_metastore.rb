@@ -431,6 +431,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      send_alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      recv_alter_table_with_cascade()
+    end
+
+    def send_alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      send_message('alter_table_with_cascade', Alter_table_with_cascade_args, :dbname => dbname, :tbl_name => tbl_name, :new_tbl => new_tbl, :cascade => cascade)
+    end
+
+    def recv_alter_table_with_cascade()
+      result = receive_message(Alter_table_with_cascade_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def add_partition(new_part)
       send_add_partition(new_part)
       return recv_add_partition()
@@ -1961,6 +1977,51 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
     end
 
+    def get_next_notification(rqst)
+      send_get_next_notification(rqst)
+      return recv_get_next_notification()
+    end
+
+    def send_get_next_notification(rqst)
+      send_message('get_next_notification', Get_next_notification_args, :rqst => rqst)
+    end
+
+    def recv_get_next_notification()
+      result = receive_message(Get_next_notification_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_next_notification failed: unknown result')
+    end
+
+    def get_current_notificationEventId()
+      send_get_current_notificationEventId()
+      return recv_get_current_notificationEventId()
+    end
+
+    def send_get_current_notificationEventId()
+      send_message('get_current_notificationEventId', Get_current_notificationEventId_args)
+    end
+
+    def recv_get_current_notificationEventId()
+      result = receive_message(Get_current_notificationEventId_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
+    end
+
+    def fire_listener_event(rqst)
+      send_fire_listener_event(rqst)
+      return recv_fire_listener_event()
+    end
+
+    def send_fire_listener_event(rqst)
+      send_message('fire_listener_event', Fire_listener_event_args, :rqst => rqst)
+    end
+
+    def recv_fire_listener_event()
+      result = receive_message(Fire_listener_event_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fire_listener_event failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -2297,6 +2358,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_table_with_environment_context', seqid)
+    end
+
+    def process_alter_table_with_cascade(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_table_with_cascade_args)
+      result = Alter_table_with_cascade_result.new()
+      begin
+        @handler.alter_table_with_cascade(args.dbname, args.tbl_name, args.new_tbl, args.cascade)
+      rescue ::InvalidOperationException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_table_with_cascade', seqid)
     end
 
     def process_add_partition(seqid, iprot, oprot)
@@ -3464,6 +3538,27 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'show_compact', seqid)
     end
 
+    def process_get_next_notification(seqid, iprot, oprot)
+      args = read_args(iprot, Get_next_notification_args)
+      result = Get_next_notification_result.new()
+      result.success = @handler.get_next_notification(args.rqst)
+      write_result(result, oprot, 'get_next_notification', seqid)
+    end
+
+    def process_get_current_notificationEventId(seqid, iprot, oprot)
+      args = read_args(iprot, Get_current_notificationEventId_args)
+      result = Get_current_notificationEventId_result.new()
+      result.success = @handler.get_current_notificationEventId()
+      write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_fire_listener_event(seqid, iprot, oprot)
+      args = read_args(iprot, Fire_listener_event_args)
+      result = Fire_listener_event_result.new()
+      result.success = @handler.fire_listener_event(args.rqst)
+      write_result(result, oprot, 'fire_listener_event', seqid)
+    end
+
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
@@ -4382,6 +4477,46 @@ module ThriftHiveMetastore
   end
 
   class Alter_table_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_table_with_cascade_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TBL_NAME = 2
+    NEW_TBL = 3
+    CASCADE = 4
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_TBL => {:type => ::Thrift::Types::STRUCT, :name => 'new_tbl', :class => ::Table},
+      CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_table_with_cascade_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
@@ -7902,6 +8037,101 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowCompactResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_next_notification_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::NotificationEventRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_next_notification_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEventResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_current_notificationEventId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_current_notificationEventId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CurrentNotificationEventId}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Fire_listener_event_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::FireEventRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Fire_listener_event_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FireEventResponse}
     }
 
     def struct_fields; FIELDS; end

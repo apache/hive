@@ -43,10 +43,10 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: c1 (type: string)
-              outputColumnNames: c1
+              outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: avg(c1), sum(c1), count(c1)
+                aggregations: avg(_col0), sum(_col0), count(_col0)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -60,17 +60,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint)
-            outputColumnNames: _col0, _col1, _col2
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -58,6 +59,8 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 import java.io.IOException;
@@ -99,7 +102,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
           deletePath = createTargetPath(targetPath, fs);
         }
-        if (!Hive.renameFile(conf, sourcePath, targetPath, fs, true, false)) {
+        if (!Hive.moveFile(conf, sourcePath, targetPath, fs, true, false)) {
           try {
             if (deletePath != null) {
               fs.delete(deletePath, true);
@@ -145,7 +148,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private Path createTargetPath(Path targetPath, FileSystem fs) throws IOException {
     Path deletePath = null;
     Path mkDirPath = targetPath.getParent();
-    if (mkDirPath != null & !fs.exists(mkDirPath)) {
+    if (mkDirPath != null && !fs.exists(mkDirPath)) {
       Path actualPath = mkDirPath;
       // targetPath path is /x/y/z/1/2/3 here /x/y/z is present in the file system
       // create the structure till /x/y/z/1/2 to work rename for multilevel directory
@@ -158,8 +161,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
+      HadoopShims shims = ShimLoader.getHadoopShims();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
-        fs.setPermission(mkDirPath, fs.getFileStatus(actualPath).getPermission());
+        try {
+          HadoopShims.HdfsFileStatus status = shims.getFullFileStatus(conf, fs, actualPath);
+          shims.setFullFileStatus(conf, status, fs, actualPath);
+        } catch (Exception e) {
+          LOG.warn("Error setting permissions or group of " + actualPath, e);
+        }
       }
     }
     return deletePath;
@@ -259,7 +268,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dirs = srcFs.globStatus(tbd.getSourcePath());
             files = new ArrayList<FileStatus>();
             for (int i = 0; (dirs != null && i < dirs.length); i++) {
-              files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath())));
+              files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)));
               // We only check one file, so exit the loop when we have at least
               // one.
               if (files.size() > 0) {
@@ -353,6 +362,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
             }
 
+            long startTime = System.currentTimeMillis();
             // load the list of DP partitions and return the list of partition specs
             // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
             // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -360,7 +370,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // iterate over it and call loadPartition() here.
             // The reason we don't do inside HIVE-1361 is the latter is large and we
             // want to isolate any potential issue it may introduce.
-            ArrayList<LinkedHashMap<String, String>> dp =
+            Map<Map<String, String>, Partition> dp =
               db.loadDynamicPartitions(
                 tbd.getSourcePath(),
                 tbd.getTable().getTableName(),
@@ -370,16 +380,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getHoldDDLTime(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
+            console.printInfo("\t Time taken for load dynamic partitions : "  +
+                (System.currentTimeMillis() - startTime));
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
                   " To turn off this error, set hive.error.on.empty.partition=false.");
             }
 
+            startTime = System.currentTimeMillis();
             // for each partition spec, get the partition
             // and put it to WriteEntity for post-exec hook
-            for (LinkedHashMap<String, String> partSpec: dp) {
-              Partition partn = db.getPartition(table, partSpec, false);
+            for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
+              Partition partn = entry.getValue();
 
               if (bucketCols != null || sortCols != null) {
                 updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
@@ -412,8 +425,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                     table.getCols());
               }
 
-              console.printInfo("\tLoading partition " + partSpec);
+              console.printInfo("\tLoading partition " + entry.getKey());
             }
+            console.printInfo("\t Time taken for adding to write entity : " +
+                (System.currentTimeMillis() - startTime));
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),

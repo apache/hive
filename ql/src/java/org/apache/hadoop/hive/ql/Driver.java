@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -62,6 +65,7 @@ import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Redactor;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -69,7 +73,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -109,10 +112,11 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -149,7 +153,7 @@ public class Driver implements CommandProcessor {
 
   private String userName;
 
-  private boolean checkConcurrency() throws SemanticException {
+  private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
       LOG.info("Concurrency mode is disabled, not creating a lock manager");
@@ -219,7 +223,7 @@ public class Driver implements CommandProcessor {
         String tableName = "result";
         List<FieldSchema> lst = null;
         try {
-          lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer());
+          lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(conf));
         } catch (Exception e) {
           LOG.warn("Error getting schema: "
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -377,6 +381,8 @@ public class Driver implements CommandProcessor {
     String queryId = QueryPlan.makeQueryId();
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
+    SessionState.get().setupQueryCurrentTimestamp();
+
     try {
       command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);
@@ -390,6 +396,14 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
+      // Initialize the transaction manager.  This must be done before analyze is called.  Also
+      // record the valid transactions for this query.  We have to do this at compile time
+      // because we use the information in planning the query.  Also,
+      // we want to record it at this point so that users see data valid at the point that they
+      // submit the query.
+      SessionState.get().initTxnMgr(conf);
+      recordValidTxns();
+
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
@@ -401,6 +415,8 @@ public class Driver implements CommandProcessor {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
         hookCtx.setUserName(userName);
+        hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
+        hookCtx.setCommand(command);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
           tree = hook.preAnalyze(hookCtx, tree);
         }
@@ -422,9 +438,15 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId);
+      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
+        SessionState.get().getCommandType());
 
       String queryStr = plan.getQueryStr();
+      List<Redactor> queryRedactors = getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
+      for (Redactor redactor : queryRedactors) {
+        redactor.setConf(conf);
+        queryStr = redactor.redactQuery(queryStr);
+      }
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
@@ -456,6 +478,14 @@ public class Driver implements CommandProcessor {
         }
       }
 
+      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+        String explainOutput = getExplainOutput(sem, plan, tree.dump());
+        if (explainOutput != null) {
+          LOG.info("EXPLAIN output for queryid " + queryId + " : "
+              + explainOutput);
+        }
+      }
+
       return 0;
     } catch (Exception e) {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
@@ -483,11 +513,38 @@ public class Driver implements CommandProcessor {
   }
 
   /**
+   * Returns EXPLAIN EXTENDED output for a semantically
+   * analyzed query.
+   *
+   * @param sem semantic analyzer for analyzed query
+   * @param plan query plan
+   * @param astStringTree AST tree dump
+   * @throws java.io.IOException
+   */
+  private String getExplainOutput(BaseSemanticAnalyzer sem, QueryPlan plan,
+      String astStringTree) throws IOException {
+    String ret = null;
+    ExplainTask task = new ExplainTask();
+    task.initialize(conf, plan, null);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PrintStream ps = new PrintStream(baos);
+    try {
+      List<Task<?>> rootTasks = sem.getRootTasks();
+      task.getJSONPlan(ps, astStringTree, rootTasks, sem.getFetchTask(), false, true, true);
+      ret = baos.toString();
+    } catch (Exception e) {
+      LOG.warn("Exception generating explain output: " + e, e);
+    }
+
+    return ret;
+  }
+
+  /**
    * Do authorization using post semantic analysis information in the semantic analyzer
    * The original command is also passed so that authorization interface can provide
    * more useful information in logs.
-   * @param sem
-   * @param command
+   * @param sem SemanticAnalyzer used to parse input query
+   * @param command input query
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -534,7 +591,7 @@ public class Driver implements CommandProcessor {
     }
     if (outputs != null && outputs.size() > 0) {
       for (WriteEntity write : outputs) {
-        if (write.isDummy()) {
+        if (write.isDummy() || write.isPathType()) {
           continue;
         }
         if (write.getType() == Entity.Type.DATABASE) {
@@ -567,7 +624,7 @@ public class Driver implements CommandProcessor {
       //determine if partition level privileges should be checked for input tables
       Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy() || read.getType() == Entity.Type.DATABASE) {
+        if (read.isDummy() || read.isPathType() || read.getType() == Entity.Type.DATABASE) {
           continue;
         }
         Table tbl = read.getTable();
@@ -594,7 +651,7 @@ public class Driver implements CommandProcessor {
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy()) {
+        if (read.isDummy() || read.isPathType()) {
           continue;
         }
         if (read.getType() == Entity.Type.DATABASE) {
@@ -650,15 +707,13 @@ public class Driver implements CommandProcessor {
         || op.equals(HiveOperation.QUERY)) {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
-      Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
 
       for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
           .getParseContext().getTopOps().entrySet()) {
         Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-        if (topOp instanceof TableScanOperator
-            && tsoTopMap.containsKey(topOp)) {
+        if (topOp instanceof TableScanOperator) {
           TableScanOperator tableScanOp = (TableScanOperator) topOp;
-          Table tbl = tsoTopMap.get(tableScanOp);
+          Table tbl = tableScanOp.getConf().getTableMetadata();
           List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
           List<FieldSchema> columns = tbl.getCols();
           List<String> cols = new ArrayList<String>();
@@ -755,7 +810,7 @@ public class Driver implements CommandProcessor {
         break;
       case DFS_DIR:
       case LOCAL_DIR:
-        objName = privObject.getD();
+        objName = privObject.getD().toString();
         break;
       case FUNCTION:
         if(privObject.getDatabase() != null) {
@@ -870,28 +925,24 @@ public class Driver implements CommandProcessor {
 
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
-  private int recordValidTxns() {
-    try {
-      ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
-      String txnStr = txns.toString();
-      conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
-      LOG.debug("Encoding valid txns info " + txnStr);
-      return 0;
-    } catch (LockException e) {
-      errorMessage = "FAILED: Error in determing valid transactions: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return 10;
-    }
+  private void recordValidTxns() throws LockException {
+    ValidTxnList txns = SessionState.get().getTxnMgr().getValidTxns();
+    String txnStr = txns.toString();
+    conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    LOG.debug("Encoding valid txns info " + txnStr);
+    // TODO I think when we switch to cross query transactions we need to keep this list in
+    // session state rather than agressively encoding it in the conf like this.  We can let the
+    // TableScanOperators then encode it in the conf before calling the input formats.
   }
 
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
-   * obtained from he inputs and outputs populated by the compiler. The lock acuisition scheme is
+   * obtained from the inputs and outputs populated by the compiler. The lock acuisition scheme is
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
    * sure that the locks are lexicographically sorted.
+   *
+   * This method also records the list of valid transactions.  This must be done after any
+   * transactions have been opened and locks acquired.
    **/
   private int acquireLocksAndOpenTxn() {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
@@ -927,6 +978,9 @@ public class Driver implements CommandProcessor {
             desc.setTransactionId(txnId);
           }
         }
+
+        // TODO Once we move to cross query transactions we need to add the open transaction to
+        // our list of valid transactions.  We don't have a way to do that right now.
       }
 
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
@@ -1103,29 +1157,7 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TIME_TO_SUBMIT);
 
-    boolean requireLock = false;
-    boolean ckLock = false;
-    SessionState ss = SessionState.get();
-    try {
-      ckLock = checkConcurrency();
-      try {
-        ss.initTxnMgr(conf);
-      } catch (LockException e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
-    } catch (SemanticException e) {
-      errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return createProcessorResponse(10);
-    }
-    int ret = recordValidTxns();
-    if (ret != 0) {
-      return createProcessorResponse(ret);
-    }
-
+    int ret;
     if (!alreadyCompiled) {
       ret = compileInternal(command);
       if (ret != 0) {
@@ -1136,34 +1168,9 @@ public class Driver implements CommandProcessor {
     // the reason that we set the txn manager for the cxt here is because each
     // query has its own ctx object. The txn mgr is shared across the
     // same instance of Driver, which can run multiple queries.
-    ctx.setHiveTxnManager(ss.getTxnMgr());
+    ctx.setHiveTxnManager(SessionState.get().getTxnMgr());
 
-    if (ckLock) {
-      boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
-      if(lockOnlyMapred) {
-        Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
-        taskQueue.addAll(plan.getRootTasks());
-        while (taskQueue.peek() != null) {
-          Task<? extends Serializable> tsk = taskQueue.remove();
-          requireLock = requireLock || tsk.requireLock();
-          if(requireLock) {
-            break;
-          }
-          if (tsk instanceof ConditionalTask) {
-            taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
-          }
-          if(tsk.getChildTasks()!= null) {
-            taskQueue.addAll(tsk.getChildTasks());
-          }
-          // does not add back up task here, because back up task should be the same
-          // type of the original task.
-        }
-      } else {
-        requireLock = true;
-      }
-    }
-
-    if (requireLock) {
+    if (requiresLock()) {
       ret = acquireLocksAndOpenTxn();
       if (ret != 0) {
         try {
@@ -1216,6 +1223,32 @@ public class Driver implements CommandProcessor {
     }
 
     return createProcessorResponse(ret);
+  }
+
+  private boolean requiresLock() {
+    if (!checkConcurrency()) {
+      return false;
+    }
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
+      return true;
+    }
+    Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
+    taskQueue.addAll(plan.getRootTasks());
+    while (taskQueue.peek() != null) {
+      Task<? extends Serializable> tsk = taskQueue.remove();
+      if (tsk.requireLock()) {
+        return true;
+      }
+      if (tsk instanceof ConditionalTask) {
+        taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
+      }
+      if (tsk.getChildTasks()!= null) {
+        taskQueue.addAll(tsk.getChildTasks());
+      }
+      // does not add back up task here, because back up task should be the same
+      // type of the original task.
+    }
+    return false;
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
@@ -1309,14 +1342,15 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
           ((PreExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
-              ShimLoader.getHadoopShims().getUGIForConf(conf));
+              Utils.getUGI());
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
         }
       }
 
       int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
-        + Utilities.getTezTasks(plan.getRootTasks()).size();
+        + Utilities.getTezTasks(plan.getRootTasks()).size()
+        + Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         console.printInfo("Query ID = " + plan.getQueryId());
         console.printInfo("Total jobs = " + jobs);
@@ -1478,7 +1512,7 @@ public class Driver implements CommandProcessor {
 
           ((PostExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
               (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
-                  : null), ShimLoader.getHadoopShims().getUGIForConf(conf));
+                  : null), Utils.getUGI());
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
         }
@@ -1597,6 +1631,7 @@ public class Driver implements CommandProcessor {
       if (LOG.isInfoEnabled()){
         LOG.info("Starting task [" + tsk + "] in parallel");
       }
+      tskRun.setOperationLog(OperationLog.getCurrentOperationLog());
       tskRun.start();
     } else {
       if (LOG.isInfoEnabled()){

@@ -1,8 +1,12 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import junit.framework.Assert;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -15,20 +19,28 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.HiveEndPoint;
 import org.apache.hive.hcatalog.streaming.StreamingConnection;
+import org.apache.hive.hcatalog.streaming.StreamingException;
 import org.apache.hive.hcatalog.streaming.TransactionBatch;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  */
@@ -140,7 +153,7 @@ public class TestCompactor {
     executeStatementOnDriver("CREATE EXTERNAL TABLE " + tblNameStg + "(a INT, b STRING)" +
       " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n'" +
       " STORED AS TEXTFILE" +
-      " LOCATION '" + stagingFolder.newFolder() + "'", driver);
+      " LOCATION '" + stagingFolder.newFolder().toURI().getPath() + "'", driver);
 
     executeStatementOnDriver("load data local inpath '" + BASIC_FILE_NAME +
       "' overwrite into table " + tblNameStg, driver);
@@ -183,7 +196,7 @@ public class TestCompactor {
     Assert.assertEquals("numNdv a", 1, colAStats.getNumDVs());
     StringColumnStatsData colBStats = colStats.get(1).getStatsData().getStringStats();
     Assert.assertEquals("maxColLen b", 3, colBStats.getMaxColLen());
-    Assert.assertEquals("avgColLen b", 3.0, colBStats.getAvgColLen());
+    Assert.assertEquals("avgColLen b", 3.0, colBStats.getAvgColLen(), 0.01);
     Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
     Assert.assertEquals("nunDVs", 2, colBStats.getNumDVs());
 
@@ -229,9 +242,10 @@ public class TestCompactor {
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
     t.setHiveConf(conf);
-    MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
-    stop.boolVal = true;
-    t.init(stop);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    t.init(stop, looped);
     t.run();
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -264,6 +278,299 @@ public class TestCompactor {
       colAStatsPart2, colStats.get(0).getStatsData().getLongStats());
     Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
       colBStatsPart2, colStats.get(1).getStatsData().getStringStats());
+  }
+
+  @Test
+  public void minorCompactWhileStreaming() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+        " STORED AS ORC", driver);
+
+    HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
+    StreamingConnection connection = endPt.newConnection(false);
+    try {
+      // Write a couple of batches
+      for (int i = 0; i < 2; i++) {
+        writeBatch(connection, writer, false);
+      }
+
+      // Start a third batch, but don't close it.
+      writeBatch(connection, writer, true);
+
+      // Now, compact
+      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
+      Worker t = new Worker();
+      t.setThreadId((int) t.getId());
+      t.setHiveConf(conf);
+      AtomicBoolean stop = new AtomicBoolean(true);
+      AtomicBoolean looped = new AtomicBoolean();
+      t.init(stop, looped);
+      t.run();
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat =
+          fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.deltaFileFilter);
+      String[] names = new String[stat.length];
+      Path resultFile = null;
+      for (int i = 0; i < names.length; i++) {
+        names[i] = stat[i].getPath().getName();
+        if (names[i].equals("delta_0000001_0000004")) {
+          resultFile = stat[i].getPath();
+        }
+      }
+      Arrays.sort(names);
+      Assert.assertArrayEquals(names, new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"});
+      checkExpectedTxnsPresent(null, new Path[]{resultFile}, 0, 1L, 4L);
+
+    } finally {
+      connection.close();
+    }
+  }
+
+  @Test
+  public void majorCompactWhileStreaming() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+        " STORED AS ORC", driver);
+
+    HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
+    StreamingConnection connection = endPt.newConnection(false);
+    try {
+      // Write a couple of batches
+      for (int i = 0; i < 2; i++) {
+        writeBatch(connection, writer, false);
+      }
+
+      // Start a third batch, but don't close it.
+      writeBatch(connection, writer, true);
+
+      // Now, compact
+      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
+      Worker t = new Worker();
+      t.setThreadId((int) t.getId());
+      t.setHiveConf(conf);
+      AtomicBoolean stop = new AtomicBoolean(true);
+      AtomicBoolean looped = new AtomicBoolean();
+      t.init(stop, looped);
+      t.run();
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat =
+          fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
+      Assert.assertEquals(1, stat.length);
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals(name, "base_0000004");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, 0, 1L, 4L);
+    } finally {
+      connection.close();
+    }
+  }
+
+  @Test
+  public void minorCompactAfterAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+        " STORED AS ORC", driver);
+
+    HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
+    StreamingConnection connection = endPt.newConnection(false);
+    try {
+      // Write a couple of batches
+      for (int i = 0; i < 2; i++) {
+        writeBatch(connection, writer, false);
+      }
+
+      // Start a third batch, abort everything, don't properly close it
+      TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
+      txnBatch.beginNextTransaction();
+      txnBatch.abort();
+      txnBatch.beginNextTransaction();
+      txnBatch.abort();
+
+      // Now, compact
+      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
+      Worker t = new Worker();
+      t.setThreadId((int) t.getId());
+      t.setHiveConf(conf);
+      AtomicBoolean stop = new AtomicBoolean(true);
+      AtomicBoolean looped = new AtomicBoolean();
+      t.init(stop, looped);
+      t.run();
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat =
+          fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.deltaFileFilter);
+      String[] names = new String[stat.length];
+      Path resultDelta = null;
+      for (int i = 0; i < names.length; i++) {
+        names[i] = stat[i].getPath().getName();
+        if (names[i].equals("delta_0000001_0000006")) {
+          resultDelta = stat[i].getPath();
+        }
+      }
+      Arrays.sort(names);
+      Assert.assertArrayEquals(names, new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000006", "delta_0000003_0000004", "delta_0000005_0000006"});
+      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, 0, 1L, 4L);
+    } finally {
+      connection.close();
+    }
+  }
+
+  @Test
+  public void majorCompactAfterAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
+        " STORED AS ORC", driver);
+
+    HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
+    StreamingConnection connection = endPt.newConnection(false);
+    try {
+      // Write a couple of batches
+      for (int i = 0; i < 2; i++) {
+        writeBatch(connection, writer, false);
+      }
+
+      // Start a third batch, but don't close it.
+      TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
+      txnBatch.beginNextTransaction();
+      txnBatch.abort();
+      txnBatch.beginNextTransaction();
+      txnBatch.abort();
+
+
+      // Now, compact
+      CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
+      Worker t = new Worker();
+      t.setThreadId((int) t.getId());
+      t.setHiveConf(conf);
+      AtomicBoolean stop = new AtomicBoolean(true);
+      AtomicBoolean looped = new AtomicBoolean();
+      t.init(stop, looped);
+      t.run();
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat =
+          fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
+      Assert.assertEquals(1, stat.length);
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals(name, "base_0000006");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, 0, 1L, 4L);
+    } finally {
+      connection.close();
+    }
+  }
+  private void writeBatch(StreamingConnection connection, DelimitedInputWriter writer,
+                          boolean closeEarly)
+      throws InterruptedException, StreamingException {
+    TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
+    txnBatch.beginNextTransaction();
+    txnBatch.write("50,Kiev".getBytes());
+    txnBatch.write("51,St. Petersburg".getBytes());
+    txnBatch.write("44,Boston".getBytes());
+    txnBatch.commit();
+
+    if (!closeEarly) {
+      txnBatch.beginNextTransaction();
+      txnBatch.write("52,Tel Aviv".getBytes());
+      txnBatch.write("53,Atlantis".getBytes());
+      txnBatch.write("53,Boston".getBytes());
+      txnBatch.commit();
+
+      txnBatch.close();
+    }
+  }
+
+  private void checkExpectedTxnsPresent(Path base, Path[] deltas, int bucket, long min, long max)
+      throws IOException {
+    ValidTxnList txnList = new ValidTxnList() {
+      @Override
+      public boolean isTxnValid(long txnid) {
+        return true;
+      }
+
+      @Override
+      public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
+        return RangeResponse.ALL;
+      }
+
+      @Override
+      public String writeToString() {
+        return "";
+      }
+
+      @Override
+      public void readFromString(String src) {
+
+      }
+
+      @Override
+      public long getHighWatermark() {
+        return  Long.MAX_VALUE;
+      }
+
+      @Override
+      public long[] getInvalidTransactions() {
+        return new long[0];
+      }
+    };
+
+    OrcInputFormat aif = new OrcInputFormat();
+
+    AcidInputFormat.RawReader<OrcStruct> reader =
+        aif.getRawReader(new Configuration(), false, bucket, txnList, base, deltas);
+    RecordIdentifier identifier = reader.createKey();
+    OrcStruct value = reader.createValue();
+    long currentTxn = min;
+    boolean seenCurrentTxn = false;
+    while (reader.next(identifier, value)) {
+      if (!seenCurrentTxn) {
+        Assert.assertEquals(currentTxn, identifier.getTransactionId());
+        seenCurrentTxn = true;
+      }
+      if (currentTxn != identifier.getTransactionId()) {
+        Assert.assertEquals(currentTxn + 1, identifier.getTransactionId());
+        currentTxn++;
+      }
+    }
+    Assert.assertEquals(max, currentTxn);
   }
 
   /**

@@ -32,7 +32,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key >= 200) and (key < 300)) (type: boolean)
+              predicate: ((UDFToDouble(key) >= 200.0) and (UDFToDouble(key) < 300.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string)
@@ -108,18 +108,24 @@ POSTHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: int
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Filter Operator
+            predicate: (table = '2008-04-08') (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Select Operator
+              expressions: location (type: int), type (type: string), '2008-04-08' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              ListSink
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300

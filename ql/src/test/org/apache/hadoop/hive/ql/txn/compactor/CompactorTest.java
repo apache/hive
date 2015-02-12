@@ -51,7 +51,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Super class for all of the compactor test modules.
@@ -63,12 +65,13 @@ public abstract class CompactorTest {
   protected CompactionTxnHandler txnHandler;
   protected IMetaStoreClient ms;
   protected long sleepTime = 1000;
+  protected HiveConf conf;
 
-  private final MetaStoreThread.BooleanPointer stop = new MetaStoreThread.BooleanPointer();
+  private final AtomicBoolean stop = new AtomicBoolean();
   private final File tmpdir;
 
   protected CompactorTest() throws Exception {
-    HiveConf conf = new HiveConf();
+    conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.cleanDb();
     ms = new HiveMetaStoreClient(conf);
@@ -79,16 +82,20 @@ public abstract class CompactorTest {
     tmpdir.deleteOnExit();
   }
 
-  protected void startInitiator(HiveConf conf) throws Exception {
-    startThread('i', conf);
+  protected void startInitiator() throws Exception {
+    startThread('i', true);
   }
 
-  protected void startWorker(HiveConf conf) throws Exception {
-    startThread('w', conf);
+  protected void startWorker() throws Exception {
+    startThread('w', true);
   }
 
-  protected void startCleaner(HiveConf conf) throws Exception {
-    startThread('c', conf);
+  protected void startCleaner() throws Exception {
+    startThread('c', true);
+  }
+
+  protected void startCleaner(AtomicBoolean looped) throws Exception {
+    startThread('c', false, looped);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
@@ -117,6 +124,9 @@ public abstract class CompactorTest {
 
     table.setParameters(parameters);
 
+    // drop the table first, in case some previous test created it
+    ms.dropTable(dbName, tableName);
+
     ms.createTable(table);
     return table;
   }
@@ -142,37 +152,32 @@ public abstract class CompactorTest {
     return txns.get(0);
   }
 
-  protected void addDeltaFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
-                              int numRecords) throws Exception{
-    addFile(conf, t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
-  }
-
-  protected void addBaseFile(HiveConf conf, Table t, Partition p, long maxTxn,
-                             int numRecords) throws Exception{
-    addFile(conf, t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
-  }
-
-  protected void addLegacyFile(HiveConf conf, Table t, Partition p,
-                               int numRecords) throws Exception {
-    addFile(conf, t, p, 0, 0, numRecords, FileType.LEGACY, 2, true);
-  }
-
-  protected void addDeltaFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
-                              int numRecords, int numBuckets, boolean allBucketsPresent)
+  protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
       throws Exception {
-    addFile(conf, t, p, minTxn, maxTxn, numRecords, FileType.DELTA, numBuckets, allBucketsPresent);
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
   }
 
-  protected void addBaseFile(HiveConf conf, Table t, Partition p, long maxTxn,
-                             int numRecords, int numBuckets, boolean allBucketsPresent)
-      throws Exception {
-    addFile(conf, t, p, 0, maxTxn, numRecords, FileType.BASE, numBuckets, allBucketsPresent);
+  protected void addLengthFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
+    throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.LENGTH_FILE, 2, true);
   }
 
-  protected void addLegacyFile(HiveConf conf, Table t, Partition p,
-                               int numRecords, int numBuckets, boolean allBucketsPresent)
-      throws Exception {
-    addFile(conf, t, p, 0, 0, numRecords, FileType.LEGACY, numBuckets, allBucketsPresent);
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
+  }
+
+  protected void addLegacyFile(Table t, Partition p, int numRecords) throws Exception {
+    addFile(t, p, 0, 0, numRecords, FileType.LEGACY, 2, true);
+  }
+
+  protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords,
+                              int numBuckets, boolean allBucketsPresent) throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, numBuckets, allBucketsPresent);
+  }
+
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords, int numBuckets,
+                             boolean allBucketsPresent) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, numBuckets, allBucketsPresent);
   }
 
   protected List<Path> getDirectories(HiveConf conf, Table t, Partition p) throws Exception {
@@ -186,9 +191,25 @@ public abstract class CompactorTest {
     return paths;
   }
 
-  protected void burnThroughTransactions(int num) throws MetaException, NoSuchTxnException, TxnAbortedException {
+  protected void burnThroughTransactions(int num)
+      throws MetaException, NoSuchTxnException, TxnAbortedException {
+    burnThroughTransactions(num, null, null);
+  }
+
+  protected void burnThroughTransactions(int num, Set<Long> open, Set<Long> aborted)
+      throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
-    for (long tid : rsp.getTxn_ids()) txnHandler.commitTxn(new CommitTxnRequest(tid));
+    for (long tid : rsp.getTxn_ids()) {
+      if (aborted != null && aborted.contains(tid)) {
+        txnHandler.abortTxn(new AbortTxnRequest(tid));
+      } else if (open == null || (open != null && !open.contains(tid))) {
+        txnHandler.commitTxn(new CommitTxnRequest(tid));
+      }
+    }
+  }
+
+  protected void stopThread() {
+    stop.set(true);
   }
 
   private StorageDescriptor newStorageDescriptor(String location, List<Order> sortCols) {
@@ -214,9 +235,13 @@ public abstract class CompactorTest {
     return sd;
   }
 
-  // I can't do this with @Before because I want to be able to control the config file provided
-  // to each test.
-  private void startThread(char type, HiveConf conf) throws Exception {
+  // I can't do this with @Before because I want to be able to control when the thead starts
+  private void startThread(char type, boolean stopAfterOne) throws Exception {
+    startThread(type, stopAfterOne, new AtomicBoolean());
+  }
+
+  private void startThread(char type, boolean stopAfterOne, AtomicBoolean looped)
+    throws Exception {
     TxnDbUtil.setConfValues(conf);
     CompactorThread t = null;
     switch (type) {
@@ -227,9 +252,10 @@ public abstract class CompactorTest {
     }
     t.setThreadId((int) t.getId());
     t.setHiveConf(conf);
-    stop.boolVal = true;
-    t.init(stop);
-    t.run();
+    stop.set(stopAfterOne);
+    t.init(stop, looped);
+    if (stopAfterOne) t.run();
+    else t.start();
   }
 
   private String getLocation(String tableName, String partValue) {
@@ -241,9 +267,9 @@ public abstract class CompactorTest {
     return location;
   }
 
-  private enum FileType {BASE, DELTA, LEGACY};
+  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE};
 
-  private void addFile(HiveConf conf, Table t, Partition p, long minTxn, long maxTxn,
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn,
                        int numRecords,  FileType type, int numBuckets,
                        boolean allBucketsPresent) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);
@@ -251,6 +277,7 @@ public abstract class CompactorTest {
     String filename = null;
     switch (type) {
       case BASE: filename = "base_" + maxTxn; break;
+      case LENGTH_FILE: // Fall through to delta
       case DELTA: filename = "delta_" + minTxn + "_" + maxTxn; break;
       case LEGACY: break; // handled below
     }
@@ -265,12 +292,19 @@ public abstract class CompactorTest {
         Path dir = new Path(location, filename);
         fs.mkdirs(dir);
         partFile = AcidUtils.createBucketFile(dir, bucket);
+        if (type == FileType.LENGTH_FILE) {
+          partFile = new Path(partFile.toString() + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
+        }
       }
       FSDataOutputStream out = fs.create(partFile);
-      for (int i = 0; i < numRecords; i++) {
-        RecordIdentifier ri = new RecordIdentifier(maxTxn - 1, bucket, i);
-        ri.write(out);
-        out.writeBytes("mary had a little lamb its fleece was white as snow\n");
+      if (type == FileType.LENGTH_FILE) {
+        out.writeInt(numRecords);
+      } else {
+        for (int i = 0; i < numRecords; i++) {
+          RecordIdentifier ri = new RecordIdentifier(maxTxn - 1, bucket, i);
+          ri.write(out);
+          out.writeBytes("mary had a little lamb its fleece was white as snow\n");
+        }
       }
       out.close();
     }
@@ -332,6 +366,7 @@ public abstract class CompactorTest {
     private final Configuration conf;
     private FSDataInputStream is = null;
     private final FileSystem fs;
+    private boolean lastWasDelete = true;
 
     MockRawReader(Configuration conf, List<Path> files) throws IOException {
       filesToRead = new Stack<Path>();
@@ -343,6 +378,15 @@ public abstract class CompactorTest {
     @Override
     public ObjectInspector getObjectInspector() {
       return null;
+    }
+
+    @Override
+    public boolean isDelete(Text value) {
+      // Alternate between returning deleted and not.  This is easier than actually
+      // tracking operations. We test that this is getting properly called by checking that only
+      // half the records show up in base files after major compactions.
+      lastWasDelete = !lastWasDelete;
+      return lastWasDelete;
     }
 
     @Override

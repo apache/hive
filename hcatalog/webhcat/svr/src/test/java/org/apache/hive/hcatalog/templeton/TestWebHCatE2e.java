@@ -18,7 +18,6 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
-import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -28,6 +27,8 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -35,11 +36,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.jetty.http.HttpStatus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import junit.framework.Assert;
 
 /**
  * A set of tests exercising e2e WebHCat DDL APIs.  These tests are somewhat
@@ -64,6 +68,7 @@ public class TestWebHCatE2e {
   private static final String ERROR_CODE = "errorCode";
   private static Main templetonServer;
   private static final String charSet = "UTF-8";
+
   @BeforeClass
   public static void startHebHcatInMem() {
     int webhcatPort = 50111;
@@ -81,6 +86,7 @@ public class TestWebHCatE2e {
     templetonServer.run();
     LOG.info("Main started");
   }
+
   @AfterClass
   public static void stopWebHcatInMem() {
     if(templetonServer != null) {
@@ -89,14 +95,33 @@ public class TestWebHCatE2e {
       LOG.info("Main stopped");
     }
   }
+
+  private static Map<String, String> jsonStringToSortedMap(String jsonStr) {
+    Map<String, String> sortedMap;
+    try {
+      sortedMap = (new ObjectMapper()).readValue(jsonStr,
+          new TypeReference<TreeMap<String, String>>() {});
+    } catch (Exception ex) {
+      throw new RuntimeException(
+          "Exception converting json string to sorted map " + ex, ex);
+    }
+
+    return sortedMap;
+  }
+
   @Test
   public void getStatus() throws IOException {
     LOG.debug("+getStatus()");
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/status", HTTP_METHOD_TYPE.GET);
     Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
-    Assert.assertEquals(p.getAssertMsg(), "{\"status\":\"ok\",\"version\":\"v1\"}", p.responseBody);
+    // Must be deterministic order map for comparison across Java versions
+    Assert.assertTrue(p.getAssertMsg(),
+        jsonStringToSortedMap("{\"status\":\"ok\",\"version\":\"v1\"}").equals(
+            jsonStringToSortedMap(p.responseBody)));
+
     LOG.debug("-getStatus()");
   }
+
   @Ignore("not ready due to HIVE-4824")
   @Test
   public void listDataBases() throws IOException {
@@ -106,6 +131,7 @@ public class TestWebHCatE2e {
     Assert.assertEquals(p.getAssertMsg(), "{\"databases\":[\"default\"]}", p.responseBody);
     LOG.debug("-listDataBases()");
   }
+
   /**
    * Check that we return correct status code when the URL doesn't map to any method
    * in {@link Server}
@@ -118,6 +144,7 @@ public class TestWebHCatE2e {
   /**
    * tries to drop table in a DB that doesn't exist
    */
+
   @Ignore("not ready due to HIVE-4824")
   @Test
   public void dropTableNoSuchDB() throws IOException {
@@ -128,6 +155,7 @@ public class TestWebHCatE2e {
       ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(),
       getErrorCode(p.responseBody));
   }
+
   /**
    * tries to drop table in a DB that doesn't exist
    */
@@ -140,6 +168,7 @@ public class TestWebHCatE2e {
     Assert.assertEquals(p.getAssertMsg(), HttpStatus.NOT_FOUND_404, p.httpStatusCode);
     Assert.assertEquals(p.getAssertMsg(), ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), getErrorCode(p.responseBody));
   }
+
   /**
    * tries to drop table that doesn't exist (with ifExists=true)
   */
@@ -151,6 +180,7 @@ public class TestWebHCatE2e {
       {new NameValuePair("ifExists", "true")});
     Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
   }
+
   @Ignore("not ready due to HIVE-4824")
   @Test
   public void createDataBase() throws IOException {
@@ -164,6 +194,7 @@ public class TestWebHCatE2e {
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/ddl/database/newdb", HTTP_METHOD_TYPE.PUT, props, null);
     Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
   }
+
   @Ignore("not ready due to HIVE-4824")
   @Test
   public void createTable() throws IOException {
@@ -186,6 +217,7 @@ public class TestWebHCatE2e {
     MethodCallRetVal descTbl = doHttpCall(templetonBaseUrl + "/ddl/database/default/table/test_table", HTTP_METHOD_TYPE.GET);
     Assert.assertEquals(descTbl.getAssertMsg(), HttpStatus.OK_200, descTbl.httpStatusCode);
   }
+
   @Ignore("not ready due to HIVE-4824")
   @Test
   public void describeNoSuchTable() throws IOException {
@@ -217,7 +249,7 @@ public class TestWebHCatE2e {
     Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
     Assert.assertEquals("hive", props.get("module"));
     Assert.assertTrue(p.getAssertMsg(),
-        ((String) props.get("version")).matches("0.[0-9]+.[0-9]+.*"));
+        ((String) props.get("version")).matches("[0-9]+.[0-9]+.[0-9]+.*"));
   }
 
   @Test
@@ -245,6 +277,7 @@ public class TestWebHCatE2e {
     }
     return hiveRetCode;
   }
+
   /**
    * Encapsulates information from HTTP method call
    */
@@ -263,10 +296,12 @@ public class TestWebHCatE2e {
       return methodName + " " + submittedURL + " " + responseBody;
     }
   }
+
   private static enum HTTP_METHOD_TYPE {GET, POST, DELETE, PUT}
   private static MethodCallRetVal doHttpCall(String uri, HTTP_METHOD_TYPE type) throws IOException {
     return doHttpCall(uri, type, null, null);
   }
+
   /**
    * Does a basic HTTP GET and returns Http Status code + response body
    * Will add the dummy user query string

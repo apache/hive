@@ -4,13 +4,12 @@ set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.Sessi
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing=true;
 
 set user.name=user1;
 -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
-CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc;
+CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 -- grant update privilege to another user
 GRANT DELETE ON t_auth_del TO USER userWIns;

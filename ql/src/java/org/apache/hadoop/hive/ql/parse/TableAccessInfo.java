@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +33,9 @@ public class TableAccessInfo {
     Map<String, List<String>>> operatorToTableAccessMap;
 
   public TableAccessInfo() {
+    // Must be deterministic order map for consistent q-test output across Java versions
     operatorToTableAccessMap =
-      new HashMap<Operator<? extends OperatorDesc>, Map<String, List<String>>>();
+      new LinkedHashMap<Operator<? extends OperatorDesc>, Map<String, List<String>>>();
   }
 
   public void add(Operator<? extends OperatorDesc> op,

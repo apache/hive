@@ -1,0 +1,269 @@
+PREHOOK: query: CREATE TABLE agg1 (col0 INT, col1 STRING, col2 DOUBLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@agg1
+POSTHOOK: query: CREATE TABLE agg1 (col0 INT, col1 STRING, col2 DOUBLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@agg1
+PREHOOK: query: INSERT INTO TABLE agg1 select key,value,key from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@agg1
+POSTHOOK: query: INSERT INTO TABLE agg1 select key,value,key from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@agg1
+POSTHOOK: Lineage: agg1.col0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: agg1.col1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: agg1.col2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+Warning: Shuffle Join JOIN[19][tables = [single_use_subq12, single_use_subq11]] in Stage 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT single_use_subq11.a1 AS a1,
+       single_use_subq11.a2 AS a2
+FROM   (SELECT Sum(agg1.col2) AS a1
+        FROM   agg1
+        GROUP  BY agg1.col0) single_use_subq12
+       JOIN (SELECT alias.a2 AS a0,
+                    alias.a1 AS a1,
+                    alias.a1 AS a2
+             FROM   (SELECT agg1.col1 AS a0,
+                            '42'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1
+                     UNION ALL
+                     SELECT agg1.col1 AS a0,
+                            '41'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1) alias
+             GROUP  BY alias.a2,
+                       alias.a1) single_use_subq11
+         ON ( single_use_subq11.a0 = single_use_subq11.a0 )
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT single_use_subq11.a1 AS a1,
+       single_use_subq11.a2 AS a2
+FROM   (SELECT Sum(agg1.col2) AS a1
+        FROM   agg1
+        GROUP  BY agg1.col0) single_use_subq12
+       JOIN (SELECT alias.a2 AS a0,
+                    alias.a1 AS a1,
+                    alias.a1 AS a2
+             FROM   (SELECT agg1.col1 AS a0,
+                            '42'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1
+                     UNION ALL
+                     SELECT agg1.col1 AS a0,
+                            '41'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1) alias
+             GROUP  BY alias.a2,
+                       alias.a1) single_use_subq11
+         ON ( single_use_subq11.a0 = single_use_subq11.a0 )
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: agg1
+            Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: col0 (type: int), col2 (type: double)
+              outputColumnNames: col0, col2
+              Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(col2)
+                keys: col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: double)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Select Operator
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col2, _col3
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: string), _col3 (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: agg1
+            Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (col0 = col0) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: '42' (type: string), col0 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Union
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: _col2 (type: int), _col1 (type: string)
+                    outputColumnNames: _col2, _col1
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      keys: _col2 (type: int), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
+            alias: agg1
+            Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (col0 = col0) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: '41' (type: string), col0 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Union
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: _col2 (type: int), _col1 (type: string)
+                    outputColumnNames: _col2, _col1
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      keys: _col2 (type: int), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: string), _col1 (type: string)
+            outputColumnNames: _col1, _col2
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[19][tables = [single_use_subq12, single_use_subq11]] in Stage 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: SELECT single_use_subq11.a1 AS a1,
+       single_use_subq11.a2 AS a2
+FROM   (SELECT Sum(agg1.col2) AS a1
+        FROM   agg1
+        GROUP  BY agg1.col0) single_use_subq12
+       JOIN (SELECT alias.a2 AS a0,
+                    alias.a1 AS a1,
+                    alias.a1 AS a2
+             FROM   (SELECT agg1.col1 AS a0,
+                            '42'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1
+                     UNION ALL
+                     SELECT agg1.col1 AS a0,
+                            '41'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1) alias
+             GROUP  BY alias.a2,
+                       alias.a1) single_use_subq11
+         ON ( single_use_subq11.a0 = single_use_subq11.a0 )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT single_use_subq11.a1 AS a1,
+       single_use_subq11.a2 AS a2
+FROM   (SELECT Sum(agg1.col2) AS a1
+        FROM   agg1
+        GROUP  BY agg1.col0) single_use_subq12
+       JOIN (SELECT alias.a2 AS a0,
+                    alias.a1 AS a1,
+                    alias.a1 AS a2
+             FROM   (SELECT agg1.col1 AS a0,
+                            '42'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1
+                     UNION ALL
+                     SELECT agg1.col1 AS a0,
+                            '41'      AS a1,
+                            agg1.col0 AS a2
+                     FROM   agg1) alias
+             GROUP  BY alias.a2,
+                       alias.a1) single_use_subq11
+         ON ( single_use_subq11.a0 = single_use_subq11.a0 )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg1
+#### A masked pattern was here ####
+42	42
+41	41

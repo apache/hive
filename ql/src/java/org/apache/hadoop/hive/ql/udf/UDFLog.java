@@ -52,29 +52,6 @@ public class UDFLog extends UDFMath {
   }
 
   /**
-   * Get the logarithm of the given decimal with the given base.
-   */
-  public DoubleWritable evaluate(DoubleWritable base, HiveDecimalWritable writable) {
-    if (base == null || writable == null) {
-      return null;
-    }
-    double d = writable.getHiveDecimal().bigDecimalValue().doubleValue();
-    return log(base.get(), d);
-  }
-
-  /**
-   * Get the logarithm of input with the given decimal as the base.
-   */
-  public DoubleWritable evaluate(HiveDecimalWritable base, DoubleWritable d) {
-    if (base == null || d == null) {
-      return null;
-    }
-
-    double b = base.getHiveDecimal().bigDecimalValue().doubleValue();
-    return log(b, d.get());
-  }
-
-  /**
    * Get the logarithm of the given decimal input with the given decimal base.
    */
   public DoubleWritable evaluate(HiveDecimalWritable baseWritable, HiveDecimalWritable writable) {

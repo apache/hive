@@ -31,7 +31,6 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
@@ -48,11 +47,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -149,17 +143,17 @@ public final class OpProcFactory {
     }
 
   }
-  
+
   public static class PTFPPD extends ScriptPPD {
-    
+
     /*
      * For WindowingTableFunction if:
-     * a. there is a Rank/DenseRank function: if there are unpushedPred of the form 
+     * a. there is a Rank/DenseRank function: if there are unpushedPred of the form
      *    rnkValue < Constant; then use the smallest Constant val as the 'rankLimit'
      *    on the WindowingTablFn.
-     * b. If there are no Wdw Fns with an End Boundary past the current row, the 
+     * b. If there are no Wdw Fns with an End Boundary past the current row, the
      *    condition can be pushed down as a limit pushdown(mapGroupBy=true)
-     * 
+     *
      * (non-Javadoc)
      * @see org.apache.hadoop.hive.ql.ppd.OpProcFactory.ScriptPPD#process(org.apache.hadoop.hive.ql.lib.Node, java.util.Stack, org.apache.hadoop.hive.ql.lib.NodeProcessorCtx, java.lang.Object[])
      */
@@ -170,30 +164,30 @@ public final class OpProcFactory {
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       PTFOperator ptfOp = (PTFOperator) nd;
-      
+
       pushRankLimit(ptfOp, owi);
       return super.process(nd, stack, procCtx, nodeOutputs);
     }
-    
+
     private void pushRankLimit(PTFOperator ptfOp, OpWalkerInfo owi) throws SemanticException {
       PTFDesc conf = ptfOp.getConf();
-      
+
       if ( !conf.forWindowing() ) {
         return;
       }
-      
+
       float threshold = owi.getParseContext().getConf().getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
       if (threshold <= 0 || threshold >= 1) {
         return;
       }
-      
+
       WindowTableFunctionDef wTFn = (WindowTableFunctionDef) conf.getFuncDef();
       List<Integer> rFnIdxs = rankingFunctions(wTFn);
-      
+
       if ( rFnIdxs.size() == 0 ) {
         return;
       }
-      
+
       ExprWalkerInfo childInfo = getChildWalkerInfo(ptfOp, owi);
 
       if (childInfo == null) {
@@ -207,7 +201,7 @@ public final class OpProcFactory {
           preds = ExprNodeDescUtils.split(pred, preds);
         }
       }
-      
+
       int rLimit = -1;
       int fnIdx = -1;
       for(ExprNodeDesc pred : preds) {
@@ -219,7 +213,7 @@ public final class OpProcFactory {
           }
         }
       }
-      
+
       if ( rLimit != -1 ) {
         wTFn.setRankLimit(rLimit);
         wTFn.setRankLimitFunction(fnIdx);
@@ -228,68 +222,68 @@ public final class OpProcFactory {
         }
       }
     }
-    
+
     private List<Integer> rankingFunctions(WindowTableFunctionDef wTFn) {
       List<Integer> rFns = new ArrayList<Integer>();
       for(int i=0; i < wTFn.getWindowFunctions().size(); i++ ) {
         WindowFunctionDef wFnDef = wTFn.getWindowFunctions().get(i);
-        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) || 
+        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) ||
             (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  ) {
           rFns.add(i);
         }
       }
       return rFns;
     }
-    
+
     /*
      * For a predicate check if it is a candidate for pushing down as limit optimization.
      * The expression must be of the form rankFn <|<= constant.
      */
     private int[] getLimit(WindowTableFunctionDef wTFn, List<Integer> rFnIdxs, ExprNodeDesc expr) {
-      
+
       if ( !(expr instanceof ExprNodeGenericFuncDesc) ) {
         return null;
       }
-      
+
       ExprNodeGenericFuncDesc fExpr = (ExprNodeGenericFuncDesc) expr;
-      
-      if ( !(fExpr.getGenericUDF() instanceof GenericUDFOPLessThan) && 
+
+      if ( !(fExpr.getGenericUDF() instanceof GenericUDFOPLessThan) &&
           !(fExpr.getGenericUDF() instanceof GenericUDFOPEqualOrLessThan) ) {
         return null;
       }
-      
+
       if ( !(fExpr.getChildren().get(0) instanceof ExprNodeColumnDesc) ) {
         return null;
       }
-      
+
       if ( !(fExpr.getChildren().get(1) instanceof ExprNodeConstantDesc) ) {
         return null;
       }
-      
+
       ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) fExpr.getChildren().get(1) ;
-      
+
       if ( constantExpr.getTypeInfo() != TypeInfoFactory.intTypeInfo ) {
         return null;
       }
-      
+
       int limit = (Integer) constantExpr.getValue();
       if ( fExpr.getGenericUDF() instanceof GenericUDFOPEqualOrLessThan ) {
         limit = limit + 1;
       }
       String colName = ((ExprNodeColumnDesc)fExpr.getChildren().get(0)).getColumn();
-      
+
       for(int i=0; i < rFnIdxs.size(); i++ ) {
         String fAlias = wTFn.getWindowFunctions().get(i).getAlias();
         if ( fAlias.equals(colName)) {
           return new int[] {limit,i};
         }
       }
-      
+
       return null;
     }
-    
+
     /*
-     * Limit can be pushed down to Map-side if all Window Functions need access 
+     * Limit can be pushed down to Map-side if all Window Functions need access
      * to rows before the current row. This is true for:
      * 1. Rank, DenseRank and Lead Fns. (the window doesn't matter for lead fn).
      * 2. If the Window for the function is Row based and the End Boundary doesn't
@@ -298,8 +292,8 @@ public final class OpProcFactory {
     private boolean canPushLimitToReduceSink(WindowTableFunctionDef wTFn) {
 
       for(WindowFunctionDef wFnDef : wTFn.getWindowFunctions() ) {
-        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) || 
-            (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  || 
+        if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) ||
+            (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  ||
             (wFnDef.getWFnEval() instanceof GenericUDAFLeadEvaluator ) ) {
           continue;
         }
@@ -314,18 +308,18 @@ public final class OpProcFactory {
       }
       return true;
     }
-    
+
     private void pushRankLimitToRedSink(PTFOperator ptfOp, HiveConf conf, int rLimit) throws SemanticException {
-      
+
       Operator<? extends OperatorDesc> parent = ptfOp.getParentOperators().get(0);
       Operator<? extends OperatorDesc> gP = parent == null ? null : parent.getParentOperators().get(0);
-      
+
       if ( gP == null || !(gP instanceof ReduceSinkOperator )) {
         return;
       }
-      
+
       float threshold = conf.getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
-      
+
       ReduceSinkOperator rSink = (ReduceSinkOperator) gP;
       ReduceSinkDesc rDesc = rSink.getConf();
       rDesc.setTopN(rLimit);
@@ -342,14 +336,12 @@ public final class OpProcFactory {
       super.process(nd, stack, procCtx, nodeOutputs);
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       ExprWalkerInfo prunedPred = owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd);
-      if (prunedPred == null) {
+      if (prunedPred == null || !prunedPred.hasAnyCandidates()) {
         return null;
       }
       Map<String, List<ExprNodeDesc>> candidates = prunedPred.getFinalCandidates();
-      if (candidates != null && !candidates.isEmpty()) {
-        createFilter((Operator)nd, prunedPred, owi);
-        candidates.clear();
-      }
+      createFilter((Operator)nd, prunedPred, owi);
+      candidates.clear();
       return null;
     }
 
@@ -465,7 +457,7 @@ public final class OpProcFactory {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
-      Set<String> aliases = getAliases(nd, owi);
+      Set<String> aliases = getAliases(nd);
       // we pass null for aliases here because mergeWithChildrenPred filters
       // aliases in the children node context and we need to filter them in
       // the current JoinOperator's context
@@ -476,7 +468,12 @@ public final class OpProcFactory {
         Set<String> toRemove = new HashSet<String>();
         // we don't push down any expressions that refer to aliases that can;t
         // be pushed down per getQualifiedAliases
-        for (String key : prunePreds.getFinalCandidates().keySet()) {
+        for (Entry<String, List<ExprNodeDesc>> entry : prunePreds.getFinalCandidates().entrySet()) {
+          String key = entry.getKey();
+          List<ExprNodeDesc> value = entry.getValue();
+          if (key == null && ExprNodeDescUtils.isAllConstants(value)) {
+            continue;   // propagate constants
+          }
           if (!aliases.contains(key)) {
             toRemove.add(key);
           }
@@ -496,8 +493,8 @@ public final class OpProcFactory {
       return null;
     }
 
-    protected Set<String> getAliases(Node nd, OpWalkerInfo owi) throws SemanticException {
-      return owi.getRowResolver(nd).getTableNames();
+    protected Set<String> getAliases(Node nd) throws SemanticException {
+      return ((Operator)nd).getSchema().getTableNames();
     }
 
     protected Object handlePredicates(Node nd, ExprWalkerInfo prunePreds, OpWalkerInfo owi)
@@ -513,182 +510,8 @@ public final class OpProcFactory {
   public static class JoinPPD extends JoinerPPD {
 
     @Override
-    protected Set<String> getAliases(Node nd, OpWalkerInfo owi) {
-      return getQualifiedAliases((JoinOperator) nd, owi.getRowResolver(nd));
-    }
-
-    @Override
-    protected Object handlePredicates(Node nd, ExprWalkerInfo prunePreds, OpWalkerInfo owi)
-        throws SemanticException {
-      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDRECOGNIZETRANSITIVITY)) {
-        applyFilterTransitivity((JoinOperator) nd, owi);
-      }
-      return super.handlePredicates(nd, prunePreds, owi);
-    }
-
-    /**
-     * Adds additional pushdown predicates for a join operator by replicating
-     * filters transitively over all the equijoin conditions.
-     *
-     * If we have a predicate "t.col=1" and the equijoin conditions
-     * "t.col=s.col" and "t.col=u.col", we add the filters "s.col=1" and
-     * "u.col=1". Note that this does not depend on the types of joins (ie.
-     * inner, left/right/full outer) between the tables s, t and u because if
-     * a predicate, eg. "t.col=1" is present in getFinalCandidates() at this
-     * point, we have already verified that it can be pushed down, so any rows
-     * emitted must satisfy s.col=t.col=u.col=1 and replicating the filters
-     * like this is ok.
-     */
-    private void applyFilterTransitivity(JoinOperator nd, OpWalkerInfo owi)
-        throws SemanticException {
-      ExprWalkerInfo prunePreds =
-          owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd);
-      if (prunePreds != null) {
-        // We want to use the row resolvers of the parents of the join op
-        // because the rowresolver refers to the output columns of an operator
-        // and the filters at this point refer to the input columns of the join
-        // operator.
-        Map<String, RowResolver> aliasToRR =
-            new HashMap<String, RowResolver>();
-        for (Operator<? extends OperatorDesc> o : (nd).getParentOperators()) {
-          for (String alias : owi.getRowResolver(o).getTableNames()){
-            aliasToRR.put(alias, owi.getRowResolver(o));
-          }
-        }
-
-        // eqExpressions is a list of ArrayList<ASTNode>'s, one for each table
-        // in the join. Then for each i, j and k, the join condition is that
-        // eqExpressions[i][k]=eqExpressions[j][k] (*) (ie. the columns referenced
-        // by the corresponding ASTNodes are equal). For example, if the query
-        // was SELECT * FROM a join b on a.col=b.col and a.col2=b.col2 left
-        // outer join c on b.col=c.col and b.col2=c.col2 WHERE c.col=1,
-        // eqExpressions would be [[a.col1, a.col2], [b.col1, b.col2],
-        // [c.col1, c.col2]].
-        //
-        // numEqualities is the number of equal columns in each equality
-        // "chain" and numColumns is the number of such chains.
-        //
-        // Note that (*) is guaranteed to be true for the
-        // join operator: if the equijoin condititions can't be expressed in
-        // these equal-length lists of equal columns (for example if we had the
-        // query SELECT * FROM a join b on a.col=b.col and a.col2=b.col2 left
-        // outer join c on b.col=c.col), more than one join operator is used.
-        ArrayList<ArrayList<ASTNode>> eqExpressions =
-            owi.getParseContext().getJoinContext().get(nd).getExpressions();
-        int numColumns = eqExpressions.size();
-        int numEqualities = eqExpressions.get(0).size();
-
-        // joins[i] is the join between table i and i+1 in the JoinOperator
-        JoinCondDesc[] joins = (nd).getConf().getConds();
-
-        // oldFilters contains the filters to be pushed down
-        Map<String, List<ExprNodeDesc>> oldFilters =
-            prunePreds.getFinalCandidates();
-        Map<String, List<ExprNodeDesc>> newFilters =
-            new HashMap<String, List<ExprNodeDesc>>();
-
-        // We loop through for each chain of equalities
-        for (int i=0; i<numEqualities; i++) {
-          // equalColumns[i] is the ColumnInfo corresponding to the ith term
-          // of the equality or null if the term is not a simple column
-          // reference
-          ColumnInfo[] equalColumns=new ColumnInfo[numColumns];
-          for (int j=0; j<numColumns; j++) {
-            equalColumns[j] =
-                getColumnInfoFromAST(eqExpressions.get(j).get(i), aliasToRR);
-          }
-          for (int j=0; j<numColumns; j++) {
-            for (int k=0; k<numColumns; k++) {
-              if (j != k && equalColumns[j]!= null
-                  && equalColumns[k] != null) {
-                // terms j and k in the equality chain are simple columns,
-                // so we can replace instances of column j with column k
-                // in the filter and ad the replicated filter.
-                ColumnInfo left = equalColumns[j];
-                ColumnInfo right = equalColumns[k];
-                if (oldFilters.get(left.getTabAlias()) != null){
-                  for (ExprNodeDesc expr :
-                    oldFilters.get(left.getTabAlias())) {
-                    // Only replicate the filter if there is exactly one column
-                    // referenced
-                    Set<String> colsreferenced =
-                        new HashSet<String>(expr.getCols());
-                    if (colsreferenced.size() == 1
-                        && colsreferenced.contains(left.getInternalName())){
-                      ExprNodeDesc newexpr = expr.clone();
-                      // Replace the column reference in the filter
-                      replaceColumnReference(newexpr, left.getInternalName(),
-                          right.getInternalName());
-                      if (newFilters.get(right.getTabAlias()) == null) {
-                        newFilters.put(right.getTabAlias(),
-                            new ArrayList<ExprNodeDesc>());
-                      }
-                      newFilters.get(right.getTabAlias()).add(newexpr);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        for (Entry<String, List<ExprNodeDesc>> aliasToFilters
-            : newFilters.entrySet()){
-          owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd)
-            .addPushDowns(aliasToFilters.getKey(), aliasToFilters.getValue());
-        }
-      }
-    }
-
-    /**
-     * Replaces the ColumnInfo for the column referred to by an ASTNode
-     * representing "table.column" or null if the ASTNode is not in that form
-     */
-    private ColumnInfo getColumnInfoFromAST(ASTNode nd,
-        Map<String, RowResolver> aliastoRR) throws SemanticException {
-      // this bit is messy since we are parsing an ASTNode at this point
-      if (nd.getType()==HiveParser.DOT) {
-        if (nd.getChildCount()==2) {
-          if (nd.getChild(0).getType()==HiveParser.TOK_TABLE_OR_COL
-              && nd.getChild(0).getChildCount()==1
-              && nd.getChild(1).getType()==HiveParser.Identifier){
-            // We unescape the identifiers and make them lower case--this
-            // really shouldn't be done here, but getExpressions gives us the
-            // raw ASTNodes. The same thing is done in SemanticAnalyzer.
-            // parseJoinCondPopulateAlias().
-            String alias = BaseSemanticAnalyzer.unescapeIdentifier(
-                nd.getChild(0).getChild(0).getText().toLowerCase());
-            String column = BaseSemanticAnalyzer.unescapeIdentifier(
-                nd.getChild(1).getText().toLowerCase());
-            RowResolver rr=aliastoRR.get(alias);
-            if (rr == null) {
-              return null;
-            }
-            return rr.get(alias, column);
-          }
-        }
-      }
-      return null;
-    }
-
-    /**
-     * Replaces all instances of oldColumn with newColumn in the
-     * ExprColumnDesc's of the ExprNodeDesc
-     */
-    private void replaceColumnReference(ExprNodeDesc expr,
-        String oldColumn, String newColumn) {
-      if (expr instanceof ExprNodeColumnDesc) {
-        if (((ExprNodeColumnDesc) expr).getColumn().equals(oldColumn)){
-          ((ExprNodeColumnDesc) expr).setColumn(newColumn);
-        }
-      }
-
-      if (expr.getChildren() != null){
-        for (ExprNodeDesc childexpr : expr.getChildren()) {
-          replaceColumnReference(childexpr, oldColumn, newColumn);
-        }
-      }
+    protected Set<String> getAliases(Node nd) {
+      return getQualifiedAliases((JoinOperator) nd, ((JoinOperator)nd).getSchema());
     }
 
     /**
@@ -715,7 +538,7 @@ public final class OpProcFactory {
      *          Row resolver
      * @return set of qualified aliases
      */
-    private Set<String> getQualifiedAliases(JoinOperator op, RowResolver rr) {
+    private Set<String> getQualifiedAliases(JoinOperator op, RowSchema rs) {
       Set<String> aliases = new HashSet<String>();
       JoinCondDesc[] conds = op.getConf().getConds();
       Map<Integer, Set<String>> posToAliasMap = op.getPosToAliasMap();
@@ -735,9 +558,89 @@ public final class OpProcFactory {
       if(i == -1){
         aliases.addAll(posToAliasMap.get(0));
       }
-      Set<String> aliases2 = rr.getTableNames();
+      Set<String> aliases2 = rs.getTableNames();
       aliases.retainAll(aliases2);
       return aliases;
+    }
+  }
+
+  public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      super.process(nd, stack, procCtx, nodeOutputs);
+      Operator<?> operator = (Operator<?>) nd;
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      if (operator.getNumChild() == 1 &&
+          operator.getChildOperators().get(0) instanceof JoinOperator) {
+        if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+            HiveConf.ConfVars.HIVEPPDRECOGNIZETRANSITIVITY)) {
+          JoinOperator child = (JoinOperator) operator.getChildOperators().get(0);
+          int targetPos = child.getParentOperators().indexOf(operator);
+          applyFilterTransitivity(child, targetPos, owi);
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Adds additional pushdown predicates for a join operator by replicating
+     * filters transitively over all the equijoin conditions.
+     *
+     * If we have a predicate "t.col=1" and the equijoin conditions
+     * "t.col=s.col" and "t.col=u.col", we add the filters "s.col=1" and
+     * "u.col=1". Note that this does not depend on the types of joins (ie.
+     * inner, left/right/full outer) between the tables s, t and u because if
+     * a predicate, eg. "t.col=1" is present in getFinalCandidates() at this
+     * point, we have already verified that it can be pushed down, so any rows
+     * emitted must satisfy s.col=t.col=u.col=1 and replicating the filters
+     * like this is ok.
+     */
+    private void applyFilterTransitivity(JoinOperator join, int targetPos, OpWalkerInfo owi)
+        throws SemanticException {
+
+      ExprWalkerInfo joinPreds = owi.getPrunedPreds(join);
+      if (joinPreds == null || !joinPreds.hasAnyCandidates()) {
+        return;
+      }
+      Map<String, List<ExprNodeDesc>> oldFilters = joinPreds.getFinalCandidates();
+      Map<String, List<ExprNodeDesc>> newFilters = new HashMap<String, List<ExprNodeDesc>>();
+
+      List<Operator<? extends OperatorDesc>> parentOperators = join.getParentOperators();
+
+      ReduceSinkOperator target = (ReduceSinkOperator) parentOperators.get(targetPos);
+      List<ExprNodeDesc> targetKeys = target.getConf().getKeyCols();
+
+      ExprWalkerInfo rsPreds = owi.getPrunedPreds(target);
+      for (int sourcePos = 0; sourcePos < parentOperators.size(); sourcePos++) {
+        ReduceSinkOperator source = (ReduceSinkOperator) parentOperators.get(sourcePos);
+        List<ExprNodeDesc> sourceKeys = source.getConf().getKeyCols();
+        Set<String> sourceAliases = new HashSet<String>(Arrays.asList(source.getInputAliases()));
+        for (Map.Entry<String, List<ExprNodeDesc>> entry : oldFilters.entrySet()) {
+          if (entry.getKey() == null && ExprNodeDescUtils.isAllConstants(entry.getValue())) {
+            // propagate constants
+            for (String targetAlias : target.getInputAliases()) {
+              rsPreds.addPushDowns(targetAlias, entry.getValue());
+            }
+            continue;
+          }
+          if (!sourceAliases.contains(entry.getKey())) {
+            continue;
+          }
+          for (ExprNodeDesc predicate : entry.getValue()) {
+            ExprNodeDesc backtrack = ExprNodeDescUtils.backtrack(predicate, join, source);
+            if (backtrack == null) {
+              continue;
+            }
+            ExprNodeDesc replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
+            if (replaced == null) {
+              continue;
+            }
+            for (String targetAlias : target.getInputAliases()) {
+              rsPreds.addFinalCandidate(targetAlias, replaced);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -786,7 +689,7 @@ public final class OpProcFactory {
         String[] aliases = ((ReduceSinkOperator)operator).getInputAliases();
         return new HashSet<String>(Arrays.asList(aliases));
       }
-      Set<String> includes = owi.getRowResolver(operator).getTableNames();
+      Set<String> includes = operator.getSchema().getTableNames();
       if (includes.size() == 1 && includes.contains("")) {
         // Reduce sink of group by operator
         return null;
@@ -881,16 +784,15 @@ public final class OpProcFactory {
 
   protected static Object createFilter(Operator op,
       ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) {
-    if (pushDownPreds == null || pushDownPreds.getFinalCandidates() == null
-        || pushDownPreds.getFinalCandidates().size() == 0) {
-      return null;
+    if (pushDownPreds != null && pushDownPreds.hasAnyCandidates()) {
+      return createFilter(op, pushDownPreds.getFinalCandidates(), owi);
     }
-    return createFilter(op, pushDownPreds.getFinalCandidates(), owi);
+    return null;
   }
 
   protected static Object createFilter(Operator op,
       Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) {
-    RowResolver inputRR = owi.getRowResolver(op);
+    RowSchema inputRS = op.getSchema();
 
     // combine all predicates into a single expression
     List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
@@ -930,7 +832,7 @@ public final class OpProcFactory {
         .getChildOperators();
     op.setChildOperators(null);
     Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
-        new FilterDesc(condn, false), new RowSchema(inputRR.getColumnInfos()),
+        new FilterDesc(condn, false), new RowSchema(inputRS.getSignature()),
         op);
     output.setChildOperators(originalChilren);
     for (Operator<? extends OperatorDesc> ch : originalChilren) {
@@ -941,8 +843,6 @@ public final class OpProcFactory {
       parentOperators.remove(pos);
       parentOperators.add(pos, output); // add the new op as the old
     }
-    OpParseContext ctx = new OpParseContext(inputRR);
-    owi.put(output, ctx);
 
     if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
         HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
@@ -993,7 +893,7 @@ public final class OpProcFactory {
     HiveConf hiveConf) {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
-    Table tbl = owi.getParseContext().getTopToTable().get(tableScanOp);
+    Table tbl = tableScanDesc.getTableMetadata();
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
       // attach the original predicate to the table scan operator for index
       // optimizations that require the pushed predicate before pcr & later
@@ -1092,6 +992,10 @@ public final class OpProcFactory {
 
   public static NodeProcessor getLVJProc() {
     return new JoinerPPD();
+  }
+
+  public static NodeProcessor getRSProc() {
+    return new ReduceSinkPPD();
   }
 
   private OpProcFactory() {

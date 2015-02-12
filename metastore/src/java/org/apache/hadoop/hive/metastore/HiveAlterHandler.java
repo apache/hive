@@ -63,6 +63,11 @@ public class HiveAlterHandler implements AlterHandler {
 
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newt) throws InvalidOperationException, MetaException {
+    alterTable(msdb, wh, dbname, name, newt, false);
+  }
+
+  public void alterTable(RawStore msdb, Warehouse wh, String dbname,
+      String name, Table newt, boolean cascade) throws InvalidOperationException, MetaException {
     if (newt == null) {
       throw new InvalidOperationException("New table is invalid: " + newt);
     }
@@ -116,6 +121,19 @@ public class HiveAlterHandler implements AlterHandler {
         // compatible with the current column types.
         MetaStoreUtils.throwExceptionIfIncompatibleColTypeChange(
             oldt.getSd().getCols(), newt.getSd().getCols());
+      }
+
+      if (cascade) {
+        //Currently only column related changes can be cascaded in alter table
+        if(MetaStoreUtils.isCascadeNeededInAlterTable(oldt, newt)) {
+          List<Partition> parts = msdb.getPartitions(dbname, name, -1);
+          for (Partition part : parts) {
+            part.getSd().setCols(newt.getSd().getCols());
+            msdb.alterPartition(dbname, name, part.getValues(), part);
+          }
+        } else {
+          LOG.warn("Alter table does not cascade changes to its partitions.");
+        }
       }
 
       //check that partition keys have not changed, except for virtual views
@@ -354,7 +372,7 @@ public class HiveAlterHandler implements AlterHandler {
           srcFs = wh.getFs(srcPath);
           destFs = wh.getFs(destPath);
           // check that src and dest are on the same file system
-          if (srcFs != destFs) {
+          if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
             throw new InvalidOperationException("table new location " + destPath
               + " is on a different file system than the old location "
               + srcPath + ". This operation is not supported");

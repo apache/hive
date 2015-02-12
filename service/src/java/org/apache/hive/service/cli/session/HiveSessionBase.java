@@ -55,12 +55,6 @@ public interface HiveSessionBase {
   void setOperationManager(OperationManager operationManager);
 
   /**
-   * Initialize the session
-   * @param sessionConfMap
-   */
-  void initialize(Map<String, String> sessionConfMap) throws Exception;
-
-  /**
    * Check whether operation logging is enabled and session dir is created successfully
    */
   boolean isOperationLogEnabled();

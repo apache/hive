@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,7 +36,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 
@@ -70,7 +71,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
                     "Target is not a directory : " + toURI));
         } else {
-          FileStatus[] files = fs.listStatus(toPath);
+          FileStatus[] files = fs.listStatus(toPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
           if (files != null && files.length != 0) {
             throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
                           "Target is not an empty directory : " + toURI));
@@ -82,11 +83,13 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
-    List<Partition> partitions = null;
+    PartitionIterable partitions = null;
     try {
-      partitions = null;
       if (ts.tableHandle.isPartitioned()) {
-        partitions = (ts.partitions != null) ? ts.partitions : db.getPartitions(ts.tableHandle);
+        partitions = (ts.partitions != null) ?
+            new PartitionIterable(ts.partitions) :
+            new PartitionIterable(db,ts.tableHandle,null,conf.getIntVar(
+                HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
       }
       Path path = new Path(ctx.getLocalTmpPath(), "_metadata");
       EximUtil.createExportDump(FileSystem.getLocal(conf), path, ts.tableHandle, partitions);
@@ -121,7 +124,6 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(rTask);
       inputs.add(new ReadEntity(ts.tableHandle));
     }
-    boolean isLocal = FileUtils.isLocalFile(conf, toURI);
-    outputs.add(new WriteEntity(parentPath, isLocal));
+    outputs.add(toWriteEntity(parentPath));
   }
 }

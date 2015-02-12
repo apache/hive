@@ -38,12 +38,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
-import jline.Completor;
-import jline.SimpleCompletor;
 import jline.Terminal;
+import jline.TerminalFactory;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
-
-class BeeLineOpts implements Completor {
+class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
   public static final int DEFAULT_MAX_HEIGHT = 80;
   public static final int DEFAULT_HEADER_INTERVAL = 100;
@@ -70,7 +70,7 @@ class BeeLineOpts implements Completor {
   private boolean showNestedErrs = false;
   private boolean showElapsedTime = true;
   private String numberFormat = "default";
-  private final Terminal terminal = Terminal.setupTerminal();
+  private final Terminal terminal = TerminalFactory.get();
   private int maxWidth = DEFAULT_MAX_WIDTH;
   private int maxHeight = DEFAULT_MAX_HEIGHT;
   private int maxColumnWidth = 15;
@@ -98,18 +98,17 @@ class BeeLineOpts implements Completor {
 
   public BeeLineOpts(BeeLine beeLine, Properties props) {
     this.beeLine = beeLine;
-    if (terminal.getTerminalWidth() > 0) {
-      maxWidth = terminal.getTerminalWidth();
+    if (terminal.getWidth() > 0) {
+      maxWidth = terminal.getWidth();
     }
-    if (terminal.getTerminalHeight() > 0) {
-      maxHeight = terminal.getTerminalHeight();
+    if (terminal.getHeight() > 0) {
+      maxHeight = terminal.getHeight();
     }
     loadProperties(props);
   }
 
-
-  public Completor[] optionCompletors() {
-    return new Completor[] {this};
+  public Completer[] optionCompleters() {
+    return new Completer[] {this};
   }
 
   public String[] possibleSettingValues() {
@@ -144,7 +143,7 @@ class BeeLineOpts implements Completor {
   @Override
   public int complete(String buf, int pos, List cand) {
     try {
-      return new SimpleCompletor(propertyNames()).complete(buf, pos, cand);
+      return new StringsCompleter(propertyNames()).complete(buf, pos, cand);
     } catch (Exception e) {
       beeLine.handleException(e);
       return -1;
@@ -427,6 +426,9 @@ class BeeLineOpts implements Completor {
   }
 
   public void setOutputFormat(String outputFormat) {
+    if(outputFormat.equalsIgnoreCase("csv") || outputFormat.equalsIgnoreCase("tsv")) {
+      beeLine.info("Format " + outputFormat + " is deprecated, please use " + outputFormat + "2");
+    }
     this.outputFormat = outputFormat;
   }
 

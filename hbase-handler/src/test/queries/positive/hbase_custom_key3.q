@@ -3,7 +3,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
     "hbase.table.name" = "hbase_custom3",
     "hbase.columns.mapping" = ":key,cf:string",
-    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.TestHBaseKeyFactory3");
+    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.SampleHBaseKeyFactory3");
 
 from src tablesample (5 rows)
 insert into table hbase_ck_5 select

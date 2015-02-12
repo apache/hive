@@ -24,6 +24,7 @@ import com.google.common.collect.Interners;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,7 +39,9 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * PartitionDesc.
@@ -48,19 +51,17 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class PartitionDesc implements Serializable, Cloneable {
 
   static {
-    TABLE_INTERNER = Interners.newWeakInterner();
     STRING_INTERNER = Interners.newWeakInterner();
     CLASS_INTERNER = Interners.newWeakInterner();
   }
 
-  private static final Interner<TableDesc> TABLE_INTERNER;
   private static final Interner<String> STRING_INTERNER;
   private static final Interner<Class<?>> CLASS_INTERNER;
 
   private TableDesc tableDesc;
   private LinkedHashMap<String, String> partSpec;
   private Class<? extends InputFormat> inputFileFormatClass;
-  private Class<? extends HiveOutputFormat> outputFileFormatClass;
+  private Class<? extends OutputFormat> outputFileFormatClass;
   private Properties properties;
 
   private String baseFileName;
@@ -73,12 +74,12 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
-    setTableDesc(table);
+    this.tableDesc = table;
     this.partSpec = partSpec;
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
-    setTableDesc(Utilities.getTableDesc(part.getTable()));
+    this.tableDesc = Utilities.getTableDesc(part.getTable());
     setProperties(part.getMetadataFromPartitionSchema());
     partSpec = part.getSpec();
     setInputFileFormatClass(part.getInputFormatClass());
@@ -86,7 +87,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final Partition part,final TableDesc tblDesc) throws HiveException {
-    setTableDesc(tblDesc);
+    this.tableDesc = tblDesc;
     setProperties(part.getSchemaFromTableSchema(tblDesc.getProperties())); // each partition maintains a large properties
     partSpec = part.getSpec();
     setOutputFileFormatClass(part.getInputFormatClass());
@@ -99,7 +100,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setTableDesc(TableDesc tableDesc) {
-    this.tableDesc = TABLE_INTERNER.intern(tableDesc);
+    this.tableDesc = tableDesc;
   }
 
   @Explain(displayName = "partition values")
@@ -150,7 +151,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
   }
 
-  public Class<? extends HiveOutputFormat> getOutputFileFormatClass() {
+  public Class<? extends OutputFormat> getOutputFileFormatClass() {
     if (outputFileFormatClass == null && tableDesc != null) {
       setOutputFileFormatClass(tableDesc.getOutputFileFormatClass());
     }
@@ -158,8 +159,8 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
-    Class<? extends HiveOutputFormat> outputClass = outputFileFormatClass == null ? null :
-      HiveFileFormatUtils.getOutputFormatSubstitute(outputFileFormatClass,false);
+    Class<? extends OutputFormat> outputClass = outputFileFormatClass == null ? null :
+      HiveFileFormatUtils.getOutputFormatSubstitute(outputFileFormatClass);
     if (outputClass != null) {
       this.outputFileFormatClass = (Class<? extends HiveOutputFormat>) 
         CLASS_INTERNER.intern(outputClass);
@@ -168,12 +169,16 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
   }
 
-  @Explain(displayName = "properties", normalExplain = false)
   public Properties getProperties() {
     if (properties == null && tableDesc != null) {
       return tableDesc.getProperties();
     }
     return properties;
+  }
+
+  @Explain(displayName = "properties", normalExplain = false)
+  public Map getPropertiesExplain() {
+    return HiveStringUtils.getPropertiesExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
@@ -265,5 +270,9 @@ public class PartitionDesc implements Serializable, Cloneable {
       // the last component at the minimum - so set to the complete path
       baseFileName = path;
     }
+  }
+
+  public void intern(Interner<TableDesc> interner) {
+    this.tableDesc = interner.intern(tableDesc);
   }
 }

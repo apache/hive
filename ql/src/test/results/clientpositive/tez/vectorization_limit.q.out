@@ -1,0 +1,549 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: explain SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 7
+      Processor Tree:
+        TableScan
+          alias: alltypesorc
+          Filter Operator
+            predicate: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
+            Select Operator
+              expressions: cbigint (type: bigint), cdouble (type: double)
+              outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 7
+                ListSink
+
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-1887561756	1839.0
+-1887561756	-10011.0
+-1887561756	-13877.0
+-1887561756	10361.0
+-1887561756	-8881.0
+-1887561756	-2281.0
+-1887561756	9531.0
+PREHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage - c/p parts from limit_pushdown
+
+explain
+select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage - c/p parts from limit_pushdown
+
+explain
+select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ctinyint is not null (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint), cdouble (type: double), csmallint (type: smallint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint), _col1 (type: double)
+                        sort order: ++
+                        Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col2 (type: smallint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: smallint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-64	-15920.0	-15920
+-64	-10462.0	-10462
+-64	-9842.0	-9842
+-64	-8080.0	-8080
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-7196.0	-7196
+-64	-6907.0	-6907
+-64	-4803.0	-4803
+-64	-4040.0	-4040
+-64	-4018.0	-4018
+-64	-3586.0	-3586
+-64	-3097.0	-3097
+-64	-2919.0	-2919
+-64	-1600.0	-1600
+-64	-200.0	-200
+PREHOOK: query: -- deduped RS
+explain
+select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- deduped RS
+explain
+select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), (cdouble + 1.0) (type: double)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: avg(_col1)
+                      keys: _col0 (type: tinyint)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	9370.0945309795
+-64	373.52941176470586
+-63	2178.7272727272725
+-62	245.69387755102042
+-61	914.3404255319149
+-60	1071.82
+-59	318.27272727272725
+-58	3483.2444444444445
+-57	1867.0535714285713
+-56	2595.818181818182
+-55	2385.595744680851
+-54	2712.7272727272725
+-53	-532.7567567567568
+-52	2810.705882352941
+-51	-96.46341463414635
+-50	-960.0192307692307
+-49	768.7659574468086
+-48	1672.909090909091
+-47	-574.6428571428571
+-46	3033.55
+PREHOOK: query: -- distincts
+explain
+select distinct(ctinyint) from alltypesorc limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- distincts
+explain
+select distinct(ctinyint) from alltypesorc limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: tinyint)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct(ctinyint) from alltypesorc limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct(ctinyint) from alltypesorc limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL
+-64
+-63
+-62
+-61
+-60
+-59
+-58
+-57
+-56
+-55
+-54
+-53
+-52
+-51
+-50
+-49
+-48
+-47
+-46
+PREHOOK: query: explain
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), cdouble (type: double)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT _col1)
+                      keys: _col0 (type: tinyint), _col1 (type: double)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint), _col1 (type: double)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	2932
+-64	24
+-63	19
+-62	27
+-61	25
+-60	27
+-59	31
+-58	23
+-57	35
+-56	36
+-55	29
+-54	26
+-53	22
+-52	33
+-51	21
+-50	30
+-49	26
+-48	29
+-47	22
+-46	24
+PREHOOK: query: -- limit zero
+explain
+select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
+PREHOOK: type: QUERY
+POSTHOOK: query: -- limit zero
+explain
+select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PREHOOK: query: -- 2MR (applied to last RS)
+explain
+select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- 2MR (applied to last RS)
+explain
+select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ctinyint is not null (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdouble (type: double), ctinyint (type: tinyint)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: sum(_col1)
+                        keys: _col0 (type: double)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: double)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: double)
+                          Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint), _col0 (type: double)
+                  sort order: ++
+                  Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.3
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: double), KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	-32768
+-7196.0	-2009
+15601.0	-1733
+4811.0	-115
+-11322.0	-101
+-1121.0	-89
+7705.0	-88
+3520.0	-86
+-8118.0	-80
+5241.0	-80
+-11492.0	-78
+9452.0	-76
+557.0	-75
+10496.0	-67
+-15920.0	-64
+-10462.0	-64
+-9842.0	-64
+-8080.0	-64
+-6907.0	-64
+-4803.0	-64

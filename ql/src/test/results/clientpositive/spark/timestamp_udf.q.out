@@ -1,0 +1,220 @@
+PREHOOK: query: drop table timestamp_udf
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table timestamp_udf
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table timestamp_udf_string
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table timestamp_udf_string
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table timestamp_udf (t timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_udf
+POSTHOOK: query: create table timestamp_udf (t timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_udf
+PREHOOK: query: create table timestamp_udf_string (t string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_udf_string
+POSTHOOK: query: create table timestamp_udf_string (t string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_udf_string
+PREHOOK: query: from (select * from src tablesample (1 rows)) s
+  insert overwrite table timestamp_udf 
+    select '2011-05-06 07:08:09.1234567'
+  insert overwrite table timestamp_udf_string
+    select '2011-05-06 07:08:09.1234567'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@timestamp_udf
+PREHOOK: Output: default@timestamp_udf_string
+POSTHOOK: query: from (select * from src tablesample (1 rows)) s
+  insert overwrite table timestamp_udf 
+    select '2011-05-06 07:08:09.1234567'
+  insert overwrite table timestamp_udf_string
+    select '2011-05-06 07:08:09.1234567'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@timestamp_udf
+POSTHOOK: Output: default@timestamp_udf_string
+POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
+POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
+PREHOOK: query: -- Test UDFs with Timestamp input
+select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
+    weekofyear(t), hour(t), minute(t), second(t), to_date(t)
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test UDFs with Timestamp input
+select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
+    weekofyear(t), hour(t), minute(t), second(t), to_date(t)
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+1304690889	2011	5	6	6	18	7	8	9	2011-05-06
+PREHOOK: query: select date_add(t, 5), date_sub(t, 10)
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select date_add(t, 5), date_sub(t, 10)
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-11	2011-04-26
+PREHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+0	3333	-3333
+PREHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 02:08:09.1234567
+PREHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 12:08:09.1234567
+PREHOOK: query: select t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 07:08:09.1234567	2011-05-06 02:08:09.1234567
+PREHOOK: query: select t, from_utc_timestamp(t, 'America/Chicago'), t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select t, from_utc_timestamp(t, 'America/Chicago'), t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 07:08:09.1234567	2011-05-06 02:08:09.1234567	2011-05-06 07:08:09.1234567	2011-05-06 02:08:09.1234567
+PREHOOK: query: select t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 07:08:09.1234567	2011-05-06 12:08:09.1234567
+PREHOOK: query: select t, to_utc_timestamp(t, 'America/Chicago'), t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select t, to_utc_timestamp(t, 'America/Chicago'), t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf
+#### A masked pattern was here ####
+2011-05-06 07:08:09.1234567	2011-05-06 12:08:09.1234567	2011-05-06 07:08:09.1234567	2011-05-06 12:08:09.1234567
+PREHOOK: query: -- Test UDFs with string input
+select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
+    weekofyear(t), hour(t), minute(t), second(t), to_date(t)
+  from timestamp_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test UDFs with string input
+select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
+    weekofyear(t), hour(t), minute(t), second(t), to_date(t)
+  from timestamp_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+1304690889	2011	5	6	6	18	7	8	9	2011-05-06
+PREHOOK: query: select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+2011-05-11	2011-04-26
+PREHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
+  from timestamp_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
+  from timestamp_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+0	3333	-3333
+PREHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+2011-05-06 02:08:09.1234567
+PREHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_udf_string
+#### A masked pattern was here ####
+2011-05-06 12:08:09.1234567
+PREHOOK: query: drop table timestamp_udf
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamp_udf
+PREHOOK: Output: default@timestamp_udf
+POSTHOOK: query: drop table timestamp_udf
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamp_udf
+POSTHOOK: Output: default@timestamp_udf
+PREHOOK: query: drop table timestamp_udf_string
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamp_udf_string
+PREHOOK: Output: default@timestamp_udf_string
+POSTHOOK: query: drop table timestamp_udf_string
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamp_udf_string
+POSTHOOK: Output: default@timestamp_udf_string

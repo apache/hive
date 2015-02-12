@@ -110,48 +110,8 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESC FORMATTED orcfile_merge1 partition (ds='1', part='0')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orcfile_merge1
-POSTHOOK: query: DESC FORMATTED orcfile_merge1 partition (ds='1', part='0')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orcfile_merge1
-# col_name            	data_type           	comment             
-	 	 
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-ds                  	string              	                    
-part                	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[1, 0]              	 
-Database:           	default             	 
-Table:              	orcfile_merge1      	 
+Found 2 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	2                   
-	numRows             	242                 
-	rawDataSize         	22748               
-	totalSize           	1747                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: -- auto-merge slow way
 EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
@@ -266,48 +226,8 @@ POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).key EXPRESSION [(src)s
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESC FORMATTED orcfile_merge1b partition (ds='1', part='0')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orcfile_merge1b
-POSTHOOK: query: DESC FORMATTED orcfile_merge1b partition (ds='1', part='0')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orcfile_merge1b
-# col_name            	data_type           	comment             
-	 	 
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-ds                  	string              	                    
-part                	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[1, 0]              	 
-Database:           	default             	 
-Table:              	orcfile_merge1b     	 
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	242                 
-	rawDataSize         	22748               
-	totalSize           	1332                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: -- auto-merge fast way
 EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
@@ -412,48 +332,8 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).key EXPRESSION [(src)s
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESC FORMATTED orcfile_merge1c partition (ds='1', part='0')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orcfile_merge1c
-POSTHOOK: query: DESC FORMATTED orcfile_merge1c partition (ds='1', part='0')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orcfile_merge1c
-# col_name            	data_type           	comment             
-	 	 
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-ds                  	string              	                    
-part                	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[1, 0]              	 
-Database:           	default             	 
-Table:              	orcfile_merge1c     	 
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	242                 
-	rawDataSize         	22748               
-	totalSize           	1623                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: -- Verify
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)

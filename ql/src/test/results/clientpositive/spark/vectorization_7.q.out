@@ -1,0 +1,342 @@
+PREHOOK: query: EXPLAIN
+SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > -15)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > -15)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((ctinyint <> 0) and ((ctimestamp1 <= 0) or ((ctinyint = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((ctimestamp2 > -15) and (3569.0 >= cdouble)))) (type: boolean)
+                    Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (csmallint % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), ((- ctinyint) + 17) (type: int), (cbigint * (- csmallint)) (type: bigint), (cint % csmallint) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+                      Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                      Limit
+                        Number of rows: 25
+                        Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 25
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > -15)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > -15)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+true	NULL	-13326	-50	1969-12-31 15:59:46.674	cvLH6Eat2yFsyy7p	NULL	-219	13326	50	67	NULL	12281	50	0
+true	NULL	-15813	-28	1969-12-31 15:59:55.787	cvLH6Eat2yFsyy7p	NULL	-136	15813	28	45	NULL	1055	28	0
+true	NULL	-9566	31	1969-12-31 15:59:44.187	cvLH6Eat2yFsyy7p	NULL	-57	9566	-31	-14	NULL	3701	-31	0
+true	NULL	-15431	-11	1969-12-31 15:59:52.176	cvLH6Eat2yFsyy7p	NULL	-11	15431	11	28	NULL	7586	11	0
+true	NULL	-15549	61	1969-12-31 15:59:44.569	cvLH6Eat2yFsyy7p	NULL	-129	15549	-61	-44	NULL	8708	-61	0
+true	NULL	10	-62	1969-12-31 15:59:52.265	cvLH6Eat2yFsyy7p	NULL	10	-10	62	79	NULL	7	62	0
+true	NULL	-10909	39	1969-12-31 15:59:58.276	cvLH6Eat2yFsyy7p	NULL	-115	10909	-39	-22	NULL	4626	-39	0
+true	NULL	-10154	-23	1969-12-31 15:59:44.088	cvLH6Eat2yFsyy7p	NULL	-131	10154	23	40	NULL	8913	23	0
+true	NULL	-7449	-55	1969-12-31 15:59:49.846	cvLH6Eat2yFsyy7p	NULL	-253	7449	55	72	NULL	5870	55	0
+true	NULL	163	-24	1969-12-31 15:59:55.51	cvLH6Eat2yFsyy7p	NULL	163	-163	24	41	NULL	95	24	0
+true	NULL	-14739	4	1969-12-31 15:59:55.188	cvLH6Eat2yFsyy7p	NULL	-90	14739	-4	13	NULL	8966	-4	0
+true	NULL	-11492	-57	1969-12-31 15:59:45.261	cvLH6Eat2yFsyy7p	NULL	-184	11492	57	74	NULL	6195	57	0
+true	NULL	-6583	38	1969-12-31 15:59:53.078	cvLH6Eat2yFsyy7p	NULL	-158	6583	-38	-21	NULL	5446	-38	0
+true	NULL	-10268	-54	1969-12-31 15:59:53.417	cvLH6Eat2yFsyy7p	NULL	-245	10268	54	71	NULL	10003	54	0
+true	NULL	-15790	51	1969-12-31 15:59:49.871	cvLH6Eat2yFsyy7p	NULL	-113	15790	-51	-34	NULL	11887	-51	0
+true	NULL	-3045	18	1969-12-31 15:59:47.829	cvLH6Eat2yFsyy7p	NULL	-218	3045	-18	-1	NULL	1937	-18	0
+true	NULL	-814	30	1969-12-31 15:59:56.955	cvLH6Eat2yFsyy7p	NULL	-43	814	-30	-13	NULL	497	-30	0
+true	NULL	-7353	-55	1969-12-31 15:59:44.941	cvLH6Eat2yFsyy7p	NULL	-157	7353	55	72	NULL	1127	55	0
+true	NULL	-4463	-40	1969-12-31 15:59:52.647	cvLH6Eat2yFsyy7p	NULL	-94	4463	40	57	NULL	3992	40	0
+true	NULL	3168	-21	1969-12-31 15:59:56.834	cvLH6Eat2yFsyy7p	NULL	84	-3168	21	38	NULL	1487	21	0
+true	NULL	-3419	-53	1969-12-31 15:59:46.771	cvLH6Eat2yFsyy7p	NULL	-78	3419	53	70	NULL	1814	53	0
+true	NULL	-4255	34	1969-12-31 15:59:56.581	cvLH6Eat2yFsyy7p	NULL	-143	4255	-34	-17	NULL	4197	-34	0
+true	NULL	-7183	-21	1969-12-31 15:59:45.035	cvLH6Eat2yFsyy7p	NULL	-244	7183	21	38	NULL	2444	21	0
+true	NULL	1475	43	1969-12-31 15:59:56.988	cvLH6Eat2yFsyy7p	NULL	190	-1475	-43	-26	NULL	967	-43	0
+true	NULL	37	41	1969-12-31 15:59:52.817	cvLH6Eat2yFsyy7p	NULL	37	-37	-41	-24	NULL	16	-41	0
+PREHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0.0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > 7.6850000000000005)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+PREHOOK: type: QUERY
+POSTHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0.0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > 7.6850000000000005)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((ctinyint <> 0) and ((ctimestamp1 <= 0.0) or ((ctinyint = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((ctimestamp2 > 7.6850000000000005) and (3569.0 >= cdouble)))) (type: boolean)
+                    Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (csmallint % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), ((- ctinyint) + 17) (type: int), (cbigint * (- csmallint)) (type: bigint), (cint % csmallint) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+                      Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                      Limit
+                        Number of rows: 25
+                        Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 25
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0.0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > 7.6850000000000005)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cboolean1,
+       cbigint,
+       csmallint,
+       ctinyint,
+       ctimestamp1,
+       cstring1,
+       (cbigint + cbigint),
+       (csmallint % -257),
+       (-(csmallint)),
+       (-(ctinyint)),
+       ((-(ctinyint)) + 17),
+       (cbigint * (-(csmallint))),
+       (cint % csmallint),
+       (-(ctinyint)),
+       ((-(ctinyint)) % ctinyint)
+FROM   alltypesorc
+WHERE  ((ctinyint != 0)
+        AND (((ctimestamp1 <= 0.0)
+          OR ((ctinyint = cint)
+               OR (cstring2 LIKE 'ss')))
+          AND ((988888 < cdouble)
+              OR ((ctimestamp2 > 7.6850000000000005)
+                  AND (3569 >= cdouble)))))
+LIMIT 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+true	NULL	-13326	-50	1969-12-31 15:59:46.674	cvLH6Eat2yFsyy7p	NULL	-219	13326	50	67	NULL	12281	50	0
+true	NULL	-15431	-11	1969-12-31 15:59:52.176	cvLH6Eat2yFsyy7p	NULL	-11	15431	11	28	NULL	7586	11	0
+true	NULL	-10909	39	1969-12-31 15:59:58.276	cvLH6Eat2yFsyy7p	NULL	-115	10909	-39	-22	NULL	4626	-39	0
+true	NULL	-14739	4	1969-12-31 15:59:55.188	cvLH6Eat2yFsyy7p	NULL	-90	14739	-4	13	NULL	8966	-4	0
+true	NULL	-814	30	1969-12-31 15:59:56.955	cvLH6Eat2yFsyy7p	NULL	-43	814	-30	-13	NULL	497	-30	0
+true	NULL	3168	-21	1969-12-31 15:59:56.834	cvLH6Eat2yFsyy7p	NULL	84	-3168	21	38	NULL	1487	21	0
+true	NULL	-1027	-4	1969-12-31 15:59:46.628	cvLH6Eat2yFsyy7p	NULL	-256	1027	4	21	NULL	514	4	0
+true	NULL	-6294	-7	1969-12-31 15:59:58.973	cvLH6Eat2yFsyy7p	NULL	-126	6294	7	24	NULL	2411	7	0
+true	NULL	-9139	42	1969-12-31 15:59:57.532	cvLH6Eat2yFsyy7p	NULL	-144	9139	-42	-25	NULL	8119	-42	0
+true	NULL	-15478	7	1969-12-31 15:59:56.809	cvLH6Eat2yFsyy7p	NULL	-58	15478	-7	10	NULL	7501	-7	0
+true	NULL	-7151	-31	1969-12-31 15:59:48.202	cvLH6Eat2yFsyy7p	NULL	-212	7151	31	48	NULL	4357	31	0
+true	NULL	-9098	-57	1969-12-31 15:59:52.146	cvLH6Eat2yFsyy7p	NULL	-103	9098	57	74	NULL	4653	57	0
+true	NULL	3519	39	1969-12-31 15:59:45.43	cvLH6Eat2yFsyy7p	NULL	178	-3519	-39	-22	NULL	2081	-39	0
+true	NULL	-9837	-7	1969-12-31 15:59:52.346	cvLH6Eat2yFsyy7p	NULL	-71	9837	7	24	NULL	2594	7	0
+true	NULL	1268	-3	1969-12-31 15:59:50.163	cvLH6Eat2yFsyy7p	NULL	240	-1268	3	20	NULL	667	3	0
+true	NULL	-3110	6	1969-12-31 15:59:58.248	cvLH6Eat2yFsyy7p	NULL	-26	3110	-6	11	NULL	2707	-6	0
+true	NULL	-5588	4	1969-12-31 15:59:52.982	cvLH6Eat2yFsyy7p	NULL	-191	5588	-4	13	NULL	4963	-4	0
+true	NULL	-14375	-60	1969-12-31 15:59:46.425	cvLH6Eat2yFsyy7p	NULL	-240	14375	60	77	NULL	9142	60	0
+true	NULL	-15659	-11	1969-12-31 15:59:48.466	cvLH6Eat2yFsyy7p	NULL	-239	15659	11	28	NULL	12199	11	0
+true	NULL	-14433	-7	1969-12-31 15:59:48.736	cvLH6Eat2yFsyy7p	NULL	-41	14433	7	24	NULL	12740	7	0
+true	NULL	-11497	-13	1969-12-31 15:59:45.567	cvLH6Eat2yFsyy7p	NULL	-189	11497	13	30	NULL	6180	13	0
+true	NULL	-6770	7	1969-12-31 15:59:58.755	cvLH6Eat2yFsyy7p	NULL	-88	6770	-7	10	NULL	867	-7	0
+true	NULL	-180	-30	1969-12-31 15:59:48.503	cvLH6Eat2yFsyy7p	NULL	-180	180	30	47	NULL	47	30	0
+true	NULL	-8841	-48	1969-12-31 15:59:57.746	cvLH6Eat2yFsyy7p	NULL	-103	8841	48	65	NULL	2105	48	0
+true	NULL	838	-48	1969-12-31 15:59:46.43	cvLH6Eat2yFsyy7p	NULL	67	-838	48	65	NULL	625	48	0

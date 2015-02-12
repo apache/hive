@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,8 +28,8 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
@@ -44,10 +43,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Implementation of one of the rule-based optimization steps. ColumnPruner gets
@@ -59,7 +56,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class ColumnPruner implements Transform {
   protected ParseContext pGraphContext;
-  private HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
 
   /**
    * empty constructor.
@@ -76,9 +72,9 @@ public class ColumnPruner implements Transform {
    * @param pactx
    *          the current parse context
    */
+  @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
     pGraphContext = pactx;
-    opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // generate pruned column list for all relevant operators
     ColumnPrunerProcCtx cppCtx = new ColumnPrunerProcCtx(pactx);
@@ -120,6 +116,9 @@ public class ColumnPruner implements Transform {
     opRules.put(new RuleRegExp("R11",
         ScriptOperator.getOperatorName() + "%"),
         ColumnPrunerProcFactory.getScriptProc());
+    opRules.put(new RuleRegExp("R12",
+        LimitOperator.getOperatorName() + "%"),
+        ColumnPrunerProcFactory.getLimitProc());
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
@@ -32,11 +31,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
@@ -84,7 +85,6 @@ public final class OperatorFactory {
     opvec.add(new OpTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
     opvec.add(new OpTuple<PTFDesc>(PTFDesc.class, PTFOperator.class));
     opvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class, ReduceSinkOperator.class));
-    opvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
     opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
     opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
     opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
@@ -101,6 +101,8 @@ public final class OperatorFactory {
         HashTableDummyOperator.class));
     opvec.add(new OpTuple<HashTableSinkDesc>(HashTableSinkDesc.class,
         HashTableSinkOperator.class));
+    opvec.add(new OpTuple<SparkHashTableSinkDesc>(SparkHashTableSinkDesc.class,
+        SparkHashTableSinkOperator.class));
     opvec.add(new OpTuple<DummyStoreDesc>(DummyStoreDesc.class,
         DummyStoreOperator.class));
     opvec.add(new OpTuple<DemuxDesc>(DemuxDesc.class,
@@ -115,6 +117,10 @@ public final class OperatorFactory {
         RCFileMergeOperator.class));
     opvec.add(new OpTuple<OrcFileMergeDesc>(OrcFileMergeDesc.class,
         OrcFileMergeOperator.class));
+    opvec.add(new OpTuple<CommonMergeJoinDesc>(CommonMergeJoinDesc.class,
+        CommonMergeJoinOperator.class));
+    opvec.add(new OpTuple<ListSinkDesc>(ListSinkDesc.class,
+        ListSinkOperator.class));
   }
 
   static {
@@ -132,7 +138,6 @@ public final class OperatorFactory {
     vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
     vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
     vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
-    vectorOpvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, VectorExtractOperator.class));
   }
 
   private static final class OpTuple<T extends OperatorDesc> {

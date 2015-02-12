@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  *
@@ -115,12 +117,14 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     supportedIndexes.add(BitmapIndexHandler.class.getName());
 
     // query the metastore to know what columns we have indexed
-    Collection<Table> topTables = pctx.getTopToTable().values();
     Map<TableScanOperator, List<Index>> indexes = new HashMap<TableScanOperator, List<Index>>();
-    for (Map.Entry<TableScanOperator, Table> entry : pctx.getTopToTable().entrySet()) {
-      List<Index> tblIndexes = IndexUtils.getIndexes(entry.getValue(), supportedIndexes);
-      if (tblIndexes.size() > 0) {
-        indexes.put(entry.getKey(), tblIndexes);
+    for (Operator<? extends OperatorDesc> op : pctx.getTopOps().values()) {
+      if (op instanceof TableScanOperator) {
+        List<Index> tblIndexes = IndexUtils.getIndexes(((TableScanOperator) op).getConf()
+            .getTableMetadata(), supportedIndexes);
+        if (tblIndexes.size() > 0) {
+          indexes.put((TableScanOperator) op, tblIndexes);
+        }
       }
     }
 

@@ -1,8 +1,12 @@
-PREHOOK: query: create table tmptable(key string, value string)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table tmptable(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: create table tmptable(key string, value string)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table tmptable(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
@@ -67,18 +71,14 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 26 Data size: 463 Basic stats: COMPLETE Column stats: PARTIAL
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 26 Data size: 7072 Basic stats: COMPLETE Column stats: PARTIAL
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 26 Data size: 7072 Basic stats: COMPLETE Column stats: PARTIAL
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.tmptable
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 26 Data size: 463 Basic stats: COMPLETE Column stats: PARTIAL
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.tmptable
           TableScan
             alias: s2
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -88,18 +88,14 @@ STAGE PLANS:
               Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 26 Data size: 463 Basic stats: COMPLETE Column stats: PARTIAL
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 26 Data size: 7072 Basic stats: COMPLETE Column stats: PARTIAL
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 26 Data size: 7072 Basic stats: COMPLETE Column stats: PARTIAL
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.tmptable
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 26 Data size: 463 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.tmptable
 
   Stage: Stage-0
     Move Operator
@@ -133,7 +129,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable

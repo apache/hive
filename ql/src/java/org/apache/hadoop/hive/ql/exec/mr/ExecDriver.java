@@ -56,7 +56,10 @@ import org.apache.hadoop.hive.ql.exec.PartitionKeySampler;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
@@ -83,6 +86,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
@@ -225,7 +229,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       return 5;
     }
 
-    ShimLoader.getHadoopShims().prepareJobOutput(job);
+    HiveFileFormatUtils.prepareJobOutput(job);
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
 
@@ -238,7 +242,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       job.setPartitionerClass((Class<? extends Partitioner>) (Class.forName(HiveConf.getVar(job,
           HiveConf.ConfVars.HIVEPARTITIONER))));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
     if (mWork.getNumMapTasks() != null) {
@@ -274,9 +278,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         useSpeculativeExecReducers);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
-    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
 
     if (mWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
@@ -287,7 +288,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     try {
       job.setInputFormat((Class<? extends InputFormat>) (Class.forName(inpFormat)));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
 
@@ -327,7 +328,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     try{
-      MapredLocalWork localwork = mWork.getMapLocalWork();
+      MapredLocalWork localwork = mWork.getMapRedLocalWork();
       if (localwork != null && localwork.hasStagedAlias()) {
         if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
           Path localPath = localwork.getTmpPath();
@@ -415,6 +416,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       Utilities.createTmpDirs(job, mWork);
       Utilities.createTmpDirs(job, rWork);
+
+      SessionState ss = SessionState.get();
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
+          && ss != null) {
+        TezSessionState session = ss.getTezSession();
+        TezSessionPoolManager.getInstance().close(session, true);
+      }
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
@@ -656,9 +664,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       conf.set("tmpfiles", files);
     }
 
-    if(ShimLoader.getHadoopShims().isSecurityEnabled()){
-      String hadoopAuthToken =
-          System.getenv(ShimLoader.getHadoopShims().getTokenFileLocEnvName());
+    if(UserGroupInformation.isSecurityEnabled()){
+      String hadoopAuthToken = UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION;
       if(hadoopAuthToken != null){
         conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
       }

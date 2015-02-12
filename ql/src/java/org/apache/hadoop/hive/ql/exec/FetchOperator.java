@@ -26,11 +26,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import com.google.common.collect.Iterators;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -49,14 +51,13 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.DelegatedObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -66,77 +67,85 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.AnnotationUtils;
 
 /**
  * FetchTask implementation.
  **/
 public class FetchOperator implements Serializable {
 
-  static Log LOG = LogFactory.getLog(FetchOperator.class.getName());
-  static LogHelper console = new LogHelper(LOG);
+  static final Log LOG = LogFactory.getLog(FetchOperator.class.getName());
+  static final LogHelper console = new LogHelper(LOG);
 
   public static final String FETCH_OPERATOR_DIRECTORY_LIST =
       "hive.complete.dir.list";
 
-  private boolean isNativeTable;
   private FetchWork work;
-  protected Operator<?> operator;    // operator tree for processing row further (option)
-  private int splitNum;
-  private PartitionDesc currPart;
-  private TableDesc currTbl;
-  private boolean tblDataDone;
-  private FooterBuffer footerBuffer = null;
-  private int headerCount = 0;
-  private int footerCount = 0;
+  private Operator<?> operator;    // operator tree for processing row further (optional)
 
-  private boolean hasVC;
-  private boolean isPartitioned;
+  private final boolean hasVC;
+  private final boolean isStatReader;
+  private final boolean isPartitioned;
+  private final boolean isNonNativeTable;
   private StructObjectInspector vcsOI;
   private List<VirtualColumn> vcCols;
   private ExecMapperContext context;
 
+  private transient Deserializer tableSerDe;
+  private transient StructObjectInspector tableOI;
+  private transient StructObjectInspector partKeyOI;
+  private transient StructObjectInspector convertedOI;
+
+  private transient Iterator<Path> iterPath;
+  private transient Iterator<PartitionDesc> iterPartDesc;
+  private transient Iterator<FetchInputFormatSplit> iterSplits = Iterators.emptyIterator();
+
+  private transient Path currPath;
+  private transient PartitionDesc currDesc;
+  private transient Deserializer currSerDe;
+  private transient Converter ObjectConverter;
   private transient RecordReader<WritableComparable, Writable> currRecReader;
-  private transient FetchInputFormatSplit[] inputSplits;
-  private transient InputFormat inputFormat;
+
   private transient JobConf job;
   private transient WritableComparable key;
   private transient Writable value;
   private transient Object[] vcValues;
-  private transient Deserializer serde;
-  private transient Deserializer tblSerde;
-  private transient Converter partTblObjectInspectorConverter;
 
-  private transient Iterator<Path> iterPath;
-  private transient Iterator<PartitionDesc> iterPartDesc;
-  private transient Path currPath;
-  private transient StructObjectInspector objectInspector;
-  private transient StructObjectInspector rowObjectInspector;
-  private transient ObjectInspector partitionedTableOI;
+  private transient int headerCount;
+  private transient int footerCount;
+  private transient FooterBuffer footerBuffer;
+
+  private transient StructObjectInspector outputOI;
   private transient Object[] row;
 
-  public FetchOperator() {
-  }
-
-  public FetchOperator(FetchWork work, JobConf job) {
-    this.job = job;
-    this.work = work;
-    initialize();
+  public FetchOperator(FetchWork work, JobConf job) throws HiveException {
+    this(work, job, null, null);
   }
 
   public FetchOperator(FetchWork work, JobConf job, Operator<?> operator,
-      List<VirtualColumn> vcCols) {
+      List<VirtualColumn> vcCols) throws HiveException {
     this.job = job;
     this.work = work;
     this.operator = operator;
     this.vcCols = vcCols;
+    this.hasVC = vcCols != null && !vcCols.isEmpty();
+    this.isStatReader = work.getTblDesc() == null;
+    this.isPartitioned = !isStatReader && work.isPartitioned();
+    this.isNonNativeTable = !isStatReader && work.getTblDesc().isNonNative();
     initialize();
   }
 
-  private void initialize() {
-    if (hasVC = vcCols != null && !vcCols.isEmpty()) {
+  private void initialize() throws HiveException {
+    if (isStatReader) {
+      outputOI = work.getStatRowOI();
+      return;
+    }
+    if (hasVC) {
       List<String> names = new ArrayList<String>(vcCols.size());
       List<ObjectInspector> inspectors = new ArrayList<ObjectInspector>(vcCols.size());
       for (VirtualColumn vc : vcCols) {
@@ -146,8 +155,6 @@ public class FetchOperator implements Serializable {
       vcsOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
       vcValues = new Object[vcCols.size()];
     }
-    isPartitioned = work.isPartitioned();
-    tblDataDone = false;
     if (hasVC && isPartitioned) {
       row = new Object[3];
     } else if (hasVC || isPartitioned) {
@@ -155,21 +162,27 @@ public class FetchOperator implements Serializable {
     } else {
       row = new Object[1];
     }
-    if (work.getTblDesc() != null) {
-      isNativeTable = !work.getTblDesc().isNonNative();
+    if (isPartitioned) {
+      iterPath = work.getPartDir().iterator();
+      iterPartDesc = work.getPartDesc().iterator();
     } else {
-      isNativeTable = true;
+      iterPath = Arrays.asList(work.getTblDir()).iterator();
+      iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
     }
-    setupExecContext();
+    outputOI = setupOutputObjectInspector();
+    context = setupExecContext(operator, work.getPathLists());
   }
 
-  private void setupExecContext() {
+  private ExecMapperContext setupExecContext(Operator operator, List<Path> paths) {
+    ExecMapperContext context = null;
     if (hasVC || work.getSplitSample() != null) {
-      context = new ExecMapperContext();
+      context = new ExecMapperContext(job);
       if (operator != null) {
         operator.setExecContext(context);
       }
     }
+    setFetchOperatorContext(job, paths);
+    return context;
   }
 
   public FetchWork getWork() {
@@ -180,203 +193,80 @@ public class FetchOperator implements Serializable {
     this.work = work;
   }
 
-  public int getSplitNum() {
-    return splitNum;
-  }
-
-  public void setSplitNum(int splitNum) {
-    this.splitNum = splitNum;
-  }
-
-  public PartitionDesc getCurrPart() {
-    return currPart;
-  }
-
-  public void setCurrPart(PartitionDesc currPart) {
-    this.currPart = currPart;
-  }
-
-  public TableDesc getCurrTbl() {
-    return currTbl;
-  }
-
-  public void setCurrTbl(TableDesc currTbl) {
-    this.currTbl = currTbl;
-  }
-
-  public boolean isTblDataDone() {
-    return tblDataDone;
-  }
-
-  public void setTblDataDone(boolean tblDataDone) {
-    this.tblDataDone = tblDataDone;
-  }
-
-  public boolean isEmptyTable() {
-    return work.getTblDir() == null && (work.getPartDir() == null || work.getPartDir().isEmpty());
-  }
-
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
+  private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
   @SuppressWarnings("unchecked")
-  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass,
-      Configuration conf) throws IOException {
-    if (!inputFormats.containsKey(inputFormatClass)) {
+  static InputFormat getInputFormatFromCache(Class<? extends InputFormat> inputFormatClass,
+       JobConf conf) throws IOException {
+    if (Configurable.class.isAssignableFrom(inputFormatClass) ||
+        JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
+      return (InputFormat<WritableComparable, Writable>) ReflectionUtils
+          .newInstance(inputFormatClass, conf);
+    }
+    InputFormat format = inputFormats.get(inputFormatClass.getName());
+    if (format == null) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
-            .newInstance(inputFormatClass, conf);
-        inputFormats.put(inputFormatClass, newInstance);
+        format = ReflectionUtils.newInstance(inputFormatClass, conf);
+        inputFormats.put(inputFormatClass.getName(), format);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return inputFormats.get(inputFormatClass);
+    return format;
   }
 
-  private StructObjectInspector getRowInspectorFromTable(TableDesc table) throws Exception {
-    Deserializer serde = table.getDeserializerClass().newInstance();
-    SerDeUtils.initializeSerDe(serde, job, table.getProperties(), null);
-    return createRowInspector(getStructOIFrom(serde.getObjectInspector()));
-  }
-
-  private StructObjectInspector getRowInspectorFromPartition(PartitionDesc partition,
-      ObjectInspector partitionOI) throws Exception {
-
-    String pcols = partition.getTableDesc().getProperties().getProperty(
+  private StructObjectInspector getPartitionKeyOI(TableDesc tableDesc) throws Exception {
+    String pcols = tableDesc.getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+    String pcolTypes = tableDesc.getProperties().getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+
     String[] partKeys = pcols.trim().split("/");
-    String pcolTypes = partition.getTableDesc().getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES); 
     String[] partKeyTypes = pcolTypes.trim().split(":");
-    row[1] = createPartValue(partKeys, partition.getPartSpec(), partKeyTypes);
-
-    return createRowInspector(getStructOIFrom(partitionOI), partKeys, partKeyTypes);
-  }
-
-  private StructObjectInspector getRowInspectorFromPartitionedTable(TableDesc table)
-      throws Exception {
-    Deserializer serde = table.getDeserializerClass().newInstance();
-    SerDeUtils.initializeSerDe(serde, job, table.getProperties(), null);
-    String pcols = table.getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
-    String[] partKeys = pcols.trim().split("/");
-    String pcolTypes = table.getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES); 
-    String[] partKeyTypes = pcolTypes.trim().split(":");    
-    row[1] = null;
-    return createRowInspector(getStructOIFrom(serde.getObjectInspector()), partKeys, partKeyTypes);
-  }
-
-  private StructObjectInspector getStructOIFrom(ObjectInspector current) throws SerDeException {
-    if (objectInspector != null) {
-      current = DelegatedObjectInspectorFactory.reset(objectInspector, current);
-    } else {
-      current = DelegatedObjectInspectorFactory.wrap(current);
-    }
-    return objectInspector = (StructObjectInspector) current;
-  }
-
-  private StructObjectInspector createRowInspector(StructObjectInspector current)
-      throws SerDeException {
-    return hasVC ? ObjectInspectorFactory.getUnionStructObjectInspector(
-        Arrays.asList(current, vcsOI)) : current;
-  }
-
-  private StructObjectInspector createRowInspector(StructObjectInspector current, String[] partKeys, String[] partKeyTypes)
-      throws SerDeException {
-    List<String> partNames = new ArrayList<String>();
-    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+    ObjectInspector[] inspectors = new ObjectInspector[partKeys.length];
     for (int i = 0; i < partKeys.length; i++) {
-      String key = partKeys[i];
-      partNames.add(key);    
-      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
+      inspectors[i] = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
           TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
-      partObjectInspectors.add(oi);
     }
-    StructObjectInspector partObjectInspector = ObjectInspectorFactory
-        .getStandardStructObjectInspector(partNames, partObjectInspectors);
-
-    return ObjectInspectorFactory.getUnionStructObjectInspector(
-        hasVC ? Arrays.asList(current, partObjectInspector, vcsOI) :
-            Arrays.asList(current, partObjectInspector));
+    return ObjectInspectorFactory.getStandardStructObjectInspector(
+        Arrays.asList(partKeys), Arrays.asList(inspectors));
   }
 
-  private Object[] createPartValue(String[] partKeys, Map<String, String> partSpec, String[] partKeyTypes) {
-    Object[] partValues = new Object[partKeys.length];
-    for (int i = 0; i < partKeys.length; i++) {
-      String key = partKeys[i];
-      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-          TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
-      partValues[i] = 
-          ObjectInspectorConverters.
-          getConverter(PrimitiveObjectInspectorFactory.
-              javaStringObjectInspector, oi).convert(partSpec.get(key));   
+  private Object[] createPartValue(PartitionDesc partDesc, StructObjectInspector partOI) {
+    Map<String, String> partSpec = partDesc.getPartSpec();
+    List<? extends StructField> fields = partOI.getAllStructFieldRefs();
+    Object[] partValues = new Object[fields.size()];
+    for (int i = 0; i < partValues.length; i++) {
+      StructField field = fields.get(i);
+      String value = partSpec.get(field.getFieldName());
+      ObjectInspector oi = field.getFieldObjectInspector();
+      partValues[i] = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi).convert(value);
     }
     return partValues;
   }
 
-  private void getNextPath() throws Exception {
-    // first time
-    if (iterPath == null) {
-      if (work.isNotPartitioned()) {
-        if (!tblDataDone) {
-          currPath = work.getTblDir();
-          currTbl = work.getTblDesc();
-          if (isNativeTable) {
-            FileSystem fs = currPath.getFileSystem(job);
-            if (fs.exists(currPath)) {
-              FileStatus[] fStats = listStatusUnderPath(fs, currPath);
-              for (FileStatus fStat : fStats) {
-                if (fStat.getLen() > 0) {
-                  tblDataDone = true;
-                  break;
-                }
-              }
-            }
-          } else {
-            tblDataDone = true;
-          }
-
-          if (!tblDataDone) {
-            currPath = null;
-          }
-          return;
-        } else {
-          currTbl = null;
-          currPath = null;
-        }
-        return;
-      } else {
-        setFetchOperatorContext(job, work.getPartDir());
-        iterPath = work.getPartDir().iterator();
-        iterPartDesc = work.getPartDesc().iterator();
-      }
-    }
-
+  private boolean getNextPath() throws Exception {
     while (iterPath.hasNext()) {
-      Path nxt = iterPath.next();
-      PartitionDesc prt = null;
-      if (iterPartDesc != null) {
-        prt = iterPartDesc.next();
+      currPath = iterPath.next();
+      currDesc = iterPartDesc.next();
+      if (isNonNativeTable) {
+        return true;
       }
-      FileSystem fs = nxt.getFileSystem(job);
-      if (fs.exists(nxt)) {
-        FileStatus[] fStats = listStatusUnderPath(fs, nxt);
-        for (FileStatus fStat : fStats) {
+      FileSystem fs = currPath.getFileSystem(job);
+      if (fs.exists(currPath)) {
+        for (FileStatus fStat : listStatusUnderPath(fs, currPath)) {
           if (fStat.getLen() > 0) {
-            currPath = nxt;
-            if (iterPartDesc != null) {
-              currPart = prt;
-            }
-            return;
+            return true;
           }
         }
       }
     }
+    return false;
   }
 
   /**
@@ -384,119 +274,53 @@ public class FetchOperator implements Serializable {
    * This helps InputFormats make decisions based on the scope of the complete
    * operation.
    * @param conf the configuration to modify
-   * @param partDirs the list of partition directories
+   * @param paths the list of input directories
    */
-  static void setFetchOperatorContext(JobConf conf,
-                                      ArrayList<Path> partDirs) {
-    if (partDirs != null) {
+  static void setFetchOperatorContext(JobConf conf, List<Path> paths) {
+    if (paths != null) {
       StringBuilder buff = new StringBuilder();
-      boolean first = true;
-      for(Path p: partDirs) {
-        if (first) {
-          first = false;
-        } else {
+      for (Path path : paths) {
+        if (buff.length() > 0) {
           buff.append('\t');
         }
-        buff.append(StringEscapeUtils.escapeJava(p.toString()));
+        buff.append(StringEscapeUtils.escapeJava(path.toString()));
       }
       conf.set(FETCH_OPERATOR_DIRECTORY_LIST, buff.toString());
     }
   }
 
-  /**
-   * A cache of Object Inspector Settable Properties.
-   */
-  private static Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
-
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
-    if (currPath == null) {
-      getNextPath();
-      if (currPath == null) {
+    if (!iterSplits.hasNext()) {
+      FetchInputFormatSplit[] splits = getNextSplits();
+      if (splits == null) {
         return null;
       }
-
-      // not using FileInputFormat.setInputPaths() here because it forces a
-      // connection
-      // to the default file system - which may or may not be online during pure
-      // metadata
-      // operations
-      job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils.escapeString(currPath
-          .toString()));
-
-      // Fetch operator is not vectorized and as such turn vectorization flag off so that
-      // non-vectorized record reader is created below.
-      if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-        HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-      }
-
-      PartitionDesc partDesc;
-      if (currTbl == null) {
-        partDesc = currPart;
+      if (!isPartitioned || convertedOI == null) {
+        currSerDe = tableSerDe;
+        ObjectConverter = null;
       } else {
-        partDesc = new PartitionDesc(currTbl, null);
+        currSerDe = needConversion(currDesc) ? currDesc.getDeserializer(job) : tableSerDe;
+        ObjectInspector inputOI = currSerDe.getObjectInspector();
+        ObjectConverter = ObjectInspectorConverters.getConverter(inputOI, convertedOI);
       }
-
-      Class<? extends InputFormat> formatter = partDesc.getInputFileFormatClass();
-      inputFormat = getInputFormatFromCache(formatter, job);
-      Utilities.copyTableJobPropertiesToConf(partDesc.getTableDesc(), job);
-      InputSplit[] splits = inputFormat.getSplits(job, 1);
-      FetchInputFormatSplit[] inputSplits = new FetchInputFormatSplit[splits.length];
-      for (int i = 0; i < splits.length; i++) {
-        inputSplits[i] = new FetchInputFormatSplit(splits[i], formatter.getName());
+      if (isPartitioned) {
+        row[1] = createPartValue(currDesc, partKeyOI);
       }
-      if (work.getSplitSample() != null) {
-        inputSplits = splitSampling(work.getSplitSample(), inputSplits);
-      }
-      this.inputSplits = inputSplits;
-
-      splitNum = 0;
-      serde = partDesc.getDeserializer(job);
-      SerDeUtils.initializeSerDe(serde, job, partDesc.getTableDesc().getProperties(),
-                                 partDesc.getProperties());
-
-      if (currTbl != null) {
-        tblSerde = serde;
-      }
-      else {
-        tblSerde = currPart.getTableDesc().getDeserializerClass().newInstance();
-        SerDeUtils.initializeSerDe(tblSerde, job, currPart.getTableDesc().getProperties(), null);
-      }
-
-      ObjectInspector outputOI = ObjectInspectorConverters.getConvertedOI(
-          serde.getObjectInspector(),
-          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI,
-          oiSettableProperties);
-
-      partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
-          serde.getObjectInspector(), outputOI);
+      iterSplits = Arrays.asList(splits).iterator();
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
-            + serde.getObjectInspector().getTypeName());
+            + currSerDe.getObjectInspector().getTypeName());
         LOG.debug("deserializer properties:\ntable properties: " +
-            partDesc.getTableDesc().getProperties() + "\npartition properties: " +
-            partDesc.getProperties());
-      }
-
-      if (currPart != null) {
-        getRowInspectorFromPartition(currPart, outputOI);
+            currDesc.getTableDesc().getProperties() + "\npartition properties: " +
+            currDesc.getProperties());
       }
     }
 
-    if (splitNum >= inputSplits.length) {
-      if (currRecReader != null) {
-        currRecReader.close();
-        currRecReader = null;
-      }
-      currPath = null;
-      return getRecordReader();
-    }
-
-    final FetchInputFormatSplit target = inputSplits[splitNum];
+    final FetchInputFormatSplit target = iterSplits.next();
 
     @SuppressWarnings("unchecked")
-    final RecordReader<WritableComparable, Writable> reader =
-        inputFormat.getRecordReader(target.getInputSplit(), job, Reporter.NULL);
+    final RecordReader<WritableComparable, Writable> reader = target.getRecordReader(job);
     if (hasVC || work.getSplitSample() != null) {
       currRecReader = new HiveRecordReader<WritableComparable, Writable>(reader, job) {
         @Override
@@ -511,14 +335,43 @@ public class FetchOperator implements Serializable {
         }
       };
       ((HiveContextAwareRecordReader)currRecReader).
-          initIOContext(target, job, inputFormat.getClass(), reader);
+          initIOContext(target, job, target.inputFormat.getClass(), reader);
     } else {
       currRecReader = reader;
     }
-    splitNum++;
     key = currRecReader.createKey();
     value = currRecReader.createValue();
+    headerCount = footerCount = 0;
     return currRecReader;
+  }
+
+  protected FetchInputFormatSplit[] getNextSplits() throws Exception {
+    while (getNextPath()) {
+      // not using FileInputFormat.setInputPaths() here because it forces a connection to the
+      // default file system - which may or may not be online during pure metadata operations
+      job.set("mapred.input.dir", StringUtils.escapeString(currPath.toString()));
+
+      // Fetch operator is not vectorized and as such turn vectorization flag off so that
+      // non-vectorized record reader is created below.
+      HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+
+      Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
+      Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
+      InputFormat inputFormat = getInputFormatFromCache(formatter, job);
+
+      InputSplit[] splits = inputFormat.getSplits(job, 1);
+      FetchInputFormatSplit[] inputSplits = new FetchInputFormatSplit[splits.length];
+      for (int i = 0; i < splits.length; i++) {
+        inputSplits[i] = new FetchInputFormatSplit(splits[i], inputFormat);
+      }
+      if (work.getSplitSample() != null) {
+        inputSplits = splitSampling(work.getSplitSample(), inputSplits);
+      }
+      if (inputSplits.length > 0) {
+        return inputSplits;
+      }
+    }
+    return null;
   }
 
   private FetchInputFormatSplit[] splitSampling(SplitSample splitSample,
@@ -527,7 +380,7 @@ public class FetchOperator implements Serializable {
     for (FetchInputFormatSplit split: splits) {
         totalSize += split.getLength();
     }
-    List<FetchInputFormatSplit> result = new ArrayList<FetchInputFormatSplit>();
+    List<FetchInputFormatSplit> result = new ArrayList<FetchInputFormatSplit>(splits.length);
     long targetSize = splitSample.getTargetSize(totalSize);
     int startIndex = splitSample.getSeedNum() % splits.length;
     long size = 0;
@@ -551,24 +404,28 @@ public class FetchOperator implements Serializable {
    * Currently only used by FetchTask.
    **/
   public boolean pushRow() throws IOException, HiveException {
-    if(work.getRowsComputedUsingStats() != null) {
+    if (work.getRowsComputedUsingStats() != null) {
       for (List<Object> row : work.getRowsComputedUsingStats()) {
         operator.processOp(row, 0);
       }
-      operator.flush();
+      flushRow();
       return true;
     }
     InspectableObject row = getNextRow();
     if (row != null) {
       pushRow(row);
     } else {
-      operator.flush();
+      flushRow();
     }
     return row != null;
   }
 
   protected void pushRow(InspectableObject row) throws HiveException {
     operator.processOp(row.o, 0);
+  }
+
+  protected void flushRow() throws HiveException {
+    operator.flush();
   }
 
   private transient final InspectableObject inspectable = new InspectableObject();
@@ -596,28 +453,16 @@ public class FetchOperator implements Serializable {
            * If file contains footer, used FooterBuffer to cache and remove footer
            * records at the end of the file.
            */
-          headerCount = 0;
-          footerCount = 0;
-          TableDesc table = null;
-          if (currTbl != null) {
-            table = currTbl;
-          } else if (currPart != null) {
-            table = currPart.getTableDesc();
-          }
-          if (table != null) {
-            headerCount = Utilities.getHeaderCount(table);
-            footerCount = Utilities.getFooterCount(table, job);
-          }
+          headerCount = Utilities.getHeaderCount(currDesc.getTableDesc());
+          footerCount = Utilities.getFooterCount(currDesc.getTableDesc(), job);
 
           // Skip header lines.
           opNotEOF = Utilities.skipHeader(currRecReader, headerCount, key, value);
 
           // Initialize footer buffer.
-          if (opNotEOF) {
-            if (footerCount > 0) {
-              footerBuffer = new FooterBuffer();
-              opNotEOF = footerBuffer.initializeBuffer(job, currRecReader, footerCount, key, value);
-            }
+          if (opNotEOF && footerCount > 0) {
+            footerBuffer = new FooterBuffer();
+            opNotEOF = footerBuffer.initializeBuffer(job, currRecReader, footerCount, key, value);
           }
         }
 
@@ -634,25 +479,24 @@ public class FetchOperator implements Serializable {
         if (opNotEOF) {
           if (operator != null && context != null && context.inputFileChanged()) {
             // The child operators cleanup if input file has changed
-            try {
-              operator.cleanUpInputFileChanged();
-            } catch (HiveException e) {
-              throw new IOException(e);
-            }
+            operator.cleanUpInputFileChanged();
           }
           if (hasVC) {
-            vcValues = MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, serde);
-            row[isPartitioned ? 2 : 1] = vcValues;
+            row[isPartitioned ? 2 : 1] =
+                MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, currSerDe);
           }
-          row[0] = partTblObjectInspectorConverter.convert(serde.deserialize(value));
+          Object deserialized = currSerDe.deserialize(value);
+          if (ObjectConverter != null) {
+            deserialized = ObjectConverter.convert(deserialized);
+          }
 
           if (hasVC || isPartitioned) {
+            row[0] = deserialized;
             inspectable.o = row;
-            inspectable.oi = rowObjectInspector;
-            return inspectable;
+          } else {
+            inspectable.o = deserialized;
           }
-          inspectable.o = row[0];
-          inspectable.oi = tblSerde.getObjectInspector();
+          inspectable.oi = currSerDe.getObjectInspector();
           return inspectable;
         } else {
           currRecReader.close();
@@ -682,13 +526,13 @@ public class FetchOperator implements Serializable {
         context.clear();
         context = null;
       }
-      this.currTbl = null;
       this.currPath = null;
       this.iterPath = null;
       this.iterPartDesc = null;
+      this.iterSplits = Iterators.emptyIterator();
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          + StringUtils.stringifyException(e));
     }
   }
 
@@ -697,25 +541,33 @@ public class FetchOperator implements Serializable {
    */
   public void setupContext(List<Path> paths) {
     this.iterPath = paths.iterator();
-    if (work.isNotPartitioned()) {
-      this.currTbl = work.getTblDesc();
+    List<PartitionDesc> partitionDescs;
+    if (!isPartitioned) {
+      this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
     } else {
       this.iterPartDesc = work.getPartDescs(paths).iterator();
     }
-    setupExecContext();
+    this.context = setupExecContext(operator, paths);
   }
 
   /**
    * returns output ObjectInspector, never null
    */
-  public ObjectInspector getOutputObjectInspector() throws HiveException {
-    if(null != work.getStatRowOI()) {
-      return work.getStatRowOI();
-    }
+  public ObjectInspector getOutputObjectInspector() {
+    return outputOI;
+  }
+
+  private StructObjectInspector setupOutputObjectInspector() throws HiveException {
+    TableDesc tableDesc = work.getTblDesc();
     try {
-      if (work.isNotPartitioned()) {
-        return getRowInspectorFromTable(work.getTblDesc());
+      tableSerDe = tableDesc.getDeserializer(job, true);
+      tableOI = (StructObjectInspector) tableSerDe.getObjectInspector();
+      if (!isPartitioned) {
+        return getTableRowOI(tableOI);
       }
+      partKeyOI = getPartitionKeyOI(tableDesc);
+
+      PartitionDesc partDesc = new PartitionDesc(tableDesc, null);
       List<PartitionDesc> listParts = work.getPartDesc();
       // Chose the table descriptor if none of the partitions is present.
       // For eg: consider the query:
@@ -723,39 +575,50 @@ public class FetchOperator implements Serializable {
       // Both T1 and T2 and partitioned tables, but T1 does not have any partitions
       // FetchOperator is invoked for T1, and listParts is empty. In that case,
       // use T1's schema to get the ObjectInspector.
-      if (listParts == null || listParts.isEmpty()) {
-        return getRowInspectorFromPartitionedTable(work.getTblDesc());
+      if (listParts == null || listParts.isEmpty() || !needConversion(tableDesc, listParts)) {
+        return getPartitionedRowOI(tableOI);
       }
-
-      // Choose any partition. It's OI needs to be converted to the table OI
-      // Whenever a new partition is being read, a new converter is being created
-      PartitionDesc partition = listParts.get(0);
-      Deserializer tblSerde = partition.getTableDesc().getDeserializerClass().newInstance();
-      SerDeUtils.initializeSerDe(tblSerde, job, partition.getTableDesc().getProperties(), null);
-
-      partitionedTableOI = null;
-      ObjectInspector tableOI = tblSerde.getObjectInspector();
-
-      // Get the OI corresponding to all the partitions
-      for (PartitionDesc listPart : listParts) {
-        partition = listPart;
-        Deserializer partSerde = listPart.getDeserializer(job);
-        SerDeUtils.initializeSerDe(partSerde, job, partition.getTableDesc().getProperties(),
-                                   listPart.getProperties());
-
-        partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
-            partSerde.getObjectInspector(), tableOI, oiSettableProperties);
-        if (!partitionedTableOI.equals(tableOI)) {
-          break;
-        }
-      }
-      return getRowInspectorFromPartition(partition, partitionedTableOI);
+      convertedOI = (StructObjectInspector) ObjectInspectorConverters.getConvertedOI(
+          tableOI, tableOI, null, false);
+      return getPartitionedRowOI(convertedOI);
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-    } finally {
-      currPart = null;
+          + StringUtils.stringifyException(e));
     }
+  }
+
+  private StructObjectInspector getTableRowOI(StructObjectInspector valueOI) {
+    return hasVC ? ObjectInspectorFactory.getUnionStructObjectInspector(
+        Arrays.asList(valueOI, vcsOI)) : valueOI;
+  }
+
+  private StructObjectInspector getPartitionedRowOI(StructObjectInspector valueOI) {
+    return ObjectInspectorFactory.getUnionStructObjectInspector(
+        hasVC ? Arrays.asList(valueOI, partKeyOI, vcsOI) : Arrays.asList(valueOI, partKeyOI));
+  }
+
+  private boolean needConversion(PartitionDesc partitionDesc) {
+    return needConversion(partitionDesc.getTableDesc(), Arrays.asList(partitionDesc));
+  }
+
+  // if table and all partitions have the same schema and serde, no need to convert
+  private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
+    Class<?> tableSerDe = tableDesc.getDeserializerClass();
+    String[] schemaProps = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class).schemaProps();
+    Properties tableProps = tableDesc.getProperties();
+    for (PartitionDesc partitionDesc : partDescs) {
+      if (!tableSerDe.getName().equals(partitionDesc.getDeserializerClassName())) {
+        return true;
+      }
+      Properties partProps = partitionDesc.getProperties();
+      for (String schemaProp : schemaProps) {
+        if (!org.apache.commons.lang3.StringUtils.equals(
+            tableProps.getProperty(schemaProp), partProps.getProperty(schemaProp))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -774,10 +637,10 @@ public class FetchOperator implements Serializable {
     boolean recursive = HiveConf.getBoolVar(job, HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
     // If this is in acid format always read it recursively regardless of what the jobconf says.
     if (!recursive && !AcidUtils.isAcid(p, job)) {
-      return fs.listStatus(p);
+      return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);
     }
     List<FileStatus> results = new ArrayList<FileStatus>();
-    for (FileStatus stat : fs.listStatus(p)) {
+    for (FileStatus stat : fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
       FileUtils.listStatusRecursively(fs, stat, results);
     }
     return results.toArray(new FileStatus[results.size()]);
@@ -791,11 +654,17 @@ public class FetchOperator implements Serializable {
     // shrinked size for this split. counter part of this in normal mode is
     // InputSplitShim.shrinkedLength.
     // what's different is that this is evaluated by unit of row using RecordReader.getPos()
-    // and that is evaluated by unit of split using InputSplt.getLength().
+    // and that is evaluated by unit of split using InputSplit.getLength().
     private long shrinkedLength = -1;
+    private InputFormat inputFormat;
 
-    public FetchInputFormatSplit(InputSplit split, String name) {
-      super(split, name);
+    public FetchInputFormatSplit(InputSplit split, InputFormat inputFormat) {
+      super(split, inputFormat.getClass().getName());
+      this.inputFormat = inputFormat;
+    }
+
+    public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
+      return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
   }
 }

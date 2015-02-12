@@ -1,0 +1,233 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
+EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
+EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: s
+          Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (((hash(key) & 2147483647) % 5) = 0) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+0
+0
+0
+0
+0
+10
+10
+100
+100
+100
+100
+105
+105
+105
+110
+120
+120
+120
+125
+125
+125
+135
+135
+135
+140
+145
+15
+15
+15
+15
+150
+155
+160
+160
+165
+165
+165
+170
+170
+175
+175
+175
+175
+180
+185
+190
+195
+195
+20
+20
+20
+200
+200
+205
+205
+205
+215
+230
+230
+230
+230
+230
+235
+235
+240
+245
+245
+255
+255
+260
+260
+260
+265
+265
+265
+275
+275
+275
+280
+280
+285
+285
+295
+295
+30
+30
+300
+300
+305
+305
+310
+310
+310
+310
+315
+325
+325
+330
+335
+335
+335
+340
+345
+35
+35
+35
+35
+35
+35
+355
+355
+360
+360
+365
+375
+375
+375
+375
+375
+375
+385
+385
+390
+390
+390
+395
+395
+395
+395
+40
+40
+400
+405
+410
+415
+425
+430
+430
+430
+430
+435
+435
+440
+440
+450
+450
+455
+455
+455
+460
+470
+470
+475
+475
+480
+480
+480
+480
+480
+485
+485
+485
+490
+490
+495
+495
+5
+5
+5
+5
+50
+60
+65
+65
+65
+70
+70
+70
+70
+75
+80
+80
+85
+85
+90
+90
+90
+95
+95

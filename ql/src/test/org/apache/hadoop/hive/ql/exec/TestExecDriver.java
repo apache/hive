@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -94,7 +93,7 @@ public class TestExecDriver extends TestCase {
       tmppath = new Path(tmpdir);
 
       fs = FileSystem.get(conf);
-      if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
+      if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDirectory()) {
         throw new RuntimeException(tmpdir + " exists but is not a directory");
       }
 
@@ -137,7 +136,7 @@ public class TestExecDriver extends TestCase {
       for (String src : srctables) {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
-            IgnoreKeyTextOutputFormat.class);
+            HiveIgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src, false, false, true, false, false);
         i++;
       }
@@ -161,27 +160,26 @@ public class TestExecDriver extends TestCase {
 
   private static void fileDiff(String datafile, String testdir) throws Exception {
     String testFileDir = conf.get("test.data.files");
-    FileInputStream fi_gold = new FileInputStream(new File(testFileDir,
-        datafile));
 
     // inbuilt assumption that the testdir has only one output file.
     Path di_test = new Path(tmppath, testdir);
     if (!fs.exists(di_test)) {
       throw new RuntimeException(tmpdir + File.separator + testdir + " does not exist");
     }
-    if (!fs.getFileStatus(di_test).isDir()) {
+    if (!fs.getFileStatus(di_test).isDirectory()) {
       throw new RuntimeException(tmpdir + File.separator + testdir + " is not a directory");
     }
     FSDataInputStream fi_test = fs.open((fs.listStatus(di_test))[0].getPath());
 
     boolean ignoreWhitespace = Shell.WINDOWS;
+    FileInputStream fi_gold = new FileInputStream(new File(testFileDir,datafile));
     if (!Utilities.contentsEqual(fi_gold, fi_test, ignoreWhitespace)) {
       LOG.error(di_test.toString() + " does not match " + datafile);
       assertEquals(false, true);
     }
   }
 
-  private FilterDesc getTestFilterDesc(String column) {
+  private FilterDesc getTestFilterDesc(String column) throws Exception {
     ArrayList<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
     children1.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
         column, "", false));
@@ -208,7 +206,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapPlan1(Table src) {
+  private void populateMapPlan1(Table src) throws Exception {
 
     Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapplan1.out"), Utilities.defaultTd, true));
@@ -219,7 +217,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapPlan2(Table src) {
+  private void populateMapPlan2(Table src) throws Exception {
 
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapplan2.out"), Utilities.defaultTd, false));
@@ -260,14 +258,17 @@ public class TestExecDriver extends TestCase {
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapredplan1.out"), Utilities.defaultTd, false));
 
-    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
-        getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
+    List<ExprNodeDesc> cols = new ArrayList<ExprNodeDesc>();
+    cols.add(getStringColumn(Utilities.ReduceField.VALUE.toString()+"."+outputColumns.get(1)));
+    List<String> colNames = new ArrayList<String>();
+    colNames.add(HiveConf.getColumnInternalName(2));
+    Operator<SelectDesc> op2 = OperatorFactory.get(new SelectDesc(cols, colNames), op3);
 
     rWork.setReducer(op2);
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan2(Table src) throws SemanticException {
+  private void populateMapRedPlan2(Table src) throws Exception {
     ArrayList<String> outputColumns = new ArrayList<String>();
     for (int i = 0; i < 2; i++) {
       outputColumns.add("_col" + i);
@@ -292,8 +293,10 @@ public class TestExecDriver extends TestCase {
 
     Operator<FilterDesc> op3 = OperatorFactory.get(getTestFilterDesc("0"), op4);
 
-    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
-        getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
+    List<ExprNodeDesc> cols = new ArrayList<ExprNodeDesc>();
+    cols.add(getStringColumn(Utilities.ReduceField.KEY + ".reducesinkkey" + 0));
+    cols.add(getStringColumn(Utilities.ReduceField.VALUE.toString()+"."+outputColumns.get(1)));
+    Operator<SelectDesc> op2 = OperatorFactory.get(new SelectDesc(cols, outputColumns), op3);
 
     rWork.setReducer(op2);
   }
@@ -376,10 +379,10 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapredplan4.out"), Utilities.defaultTd, false));
-
-    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
-        getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
-
+    List<ExprNodeDesc> cols = new ArrayList<ExprNodeDesc>();
+    cols.add(getStringColumn(Utilities.ReduceField.KEY + ".reducesinkkey" + 0));
+    cols.add(getStringColumn(Utilities.ReduceField.VALUE.toString()+"."+outputColumns.get(1)));
+    Operator<SelectDesc> op2 = OperatorFactory.get(new SelectDesc(cols, outputColumns), op3);
     rWork.setReducer(op2);
   }
 
@@ -416,14 +419,15 @@ public class TestExecDriver extends TestCase {
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapredplan5.out"), Utilities.defaultTd, false));
 
-    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
-        getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
-
+    List<ExprNodeDesc> cols = new ArrayList<ExprNodeDesc>();
+    cols.add(getStringColumn(Utilities.ReduceField.KEY + ".reducesinkkey" + 0));
+    cols.add(getStringColumn(Utilities.ReduceField.VALUE.toString()+"."+outputColumns.get(1)));
+    Operator<SelectDesc> op2 = OperatorFactory.get(new SelectDesc(cols, outputColumns), op3);
     rWork.setReducer(op2);
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan6(Table src) throws SemanticException {
+  private void populateMapRedPlan6(Table src) throws Exception {
 
     // map-side work
     ArrayList<String> outputColumns = new ArrayList<String>();
@@ -459,8 +463,10 @@ public class TestExecDriver extends TestCase {
 
     Operator<FilterDesc> op2 = OperatorFactory.get(getTestFilterDesc("0"), op3);
 
-    Operator<ExtractDesc> op5 = OperatorFactory.get(new ExtractDesc(
-        getStringColumn(Utilities.ReduceField.VALUE.toString())), op2);
+    List<ExprNodeDesc> cols = new ArrayList<ExprNodeDesc>();
+    cols.add(getStringColumn(Utilities.ReduceField.KEY + ".reducesinkkey" + 0));
+    cols.add(getStringColumn(Utilities.ReduceField.VALUE.toString()+"."+outputColumns.get(1)));
+    Operator<SelectDesc> op5 = OperatorFactory.get(new SelectDesc(cols, outputColumns), op2);
 
     rWork.setReducer(op5);
   }

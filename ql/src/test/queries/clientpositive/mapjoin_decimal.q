@@ -2,6 +2,8 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
@@ -27,11 +29,6 @@ explain
 select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
 
 set hive.mapjoin.optimized.hashtable=false;
-set hive.mapjoin.optimized.keys=false;
-
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
-
-set hive.mapjoin.optimized.keys=true;
 
 select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
 

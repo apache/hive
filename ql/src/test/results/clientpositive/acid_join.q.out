@@ -1,0 +1,72 @@
+PREHOOK: query: -- This test checks that a join with tables with two different buckets send the right bucket info to each table.
+create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidjoin1
+POSTHOOK: query: -- This test checks that a join with tables with two different buckets send the right bucket info to each table.
+create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidjoin1
+PREHOOK: query: create table acidjoin2(name varchar(50), gpa decimal(3, 2)) clustered by (gpa) into 4 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidjoin2
+POSTHOOK: query: create table acidjoin2(name varchar(50), gpa decimal(3, 2)) clustered by (gpa) into 4 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidjoin2
+PREHOOK: query: create table acidjoin3(name varchar(50), age int, gpa decimal(3, 2)) clustered by (gpa) into 8 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidjoin3
+POSTHOOK: query: create table acidjoin3(name varchar(50), age int, gpa decimal(3, 2)) clustered by (gpa) into 8 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidjoin3
+PREHOOK: query: insert into table acidjoin1 values ('aaa', 35), ('bbb', 32), ('ccc', 32), ('ddd', 35), ('eee', 32)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acidjoin1
+POSTHOOK: query: insert into table acidjoin1 values ('aaa', 35), ('bbb', 32), ('ccc', 32), ('ddd', 35), ('eee', 32)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acidjoin1
+POSTHOOK: Lineage: acidjoin1.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acidjoin1.name EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table acidjoin2 values ('aaa', 3.00), ('bbb', 3.01), ('ccc', 3.02), ('ddd', 3.03), ('eee', 3.04)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@acidjoin2
+POSTHOOK: query: insert into table acidjoin2 values ('aaa', 3.00), ('bbb', 3.01), ('ccc', 3.02), ('ddd', 3.03), ('eee', 3.04)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@acidjoin2
+POSTHOOK: Lineage: acidjoin2.gpa EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acidjoin2.name EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table acidjoin3 select a.name, age, gpa from acidjoin1 a join acidjoin2 b on (a.name = b.name)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidjoin1
+PREHOOK: Input: default@acidjoin2
+PREHOOK: Output: default@acidjoin3
+POSTHOOK: query: insert into table acidjoin3 select a.name, age, gpa from acidjoin1 a join acidjoin2 b on (a.name = b.name)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidjoin1
+POSTHOOK: Input: default@acidjoin2
+POSTHOOK: Output: default@acidjoin3
+POSTHOOK: Lineage: acidjoin3.age SIMPLE [(acidjoin1)a.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: acidjoin3.gpa SIMPLE [(acidjoin2)b.FieldSchema(name:gpa, type:decimal(3,2), comment:null), ]
+POSTHOOK: Lineage: acidjoin3.name SIMPLE [(acidjoin1)a.FieldSchema(name:name, type:varchar(50), comment:null), ]
+PREHOOK: query: select * from acidjoin3 order by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidjoin3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acidjoin3 order by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidjoin3
+#### A masked pattern was here ####
+aaa	35	3
+bbb	32	3.01
+ccc	32	3.02
+ddd	35	3.03
+eee	32	3.04

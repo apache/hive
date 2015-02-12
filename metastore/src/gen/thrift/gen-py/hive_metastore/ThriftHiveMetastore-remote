@@ -48,6 +48,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_table_names_by_filter(string dbname, string filter, i16 max_tables)'
   print '  void alter_table(string dbname, string tbl_name, Table new_tbl)'
   print '  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)'
+  print '  void alter_table_with_cascade(string dbname, string tbl_name, Table new_tbl, bool cascade)'
   print '  Partition add_partition(Partition new_part)'
   print '  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)'
   print '  i32 add_partitions( new_parts)'
@@ -139,6 +140,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest txns)'
   print '  void compact(CompactionRequest rqst)'
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
+  print '  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)'
+  print '  CurrentNotificationEventId get_current_notificationEventId()'
+  print '  FireEventResponse fire_listener_event(FireEventRequest rqst)'
   print ''
   sys.exit(0)
 
@@ -339,6 +343,12 @@ elif cmd == 'alter_table_with_environment_context':
     print 'alter_table_with_environment_context requires 4 args'
     sys.exit(1)
   pp.pprint(client.alter_table_with_environment_context(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'alter_table_with_cascade':
+  if len(args) != 4:
+    print 'alter_table_with_cascade requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.alter_table_with_cascade(args[0],args[1],eval(args[2]),eval(args[3]),))
 
 elif cmd == 'add_partition':
   if len(args) != 1:
@@ -885,6 +895,24 @@ elif cmd == 'show_compact':
     print 'show_compact requires 1 args'
     sys.exit(1)
   pp.pprint(client.show_compact(eval(args[0]),))
+
+elif cmd == 'get_next_notification':
+  if len(args) != 1:
+    print 'get_next_notification requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.get_next_notification(eval(args[0]),))
+
+elif cmd == 'get_current_notificationEventId':
+  if len(args) != 0:
+    print 'get_current_notificationEventId requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.get_current_notificationEventId())
+
+elif cmd == 'fire_listener_event':
+  if len(args) != 1:
+    print 'fire_listener_event requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.fire_listener_event(eval(args[0]),))
 
 else:
   print 'Unrecognized method %s' % cmd

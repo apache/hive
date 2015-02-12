@@ -30,6 +30,8 @@ import org.apache.hadoop.security.UserGroupInformation;
  * but honours a proxy config setting proxy.user.name instead of the
  * current user if set. This allows server processes like webhcat which
  * proxy other users to easily specify an override if allowed.
+ *
+ * It is no longer necessary to use this class with WebHCat as of Hive 0.14.
  */
 public class ProxyUserAuthenticator extends HadoopDefaultAuthenticator {
 
@@ -49,7 +51,7 @@ public class ProxyUserAuthenticator extends HadoopDefaultAuthenticator {
     // If we're here, proxy user is set.
 
     try {
-      ugi = ShimLoader.getHadoopShims().createRemoteUser(proxyUser,null);
+      ugi = UserGroupInformation.createRemoteUser(proxyUser);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -59,7 +61,7 @@ public class ProxyUserAuthenticator extends HadoopDefaultAuthenticator {
           "Can not initialize ProxyUserAuthenticator for user ["+proxyUser+"]");
     }
 
-    this.userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    this.userName = ugi.getShortUserName();
     if (ugi.getGroupNames() != null) {
       this.groupNames = Arrays.asList(ugi.getGroupNames());
     }

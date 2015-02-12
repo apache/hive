@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -46,7 +44,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QB;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -59,9 +56,6 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 //try to replace a bucket map join with a sorted merge map join
 abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc implements NodeProcessor {
-
-  private static final Log LOG = LogFactory
-    .getLog(SortedMergeBucketMapJoinOptimizer.class.getName());
 
   public AbstractSMBJoinProc(ParseContext pctx) {
     super(pctx);
@@ -97,16 +91,16 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       return false;
     }
 
-    boolean tableEligibleForBucketedSortMergeJoin = true;
-    QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext()
-      .get(mapJoinOp);
-    if (joinCxt == null) {
+    if (!this.pGraphContext.getMapJoinOps().contains(mapJoinOp)) {
       return false;
     }
-    String[] srcs = joinCxt.getBaseSrc();
+
+    String[] srcs = mapJoinOp.getConf().getBaseSrc();
     for (int srcPos = 0; srcPos < srcs.length; srcPos++) {
-      srcs[srcPos] = QB.getAppendedAliasFromId(joinCxt.getId(), srcs[srcPos]);
+      srcs[srcPos] = QB.getAppendedAliasFromId(mapJoinOp.getConf().getId(), srcs[srcPos]);
     }
+
+    boolean tableEligibleForBucketedSortMergeJoin = true;
 
     // All the tables/partitions columns should be sorted in the same order
     // For example, if tables A and B are being joined on columns c1, c2 and c3
@@ -117,9 +111,8 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     for (int pos = 0; pos < srcs.length; pos++) {
       tableEligibleForBucketedSortMergeJoin = tableEligibleForBucketedSortMergeJoin
         && isEligibleForBucketSortMergeJoin(smbJoinContext,
-             pGraphContext,
              mapJoinOp.getConf().getKeys().get((byte) pos),
-             joinCxt,
+             mapJoinOp.getConf().getAliasToOpInfo(),
              srcs,
              pos,
              sortColumnsFirstTable);
@@ -141,8 +134,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
   // Convert the bucket map-join operator to a sort-merge map join operator
   protected SMBMapJoinOperator convertBucketMapJoinToSMBJoin(MapJoinOperator mapJoinOp,
-    SortBucketJoinProcCtx smbJoinContext,
-    ParseContext parseContext) {
+    SortBucketJoinProcCtx smbJoinContext) {
 
     String[] srcs = smbJoinContext.getSrcs();
     SMBMapJoinOperator smbJop = new SMBMapJoinOperator(mapJoinOp);
@@ -219,10 +211,12 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       child.getParentOperators().remove(index);
       child.getParentOperators().add(index, smbJop);
     }
-    parseContext.getSmbMapJoinContext().put(smbJop,
-        parseContext.getMapJoinContext().get(mapJoinOp));
-    parseContext.getMapJoinContext().remove(mapJoinOp);
-    parseContext.getOpParseCtx().put(smbJop, parseContext.getOpParseCtx().get(mapJoinOp));
+
+    // Data structures coming from QBJoinTree
+    smbJop.getConf().setQBJoinTreeProps(mapJoinOp.getConf());
+    //
+    pGraphContext.getSmbMapJoinOps().add(smbJop);
+    pGraphContext.getMapJoinOps().remove(mapJoinOp);
 
     return smbJop;
   }
@@ -242,15 +236,12 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
    */
   private boolean isEligibleForBucketSortMergeJoin(
     SortBucketJoinProcCtx smbJoinContext,
-    ParseContext pctx,
     List<ExprNodeDesc> keys,
-    QBJoinTree joinTree,
+    Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo,
     String[] aliases,
     int pos,
     List<Order> sortColumnsFirstTable) throws SemanticException {
     String alias = aliases[pos];
-    Map<TableScanOperator, Table> topToTable = this.pGraphContext
-      .getTopToTable();
 
     /*
      * Consider a query like:
@@ -266,7 +257,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
      * table. If the object being map-joined is a base table, then aliasToOpInfo
      * contains the TableScanOperator, and TableAccessAnalyzer is a no-op.
      */
-    Operator<? extends OperatorDesc> topOp = joinTree.getAliasToOpInfo().get(alias);
+    Operator<? extends OperatorDesc> topOp = aliasToOpInfo.get(alias);
     if (topOp == null) {
       return false;
     }
@@ -313,7 +304,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       return false;
     }
 
-    Table tbl = topToTable.get(tso);
+    Table tbl = tso.getConf().getTableMetadata();
     if (tbl.isPartitioned()) {
       PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
       List<Partition> partitions = prunedParts.getNotDeniedPartns();
@@ -386,15 +377,13 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   // It is already verified that the join can be converted to a bucket map join
   protected boolean checkConvertJoinToSMBJoin(
       JoinOperator joinOperator,
-      SortBucketJoinProcCtx smbJoinContext,
-      ParseContext pGraphContext) throws SemanticException {
+      SortBucketJoinProcCtx smbJoinContext) throws SemanticException {
 
-    QBJoinTree joinCtx = pGraphContext.getJoinContext().get(joinOperator);
-
-    if (joinCtx == null) {
+    if (!this.pGraphContext.getJoinOps().contains(joinOperator)) {
       return false;
     }
-    String[] srcs = joinCtx.getBaseSrc();
+
+    String[] srcs = joinOperator.getConf().getBaseSrc();
 
     // All the tables/partitions columns should be sorted in the same order
     // For example, if tables A and B are being joined on columns c1, c2 and c3
@@ -404,9 +393,8 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     for (int pos = 0; pos < srcs.length; pos++) {
       if (!isEligibleForBucketSortMergeJoin(smbJoinContext,
-          pGraphContext,
           smbJoinContext.getKeyExprMap().get((byte) pos),
-          joinCtx,
+          joinOperator.getConf().getAliasToOpInfo(),
           srcs,
           pos,
           sortColumnsFirstTable)) {
@@ -421,12 +409,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   // Can the join operator be converted to a sort-merge join operator ?
   protected boolean canConvertJoinToSMBJoin(
     JoinOperator joinOperator,
-    SortBucketJoinProcCtx smbJoinContext,
-    ParseContext pGraphContext) throws SemanticException {
+    SortBucketJoinProcCtx smbJoinContext) throws SemanticException {
     boolean canConvert =
       canConvertJoinToBucketMapJoin(
         joinOperator,
-        pGraphContext,
         smbJoinContext
       );
 
@@ -434,13 +420,13 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       return false;
     }
 
-    return checkConvertJoinToSMBJoin(joinOperator, smbJoinContext, pGraphContext);
+    return checkConvertJoinToSMBJoin(joinOperator, smbJoinContext);
   }
 
   // Can the join operator be converted to a bucket map-merge join operator ?
+  @SuppressWarnings("unchecked")
   protected boolean canConvertJoinToBucketMapJoin(
     JoinOperator joinOp,
-    ParseContext pGraphContext,
     SortBucketJoinProcCtx context) throws SemanticException {
 
     // This has already been inspected and rejected
@@ -448,8 +434,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       return false;
     }
 
-    QBJoinTree joinCtx = pGraphContext.getJoinContext().get(joinOp);
-    if (joinCtx == null) {
+    if (!this.pGraphContext.getJoinOps().contains(joinOp)) {
       return false;
     }
 
@@ -482,8 +467,9 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     context.setBigTablePosition(bigTablePosition);
     String joinAlias =
       bigTablePosition == 0 ?
-        joinCtx.getLeftAlias() : joinCtx.getRightAliases()[bigTablePosition - 1];
-    joinAlias = QB.getAppendedAliasFromId(joinCtx.getId(), joinAlias);
+        joinOp.getConf().getLeftAlias() :
+        joinOp.getConf().getRightAliases()[bigTablePosition - 1];
+    joinAlias = QB.getAppendedAliasFromId(joinOp.getConf().getId(), joinAlias);
 
     Map<Byte, List<ExprNodeDesc>> keyExprMap  = new HashMap<Byte, List<ExprNodeDesc>>();
     List<Operator<? extends OperatorDesc>> parentOps = joinOp.getParentOperators();
@@ -497,10 +483,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     context.setKeyExprMap(keyExprMap);
     // Make a deep copy of the aliases so that they are not changed in the context
-    String[] joinSrcs = joinCtx.getBaseSrc();
+    String[] joinSrcs = joinOp.getConf().getBaseSrc();
     String[] srcs = new String[joinSrcs.length];
     for (int srcPos = 0; srcPos < joinSrcs.length; srcPos++) {
-      joinSrcs[srcPos] = QB.getAppendedAliasFromId(joinCtx.getId(), joinSrcs[srcPos]);
+      joinSrcs[srcPos] = QB.getAppendedAliasFromId(joinOp.getConf().getId(), joinSrcs[srcPos]);
       srcs[srcPos] = new String(joinSrcs[srcPos]);
     }
 
@@ -508,9 +494,8 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     // The candidate map-join was derived from the pluggable sort merge join big
     // table matcher.
     return checkConvertBucketMapJoin(
-      pGraphContext,
       context,
-      joinCtx,
+      joinOp.getConf().getAliasToOpInfo(),
       keyExprMap,
       joinAlias,
       Arrays.asList(srcs));
@@ -519,19 +504,22 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   // Convert the join operator to a bucket map-join join operator
   protected MapJoinOperator convertJoinToBucketMapJoin(
     JoinOperator joinOp,
-    SortBucketJoinProcCtx joinContext,
-    ParseContext parseContext) throws SemanticException {
-    MapJoinOperator mapJoinOp = MapJoinProcessor.convertMapJoin(
-      parseContext.getConf(),
-      parseContext.getOpParseCtx(),
+    SortBucketJoinProcCtx joinContext) throws SemanticException {
+    MapJoinOperator mapJoinOp = new MapJoinProcessor().convertMapJoin(
+      pGraphContext.getConf(),
       joinOp,
-      pGraphContext.getJoinContext().get(joinOp),
+      joinOp.getConf().isLeftInputJoin(),
+      joinOp.getConf().getBaseSrc(),
+      joinOp.getConf().getMapAliases(),
       joinContext.getBigTablePosition(),
       false,
       false);
     // Remove the join operator from the query join context
-    parseContext.getMapJoinContext().put(mapJoinOp, parseContext.getJoinContext().get(joinOp));
-    parseContext.getJoinContext().remove(joinOp);
+    // Data structures coming from QBJoinTree
+    mapJoinOp.getConf().setQBJoinTreeProps(joinOp.getConf());
+    //
+    pGraphContext.getMapJoinOps().add(mapJoinOp);
+    pGraphContext.getJoinOps().remove(joinOp);
     convertMapJoinToBucketMapJoin(mapJoinOp, joinContext);
     return mapJoinOp;
   }
@@ -539,11 +527,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   // Convert the join operator to a sort-merge join operator
   protected void convertJoinToSMBJoin(
     JoinOperator joinOp,
-    SortBucketJoinProcCtx smbJoinContext,
-    ParseContext parseContext) throws SemanticException {
-    MapJoinOperator mapJoinOp = convertJoinToBucketMapJoin(joinOp, smbJoinContext, parseContext);
+    SortBucketJoinProcCtx smbJoinContext) throws SemanticException {
+    MapJoinOperator mapJoinOp = convertJoinToBucketMapJoin(joinOp, smbJoinContext);
     SMBMapJoinOperator smbMapJoinOp =
-        convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext, parseContext);
+        convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext);
     smbMapJoinOp.setConvertedAutomaticallySMBJoin(true);
   }
 }

@@ -52,8 +52,10 @@ public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTas
     for (Map.Entry<String, String> entry : stats.entrySet()) {
       try {
         reporter.incrCounter(fileID, entry.getKey(), Long.valueOf(entry.getValue()));
-      } catch (NumberFormatException e) {
-        LOG.error("Invalid counter value " + entry.getValue() + " for " + entry.getKey());
+      } catch (Exception e) {
+        LOG.error("Failed to increment counter value " + entry.getValue() + " for " + entry.getKey()
+          + ": " + e, e);
+        return false;
       }
     }
     return true;

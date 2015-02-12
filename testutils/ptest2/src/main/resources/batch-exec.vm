@@ -62,7 +62,7 @@ then
     testModule=./
   fi
   pushd $testModule
-  timeout 2h mvn -B -o test -Dmaven.repo.local=$localDir/$instanceName/maven \
+  timeout 2h mvn -B test -Dmaven.repo.local=$localDir/$instanceName/maven \
     $mavenArgs $mavenTestArgs $testArguments 1>$logDir/maven-test.txt 2>&1 </dev/null &
 #[[
   pid=$!
@@ -86,7 +86,7 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
-find ./ -type f -name hive.log | \
+find ./ -type f -name hive.log -o -name spark.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
 find ./ -type f -name 'TEST-*.xml' | \
   xargs -I {} sh -c 'f=TEST-${batchName}-$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
 /**
  * Client-side stats aggregator task.
@@ -31,6 +32,7 @@ public class StatsNoJobWork implements Serializable {
 
   private tableSpec tableSpecs;
   private boolean statsReliable;
+  private PrunedPartitionList prunedPartitionList;
 
   public StatsNoJobWork() {
   }
@@ -53,5 +55,13 @@ public class StatsNoJobWork implements Serializable {
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
+  }
+
+  public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
+    this.prunedPartitionList = prunedPartitionList;
+  }
+
+  public PrunedPartitionList getPrunedPartitionList() {
+    return prunedPartitionList;
   }
 }

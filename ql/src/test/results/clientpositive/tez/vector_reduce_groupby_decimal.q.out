@@ -1,0 +1,205 @@
+PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+WHERE cint is not null and cdouble is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_test
+POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+WHERE cint is not null and cdouble is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_test
+PREHOOK: query: EXPLAIN
+SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+WHERE cdecimal1 is not null and cdecimal2 is not null
+GROUP BY cint, cdouble, cdecimal1, cdecimal2
+ORDER BY cint, cdouble, cdecimal1, cdecimal2
+LIMIT 50
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+WHERE cdecimal1 is not null and cdecimal2 is not null
+GROUP BY cint, cdouble, cdecimal1, cdecimal2
+ORDER BY cint, cdouble, cdecimal1, cdecimal2
+LIMIT 50
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_test
+                  Statistics: Num rows: 6102 Data size: 1440072 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cdecimal1 is not null and cdecimal2 is not null) (type: boolean)
+                    Statistics: Num rows: 1526 Data size: 360136 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cint (type: int), cdouble (type: double), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1526 Data size: 360136 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(_col2)
+                        keys: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1526 Data size: 360136 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                          sort order: ++++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                          Statistics: Num rows: 1526 Data size: 360136 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col4 (type: decimal(20,10))
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: double), KEY._col2 (type: decimal(20,10)), KEY._col3 (type: decimal(23,14))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 763 Data size: 180068 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                  sort order: ++++
+                  Statistics: Num rows: 763 Data size: 180068 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: decimal(20,10))
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: decimal(20,10)), KEY.reducesinkkey3 (type: decimal(23,14)), VALUE._col0 (type: decimal(20,10))
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 763 Data size: 180068 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 50 Data size: 11800 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 50 Data size: 11800 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+WHERE cdecimal1 is not null and cdecimal2 is not null
+GROUP BY cint, cdouble, cdecimal1, cdecimal2
+ORDER BY cint, cdouble, cdecimal1, cdecimal2
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+WHERE cdecimal1 is not null and cdecimal2 is not null
+GROUP BY cint, cdouble, cdecimal1, cdecimal2
+ORDER BY cint, cdouble, cdecimal1, cdecimal2
+LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+-1073051226	-7382.0	-4409.2486486486	-5280.969230769231	-4409.2486486486
+-1072081801	8373.0	5001.1702702703	5989.915384615385	5001.1702702703
+-1072076362	-5470.0	-3267.2162162162	-3913.1538461538466	-3267.2162162162
+-1070883071	-741.0	-442.5972972973	-530.1	-442.5972972973
+-1070551679	-947.0	-565.6405405405	-677.4692307692308	-565.6405405405
+-1069512165	11417.0	6819.3432432432	8167.546153846154	6819.3432432432
+-1069109166	8390.0	5011.3243243243	6002.076923076923	5011.3243243243
+-1068623584	-14005.0	-8365.1486486486	-10018.961538461539	-8365.1486486486
+-1067386090	-3977.0	-2375.4513513514	-2845.084615384616	-2375.4513513514
+-1066922682	-9987.0	-5965.2081081081	-7144.546153846154	-5965.2081081081
+-1066226047	-9439.0	-5637.8891891892	-6752.515384615385	-5637.8891891892
+-1065117869	2538.0	1515.9405405405	1815.646153846154	1515.9405405405
+-1064949302	6454.0	3854.9567567568	4617.092307692308	3854.9567567568
+-1063498122	-11480.0	-6856.972972973	-8212.615384615387	-6856.972972973
+-1062973443	10541.0	6296.1108108108	7540.869230769231	6296.1108108108
+-1061614989	-4234.0	-2528.9567567568	-3028.938461538462	-2528.9567567568
+-1061057428	-1085.0	-648.0675675676	-776.1923076923077	-648.0675675676
+-1059941909	8782.0	5245.4648648649	6282.507692307693	5245.4648648649
+-1059338191	7322.0	4373.4108108108	5238.046153846154	4373.4108108108
+-1059047258	12452.0	7437.5459459459	8907.969230769231	7437.5459459459
+-1056684111	13991.0	8356.7864864865	10008.946153846155	8356.7864864865
+-1055945837	13690.0	8177	9793.615384615387	8177
+-1055669248	2570.0	1535.0540540541	1838.538461538462	1535.0540540541
+-1055316250	-14990.0	-8953.4864864865	-10723.615384615385	-8953.4864864865
+-1053385587	14504.0	8663.2	10375.938461538462	8663.2
+-1053238077	-3704.0	-2212.3891891892	-2649.784615384616	-2212.3891891892
+-1052745800	-12404.0	-7408.8756756757	-8873.630769230771	-7408.8756756757
+-1052322972	-7433.0	-4439.7108108108	-5317.453846153847	-4439.7108108108
+-1050684541	-8261.0	-4934.272972973	-5909.792307692308	-4934.272972973
+-1050657303	-6999.0	-4180.4837837838	-5006.976923076923	-4180.4837837838
+-1050165799	8634.0	5157.0648648649	6176.63076923077	5157.0648648649
+-1048934049	-524.0	-312.9837837838	-374.86153846153854	-312.9837837838
+-1046399794	4130.0	2466.8378378378	2954.5384615384614	2466.8378378378
+-1045867222	-8034.0	-4798.6864864865	-5747.400000000001	-4798.6864864865
+-1045196363	-5039.0	-3009.7810810811	-3604.823076923077	-3009.7810810811
+-1045181724	-5706.0	-3408.1783783784	-4081.9846153846156	-3408.1783783784
+-1045087657	-5865.0	-3503.1486486486	-4195.7307692307695	-3503.1486486486
+-1044207190	5381.0	3214.0567567568	3849.4846153846156	3214.0567567568
+-1044093617	-3422.0	-2043.9513513514	-2448.046153846154	-2043.9513513514
+-1043573508	16216.0	9685.772972973	11600.676923076924	9685.772972973
+-1043132597	12302.0	7347.9513513514	8800.66153846154	7347.9513513514
+-1043082182	9180.0	5483.1891891892	6567.2307692307695	5483.1891891892
+-1042805968	5133.0	3065.927027027	3672.0692307692307	3065.927027027
+-1042712895	9296.0	5552.4756756757	6650.215384615385	5552.4756756757
+-1042396242	9583.0	5723.9	6855.53076923077	5723.9
+-1041734429	-836.0	-499.3405405405	-598.0615384615385	-499.3405405405
+-1041391389	-12970.0	-7746.9459459459	-9278.538461538463	-7746.9459459459
+-1041252354	756.0	451.5567567568	540.8307692307692	451.5567567568
+-1039776293	13704.0	8185.3621621622	9803.630769230771	8185.3621621622
+-1039762548	-3802.0	-2270.9243243243	-2719.8923076923083	-2270.9243243243
+PREHOOK: query: SELECT sum(hash(*))
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+        WHERE cdecimal1 is not null and cdecimal2 is not null
+        GROUP BY cint, cdouble, cdecimal1, cdecimal2
+        ORDER BY cint, cdouble, cdecimal1, cdecimal2
+        LIMIT 50) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*))
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+        WHERE cdecimal1 is not null and cdecimal2 is not null
+        GROUP BY cint, cdouble, cdecimal1, cdecimal2
+        ORDER BY cint, cdouble, cdecimal1, cdecimal2
+        LIMIT 50) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+12703057972
+PREHOOK: query: SELECT sum(hash(*))
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+        WHERE cdecimal1 is not null and cdecimal2 is not null
+        GROUP BY cint, cdouble, cdecimal1, cdecimal2
+        ORDER BY cint, cdouble, cdecimal1, cdecimal2
+        LIMIT 50) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*))
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+        WHERE cdecimal1 is not null and cdecimal2 is not null
+        GROUP BY cint, cdouble, cdecimal1, cdecimal2
+        ORDER BY cint, cdouble, cdecimal1, cdecimal2
+        LIMIT 50) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+12703057972

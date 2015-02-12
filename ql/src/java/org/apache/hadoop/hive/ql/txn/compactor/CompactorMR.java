@@ -25,7 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -158,7 +159,7 @@ public class CompactorMR {
 
     if (parsedDeltas == null || parsedDeltas.size() == 0) {
       // Seriously, no deltas?  Can't compact that.
-      LOG.error("No delta files found to compact in " + sd.getLocation());
+      LOG.error(  "No delta files found to compact in " + sd.getLocation());
       return;
     }
 
@@ -504,15 +505,17 @@ public class CompactorMR {
       AcidInputFormat<WritableComparable, V> aif =
           instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
       ValidTxnList txnList =
-          new ValidTxnListImpl(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
+          new ValidReadTxnList(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
 
+      boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
-          aif.getRawReader(jobConf, jobConf.getBoolean(IS_MAJOR, false), split.getBucket(),
+          aif.getRawReader(jobConf, isMajor, split.getBucket(),
               txnList, split.getBaseDir(), split.getDeltaDirs());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
       while (reader.next(identifier, value)) {
+        if (isMajor && reader.isDelete(value)) continue;
         writer.write(value);
         reporter.progress();
       }
@@ -695,9 +698,10 @@ public class CompactorMR {
 
     @Override
     public void commitJob(JobContext context) throws IOException {
-      Path tmpLocation = new Path(context.getJobConf().get(TMP_LOCATION));
-      Path finalLocation = new Path(context.getJobConf().get(FINAL_LOCATION));
-      FileSystem fs = tmpLocation.getFileSystem(context.getJobConf());
+      JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
+      Path tmpLocation = new Path(conf.get(TMP_LOCATION));
+      Path finalLocation = new Path(conf.get(FINAL_LOCATION));
+      FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
 
@@ -711,8 +715,9 @@ public class CompactorMR {
 
     @Override
     public void abortJob(JobContext context, int status) throws IOException {
-      Path tmpLocation = new Path(context.getJobConf().get(TMP_LOCATION));
-      FileSystem fs = tmpLocation.getFileSystem(context.getJobConf());
+      JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
+      Path tmpLocation = new Path(conf.get(TMP_LOCATION));
+      FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Removing " + tmpLocation.toString());
       fs.delete(tmpLocation, true);
     }

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -37,9 +38,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -448,6 +450,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // we always want to read all of the deltas
     eventOptions.range(0, Long.MAX_VALUE);
+    // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
+    // it can produce wrong results (if the latest valid version of the record is filtered out by
+    // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
+    eventOptions.searchArgument(null, null);
     if (deltaDirectory != null) {
       for(Path delta: deltaDirectory) {
         ReaderKey key = new ReaderKey();
@@ -569,7 +575,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
 
       // if this transaction isn't ok, skip over it
-      if (!validTxnList.isTxnCommitted(
+      if (!validTxnList.isTxnValid(
           ((ReaderKey) recordIdentifier).getCurrentTransactionId())) {
         continue;
       }
@@ -627,8 +633,16 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<String>();
+    Deque<Integer> virtualColumns = new ArrayDeque<Integer>();
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      Collections.addAll(columnNames, columnNameProperty.split(","));
+      String[] colNames = columnNameProperty.split(",");
+      for (int i = 0; i < colNames.length; i++) {
+        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(colNames[i])) {
+          virtualColumns.addLast(i);
+        } else {
+          columnNames.add(colNames[i]);
+        }
+      }
     }
     if (columnTypeProperty == null) {
       // Default type: all string
@@ -644,11 +658,19 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     ArrayList<TypeInfo> fieldTypes =
         TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+    while (virtualColumns.size() > 0) {
+      fieldTypes.remove(virtualColumns.removeLast());
+    }
     StructTypeInfo rowType = new StructTypeInfo();
     rowType.setAllStructFieldNames(columnNames);
     rowType.setAllStructFieldTypeInfos(fieldTypes);
     return OrcRecordUpdater.createEventSchema
         (OrcStruct.createObjectInspector(rowType));
+  }
+
+  @Override
+  public boolean isDelete(OrcStruct value) {
+    return OrcRecordUpdater.getOperation(value) == OrcRecordUpdater.DELETE_OPERATION;
   }
 
   /**

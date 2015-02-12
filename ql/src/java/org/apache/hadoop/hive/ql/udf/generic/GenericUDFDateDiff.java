@@ -57,7 +57,7 @@ import org.apache.hadoop.io.IntWritable;
         + "'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time parts are ignored."
         + "If date1 is earlier than date2, the result is negative.\n"
         + "Example:\n "
-        + "  > SELECT _FUNC_('2009-30-07', '2009-31-07') FROM src LIMIT 1;\n"
+        + "  > SELECT _FUNC_('2009-07-30', '2009-07-31') FROM src LIMIT 1;\n"
         + "  1")
 @VectorizedExpressions({VectorUDFDateDiffColScalar.class, VectorUDFDateDiffColCol.class, VectorUDFDateDiffScalarCol.class})
 public class GenericUDFDateDiff extends GenericUDF {

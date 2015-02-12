@@ -1,0 +1,741 @@
+PREHOOK: query: CREATE TABLE TBL(C1 INT, C2 INT, C3 INT, C4 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TBL
+POSTHOOK: query: CREATE TABLE TBL(C1 INT, C2 INT, C3 INT, C4 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TBL
+PREHOOK: query: CREATE TABLE DEST1(d1 INT, d2 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST1
+POSTHOOK: query: CREATE TABLE DEST1(d1 INT, d2 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST1
+PREHOOK: query: CREATE TABLE DEST2(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST2
+POSTHOOK: query: CREATE TABLE DEST2(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST2
+PREHOOK: query: CREATE TABLE DEST3(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST3
+POSTHOOK: query: CREATE TABLE DEST3(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST3
+PREHOOK: query: CREATE TABLE DEST4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST4
+POSTHOOK: query: CREATE TABLE DEST4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST4
+PREHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (GROUP, 2)
+        Reducer 3 <- Map 5 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int)
+                    outputColumnNames: c1, c2
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c2)
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int)
+                    outputColumnNames: c1, c2, c3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c3)
+                      keys: c1 (type: int), c2 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C2, TBL.C1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C2, TBL.C1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (GROUP, 2)
+        Reducer 3 <- Map 5 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int)
+                    outputColumnNames: c1, c2
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c2)
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c2 (type: int), c1 (type: int), c3 (type: int)
+                    outputColumnNames: c2, c1, c3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c3)
+                      keys: c2 (type: int), c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (GROUP, 2)
+        Reducer 3 <- Map 5 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
+                    outputColumnNames: c1, c2, c3, c4
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c4)
+                      keys: c1 (type: int), c2 (type: int), c3 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int)
+                    outputColumnNames: c1, c2, c3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c3)
+                      keys: c1 (type: int), c2 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), UDFToInteger(_col3) (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest3
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest3
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST4 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C3, TBL.C2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST4 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C3, TBL.C2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
+                    outputColumnNames: c1, c2, c3, c4
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: c1 (type: int), c2 (type: int), c3 (type: int)
+                      sort order: +++
+                      Map-reduce partition columns: c1 (type: int), c2 (type: int), c3 (type: int)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: c4 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Group By Operator
+                  aggregations: count(VALUE._col0)
+                  keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+                  mode: complete
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), UDFToInteger(_col3) (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.dest3
+                Group By Operator
+                  aggregations: count(VALUE._col0)
+                  keys: KEY._col0 (type: int), KEY._col2 (type: int), KEY._col1 (type: int)
+                  mode: complete
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), UDFToInteger(_col3) (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.dest4
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest3
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest4
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM TBL
+INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
+INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-3
+  Stage-6 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-3
+    Spark
+      Edges:
+        Reducer 2 <- Map 5 (GROUP, 2)
+        Reducer 3 <- Map 6 (GROUP, 2)
+        Reducer 4 <- Map 7 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
+                    outputColumnNames: c1, c2, c3, c4
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c4)
+                      keys: c1 (type: int), c2 (type: int), c3 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int)
+                    outputColumnNames: c1, c2, c3
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c3)
+                      keys: c1 (type: int), c2 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: int)
+                    outputColumnNames: c1, c2
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(c2)
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), UDFToInteger(_col3) (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest3
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-5
+    Stats-Aggr Operator
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-6
+    Stats-Aggr Operator
+

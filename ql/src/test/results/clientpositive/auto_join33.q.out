@@ -1,0 +1,103 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
+SELECT * FROM
+  (SELECT * FROM src WHERE key+1 < 10) a
+    JOIN 
+  (SELECT * FROM src WHERE key+2 < 10) b
+    ON a.key+1=b.key+2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
+SELECT * FROM
+  (SELECT * FROM src WHERE key+1 < 10) a
+    JOIN 
+  (SELECT * FROM src WHERE key+2 < 10) b
+    ON a.key+1=b.key+2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:src 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:src 
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((UDFToDouble(key) + 1.0) < 10.0) and (UDFToDouble(key) + 1.0) is not null) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 (UDFToDouble(_col0) + 1.0) (type: double)
+                    1 (UDFToDouble(_col0) + 2.0) (type: double)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((UDFToDouble(key) + 2.0) < 10.0) and (UDFToDouble(key) + 2.0) is not null) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 (UDFToDouble(_col0) + 1.0) (type: double)
+                    1 (UDFToDouble(_col0) + 2.0) (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM
+  (SELECT * FROM src WHERE key+1 < 10) a
+    JOIN
+  (SELECT * FROM src WHERE key+2 < 10) b
+    ON a.key+1=b.key+2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM
+  (SELECT * FROM src WHERE key+1 < 10) a
+    JOIN
+  (SELECT * FROM src WHERE key+2 < 10) b
+    ON a.key+1=b.key+2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5	val_5	4	val_4
+5	val_5	4	val_4
+5	val_5	4	val_4

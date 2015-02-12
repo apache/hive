@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.NoMatchingMethodException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -292,7 +294,7 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert (children.length == 2);
+    assert (children.length == 2) : opDisplayName + " with " + children.length + " children";
     return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
   }
 
@@ -317,5 +319,18 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
   public void setAnsiSqlArithmetic(boolean ansiSqlArithmetic) {
     this.ansiSqlArithmetic = ansiSqlArithmetic;
+  }
+
+  public PrimitiveTypeInfo deriveMinArgumentCast(
+      ExprNodeDesc childExpr, TypeInfo targetType) {
+    assert targetType instanceof PrimitiveTypeInfo : "Not a primitive type" + targetType;
+    PrimitiveTypeInfo pti = (PrimitiveTypeInfo)targetType;
+    // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
+    // We also don't do anything for non-primitive children (maybe we should assert).
+    if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
+        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
+    PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
+    // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
+    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
   }
 }

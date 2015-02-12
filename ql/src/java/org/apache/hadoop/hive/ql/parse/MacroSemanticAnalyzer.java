@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.LinkedHashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,7 +123,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
       macroColNames.add(argument.getName());
       macroColTypes.add(colType);
     }
-    Set<String> expectedColumnNames = new HashSet<String>(macroColNames);
+    Set<String> expectedColumnNames = new LinkedHashSet<String>(macroColNames);
     if(!expectedColumnNames.equals(actualColumnNames)) {
       throw new SemanticException("Expected columns " + expectedColumnNames + " but found "
           + actualColumnNames);
@@ -131,7 +132,9 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("At least one parameter name was used more than once "
           + macroColNames);
     }
-    SemanticAnalyzer sa = new SemanticAnalyzer(conf);
+    SemanticAnalyzer sa = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED) ? new CalcitePlanner(
+        conf) : new SemanticAnalyzer(conf);
+    ;
     ExprNodeDesc body;
     if(isNoArgumentMacro) {
       body = sa.genExprNodeDesc((ASTNode)ast.getChild(1), rowResolver);

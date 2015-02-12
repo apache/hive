@@ -57,9 +57,11 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.slf4j.Logger;
@@ -116,7 +118,7 @@ public class NotificationListener extends MetaStoreEventListener {
     testAndCreateConnection();
   }
 
-  private static String getTopicName(Table table, ListenerEvent partitionEvent) {
+  private static String getTopicName(Table table) {
     return table.getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
   }
 
@@ -129,7 +131,7 @@ public class NotificationListener extends MetaStoreEventListener {
     if (partitionEvent.getStatus()) {
       Table table = partitionEvent.getTable();
       List<Partition> partitions = partitionEvent.getPartitions();
-      String topicName = getTopicName(table, partitionEvent);
+      String topicName = getTopicName(table);
       if (topicName != null && !topicName.equals("")) {
         send(messageFactory.buildAddPartitionMessage(table, partitions), topicName);
       } else {
@@ -141,6 +143,17 @@ public class NotificationListener extends MetaStoreEventListener {
             + HCatConstants.HCAT_MSGBUS_TOPIC_NAME
             + "=<dbname>.<tablename>) or whatever you want topic name to be.");
       }
+    }
+  }
+
+  @Override
+  public void onAlterPartition(AlterPartitionEvent ape) throws MetaException {
+    if (ape.getStatus()) {
+      Partition before = ape.getOldPartition();
+      Partition after = ape.getNewPartition();
+
+      String topicName = getTopicName(ape.getTable());
+      send(messageFactory.buildAlterPartitionMessage(before, after), topicName);
     }
   }
 
@@ -165,7 +178,7 @@ public class NotificationListener extends MetaStoreEventListener {
       sd.setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSkewedInfo().setSkewedColNames(new ArrayList<String>());
-      String topicName = getTopicName(partitionEvent.getTable(), partitionEvent);
+      String topicName = getTopicName(partitionEvent.getTable());
       if (topicName != null && !topicName.equals("")) {
         send(messageFactory.buildDropPartitionMessage(partitionEvent.getTable(), partition), topicName);
       } else {
@@ -214,7 +227,7 @@ public class NotificationListener extends MetaStoreEventListener {
       HiveConf conf = handler.getHiveConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table(tbl.getDbName(), tbl.getTableName())
+        newTbl = handler.get_table_core(tbl.getDbName(), tbl.getTableName())
           .deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,
@@ -241,6 +254,35 @@ public class NotificationListener extends MetaStoreEventListener {
   }
 
   /**
+   * Send altered table notifications. Subscribers can receive these notifications for
+   * dropped tables by listening on topic "HCAT" with message selector string
+   * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
+   * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_ALTER_TABLE_EVENT}
+   */
+  @Override
+  public void onAlterTable(AlterTableEvent tableEvent) throws MetaException {
+    if (tableEvent.getStatus()) {
+      Table before = tableEvent.getOldTable();
+      Table after = tableEvent.getNewTable();
+
+      // onCreateTable alters the table to add the topic name.  Since this class is generating
+      // that alter, we don't want to notify on that alter.  So take a quick look and see if
+      // that's what this this alter is, and if so swallow it.
+      if (after.getParameters() != null &&
+          after.getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME) != null &&
+          (before.getParameters() == null ||
+              before.getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME) == null)) {
+        return;
+      }
+      // I think this is wrong, the alter table statement should come on the table topic not the
+      // DB topic - Alan.
+      String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." +
+          after.getDbName().toLowerCase();
+      send(messageFactory.buildAlterTableMessage(before, after), topicName);
+    }
+  }
+
+  /**
    * Send dropped table notifications. Subscribers can receive these notifications for
    * dropped tables by listening on topic "HCAT" with message selector string
    * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
@@ -262,6 +304,8 @@ public class NotificationListener extends MetaStoreEventListener {
 
     if (tableEvent.getStatus()) {
       Table table = tableEvent.getTable();
+      // I think this is wrong, the drop table statement should come on the table topic not the
+      // DB topic - Alan.
       String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." + table.getDbName().toLowerCase();
       send(messageFactory.buildDropTableMessage(table), topicName);
     }
@@ -434,15 +478,5 @@ public class NotificationListener extends MetaStoreEventListener {
 //  TODO: Fix LoadPartitionDoneEvent. Currently, LPDE can only carry a single partition-spec. And that defeats the purpose.
 //        if(lpde.getStatus())
 //            send(lpde.getPartitionName(),lpde.getTable().getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME),HCatConstants.HCAT_PARTITION_DONE_EVENT);
-  }
-
-  @Override
-  public void onAlterPartition(AlterPartitionEvent ape) throws MetaException {
-    // no-op
-  }
-
-  @Override
-  public void onAlterTable(AlterTableEvent ate) throws MetaException {
-    // no-op
   }
 }

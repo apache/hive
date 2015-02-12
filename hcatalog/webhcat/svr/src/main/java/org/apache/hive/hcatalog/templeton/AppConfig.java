@@ -28,12 +28,14 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
@@ -119,6 +121,7 @@ public class AppConfig extends Configuration {
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
   public static final String SQOOP_ARCHIVE_NAME  = "templeton.sqoop.archive";
   public static final String SQOOP_PATH_NAME     = "templeton.sqoop.path";
+  public static final String SQOOP_HOME_PATH     = "templeton.sqoop.home";
   public static final String LIB_JARS_NAME       = "templeton.libjars";
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";
   public static final String PIG_PATH_NAME       = "templeton.pig.path";
@@ -223,14 +226,8 @@ public class AppConfig extends Configuration {
    * support/debugging.  Later it may be worth adding a REST call which will return this data.
    */
   private String dumpEnvironent() {
-    StringBuilder sb = new StringBuilder("WebHCat environment:\n");
-    Map<String, String> env = System.getenv();
-    List<String> propKeys = new ArrayList<String>(env.keySet());
-    Collections.sort(propKeys);
-    for(String propKey : propKeys) {
-      sb.append(propKey).append('=').append(env.get(propKey)).append('\n');
-    }
-    sb.append("Configration properties: \n");
+    StringBuilder sb = TempletonUtils.dumpPropMap("========WebHCat System.getenv()========", System.getenv());
+    sb.append("START========WebHCat AppConfig.iterator()========: \n");
     Iterator<Map.Entry<String, String>> configIter = this.iterator();
     List<Map.Entry<String, String>> configVals = new ArrayList<Map.Entry<String, String>>();
     while(configIter.hasNext()) {
@@ -244,8 +241,19 @@ public class AppConfig extends Configuration {
     });
     for(Map.Entry<String, String> entry : configVals) {
       //use get() to make sure variable substitution works
-      sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
+      if(entry.getKey().toLowerCase().contains("path")) {
+        StringTokenizer st = new StringTokenizer(get(entry.getKey()), File.pathSeparator);
+        sb.append(entry.getKey()).append("=\n");
+        while(st.hasMoreTokens()) {
+          sb.append("    ").append(st.nextToken()).append(File.pathSeparator).append('\n');
+        }
+      }
+      else {
+        sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
+      }
     }
+    sb.append("END========WebHCat AppConfig.iterator()========: \n");
+    sb.append(TempletonUtils.dumpPropMap("========WebHCat System.getProperties()========", System.getProperties()));
     return sb.toString();
   }
   public void startCleanup() {
@@ -297,6 +305,7 @@ public class AppConfig extends Configuration {
   public String hiveArchive()      { return get(HIVE_ARCHIVE_NAME); }
   public String sqoopPath()        { return get(SQOOP_PATH_NAME); }
   public String sqoopArchive()     { return get(SQOOP_ARCHIVE_NAME); }
+  public String sqoopHome()        { return get(SQOOP_HOME_PATH); }
   public String streamingJar()     { return get(STREAMING_JAR_NAME); }
   public String kerberosSecret()   { return get(KERBEROS_SECRET); }
   public String kerberosPrincipal(){ return get(KERBEROS_PRINCIPAL); }
@@ -313,10 +322,14 @@ public class AppConfig extends Configuration {
     String[] props= StringUtils.split(get(HIVE_PROPS_NAME));
     //since raw data was (possibly) escaped to make split work,
     //now need to remove escape chars so they don't interfere with downstream processing
-    for(int i = 0; i < props.length; i++) {
-      props[i] = TempletonUtils.unEscapeString(props[i]);
+    if (props == null) {
+      return Collections.emptyList();
+    } else {
+      for(int i = 0; i < props.length; i++) {
+        props[i] = TempletonUtils.unEscapeString(props[i]);
+      }
+      return Arrays.asList(props);
     }
-    return Arrays.asList(props);
   }
 
   public String[] overrideJars() {

@@ -1,0 +1,184 @@
+PREHOOK: query: explain
+ SELECT sum(hash(a.key, a.value, b.key, b.value1,  b.value2))
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value1,
+  count(distinct(src2.key)) AS value2
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+ SELECT sum(hash(a.key, a.value, b.key, b.value1,  b.value2))
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value1,
+  count(distinct(src2.key)) AS value2
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 6 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Reducer 3 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(value)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT value), count(DISTINCT key)
+                      keys: key (type: string), value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(hash(_col0,_col1,_col2,_col3,_col4))
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value1,  b.value2))
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value1,
+  count(distinct(src2.key)) AS value2
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value1,  b.value2))
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value1,
+  count(distinct(src2.key)) AS value2
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+40694575227

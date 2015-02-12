@@ -1,19 +1,5 @@
-DROP TABLE part;
-
--- data setup
-CREATE TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-);
-
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
+set mapred.reduce.tasks=4;
+-- SORT_QUERY_RESULTS
 
 -- 1. testWindowing
 select p_mfgr, p_name, p_size,
@@ -444,3 +430,7 @@ select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_na
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
 from part 
 where p_mfgr='Manufacturer#1';
+
+-- 47. empty partition
+select sum(p_size) over (partition by p_mfgr )
+from part where p_mfgr = 'm1';

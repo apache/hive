@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -38,16 +38,67 @@
    <module>util</module>
    <module>test-serde</module>
    <module>qtest</module>
+   <module>hive-jmh</module>
   </modules>
 
   <profiles>
     <profile>
       <id>hadoop-2</id>
       <modules>
+        <module>qtest-spark</module>
         <module>hive-unit-hadoop2</module>
         <module>hive-minikdc</module>
       </modules>
     </profile>
+    <profile>
+      <id>hadoop-1</id>
+      <modules>
+        <module>qtest-spark</module>
+      </modules>
+    </profile>
   </profiles>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-spark</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo file="target/download.sh">
+                  set -x
+                  /bin/pwd
+                  BASE_DIR=./target
+                  HIVE_ROOT=$BASE_DIR/../../../
+                  DOWNLOAD_DIR=./../thirdparty
+                  download() {
+                    url=$1;
+                    finalName=$2
+                    tarName=$(basename $url)
+                    rm -rf $BASE_DIR/$finalName
+                    if [[ ! -f $DOWNLOAD_DIR/$tarName ]]
+                    then
+                     curl -Sso $DOWNLOAD_DIR/$tarName $url
+                    fi
+                    tar -zxf $DOWNLOAD_DIR/$tarName -C $BASE_DIR
+                    mv $BASE_DIR/spark-${spark.version}-bin-hadoop2-without-hive $BASE_DIR/$finalName
+                  }
+                  mkdir -p $DOWNLOAD_DIR
+                  download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
+                  cp -f $HIVE_ROOT/data/conf/spark/log4j.properties $BASE_DIR/spark/conf/
+                </echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

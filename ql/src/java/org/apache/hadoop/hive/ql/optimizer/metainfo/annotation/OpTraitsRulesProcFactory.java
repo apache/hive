@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -104,7 +105,12 @@ public class OpTraitsRulesProcFactory {
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(bucketCols);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1);
+      int numBuckets = -1;
+      OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getOpTraits();
+      if (parentOpTraits != null) {
+        numBuckets = parentOpTraits.getNumBuckets();
+      }
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols);
       rs.setOpTraits(opTraits);
       return null;
     }
@@ -155,7 +161,7 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator ts = (TableScanOperator)nd;
       AnnotateOpTraitsProcCtx opTraitsCtx = (AnnotateOpTraitsProcCtx)procCtx;
-      Table table = opTraitsCtx.getParseContext().getTopToTable().get(ts);
+      Table table = ts.getConf().getTableMetadata();
       PrunedPartitionList prunedPartList = null;
       try {
         prunedPartList =
@@ -163,15 +169,21 @@ public class OpTraitsRulesProcFactory {
       } catch (HiveException e) {
         prunedPartList = null;
       }
-      boolean bucketMapJoinConvertible = checkBucketedTable(table, 
+      boolean isBucketed = checkBucketedTable(table,
           opTraitsCtx.getParseContext(), prunedPartList);
-      List<List<String>>bucketCols = new ArrayList<List<String>>();
+      List<List<String>> bucketColsList = new ArrayList<List<String>>();
+      List<List<String>> sortedColsList = new ArrayList<List<String>>();
       int numBuckets = -1;
-      if (bucketMapJoinConvertible) {
-        bucketCols.add(table.getBucketCols());
+      if (isBucketed) {
+        bucketColsList.add(table.getBucketCols());
         numBuckets = table.getNumBuckets();
+        List<String> sortCols = new ArrayList<String>();
+        for (Order colSortOrder : table.getSortCols()) {
+          sortCols.add(colSortOrder.getCol());
+        }
+        sortedColsList.add(sortCols);
       }
-      OpTraits opTraits = new OpTraits(bucketCols, numBuckets);
+      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -197,7 +209,7 @@ public class OpTraitsRulesProcFactory {
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols);
       gbyOp.setOpTraits(opTraits);
       return null;
     }
@@ -205,22 +217,17 @@ public class OpTraitsRulesProcFactory {
 
   public static class SelectRule implements NodeProcessor {
 
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      SelectOperator selOp = (SelectOperator)nd;
-      List<List<String>> parentBucketColNames = 
-          selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
-
+    public List<List<String>> getConvertedColNames(List<List<String>> parentColNames,
+        SelectOperator selOp) {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       if (selOp.getColumnExprMap() != null) {
-        if (parentBucketColNames != null) {
-          for (List<String> colNames : parentBucketColNames) {
+        if (parentColNames != null) {
+          for (List<String> colNames : parentColNames) {
             List<String> bucketColNames = new ArrayList<String>();
             for (String colName : colNames) {
               for (Entry<String, ExprNodeDesc> entry : selOp.getColumnExprMap().entrySet()) {
                 if (entry.getValue() instanceof ExprNodeColumnDesc) {
-                  if(((ExprNodeColumnDesc)(entry.getValue())).getColumn().equals(colName)) {
+                  if (((ExprNodeColumnDesc) (entry.getValue())).getColumn().equals(colName)) {
                     bucketColNames.add(entry.getKey());
                   }
                 }
@@ -231,11 +238,34 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
+      return listBucketCols;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      SelectOperator selOp = (SelectOperator)nd;
+      List<List<String>> parentBucketColNames =
+          selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
+
+      List<List<String>> listBucketCols = null;
+      List<List<String>> listSortCols = null;
+      if (selOp.getColumnExprMap() != null) {
+        if (parentBucketColNames != null) {
+          listBucketCols = getConvertedColNames(parentBucketColNames, selOp);
+        }
+        List<List<String>> parentSortColNames = selOp.getParentOperators().get(0).getOpTraits()
+            .getSortCols();
+        if (parentSortColNames != null) {
+          listSortCols = getConvertedColNames(parentSortColNames, selOp);
+        }
+      }
+
       int numBuckets = -1;
       if (selOp.getParentOperators().get(0).getOpTraits() != null) {
         numBuckets = selOp.getParentOperators().get(0).getOpTraits().getNumBuckets();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols);
       selOp.setOpTraits(opTraits);
       return null;
     }
@@ -248,6 +278,7 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       JoinOperator joinOp = (JoinOperator)nd;
       List<List<String>> bucketColsList = new ArrayList<List<String>>();
+      List<List<String>> sortColsList = new ArrayList<List<String>>();
       byte pos = 0;
       for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
         if (!(parentOp instanceof ReduceSinkOperator)) {
@@ -259,26 +290,24 @@ public class OpTraitsRulesProcFactory {
           ReduceSinkRule rsRule = new ReduceSinkRule();
           rsRule.process(rsOp, stack, procCtx, nodeOutputs);
         }
-        bucketColsList.add(getOutputColNames(joinOp, rsOp, pos));
+        bucketColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getBucketColNames(), pos));
+        sortColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getSortCols(), pos));
         pos++;
       }
 
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList));
       return null;
     }
 
-    private List<String> getOutputColNames(JoinOperator joinOp,
-        ReduceSinkOperator rs, byte pos) {
-      List<List<String>> parentBucketColNames =
-          rs.getOpTraits().getBucketColNames();
-
-      if (parentBucketColNames != null) {
+    private List<String> getOutputColNames(JoinOperator joinOp, List<List<String>> parentColNames,
+        byte pos) {
+      if (parentColNames != null) {
         List<String> bucketColNames = new ArrayList<String>();
 
         // guaranteed that there is only 1 list within this list because
         // a reduce sink always brings down the bucketing cols to a single list.
         // may not be true with correlation operators (mux-demux)
-        List<String> colNames = parentBucketColNames.get(0);
+        List<String> colNames = parentColNames.get(0);
         for (String colName : colNames) {
           for (ExprNodeDesc exprNode : joinOp.getConf().getExprs().get(pos)) {
             if (exprNode instanceof ExprNodeColumnDesc) {
@@ -317,7 +346,7 @@ public class OpTraitsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      OpTraits opTraits = new OpTraits(null, -1);
+      OpTraits opTraits = new OpTraits(null, -1, null);
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>)nd;
       operator.setOpTraits(opTraits);

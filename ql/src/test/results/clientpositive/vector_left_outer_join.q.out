@@ -17,73 +17,71 @@ left outer join alltypesorc hd
 ) t1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-2
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        t1:cd 
+        $hdt$_0:$hdt$_1:c 
           Fetch Operator
             limit: -1
-        t1:hd 
+        $hdt$_0:$hdt$_2:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        t1:cd 
+        $hdt$_0:$hdt$_1:c 
           TableScan
-            alias: cd
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
-            HashTable Sink Operator
-              condition expressions:
-                0 {ctinyint}
-                1 
-              keys:
-                0 cint (type: int)
-                1 cint (type: int)
-        t1:hd 
+            alias: c
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+        $hdt$_0:$hdt$_2:c 
           TableScan
-            alias: hd
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              keys:
-                0 _col0 (type: tinyint)
-                1 ctinyint (type: tinyint)
+            alias: c
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
-            Map Join Operator
-              condition map:
-                   Left Outer Join0 to 1
-              condition expressions:
-                0 {ctinyint}
-                1 
-              keys:
-                0 cint (type: int)
-                1 cint (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 13516 Data size: 414960 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint), cint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
-                  0 _col0 (type: tinyint)
-                  1 ctinyint (type: tinyint)
-                Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 14867 Data size: 456456 Basic stats: COMPLETE Column stats: NONE
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: tinyint)
+                    1 _col0 (type: tinyint)
+                  Statistics: Num rows: 14867 Data size: 3196776 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -102,17 +100,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

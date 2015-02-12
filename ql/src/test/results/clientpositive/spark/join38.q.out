@@ -1,0 +1,152 @@
+PREHOOK: query: create table tmp(col0 string, col1 string,col2 string,col3 string,col4 string,col5 string,col6 string,col7 string,col8 string,col9 string,col10 string,col11 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp
+POSTHOOK: query: create table tmp(col0 string, col1 string,col2 string,col3 string,col4 string,col5 string,col6 string,col7 string,col8 string,col9 string,col10 string,col11 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp
+PREHOOK: query: insert overwrite table tmp select key, cast(key + 1 as int), key +2, key+3, key+4, cast(key+5 as int), key+6, key+7, key+8, key+9, key+10, cast(key+11 as int) from src where key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp
+POSTHOOK: query: insert overwrite table tmp select key, cast(key + 1 as int), key +2, key+3, key+4, cast(key+5 as int), key+6, key+7, key+8, key+9, key+10, cast(key+11 as int) from src where key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp
+POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col11 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col4 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col5 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col6 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col7 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col8 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.col9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp
+#### A masked pattern was here ####
+100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
+100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
+PREHOOK: query: explain
+FROM src a JOIN tmp b ON (a.key = b.col11)
+SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
+where b.col11 = 111
+group by a.value, b.col5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM src a JOIN tmp b ON (a.key = b.col11)
+SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
+where b.col11 = 111
+group by a.value, b.col5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = 111) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 '111' (type: string)
+                        1 '111' (type: string)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 126 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (col11 = 111) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 '111' (type: string)
+                        1 '111' (type: string)
+                      outputColumnNames: _col1, _col10
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(1)
+                        keys: _col1 (type: string), _col10 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col2 (type: bigint)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
+SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
+where b.col11 = 111
+group by a.value, b.col5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tmp
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
+SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
+where b.col11 = 111
+group by a.value, b.col5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tmp
+#### A masked pattern was here ####
+val_111	105	2

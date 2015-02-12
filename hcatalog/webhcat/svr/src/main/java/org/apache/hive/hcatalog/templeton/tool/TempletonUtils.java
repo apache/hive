@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,18 +30,25 @@ import java.net.URLDecoder;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
@@ -51,6 +59,8 @@ import org.apache.hive.hcatalog.templeton.BadParam;
  * General utility methods.
  */
 public class TempletonUtils {
+  private static final Log LOG = LogFactory.getLog(TempletonUtils.class);
+
   /**
    * Is the object non-empty?
    */
@@ -92,6 +102,24 @@ public class TempletonUtils {
   public static final Pattern PIG_COMPLETE = Pattern.compile(" \\d+% complete$");
   //looking for map = 100%,  reduce = 100%
   public static final Pattern HIVE_COMPLETE = Pattern.compile(" map = (\\d+%),\\s+reduce = (\\d+%).*$");
+  /**
+   * Hive on Tez produces progress report that looks like this
+   * Map 1: -/-	Reducer 2: 0/1	
+   * Map 1: -/-	Reducer 2: 0(+1)/1	
+   * Map 1: -/-	Reducer 2: 1/1
+   * 
+   * -/- means there are no tasks (yet)
+   * 0/1 means 1 total tasks, 0 completed
+   * 1(+2)/3 means 3 total, 1 completed and 2 running
+   * 
+   * HIVE-8495, in particular https://issues.apache.org/jira/secure/attachment/12675504/Screen%20Shot%202014-10-16%20at%209.35.26%20PM.png
+   * has more examples.
+   * To report progress, we'll assume all tasks are equal size and compute "completed" as percent of "total"
+   * "(Map|Reducer) (\\d+:) ((-/-)|(\\d+(\\(\\+\\d+\\))?/\\d+))" is the complete pattern but we'll drop "-/-" to exclude
+   * groups that don't add information such as "Map 1: -/-"
+   */
+  public static final Pattern TEZ_COMPLETE = Pattern.compile("(Map|Reducer) (\\d+:) (\\d+(\\(\\+\\d+\\))?/\\d+)");
+  public static final Pattern TEZ_COUNTERS = Pattern.compile("\\d+");
 
   /**
    * Extract the percent complete line from Pig or Jar jobs.
@@ -108,6 +136,31 @@ public class TempletonUtils {
     Matcher hive = HIVE_COMPLETE.matcher(line);
     if(hive.find()) {
       return "map " + hive.group(1) + " reduce " + hive.group(2);
+    }
+    Matcher tez = TEZ_COMPLETE.matcher(line);
+    if(tez.find()) {
+      int totalTasks = 0;
+      int completedTasks = 0;
+      do {
+        //here each group looks something like "Map 2: 2/4" "Reducer 3: 1(+2)/4"
+        //just parse the numbers and ignore one from "Map 2" and from "(+2)" if it's there
+        Matcher counts = TEZ_COUNTERS.matcher(tez.group());
+        List<String> items = new ArrayList<String>(4);
+        while(counts.find()) {
+          items.add(counts.group());
+        }
+        completedTasks += Integer.parseInt(items.get(1));
+        if(items.size() == 3) {
+          totalTasks += Integer.parseInt(items.get(2));
+        }
+        else {
+          totalTasks += Integer.parseInt(items.get(3));
+        }
+      } while(tez.find());
+      if(totalTasks == 0) {
+        return "0% complete (0 total tasks)";
+      }
+      return completedTasks * 100 / totalTasks + "% complete";
     }
     return null;
   }
@@ -211,6 +264,28 @@ public class TempletonUtils {
   }
 
   /**
+   * Returns all files (non-recursive) in {@code dirName}
+   */
+  public static List<Path> hadoopFsListChildren(String dirName, Configuration conf, String user)
+    throws URISyntaxException, IOException, InterruptedException {
+
+    Path p = hadoopFsPath(dirName, conf, user);
+    FileSystem fs =  p.getFileSystem(conf);
+    if(!fs.exists(p)) {
+      return Collections.emptyList();
+    }
+    List<FileStatus> children = ShimLoader.getHadoopShims().listLocatedStatus(fs, p, null);
+    if(!isset(children)) {
+      return Collections.emptyList();
+    }
+    List<Path> files = new ArrayList<Path>();
+    for(FileStatus stat : children) {
+      files.add(stat.getPath());
+    }
+    return files;
+  }
+
+  /**
    * @return true iff we are sure the file is not there.
    */
   public static boolean hadoopFsIsMissing(FileSystem fs, Path p) {
@@ -239,8 +314,7 @@ public class TempletonUtils {
   }
 
   public static Path hadoopFsPath(String fname, final Configuration conf, String user)
-    throws URISyntaxException, IOException,
-    InterruptedException {
+    throws URISyntaxException, IOException, InterruptedException {
     if (fname == null || conf == null) {
       return null;
     }
@@ -383,5 +457,35 @@ public class TempletonUtils {
       throw new RuntimeException(e);
     }
     return null;
+  }
+  public static StringBuilder dumpPropMap(String header, Properties props) {
+    Map<String, String> map = new HashMap<String, String>();
+    for(Map.Entry<Object, Object> ent : props.entrySet()) {
+      map.put(ent.getKey().toString(), ent.getValue() == null ? null : ent.getValue().toString());
+    }
+    return dumpPropMap(header, map);
+  }
+  public static StringBuilder dumpPropMap(String header, Map<String, String> map) {
+    StringBuilder sb = new StringBuilder("START").append(header).append(":\n");
+    List<String> propKeys = new ArrayList<String>(map.keySet());
+    Collections.sort(propKeys);
+    for(String propKey : propKeys) {
+      if(propKey.toLowerCase().contains("path")) {
+        StringTokenizer st = new StringTokenizer(map.get(propKey), File.pathSeparator);
+        if(st.countTokens() > 1) {
+          sb.append(propKey).append("=\n");
+          while (st.hasMoreTokens()) {
+            sb.append("    ").append(st.nextToken()).append(File.pathSeparator).append('\n');
+          }
+        }
+        else {
+          sb.append(propKey).append('=').append(map.get(propKey)).append('\n');
+        }
+      }
+      else {
+        sb.append(propKey).append('=').append(map.get(propKey)).append('\n');
+      }
+    }
+    return sb.append("END").append(header).append('\n');
   }
 }

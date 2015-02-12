@@ -115,15 +115,17 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
   }
 
   private void resetIOContext() {
-    ioContext = IOContext.get();
+    conf.set(Utilities.INPUT_NAME, "TestHiveBinarySearchRecordReader");
+    ioContext = IOContext.get(conf);
     ioContext.setUseSorted(false);
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setEndBinarySearch(false);
     ioContext.setComparison(null);
     ioContext.setGenericUDFClassName(null);
   }
 
   private void init() throws IOException {
+    conf = new JobConf();
     resetIOContext();
     rcfReader = mock(RCFileRecordReader.class);
     when(rcfReader.next((LongWritable)anyObject(),
@@ -131,7 +133,6 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     // Since the start is 0, and the length is 100, the first call to sync should be with the value
     // 50 so return that for getPos()
     when(rcfReader.getPos()).thenReturn(50L);
-    conf = new JobConf();
     conf.setBoolean("hive.input.format.sorted", true);
 
     TableDesc tblDesc = Utilities.defaultTd;
@@ -251,7 +252,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPEqual.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);
@@ -291,7 +292,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPGreaterThan.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);
@@ -305,7 +306,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPEqualOrGreaterThan.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);

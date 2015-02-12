@@ -94,7 +94,7 @@ Sort Columns:       	[]
 View Original Text: 	select key, value from (	 
   select key, value from src	 	 
 ) a	 	 
-View Expanded Text: 	select key, value from (	 
+View Expanded Text: 	select `a`.`key`, `a`.`value` from (	 
   select `src`.`key`, `src`.`value` from `default`.`src`	 	 
 ) `a`	 	 
 PREHOOK: query: drop view v

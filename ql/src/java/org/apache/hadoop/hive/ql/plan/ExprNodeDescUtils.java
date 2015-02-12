@@ -193,6 +193,7 @@ public class ExprNodeDescUtils {
   /**
    * Convert expressions in current operator to those in terminal operator, which
    * is an ancestor of current or null (back to top operator).
+   * Possibly contain null values for non-traceable exprs
    */
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
       Operator<?> current, Operator<?> terminal) throws SemanticException {
@@ -212,7 +213,14 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      function.setChildren(backtrack(function.getChildren(), current, terminal));
+      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal);
+      for (ExprNodeDesc child : children) {
+        if (child == null) {
+          // Could not resolve all of the function children, fail
+          return null;
+        }
+      }
+      function.setChildren(children);
       return function;
     }
     if (source instanceof ExprNodeColumnDesc) {
@@ -222,7 +230,11 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeFieldDesc) {
       // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
-      field.setDesc(backtrack(field.getDesc(), current, terminal));
+      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal);
+      if (fieldDesc == null) {
+        return null;
+      }
+      field.setDesc(fieldDesc);
       return field;
     }
     // constant or null expr, just return
@@ -385,29 +397,34 @@ public class ExprNodeDescUtils {
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
 	 * 
 	 * @param exprDesc
-	 * @param hashCodeTocolumnDescMap
+	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
 	 *            they are logically referring to same projection
 	 */
 	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
+			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
 		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeTocolumnDescMap.put(
-					((ExprNodeColumnDesc) exprDesc).hashCode(),
-					((ExprNodeColumnDesc) exprDesc));
+			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
 		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : ((ExprNodeColumnListDesc) exprDesc)
-					.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			for (ExprNodeDesc child : exprDesc.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
 			}
 		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : ((ExprNodeGenericFuncDesc) exprDesc)
-					.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			for (ExprNodeDesc child : exprDesc.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
 			}
 		} else if (exprDesc instanceof ExprNodeFieldDesc) {
 			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeTocolumnDescMap);
+					hashCodeToColumnDescMap);
 		}
 	}
+
+  public static boolean isAllConstants(List<ExprNodeDesc> value) {
+    for (ExprNodeDesc expr : value) {
+      if (!(expr instanceof ExprNodeConstantDesc)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

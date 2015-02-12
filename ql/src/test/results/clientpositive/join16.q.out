@@ -14,44 +14,48 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((((key > 10) and (key > 20)) and key is not null) and value is not null) and (value < 200)) (type: boolean)
-              Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((UDFToDouble(key) > 10.0) and (UDFToDouble(key) > 20.0)) and (UDFToDouble(value) < 200.0)) and key is not null) and value is not null) (type: boolean)
+              Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: tab
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key > 20) and key is not null) and value is not null) and (value < 200)) (type: boolean)
-              Statistics: Num rows: 14 Data size: 148 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string), value (type: string)
-                sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
-                Statistics: Num rows: 14 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((UDFToDouble(value) < 200.0) and (UDFToDouble(key) > 10.0)) and (UDFToDouble(key) > 20.0)) and key is not null) and value is not null) (type: boolean)
+              Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 5 Data size: 53 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey1}
+          keys:
+            0 _col0 (type: string), _col1 (type: string)
+            1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0, _col3
-          Statistics: Num rows: 15 Data size: 162 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 58 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col3 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 15 Data size: 162 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 58 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 15 Data size: 162 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 58 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

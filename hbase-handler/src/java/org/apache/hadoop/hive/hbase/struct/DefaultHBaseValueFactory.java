@@ -21,44 +21,61 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.hbase.ColumnMappings;
+import org.apache.hadoop.hive.hbase.HBaseSerDeHelper;
 import org.apache.hadoop.hive.hbase.HBaseSerDeParameters;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Default implementation of the {@link HBaseValueFactory}
  * */
-public class DefaultHBaseValueFactory implements HBaseValueFactory{
+public class DefaultHBaseValueFactory implements HBaseValueFactory {
 
   protected LazySimpleSerDe.SerDeParameters serdeParams;
+  protected ColumnMappings columnMappings;
   protected HBaseSerDeParameters hbaseParams;
   protected Properties properties;
   protected Configuration conf;
 
-	@Override
+  private int fieldID;
+
+  public DefaultHBaseValueFactory(int fieldID) {
+    this.fieldID = fieldID;
+  }
+
+  @Override
   public void init(HBaseSerDeParameters hbaseParams, Configuration conf, Properties properties)
-			throws SerDeException {
+      throws SerDeException {
     this.hbaseParams = hbaseParams;
     this.serdeParams = hbaseParams.getSerdeParams();
+    this.columnMappings = hbaseParams.getColumnMappings();
     this.properties = properties;
     this.conf = conf;
-	}
+  }
 
-	@Override
-	public ObjectInspector createValueObjectInspector(TypeInfo type)
-			throws SerDeException {
-    return LazyFactory.createLazyObjectInspector(type, serdeParams.getSeparators(),
-        1, serdeParams.getNullSequence(), serdeParams.isEscaped(), serdeParams.getEscapeChar());
-	}
+  @Override
+  public ObjectInspector createValueObjectInspector(TypeInfo type)
+      throws SerDeException {
+    return LazyFactory.createLazyObjectInspector(type,
+        1, serdeParams, ObjectInspectorOptions.JAVA);
+  }
 
-	@Override
-	public byte[] serializeValue(Object object, StructField field)
-			throws IOException {
+  @Override
+  public LazyObjectBase createValueObject(ObjectInspector inspector) throws SerDeException {
+    return HBaseSerDeHelper.createLazyField(columnMappings.getColumnsMapping(), fieldID, inspector);
+  }
+
+  @Override
+  public byte[] serializeValue(Object object, StructField field)
+      throws IOException {
     // TODO Add support for serialization of values here
-		return null;
-	}
+    return null;
+  }
 }

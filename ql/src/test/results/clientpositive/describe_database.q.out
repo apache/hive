@@ -8,7 +8,12 @@ PREHOOK: query: desc database extended test_db
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: desc database extended test_db
 POSTHOOK: type: DESCDATABASE
-test_db		location/in/test	hive_test_user	USER	{key2=value2, key1=value1}
+test_db		location/in/test	hive_test_user	USER	{key1=value1, key2=value2}
+PREHOOK: query: desc schema extended test_db
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: desc schema extended test_db
+POSTHOOK: type: DESCDATABASE
+test_db		location/in/test	hive_test_user	USER	{key1=value1, key2=value2}
 PREHOOK: query: drop database test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db

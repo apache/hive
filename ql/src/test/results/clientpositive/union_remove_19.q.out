@@ -78,19 +78,19 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: key (type: string)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -99,18 +99,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -130,19 +126,19 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: key (type: string)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -151,18 +147,14 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.outputtbl1
 
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT a.key, a.values
@@ -271,25 +263,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1
-            Statistics: Num rows: 30 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 7) (type: boolean)
-              Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) = 7.0) (type: boolean)
+              Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '7' (type: string)
-                outputColumnNames: key
-                Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: key (type: string)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -297,19 +289,15 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -326,25 +314,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1
-            Statistics: Num rows: 30 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 7) (type: boolean)
-              Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToDouble(key) = 7.0) (type: boolean)
+              Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '7' (type: string)
-                outputColumnNames: key
-                Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
-                  keys: key (type: string)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 15 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -352,19 +340,15 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 7 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.outputtbl1
 
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT a.key, a.values
@@ -436,22 +420,25 @@ STAGE PLANS:
           TableScan
             alias: inputtbl1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: key
-              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              Group By Operator
-                aggregations: count(1)
-                keys: key (type: string)
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: bigint)
+            Filter Operator
+              predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -460,24 +447,17 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: (_col0 + _col0) (type: double), _col1 (type: bigint)
+            expressions: (UDFToDouble(_col0) + UDFToDouble(_col0)) (type: double), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Filter Operator
-              predicate: (_col0 >= 7.0) (type: boolean)
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: double), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -495,22 +475,25 @@ STAGE PLANS:
           TableScan
             alias: inputtbl1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: key
-              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              Group By Operator
-                aggregations: count(1)
-                keys: key (type: string)
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: bigint)
+            Filter Operator
+              predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -519,24 +502,17 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
-            expressions: (_col0 + _col0) (type: double), _col1 (type: bigint)
+            expressions: (UDFToDouble(_col0) + UDFToDouble(_col0)) (type: double), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Filter Operator
-              predicate: (_col0 >= 7.0) (type: boolean)
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: double), _col1 (type: bigint)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
 PREHOOK: query: insert overwrite table outputTbl1
 select key, values from

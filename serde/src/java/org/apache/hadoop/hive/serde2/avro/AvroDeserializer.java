@@ -22,6 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,10 +41,13 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.util.Utf8;
+import org.apache.avro.UnresolvedUnionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -197,9 +202,8 @@ class AvroDeserializer {
     // Avro requires NULLable types to be defined as unions of some type T
     // and NULL.  This is annoying and we're going to hide it from the user.
     if(AvroSerdeUtils.isNullableType(recordSchema)) {
-      return deserializeNullableUnion(datum, fileSchema, recordSchema, columnType);
+      return deserializeNullableUnion(datum, fileSchema, recordSchema);
     }
-
 
     switch(columnType.getCategory()) {
     case STRUCT:
@@ -249,6 +253,48 @@ class AvroDeserializer {
       JavaHiveDecimalObjectInspector oi = (JavaHiveDecimalObjectInspector)
           PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector((DecimalTypeInfo)columnType);
       return oi.set(null, dec);
+    case CHAR:
+      if (fileSchema == null) {
+        throw new AvroSerdeException("File schema is missing for char field. Reader schema is " + columnType);
+      }
+
+      int maxLength = 0;
+      try {
+        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
+      }
+
+      String str = datum.toString();
+      HiveChar hc = new HiveChar(str, maxLength);
+      return hc;
+    case VARCHAR:
+      if (fileSchema == null) {
+        throw new AvroSerdeException("File schema is missing for varchar field. Reader schema is " + columnType);
+      }
+
+      maxLength = 0;
+      try {
+        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
+      }
+
+      str = datum.toString();
+      HiveVarchar hvc = new HiveVarchar(str, maxLength);
+      return hvc;
+    case DATE:
+      if (recordSchema.getType() != Type.INT) {
+        throw new AvroSerdeException("Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
+      }
+
+      return new Date(DateWritable.daysToMillis((Integer)datum));
+    case TIMESTAMP:
+      if (recordSchema.getType() != Type.LONG) {
+        throw new AvroSerdeException(
+          "Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
+      }
+      return new Timestamp((Long)datum);
     default:
       return datum;
     }
@@ -258,8 +304,8 @@ class AvroDeserializer {
    * Extract either a null or the correct type from a Nullable type.  This is
    * horrible in that we rebuild the TypeInfo every time.
    */
-  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema,
-                                          TypeInfo columnType) throws AvroSerdeException {
+  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema)
+                                            throws AvroSerdeException {
     int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
     Schema schema = recordSchema.getTypes().get(tag);
     if (schema.getType().equals(Schema.Type.NULL)) {
@@ -268,8 +314,33 @@ class AvroDeserializer {
 
     Schema currentFileSchema = null;
     if (fileSchema != null) {
-       currentFileSchema =
-           fileSchema.getType() == Type.UNION ? fileSchema.getTypes().get(tag) : fileSchema;
+      if (fileSchema.getType() == Type.UNION) {
+        // The fileSchema may have the null value in a different position, so
+        // we need to get the correct tag
+        try {
+          tag = GenericData.get().resolveUnion(fileSchema, datum);
+          currentFileSchema = fileSchema.getTypes().get(tag);
+        } catch (UnresolvedUnionException e) {
+          if (LOG.isDebugEnabled()) {
+            String datumClazz = null;
+            if (datum != null) {
+              datumClazz = datum.getClass().getName();
+            }
+            String msg = "File schema union could not resolve union. fileSchema = " + fileSchema +
+              ", recordSchema = " + recordSchema + ", datum class = " + datumClazz + ": " + e;
+            LOG.debug(msg, e);
+          }
+          // This occurs when the datum type is different between
+          // the file and record schema. For example if datum is long
+          // and the field in the file schema is int. See HIVE-9462.
+          // in this case we will re-use the record schema as the file
+          // schema, Ultimately we need to clean this code up and will
+          // do as a follow-on to HIVE-9462.
+          currentFileSchema = schema;
+        }
+      } else {
+        currentFileSchema = fileSchema;
+      }
     }
     return worker(datum, currentFileSchema, schema, SchemaToTypeInfo.generateTypeInfo(schema));
 
@@ -331,10 +402,10 @@ class AvroDeserializer {
     // Avro only allows maps with Strings for keys, so we only have to worry
     // about deserializing the values
     Map<String, Object> map = new HashMap<String, Object>();
-    Map<Utf8, Object> mapDatum = (Map)datum;
+    Map<CharSequence, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();
-    for (Utf8 key : mapDatum.keySet()) {
+    for (CharSequence key : mapDatum.keySet()) {
       Object value = mapDatum.get(key);
       map.put(key.toString(), worker(value, fileSchema == null ? null : fileSchema.getValueType(),
           valueSchema, valueTypeInfo));

@@ -34,11 +34,11 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -73,8 +73,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
@@ -113,6 +112,8 @@ public class StatsOptimizer implements Transform {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TS + SEL + GBY + RS + GBY + SEL + FS),
         new MetaDataProcessor(pctx));
+    opRules.put(new RuleRegExp("R2", TS + SEL + GBY + RS + GBY + FS),
+            new MetaDataProcessor(pctx));
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
@@ -138,6 +139,22 @@ public class StatsOptimizer implements Transform {
       Boolean,
       Binary,
       Unsupported
+    }
+
+    enum LongSubType {
+      BIGINT { Object cast(long longValue) { return longValue; } }, 
+      INT { Object cast(long longValue) { return (int)longValue; } },
+      SMALLINT { Object cast(long longValue) { return (short)longValue; } },
+      TINYINT { Object cast(long longValue) { return (byte)longValue; } };
+
+      abstract Object cast(long longValue);
+    }
+
+    enum DoubleSubType {
+      DOUBLE { Object cast(double doubleValue) { return doubleValue; } },
+      FLOAT { Object cast(double doubleValue) { return (float) doubleValue; } };
+
+      abstract Object cast(double doubleValue);
     }
 
     private StatType getType(String origType) {
@@ -187,54 +204,56 @@ public class StatsOptimizer implements Transform {
 
       try {
         TableScanOperator tsOp = (TableScanOperator) stack.get(0);
-        if(tsOp.getParentOperators() != null && tsOp.getParentOperators().size() > 0) {
+        if (tsOp.getNumParent() > 0) {
           // looks like a subq plan.
           return null;
         }
-        SelectOperator selOp = (SelectOperator)tsOp.getChildren().get(0);
-        for(ExprNodeDesc desc : selOp.getConf().getColList()) {
+        SelectOperator pselOp = (SelectOperator)stack.get(1);
+        for(ExprNodeDesc desc : pselOp.getConf().getColList()) {
           if (!((desc instanceof ExprNodeColumnDesc) || (desc instanceof ExprNodeConstantDesc))) {
             // Probably an expression, cant handle that
             return null;
           }
         }
-        Map<String, ExprNodeDesc> exprMap = selOp.getColumnExprMap();
-        // Since we have done an exact match on TS-SEL-GBY-RS-GBY-SEL-FS
+        Map<String, ExprNodeDesc> exprMap = pselOp.getColumnExprMap();
+        // Since we have done an exact match on TS-SEL-GBY-RS-GBY-(SEL)-FS
         // we need not to do any instanceof checks for following.
-        GroupByOperator gbyOp = (GroupByOperator)selOp.getChildren().get(0);
-        ReduceSinkOperator rsOp = (ReduceSinkOperator)gbyOp.getChildren().get(0);
+        GroupByOperator pgbyOp = (GroupByOperator)stack.get(2);
+        if (pgbyOp.getConf().getOutputColumnNames().size() != 
+            pgbyOp.getConf().getAggregators().size()) {
+          return null;
+        }
+        ReduceSinkOperator rsOp = (ReduceSinkOperator)stack.get(3);
         if (rsOp.getConf().getDistinctColumnIndices().size() > 0) {
           // we can't handle distinct
           return null;
         }
 
-        selOp = (SelectOperator)rsOp.getChildOperators().get(0).getChildOperators().get(0);
-        List<AggregationDesc> aggrs = gbyOp.getConf().getAggregators();
-
-        if (!(selOp.getConf().getColList().size() == aggrs.size())) {
-          // all select columns must be aggregations
+        GroupByOperator cgbyOp = (GroupByOperator)stack.get(4);
+        if (cgbyOp.getConf().getOutputColumnNames().size() !=
+            cgbyOp.getConf().getAggregators().size()) {
           return null;
-
         }
-        for(ExprNodeDesc desc : selOp.getConf().getColList()) {
-          if (!(desc instanceof ExprNodeColumnDesc)) {
-            // Probably an expression, cant handle that
-            return null;
+        Operator<?> last = (Operator<?>) stack.get(5);
+        if (last instanceof SelectOperator) {
+          SelectOperator cselOp = (SelectOperator) last;
+          if (!cselOp.isIdentitySelect()) {
+            return null;  // todo we can do further by providing operator to fetch task
           }
+          last = (Operator<?>) stack.get(6);
         }
-        FileSinkOperator fsOp = (FileSinkOperator)(selOp.getChildren().get(0));
-        if (fsOp.getChildOperators() != null && fsOp.getChildOperators().size() > 0) {
+        FileSinkOperator fsOp = (FileSinkOperator)last;
+        if (fsOp.getNumChild() > 0) {
           // looks like a subq plan.
-          return null;
+          return null;  // todo we can collapse this part of tree into single TS 
         }
 
-        Table tbl = pctx.getTopToTable().get(tsOp);
+        Table tbl = tsOp.getConf().getTableMetadata();
         List<Object> oneRow = new ArrayList<Object>();
-        List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
 
         Hive hive = Hive.get(pctx.getConf());
 
-        for (AggregationDesc aggr : aggrs) {
+        for (AggregationDesc aggr : pgbyOp.getConf().getAggregators()) {
           if (aggr.getDistinct()) {
             // our stats for NDV is approx, not accurate.
             return null;
@@ -243,7 +262,12 @@ public class StatsOptimizer implements Transform {
           GenericUDAFResolver udaf =
               FunctionRegistry.getGenericUDAFResolver(aggr.getGenericUDAFName());
           if (udaf instanceof GenericUDAFSum) {
+            // long/double/decimal
             ExprNodeDesc desc = aggr.getParameters().get(0);
+            PrimitiveCategory category = GenericUDAFSum.getReturnType(desc.getTypeInfo());
+            if (category == null) {
+              return null;
+            }
             String constant;
             if (desc instanceof ExprNodeConstantDesc) {
               constant = ((ExprNodeConstantDesc) desc).getValue().toString();
@@ -256,11 +280,22 @@ public class StatsOptimizer implements Transform {
             if(rowCnt == null) {
               return null;
             }
-            oneRow.add(HiveDecimal.create(constant).multiply(HiveDecimal.create(rowCnt)));
-            ois.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-                PrimitiveCategory.DECIMAL));
+            switch (category) {
+              case LONG: 
+                oneRow.add(Long.valueOf(constant) * rowCnt);
+                break;
+              case DOUBLE:
+                oneRow.add(Double.valueOf(constant) * rowCnt);
+                break;
+              case DECIMAL:
+                oneRow.add(HiveDecimal.create(constant).multiply(HiveDecimal.create(rowCnt)));
+                break;
+              default:
+                throw new IllegalStateException("never");
+            }
           }
           else if (udaf instanceof GenericUDAFCount) {
+            // always long
             Long rowCnt = 0L;
             if (aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
                 ExprNodeConstantDesc || ((aggr.getParameters().get(0) instanceof ExprNodeColumnDesc) &&
@@ -335,8 +370,6 @@ public class StatsOptimizer implements Transform {
               }
             }
             oneRow.add(rowCnt);
-            ois.add(PrimitiveObjectInspectorFactory.
-                getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
           } else if (udaf instanceof GenericUDAFMax) {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
             String colName = colDesc.getColumn();
@@ -353,19 +386,28 @@ public class StatsOptimizer implements Transform {
                 return null;
               }
               ColumnStatisticsData statData = stats.get(0).getStatsData();
+              String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
-                case Integeral:
+                case Integeral: {
+                  LongSubType subType = LongSubType.valueOf(name);
                   LongColumnStatsData lstats = statData.getLongStats();
-                  oneRow.add(lstats.isSetHighValue() ? lstats.getHighValue() : null);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
+                  if (lstats.isSetHighValue()) {
+                    oneRow.add(subType.cast(lstats.getHighValue()));
+                  } else {
+                    oneRow.add(null);
+                  }
                   break;
-                case Double:
+                }
+                case Double: {
+                  DoubleSubType subType = DoubleSubType.valueOf(name);
                   DoubleColumnStatsData dstats = statData.getDoubleStats();
-                  oneRow.add(dstats.isSetHighValue() ? dstats.getHighValue() : null);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
+                  if (dstats.isSetHighValue()) {
+                    oneRow.add(subType.cast(dstats.getHighValue()));
+                  } else {
+                    oneRow.add(null);
+                  }
                   break;
+                }
                 default:
                   // unsupported type
                   Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
@@ -375,8 +417,11 @@ public class StatsOptimizer implements Transform {
             } else {
               Set<Partition> parts = pctx.getPrunedPartitions(
                   tsOp.getConf().getAlias(), tsOp).getPartitions();
+              String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
                 case Integeral: {
+                  LongSubType subType = LongSubType.valueOf(name);
+                  
                   Long maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -393,12 +438,16 @@ public class StatsOptimizer implements Transform {
                     long curVal = lstats.getHighValue();
                     maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
                   }
-                  oneRow.add(maxVal);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
+                  if (maxVal != null) {
+                    oneRow.add(subType.cast(maxVal));
+                  } else {
+                    oneRow.add(maxVal);
+                  }
                   break;
                 }
                 case Double: {
+                  DoubleSubType subType = DoubleSubType.valueOf(name);
+                  
                   Double maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -415,9 +464,11 @@ public class StatsOptimizer implements Transform {
                     double curVal = statData.getDoubleStats().getHighValue();
                     maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
                   }
-                  oneRow.add(maxVal);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
+                  if (maxVal != null) {
+                    oneRow.add(subType.cast(maxVal));
+                  } else {
+                    oneRow.add(null);
+                  }
                   break;
                 }
                 default:
@@ -438,19 +489,28 @@ public class StatsOptimizer implements Transform {
               ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
                   tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName))
                   .get(0).getStatsData();
+              String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
-                case Integeral:
+                case Integeral: {
+                  LongSubType subType = LongSubType.valueOf(name);
                   LongColumnStatsData lstats = statData.getLongStats();
-                  oneRow.add(lstats.isSetLowValue() ? lstats.getLowValue() : null);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
+                  if (lstats.isSetLowValue()) {
+                    oneRow.add(subType.cast(lstats.getLowValue()));
+                  } else {
+                    oneRow.add(null);
+                  }
                   break;
-                case Double:
+                }
+                case Double: {
+                  DoubleSubType subType = DoubleSubType.valueOf(name);
                   DoubleColumnStatsData dstats = statData.getDoubleStats();
-                  oneRow.add(dstats.isSetLowValue() ? dstats.getLowValue() : null);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
+                  if (dstats.isSetLowValue()) {
+                    oneRow.add(subType.cast(dstats.getLowValue()));
+                  } else {
+                    oneRow.add(null);
+                  }
                   break;
+                }
                 default: // unsupported type
                   Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
@@ -458,8 +518,11 @@ public class StatsOptimizer implements Transform {
               }
             } else {
               Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions();
+              String name = colDesc.getTypeString().toUpperCase();
               switch(type) {
                 case Integeral: {
+                  LongSubType subType = LongSubType.valueOf(name);
+                  
                   Long minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -476,12 +539,16 @@ public class StatsOptimizer implements Transform {
                     long curVal = lstats.getLowValue();
                     minVal = minVal == null ? curVal : Math.min(minVal, curVal);
                   }
-                  oneRow.add(minVal);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG));
+                  if (minVal != null) {
+                    oneRow.add(subType.cast(minVal));
+                  } else {
+                    oneRow.add(minVal);
+                  }
                   break;
                 }
                 case Double: {
+                  DoubleSubType subType = DoubleSubType.valueOf(name);
+                  
                   Double minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -498,9 +565,11 @@ public class StatsOptimizer implements Transform {
                     double curVal = statData.getDoubleStats().getLowValue();
                     minVal = minVal == null ? curVal : Math.min(minVal, curVal);
                   }
-                  oneRow.add(minVal);
-                  ois.add(PrimitiveObjectInspectorFactory.
-                      getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE));
+                  if (minVal != null) {
+                    oneRow.add(subType.cast(minVal));
+                  } else {
+                    oneRow.add(minVal);
+                  }
                   break;
                 }
                 default: // unsupported type
@@ -522,8 +591,10 @@ public class StatsOptimizer implements Transform {
         allRows.add(oneRow);
 
         List<String> colNames = new ArrayList<String>();
-        for (ColumnInfo colInfo: gbyOp.getSchema().getSignature()) {
+        List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+        for (ColumnInfo colInfo: cgbyOp.getSchema().getSignature()) {
           colNames.add(colInfo.getInternalName());
+          ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
         }
         StandardStructObjectInspector sOI = ObjectInspectorFactory.
             getStandardStructObjectInspector(colNames, ois);

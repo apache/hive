@@ -42,19 +42,38 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
     finishAdding();
   }
 
+  /*
+   * This helper method copies the group keys from one vectorized row batch to another,
+   * but does not increment the outputBatch.size (i.e. the next output position).
+   * 
+   * It was designed for VectorGroupByOperator's sorted reduce group batch processing mode
+   * to copy the group keys at startGroup.
+   */
   public void copyGroupKey(VectorizedRowBatch inputBatch, VectorizedRowBatch outputBatch,
           DataOutputBuffer buffer) throws HiveException {
-    // Grab the key at index 0.  We don't care about selected or repeating since all keys in the input batch are the same.
     for(int i = 0; i< longIndices.length; ++i) {
       int keyIndex = longIndices[i];
       LongColumnVector inputColumnVector = (LongColumnVector) inputBatch.cols[keyIndex];
       LongColumnVector outputColumnVector = (LongColumnVector) outputBatch.cols[keyIndex];
+
+      // This vectorized code pattern says: 
+      //    If the input batch has no nulls at all (noNulls is true) OR
+      //    the input row is NOT NULL, copy the value.
+      //
+      //    Otherwise, we have a NULL input value.  The standard way to mark a NULL in the
+      //    output batch is: turn off noNulls indicating there is at least one NULL in the batch
+      //    and mark that row as NULL.
+      //
+      //    When a vectorized row batch is reset, noNulls is set to true and the isNull array
+      //    is zeroed.
+      //
+      // We grab the key at index 0.  We don't care about selected or repeating since all keys
+      // in the input batch are suppose to be the same.
+      //
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
         outputColumnVector.vector[outputBatch.size] = inputColumnVector.vector[0];
-      } else if (inputColumnVector.noNulls ){
-        outputColumnVector.noNulls = false;
-        outputColumnVector.isNull[outputBatch.size] = true;
       } else {
+        outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;
       }
     }
@@ -64,10 +83,8 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       DoubleColumnVector outputColumnVector = (DoubleColumnVector) outputBatch.cols[keyIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
         outputColumnVector.vector[outputBatch.size] = inputColumnVector.vector[0];
-      } else if (inputColumnVector.noNulls ){
-        outputColumnVector.noNulls = false;
-        outputColumnVector.isNull[outputBatch.size] = true;
       } else {
+        outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;
       }
     }
@@ -85,10 +102,8 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
           throw new IllegalStateException("bad write", ioe);
         }
         outputColumnVector.setRef(outputBatch.size, buffer.getData(), start, length);
-      } else if (inputColumnVector.noNulls ){
-        outputColumnVector.noNulls = false;
-        outputColumnVector.isNull[outputBatch.size] = true;
       } else {
+        outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;
       }
     }
@@ -97,11 +112,12 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       DecimalColumnVector inputColumnVector = (DecimalColumnVector) inputBatch.cols[keyIndex];
       DecimalColumnVector outputColumnVector = (DecimalColumnVector) outputBatch.cols[keyIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
-        outputColumnVector.vector[outputBatch.size] = inputColumnVector.vector[0];
-      } else if (inputColumnVector.noNulls ){
-        outputColumnVector.noNulls = false;
-        outputColumnVector.isNull[outputBatch.size] = true;
+
+        // Since we store references to HiveDecimalWritable instances, we must use the update method instead
+        // of plain assignment.
+        outputColumnVector.set(outputBatch.size, inputColumnVector.vector[0]);
       } else {
+        outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;
       }
     }

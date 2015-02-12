@@ -2,21 +2,21 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 
 -- top level
 explain
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- top level
 explain
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -33,7 +33,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 0) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 0 (type: int)
@@ -67,45 +67,33 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Map Reduce
@@ -114,7 +102,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 1) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 1 (type: int)
@@ -149,7 +137,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 2) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 2 (type: int)
@@ -183,19 +171,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, 0 as value from src where key % 3 == 0 limit 3
+PREHOOK: query: select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key, 0 as value from src where key % 3 == 0 limit 3
+POSTHOOK: query: select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -209,14 +197,14 @@ POSTHOOK: Input: default@src
 484	1
 86	2
 PREHOOK: query: explain
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)a
 union all
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)a
 union all
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -236,34 +224,42 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
           TableScan
-            alias: s2
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
-          outputColumnNames: _col0, _col6
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col1, _col2
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col6 (type: string)
+            expressions: _col2 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -305,31 +301,23 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Map Reduce
@@ -340,34 +328,42 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
           TableScan
-            alias: s2
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
-          outputColumnNames: _col0, _col6
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col1, _col2
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col6 (type: string)
+            expressions: _col2 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -409,15 +405,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+PREHOOK: query: select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)a
 union all
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+POSTHOOK: query: select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)a
 union all
-select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10
+select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) limit 10)b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -444,20 +440,20 @@ POSTHOOK: Input: default@src
 PREHOOK: query: -- ctas
 explain
 create table union_top as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: -- ctas
 explain
 create table union_top as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -481,7 +477,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 0) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 0 (type: int)
@@ -515,48 +511,36 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
 
   Stage: Stage-8
     Conditional Operator
@@ -622,7 +606,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 1) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 1 (type: int)
@@ -657,7 +641,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 2) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 2 (type: int)
@@ -686,21 +670,21 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
 PREHOOK: query: create table union_top as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_top
 POSTHOOK: query: create table union_top as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -731,20 +715,20 @@ POSTHOOK: Output: default@union_top
 PREHOOK: query: -- insert into
 explain
 insert into table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 POSTHOOK: query: -- insert into
 explain
 insert into table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -767,7 +751,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 0) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 0 (type: int)
@@ -801,48 +785,36 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
 
   Stage: Stage-8
     Conditional Operator
@@ -903,7 +875,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 1) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 1 (type: int)
@@ -938,7 +910,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 2) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 2 (type: int)
@@ -967,20 +939,20 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
 PREHOOK: query: insert into table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@union_top
 POSTHOOK: query: insert into table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_top
@@ -1005,19 +977,19 @@ POSTHOOK: Input: default@union_top
 86	2
 PREHOOK: query: explain
 insert overwrite table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1040,7 +1012,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 0) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 0 (type: int)
@@ -1074,48 +1046,36 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
           TableScan
             Union
               Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: int)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.union_top
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.union_top
 
   Stage: Stage-8
     Conditional Operator
@@ -1176,7 +1136,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 1) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 1 (type: int)
@@ -1211,7 +1171,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key % 3) = 2) (type: boolean)
+              predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), 2 (type: int)
@@ -1240,20 +1200,20 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
 PREHOOK: query: insert overwrite table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@union_top
 POSTHOOK: query: insert overwrite table union_top
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_top
@@ -1279,20 +1239,20 @@ POSTHOOK: Input: default@union_top
 PREHOOK: query: -- create view
 explain
 create view union_top_view as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATEVIEW
 POSTHOOK: query: -- create view
 explain
 create view union_top_view as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1303,34 +1263,34 @@ STAGE PLANS:
         Create View
           or replace: false
           columns: key string, value int
-          expanded text: select `src`.`key`, 0 as `value` from `default`.`src` where `src`.`key` % 3 == 0 limit 3
+          expanded text: select `a`.`key`, `a`.`value` from (select `src`.`key`, 0 as `value` from `default`.`src` where `src`.`key` % 3 == 0 limit 3)`a`
 union all
-select `src`.`key`, 1 as `value` from `default`.`src` where `src`.`key` % 3 == 1 limit 3
+select `b`.`key`, `b`.`value` from (select `src`.`key`, 1 as `value` from `default`.`src` where `src`.`key` % 3 == 1 limit 3)`b`
 union all
-select `src`.`key`, 2 as `value` from `default`.`src` where `src`.`key` % 3 == 2 limit 3
+select `c`.`key`, `c`.`value` from (select `src`.`key`, 2 as `value` from `default`.`src` where `src`.`key` % 3 == 2 limit 3)`c`
           name: default.union_top_view
-          original text: select key, 0 as value from src where key % 3 == 0 limit 3
+          original text: select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 
 PREHOOK: query: create view union_top_view as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_top_view
 POSTHOOK: query: create view union_top_view as
-select key, 0 as value from src where key % 3 == 0 limit 3
+select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
-select key, 1 as value from src where key % 3 == 1 limit 3
+select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
-select key, 2 as value from src where key % 3 == 2 limit 3
+select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

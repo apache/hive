@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
  *  statements and does not make assumptions about the privileges needed for a hive operation.
  * This is referred to as V2 authorizer in other parts of the code.
  */
-@LimitedPrivate(value = { "" })
+@LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
 public interface HiveAuthorizer {
 
@@ -191,8 +191,9 @@ public interface HiveAuthorizer {
    * Modify the given HiveConf object to configure authorization related parameters
    * or other parameters related to hive security
    * @param hiveConf
+   * @throws HiveAuthzPluginException
    */
-  public void applyAuthorizationConfigPolicy(HiveConf hiveConf);
+  public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 
 }
 

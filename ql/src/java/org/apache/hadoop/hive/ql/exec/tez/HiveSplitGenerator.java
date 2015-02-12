@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +40,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.dag.api.VertexLocationHint;
 import org.apache.tez.dag.api.TaskLocationHint;
+import org.apache.tez.dag.api.VertexLocationHint;
+import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfoMem;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
@@ -63,7 +66,6 @@ import com.google.common.collect.Multimap;
  * making sure that splits from different partitions are only grouped if they
  * are of the same schema, format and serde
  */
-@SuppressWarnings("deprecation")
 public class HiveSplitGenerator extends InputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
@@ -71,9 +73,15 @@ public class HiveSplitGenerator extends InputInitializer {
   private static final SplitGrouper grouper = new SplitGrouper();
   private final DynamicPartitionPruner pruner = new DynamicPartitionPruner();
   private InputInitializerContext context;
+  private static Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cache =
+      new HashMap<Map<String, PartitionDesc>, Map<String, PartitionDesc>>();
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) {
     super(initializerContext);
+  }
+
+  public HiveSplitGenerator() {
+    this(null);
   }
 
   @Override
@@ -149,45 +157,28 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
 
-  public static Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
       Configuration conf, InputSplit[] splits, float waves, int availableSlots)
       throws Exception {
+    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true);
+  }
 
-    MapWork work = Utilities.getMapWork(jobConf);
+  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+      Configuration conf, InputSplit[] splits, float waves, int availableSlots, String inputName,
+      boolean groupAcrossFiles) throws Exception {
 
+    MapWork work = populateMapWork(jobConf, inputName);
     Multimap<Integer, InputSplit> bucketSplitMultiMap =
         ArrayListMultimap.<Integer, InputSplit> create();
 
-    Class<?> previousInputFormatClass = null;
-    String previousDeserializerClass = null;
-    Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cache =
-        new HashMap<Map<String, PartitionDesc>, Map<String, PartitionDesc>>();
-
     int i = 0;
-
+    InputSplit prevSplit = null;
     for (InputSplit s : splits) {
       // this is the bit where we make sure we don't group across partition
       // schema boundaries
-
-      Path path = ((FileSplit) s).getPath();
-
-      PartitionDesc pd =
-          HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
-              path, cache);
-
-      String currentDeserializerClass = pd.getDeserializerClassName();
-      Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
-
-      if ((currentInputFormatClass != previousInputFormatClass)
-          || (!currentDeserializerClass.equals(previousDeserializerClass))) {
+      if (schemaEvolved(s, prevSplit, groupAcrossFiles, work)) {
         ++i;
-      }
-
-      previousInputFormatClass = currentInputFormatClass;
-      previousDeserializerClass = currentDeserializerClass;
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Adding split " + path + " to src group " + i);
+        prevSplit = s;
       }
       bucketSplitMultiMap.put(i, s);
     }
@@ -198,6 +189,54 @@ public class HiveSplitGenerator extends InputInitializer {
         grouper.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
 
     return groupedSplits;
+  }
+
+  private MapWork populateMapWork(JobConf jobConf, String inputName) {
+    MapWork work = null;
+    if (inputName != null) {
+      work = (MapWork) Utilities.getMergeWork(jobConf, inputName);
+      // work can still be null if there is no merge work for this input
+    }
+    if (work == null) {
+      work = Utilities.getMapWork(jobConf);
+    }
+
+    return work;
+  }
+
+  public boolean schemaEvolved(InputSplit s, InputSplit prevSplit, boolean groupAcrossFiles,
+      MapWork work) throws IOException {
+    boolean retval = false;
+    Path path = ((FileSplit) s).getPath();
+    PartitionDesc pd =
+        HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
+            path, cache);
+    String currentDeserializerClass = pd.getDeserializerClassName();
+    Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
+
+    Class<?> previousInputFormatClass = null;
+    String previousDeserializerClass = null;
+    if (prevSplit != null) {
+      Path prevPath = ((FileSplit) prevSplit).getPath();
+      if (!groupAcrossFiles) {
+        return !path.equals(prevPath);
+      }
+      PartitionDesc prevPD =
+          HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
+              prevPath, cache);
+      previousDeserializerClass = prevPD.getDeserializerClassName();
+      previousInputFormatClass = prevPD.getInputFileFormatClass();
+    }
+
+    if ((currentInputFormatClass != previousInputFormatClass)
+        || (!currentDeserializerClass.equals(previousDeserializerClass))) {
+      retval = true;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Adding split " + path + " to src new group? " + retval);
+    }
+    return retval;
   }
 
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
@@ -230,9 +269,14 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
   @Override
+  public void onVertexStateUpdated(VertexStateUpdate stateUpdate) {
+    pruner.processVertex(stateUpdate.getVertexName());
+  }
+
+  @Override
   public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
     for (InputInitializerEvent e : events) {
-      pruner.getQueue().put(e);
+      pruner.addEvent(e);
     }
   }
 }

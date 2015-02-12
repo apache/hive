@@ -18,17 +18,22 @@
 
 package org.apache.hadoop.hive.metastore;
 
+
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -40,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -74,9 +81,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
 /**
- * TODO Unnecessary when the server sides for both dbstore and filestore are
- * merged
+ * Wrapper around hive metastore thrift api
  */
+@Public
+@Evolving
 public interface IMetaStoreClient {
 
   /**
@@ -616,6 +624,10 @@ public interface IMetaStoreClient {
   void alter_table(String defaultDatabaseName, String tblName,
       Table table) throws InvalidOperationException, MetaException, TException;
 
+  //alter_table_with_cascade
+  void alter_table(String defaultDatabaseName, String tblName, Table table,
+      boolean cascade) throws InvalidOperationException, MetaException, TException;
+
   void createDatabase(Database db)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -1086,6 +1098,15 @@ public interface IMetaStoreClient {
   ValidTxnList getValidTxns() throws TException;
 
   /**
+   * Get a structure that details valid transactions.
+   * @param currentTxn The current transaction of the caller.  This will be removed from the
+   *                   exceptions list so that the caller sees records from his own transaction.
+   * @return list of valid transactions
+   * @throws TException
+   */
+  ValidTxnList getValidTxns(long currentTxn) throws TException;
+
+  /**
    * Initiate a transaction.
    * @param user User who is opening this transaction.  This is the Hive user,
    *             not necessarily the OS user.  It is assumed that this user has already been
@@ -1292,6 +1313,50 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * A filter provided by the client that determines if a given notification event should be
+   * returned.
+   */
+  interface NotificationFilter {
+    /**
+     * Whether a notification event should be accepted
+     * @param event
+     * @return if true, event will be added to list, if false it will be ignored
+     */
+    boolean accept(NotificationEvent event);
+  }
+
+  /**
+   * Get the next set of notifications from the database.
+   * @param lastEventId The last event id that was consumed by this reader.  The returned
+   *                    notifications will start at the next eventId available after this eventId.
+   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   *                  be returned.
+   * @param filter User provided filter to remove unwanted events.  If null, all events will be
+   *               returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws TException
+   */
+  NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
+                                                NotificationFilter filter) throws TException;
+
+  /**
+   * Get the last used notification event id.
+   * @return last used id
+   * @throws TException
+   */
+  CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+
+  /**
+   * Request that the metastore fire an event.  Currently this is only supported for DML
+   * operations, since the metastore knows when DDL operations happen.
+   * @param request
+   * @return response, type depends on type of request
+   * @throws TException
+   */
+  FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

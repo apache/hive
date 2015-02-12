@@ -98,7 +98,7 @@ public class TestHiveAuthorizerCheckInvocation {
     runCmd("create database " + dbName);
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
     runCmd("create table " + acidTableName + " (i int, j int) clustered by (i) into 2 buckets " +
-        "stored as orc");
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
   }
 
   private static void runCmd(String cmd) throws CommandNeedRetryException {

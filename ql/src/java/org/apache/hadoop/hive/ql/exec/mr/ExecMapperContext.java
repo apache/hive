@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -60,8 +61,9 @@ public class ExecMapperContext {
     this.currentBigBucketFile = currentBigBucketFile;
   }
 
-  public ExecMapperContext() {
-    ioCxt = IOContext.get();
+  public ExecMapperContext(JobConf jc) {
+    this.jc = jc;
+    ioCxt = IOContext.get(jc);
   }
 
   public void clear() {

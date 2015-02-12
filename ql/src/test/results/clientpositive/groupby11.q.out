@@ -1,8 +1,12 @@
-PREHOOK: query: CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
@@ -30,12 +34,11 @@ INSERT OVERWRITE TABLE dest2  partition(ds='111')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
-  Stage-6 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -44,55 +47,30 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: value (type: string), substr(value, 5) (type: string)
-      Reduce Operator Tree:
-        Forward
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Group By Operator
-            aggregations: count(KEY._col0), count(DISTINCT KEY._col0)
-            keys: VALUE._col0 (type: string)
-            mode: hash
-            outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-          Group By Operator
-            aggregations: count(KEY._col0), count(DISTINCT KEY._col0)
-            keys: VALUE._col1 (type: string)
-            mode: hash
-            outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
+              Reduce Output Operator
+                key expressions: value (type: string), key (type: string)
+                sort order: ++
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: key, value
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: bigint), _col2 (type: bigint)
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
-          aggregations: count(VALUE._col0), count(VALUE._col1)
+          aggregations: count(KEY._col1:0._col0), count(DISTINCT KEY._col1:0._col0)
           keys: KEY._col0 (type: string)
-          mode: final
+          mode: complete
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -120,24 +98,23 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
+              key expressions: substr(value, 5) (type: string), key (type: string)
+              sort order: ++
+              Map-reduce partition columns: substr(value, 5) (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: count(VALUE._col0), count(VALUE._col1)
+          aggregations: count(KEY._col1:0._col0), count(DISTINCT KEY._col1:0._col0)
           keys: KEY._col0 (type: string)
-          mode: final
+          mode: complete
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -165,7 +142,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest2
 
-  Stage: Stage-6
+  Stage: Stage-5
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src

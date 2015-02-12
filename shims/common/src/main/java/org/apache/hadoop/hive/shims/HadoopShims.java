@@ -17,23 +17,23 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.security.auth.login.LoginException;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -46,14 +46,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -74,8 +75,6 @@ import org.apache.hadoop.util.Progressable;
  */
 public interface HadoopShims {
 
-  static final Log LOG = LogFactory.getLog(HadoopShims.class);
-
   /**
    * Constructs and Returns TaskAttempt Log Url
    * or null if the TaskLogServlet is not available
@@ -94,7 +93,10 @@ public interface HadoopShims {
       String nameNode, int numDir) throws IOException;
 
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-                                     String nameNode, int numDir) throws IOException;
+      String nameNode, int numDir) throws IOException;
+
+  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
+      String nameNode, int numDir) throws IOException;
 
   /**
    * Shim for MiniMrCluster
@@ -124,139 +126,6 @@ public interface HadoopShims {
   }
 
   CombineFileInputFormatShim getCombineFileInputFormat();
-
-  String getInputFormatClassName();
-
-  int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
-      String archiveName) throws Exception;
-
-  public URI getHarUri(URI original, URI base, URI originalBase)
-      throws URISyntaxException;
-  /**
-   * Hive uses side effect files exclusively for it's output. It also manages
-   * the setup/cleanup/commit of output from the hive client. As a result it does
-   * not need support for the same inside the MR framework
-   *
-   * This routine sets the appropriate options related to bypass setup/cleanup/commit
-   * support in the MR framework, but does not set the OutputFormat class.
-   */
-  void prepareJobOutput(JobConf conf);
-
-  /**
-   * Used by TaskLogProcessor to Remove HTML quoting from a string
-   * @param item the string to unquote
-   * @return the unquoted string
-   *
-   */
-  public String unquoteHtmlChars(String item);
-
-
-
-  public void closeAllForUGI(UserGroupInformation ugi);
-
-  /**
-   * Get the UGI that the given job configuration will run as.
-   *
-   * In secure versions of Hadoop, this simply returns the current
-   * access control context's user, ignoring the configuration.
-   */
-  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
-
-  /**
-   * Used by metastore server to perform requested rpc in client context.
-   * @param <T>
-   * @param ugi
-   * @param pvea
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
-  IOException, InterruptedException;
-
-  /**
-   * Once a delegation token is stored in a file, the location is specified
-   * for a child process that runs hadoop operations, using an environment
-   * variable .
-   * @return Return the name of environment variable used by hadoop to find
-   *  location of token file
-   */
-  public String getTokenFileLocEnvName();
-
-
-  /**
-   * Get delegation token from filesystem and write the token along with
-   * metastore tokens into a file
-   * @param conf
-   * @return Path of the file with token credential
-   * @throws IOException
-   */
-  public Path createDelegationTokenFile(final Configuration conf) throws IOException;
-
-
-  /**
-   * Used to creates UGI object for a remote user.
-   * @param userName remote User Name
-   * @param groupNames group names associated with remote user name
-   * @return UGI created for the remote user.
-   */
-  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames);
-
-  /**
-   * Get the short name corresponding to the subject in the passed UGI
-   *
-   * In secure versions of Hadoop, this returns the short name (after
-   * undergoing the translation in the kerberos name rule mapping).
-   * In unsecure versions of Hadoop, this returns the name of the subject
-   */
-  public String getShortUserName(UserGroupInformation ugi);
-
-  /**
-   * Return true if the Shim is based on Hadoop Security APIs.
-   */
-  public boolean isSecureShimImpl();
-
-  /**
-   * Return true if the hadoop configuration has security enabled
-   * @return
-   */
-  public boolean isSecurityEnabled();
-
-  /**
-   * Get the string form of the token given a token signature.
-   * The signature is used as the value of the "service" field in the token for lookup.
-   * Ref: AbstractDelegationTokenSelector in Hadoop. If there exists such a token
-   * in the token cache (credential store) of the job, the lookup returns that.
-   * This is relevant only when running against a "secure" hadoop release
-   * The method gets hold of the tokens if they are set up by hadoop - this should
-   * happen on the map/reduce tasks if the client added the tokens into hadoop's
-   * credential store in the front end during job submission. The method will
-   * select the hive delegation token among the set of tokens and return the string
-   * form of it
-   * @param tokenSignature
-   * @return the string form of the token found
-   * @throws IOException
-   */
-  public String getTokenStrForm(String tokenSignature) throws IOException;
-
-  /**
-   * Add a delegation token to the given ugi
-   * @param ugi
-   * @param tokenStr
-   * @param tokenService
-   * @throws IOException
-   */
-  public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService)
-      throws IOException;
-
-  /**
-   * Add given service to the string format token
-   * @param tokenStr
-   * @param tokenService
-   * @return
-   * @throws IOException
-   */
-  public String addServiceToToken(String tokenStr, String tokenService)
-      throws IOException;
 
   enum JobTrackerState { INITIALIZING, RUNNING };
 
@@ -306,35 +175,6 @@ public interface HadoopShims {
    */
   public String getJobLauncherHttpAddress(Configuration conf);
 
-
-  /**
-   *  Perform kerberos login using the given principal and keytab
-   * @throws IOException
-   */
-  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException;
-
-  /**
-   *  Perform kerberos login using the given principal and keytab,
-   *  and return the UGI object
-   * @throws IOException
-   */
-  public UserGroupInformation loginUserFromKeytabAndReturnUGI(String principal,
-      String keytabFile) throws IOException;
-
-  /**
-   * Perform kerberos re-login using the given principal and keytab, to renew
-   * the credentials
-   * @throws IOException
-   */
-  public void reLoginUserFromKeytab() throws IOException;
-
-  /***
-   * Check if the current UGI is keytab based
-   * @return
-   * @throws IOException
-   */
-  public boolean isLoginKeytabBased() throws IOException;
-
   /**
    * Move the directory/file to trash. In case of the symlinks or mount points, the file is
    * moved to the trashbin in the actual volume of the path p being deleted
@@ -366,18 +206,13 @@ public interface HadoopShims {
   public short getDefaultReplication(FileSystem fs, Path path);
 
   /**
-   * Create the proxy ugi for the given userid
-   * @param userName
-   * @return
+   * Reset the default fair scheduler queue mapping to end user.
+   *
+   * @param conf
+   * @param userName end user name
    */
-  public UserGroupInformation createProxyUser(String userName) throws IOException;
-
-  /**
-   * Verify proxy access to given UGI for given user
-   * @param ugi
-   */
-  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
-      String ipAddress, Configuration conf) throws IOException;
+  public void refreshDefaultQueue(Configuration conf, String userName)
+      throws IOException;
 
   /**
    * The method sets to set the partition file has a different signature between
@@ -390,53 +225,6 @@ public interface HadoopShims {
   Comparator<LongWritable> getLongComparator();
 
   /**
-   * InputSplitShim.
-   *
-   */
-  public interface InputSplitShim extends InputSplit {
-    JobConf getJob();
-
-    @Override
-    long getLength();
-
-    /** Returns an array containing the startoffsets of the files in the split. */
-    long[] getStartOffsets();
-
-    /** Returns an array containing the lengths of the files in the split. */
-    long[] getLengths();
-
-    /** Returns the start offset of the i<sup>th</sup> Path. */
-    long getOffset(int i);
-
-    /** Returns the length of the i<sup>th</sup> Path. */
-    long getLength(int i);
-
-    /** Returns the number of Paths in the split. */
-    int getNumPaths();
-
-    /** Returns the i<sup>th</sup> Path. */
-    Path getPath(int i);
-
-    /** Returns all the Paths in the split. */
-    Path[] getPaths();
-
-    /** Returns all the Paths where this input-split resides. */
-    @Override
-    String[] getLocations() throws IOException;
-
-    void shrinkSplit(long length);
-
-    @Override
-    String toString();
-
-    @Override
-    void readFields(DataInput in) throws IOException;
-
-    @Override
-    void write(DataOutput out) throws IOException;
-  }
-
-  /**
    * CombineFileInputFormatShim.
    *
    * @param <K>
@@ -447,11 +235,11 @@ public interface HadoopShims {
 
     void createPool(JobConf conf, PathFilter... filters);
 
-    InputSplitShim[] getSplits(JobConf job, int numSplits) throws IOException;
+    CombineFileSplit[] getSplits(JobConf job, int numSplits) throws IOException;
 
-    InputSplitShim getInputSplitShim() throws IOException;
+    CombineFileSplit getInputSplitShim() throws IOException;
 
-    RecordReader getRecordReader(JobConf job, InputSplitShim split, Reporter reporter,
+    RecordReader getRecordReader(JobConf job, CombineFileSplit split, Reporter reporter,
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
@@ -612,6 +400,33 @@ public interface HadoopShims {
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 
   public Map<String, String> getHadoopConfNames();
+  
+  /**
+   * Create a shim for DFS storage policy.
+   */
+  
+  public enum StoragePolicyValue {
+    MEMORY, /* 1-replica memory */
+    SSD, /* 3-replica ssd */
+    DEFAULT /* system defaults (usually 3-replica disk) */;
+
+    public static StoragePolicyValue lookup(String name) {
+      if (name == null) {
+        return DEFAULT;
+      }
+      return StoragePolicyValue.valueOf(name.toUpperCase().trim());
+    }
+  };
+  
+  public interface StoragePolicyShim {
+    void setStoragePolicy(Path path, StoragePolicyValue policy) throws IOException;
+  }
+  
+  /**
+   *  obtain a storage policy shim associated with the filesystem.
+   *  Returns null when the filesystem has no storage policies.
+   */
+  public StoragePolicyShim getStoragePolicyShim(FileSystem fs);
 
   /**
    * a hadoop.io ByteBufferPool shim.
@@ -682,9 +497,18 @@ public interface HadoopShims {
    */
   public Configuration getConfiguration(JobContext context);
 
+  /**
+   * Get job conf from the old style JobContext.
+   * @param context job context
+   * @return job conf
+   */
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context);
+
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 
   public void getMergedCredentials(JobConf jobConf) throws IOException;
+
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException;
 
   /**
    * Check if the configured UGI has access to the path for the given file system action.
@@ -721,4 +545,165 @@ public interface HadoopShims {
    * @return sticky bit
    */
   boolean hasStickyBit(FsPermission permission);
+
+  /**
+   * @return True if the current hadoop supports trash feature.
+   */
+  boolean supportTrashFeature();
+
+  /**
+   * @return Path to HDFS trash, if current hadoop supports trash feature.  Null otherwise.
+   */
+  Path getCurrentTrashPath(Configuration conf, FileSystem fs);
+
+  /**
+   * Check whether file is directory.
+   */
+  boolean isDirectory(FileStatus fileStatus);
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException;
+
+  /**
+   * Shim for KerberosName
+   */
+  public interface KerberosNameShim {
+    public String getDefaultRealm();
+    public String getServiceName();
+    public String getHostName();
+    public String getRealm();
+    public String getShortName() throws IOException;
+  }
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done.
+   *
+   * @param src Path to the source file or directory to copy
+   * @param dst Path to the destination file or directory
+   * @param conf The hadoop configuration object
+   * @return True if it is successfull; False otherwise.
+   */
+  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException;
+
+  /**
+   * This interface encapsulates methods used to get encryption information from
+   * HDFS paths.
+   */
+  public interface HdfsEncryptionShim {
+    /**
+     * Checks if a given HDFS path is encrypted.
+     *
+     * @param path Path to HDFS file system
+     * @return True if it is encrypted; False otherwise.
+     * @throws IOException If an error occurred attempting to get encryption information
+     */
+    public boolean isPathEncrypted(Path path) throws IOException;
+
+    /**
+     * Checks if two HDFS paths are on the same encrypted or unencrypted zone.
+     *
+     * @param path1 Path to HDFS file system
+     * @param path2 Path to HDFS file system
+     * @return True if both paths are in the same zone; False otherwise.
+     * @throws IOException If an error occurred attempting to get encryption information
+     */
+    public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException;
+
+    /**
+     * Compares two encrypted path strengths.
+     *
+     * @param path1 HDFS path to compare.
+     * @param path2 HDFS path to compare.
+     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @throws IOException If an error occurred attempting to get encryption/key metadata
+     */
+    public int comparePathKeyStrength(Path path1, Path path2) throws IOException;
+
+    /**
+     * create encryption zone by path and keyname
+     * @param path HDFS path to create encryption zone
+     * @param keyName keyname
+     * @throws IOException
+     */
+    @VisibleForTesting
+    public void createEncryptionZone(Path path, String keyName) throws IOException;
+
+    /**
+     * Creates an encryption key.
+     *
+     * @param keyName Name of the key
+     * @param bitLength Key encryption length in bits (128 or 256).
+     * @throws IOException If an error occurs while creating the encryption key
+     * @throws NoSuchAlgorithmException If cipher algorithm is invalid.
+     */
+    @VisibleForTesting
+    public void createKey(String keyName, int bitLength)
+      throws IOException, NoSuchAlgorithmException;
+
+    @VisibleForTesting
+    public void deleteKey(String keyName) throws IOException;
+
+    @VisibleForTesting
+    public List<String> getKeys() throws IOException;
+  }
+
+  /**
+   * This is a dummy class used when the hadoop version does not support hdfs encryption.
+   */
+  public static class NoopHdfsEncryptionShim implements HdfsEncryptionShim {
+    @Override
+    public boolean isPathEncrypted(Path path) throws IOException {
+    /* not supported */
+      return false;
+    }
+
+    @Override
+    public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException {
+    /* not supported */
+      return true;
+    }
+
+    @Override
+    public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
+    /* not supported */
+      return 0;
+    }
+
+    @Override
+    public void createEncryptionZone(Path path, String keyName) {
+    /* not supported */
+    }
+
+    @Override
+    public void createKey(String keyName, int bitLength) {
+    /* not supported */
+    }
+
+    @Override
+    public void deleteKey(String keyName) throws IOException {
+    /* not supported */
+    }
+
+    @Override
+    public List<String> getKeys() throws IOException{
+    /* not supported */
+      return null;
+    }
+  }
+
+  /**
+   * Returns a new instance of the HdfsEncryption shim.
+   *
+   * @param fs A FileSystem object to HDFS
+   * @param conf A Configuration object
+   * @return A new instance of the HdfsEncryption shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
+
+  public Path getPathWithoutSchemeAndAuthority(Path path);
 }

@@ -23,14 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -45,13 +45,10 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   private final Map<Operator<? extends OperatorDesc>, List<String>> prunedColLists;
 
-  private final HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
-
   private final Map<CommonJoinOperator, Map<Byte, List<String>>> joinPrunedColLists;
 
   public ColumnPrunerProcCtx(ParseContext pctx) {
     this.pctx = pctx;
-    this.opToParseCtxMap = pctx.getOpParseCtx();
     prunedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
     joinPrunedColLists = new HashMap<CommonJoinOperator, Map<Byte, List<String>>>();
   }
@@ -69,10 +66,6 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    */
   public List<String> getPrunedColList(Operator<? extends OperatorDesc> op) {
     return prunedColLists.get(op);
-  }
-
-  public HashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpToParseCtxMap() {
-    return opToParseCtxMap;
   }
 
   public Map<Operator<? extends OperatorDesc>, List<String>> getPrunedColLists() {
@@ -128,9 +121,16 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public List<String> getColsFromSelectExpr(SelectOperator op) {
     List<String> cols = new ArrayList<String>();
     SelectDesc conf = op.getConf();
-    List<ExprNodeDesc> exprList = conf.getColList();
-    for (ExprNodeDesc expr : exprList) {
-      cols = Utilities.mergeUniqElems(cols, expr.getCols());
+    if(conf.isSelStarNoCompute()) {
+      for (ColumnInfo colInfo : op.getSchema().getSignature()) {
+        cols.add(colInfo.getInternalName());
+      }
+    }
+    else {
+      List<ExprNodeDesc> exprList = conf.getColList();
+        for (ExprNodeDesc expr : exprList) {
+          cols = Utilities.mergeUniqElems(cols, expr.getCols());
+        }
     }
     return cols;
   }
@@ -175,11 +175,11 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   /**
    * Create the list of internal columns for select tag of LV
    */
-  public List<String> getSelectColsFromLVJoin(RowResolver rr,
+  public List<String> getSelectColsFromLVJoin(RowSchema rs,
       List<String> colList) throws SemanticException {
     List<String> columns = new ArrayList<String>();
     for (String col : colList) {
-      if (rr.reverseLookup(col) != null) {
+      if (rs.getColumnInfo(col) != null) {
         columns.add(col);
       }
     }

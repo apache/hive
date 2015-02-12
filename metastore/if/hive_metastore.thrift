@@ -106,6 +106,15 @@ enum GrantRevokeType {
     REVOKE = 2,
 }
 
+// Types of events the client can request that the metastore fire.  For now just support DML operations, as the metastore knows
+// about DDL operations and there's no reason for the client to request such an event.
+enum EventRequestType {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3,
+}
+
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -642,6 +651,52 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct NotificationEventRequest {
+    1: required i64 lastEvent,
+    2: optional i32 maxEvents,
+}
+
+struct NotificationEvent {
+    1: required i64 eventId,
+    2: required i32 eventTime,
+    3: required string eventType,
+    4: optional string dbName,
+    5: optional string tableName,
+    6: required string message,
+}
+
+struct NotificationEventResponse {
+    1: required list<NotificationEvent> events,
+}
+
+struct CurrentNotificationEventId {
+    1: required i64 eventId,
+}
+
+struct InsertEventRequestData {
+    1: required list<string> filesAdded
+}
+
+union FireEventRequestData {
+    1: InsertEventRequestData insertData
+}
+
+struct FireEventRequest {
+    1: required bool successful,
+    2: required FireEventRequestData data
+    // dbname, tablename, and partition vals are included as optional in the top level event rather than placed in each type of
+    // subevent as I assume they'll be used across most event types.
+    3: optional string dbName,
+    4: optional string tableName,
+    5: optional list<string> partitionVals,
+}
+
+struct FireEventResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+    
+
+
 exception MetaException {
   1: string message
 }
@@ -809,6 +864,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void alter_table_with_environment_context(1:string dbname, 2:string tbl_name,
       3:Table new_tbl, 4:EnvironmentContext environment_context)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
+  // alter table not only applies to future partitions but also cascade to existing partitions
+  void alter_table_with_cascade(1:string dbname, 2:string tbl_name, 3:Table new_tbl, 4:bool cascade)
+                       throws (1:InvalidOperationException o1, 2:MetaException o2)
   // the following applies to only tables that have partitions
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
@@ -1104,6 +1162,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+
+  // Notification logging calls
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  CurrentNotificationEventId get_current_notificationEventId()
+  FireEventResponse fire_listener_event(1:FireEventRequest rqst)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -1139,6 +1202,7 @@ const string META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types",
 const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",
-
+const string TABLE_IS_TRANSACTIONAL = "transactional",
+const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 
 

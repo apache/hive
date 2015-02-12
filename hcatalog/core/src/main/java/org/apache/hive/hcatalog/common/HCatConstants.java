@@ -96,6 +96,19 @@ public final class HCatConstants {
   public static final String HCAT_DESIRED_PARTITION_NUM_SPLITS =
     "hcat.desired.partition.num.splits";
 
+  /**
+   * hcat.append.limit allows a hcat user to specify a custom append limit.
+   * By default, while appending to an existing directory, hcat will attempt
+   * to avoid naming clashes and try to append _a_NNN where NNN is a number to
+   * the desired filename to avoid clashes. However, by default, it only tries
+   * for NNN from 0 to 999 before giving up. This can cause an issue for some
+   * tables with an extraordinarily large number of files. Ideally, this should
+   * be fixed by the user changing their usage pattern and doing some manner of
+   * compaction, but in the meanwhile, until they can, setting this parameter
+   * can be used to bump that limit.
+   */
+  public static final String HCAT_APPEND_LIMIT = "hcat.append.limit";
+
   // IMPORTANT IMPORTANT IMPORTANT!!!!!
   //The keys used to store info into the job Configuration.
   //If any new keys are added, the HCatStorer needs to be updated. The HCatStorer
@@ -132,11 +145,14 @@ public final class HCatConstants {
   public static final String HCAT_EVENT = "HCAT_EVENT";
   public static final String HCAT_ADD_PARTITION_EVENT = "ADD_PARTITION";
   public static final String HCAT_DROP_PARTITION_EVENT = "DROP_PARTITION";
+  public static final String HCAT_ALTER_PARTITION_EVENT = "ALTER_PARTITION";
   public static final String HCAT_PARTITION_DONE_EVENT = "PARTITION_DONE";
   public static final String HCAT_CREATE_TABLE_EVENT = "CREATE_TABLE";
+  public static final String HCAT_ALTER_TABLE_EVENT = "ALTER_TABLE";
   public static final String HCAT_DROP_TABLE_EVENT = "DROP_TABLE";
   public static final String HCAT_CREATE_DATABASE_EVENT = "CREATE_DATABASE";
   public static final String HCAT_DROP_DATABASE_EVENT = "DROP_DATABASE";
+  public static final String HCAT_INSERT_EVENT = "INSERT";
   public static final String HCAT_MESSAGE_VERSION = "HCAT_MESSAGE_VERSION";
   public static final String HCAT_MESSAGE_FORMAT = "HCAT_MESSAGE_FORMAT";
   public static final String CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX = "hcatalog.message.factory.impl.";

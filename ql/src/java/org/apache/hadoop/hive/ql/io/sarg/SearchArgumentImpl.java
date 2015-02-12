@@ -24,11 +24,13 @@ import com.esotericsoftware.kryo.io.Output;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
+import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -62,10 +64,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import parquet.filter2.predicate.FilterApi;
+import parquet.filter2.predicate.FilterPredicate;
+
 /**
  * The implementation of SearchArguments.
  */
 final class SearchArgumentImpl implements SearchArgument {
+  public static final Log LOG = LogFactory.getLog(SearchArgumentImpl.class);
 
   static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;
@@ -100,7 +106,7 @@ final class SearchArgumentImpl implements SearchArgument {
     }
 
     @Override
-    public Type getType() {
+    public Type getType(){
       return type;
     }
 
@@ -110,18 +116,55 @@ final class SearchArgumentImpl implements SearchArgument {
     }
 
     @Override
-    public Object getLiteral() {
+    public Object getLiteral(FileFormat format) {
       // To get around a kryo 2.22 bug while deserialize a Timestamp into Date
       // (https://github.com/EsotericSoftware/kryo/issues/88)
       // When we see a Date, convert back into Timestamp
       if (literal instanceof java.util.Date) {
-        return new Timestamp(((java.util.Date)literal).getTime());
+        return new Timestamp(((java.util.Date) literal).getTime());
       }
-      return literal;
+
+      switch (format) {
+        case ORC:
+          // adapt base type to what orc needs
+          if (literal instanceof Integer) {
+            return Long.valueOf(literal.toString());
+          }
+          return literal;
+        case PARQUET:
+          return literal;
+        default:
+          throw new RuntimeException(
+            "File format " + format + "is not support to build search arguments");
+      }
     }
 
     @Override
-    public List<Object> getLiteralList() {
+    public List<Object> getLiteralList(FileFormat format) {
+      switch (format) {
+        case ORC:
+          return getOrcLiteralList();
+        case PARQUET:
+          return getParquetLiteralList();
+        default:
+          throw new RuntimeException("File format is not support to build search arguments");
+      }
+    }
+
+    private List<Object> getOrcLiteralList() {
+      // no need to cast
+      if (literalList == null || literalList.size() == 0 || !(literalList.get(0) instanceof
+          Integer)) {
+        return literalList;
+      }
+      List<Object> result = new ArrayList<Object>();
+      for (Object o : literalList) {
+        result.add(Long.valueOf(o.toString()));
+      }
+      return result;
+    }
+
+    private List<Object> getParquetLiteralList() {
       return literalList;
     }
 
@@ -256,6 +299,76 @@ final class SearchArgumentImpl implements SearchArgument {
       }
     }
 
+    FilterPredicate translate(List<PredicateLeaf> leafs){
+      FilterPredicate p = null;
+      switch (operator) {
+        case OR:
+          for(ExpressionTree child: children) {
+            if (p == null) {
+              p = child.translate(leafs);
+            } else {
+              FilterPredicate right = child.translate(leafs);
+              // constant means no filter, ignore it when it is null
+              if(right != null){
+                p = FilterApi.or(p, right);
+              }
+            }
+          }
+          return p;
+        case AND:
+          for(ExpressionTree child: children) {
+            if (p == null) {
+              p = child.translate(leafs);
+            } else {
+              FilterPredicate right = child.translate(leafs);
+              // constant means no filter, ignore it when it is null
+              if(right != null){
+                p = FilterApi.and(p, right);
+              }
+            }
+          }
+          return p;
+        case NOT:
+          FilterPredicate op = children.get(0).translate(leafs);
+          if (op != null) {
+            return FilterApi.not(op);
+          } else {
+            return null;
+          }
+        case LEAF:
+          return buildFilterPredicateFromPredicateLeaf(leafs.get(leaf));
+        case CONSTANT:
+          return null;// no filter will be executed for constant
+        default:
+          throw new IllegalStateException("Unknown operator: " + operator);
+      }
+    }
+
+    private FilterPredicate buildFilterPredicateFromPredicateLeaf(PredicateLeaf leaf) {
+      LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
+      FilterPredicateLeafBuilder builder;
+      try {
+        builder = leafFilterFactory
+          .getLeafFilterBuilderByType(leaf.getType());
+        if (builder == null) return null;
+        if (isMultiLiteralsOperator(leaf.getOperator())) {
+          return builder.buildPredicate(leaf.getOperator(), leaf.getLiteralList(
+            PredicateLeaf.FileFormat.PARQUET), leaf.getColumnName());
+        } else {
+          return builder
+            .buildPredict(leaf.getOperator(), leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET),
+              leaf.getColumnName());
+        }
+      } catch (Exception e) {
+        LOG.error("fail to build predicate filter leaf with errors" + e, e);
+        return null;
+      }
+    }
+
+    private boolean isMultiLiteralsOperator(PredicateLeaf.Operator op) {
+      return (op == PredicateLeaf.Operator.IN) || (op == PredicateLeaf.Operator.BETWEEN);
+    }
+
     @Override
     public String toString() {
       StringBuilder buffer = new StringBuilder();
@@ -302,6 +415,8 @@ final class SearchArgumentImpl implements SearchArgument {
   }
 
   static class ExpressionBuilder {
+    // max threshold for CNF conversion. having >8 elements in andList will be converted to maybe
+    private static final int CNF_COMBINATIONS_THRESHOLD = 256;
     private final List<PredicateLeaf> leaves = new ArrayList<PredicateLeaf>();
 
     /**
@@ -316,8 +431,9 @@ final class SearchArgumentImpl implements SearchArgument {
           case BYTE:
           case SHORT:
           case INT:
-          case LONG:
             return PredicateLeaf.Type.INTEGER;
+          case LONG:
+            return PredicateLeaf.Type.LONG;
           case CHAR:
           case VARCHAR:
           case STRING:
@@ -362,11 +478,13 @@ final class SearchArgumentImpl implements SearchArgument {
     private static Object boxLiteral(ExprNodeConstantDesc lit) {
       switch (getType(lit)) {
         case INTEGER:
+          return ((Number) lit.getValue()).intValue();
+        case LONG:
           return ((Number) lit.getValue()).longValue();
         case STRING:
           return StringUtils.stripEnd(lit.getValue().toString(), null);
         case FLOAT:
-          return ((Number) lit.getValue()).doubleValue();
+          return Double.parseDouble(lit.getValue().toString());
         case DATE:
         case TIMESTAMP:
         case DECIMAL:
@@ -422,6 +540,7 @@ final class SearchArgumentImpl implements SearchArgument {
       if (type == null) {
         return new ExpressionTree(TruthValue.YES_NO_NULL);
       }
+
       Object literal = null;
       List<Object> literalList = null;
       switch (operator) {
@@ -727,12 +846,27 @@ final class SearchArgumentImpl implements SearchArgument {
             }
           }
           if (!andList.isEmpty()) {
-            root = new ExpressionTree(ExpressionTree.Operator.AND);
-            generateAllCombinations(root.children, andList, nonAndList);
+            if (checkCombinationsThreshold(andList)) {
+              root = new ExpressionTree(ExpressionTree.Operator.AND);
+              generateAllCombinations(root.children, andList, nonAndList);
+            } else {
+              root = new ExpressionTree(TruthValue.YES_NO_NULL);
+            }
           }
         }
       }
       return root;
+    }
+
+    private static boolean checkCombinationsThreshold(List<ExpressionTree> andList) {
+      int numComb = 1;
+      for (ExpressionTree tree : andList) {
+        numComb *= tree.children.size();
+        if (numComb > CNF_COMBINATIONS_THRESHOLD) {
+          return false;
+        }
+      }
+      return true;
     }
 
     /**
@@ -905,6 +1039,11 @@ final class SearchArgumentImpl implements SearchArgument {
     return new Kryo().readObject(input, SearchArgumentImpl.class);
   }
 
+  @Override
+  public FilterPredicate toFilterPredicate() {
+    return expression.translate(leaves);
+  }
+
   private static class BuilderImpl implements Builder {
     private final Deque<ExpressionTree> currentTree =
         new ArrayDeque<ExpressionTree>();
@@ -977,7 +1116,9 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof Integer) {
         return Long.valueOf(literal.toString());
       } else if (literal instanceof Float) {
-        return Double.valueOf((Float) literal);
+        // to avoid change in precision when upcasting float to double
+        // we convert the literal to string and parse it as double. (HIVE-8460)
+        return Double.parseDouble(literal.toString());
       } else {
         throw new IllegalArgumentException("Unknown type for literal " +
             literal);
@@ -987,10 +1128,11 @@ final class SearchArgumentImpl implements SearchArgument {
     private static PredicateLeaf.Type getType(Object literal) {
       if (literal instanceof Byte ||
           literal instanceof Short ||
-          literal instanceof Integer ||
-          literal instanceof Long) {
+          literal instanceof Integer) {
         return PredicateLeaf.Type.INTEGER;
-      } else if (literal instanceof HiveChar ||
+      } else if(literal instanceof Long){
+        return PredicateLeaf.Type.LONG;
+      }else if (literal instanceof HiveChar ||
           literal instanceof HiveVarchar ||
           literal instanceof String) {
         return PredicateLeaf.Type.STRING;
@@ -1005,7 +1147,7 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof BigDecimal) {
         return PredicateLeaf.Type.DECIMAL;
       } else if (literal instanceof Boolean) {
-    	return PredicateLeaf.Type.BOOLEAN;
+        return PredicateLeaf.Type.BOOLEAN;
       }
       throw new IllegalArgumentException("Unknown type for literal " + literal);
     }
@@ -1069,6 +1211,7 @@ final class SearchArgumentImpl implements SearchArgument {
       for(Object lit: literal){
         argList.add(boxLiteral(lit));
       }
+
       PredicateLeaf leaf =
           new PredicateLeafImpl(PredicateLeaf.Operator.IN,
               getType(argList.get(0)), column, null, argList);

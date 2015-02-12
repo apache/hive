@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -39,7 +41,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -148,6 +149,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 
 /**
  * FunctionRegistry.
@@ -170,6 +174,8 @@ public final class FunctionRegistry {
   public static final String LAG_FUNC_NAME = "lag";
   public static final String LAST_VALUE_FUNC_NAME = "last_value";
 
+  public static final String UNARY_PLUS_FUNC_NAME = "positive";
+  public static final String UNARY_MINUS_FUNC_NAME = "negative";
 
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
   private static final String NOOP_TABLE_FUNCTION = "noop";
@@ -240,6 +246,7 @@ public final class FunctionRegistry {
     registerUDF("reverse", UDFReverse.class, false);
     registerGenericUDF("field", GenericUDFField.class);
     registerUDF("find_in_set", UDFFindInSet.class, false);
+    registerGenericUDF("initcap", GenericUDFInitCap.class);
 
     registerUDF("like", UDFLike.class, true);
     registerUDF("rlike", UDFRegExp.class, true);
@@ -252,8 +259,8 @@ public final class FunctionRegistry {
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     registerGenericUDF("translate", GenericUDFTranslate.class);
 
-    registerGenericUDF("positive", GenericUDFOPPositive.class);
-    registerGenericUDF("negative", GenericUDFOPNegative.class);
+    registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
+    registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
 
     registerUDF("day", UDFDayOfMonth.class, false);
     registerUDF("dayofmonth", UDFDayOfMonth.class, false);
@@ -265,10 +272,13 @@ public final class FunctionRegistry {
     registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     registerGenericUDF("to_date", GenericUDFDate.class);
     registerUDF("weekofyear", UDFWeekOfYear.class, false);
+    registerGenericUDF("last_day", GenericUDFLastDay.class);
+    registerGenericUDF("next_day", GenericUDFNextDay.class);
 
     registerGenericUDF("date_add", GenericUDFDateAdd.class);
     registerGenericUDF("date_sub", GenericUDFDateSub.class);
     registerGenericUDF("datediff", GenericUDFDateDiff.class);
+    registerGenericUDF("add_months", GenericUDFAddMonths.class);
 
     registerUDF("get_json_object", UDFJson.class, false);
 
@@ -295,6 +305,9 @@ public final class FunctionRegistry {
     registerUDF("~", UDFOPBitNot.class, true);
 
     registerGenericUDF("current_database", UDFCurrentDB.class);
+    registerGenericUDF("current_date", GenericUDFCurrentDate.class);
+    registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
+    registerGenericUDF("current_user", GenericUDFCurrentUser.class);
 
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -414,6 +427,8 @@ public final class FunctionRegistry {
     registerGenericUDF("map_values", GenericUDFMapValues.class);
     registerGenericUDF("format_number", GenericUDFFormatNumber.class);
     registerGenericUDF("printf", GenericUDFPrintf.class);
+    registerGenericUDF("greatest", GenericUDFGreatest.class);
+    registerGenericUDF("least", GenericUDFLeast.class);
 
     registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
@@ -500,7 +515,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDF> genericUDFClass) {
     if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null));
+          ReflectionUtils.newInstance(genericUDFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -523,7 +538,7 @@ public final class FunctionRegistry {
       Class<? extends GenericUDTF> genericUDTFClass) {
     if (GenericUDTF.class.isAssignableFrom(genericUDTFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
-          (GenericUDTF) ReflectionUtils.newInstance(genericUDTFClass, null));
+          ReflectionUtils.newInstance(genericUDTFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
       registerNativeStatus(fI);
     } else {
@@ -534,7 +549,7 @@ public final class FunctionRegistry {
 
   private static FunctionInfo getFunctionInfoFromMetastore(String functionName) {
     FunctionInfo ret = null;
-  
+
     try {
       String dbName;
       String fName;
@@ -577,7 +592,7 @@ public final class FunctionRegistry {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
     }
-  
+
     return ret;
   }
 
@@ -599,7 +614,7 @@ public final class FunctionRegistry {
     if (functionInfo != null) {
       loadFunctionResourcesIfNecessary(functionName, functionInfo);
     }
-    
+
     return functionInfo;
   }
 
@@ -666,8 +681,12 @@ public final class FunctionRegistry {
     return functionInfo;
   }
 
-  public static FunctionInfo getFunctionInfo(String functionName) {
-    return getFunctionInfo(mFunctions, functionName);
+  public static FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
+    FunctionInfo functionInfo = getFunctionInfo(mFunctions, functionName);
+    if (functionInfo != null && functionInfo.isBlockedFunction()) {
+      throw new SemanticException ("UDF " + functionName + " is not allowed");
+    }
+    return functionInfo;
   }
 
   /**
@@ -732,6 +751,34 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns a set of registered function names which matchs the given pattern.
+   * This is used for the CLI command "SHOW FUNCTIONS LIKE 'regular expression';"
+   *
+   * @param funcPatternStr
+   *          regular expression of the interested function names
+   * @return set of strings contains function names
+   */
+  public static Set<String> getFunctionNamesByLikePattern(String funcPatternStr) {
+    Set<String> funcNames = new TreeSet<String>();
+    Set<String> allFuncs = getFunctionNames(true);
+    String[] subpatterns = funcPatternStr.trim().split("\\|");
+    for (String subpattern : subpatterns) {
+      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      try {
+        Pattern patternObj = Pattern.compile(subpattern);
+        for (String funcName : allFuncs) {
+          if (patternObj.matcher(funcName).matches()) {
+            funcNames.add(funcName);
+          }
+        }
+      } catch (PatternSyntaxException e) {
+        continue;
+      }
+    }
+    return funcNames;
+  }
+
+  /**
    * Returns the set of synonyms of the supplied function.
    *
    * @param funcName
@@ -739,9 +786,16 @@ public final class FunctionRegistry {
    * @return Set of synonyms for funcName
    */
   public static Set<String> getFunctionSynonyms(String funcName) {
-    Set<String> synonyms = new HashSet<String>();
+    // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
+    Set<String> synonyms = new LinkedHashSet<String>();
 
-    FunctionInfo funcInfo = getFunctionInfo(funcName);
+    FunctionInfo funcInfo;
+    try {
+      funcInfo = getFunctionInfo(funcName);
+    } catch (SemanticException e) {
+      LOG.warn("Failed to load " + funcName);
+      funcInfo = null;
+    }
     if (null == funcInfo) {
       return synonyms;
     }
@@ -869,15 +923,7 @@ public final class FunctionRegistry {
             TypeInfoUtils.getCharacterLengthForType(b));
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
       case DECIMAL:
-          int prec1 = HiveDecimalUtils.getPrecisionForType(a);
-          int prec2 = HiveDecimalUtils.getPrecisionForType(b);
-          int scale1 = HiveDecimalUtils.getScaleForType(a);
-          int scale2 = HiveDecimalUtils.getScaleForType(b);
-          int intPart = Math.max(prec1 - scale1, prec2 - scale2);
-          int decPart = Math.max(scale1, scale2);
-          int prec =  Math.min(intPart + decPart, HiveDecimal.MAX_PRECISION);
-          int scale = Math.min(decPart, HiveDecimal.MAX_PRECISION - intPart);
-          return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+      return HiveDecimalUtils.getDecimalTypeForPrimitiveCategories(a, b);
       default:
         // Type doesn't require any qualifiers.
         return TypeInfoFactory.getPrimitiveTypeInfo(
@@ -962,6 +1008,12 @@ public final class FunctionRegistry {
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
 
+    // Another special case, because timestamp is not implicitly convertible to numeric types.
+    if ((pgA == PrimitiveGrouping.NUMERIC_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)
+        && (pcA == PrimitiveCategory.TIMESTAMP || pcB == PrimitiveCategory.TIMESTAMP)) {
+      return TypeInfoFactory.doubleTypeInfo;
+    }
+
     for (PrimitiveCategory t : numericTypeList) {
       if (FunctionRegistry.implicitConvertible(pcA, t)
           && FunctionRegistry.implicitConvertible(pcB, t)) {
@@ -992,7 +1044,7 @@ public final class FunctionRegistry {
       // If either is not a numeric type, return null.
       return null;
     }
-    
+
     return (ai > bi) ? pcA : pcB;
   }
 
@@ -1197,7 +1249,7 @@ public final class FunctionRegistry {
       Class<? extends UDAF> udafClass) {
     FunctionInfo fi = new FunctionInfo(isNative,
         functionName.toLowerCase(), new GenericUDAFBridge(
-        (UDAF) ReflectionUtils.newInstance(udafClass, null)));
+        ReflectionUtils.newInstance(udafClass, null)));
     mFunctions.put(functionName.toLowerCase(), fi);
 
     // All aggregate functions should also be usable as window functions
@@ -1218,7 +1270,7 @@ public final class FunctionRegistry {
     }
   }
 
-  public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
+  public static GenericUDAFResolver getGenericUDAFResolver(String functionName) throws SemanticException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Looking up GenericUDAF: " + functionName);
     }
@@ -1515,16 +1567,18 @@ public final class FunctionRegistry {
   /**
    * A shortcut to get the "index" GenericUDF. This is used for getting elements
    * out of array and getting values out of map.
+   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForIndex() {
-    return FunctionRegistry.getFunctionInfo("index").getGenericUDF();
+    return FunctionRegistry.getFunctionInfo(mFunctions, "index").getGenericUDF();
   }
 
   /**
    * A shortcut to get the "and" GenericUDF.
+   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForAnd() {
-    return FunctionRegistry.getFunctionInfo("and").getGenericUDF();
+    return FunctionRegistry.getFunctionInfo(mFunctions, "and").getGenericUDF();
   }
 
   /**
@@ -1545,7 +1599,7 @@ public final class FunctionRegistry {
       clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
           bridge.getColNames(), bridge.getColTypes());
     } else {
-      clonedUDF = (GenericUDF) ReflectionUtils
+      clonedUDF = ReflectionUtils
           .newInstance(genericUDF.getClass(), null);
     }
 
@@ -1584,7 +1638,7 @@ public final class FunctionRegistry {
     if (null == genericUDTF) {
       return null;
     }
-    return (GenericUDTF) ReflectionUtils.newInstance(genericUDTF.getClass(),
+    return ReflectionUtils.newInstance(genericUDTF.getClass(),
         null);
   }
 
@@ -1709,17 +1763,17 @@ public final class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is node of "cast".
    */
-  private static boolean isOpCast(ExprNodeDesc desc) {
+  public static boolean isOpCast(ExprNodeDesc desc) {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
-    Class udfClass;
-    if (genericUDF instanceof GenericUDFBridge) {
-      udfClass = ((GenericUDFBridge)genericUDF).getUdfClass();
-    } else {
-      udfClass = genericUDF.getClass();
-    }
+    return isOpCast(((ExprNodeGenericFuncDesc)desc).getGenericUDF());
+  }
+
+  public static boolean isOpCast(GenericUDF genericUDF) {
+    Class udfClass = (genericUDF instanceof GenericUDFBridge) ?
+        ((GenericUDFBridge)genericUDF).getUdfClass() : genericUDF.getClass();
+
     return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
@@ -1896,8 +1950,9 @@ public final class FunctionRegistry {
    *          name of function
    * @return true if a GenericUDF or GenericUDAF exists for this name and implyOrder is true, false
    *         otherwise.
+   * @throws SemanticException
    */
-  public static boolean impliesOrder(String functionName) {
+  public static boolean impliesOrder(String functionName) throws SemanticException {
 
     FunctionInfo info = getFunctionInfo(functionName);
     if (info != null) {
@@ -1923,13 +1978,13 @@ public final class FunctionRegistry {
     windowFunctions.put(functionName.toLowerCase(), wInfo);
   }
 
-  public static boolean isTableFunction(String name)
+  public static boolean isTableFunction(String name) throws SemanticException
   {
     FunctionInfo tFInfo = getFunctionInfo(name);
     return tFInfo != null && !tFInfo.isInternalTableFunction() && tFInfo.isTableFunction();
   }
 
-  public static TableFunctionResolver getTableFunctionResolver(String name)
+  public static TableFunctionResolver getTableFunctionResolver(String name) throws SemanticException
   {
     FunctionInfo tfInfo = getFunctionInfo(name);
     if(tfInfo.isTableFunction()) {
@@ -1938,11 +1993,11 @@ public final class FunctionRegistry {
     return null;
   }
 
-  public static TableFunctionResolver getWindowingTableFunction()
+  public static TableFunctionResolver getWindowingTableFunction() throws SemanticException
   {
     return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
-  
+
   public static boolean isNoopFunction(String fnName) {
     fnName = fnName.toLowerCase();
     return fnName.equals(NOOP_MAP_TABLE_FUNCTION) ||
@@ -1965,18 +2020,20 @@ public final class FunctionRegistry {
    *          name of a function
    * @return true if function is a UDAF, has WindowFunctionDescription annotation and the annotations
    *         confirms a ranking function, false otherwise
+   * @throws SemanticException
    */
-  public static boolean isRankingFunction(String name){
+  public static boolean isRankingFunction(String name) throws SemanticException {
     FunctionInfo info = getFunctionInfo(name);
-    GenericUDAFResolver res = info.getGenericUDAFResolver();
-    if (res != null){
-      WindowFunctionDescription desc =
-          AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
-      if (desc != null){
-        return desc.rankingFunction();
-      }
+    if (info == null) {
+      return false;
     }
-    return false;
+    GenericUDAFResolver res = info.getGenericUDAFResolver();
+    if (res == null) {
+      return false;
+    }
+    WindowFunctionDescription desc =
+        AnnotationUtils.getAnnotation(res.getClass(), WindowFunctionDescription.class);
+    return (desc != null) && desc.rankingFunction();
   }
 
   /**
@@ -1996,5 +2053,58 @@ public final class FunctionRegistry {
       return;
     }
     nativeUdfs.add(fi.getFunctionClass());
+  }
+
+  /**
+   * Setup blocked flag for all builtin UDFs as per udf whitelist and blacklist
+   * @param whiteList
+   * @param blackList
+   */
+  public static void setupPermissionsForBuiltinUDFs(String whiteListStr,
+      String blackListStr) {
+    List<String> whiteList = Lists.newArrayList(
+        Splitter.on(",").trimResults().omitEmptyStrings().split(whiteListStr));
+    List<String> blackList = Lists.newArrayList(
+        Splitter.on(",").trimResults().omitEmptyStrings().split(blackListStr));
+
+    for ( Entry<String, FunctionInfo> funcEntry : mFunctions.entrySet()) {
+      funcEntry.getValue().setBlockedFunction(
+          isUdfBlocked(funcEntry.getKey(), whiteList, blackList));
+    }
+  }
+
+  /**
+   * Check if the function belongs to whitelist or blacklist
+   * @param functionName
+   * @param whiteList
+   * @param blackList
+   * @return true if the given udf is to be blocked
+   */
+  private static boolean isUdfBlocked(String functionName,
+      List<String> whiteList, List<String> blackList) {
+    boolean inWhiteList = false;
+    boolean inBlackList = false;
+
+    if (whiteList.isEmpty()) {
+      // if whitelist is empty, all udfs are allowed
+      inWhiteList = true;
+    } else {
+      for (String allowedFunction : whiteList) {
+        if (functionName.equalsIgnoreCase(allowedFunction)) {
+          inWhiteList = true;
+          break;
+        }
+      }
+    }
+
+    for (String blockedFunction : blackList) {
+      if (functionName.equalsIgnoreCase(blockedFunction)) {
+        inBlackList = true;
+        break;
+      }
+    }
+
+    // blacklist setting takes presendence on whitelist
+    return !inWhiteList || inBlackList;
   }
 }

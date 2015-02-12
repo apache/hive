@@ -23,11 +23,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: key, value
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(value)
-                      keys: key (type: string)
+                      aggregations: count(_col1)
+                      keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -45,15 +45,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: bigint)
-                    sort order: +
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                  value expressions: _col0 (type: string)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
@@ -413,17 +409,21 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -432,36 +432,36 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                outputColumnNames: _col5, _col6
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col5 (type: string), _col6 (type: string)
-                  outputColumnNames: _col5, _col6
+                Group By Operator
+                  aggregations: count(DISTINCT _col1)
+                  keys: _col0 (type: string), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(DISTINCT _col6)
-                    keys: _col5 (type: string), _col6 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1, _col2
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -470,15 +470,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
                   Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: bigint)
-                    sort order: +
-                    Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                  value expressions: _col0 (type: string)
         Reducer 4 
             Reduce Operator Tree:
               Select Operator
@@ -830,26 +826,12 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Map 1 <- Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -857,26 +839,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 {key} {value}
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col5, _col6
-                      input vertices:
-                        1 Map 1
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col5 (type: string), _col6 (type: string)
-                        outputColumnNames: _col5, _col6
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1
+                        input vertices:
+                          1 Map 4
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(DISTINCT _col6)
-                          keys: _col5 (type: string), _col6 (type: string)
+                          aggregations: count(DISTINCT _col1)
+                          keys: _col0 (type: string), _col1 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
@@ -885,7 +864,24 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
@@ -893,16 +889,12 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
                   Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: bigint)
-                    sort order: +
-                    Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
-        Reducer 4 
+                  value expressions: _col0 (type: string)
+        Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -1301,11 +1293,11 @@ STAGE PLANS:
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
-                      outputColumnNames: key, value
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(value)
-                        keys: key (type: string)
+                        aggregations: count(_col1)
+                        keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -1325,11 +1317,11 @@ STAGE PLANS:
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
-                      outputColumnNames: key, value
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(value)
-                        keys: key (type: string)
+                        aggregations: count(_col1)
+                        keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -1349,11 +1341,11 @@ STAGE PLANS:
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
-                      outputColumnNames: key, value
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(value)
-                        keys: key (type: string)
+                        aggregations: count(_col1)
+                        keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -1371,29 +1363,22 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col1 > 1) (type: boolean)
-                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col1 (type: bigint)
-                      sort order: +
-                      Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
+                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
         Reducer 11 
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -1403,15 +1388,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
                   Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: bigint)
-                    sort order: +
-                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                  value expressions: _col0 (type: string)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
@@ -1426,18 +1407,18 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
-              Join Operator
+              Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                  2 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col3, _col4, _col5
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: string), _col5 (type: bigint)
+                  expressions: _col0 (type: string), _col3 (type: bigint), _col0 (type: string), _col1 (type: bigint), _col4 (type: string), _col5 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
@@ -1466,26 +1447,25 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 > 1) (type: boolean)
+                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: bigint)
                     sort order: +
-                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string)
         Reducer 8 
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
@@ -1669,14 +1649,14 @@ EXPLAIN
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key)
+  JOIN src ON (s1.key = src.key) order by s1.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- query with broadcast join in the reduce stage
 EXPLAIN
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key)
+  JOIN src ON (s1.key = src.key) order by s1.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1686,8 +1666,9 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 1 <- Reducer 3 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Map 1 <- Reducer 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1698,31 +1679,30 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0} {_col1}
-                        1 {key} {value}
-                      keys:
-                        0 _col0 (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      input vertices:
-                        0 Reducer 3
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          1 Reducer 4
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
+                        Select Operator
+                          expressions: _col0 (type: string), _col3 (type: bigint), _col0 (type: string), _col1 (type: string)
+                          outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Map 2 
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1732,11 +1712,11 @@ STAGE PLANS:
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
-                      outputColumnNames: key, value
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(value)
-                        keys: key (type: string)
+                        aggregations: count(_col1)
+                        keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -1746,7 +1726,20 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: bigint)
-        Reducer 3 
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: string), VALUE._col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1754,16 +1747,12 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
     Fetch Operator
@@ -1774,514 +1763,514 @@ STAGE PLANS:
 PREHOOK: query: SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key)
+  JOIN src ON (s1.key = src.key) order by s1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key)
+  JOIN src ON (s1.key = src.key) order by s1.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-238	2	238	val_238
-86	1	86	val_86
-311	3	311	val_311
-27	1	27	val_27
-165	2	165	val_165
-409	3	409	val_409
-255	2	255	val_255
-278	2	278	val_278
-98	2	98	val_98
-484	1	484	val_484
-265	2	265	val_265
-193	3	193	val_193
-401	5	401	val_401
-150	1	150	val_150
-273	3	273	val_273
-224	2	224	val_224
-369	3	369	val_369
-66	1	66	val_66
-128	3	128	val_128
-213	2	213	val_213
-146	2	146	val_146
-406	4	406	val_406
-429	2	429	val_429
-374	1	374	val_374
-152	2	152	val_152
-469	5	469	val_469
-145	1	145	val_145
-495	1	495	val_495
-37	2	37	val_37
-327	3	327	val_327
-281	2	281	val_281
-277	4	277	val_277
-209	2	209	val_209
-15	2	15	val_15
-82	1	82	val_82
-403	3	403	val_403
-166	1	166	val_166
-417	3	417	val_417
-430	3	430	val_430
-252	1	252	val_252
-292	1	292	val_292
-219	2	219	val_219
-287	1	287	val_287
-153	1	153	val_153
-193	3	193	val_193
-338	1	338	val_338
-446	1	446	val_446
-459	2	459	val_459
-394	1	394	val_394
-237	2	237	val_237
-482	1	482	val_482
-174	2	174	val_174
-413	2	413	val_413
-494	1	494	val_494
-207	2	207	val_207
-199	3	199	val_199
-466	3	466	val_466
-208	3	208	val_208
-174	2	174	val_174
-399	2	399	val_399
-396	3	396	val_396
-247	1	247	val_247
-417	3	417	val_417
-489	4	489	val_489
-162	1	162	val_162
-377	1	377	val_377
-397	2	397	val_397
-309	2	309	val_309
-365	1	365	val_365
-266	1	266	val_266
-439	2	439	val_439
-342	2	342	val_342
-367	2	367	val_367
-325	2	325	val_325
-167	3	167	val_167
-195	2	195	val_195
-475	1	475	val_475
-17	1	17	val_17
-113	2	113	val_113
-155	1	155	val_155
-203	2	203	val_203
-339	1	339	val_339
 0	3	0	val_0
-455	1	455	val_455
-128	3	128	val_128
-311	3	311	val_311
-316	3	316	val_316
-57	1	57	val_57
-302	1	302	val_302
-205	2	205	val_205
-149	2	149	val_149
-438	3	438	val_438
-345	1	345	val_345
-129	2	129	val_129
-170	1	170	val_170
-20	1	20	val_20
-489	4	489	val_489
-157	1	157	val_157
-378	1	378	val_378
-221	2	221	val_221
-92	1	92	val_92
-111	1	111	val_111
-47	1	47	val_47
-72	2	72	val_72
-4	1	4	val_4
-280	2	280	val_280
-35	3	35	val_35
-427	1	427	val_427
-277	4	277	val_277
-208	3	208	val_208
-356	1	356	val_356
-399	2	399	val_399
-169	4	169	val_169
-382	2	382	val_382
-498	3	498	val_498
-125	2	125	val_125
-386	1	386	val_386
-437	1	437	val_437
-469	5	469	val_469
-192	1	192	val_192
-286	1	286	val_286
-187	3	187	val_187
-176	2	176	val_176
-54	1	54	val_54
-459	2	459	val_459
-51	2	51	val_51
-138	4	138	val_138
-103	2	103	val_103
-239	2	239	val_239
-213	2	213	val_213
-216	2	216	val_216
-430	3	430	val_430
-278	2	278	val_278
-176	2	176	val_176
-289	1	289	val_289
-221	2	221	val_221
-65	1	65	val_65
-318	3	318	val_318
-332	1	332	val_332
-311	3	311	val_311
-275	1	275	val_275
-137	2	137	val_137
-241	1	241	val_241
-83	2	83	val_83
-333	2	333	val_333
-180	1	180	val_180
-284	1	284	val_284
-12	2	12	val_12
-230	5	230	val_230
-181	1	181	val_181
-67	2	67	val_67
-260	1	260	val_260
-404	2	404	val_404
-384	3	384	val_384
-489	4	489	val_489
-353	2	353	val_353
-373	1	373	val_373
-272	2	272	val_272
-138	4	138	val_138
-217	2	217	val_217
-84	2	84	val_84
-348	5	348	val_348
-466	3	466	val_466
-58	2	58	val_58
-8	1	8	val_8
-411	1	411	val_411
-230	5	230	val_230
-208	3	208	val_208
-348	5	348	val_348
-24	2	24	val_24
-463	2	463	val_463
-431	3	431	val_431
-179	2	179	val_179
-172	2	172	val_172
-42	2	42	val_42
-129	2	129	val_129
-158	1	158	val_158
-119	3	119	val_119
-496	1	496	val_496
 0	3	0	val_0
-322	2	322	val_322
-197	2	197	val_197
-468	4	468	val_468
-393	1	393	val_393
-454	3	454	val_454
-100	2	100	val_100
-298	3	298	val_298
-199	3	199	val_199
-191	2	191	val_191
-418	1	418	val_418
-96	1	96	val_96
-26	2	26	val_26
-165	2	165	val_165
-327	3	327	val_327
-230	5	230	val_230
-205	2	205	val_205
-120	2	120	val_120
-131	1	131	val_131
-51	2	51	val_51
-404	2	404	val_404
-43	1	43	val_43
-436	1	436	val_436
-156	1	156	val_156
-469	5	469	val_469
-468	4	468	val_468
-308	1	308	val_308
-95	2	95	val_95
-196	1	196	val_196
-288	2	288	val_288
-481	1	481	val_481
-457	1	457	val_457
-98	2	98	val_98
-282	2	282	val_282
-197	2	197	val_197
-187	3	187	val_187
-318	3	318	val_318
-318	3	318	val_318
-409	3	409	val_409
-470	1	470	val_470
-137	2	137	val_137
-369	3	369	val_369
-316	3	316	val_316
-169	4	169	val_169
-413	2	413	val_413
-85	1	85	val_85
-77	1	77	val_77
 0	3	0	val_0
-490	1	490	val_490
-87	1	87	val_87
-364	1	364	val_364
-179	2	179	val_179
-118	2	118	val_118
-134	2	134	val_134
-395	2	395	val_395
-282	2	282	val_282
-138	4	138	val_138
-238	2	238	val_238
-419	1	419	val_419
-15	2	15	val_15
-118	2	118	val_118
-72	2	72	val_72
-90	3	90	val_90
-307	2	307	val_307
-19	1	19	val_19
-435	1	435	val_435
 10	1	10	val_10
-277	4	277	val_277
-273	3	273	val_273
-306	1	306	val_306
-224	2	224	val_224
-309	2	309	val_309
-389	1	389	val_389
-327	3	327	val_327
-242	2	242	val_242
-369	3	369	val_369
-392	1	392	val_392
-272	2	272	val_272
-331	2	331	val_331
-401	5	401	val_401
-242	2	242	val_242
-452	1	452	val_452
-177	1	177	val_177
-226	1	226	val_226
-5	3	5	val_5
-497	1	497	val_497
-402	1	402	val_402
-396	3	396	val_396
-317	2	317	val_317
-395	2	395	val_395
-58	2	58	val_58
-35	3	35	val_35
-336	1	336	val_336
-95	2	95	val_95
-11	1	11	val_11
-168	1	168	val_168
-34	1	34	val_34
-229	2	229	val_229
-233	2	233	val_233
-143	1	143	val_143
-472	1	472	val_472
-322	2	322	val_322
-498	3	498	val_498
-160	1	160	val_160
-195	2	195	val_195
-42	2	42	val_42
-321	2	321	val_321
-430	3	430	val_430
-119	3	119	val_119
-489	4	489	val_489
-458	2	458	val_458
-78	1	78	val_78
-76	2	76	val_76
-41	1	41	val_41
-223	2	223	val_223
-492	2	492	val_492
-149	2	149	val_149
-449	1	449	val_449
-218	1	218	val_218
-228	1	228	val_228
-138	4	138	val_138
-453	1	453	val_453
-30	1	30	val_30
-209	2	209	val_209
-64	1	64	val_64
-468	4	468	val_468
-76	2	76	val_76
-74	1	74	val_74
-342	2	342	val_342
-69	1	69	val_69
-230	5	230	val_230
-33	1	33	val_33
-368	1	368	val_368
+100	2	100	val_100
+100	2	100	val_100
 103	2	103	val_103
-296	1	296	val_296
-113	2	113	val_113
-216	2	216	val_216
-367	2	367	val_367
-344	2	344	val_344
-167	3	167	val_167
-274	1	274	val_274
-219	2	219	val_219
-239	2	239	val_239
-485	1	485	val_485
-116	1	116	val_116
-223	2	223	val_223
-256	2	256	val_256
-263	1	263	val_263
-70	3	70	val_70
-487	1	487	val_487
-480	3	480	val_480
-401	5	401	val_401
-288	2	288	val_288
-191	2	191	val_191
-5	3	5	val_5
-244	1	244	val_244
-438	3	438	val_438
-128	3	128	val_128
-467	1	467	val_467
-432	1	432	val_432
-202	1	202	val_202
-316	3	316	val_316
-229	2	229	val_229
-469	5	469	val_469
-463	2	463	val_463
-280	2	280	val_280
-2	1	2	val_2
-35	3	35	val_35
-283	1	283	val_283
-331	2	331	val_331
-235	1	235	val_235
-80	1	80	val_80
-44	1	44	val_44
-193	3	193	val_193
-321	2	321	val_321
-335	1	335	val_335
+103	2	103	val_103
 104	2	104	val_104
-466	3	466	val_466
-366	1	366	val_366
-175	2	175	val_175
-403	3	403	val_403
-483	1	483	val_483
-53	1	53	val_53
+104	2	104	val_104
 105	1	105	val_105
-257	1	257	val_257
-406	4	406	val_406
-409	3	409	val_409
-190	1	190	val_190
-406	4	406	val_406
-401	5	401	val_401
+11	1	11	val_11
+111	1	111	val_111
+113	2	113	val_113
+113	2	113	val_113
 114	1	114	val_114
-258	1	258	val_258
-90	3	90	val_90
-203	2	203	val_203
-262	1	262	val_262
-348	5	348	val_348
-424	2	424	val_424
-12	2	12	val_12
-396	3	396	val_396
-201	1	201	val_201
-217	2	217	val_217
-164	2	164	val_164
-431	3	431	val_431
-454	3	454	val_454
-478	2	478	val_478
-298	3	298	val_298
-125	2	125	val_125
-431	3	431	val_431
-164	2	164	val_164
-424	2	424	val_424
-187	3	187	val_187
-382	2	382	val_382
-5	3	5	val_5
-70	3	70	val_70
-397	2	397	val_397
-480	3	480	val_480
-291	1	291	val_291
-24	2	24	val_24
-351	1	351	val_351
-255	2	255	val_255
-104	2	104	val_104
-70	3	70	val_70
-163	1	163	val_163
-438	3	438	val_438
+116	1	116	val_116
+118	2	118	val_118
+118	2	118	val_118
 119	3	119	val_119
-414	2	414	val_414
-200	2	200	val_200
-491	1	491	val_491
-237	2	237	val_237
-439	2	439	val_439
-360	1	360	val_360
-248	1	248	val_248
-479	1	479	val_479
-305	1	305	val_305
-417	3	417	val_417
-199	3	199	val_199
-444	1	444	val_444
+119	3	119	val_119
+119	3	119	val_119
+12	2	12	val_12
+12	2	12	val_12
 120	2	120	val_120
-429	2	429	val_429
+120	2	120	val_120
+125	2	125	val_125
+125	2	125	val_125
+126	1	126	val_126
+128	3	128	val_128
+128	3	128	val_128
+128	3	128	val_128
+129	2	129	val_129
+129	2	129	val_129
+131	1	131	val_131
+133	1	133	val_133
+134	2	134	val_134
+134	2	134	val_134
+136	1	136	val_136
+137	2	137	val_137
+137	2	137	val_137
+138	4	138	val_138
+138	4	138	val_138
+138	4	138	val_138
+138	4	138	val_138
+143	1	143	val_143
+145	1	145	val_145
+146	2	146	val_146
+146	2	146	val_146
+149	2	149	val_149
+149	2	149	val_149
+15	2	15	val_15
+15	2	15	val_15
+150	1	150	val_150
+152	2	152	val_152
+152	2	152	val_152
+153	1	153	val_153
+155	1	155	val_155
+156	1	156	val_156
+157	1	157	val_157
+158	1	158	val_158
+160	1	160	val_160
+162	1	162	val_162
+163	1	163	val_163
+164	2	164	val_164
+164	2	164	val_164
+165	2	165	val_165
+165	2	165	val_165
+166	1	166	val_166
+167	3	167	val_167
+167	3	167	val_167
+167	3	167	val_167
+168	1	168	val_168
 169	4	169	val_169
-443	1	443	val_443
+169	4	169	val_169
+169	4	169	val_169
+169	4	169	val_169
+17	1	17	val_17
+170	1	170	val_170
+172	2	172	val_172
+172	2	172	val_172
+174	2	174	val_174
+174	2	174	val_174
+175	2	175	val_175
+175	2	175	val_175
+176	2	176	val_176
+176	2	176	val_176
+177	1	177	val_177
+178	1	178	val_178
+179	2	179	val_179
+179	2	179	val_179
+18	2	18	val_18
+18	2	18	val_18
+180	1	180	val_180
+181	1	181	val_181
+183	1	183	val_183
+186	1	186	val_186
+187	3	187	val_187
+187	3	187	val_187
+187	3	187	val_187
+189	1	189	val_189
+19	1	19	val_19
+190	1	190	val_190
+191	2	191	val_191
+191	2	191	val_191
+192	1	192	val_192
+193	3	193	val_193
+193	3	193	val_193
+193	3	193	val_193
+194	1	194	val_194
+195	2	195	val_195
+195	2	195	val_195
+196	1	196	val_196
+197	2	197	val_197
+197	2	197	val_197
+199	3	199	val_199
+199	3	199	val_199
+199	3	199	val_199
+2	1	2	val_2
+20	1	20	val_20
+200	2	200	val_200
+200	2	200	val_200
+201	1	201	val_201
+202	1	202	val_202
+203	2	203	val_203
+203	2	203	val_203
+205	2	205	val_205
+205	2	205	val_205
+207	2	207	val_207
+207	2	207	val_207
+208	3	208	val_208
+208	3	208	val_208
+208	3	208	val_208
+209	2	209	val_209
+209	2	209	val_209
+213	2	213	val_213
+213	2	213	val_213
+214	1	214	val_214
+216	2	216	val_216
+216	2	216	val_216
+217	2	217	val_217
+217	2	217	val_217
+218	1	218	val_218
+219	2	219	val_219
+219	2	219	val_219
+221	2	221	val_221
+221	2	221	val_221
+222	1	222	val_222
+223	2	223	val_223
+223	2	223	val_223
+224	2	224	val_224
+224	2	224	val_224
+226	1	226	val_226
+228	1	228	val_228
+229	2	229	val_229
+229	2	229	val_229
+230	5	230	val_230
+230	5	230	val_230
+230	5	230	val_230
+230	5	230	val_230
+230	5	230	val_230
+233	2	233	val_233
+233	2	233	val_233
+235	1	235	val_235
+237	2	237	val_237
+237	2	237	val_237
+238	2	238	val_238
+238	2	238	val_238
+239	2	239	val_239
+239	2	239	val_239
+24	2	24	val_24
+24	2	24	val_24
+241	1	241	val_241
+242	2	242	val_242
+242	2	242	val_242
+244	1	244	val_244
+247	1	247	val_247
+248	1	248	val_248
+249	1	249	val_249
+252	1	252	val_252
+255	2	255	val_255
+255	2	255	val_255
+256	2	256	val_256
+256	2	256	val_256
+257	1	257	val_257
+258	1	258	val_258
+26	2	26	val_26
+26	2	26	val_26
+260	1	260	val_260
+262	1	262	val_262
+263	1	263	val_263
+265	2	265	val_265
+265	2	265	val_265
+266	1	266	val_266
+27	1	27	val_27
+272	2	272	val_272
+272	2	272	val_272
+273	3	273	val_273
+273	3	273	val_273
+273	3	273	val_273
+274	1	274	val_274
+275	1	275	val_275
+277	4	277	val_277
+277	4	277	val_277
+277	4	277	val_277
+277	4	277	val_277
+278	2	278	val_278
+278	2	278	val_278
+28	1	28	val_28
+280	2	280	val_280
+280	2	280	val_280
+281	2	281	val_281
+281	2	281	val_281
+282	2	282	val_282
+282	2	282	val_282
+283	1	283	val_283
+284	1	284	val_284
+285	1	285	val_285
+286	1	286	val_286
+287	1	287	val_287
+288	2	288	val_288
+288	2	288	val_288
+289	1	289	val_289
+291	1	291	val_291
+292	1	292	val_292
+296	1	296	val_296
+298	3	298	val_298
+298	3	298	val_298
+298	3	298	val_298
+30	1	30	val_30
+302	1	302	val_302
+305	1	305	val_305
+306	1	306	val_306
+307	2	307	val_307
+307	2	307	val_307
+308	1	308	val_308
+309	2	309	val_309
+309	2	309	val_309
+310	1	310	val_310
+311	3	311	val_311
+311	3	311	val_311
+311	3	311	val_311
+315	1	315	val_315
+316	3	316	val_316
+316	3	316	val_316
+316	3	316	val_316
+317	2	317	val_317
+317	2	317	val_317
+318	3	318	val_318
+318	3	318	val_318
+318	3	318	val_318
+321	2	321	val_321
+321	2	321	val_321
+322	2	322	val_322
+322	2	322	val_322
 323	1	323	val_323
 325	2	325	val_325
-277	4	277	val_277
-230	5	230	val_230
-478	2	478	val_478
-178	1	178	val_178
-468	4	468	val_468
-310	1	310	val_310
-317	2	317	val_317
+325	2	325	val_325
+327	3	327	val_327
+327	3	327	val_327
+327	3	327	val_327
+33	1	33	val_33
+331	2	331	val_331
+331	2	331	val_331
+332	1	332	val_332
 333	2	333	val_333
-493	1	493	val_493
-460	1	460	val_460
-207	2	207	val_207
-249	1	249	val_249
-265	2	265	val_265
-480	3	480	val_480
-83	2	83	val_83
-136	1	136	val_136
-353	2	353	val_353
-172	2	172	val_172
-214	1	214	val_214
-462	2	462	val_462
-233	2	233	val_233
-406	4	406	val_406
-133	1	133	val_133
-175	2	175	val_175
-189	1	189	val_189
-454	3	454	val_454
-375	1	375	val_375
-401	5	401	val_401
-421	1	421	val_421
-407	1	407	val_407
-384	3	384	val_384
-256	2	256	val_256
-26	2	26	val_26
-134	2	134	val_134
-67	2	67	val_67
-384	3	384	val_384
-379	1	379	val_379
-18	2	18	val_18
-462	2	462	val_462
-492	2	492	val_492
-100	2	100	val_100
-298	3	298	val_298
-9	1	9	val_9
+333	2	333	val_333
+335	1	335	val_335
+336	1	336	val_336
+338	1	338	val_338
+339	1	339	val_339
+34	1	34	val_34
 341	1	341	val_341
-498	3	498	val_498
-146	2	146	val_146
-458	2	458	val_458
-362	1	362	val_362
-186	1	186	val_186
-285	1	285	val_285
-348	5	348	val_348
-167	3	167	val_167
-18	2	18	val_18
-273	3	273	val_273
-183	1	183	val_183
-281	2	281	val_281
+342	2	342	val_342
+342	2	342	val_342
 344	2	344	val_344
-97	2	97	val_97
-469	5	469	val_469
-315	1	315	val_315
-84	2	84	val_84
-28	1	28	val_28
-37	2	37	val_37
-448	1	448	val_448
-152	2	152	val_152
+344	2	344	val_344
+345	1	345	val_345
 348	5	348	val_348
-307	2	307	val_307
-194	1	194	val_194
-414	2	414	val_414
-477	1	477	val_477
-222	1	222	val_222
-126	1	126	val_126
-90	3	90	val_90
-169	4	169	val_169
-403	3	403	val_403
+348	5	348	val_348
+348	5	348	val_348
+348	5	348	val_348
+348	5	348	val_348
+35	3	35	val_35
+35	3	35	val_35
+35	3	35	val_35
+351	1	351	val_351
+353	2	353	val_353
+353	2	353	val_353
+356	1	356	val_356
+360	1	360	val_360
+362	1	362	val_362
+364	1	364	val_364
+365	1	365	val_365
+366	1	366	val_366
+367	2	367	val_367
+367	2	367	val_367
+368	1	368	val_368
+369	3	369	val_369
+369	3	369	val_369
+369	3	369	val_369
+37	2	37	val_37
+37	2	37	val_37
+373	1	373	val_373
+374	1	374	val_374
+375	1	375	val_375
+377	1	377	val_377
+378	1	378	val_378
+379	1	379	val_379
+382	2	382	val_382
+382	2	382	val_382
+384	3	384	val_384
+384	3	384	val_384
+384	3	384	val_384
+386	1	386	val_386
+389	1	389	val_389
+392	1	392	val_392
+393	1	393	val_393
+394	1	394	val_394
+395	2	395	val_395
+395	2	395	val_395
+396	3	396	val_396
+396	3	396	val_396
+396	3	396	val_396
+397	2	397	val_397
+397	2	397	val_397
+399	2	399	val_399
+399	2	399	val_399
+4	1	4	val_4
 400	1	400	val_400
-200	2	200	val_200
+401	5	401	val_401
+401	5	401	val_401
+401	5	401	val_401
+401	5	401	val_401
+401	5	401	val_401
+402	1	402	val_402
+403	3	403	val_403
+403	3	403	val_403
+403	3	403	val_403
+404	2	404	val_404
+404	2	404	val_404
+406	4	406	val_406
+406	4	406	val_406
+406	4	406	val_406
+406	4	406	val_406
+407	1	407	val_407
+409	3	409	val_409
+409	3	409	val_409
+409	3	409	val_409
+41	1	41	val_41
+411	1	411	val_411
+413	2	413	val_413
+413	2	413	val_413
+414	2	414	val_414
+414	2	414	val_414
+417	3	417	val_417
+417	3	417	val_417
+417	3	417	val_417
+418	1	418	val_418
+419	1	419	val_419
+42	2	42	val_42
+42	2	42	val_42
+421	1	421	val_421
+424	2	424	val_424
+424	2	424	val_424
+427	1	427	val_427
+429	2	429	val_429
+429	2	429	val_429
+43	1	43	val_43
+430	3	430	val_430
+430	3	430	val_430
+430	3	430	val_430
+431	3	431	val_431
+431	3	431	val_431
+431	3	431	val_431
+432	1	432	val_432
+435	1	435	val_435
+436	1	436	val_436
+437	1	437	val_437
+438	3	438	val_438
+438	3	438	val_438
+438	3	438	val_438
+439	2	439	val_439
+439	2	439	val_439
+44	1	44	val_44
+443	1	443	val_443
+444	1	444	val_444
+446	1	446	val_446
+448	1	448	val_448
+449	1	449	val_449
+452	1	452	val_452
+453	1	453	val_453
+454	3	454	val_454
+454	3	454	val_454
+454	3	454	val_454
+455	1	455	val_455
+457	1	457	val_457
+458	2	458	val_458
+458	2	458	val_458
+459	2	459	val_459
+459	2	459	val_459
+460	1	460	val_460
+462	2	462	val_462
+462	2	462	val_462
+463	2	463	val_463
+463	2	463	val_463
+466	3	466	val_466
+466	3	466	val_466
+466	3	466	val_466
+467	1	467	val_467
+468	4	468	val_468
+468	4	468	val_468
+468	4	468	val_468
+468	4	468	val_468
+469	5	469	val_469
+469	5	469	val_469
+469	5	469	val_469
+469	5	469	val_469
+469	5	469	val_469
+47	1	47	val_47
+470	1	470	val_470
+472	1	472	val_472
+475	1	475	val_475
+477	1	477	val_477
+478	2	478	val_478
+478	2	478	val_478
+479	1	479	val_479
+480	3	480	val_480
+480	3	480	val_480
+480	3	480	val_480
+481	1	481	val_481
+482	1	482	val_482
+483	1	483	val_483
+484	1	484	val_484
+485	1	485	val_485
+487	1	487	val_487
+489	4	489	val_489
+489	4	489	val_489
+489	4	489	val_489
+489	4	489	val_489
+490	1	490	val_490
+491	1	491	val_491
+492	2	492	val_492
+492	2	492	val_492
+493	1	493	val_493
+494	1	494	val_494
+495	1	495	val_495
+496	1	496	val_496
+497	1	497	val_497
+498	3	498	val_498
+498	3	498	val_498
+498	3	498	val_498
+5	3	5	val_5
+5	3	5	val_5
+5	3	5	val_5
+51	2	51	val_51
+51	2	51	val_51
+53	1	53	val_53
+54	1	54	val_54
+57	1	57	val_57
+58	2	58	val_58
+58	2	58	val_58
+64	1	64	val_64
+65	1	65	val_65
+66	1	66	val_66
+67	2	67	val_67
+67	2	67	val_67
+69	1	69	val_69
+70	3	70	val_70
+70	3	70	val_70
+70	3	70	val_70
+72	2	72	val_72
+72	2	72	val_72
+74	1	74	val_74
+76	2	76	val_76
+76	2	76	val_76
+77	1	77	val_77
+78	1	78	val_78
+8	1	8	val_8
+80	1	80	val_80
+82	1	82	val_82
+83	2	83	val_83
+83	2	83	val_83
+84	2	84	val_84
+84	2	84	val_84
+85	1	85	val_85
+86	1	86	val_86
+87	1	87	val_87
+9	1	9	val_9
+90	3	90	val_90
+90	3	90	val_90
+90	3	90	val_90
+92	1	92	val_92
+95	2	95	val_95
+95	2	95	val_95
+96	1	96	val_96
 97	2	97	val_97
+97	2	97	val_97
+98	2	98	val_98
+98	2	98	val_98

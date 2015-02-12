@@ -1,3 +1,6 @@
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 

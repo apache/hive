@@ -1,0 +1,289 @@
+PREHOOK: query: explain select *
+from part p1 join part p2 join part p3 on p1.p_name = p2.p_name join part p4 on p2.p_name = p3.p_name and p1.p_name = p4.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select *
+from part p1 join part p2 join part p3 on p1.p_name = p2.p_name join part p4 on p2.p_name = p3.p_name and p1.p_name = p4.p_name
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 1 to 2
+                keys:
+                  0 _col1 (type: string)
+                  1 _col1 (type: string)
+                  2 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                Statistics: Num rows: 30 Data size: 3806 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col18 (type: int), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: int), _col24 (type: string), _col25 (type: double), _col26 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col27 (type: int), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: int), _col33 (type: string), _col34 (type: double), _col35 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                  Statistics: Num rows: 30 Data size: 3806 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 30 Data size: 3806 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select *
+from part p1 join part p2 join part p3 on p2.p_name = p1.p_name join part p4 on p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
+            and p1.p_partkey = p2.p_partkey
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select *
+from part p1 join part p2 join part p3 on p2.p_name = p1.p_name join part p4 on p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
+            and p1.p_partkey = p2.p_partkey
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 2), Map 7 (PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_partkey is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col9 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col18 (type: int), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: int), _col24 (type: string), _col25 (type: double), _col26 (type: string), _col27 (type: int), _col28 (type: string), _col29 (type: string), _col30 (type: string), _col31 (type: string), _col32 (type: int), _col33 (type: string), _col34 (type: double), _col35 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                  Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col10 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26
+                Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col9 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col9 (type: int)
+                  Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string), _col18 (type: int), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: int), _col24 (type: string), _col25 (type: double), _col26 (type: string)
+        Reducer 6 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int), _col1 (type: string)
+                  1 _col0 (type: int), _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col10 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col10 (type: string)
+                  Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: int), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

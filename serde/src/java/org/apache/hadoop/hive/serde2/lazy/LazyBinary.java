@@ -18,18 +18,16 @@
 
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.nio.charset.CharacterCodingException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 
 public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWritable> {
 
   private static final Log LOG = LogFactory.getLog(LazyBinary.class);
+  private static final boolean DEBUG_LOG_ENABLED = LOG.isDebugEnabled();
 
   LazyBinary(LazyBinaryObjectInspector oi) {
     super(oi);
@@ -46,18 +44,21 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-
+    super.init(bytes, start, length);
     byte[] recv = new byte[length];
     System.arraycopy(bytes.getData(), start, recv, 0, length);
-    boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
-    if (arrayByteBase64) {
-      LOG.debug("Data not contains valid characters within the Base64 alphabet so " +
-                "decoded the data.");
-    }
-    byte[] decoded = arrayByteBase64 ? Base64.decodeBase64(recv) : recv;
+    byte[] decoded = decodeIfNeeded(recv);
     // use the original bytes in case decoding should fail
     decoded = decoded.length > 0 ? decoded : recv;
     data.set(decoded, 0, decoded.length);
   }
 
+  // todo this should be configured in serde
+  private byte[] decodeIfNeeded(byte[] recv) {
+    boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
+    if (DEBUG_LOG_ENABLED && arrayByteBase64) {
+      LOG.debug("Data only contains Base64 alphabets only so try to decode the data.");
+    }
+    return arrayByteBase64 ? Base64.decodeBase64(recv) : recv;
+  }
 }

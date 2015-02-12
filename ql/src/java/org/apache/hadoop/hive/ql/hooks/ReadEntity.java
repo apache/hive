@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +55,8 @@ public class ReadEntity extends Entity implements Serializable {
   private boolean isUpdateOrDelete = false;
 
   // For views, the entities can be nested - by default, entities are at the top level
-  private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
+  // Must be deterministic order set for consistent q-test output across Java versions
+  private final Set<ReadEntity> parents = new LinkedHashSet<ReadEntity>();
 
   // The accessed columns of query
   private final List<String> accessedColumns = new ArrayList<String>();
@@ -128,7 +130,7 @@ public class ReadEntity extends Entity implements Serializable {
    *          Flag to decide whether this directory is local or in dfs.
    */
   public ReadEntity(Path d, boolean islocal) {
-    super(d.toString(), islocal, true);
+    super(d, islocal, true);
   }
 
   public Set<ReadEntity> getParents() {

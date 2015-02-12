@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -28,8 +30,10 @@ import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 
 /**
@@ -117,6 +121,37 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException {
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
+  }
+
+  /**
+   * This will be called when an insert is executed that does not cause a partition to be added.
+   * If an insert causes a partition to be added it will cause {@link #onAddPartition} to be
+   * called instead.
+   * @param insertEvent
+   * @throws MetaException
+   */
+  public void onInsert(InsertEvent insertEvent) throws MetaException {
 
   }
 

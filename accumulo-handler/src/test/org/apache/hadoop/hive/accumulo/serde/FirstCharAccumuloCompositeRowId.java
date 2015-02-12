@@ -19,10 +19,9 @@ package org.apache.hadoop.hive.accumulo.serde;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -33,9 +32,6 @@ public class FirstCharAccumuloCompositeRowId extends AccumuloCompositeRowId {
 
   private Properties tbl;
   private Configuration conf;
-  private byte[] bytes;
-  private int start, length;
-  private String bytesAsString;
 
   public FirstCharAccumuloCompositeRowId(LazySimpleStructObjectInspector oi, Properties tbl,
       Configuration conf) {
@@ -45,19 +41,10 @@ public class FirstCharAccumuloCompositeRowId extends AccumuloCompositeRowId {
   }
 
   @Override
-  public void init(ByteArrayRef bytes, int start, int length) {
-    this.bytes = bytes.getData();
-    this.start = start;
-    this.length = length;
-  }
-
-  @Override
   public Object getField(int fieldID) {
-    if (bytesAsString == null) {
-      this.bytesAsString = new String(bytes, start, length);
-    }
+    String bytesAsString = new String(bytes.getData(), start, length);
 
-    log.info("Data: " + bytesAsString + ", " + Arrays.toString(bytes));
+    log.info("Data: " + bytesAsString + ", " + Arrays.toString(bytes.getData()));
 
     // The separator for the hive row would be using \x02, so the separator for this struct would be
     // \x02 + 1 = \x03

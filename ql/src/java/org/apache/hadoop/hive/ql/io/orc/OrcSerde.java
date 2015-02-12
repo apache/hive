@@ -27,8 +27,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSerde;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -40,6 +42,7 @@ import org.apache.hadoop.io.Writable;
  * A serde class for ORC.
  * It transparently passes the object to/from the ORC file reader/writer.
  */
+@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
 public class OrcSerde implements SerDe, VectorizedSerde {
 
   private static final Log LOG = LogFactory.getLog(OrcSerde.class);
@@ -75,9 +78,9 @@ public class OrcSerde implements SerDe, VectorizedSerde {
   @Override
   public void initialize(Configuration conf, Properties table) {
     // Read the configuration parameters
-    String columnNameProperty = table.getProperty("columns");
+    String columnNameProperty = table.getProperty(serdeConstants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = table.getProperty("columns.types");
+    String columnTypeProperty = table.getProperty(serdeConstants.LIST_COLUMN_TYPES);
 
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<String>();

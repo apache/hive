@@ -120,23 +120,23 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 3 (CUSTOM_EDGE)
+        Map 2 <- Map 1 (CUSTOM_EDGE), Map 3 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: value (type: string)
+                      key expressions: key (type: int)
                       sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: key (type: int)
+                      Map-reduce partition columns: key (type: int)
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -148,28 +148,22 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
                       input vertices:
-                        0 Map 3
+                        0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {key}
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
                         outputColumnNames: _col0, _col12
                         input vertices:
-                          1 Map 1
+                          1 Map 3
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col12 (type: int)
@@ -185,17 +179,17 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: key (type: int)
+                      key expressions: value (type: string)
                       sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: key (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -241,42 +235,10 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                      keys:
-                        0 UDFToDouble(key) (type: double)
-                        1 UDFToDouble(key) (type: double)
-                      outputColumnNames: _col0, _col1, _col6
-                      input vertices:
-                        0 Map 2
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -290,6 +252,35 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                       value expressions: key (type: int), value (type: string)
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 UDFToDouble(key) (type: double)
+                        1 UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1, _col6
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -320,53 +311,46 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 1) and key is not null) (type: boolean)
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 1) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: int), _col1 (type: int)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 2) and key is not null) (type: boolean)
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 2) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -406,9 +390,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -416,17 +397,13 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: int), _col1 (type: int)
-                          outputColumnNames: _col0, _col1
+                        File Output Operator
+                          compressed: false
                           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -500,9 +477,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Right Outer Join0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -510,17 +484,13 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: int), _col1 (type: int)
-                          outputColumnNames: _col0, _col1
+                        File Output Operator
+                          compressed: false
                           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -540,11 +510,29 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 1 <- Reducer 3 (CUSTOM_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Map 3 <- Reducer 2 (CUSTOM_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tab
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: key (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -555,65 +543,32 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0}
-                        1 {key}
                       keys:
                         0 _col0 (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1
                       input vertices:
-                        0 Reducer 3
+                        0 Reducer 2
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: int)
-                        outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: tab
-                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: key
-                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: key (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -633,11 +588,29 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 1 <- Reducer 3 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Map 3 <- Reducer 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tab
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(value) is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -648,15 +621,12 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0}
-                        1 {value}
                       keys:
                         0 UDFToDouble(_col0) (type: double)
                         1 UDFToDouble(key) (type: double)
                       outputColumnNames: _col0, _col2
                       input vertices:
-                        0 Reducer 3
+                        0 Reducer 2
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string), _col2 (type: string)
@@ -669,45 +639,19 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: tab
-                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: UDFToDouble(value) is not null (type: boolean)
-                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: value
-                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: value (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                   Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: UDFToDouble(_col0) (type: double)
-                    sort order: +
-                    Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                    Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                  value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator

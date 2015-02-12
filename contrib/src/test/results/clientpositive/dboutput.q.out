@@ -135,7 +135,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key < 10) (type: boolean)
+              predicate: (UDFToDouble(key) < 10.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: dboutput('jdbc:derby:../build/test_dboutput_db','','','INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value) (type: int)

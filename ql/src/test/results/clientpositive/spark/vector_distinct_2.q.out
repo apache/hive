@@ -1,0 +1,1866 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2korc
+PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: default@vectortab2korc
+POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+PREHOOK: query: explain
+select distinct s, t from vectortab2korc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select distinct s, t from vectortab2korc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2korc
+                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: s (type: string), t (type: tinyint)
+                    outputColumnNames: s, t
+                    Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: s (type: string), t (type: tinyint)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: tinyint)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
+                        Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct s, t from vectortab2korc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct s, t from vectortab2korc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+	-10
+	-104
+	-107
+	-108
+	-113
+	-114
+	-116
+	-12
+	-14
+	-16
+	-19
+	-2
+	-24
+	-25
+	-28
+	-29
+	-33
+	-36
+	-38
+	-4
+	-46
+	-5
+	-53
+	-66
+	-72
+	-75
+	-80
+	-83
+	-84
+	-85
+	-86
+	-87
+	-91
+	0
+	102
+	103
+	105
+	109
+	112
+	113
+	114
+	12
+	123
+	16
+	19
+	22
+	23
+	26
+	29
+	31
+	37
+	4
+	42
+	46
+	48
+	5
+	54
+	57
+	59
+	60
+	62
+	64
+	79
+	8
+	84
+	87
+	88
+	90
+	91
+	96
+	97
+	NULL
+american history	-101
+american history	-103
+american history	-105
+american history	-108
+american history	-11
+american history	-110
+american history	-112
+american history	-116
+american history	-119
+american history	-127
+american history	-15
+american history	-17
+american history	-18
+american history	-19
+american history	-26
+american history	-27
+american history	-28
+american history	-30
+american history	-34
+american history	-47
+american history	-48
+american history	-50
+american history	-53
+american history	-55
+american history	-59
+american history	-60
+american history	-66
+american history	-73
+american history	-80
+american history	-81
+american history	-86
+american history	-87
+american history	-89
+american history	-9
+american history	-90
+american history	-92
+american history	-94
+american history	-95
+american history	0
+american history	100
+american history	103
+american history	111
+american history	119
+american history	122
+american history	123
+american history	20
+american history	22
+american history	29
+american history	31
+american history	33
+american history	38
+american history	39
+american history	40
+american history	42
+american history	46
+american history	48
+american history	5
+american history	54
+american history	56
+american history	60
+american history	68
+american history	69
+american history	71
+american history	72
+american history	74
+american history	77
+american history	79
+american history	82
+american history	84
+american history	89
+american history	96
+american history	NULL
+biology	-101
+biology	-104
+biology	-119
+biology	-120
+biology	-121
+biology	-127
+biology	-13
+biology	-16
+biology	-19
+biology	-20
+biology	-31
+biology	-35
+biology	-36
+biology	-40
+biology	-42
+biology	-44
+biology	-46
+biology	-49
+biology	-5
+biology	-53
+biology	-54
+biology	-57
+biology	-59
+biology	-6
+biology	-66
+biology	-67
+biology	-7
+biology	-72
+biology	-79
+biology	-81
+biology	-82
+biology	-83
+biology	-85
+biology	-86
+biology	-90
+biology	-92
+biology	-96
+biology	-97
+biology	-98
+biology	0
+biology	100
+biology	111
+biology	113
+biology	114
+biology	115
+biology	117
+biology	12
+biology	120
+biology	124
+biology	18
+biology	2
+biology	27
+biology	3
+biology	30
+biology	34
+biology	35
+biology	36
+biology	4
+biology	41
+biology	47
+biology	5
+biology	51
+biology	52
+biology	54
+biology	55
+biology	57
+biology	6
+biology	64
+biology	7
+biology	8
+biology	83
+biology	86
+biology	89
+biology	90
+biology	91
+biology	NULL
+chemistry	-101
+chemistry	-103
+chemistry	-108
+chemistry	-109
+chemistry	-110
+chemistry	-115
+chemistry	-117
+chemistry	-122
+chemistry	-125
+chemistry	-127
+chemistry	-2
+chemistry	-23
+chemistry	-26
+chemistry	-3
+chemistry	-30
+chemistry	-31
+chemistry	-33
+chemistry	-37
+chemistry	-40
+chemistry	-44
+chemistry	-46
+chemistry	-52
+chemistry	-56
+chemistry	-57
+chemistry	-59
+chemistry	-61
+chemistry	-68
+chemistry	-75
+chemistry	-8
+chemistry	-81
+chemistry	-89
+chemistry	-90
+chemistry	-91
+chemistry	-95
+chemistry	-98
+chemistry	102
+chemistry	104
+chemistry	110
+chemistry	113
+chemistry	116
+chemistry	124
+chemistry	126
+chemistry	14
+chemistry	16
+chemistry	19
+chemistry	25
+chemistry	27
+chemistry	3
+chemistry	32
+chemistry	37
+chemistry	39
+chemistry	4
+chemistry	41
+chemistry	46
+chemistry	51
+chemistry	55
+chemistry	64
+chemistry	74
+chemistry	75
+chemistry	78
+chemistry	79
+chemistry	8
+chemistry	83
+chemistry	88
+chemistry	90
+chemistry	91
+chemistry	96
+chemistry	NULL
+debate	-106
+debate	-108
+debate	-114
+debate	-117
+debate	-12
+debate	-127
+debate	-15
+debate	-24
+debate	-26
+debate	-27
+debate	-28
+debate	-29
+debate	-3
+debate	-32
+debate	-35
+debate	-41
+debate	-46
+debate	-47
+debate	-50
+debate	-52
+debate	-57
+debate	-67
+debate	-69
+debate	-70
+debate	-72
+debate	-82
+debate	-85
+debate	-86
+debate	-87
+debate	-88
+debate	-95
+debate	-96
+debate	-98
+debate	113
+debate	124
+debate	17
+debate	19
+debate	20
+debate	26
+debate	34
+debate	36
+debate	41
+debate	42
+debate	5
+debate	52
+debate	54
+debate	56
+debate	63
+debate	67
+debate	68
+debate	69
+debate	70
+debate	73
+debate	75
+debate	77
+debate	85
+debate	87
+debate	89
+debate	90
+debate	93
+debate	94
+debate	NULL
+education	-101
+education	-105
+education	-109
+education	-111
+education	-113
+education	-125
+education	-127
+education	-13
+education	-15
+education	-24
+education	-28
+education	-34
+education	-36
+education	-37
+education	-38
+education	-43
+education	-44
+education	-52
+education	-55
+education	-61
+education	-64
+education	-69
+education	-72
+education	-77
+education	-86
+education	-87
+education	-89
+education	-9
+education	-92
+education	-93
+education	-96
+education	-98
+education	102
+education	103
+education	110
+education	111
+education	113
+education	114
+education	116
+education	119
+education	12
+education	125
+education	17
+education	27
+education	33
+education	34
+education	35
+education	38
+education	4
+education	41
+education	45
+education	46
+education	49
+education	51
+education	53
+education	59
+education	61
+education	66
+education	73
+education	75
+education	77
+education	81
+education	82
+education	85
+education	89
+education	95
+education	NULL
+forestry	-1
+forestry	-10
+forestry	-105
+forestry	-109
+forestry	-11
+forestry	-116
+forestry	-118
+forestry	-12
+forestry	-126
+forestry	-23
+forestry	-3
+forestry	-34
+forestry	-42
+forestry	-49
+forestry	-50
+forestry	-51
+forestry	-58
+forestry	-68
+forestry	-73
+forestry	-74
+forestry	-77
+forestry	-79
+forestry	-8
+forestry	-80
+forestry	-81
+forestry	-83
+forestry	-94
+forestry	-95
+forestry	-98
+forestry	0
+forestry	102
+forestry	106
+forestry	107
+forestry	11
+forestry	111
+forestry	115
+forestry	117
+forestry	12
+forestry	120
+forestry	19
+forestry	29
+forestry	31
+forestry	35
+forestry	37
+forestry	39
+forestry	40
+forestry	44
+forestry	45
+forestry	50
+forestry	51
+forestry	52
+forestry	55
+forestry	56
+forestry	7
+forestry	71
+forestry	78
+forestry	79
+forestry	8
+forestry	87
+forestry	90
+forestry	93
+forestry	94
+forestry	97
+forestry	NULL
+geology	-100
+geology	-101
+geology	-106
+geology	-108
+geology	-112
+geology	-115
+geology	-117
+geology	-124
+geology	-16
+geology	-18
+geology	-21
+geology	-23
+geology	-30
+geology	-31
+geology	-32
+geology	-34
+geology	-35
+geology	-48
+geology	-50
+geology	-53
+geology	-54
+geology	-57
+geology	-59
+geology	-68
+geology	-72
+geology	-75
+geology	-79
+geology	-80
+geology	-82
+geology	-84
+geology	-94
+geology	-96
+geology	1
+geology	100
+geology	101
+geology	102
+geology	116
+geology	121
+geology	124
+geology	127
+geology	14
+geology	18
+geology	21
+geology	23
+geology	26
+geology	28
+geology	31
+geology	33
+geology	37
+geology	38
+geology	4
+geology	49
+geology	5
+geology	58
+geology	6
+geology	72
+geology	82
+geology	84
+geology	86
+geology	89
+geology	9
+geology	92
+geology	93
+geology	95
+geology	NULL
+history	-1
+history	-101
+history	-103
+history	-104
+history	-105
+history	-12
+history	-124
+history	-125
+history	-15
+history	-18
+history	-19
+history	-24
+history	-26
+history	-34
+history	-37
+history	-42
+history	-5
+history	-54
+history	-58
+history	-61
+history	-67
+history	-75
+history	-79
+history	-8
+history	-89
+history	-90
+history	-91
+history	-98
+history	1
+history	100
+history	108
+history	112
+history	113
+history	114
+history	126
+history	127
+history	14
+history	18
+history	2
+history	25
+history	50
+history	51
+history	52
+history	57
+history	58
+history	59
+history	61
+history	62
+history	7
+history	71
+history	72
+history	73
+history	75
+history	78
+history	84
+history	92
+history	95
+history	98
+history	NULL
+industrial engineering	-1
+industrial engineering	-101
+industrial engineering	-11
+industrial engineering	-110
+industrial engineering	-124
+industrial engineering	-22
+industrial engineering	-28
+industrial engineering	-30
+industrial engineering	-31
+industrial engineering	-35
+industrial engineering	-38
+industrial engineering	-43
+industrial engineering	-47
+industrial engineering	-49
+industrial engineering	-5
+industrial engineering	-53
+industrial engineering	-57
+industrial engineering	-58
+industrial engineering	-6
+industrial engineering	-65
+industrial engineering	-68
+industrial engineering	-7
+industrial engineering	-72
+industrial engineering	-85
+industrial engineering	-87
+industrial engineering	-96
+industrial engineering	-98
+industrial engineering	102
+industrial engineering	104
+industrial engineering	105
+industrial engineering	106
+industrial engineering	113
+industrial engineering	126
+industrial engineering	27
+industrial engineering	29
+industrial engineering	3
+industrial engineering	32
+industrial engineering	33
+industrial engineering	36
+industrial engineering	42
+industrial engineering	43
+industrial engineering	48
+industrial engineering	54
+industrial engineering	58
+industrial engineering	59
+industrial engineering	7
+industrial engineering	70
+industrial engineering	73
+industrial engineering	78
+industrial engineering	79
+industrial engineering	83
+industrial engineering	95
+industrial engineering	96
+industrial engineering	98
+industrial engineering	99
+industrial engineering	NULL
+joggying	-1
+joggying	-100
+joggying	-101
+joggying	-110
+joggying	-119
+joggying	-121
+joggying	-125
+joggying	-14
+joggying	-15
+joggying	-24
+joggying	-27
+joggying	-30
+joggying	-40
+joggying	-43
+joggying	-47
+joggying	-48
+joggying	-55
+joggying	-57
+joggying	-61
+joggying	-62
+joggying	-64
+joggying	-69
+joggying	-73
+joggying	-76
+joggying	-77
+joggying	-79
+joggying	-8
+joggying	-80
+joggying	104
+joggying	105
+joggying	118
+joggying	119
+joggying	121
+joggying	123
+joggying	125
+joggying	13
+joggying	20
+joggying	25
+joggying	26
+joggying	27
+joggying	28
+joggying	37
+joggying	43
+joggying	46
+joggying	48
+joggying	49
+joggying	52
+joggying	57
+joggying	61
+joggying	62
+joggying	69
+joggying	70
+joggying	72
+joggying	74
+joggying	80
+joggying	85
+joggying	87
+joggying	92
+joggying	93
+joggying	94
+joggying	97
+joggying	99
+joggying	NULL
+kindergarten	-106
+kindergarten	-113
+kindergarten	-126
+kindergarten	-18
+kindergarten	-26
+kindergarten	-40
+kindergarten	-42
+kindergarten	-54
+kindergarten	-57
+kindergarten	-59
+kindergarten	-60
+kindergarten	-69
+kindergarten	-74
+kindergarten	-75
+kindergarten	-78
+kindergarten	-79
+kindergarten	-8
+kindergarten	-92
+kindergarten	-95
+kindergarten	-98
+kindergarten	10
+kindergarten	100
+kindergarten	101
+kindergarten	109
+kindergarten	111
+kindergarten	116
+kindergarten	118
+kindergarten	120
+kindergarten	122
+kindergarten	127
+kindergarten	16
+kindergarten	18
+kindergarten	19
+kindergarten	23
+kindergarten	29
+kindergarten	37
+kindergarten	46
+kindergarten	48
+kindergarten	51
+kindergarten	52
+kindergarten	55
+kindergarten	61
+kindergarten	66
+kindergarten	69
+kindergarten	82
+kindergarten	84
+kindergarten	85
+kindergarten	86
+kindergarten	90
+kindergarten	92
+kindergarten	96
+kindergarten	NULL
+linguistics	-101
+linguistics	-113
+linguistics	-12
+linguistics	-122
+linguistics	-127
+linguistics	-13
+linguistics	-14
+linguistics	-16
+linguistics	-17
+linguistics	-2
+linguistics	-20
+linguistics	-22
+linguistics	-28
+linguistics	-34
+linguistics	-4
+linguistics	-41
+linguistics	-52
+linguistics	-53
+linguistics	-6
+linguistics	-67
+linguistics	-68
+linguistics	-69
+linguistics	-70
+linguistics	-73
+linguistics	-77
+linguistics	-78
+linguistics	-86
+linguistics	-87
+linguistics	-89
+linguistics	-90
+linguistics	0
+linguistics	1
+linguistics	10
+linguistics	100
+linguistics	11
+linguistics	113
+linguistics	115
+linguistics	123
+linguistics	125
+linguistics	126
+linguistics	18
+linguistics	3
+linguistics	33
+linguistics	37
+linguistics	42
+linguistics	44
+linguistics	50
+linguistics	53
+linguistics	6
+linguistics	64
+linguistics	67
+linguistics	7
+linguistics	72
+linguistics	73
+linguistics	83
+linguistics	89
+linguistics	93
+linguistics	96
+linguistics	98
+linguistics	NULL
+mathematics	-100
+mathematics	-101
+mathematics	-103
+mathematics	-117
+mathematics	-118
+mathematics	-120
+mathematics	-122
+mathematics	-124
+mathematics	-127
+mathematics	-19
+mathematics	-21
+mathematics	-31
+mathematics	-33
+mathematics	-40
+mathematics	-45
+mathematics	-46
+mathematics	-49
+mathematics	-50
+mathematics	-52
+mathematics	-57
+mathematics	-66
+mathematics	-7
+mathematics	-75
+mathematics	-77
+mathematics	-79
+mathematics	-81
+mathematics	-88
+mathematics	-91
+mathematics	-95
+mathematics	-98
+mathematics	-99
+mathematics	0
+mathematics	10
+mathematics	102
+mathematics	107
+mathematics	111
+mathematics	114
+mathematics	22
+mathematics	23
+mathematics	25
+mathematics	3
+mathematics	32
+mathematics	35
+mathematics	38
+mathematics	39
+mathematics	46
+mathematics	48
+mathematics	50
+mathematics	53
+mathematics	55
+mathematics	56
+mathematics	58
+mathematics	59
+mathematics	6
+mathematics	62
+mathematics	63
+mathematics	65
+mathematics	76
+mathematics	79
+mathematics	80
+mathematics	82
+mathematics	87
+mathematics	92
+mathematics	98
+mathematics	NULL
+nap time	-101
+nap time	-102
+nap time	-104
+nap time	-113
+nap time	-115
+nap time	-119
+nap time	-122
+nap time	-15
+nap time	-2
+nap time	-31
+nap time	-4
+nap time	-41
+nap time	-45
+nap time	-49
+nap time	-54
+nap time	-6
+nap time	-61
+nap time	-71
+nap time	-85
+nap time	-91
+nap time	0
+nap time	103
+nap time	104
+nap time	105
+nap time	107
+nap time	108
+nap time	118
+nap time	16
+nap time	23
+nap time	27
+nap time	3
+nap time	31
+nap time	35
+nap time	42
+nap time	51
+nap time	52
+nap time	56
+nap time	6
+nap time	62
+nap time	69
+nap time	70
+nap time	73
+nap time	76
+nap time	80
+nap time	89
+nap time	90
+nap time	92
+nap time	93
+nap time	98
+nap time	NULL
+opthamology	-111
+opthamology	-118
+opthamology	-121
+opthamology	-122
+opthamology	-14
+opthamology	-17
+opthamology	-18
+opthamology	-22
+opthamology	-24
+opthamology	-27
+opthamology	-28
+opthamology	-30
+opthamology	-33
+opthamology	-35
+opthamology	-44
+opthamology	-48
+opthamology	-49
+opthamology	-5
+opthamology	-55
+opthamology	-59
+opthamology	-63
+opthamology	-73
+opthamology	-75
+opthamology	-77
+opthamology	-78
+opthamology	-79
+opthamology	-8
+opthamology	-82
+opthamology	-86
+opthamology	-91
+opthamology	-97
+opthamology	-99
+opthamology	100
+opthamology	104
+opthamology	117
+opthamology	120
+opthamology	122
+opthamology	125
+opthamology	127
+opthamology	21
+opthamology	39
+opthamology	4
+opthamology	41
+opthamology	48
+opthamology	49
+opthamology	5
+opthamology	52
+opthamology	53
+opthamology	55
+opthamology	68
+opthamology	69
+opthamology	74
+opthamology	76
+opthamology	77
+opthamology	79
+opthamology	81
+opthamology	84
+opthamology	87
+opthamology	88
+opthamology	89
+opthamology	92
+opthamology	96
+opthamology	97
+opthamology	NULL
+philosophy	-100
+philosophy	-103
+philosophy	-105
+philosophy	-11
+philosophy	-110
+philosophy	-115
+philosophy	-119
+philosophy	-121
+philosophy	-125
+philosophy	-17
+philosophy	-25
+philosophy	-26
+philosophy	-27
+philosophy	-39
+philosophy	-40
+philosophy	-50
+philosophy	-51
+philosophy	-52
+philosophy	-53
+philosophy	-55
+philosophy	-56
+philosophy	-61
+philosophy	-68
+philosophy	-69
+philosophy	-77
+philosophy	-78
+philosophy	-80
+philosophy	-92
+philosophy	-93
+philosophy	-95
+philosophy	-99
+philosophy	104
+philosophy	108
+philosophy	117
+philosophy	118
+philosophy	120
+philosophy	123
+philosophy	20
+philosophy	21
+philosophy	22
+philosophy	29
+philosophy	31
+philosophy	34
+philosophy	38
+philosophy	41
+philosophy	43
+philosophy	45
+philosophy	48
+philosophy	64
+philosophy	67
+philosophy	68
+philosophy	73
+philosophy	8
+philosophy	83
+philosophy	96
+philosophy	98
+philosophy	NULL
+quiet hour	-1
+quiet hour	-104
+quiet hour	-105
+quiet hour	-111
+quiet hour	-114
+quiet hour	-119
+quiet hour	-121
+quiet hour	-123
+quiet hour	-127
+quiet hour	-14
+quiet hour	-25
+quiet hour	-31
+quiet hour	-33
+quiet hour	-41
+quiet hour	-42
+quiet hour	-45
+quiet hour	-48
+quiet hour	-50
+quiet hour	-52
+quiet hour	-55
+quiet hour	-56
+quiet hour	-65
+quiet hour	-66
+quiet hour	-68
+quiet hour	-73
+quiet hour	-76
+quiet hour	-8
+quiet hour	-87
+quiet hour	-88
+quiet hour	0
+quiet hour	110
+quiet hour	112
+quiet hour	115
+quiet hour	120
+quiet hour	121
+quiet hour	123
+quiet hour	13
+quiet hour	21
+quiet hour	23
+quiet hour	29
+quiet hour	30
+quiet hour	33
+quiet hour	35
+quiet hour	38
+quiet hour	43
+quiet hour	58
+quiet hour	6
+quiet hour	60
+quiet hour	66
+quiet hour	7
+quiet hour	71
+quiet hour	74
+quiet hour	8
+quiet hour	80
+quiet hour	82
+quiet hour	84
+quiet hour	93
+quiet hour	98
+quiet hour	NULL
+religion	-104
+religion	-106
+religion	-125
+religion	-23
+religion	-24
+religion	-26
+religion	-28
+religion	-29
+religion	-3
+religion	-32
+religion	-35
+religion	-38
+religion	-41
+religion	-42
+religion	-44
+religion	-56
+religion	-60
+religion	-62
+religion	-64
+religion	-69
+religion	-7
+religion	-70
+religion	-71
+religion	-76
+religion	-77
+religion	-78
+religion	-81
+religion	-9
+religion	-93
+religion	-94
+religion	0
+religion	102
+religion	103
+religion	106
+religion	107
+religion	110
+religion	115
+religion	120
+religion	123
+religion	124
+religion	15
+religion	17
+religion	2
+religion	29
+religion	31
+religion	38
+religion	4
+religion	44
+religion	45
+religion	49
+religion	5
+religion	52
+religion	54
+religion	58
+religion	67
+religion	70
+religion	73
+religion	74
+religion	76
+religion	78
+religion	82
+religion	92
+religion	93
+religion	96
+religion	97
+religion	NULL
+study skills	-1
+study skills	-100
+study skills	-106
+study skills	-107
+study skills	-117
+study skills	-126
+study skills	-127
+study skills	-13
+study skills	-14
+study skills	-17
+study skills	-22
+study skills	-26
+study skills	-27
+study skills	-3
+study skills	-33
+study skills	-36
+study skills	-4
+study skills	-5
+study skills	-52
+study skills	-6
+study skills	-65
+study skills	-73
+study skills	-76
+study skills	-81
+study skills	-82
+study skills	-86
+study skills	-88
+study skills	101
+study skills	106
+study skills	107
+study skills	110
+study skills	115
+study skills	119
+study skills	123
+study skills	18
+study skills	2
+study skills	21
+study skills	23
+study skills	25
+study skills	28
+study skills	29
+study skills	3
+study skills	30
+study skills	35
+study skills	39
+study skills	40
+study skills	47
+study skills	49
+study skills	50
+study skills	54
+study skills	55
+study skills	58
+study skills	62
+study skills	63
+study skills	66
+study skills	68
+study skills	72
+study skills	77
+study skills	80
+study skills	83
+study skills	92
+study skills	95
+study skills	96
+study skills	NULL
+topology	-1
+topology	-102
+topology	-105
+topology	-106
+topology	-116
+topology	-122
+topology	-21
+topology	-25
+topology	-31
+topology	-32
+topology	-36
+topology	-41
+topology	-42
+topology	-44
+topology	-5
+topology	-50
+topology	-57
+topology	-58
+topology	-60
+topology	-71
+topology	-74
+topology	-78
+topology	-86
+topology	-88
+topology	-96
+topology	-98
+topology	105
+topology	107
+topology	11
+topology	119
+topology	121
+topology	127
+topology	13
+topology	14
+topology	18
+topology	26
+topology	30
+topology	38
+topology	41
+topology	42
+topology	47
+topology	50
+topology	52
+topology	54
+topology	55
+topology	58
+topology	59
+topology	61
+topology	63
+topology	67
+topology	69
+topology	7
+topology	71
+topology	80
+topology	81
+topology	83
+topology	86
+topology	87
+topology	94
+topology	NULL
+undecided	-10
+undecided	-104
+undecided	-105
+undecided	-112
+undecided	-114
+undecided	-115
+undecided	-116
+undecided	-117
+undecided	-118
+undecided	-120
+undecided	-13
+undecided	-19
+undecided	-23
+undecided	-28
+undecided	-29
+undecided	-41
+undecided	-43
+undecided	-51
+undecided	-52
+undecided	-53
+undecided	-62
+undecided	-69
+undecided	-78
+undecided	-8
+undecided	-83
+undecided	-84
+undecided	-90
+undecided	-93
+undecided	-96
+undecided	0
+undecided	1
+undecided	11
+undecided	111
+undecided	114
+undecided	119
+undecided	123
+undecided	124
+undecided	13
+undecided	14
+undecided	27
+undecided	30
+undecided	33
+undecided	37
+undecided	45
+undecided	47
+undecided	50
+undecided	51
+undecided	56
+undecided	69
+undecided	7
+undecided	76
+undecided	95
+undecided	97
+undecided	98
+undecided	NULL
+values clariffication	-100
+values clariffication	-105
+values clariffication	-107
+values clariffication	-108
+values clariffication	-109
+values clariffication	-114
+values clariffication	-119
+values clariffication	-123
+values clariffication	-28
+values clariffication	-31
+values clariffication	-37
+values clariffication	-38
+values clariffication	-40
+values clariffication	-42
+values clariffication	-46
+values clariffication	-48
+values clariffication	-5
+values clariffication	-50
+values clariffication	-51
+values clariffication	-55
+values clariffication	-6
+values clariffication	-60
+values clariffication	-62
+values clariffication	-63
+values clariffication	-67
+values clariffication	-69
+values clariffication	-70
+values clariffication	-75
+values clariffication	-8
+values clariffication	-81
+values clariffication	-90
+values clariffication	-92
+values clariffication	-95
+values clariffication	-97
+values clariffication	-98
+values clariffication	10
+values clariffication	108
+values clariffication	118
+values clariffication	12
+values clariffication	120
+values clariffication	122
+values clariffication	124
+values clariffication	126
+values clariffication	127
+values clariffication	14
+values clariffication	15
+values clariffication	21
+values clariffication	23
+values clariffication	30
+values clariffication	32
+values clariffication	4
+values clariffication	42
+values clariffication	50
+values clariffication	53
+values clariffication	56
+values clariffication	57
+values clariffication	62
+values clariffication	70
+values clariffication	74
+values clariffication	8
+values clariffication	80
+values clariffication	85
+values clariffication	9
+values clariffication	92
+values clariffication	93
+values clariffication	96
+values clariffication	97
+values clariffication	98
+values clariffication	NULL
+wind surfing	-102
+wind surfing	-104
+wind surfing	-111
+wind surfing	-113
+wind surfing	-116
+wind surfing	-117
+wind surfing	-12
+wind surfing	-121
+wind surfing	-124
+wind surfing	-14
+wind surfing	-18
+wind surfing	-2
+wind surfing	-21
+wind surfing	-30
+wind surfing	-31
+wind surfing	-34
+wind surfing	-38
+wind surfing	-39
+wind surfing	-42
+wind surfing	-56
+wind surfing	-57
+wind surfing	-6
+wind surfing	-60
+wind surfing	-65
+wind surfing	-71
+wind surfing	-78
+wind surfing	-8
+wind surfing	-80
+wind surfing	-83
+wind surfing	-96
+wind surfing	-98
+wind surfing	-99
+wind surfing	101
+wind surfing	102
+wind surfing	107
+wind surfing	108
+wind surfing	11
+wind surfing	111
+wind surfing	112
+wind surfing	121
+wind surfing	15
+wind surfing	16
+wind surfing	20
+wind surfing	21
+wind surfing	22
+wind surfing	26
+wind surfing	29
+wind surfing	33
+wind surfing	36
+wind surfing	37
+wind surfing	40
+wind surfing	41
+wind surfing	44
+wind surfing	45
+wind surfing	48
+wind surfing	5
+wind surfing	52
+wind surfing	53
+wind surfing	54
+wind surfing	58
+wind surfing	59
+wind surfing	62
+wind surfing	63
+wind surfing	64
+wind surfing	66
+wind surfing	68
+wind surfing	71
+wind surfing	75
+wind surfing	78
+wind surfing	86
+wind surfing	88
+wind surfing	92
+wind surfing	96
+wind surfing	NULL
+xylophone band	-10
+xylophone band	-101
+xylophone band	-104
+xylophone band	-109
+xylophone band	-112
+xylophone band	-115
+xylophone band	-13
+xylophone band	-15
+xylophone band	-2
+xylophone band	-23
+xylophone band	-26
+xylophone band	-27
+xylophone band	-3
+xylophone band	-46
+xylophone band	-59
+xylophone band	-6
+xylophone band	-68
+xylophone band	-70
+xylophone band	-72
+xylophone band	-75
+xylophone band	-78
+xylophone band	-91
+xylophone band	-94
+xylophone band	-96
+xylophone band	-98
+xylophone band	0
+xylophone band	107
+xylophone band	108
+xylophone band	11
+xylophone band	112
+xylophone band	118
+xylophone band	122
+xylophone band	123
+xylophone band	125
+xylophone band	127
+xylophone band	14
+xylophone band	17
+xylophone band	19
+xylophone band	22
+xylophone band	23
+xylophone band	3
+xylophone band	33
+xylophone band	36
+xylophone band	38
+xylophone band	40
+xylophone band	52
+xylophone band	6
+xylophone band	60
+xylophone band	62
+xylophone band	7
+xylophone band	77
+xylophone band	79
+xylophone band	84
+xylophone band	85
+xylophone band	88
+xylophone band	9
+xylophone band	92
+xylophone band	94
+xylophone band	NULL
+yard duty	-1
+yard duty	-100
+yard duty	-102
+yard duty	-103
+yard duty	-109
+yard duty	-114
+yard duty	-115
+yard duty	-127
+yard duty	-15
+yard duty	-17
+yard duty	-19
+yard duty	-21
+yard duty	-27
+yard duty	-28
+yard duty	-33
+yard duty	-44
+yard duty	-45
+yard duty	-46
+yard duty	-48
+yard duty	-49
+yard duty	-50
+yard duty	-51
+yard duty	-53
+yard duty	-57
+yard duty	-61
+yard duty	-62
+yard duty	-76
+yard duty	-82
+yard duty	-85
+yard duty	-86
+yard duty	-88
+yard duty	-91
+yard duty	-93
+yard duty	-98
+yard duty	10
+yard duty	102
+yard duty	105
+yard duty	110
+yard duty	15
+yard duty	18
+yard duty	22
+yard duty	25
+yard duty	28
+yard duty	30
+yard duty	34
+yard duty	42
+yard duty	48
+yard duty	53
+yard duty	55
+yard duty	57
+yard duty	60
+yard duty	64
+yard duty	65
+yard duty	78
+yard duty	8
+yard duty	86
+yard duty	9
+yard duty	90
+yard duty	NULL
+zync studies	-102
+zync studies	-103
+zync studies	-105
+zync studies	-111
+zync studies	-116
+zync studies	-117
+zync studies	-12
+zync studies	-127
+zync studies	-20
+zync studies	-21
+zync studies	-26
+zync studies	-27
+zync studies	-32
+zync studies	-33
+zync studies	-34
+zync studies	-35
+zync studies	-36
+zync studies	-37
+zync studies	-38
+zync studies	-39
+zync studies	-40
+zync studies	-45
+zync studies	-50
+zync studies	-52
+zync studies	-54
+zync studies	-57
+zync studies	-58
+zync studies	-61
+zync studies	-68
+zync studies	-78
+zync studies	-79
+zync studies	-83
+zync studies	-90
+zync studies	-94
+zync studies	1
+zync studies	100
+zync studies	11
+zync studies	116
+zync studies	120
+zync studies	15
+zync studies	19
+zync studies	31
+zync studies	37
+zync studies	48
+zync studies	59
+zync studies	63
+zync studies	7
+zync studies	70
+zync studies	87
+zync studies	9
+zync studies	90
+zync studies	91
+zync studies	98
+zync studies	99
+zync studies	NULL

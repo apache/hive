@@ -1,0 +1,460 @@
+PREHOOK: query: drop table location
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table location
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- There are different cases for Group By depending on map/reduce side, hash aggregation,
+-- grouping sets and column stats. If we don't have column stats, we just assume hash
+-- aggregation is disabled. Following are the possible cases and rule for cardinality
+-- estimation
+
+-- MAP SIDE:
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+-- Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+-- Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+-- Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+-- REDUCE SIDE:
+-- Case 7: NO column stats — numRows / 2
+-- Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+-- Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
+
+create table location (state string, country string, votes bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@location
+POSTHOOK: query: -- There are different cases for Group By depending on map/reduce side, hash aggregation,
+-- grouping sets and column stats. If we don't have column stats, we just assume hash
+-- aggregation is disabled. Following are the possible cases and rule for cardinality
+-- estimation
+
+-- MAP SIDE:
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+-- Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+-- Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+-- Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+-- REDUCE SIDE:
+-- Case 7: NO column stats — numRows / 2
+-- Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+-- Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
+
+create table location (state string, country string, votes bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@location
+PREHOOK: query: load data local inpath "../../data/files/location.txt" overwrite into table location
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@location
+POSTHOOK: query: load data local inpath "../../data/files/location.txt" overwrite into table location
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@location
+PREHOOK: query: analyze table location compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+PREHOOK: Output: default@location
+POSTHOOK: query: analyze table location compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+POSTHOOK: Output: default@location
+PREHOOK: query: analyze table location compute statistics for columns state, country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table location compute statistics for columns state, country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+PREHOOK: query: -- Case 1: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 20
+-- Case 7: NO column stats - cardinality = 10
+explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 1: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 20
+-- Case 7: NO column stats - cardinality = 10
+explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 80
+-- Case 7: NO column stats - cardinality = 40
+explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 80
+-- Case 7: NO column stats - cardinality = 40
+explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 80 Data size: 800 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Statistics: Num rows: 80 Data size: 800 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+          pruneGroupingSetId: true
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- parallelism = 4
+
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+POSTHOOK: query: -- parallelism = 4
+
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- column stats for votes is missing, so ndvProduct becomes 0 and will be set to numRows / 2
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 10
+-- Case 9: column stats, NO grouping sets - caridnality = 5
+explain select state, votes from location group by state, votes
+PREHOOK: type: QUERY
+POSTHOOK: query: -- column stats for votes is missing, so ndvProduct becomes 0 and will be set to numRows / 2
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 10
+-- Case 9: column stats, NO grouping sets - caridnality = 5
+explain select state, votes from location group by state, votes
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: PARTIAL
+            Select Operator
+              expressions: state (type: string), votes (type: bigint)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: PARTIAL
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: bigint)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: bigint)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                  Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 4: column stats, hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 4: column stats, hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 8256 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Statistics: Num rows: 32 Data size: 8256 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+          pruneGroupingSetId: true
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 20
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 20
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 80
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 80
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: location
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), country (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 80 Data size: 20640 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Statistics: Num rows: 80 Data size: 20640 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+          pruneGroupingSetId: true
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table location
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@location
+PREHOOK: Output: default@location
+POSTHOOK: query: drop table location
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@location
+POSTHOOK: Output: default@location

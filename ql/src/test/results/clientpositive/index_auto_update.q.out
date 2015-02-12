@@ -109,10 +109,10 @@ STAGE PLANS:
             alias: temp
             Select Operator
               expressions: key (type: string), INPUT__FILE__NAME (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)
-              outputColumnNames: key, INPUT__FILE__NAME, BLOCK__OFFSET__INSIDE__FILE
+              outputColumnNames: _col0, _col1, _col2
               Group By Operator
-                aggregations: collect_set(BLOCK__OFFSET__INSIDE__FILE)
-                keys: key (type: string), INPUT__FILE__NAME (type: string)
+                aggregations: collect_set(_col2)
+                keys: _col0 (type: string), _col1 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Reduce Output Operator
@@ -126,16 +126,13 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: array<bigint>)
-            outputColumnNames: _col0, _col1, _col2
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.default__temp_temp_index__
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.default__temp_temp_index__
 
   Stage: Stage-1
     Move Operator
@@ -222,10 +219,10 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__temp_temp_index__
-            filterExpr: (key = 86) (type: boolean)
+            alias: default.default__temp_temp_index__
+            filterExpr: (UDFToDouble(key) = 86.0) (type: boolean)
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offsets (type: array<bigint>)
                 outputColumnNames: _col0, _col1
@@ -256,10 +253,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: temp
-            filterExpr: (key = 86) (type: boolean)
+            filterExpr: (UDFToDouble(key) = 86.0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '86' (type: string), val (type: string)

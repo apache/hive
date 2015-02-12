@@ -10,6 +10,7 @@ set mapred.input.dir.recursive=true;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- create a skewed table
 create table list_bucketing_dynamic_part (key String, value String) 

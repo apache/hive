@@ -1,0 +1,289 @@
+PREHOOK: query: -- 9. Test Windowing Functions
+select count(c_int) over() from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 9. Test Windowing Functions
+select count(c_int) over() from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+PREHOOK: query: select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+18	18.0	1	1	1	1	1	0.0	1	NULL
+18	18.0	1	1	2	1	1	0.0	1	NULL
+18	18.0	1	1	3	1	1	0.0	1	NULL
+18	18.0	1	1	4	1	1	0.0	1	NULL
+18	18.0	1	1	5	1	1	0.0	1	1.0
+18	18.0	1	1	6	1	1	0.0	1	1.0
+18	18.0	1	1	7	1	1	0.0	1	1.0
+18	18.0	1	1	8	1	1	0.0	1	1.0
+18	18.0	1	1	9	1	1	0.0	1	1.0
+18	18.0	1	1	10	1	1	0.0	1	1.0
+18	18.0	1	1	11	1	1	0.0	1	1.0
+18	18.0	1	1	12	1	1	0.0	1	1.0
+18	18.0	1	1	13	1	1	0.0	1	1.0
+18	18.0	1	1	14	1	1	0.0	1	1.0
+18	18.0	1	1	15	1	1	0.0	1	1.0
+18	18.0	1	1	16	1	1	0.0	1	1.0
+18	18.0	1	1	17	1	1	0.0	1	1.0
+18	18.0	1	1	18	1	1	0.0	1	1.0
+18	18.0	1	1	19	1	1	0.0	1	1.0
+18	18.0	1	1	20	1	1	0.0	1	1.0
+PREHOOK: query: select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+18	18.0	1	1	1	1	1	0.0	1	NULL
+18	18.0	1	1	2	1	1	0.0	1	NULL
+18	18.0	1	1	3	1	1	0.0	1	NULL
+18	18.0	1	1	4	1	1	0.0	1	NULL
+18	18.0	1	1	5	1	1	0.0	1	1.0
+18	18.0	1	1	6	1	1	0.0	1	1.0
+18	18.0	1	1	7	1	1	0.0	1	1.0
+18	18.0	1	1	8	1	1	0.0	1	1.0
+18	18.0	1	1	9	1	1	0.0	1	1.0
+18	18.0	1	1	10	1	1	0.0	1	1.0
+18	18.0	1	1	11	1	1	0.0	1	1.0
+18	18.0	1	1	12	1	1	0.0	1	1.0
+18	18.0	1	1	13	1	1	0.0	1	1.0
+18	18.0	1	1	14	1	1	0.0	1	1.0
+18	18.0	1	1	15	1	1	0.0	1	1.0
+18	18.0	1	1	16	1	1	0.0	1	1.0
+18	18.0	1	1	17	1	1	0.0	1	1.0
+18	18.0	1	1	18	1	1	0.0	1	1.0
+18	18.0	1	1	19	1	1	0.0	1	1.0
+18	18.0	1	1	20	1	1	0.0	1	1.0
+PREHOOK: query: select x from (select count(c_int) over() as x, sum(c_float) over() from cbo_t1) cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select x from (select count(c_int) over() as x, sum(c_float) over() from cbo_t1) cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+18
+PREHOOK: query: select 1+sum(c_int) over() from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select 1+sum(c_int) over() from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+19
+PREHOOK: query: select sum(c_int)+sum(sum(c_int)) over() from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(c_int)+sum(sum(c_int)) over() from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+36
+PREHOOK: query: select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from cbo_t1) cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select max(c_int) over (partition by key order by value Rows UNBOUNDED PRECEDING), min(c_int) over (partition by key order by value rows current row), count(c_int) over(partition by key order by value ROWS 1 PRECEDING), avg(value) over (partition by key order by value Rows between unbounded preceding and unbounded following), sum(value) over (partition by key order by value rows between unbounded preceding and current row), avg(c_float) over (partition by key order by value Rows between 1 preceding and unbounded following), sum(c_float) over (partition by key order by value rows between 1 preceding and current row), max(c_float) over (partition by key order by value rows between 1 preceding and unbounded following), min(c_float) over (partition by key order by value rows between 1 preceding and 1 following) from cbo_t1) cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
+1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
+1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
+1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
+1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
+1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	3.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	4.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	5.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	6.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	7.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	8.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	9.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	10.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	11.0	1.0	2.0	1.0	1.0
+1	1	2	1.0	12.0	1.0	2.0	1.0	1.0
+1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
+1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
+PREHOOK: query: select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from cbo_t1) cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from cbo_t1) cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
+PREHOOK: query: select *, rank() over(partition by key order by value) as rr from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select *, rank() over(partition by key order by value) as rr from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		1
+		1
+		1
+		1
+	val_165	5
+	val_193	6
+	val_265	7
+	val_27	8
+	val_409	9
+	val_484	10
+128		1
+146	val_146	1
+150	val_150	1
+213	val_213	1
+224		1
+238	val_238	1
+255	val_255	1
+273	val_273	1
+278	val_278	1
+311	val_311	1
+369		1
+401	val_401	1
+406	val_406	1
+66	val_66	1
+98	val_98	1
+PREHOOK: query: select *, rank() over(partition by key order by value) from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select *, rank() over(partition by key order by value) from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+		1
+		1
+		1
+		1
+	val_165	5
+	val_193	6
+	val_265	7
+	val_27	8
+	val_409	9
+	val_484	10
+128		1
+146	val_146	1
+150	val_150	1
+213	val_213	1
+224		1
+238	val_238	1
+255	val_255	1
+273	val_273	1
+278	val_278	1
+311	val_311	1
+369		1
+401	val_401	1
+406	val_406	1
+66	val_66	1
+98	val_98	1

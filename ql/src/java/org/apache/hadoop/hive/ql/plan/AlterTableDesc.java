@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -52,7 +54,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     ALTERPARTITIONPROTECTMODE("alter partition protect mode"), ALTERLOCATION("alter location"),
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
-    ALTERPARTITION("alter partition"), COMPACT("compact");
+    ALTERPARTITION("alter partition"), COMPACT("compact"),
+    TRUNCATE("truncate"), MERGEFILES("merge files");
+    ;
 
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }
@@ -63,6 +67,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     NO_DROP, OFFLINE, READ_ONLY, NO_DROP_CASCADE
   }
 
+  public static final Set<AlterTableTypes> alterTableTypesWithPartialSpec =
+      new HashSet<AlterTableDesc.AlterTableTypes>();
+
+  static {
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDCOLS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.REPLACECOLS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAMECOLUMN);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.DROPPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDE);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDEPROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDFILEFORMAT);
+  }
 
   AlterTableTypes op;
   String oldName;
@@ -96,6 +114,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   Table table;
   boolean isDropIfExists = false;
   boolean isTurnOffSorting = false;
+  boolean isCascade = false;
 
   public AlterTableDesc() {
   }
@@ -110,10 +129,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newComment
    * @param newType
    */
-  public AlterTableDesc(String tblName, String oldColName, String newColName,
-      String newType, String newComment, boolean first, String afterCol) {
+  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
+      String oldColName, String newColName, String newType, String newComment,
+      boolean first, String afterCol, boolean isCascade) {
     super();
     oldName = tblName;
+    this.partSpec = partSpec;
     this.oldColName = oldColName;
     this.newColName = newColName;
     newColType = newType;
@@ -121,6 +142,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.first = first;
     this.afterCol = afterCol;
     op = AlterTableTypes.RENAMECOLUMN;
+    this.isCascade = isCascade;
   }
 
   /**
@@ -142,11 +164,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newCols
    *          new columns to be added
    */
-  public AlterTableDesc(String name, List<FieldSchema> newCols,
-      AlterTableTypes alterType) {
+  public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
+      AlterTableTypes alterType, boolean isCascade) {
     op = alterType;
     oldName = name;
     this.newCols = new ArrayList<FieldSchema>(newCols);
+    this.partSpec = partSpec;
+    this.isCascade = isCascade;
   }
 
   /**
@@ -701,5 +725,15 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     return isDropIfExists;
   }
 
+  /**
+   * @return isCascade
+   */
+  public boolean getIsCascade() {
+    return isCascade;
+  }
+
+  public static boolean doesAlterTableTypeSupportPartialPartitionSpec(AlterTableTypes type) {
+    return alterTableTypesWithPartialSpec.contains(type);
+  }
 
 }

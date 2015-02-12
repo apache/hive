@@ -34,8 +34,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
@@ -50,8 +50,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -65,6 +63,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 /**
@@ -86,10 +85,11 @@ public class Table implements Serializable {
    * These fields are all cached fields.  The information comes from tTable.
    */
   private Deserializer deserializer;
-  private Class<? extends HiveOutputFormat> outputFormatClass;
+  private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private Path path;
-  private HiveStorageHandler storageHandler;
+
+  private transient HiveStorageHandler storageHandler;
 
   /**
    * Used only for serialization.
@@ -192,7 +192,7 @@ public class Table implements Serializable {
           "at least one column must be specified for the table");
     }
     if (!isView()) {
-      if (null == getDeserializerFromMetaStore()) {
+      if (null == getDeserializerFromMetaStore(false)) {
         throw new HiveException("must specify a non-null serDe");
       }
       if (null == getInputFormatClass()) {
@@ -223,7 +223,7 @@ public class Table implements Serializable {
     tTable.getSd().setInputFormat(inputFormatClass.getName());
   }
 
-  public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
+  public void setOutputFormatClass(Class<? extends OutputFormat> outputFormatClass) {
     this.outputFormatClass = outputFormatClass;
     tTable.getSd().setOutputFormat(outputFormatClass.getName());
   }
@@ -253,14 +253,25 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
-      deserializer = getDeserializerFromMetaStore();
+      deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
   }
 
-  private Deserializer getDeserializerFromMetaStore() {
+  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
+    return MetaStoreUtils.getDeserializerClass(Hive.get().getConf(), tTable);
+  }
+
+  final public Deserializer getDeserializer(boolean skipConfError) {
+    if (deserializer == null) {
+      deserializer = getDeserializerFromMetaStore(skipConfError);
+    }
+    return deserializer;
+  }
+
+  final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
-      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
+      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable, skipConfError);
     } catch (MetaException e) {
       throw new RuntimeException(e);
     } catch (HiveException e) {
@@ -269,7 +280,7 @@ public class Table implements Serializable {
   }
 
   public HiveStorageHandler getStorageHandler() {
-    if (storageHandler != null) {
+    if (storageHandler != null || !isNonNative()) {
       return storageHandler;
     }
     try {
@@ -303,9 +314,7 @@ public class Table implements Serializable {
     return inputFormatClass;
   }
 
-  final public Class<? extends HiveOutputFormat> getOutputFormatClass() {
-    // Replace FileOutputFormat for backward compatibility
-    boolean storagehandler = false;
+  final public Class<? extends OutputFormat> getOutputFormatClass() {
     if (outputFormatClass == null) {
       try {
         String className = tTable.getSd().getOutputFormat();
@@ -316,34 +325,10 @@ public class Table implements Serializable {
           }
           c = getStorageHandler().getOutputFormatClass();
         } else {
-            // if HivePassThroughOutputFormat
-            if (className.equals(
-                 HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME)) {
-              if (getStorageHandler() != null) {
-                // get the storage handler real output format class
-                c = getStorageHandler().getOutputFormatClass();
-              }
-              else {
-                //should not happen
-                return null;
-              }
-            }
-            else {
-              c = Class.forName(className, true,
-                  Utilities.getSessionSpecifiedClassLoader());
-            }
+          c = Class.forName(className, true, Utilities.getSessionSpecifiedClassLoader());
         }
-        if (!HiveOutputFormat.class.isAssignableFrom(c)) {
-          if (getStorageHandler() != null) {
-            storagehandler = true;
-          }
-          else {
-            storagehandler = false;
-          }
-          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,storagehandler);
-        } else {
-          outputFormatClass = (Class<? extends HiveOutputFormat>)c;
-        }
+        // Replace FileOutputFormat for backward compatibility
+        outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -383,6 +368,10 @@ public class Table implements Serializable {
 
   public void setProperty(String name, String value) {
     tTable.getParameters().put(name, value);
+  }
+
+  public void setParamters(Map<String, String> params) {
+    tTable.setParameters(params);
   }
 
   public String getProperty(String name) {
@@ -648,7 +637,7 @@ public class Table implements Serializable {
   protected void replaceFiles(Path srcf, boolean isSrcLocal)
       throws HiveException {
     Path tableDest = getPath();
-    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf(),
+    Hive.replaceFiles(tableDest, srcf, tableDest, tableDest, Hive.get().getConf(),
         isSrcLocal);
   }
 
@@ -661,12 +650,15 @@ public class Table implements Serializable {
    *          If the source directory is LOCAL
    * @param isAcid
    *          True if this is an ACID based insert, update, or delete
+   * @param newFiles optional list of paths.  If non-null, then all files copyied to the table
+   *                 will be added to this list.
    */
-  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid) throws HiveException {
+  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid, List<Path> newFiles)
+      throws HiveException {
     FileSystem fs;
     try {
       fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid);
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid, newFiles);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
@@ -694,8 +686,7 @@ public class Table implements Serializable {
     }
     try {
       Class<?> origin = Class.forName(name, true, Utilities.getSessionSpecifiedClassLoader());
-      setOutputFormatClass(HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin,false));
+      setOutputFormatClass(HiveFileFormatUtils.getOutputFormatSubstitute(origin));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);
     }
@@ -964,7 +955,7 @@ public class Table implements Serializable {
         pathPattern = pathPattern + "/*";
       }
       LOG.info("Path pattern = " + pathPattern);
-      FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
+      FileStatus srcs[] = fs.globStatus(new Path(pathPattern), FileUtils.HIDDEN_FILES_PATH_FILTER);
       Arrays.sort(srcs);
       for (FileStatus src : srcs) {
         LOG.info("Got file: " + src.getPath());

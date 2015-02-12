@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -51,9 +52,9 @@ public class DefaultFileAccess {
   public static void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
       throws IOException, AccessControlException, LoginException {
     // Get the user/groups for checking permissions based on the current UGI.
-    UserGroupInformation currentUgi = ShimLoader.getHadoopShims().getUGIForConf(fs.getConf());
+    UserGroupInformation currentUgi = Utils.getUGI();
     DefaultFileAccess.checkFileAccess(fs, stat, action,
-        ShimLoader.getHadoopShims().getShortUserName(currentUgi),
+        currentUgi.getShortUserName(),
         Arrays.asList(currentUgi.getGroupNames()));
   }
 

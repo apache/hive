@@ -1,0 +1,187 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_UDF2_txt (key decimal(20,10), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_UDF2_txt
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF2_txt (key decimal(20,10), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_UDF2_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF2_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_udf2_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF2_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_udf2_txt
+PREHOOK: query: CREATE TABLE DECIMAL_UDF2 (key decimal(20,10), value int)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_UDF2
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF2 (key decimal(20,10), value int)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_UDF2
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF2 SELECT * FROM DECIMAL_UDF2_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_txt
+PREHOOK: Output: default@decimal_udf2
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF2 SELECT * FROM DECIMAL_UDF2_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_txt
+POSTHOOK: Output: default@decimal_udf2
+POSTHOOK: Lineage: decimal_udf2.key SIMPLE [(decimal_udf2_txt)decimal_udf2_txt.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
+POSTHOOK: Lineage: decimal_udf2.value SIMPLE [(decimal_udf2_txt)decimal_udf2_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: EXPLAIN
+SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_udf2
+                  Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = CAST( 10 AS decimal(20,10))) (type: boolean)
+                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: acos(key) (type: double), asin(key) (type: double), atan(key) (type: double), cos(key) (type: double), sin(key) (type: double), tan(key) (type: double), radians(key) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+NaN	NaN	1.4711276743037347	-0.8390715290764524	-0.5440211108893698	0.6483608274590866	0.17453292519943295
+PREHOOK: query: EXPLAIN
+SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_udf2
+                  Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = CAST( 10 AS decimal(20,10))) (type: boolean)
+                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: exp(key) (type: double), ln(key) (type: double), log(key) (type: double), log(key, key) (type: double), log(key, value) (type: double), log(value, key) (type: double), log10(key) (type: double), sqrt(key) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2 WHERE key = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_udf2_txt
+PREHOOK: Output: default@decimal_udf2_txt
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_udf2_txt
+POSTHOOK: Output: default@decimal_udf2_txt
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_udf2
+PREHOOK: Output: default@decimal_udf2
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_udf2
+POSTHOOK: Output: default@decimal_udf2

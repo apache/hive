@@ -288,7 +288,7 @@ STAGE PLANS:
               predicate: (key = '145') (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '145' (type: string), value (type: string), ds (type: string), hr (type: string)
+                expressions: '145' (type: string), value (type: string), '1' (type: string), '1' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -327,7 +327,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -348,7 +348,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -424,18 +424,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col0 (type: bigint)
                   auto parallelism: false
@@ -454,7 +454,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -475,7 +475,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -489,39 +489,35 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=1 [fact_daily]
+        /fact_daily/ds=1/hr=1 [$hdt$_0:$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -601,7 +597,7 @@ STAGE PLANS:
               predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '484' (type: string), 'val_484' (type: string), ds (type: string), hr (type: string)
+                expressions: '484' (type: string), 'val_484' (type: string), '1' (type: string), '2' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -640,7 +636,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -661,7 +657,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -755,7 +751,7 @@ STAGE PLANS:
               predicate: ((key = '327') and (value = 'val_327')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '327' (type: string), 'val_327' (type: string), ds (type: string), hr (type: string)
+                expressions: '327' (type: string), 'val_327' (type: string), '1' (type: string), '3' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -794,7 +790,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -815,7 +811,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily

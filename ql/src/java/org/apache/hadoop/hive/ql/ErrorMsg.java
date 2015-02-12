@@ -219,7 +219,7 @@ public enum ErrorMsg {
       "Dynamic partitions do not support IF NOT EXISTS. Specified partitions with value :"),
   UDAF_INVALID_LOCATION(10128, "Not yet supported place for UDAF"),
   DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY(10129,
-    "Drop partitions for a non string partition columns is not allowed using non-equality"),
+    "Drop partitions for a non-string partition column is only allowed using equality"),
   ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
@@ -388,6 +388,8 @@ public enum ErrorMsg {
   TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction could be found, " +
       "may have timed out"),
   TXN_ABORTED(10263, "Transaction manager has aborted the transaction."),
+  DBTXNMGR_REQUIRES_CONCURRENCY(10264,
+      "To use DbTxnManager you must set hive.support.concurrency=true"),
 
   LOCK_NO_SUCH_LOCK(10270, "No record of lock could be found, " +
       "may have timed out"),
@@ -417,6 +419,15 @@ public enum ErrorMsg {
       "that implements AcidOutputFormat while transaction manager that supports ACID is in use"),
   VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
       "Values clause with table constructor not yet supported"),
+  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that does not use " +
+      "an AcidOutputFormat or is not bucketed", true),
+  ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
+      "sorted, table {0}", true),
+  ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED(10299,
+      "Alter table partition type {0} does not allow partial partition spec", true),
+  ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED(10300,
+      "Alter table partition type {0} does not support cascade", true),
+
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),

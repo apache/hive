@@ -1,0 +1,458 @@
+PREHOOK: query: create table store_sales_txt
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales_txt
+POSTHOOK: query: create table store_sales_txt
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@store_sales_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@store_sales_txt
+PREHOOK: query: create table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float
+)
+stored as orc
+tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float
+)
+stored as orc
+tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: insert overwrite table store_sales
+select 
+ss_sold_date_sk           ,
+    ss_sold_time_sk       ,
+    ss_item_sk            ,
+    ss_customer_sk        ,
+    ss_cdemo_sk           ,
+    ss_hdemo_sk           ,
+    ss_addr_sk            ,
+    ss_store_sk           ,
+    ss_promo_sk           ,
+    ss_ticket_number      ,
+    ss_quantity           ,
+    ss_wholesale_cost     ,
+    ss_list_price         ,
+    ss_sales_price        ,
+    ss_ext_discount_amt   ,
+    ss_ext_sales_price    ,
+    ss_ext_wholesale_cost ,
+    ss_ext_list_price     ,
+    ss_ext_tax            ,
+    ss_coupon_amt         ,
+    ss_net_paid           ,
+    ss_net_paid_inc_tax   ,
+    ss_net_profit         
+ from store_sales_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_txt
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: insert overwrite table store_sales
+select 
+ss_sold_date_sk           ,
+    ss_sold_time_sk       ,
+    ss_item_sk            ,
+    ss_customer_sk        ,
+    ss_cdemo_sk           ,
+    ss_hdemo_sk           ,
+    ss_addr_sk            ,
+    ss_store_sk           ,
+    ss_promo_sk           ,
+    ss_ticket_number      ,
+    ss_quantity           ,
+    ss_wholesale_cost     ,
+    ss_list_price         ,
+    ss_sales_price        ,
+    ss_ext_discount_amt   ,
+    ss_ext_sales_price    ,
+    ss_ext_wholesale_cost ,
+    ss_ext_list_price     ,
+    ss_ext_tax            ,
+    ss_coupon_amt         ,
+    ss_net_paid           ,
+    ss_net_paid_inc_tax   ,
+    ss_net_profit         
+ from store_sales_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_txt
+POSTHOOK: Output: default@store_sales
+POSTHOOK: Lineage: store_sales.ss_addr_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_cdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_coupon_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_coupon_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_customer_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_discount_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_discount_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_wholesale_cost, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_item_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_paid SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_paid_inc_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_promo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_quantity SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_quantity, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sold_date_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sold_time_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ticket_number SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:float, comment:null), ]
+PREHOOK: query: explain
+select 
+  ss_ticket_number
+from
+  store_sales
+group by ss_ticket_number
+limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select 
+  ss_ticket_number
+from
+  store_sales
+group by ss_ticket_number
+limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ss_ticket_number (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 
+  ss_ticket_number
+from
+  store_sales
+group by ss_ticket_number
+limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+  ss_ticket_number
+from
+  store_sales
+group by ss_ticket_number
+limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+PREHOOK: query: explain
+select 
+    min(ss_ticket_number)
+from
+    (select 
+        ss_ticket_number
+    from
+        store_sales
+    group by ss_ticket_number) a
+group by ss_ticket_number
+limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select 
+    min(ss_ticket_number)
+from
+    (select 
+        ss_ticket_number
+    from
+        store_sales
+    group by ss_ticket_number) a
+group by ss_ticket_number
+limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ss_ticket_number (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: min(_col0)
+                  keys: _col0 (type: int)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 20
+                      Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 
+    min(ss_ticket_number)
+from
+    (select 
+        ss_ticket_number
+    from
+        store_sales
+    group by ss_ticket_number) a
+group by ss_ticket_number
+limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+    min(ss_ticket_number)
+from
+    (select 
+        ss_ticket_number
+    from
+        store_sales
+    group by ss_ticket_number) a
+group by ss_ticket_number
+limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20

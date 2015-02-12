@@ -616,13 +616,13 @@ select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
-  Stage-3
+  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
@@ -634,9 +634,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Outer Join 0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -652,10 +649,10 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.smb_join_results
 
-  Stage: Stage-7
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
@@ -671,22 +668,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.smb_join_results
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.smb_join_results
-
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -699,6 +684,18 @@ STAGE PLANS:
                   name: default.smb_join_results
 
   Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.smb_join_results
+
+  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true

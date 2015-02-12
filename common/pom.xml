@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -56,9 +56,19 @@
       <version>${commons-logging.version}</version>
     </dependency>
     <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${joda.version}</version>
+    </dependency>
+    <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>apache-log4j-extras</artifactId>
+      <version>${log4j-extras.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -71,6 +81,12 @@
       <version>${ant.version}</version>
     </dependency>
     <!-- test inter-project -->
+    <dependency>
+      <groupId>com.google.code.tempus-fugit</groupId>
+      <artifactId>tempus-fugit</artifactId>
+      <version>${tempus-fugit.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -112,14 +128,6 @@
     <profile>
       <id>dist</id>
       <build>
-        <resources>
-          <resource>
-            <directory>../conf/</directory>
-            <includes>
-              <include>hive-default.xml.template</include>
-            </includes>
-          </resource>
-        </resources>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

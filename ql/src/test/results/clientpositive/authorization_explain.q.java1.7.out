@@ -1,0 +1,47 @@
+Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+explain authorization select * from src join srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+explain authorization select * from src join srcpart
+POSTHOOK: type: QUERY
+INPUTS: 
+  default@src
+  default@srcpart
+  default@srcpart@ds=2008-04-08/hr=11
+  default@srcpart@ds=2008-04-08/hr=12
+  default@srcpart@ds=2008-04-09/hr=11
+  default@srcpart@ds=2008-04-09/hr=12
+OUTPUTS: 
+#### A masked pattern was here ####
+CURRENT_USER: 
+  hive_test_user
+OPERATION: 
+  QUERY
+AUTHORIZATION_FAILURES: 
+  No privilege 'Select' found for inputs { database:default, table:src, columnName:key}
+  No privilege 'Select' found for inputs { database:default, table:srcpart, columnName:key}
+Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: explain formatted authorization select * from src join srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: explain formatted authorization select * from src join srcpart
+POSTHOOK: type: QUERY
+#### A masked pattern was here ####
+PREHOOK: query: explain authorization use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: explain authorization use default
+POSTHOOK: type: SWITCHDATABASE
+INPUTS: 
+  database:default
+OUTPUTS: 
+CURRENT_USER: 
+  hive_test_user
+OPERATION: 
+  SWITCHDATABASE
+PREHOOK: query: explain formatted authorization use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: explain formatted authorization use default
+POSTHOOK: type: SWITCHDATABASE
+{"OUTPUTS":[],"INPUTS":["database:default"],"OPERATION":"SWITCHDATABASE","CURRENT_USER":"hive_test_user"}

@@ -42,7 +42,7 @@ public class TestIUD {
   @Before
   public void setup() throws SemanticException {
     pd = new ParseDriver();
-    sA = new SemanticAnalyzer(conf);
+    sA = new CalcitePlanner(conf);
   }
 
   ASTNode parse(String query) throws ParseException {
@@ -193,7 +193,7 @@ public class TestIUD {
   }
   @Test
   public void testInsertIntoTableAsSelectFromNamedVirtTable() throws ParseException {
-    ASTNode ast = parse("insert into table page_view select a,b as c from (values (1,2),(3,4)) as VC(a,b) where b = 9");
+    ASTNode ast = parse("insert into page_view select a,b as c from (values (1,2),(3,4)) as VC(a,b) where b = 9");
     Assert.assertEquals("AST doesn't match",
       "(TOK_QUERY " +
         "(TOK_FROM " +
@@ -209,7 +209,7 @@ public class TestIUD {
   }
   @Test
   public void testInsertIntoTableFromAnonymousTable1Row() throws ParseException {
-    ASTNode ast = parse("insert into table page_view values(1,2)");
+    ASTNode ast = parse("insert into page_view values(1,2)");
     Assert.assertEquals("AST doesn't match",
       "(TOK_QUERY " +
         "(TOK_FROM " +
@@ -231,6 +231,17 @@ public class TestIUD {
           "(TOK_VALUES_TABLE (TOK_VALUE_ROW (- 1) 2) (TOK_VALUE_ROW 3 (+ 4))))) " +
         "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
           "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
+      ast.toStringTree());
+    //same query as above less the "table" keyword KW_TABLE
+    ast = parse("insert into page_view values(-1,2),(3,+4)");
+    Assert.assertEquals("AST doesn't match",
+      "(TOK_QUERY " +
+        "(TOK_FROM " +
+        "(TOK_VIRTUAL_TABLE " +
+        "(TOK_VIRTUAL_TABREF TOK_ANONYMOUS) " +
+        "(TOK_VALUES_TABLE (TOK_VALUE_ROW (- 1) 2) (TOK_VALUE_ROW 3 (+ 4))))) " +
+        "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME page_view))) " +
+        "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
       ast.toStringTree());
   }
 }

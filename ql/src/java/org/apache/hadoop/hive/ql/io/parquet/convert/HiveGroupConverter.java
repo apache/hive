@@ -13,39 +13,74 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
-
 import parquet.io.api.Converter;
 import parquet.io.api.GroupConverter;
+import parquet.io.api.PrimitiveConverter;
+import parquet.schema.GroupType;
+import parquet.schema.OriginalType;
+import parquet.schema.PrimitiveType;
 import parquet.schema.Type;
-import parquet.schema.Type.Repetition;
 
-public abstract class HiveGroupConverter extends GroupConverter {
+import java.util.Map;
 
-  protected static Converter getConverterFromDescription(final Type type, final int index,
-      final HiveGroupConverter parent, List<TypeInfo> hiveSchemaTypeInfos) {
+public abstract class HiveGroupConverter extends GroupConverter implements ConverterParent {
+
+  private Map<String, String> metadata;
+
+  public void setMetadata(Map<String, String> metadata) {
+    this.metadata = metadata;
+  }
+
+  public Map<String, String> getMetadata() {
+    return metadata;
+  }
+
+  protected static PrimitiveConverter getConverterFromDescription(PrimitiveType type, int index, ConverterParent parent) {
     if (type == null) {
       return null;
     }
-    if (type.isPrimitive()) {
-      return ETypeConverter.getNewConverter(type.asPrimitiveType(), index, parent,
-          hiveSchemaTypeInfos);
-    } else {
-      if (type.asGroupType().getRepetition() == Repetition.REPEATED) {
-        return new ArrayWritableGroupConverter(type.asGroupType(), parent, index,
-            hiveSchemaTypeInfos);
-      } else {
-        return new DataWritableGroupConverter(type.asGroupType(), parent, index,
-            hiveSchemaTypeInfos);
-      }
-    }
+
+    return ETypeConverter.getNewConverter(type, index, parent);
   }
 
-  protected abstract void set(int index, Writable value);
+  protected static HiveGroupConverter getConverterFromDescription(GroupType type, int index, ConverterParent parent) {
+    if (type == null) {
+      return null;
+    }
 
-  protected abstract void add(int index, Writable value);
+    OriginalType annotation = type.getOriginalType();
+    if (annotation == OriginalType.LIST) {
+      return HiveCollectionConverter.forList(type, parent, index);
+    } else if (annotation == OriginalType.MAP || annotation == OriginalType.MAP_KEY_VALUE) {
+      return HiveCollectionConverter.forMap(type, parent, index);
+    }
+
+    return new HiveStructConverter(type, parent, index);
+  }
+
+  protected static Converter getConverterFromDescription(Type type, int index, ConverterParent parent) {
+    if (type == null) {
+      return null;
+    }
+
+    if (type.isPrimitive()) {
+      return getConverterFromDescription(type.asPrimitiveType(), index, parent);
+    }
+
+    return getConverterFromDescription(type.asGroupType(), index, parent);
+  }
+
+  /**
+   * The original list and map conversion didn't remove the synthetic layer and
+   * the ObjectInspector had to remove it. This is a temporary fix that adds an
+   * extra layer for the ObjectInspector to remove.
+   */
+  static ArrayWritable wrapList(ArrayWritable list) {
+    return new ArrayWritable(Writable.class, new Writable[] {list});
+  }
+
+  public abstract void set(int index, Writable value);
 
 }

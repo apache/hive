@@ -951,9 +951,9 @@ public final class ObjectInspectorUtils {
 
       if (childFieldsList1 == null && childFieldsList2 == null) {
         return true;
-      }
-
-      if (childFieldsList1.size() != childFieldsList2.size()) {
+      } else if (childFieldsList1 == null || childFieldsList2 == null) {
+        return false;
+      } else if (childFieldsList1.size() != childFieldsList2.size()) {
         return false;
       }
 
@@ -1000,6 +1000,9 @@ public final class ObjectInspectorUtils {
   }
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
+    if (oi instanceof ConstantObjectInspector) {
+      return (ConstantObjectInspector) oi;  
+    }
     ObjectInspector writableOI = getStandardObjectInspector(oi, ObjectInspectorCopyOption.WRITABLE);
     Object writableValue =
       ObjectInspectorConverters.getConverter(oi, writableOI).convert(value);

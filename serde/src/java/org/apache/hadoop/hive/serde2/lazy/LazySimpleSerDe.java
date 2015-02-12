@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractEncodingAwareSerDe;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -53,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * LazySimpleSerDe can be used to read the same data format as
@@ -64,6 +68,14 @@ import org.apache.hadoop.io.Writable;
  * Also LazySimpleSerDe outputs typed columns instead of treating all columns as
  * String like MetadataTypedColumnsetSerDe.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
+    serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+    serdeConstants.ESCAPE_CHAR,
+    serdeConstants.SERIALIZATION_ENCODING,
+    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS})
 public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
@@ -120,7 +132,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * SerDeParameters.
    *
    */
-  public static class SerDeParameters {
+  public static class SerDeParameters implements LazyObjectInspectorParameters {
     byte[] separators = DefaultSeparators;
     String nullString;
     Text nullSequence;
@@ -134,6 +146,10 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
     boolean[] needsEscape;
 
     boolean extendedBooleanLiteral;
+    List<String> timestampFormats;
+
+    public SerDeParameters() {
+    }
 
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
@@ -174,6 +190,14 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
     public boolean[] getNeedsEscape() {
       return needsEscape;
     }
+
+    public boolean isExtendedBooleanLiteral() {
+      return extendedBooleanLiteral;
+    }
+
+    public List<String> getTimestampFormats() {
+      return timestampFormats;
+    }
   }
 
   SerDeParameters serdeParams = null;
@@ -197,10 +221,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(serdeParams
-        .getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-        .getSeparators(), serdeParams.getNullSequence(), serdeParams
-        .isLastColumnTakesRest(), serdeParams.isEscaped(), serdeParams
-        .getEscapeChar(), serdeParams.extendedBooleanLiteral);
+        .getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
@@ -209,7 +230,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
         + serdeParams.columnNames + " columnTypes=" + serdeParams.columnTypes
         + " separator=" + Arrays.asList(serdeParams.separators)
         + " nullstring=" + serdeParams.nullString + " lastColumnTakesRest="
-        + serdeParams.lastColumnTakesRest);
+        + serdeParams.lastColumnTakesRest + " timestampFormats=" + serdeParams.timestampFormats);
 
     serializedSize = 0;
     stats = new SerDeStats();
@@ -317,6 +338,12 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     serdeParams.extendedBooleanLiteral = job == null ? false :
         job.getBoolean(ConfVars.HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL.varname, false);
+
+    String[] timestampFormatsArray =
+        HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS));
+    if (timestampFormatsArray != null) {
+      serdeParams.timestampFormats = Arrays.asList(timestampFormatsArray);
+    }
     return serdeParams;
   }
 

@@ -52,13 +52,10 @@ public abstract class RecordProcessor  {
 
 
   // used to log memory usage periodically
-  public static MemoryMXBean memoryMXBean;
   protected boolean isLogInfoEnabled = false;
   protected boolean isLogTraceEnabled = false;
   protected MRTaskReporter reporter;
 
-  private long numRows = 0;
-  private long nextUpdateCntr = 1;
   protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
@@ -78,11 +75,6 @@ public abstract class RecordProcessor  {
     this.inputs = inputs;
     this.outputs = outputs;
     this.processorContext = processorContext;
-
-    // Allocate the bean at the beginning -
-    memoryMXBean = ManagementFactory.getMemoryMXBean();
-
-    l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
     isLogInfoEnabled = l4j.isInfoEnabled();
     isLogTraceEnabled = l4j.isTraceEnabled();
@@ -109,39 +101,6 @@ public abstract class RecordProcessor  {
 
 
   abstract void close();
-
-  /**
-   * Log information to be logged at the end
-   */
-  protected void logCloseInfo() {
-    long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-    l4j.info("ExecMapper: processed " + numRows + " rows: used memory = "
-        + used_memory);
-  }
-
-  /**
-   * Log number of records processed and memory used after processing many records
-   */
-  protected void logProgress() {
-    numRows++;
-    if (numRows == nextUpdateCntr) {
-      long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-      l4j.info("ExecMapper: processing " + numRows
-          + " rows: used memory = " + used_memory);
-      nextUpdateCntr = getNextUpdateRecordCounter(numRows);
-    }
-  }
-
-  private long getNextUpdateRecordCounter(long cntr) {
-    // A very simple counter to keep track of number of rows processed by the
-    // reducer. It dumps
-    // every 1 million times, and quickly before that
-    if (cntr >= 1000000) {
-      return cntr + 1000000;
-    }
-
-    return 10 * cntr;
-  }
 
   protected void createOutputMap() {
     Preconditions.checkState(outMap == null, "Outputs should only be setup once");

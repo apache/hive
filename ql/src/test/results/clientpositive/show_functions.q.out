@@ -21,6 +21,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 ^
 abs
 acos
+add_months
 and
 array
 array_contains
@@ -51,6 +52,9 @@ covar_samp
 create_union
 cume_dist
 current_database
+current_date
+current_timestamp
+current_user
 date_add
 date_sub
 datediff
@@ -78,6 +82,7 @@ format_number
 from_unixtime
 from_utc_timestamp
 get_json_object
+greatest
 hash
 hex
 histogram_numeric
@@ -86,6 +91,7 @@ if
 in
 in_file
 index
+initcap
 inline
 instr
 isnotnull
@@ -93,9 +99,11 @@ isnull
 java_method
 json_tuple
 lag
+last_day
 last_value
 lcase
 lead
+least
 length
 like
 ln
@@ -116,6 +124,7 @@ minute
 month
 named_struct
 negative
+next_day
 ngrams
 noop
 noopstreaming
@@ -223,6 +232,9 @@ covar_samp
 create_union
 cume_dist
 current_database
+current_date
+current_timestamp
+current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'
@@ -231,6 +243,7 @@ assert_true
 case
 coalesce
 current_database
+current_date
 decode
 e
 encode
@@ -272,6 +285,7 @@ PREHOOK: query: SHOW FUNCTIONS '.*date.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
 POSTHOOK: type: SHOWFUNCTIONS
+current_date
 date_add
 date_sub
 datediff
@@ -280,3 +294,75 @@ PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '***'
 POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+when
+PREHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+POSTHOOK: type: SHOWFUNCTIONS
+max
+min
+PREHOOK: query: SHOW FUNCTIONS LIKE 'xpath*|m*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'xpath*|m*'
+POSTHOOK: type: SHOWFUNCTIONS
+map
+map_keys
+map_values
+matchpath
+max
+min
+minute
+month
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+PREHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS LIKE "log"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE `log`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log*'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+PREHOOK: query: SHOW FUNCTIONS LIKE "log*"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log*"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+PREHOOK: query: SHOW FUNCTIONS LIKE `log*`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log*`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2

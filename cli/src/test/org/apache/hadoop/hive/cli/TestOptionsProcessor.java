@@ -41,8 +41,7 @@ public class TestOptionsProcessor {
     System.clearProperty("hivevar");
     assertNull(System.getProperty("_A"));
     String[] args = { "-hiveconf", "_A=B", "-define", "C=D", "-hivevar", "X=Y",
-        "-S", "true", "-database", "testDb", "-e", "execString",  "-v", "true",
-        "-h", "yahoo.host", "-p", "3000"};
+        "-S", "true", "-database", "testDb", "-e", "execString",  "-v", "true"};
 
     // stage 1
     assertTrue(processor.process_stage1(args));
@@ -55,8 +54,6 @@ public class TestOptionsProcessor {
     processor.process_stage2(sessionState);
     assertEquals("testDb", sessionState.database);
     assertEquals("execString", sessionState.execString);
-    assertEquals("yahoo.host", sessionState.host);
-    assertEquals(3000, sessionState.port);
     assertEquals(0, sessionState.initFiles.size());
     assertTrue(sessionState.getIsVerbose());
     sessionState.setConf(null);

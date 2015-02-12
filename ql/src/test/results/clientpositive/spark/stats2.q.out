@@ -1,0 +1,201 @@
+PREHOOK: query: create table analyze_t1 like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@analyze_t1
+POSTHOOK: query: create table analyze_t1 like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@analyze_t1
+PREHOOK: query: explain
+insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.analyze_t1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.analyze_t1
+
+PREHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@analyze_t1
+POSTHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted analyze_t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@analyze_t1
+POSTHOOK: query: desc formatted analyze_t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@analyze_t1
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain analyze table analyze_t1 partition (ds, hr) compute statistics
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze table analyze_t1 partition (ds, hr) compute statistics
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: analyze_t1
+                  Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
+
+  Stage: Stage-1
+    Stats-Aggr Operator
+
+PREHOOK: query: analyze table analyze_t1 partition (ds, hr) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_t1
+PREHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=11
+PREHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=12
+PREHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=11
+PREHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=12
+PREHOOK: Output: default@analyze_t1
+PREHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=12
+PREHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=11
+PREHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=12
+POSTHOOK: query: analyze table analyze_t1 partition (ds, hr) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_t1
+POSTHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_t1
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=12
+PREHOOK: query: describe formatted analyze_t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@analyze_t1
+POSTHOOK: query: describe formatted analyze_t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@analyze_t1
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

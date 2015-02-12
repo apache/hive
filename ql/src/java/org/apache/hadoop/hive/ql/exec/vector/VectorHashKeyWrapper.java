@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -36,6 +37,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  */
 public class VectorHashKeyWrapper extends KeyWrapper {
 
+  private static final int[] EMPTY_INT_ARRAY = new int[0];
+  private static final long[] EMPTY_LONG_ARRAY = new long[0];
+  private static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
+  private static final byte[][] EMPTY_BYTES_ARRAY = new byte[0][];
+  private static final HiveDecimalWritable[] EMPTY_DECIMAL_ARRAY = new HiveDecimalWritable[0];
+
   private long[] longValues;
   private double[] doubleValues;
 
@@ -43,22 +50,28 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private int[] byteStarts;
   private int[] byteLengths;
 
-  private Decimal128[] decimalValues;
+  private HiveDecimalWritable[] decimalValues;
 
   private boolean[] isNull;
   private int hashcode;
 
   public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount) {
-    longValues = new long[longValuesCount];
-    doubleValues = new double[doubleValuesCount];
-    decimalValues = new Decimal128[decimalValuesCount];
+    longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
+    doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
+    decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
     for(int i = 0; i < decimalValuesCount; ++i) {
-      decimalValues[i] = new Decimal128();
+      decimalValues[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
     }
-    byteValues = new byte[byteValuesCount][];
-    byteStarts = new int[byteValuesCount];
-    byteLengths = new int[byteValuesCount];
+    if (byteValuesCount > 0) {
+      byteValues = new byte[byteValuesCount][];
+      byteStarts = new int[byteValuesCount];
+      byteLengths = new int[byteValuesCount];
+    } else {
+      byteValues = EMPTY_BYTES_ARRAY;
+      byteStarts = EMPTY_INT_ARRAY;
+      byteLengths = EMPTY_INT_ARRAY;
+    }
     isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount];
     hashcode = 0;
   }
@@ -75,8 +88,11 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public void setHashKey() {
     hashcode = Arrays.hashCode(longValues) ^
         Arrays.hashCode(doubleValues) ^
-        Arrays.hashCode(decimalValues) ^
         Arrays.hashCode(isNull);
+
+    for (int i = 0; i < decimalValues.length; i++) {
+      hashcode ^= decimalValues[i].getHiveDecimal().hashCode();
+    }
 
     // This code, with branches and all, is not executed if there are no string keys
     for (int i = 0; i < byteValues.length; ++i) {
@@ -149,27 +165,36 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void duplicateTo(VectorHashKeyWrapper clone) {
-    clone.longValues = longValues.clone();
-    clone.doubleValues = doubleValues.clone();
+    clone.longValues = (longValues.length > 0) ? longValues.clone() : EMPTY_LONG_ARRAY;
+    clone.doubleValues = (doubleValues.length > 0) ? doubleValues.clone() : EMPTY_DOUBLE_ARRAY;
     clone.isNull = isNull.clone();
 
-    // Decimal128 requires deep clone
-    clone.decimalValues = new Decimal128[decimalValues.length];
-    for(int i = 0; i < decimalValues.length; ++i) {
-      clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+    if (decimalValues.length > 0) {
+      // Decimal columns use HiveDecimalWritable.
+      clone.decimalValues = new HiveDecimalWritable[decimalValues.length];
+      for(int i = 0; i < decimalValues.length; ++i) {
+        clone.decimalValues[i] = new HiveDecimalWritable(decimalValues[i]);
+      }
+    } else {
+      clone.decimalValues = EMPTY_DECIMAL_ARRAY;
     }
 
-    clone.byteValues = new byte[byteValues.length][];
-    clone.byteStarts = new int[byteValues.length];
-    clone.byteLengths = byteLengths.clone();
-    for (int i = 0; i < byteValues.length; ++i) {
-      // avoid allocation/copy of nulls, because it potentially expensive. branch instead.
-      if (!isNull[longValues.length + doubleValues.length + i]) {
-        clone.byteValues[i] = Arrays.copyOfRange(
-            byteValues[i],
-            byteStarts[i],
-            byteStarts[i] + byteLengths[i]);
+    if (byteLengths.length > 0) {
+      clone.byteValues = new byte[byteValues.length][];
+      clone.byteStarts = new int[byteValues.length];
+      clone.byteLengths = byteLengths.clone();
+      for (int i = 0; i < byteValues.length; ++i) {
+        // avoid allocation/copy of nulls, because it potentially expensive.
+        // branch instead.
+        if (!isNull[longValues.length + doubleValues.length + i]) {
+          clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
+              byteStarts[i], byteStarts[i] + byteLengths[i]);
+        }
       }
+    } else {
+      clone.byteValues = EMPTY_BYTES_ARRAY;
+      clone.byteStarts = EMPTY_INT_ARRAY;
+      clone.byteLengths = EMPTY_INT_ARRAY;
     }
     clone.hashcode = hashcode;
     assert clone.equals(this);
@@ -222,8 +247,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     isNull[longValues.length + doubleValues.length + index] = true;
   }
 
-  public void assignDecimal(int index, Decimal128 value) {
-    decimalValues[index].update(value);
+  public void assignDecimal(int index, HiveDecimalWritable value) {
+    decimalValues[index].set(value);
     isNull[longValues.length + doubleValues.length + byteValues.length + index] = false;
   }
 
@@ -287,7 +312,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return isNull[longValues.length + doubleValues.length + byteValues.length + i];
   }
 
-  public Decimal128 getDecimal(int i) {
+  public HiveDecimalWritable getDecimal(int i) {
     return decimalValues[i];
   }
 }

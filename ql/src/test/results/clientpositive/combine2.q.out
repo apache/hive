@@ -22,7 +22,7 @@ create table combine2(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@combine2
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
@@ -40,7 +40,7 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@combine2
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
@@ -94,33 +94,21 @@ POSTHOOK: query: explain
 select key, value from combine2 where value is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: combine2
-            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: combine2
+          Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+            ListSink
 
 PREHOOK: query: select key, value from combine2 where value is not null
 PREHOOK: type: QUERY
@@ -197,18 +185,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: combine2
-            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(1)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col0 (type: bigint)
                   auto parallelism: false
@@ -275,7 +263,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 1
+              numFiles 3
               numRows 3
               partition_columns value
               partition_columns.types string
@@ -410,7 +398,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 1
+              numFiles 3
               numRows 3
               partition_columns value
               partition_columns.types string
@@ -576,46 +564,42 @@ STAGE PLANS:
               name: default.combine2
             name: default.combine2
       Truncated Path -> Alias:
-        /combine2/value=2010-04-21 09%3A45%3A00 [combine2]
-        /combine2/value=val_0 [combine2]
-        /combine2/value=val_2 [combine2]
-        /combine2/value=val_4 [combine2]
-        /combine2/value=val_5 [combine2]
-        /combine2/value=val_8 [combine2]
-        /combine2/value=val_9 [combine2]
-        /combine2/value=| [combine2]
+        /combine2/value=2010-04-21 09%3A45%3A00 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_0 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_2 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_4 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_5 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_8 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=val_9 [$hdt$_0:$hdt$_0:combine2]
+        /combine2/value=| [$hdt$_0:$hdt$_0:combine2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -664,22 +648,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ds (type: string)
-              outputColumnNames: ds
-              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: COMPLETE
+              outputColumnNames: _col0
+              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: ds (type: string)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -687,18 +671,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

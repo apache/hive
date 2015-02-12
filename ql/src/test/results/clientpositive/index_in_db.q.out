@@ -1,0 +1,51 @@
+PREHOOK: query: drop database if exists index_test_db cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists index_test_db cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: -- Test selecting selecting from a table that is backed by an index
+-- create table, index in a db, then set default db as current db, and try selecting
+
+create database index_test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:index_test_db
+POSTHOOK: query: -- Test selecting selecting from a table that is backed by an index
+-- create table, index in a db, then set default db as current db, and try selecting
+
+create database index_test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:index_test_db
+PREHOOK: query: use index_test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:index_test_db
+POSTHOOK: query: use index_test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:index_test_db
+PREHOOK: query: create table testtb (id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:index_test_db
+PREHOOK: Output: index_test_db@testtb
+POSTHOOK: query: create table testtb (id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:index_test_db
+POSTHOOK: Output: index_test_db@testtb
+PREHOOK: query: create index id_index on table testtb (id) as 'COMPACT' WITH DEFERRED REBUILD  in table testdb_id_idx_tb
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: index_test_db@testtb
+POSTHOOK: query: create index id_index on table testtb (id) as 'COMPACT' WITH DEFERRED REBUILD  in table testdb_id_idx_tb
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: index_test_db@testtb
+POSTHOOK: Output: index_test_db@testdb_id_idx_tb
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: select * from index_test_db.testtb where id>2
+PREHOOK: type: QUERY
+PREHOOK: Input: index_test_db@testtb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from index_test_db.testtb where id>2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: index_test_db@testtb
+#### A masked pattern was here ####

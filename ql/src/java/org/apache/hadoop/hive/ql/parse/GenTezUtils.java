@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
+
 /**
  * GenTezUtils is a collection of shared helper methods to produce
  * TezWork
@@ -117,7 +119,7 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
-    if (isAutoReduceParallelism && reduceSink.getConf().isAutoParallel()) {
+    if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
       reduceWork.setAutoReduceParallelism(true);
 
       // configured limit for reducers
@@ -167,7 +169,8 @@ public class GenTezUtils {
     GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
 
     // remember which parent belongs to which tag
-    reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
+    int tag = reduceSink.getConf().getTag();
+    reduceWork.getTagToInput().put(tag == -1 ? 0 : tag,
          context.preceedingWork.getName());
 
     // remember the output name of the reduce sink
@@ -188,10 +191,7 @@ public class GenTezUtils {
 
     setupMapWork(mapWork, context, partitions, root, alias);
 
-    if (context.parseContext != null
-        && context.parseContext.getTopToTable() != null
-        && context.parseContext.getTopToTable().containsKey(ts)
-        && context.parseContext.getTopToTable().get(ts).isDummyTable()) {
+    if (ts.getConf().getTableMetadata() != null && ts.getConf().getTableMetadata().isDummyTable()) {
       mapWork.setDummyTableScan(true);
     }
 

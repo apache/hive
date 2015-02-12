@@ -39,10 +39,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.mapred.JobConf;
+
+import com.google.common.collect.Interner;
 
 /**
  * MapWork represents all the information used to run a map task on the cluster.
@@ -84,7 +84,6 @@ public class MapWork extends BaseWork {
   private final Map<String, List<SortCol>> sortedColsByDirectory =
       new HashMap<String, List<SortCol>>();
 
-  private MapredLocalWork mapLocalWork;
   private Path tmpHDFSPath;
 
   private String inputformat;
@@ -104,8 +103,9 @@ public class MapWork extends BaseWork {
   public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   // the following two are used for join processing
-  private QBJoinTree joinTree;
-  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
+  private boolean leftInputJoin;
+  private String[] baseSrc;
+  private List<String> mapAliases;
 
   private boolean mapperCannotSpanPartns;
 
@@ -125,6 +125,8 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
+
+  private boolean doSplitsGrouping = true;
 
   public MapWork() {}
 
@@ -190,8 +192,26 @@ public class MapWork extends BaseWork {
         entry.getValue().deriveBaseFileName(entry.getKey());
       }
     }
+
+    MapredLocalWork mapLocalWork = getMapRedLocalWork();
     if (mapLocalWork != null) {
       mapLocalWork.deriveExplainAttributes();
+    }
+  }
+
+  public void internTable(Interner<TableDesc> interner) {
+    if (aliasToPartnInfo != null) {
+      for (PartitionDesc part : aliasToPartnInfo.values()) {
+        if (part == null) {
+          continue;
+        }
+        part.intern(interner);
+      }
+    }
+    if (pathToPartitionInfo != null) {
+      for (PartitionDesc part : pathToPartitionInfo.values()) {
+        part.intern(interner);
+      }
     }
   }
 
@@ -219,23 +239,6 @@ public class MapWork extends BaseWork {
       final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
   }
-
-  /**
-   * @return the mapredLocalWork
-   */
-  @Explain(displayName = "Local Work")
-  public MapredLocalWork getMapLocalWork() {
-    return mapLocalWork;
-  }
-
-  /**
-   * @param mapLocalWork
-   *          the mapredLocalWork to set
-   */
-  public void setMapLocalWork(final MapredLocalWork mapLocalWork) {
-    this.mapLocalWork = mapLocalWork;
-  }
-
 
   @Explain(displayName = "Split Sample", normalExplain = false)
   public HashMap<String, SplitSample> getNameToSplitSample() {
@@ -415,14 +418,6 @@ public class MapWork extends BaseWork {
     return useOneNullRowInputFormat;
   }
 
-  public QBJoinTree getJoinTree() {
-    return joinTree;
-  }
-
-  public void setJoinTree(QBJoinTree joinTree) {
-    this.joinTree = joinTree;
-  }
-
   public void setMapperCannotSpanPartns(boolean mapperCannotSpanPartns) {
     this.mapperCannotSpanPartns = mapperCannotSpanPartns;
   }
@@ -457,16 +452,6 @@ public class MapWork extends BaseWork {
 
   public ArrayList<PartitionDesc> getPartitionDescs() {
     return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
-  }
-
-  public
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtxMap() {
-    return opParseCtxMap;
-  }
-
-  public void setOpParseCtxMap(
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap) {
-    this.opParseCtxMap = opParseCtxMap;
   }
 
   public Path getTmpHDFSPath() {
@@ -566,5 +551,37 @@ public class MapWork extends BaseWork {
 
   public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
     this.eventSourcePartKeyExprMap = map;
+  }
+
+  public void setDoSplitsGrouping(boolean doSplitsGrouping) {
+    this.doSplitsGrouping = doSplitsGrouping;
+  }
+
+  public boolean getDoSplitsGrouping() {
+    return this.doSplitsGrouping;
+  }
+
+  public boolean isLeftInputJoin() {
+    return leftInputJoin;
+  }
+
+  public void setLeftInputJoin(boolean leftInputJoin) {
+    this.leftInputJoin = leftInputJoin;
+  }
+
+  public String[] getBaseSrc() {
+    return baseSrc;
+  }
+
+  public void setBaseSrc(String[] baseSrc) {
+    this.baseSrc = baseSrc;
+  }
+
+  public List<String> getMapAliases() {
+    return mapAliases;
+  }
+
+  public void setMapAliases(List<String> mapAliases) {
+    this.mapAliases = mapAliases;
   }
 }

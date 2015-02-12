@@ -60,7 +60,7 @@ implements BigTableSelectorForAutoSMJ {
           currentPos++;
           continue;
         }
-        Table table = parseCtx.getTopToTable().get(topOp);
+        Table table = topOp.getConf().getTableMetadata();
         long currentSize = 0;
 
         if (!table.isPartitioned()) {

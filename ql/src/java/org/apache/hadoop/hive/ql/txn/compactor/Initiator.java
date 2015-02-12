@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -33,7 +34,9 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -44,6 +47,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -51,8 +55,6 @@ import java.util.concurrent.TimeUnit;
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
-
-  static final private String NO_COMPACTION = "NO_AUTO_COMPACTION";
 
   private long checkInterval;
 
@@ -76,7 +78,8 @@ public class Initiator extends CompactorThread {
         // don't doom the entire thread.
         try {
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns());
+          ValidTxnList txns =
+              CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
@@ -85,9 +88,8 @@ public class Initiator extends CompactorThread {
             try {
               Table t = resolveTable(ci);
               // check if no compaction set for this table
-              if (t.getParameters().get(NO_COMPACTION) != null) {
-                LOG.info("Table " + tableName(t) + " marked " +  NO_COMPACTION +
-                    " so we will not compact it.");
+              if (noAutoCompactSet(t)) {
+                LOG.info("Table " + tableName(t) + " marked true so we will not compact it.");
                 continue;
               }
 
@@ -126,10 +128,10 @@ public class Initiator extends CompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= checkInterval || stop.boolVal)  continue;
+        if (elapsedTime >= checkInterval || stop.get())  continue;
         else Thread.sleep(checkInterval - elapsedTime);
 
-      } while (!stop.boolVal);
+      } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
@@ -137,8 +139,8 @@ public class Initiator extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
-    super.init(stop);
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+    super.init(stop, looped);
     checkInterval =
         conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
   }
@@ -263,7 +265,7 @@ public class Initiator extends CompactorThread {
 
   private long sumDirSize(FileSystem fs, Path dir) throws IOException {
     long size = 0;
-    FileStatus[] buckets = fs.listStatus(dir);
+    FileStatus[] buckets = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
     for (int i = 0; i < buckets.length; i++) {
       size += buckets[i].getLen();
     }
@@ -277,5 +279,17 @@ public class Initiator extends CompactorThread {
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
     txnHandler.compact(rqst);
+  }
+
+  // Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
+  // to no_auto_compact, we need to check it in both cases.
+  private boolean noAutoCompactSet(Table t) {
+    String noAutoCompact =
+        t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
+    if (noAutoCompact == null) {
+      noAutoCompact =
+          t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
+    }
+    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 }

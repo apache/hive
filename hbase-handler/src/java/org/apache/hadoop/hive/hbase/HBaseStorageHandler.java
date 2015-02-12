@@ -42,9 +42,13 @@ import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
+import org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier;
+import org.apache.hadoop.hbase.security.token.AuthenticationTokenSelector;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hbase.zookeeper.ZKClusterId;
+import org.apache.hadoop.hbase.zookeeper.ZooKeeperWatcher;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -59,11 +63,15 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.zookeeper.KeeperException;
 
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
@@ -186,7 +194,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
           Set<String> uniqueColumnFamilies = new HashSet<String>();
 
           for (ColumnMapping colMap : columnMappings) {
-            if (!colMap.hbaseRowKey) {
+            if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
               uniqueColumnFamilies.add(colMap.familyName);
             }
           }
@@ -213,7 +221,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
         for (ColumnMapping colMap : columnMappings) {
 
-          if (colMap.hbaseRowKey) {
+          if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
             continue;
           }
 
@@ -449,13 +457,45 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   private void addHBaseDelegationToken(Configuration conf) throws IOException {
     if (User.isHBaseSecurityEnabled(conf)) {
       try {
-        User.getCurrent().obtainAuthTokenForJob(conf,new Job(conf));
+        User curUser = User.getCurrent();
+        Token<AuthenticationTokenIdentifier> authToken = getAuthToken(conf, curUser);
+        Job job = new Job(conf);
+        if (authToken == null) {
+          curUser.obtainAuthTokenForJob(conf,job);
+        } else {
+          job.getCredentials().addToken(authToken.getService(), authToken);
+        }
       } catch (InterruptedException e) {
         throw new IOException("Error while obtaining hbase delegation token", e);
       }
     }
   }
 
+  /**
+   * Get the authentication token of the user for the cluster specified in the configuration
+   * @return null if the user does not have the token, otherwise the auth token for the cluster.
+   */
+  private static Token<AuthenticationTokenIdentifier> getAuthToken(Configuration conf, User user)
+      throws IOException, InterruptedException {
+    ZooKeeperWatcher zkw = new ZooKeeperWatcher(conf, "mr-init-credentials", null);
+    try {
+      String clusterId = ZKClusterId.readClusterIdZNode(zkw);
+      return new AuthenticationTokenSelector().selectToken(new Text(clusterId), user.getUGI().getTokens());
+    } catch (KeeperException e) {
+      throw new IOException(e);
+    } finally {
+      zkw.close();
+    }
+  }
+
+  private static Class counterClass = null;
+  static {
+    try {
+      counterClass = Class.forName("org.cliffc.high_scale_lib.Counter");
+    } catch (ClassNotFoundException cnfe) {
+      // this dependency is removed for HBase 1.0
+    }
+  }
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     try {
@@ -466,15 +506,24 @@ public class HBaseStorageHandler extends DefaultStorageHandler
        * will not be required once Hive bumps up its hbase version). At that time , we will
        * only need TableMapReduceUtil.addDependencyJars(jobConf) here.
        */
-      TableMapReduceUtil.addDependencyJars(
-          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class,
-          org.cliffc.high_scale_lib.Counter.class); // this will be removed for HBase 1.0
+      if (counterClass != null) {
+        TableMapReduceUtil.addDependencyJars(
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class, counterClass);
+      } else {
+        TableMapReduceUtil.addDependencyJars(
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class);
+      }
       Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
 
       Job copy = new Job(jobConf);
       TableMapReduceUtil.addDependencyJars(copy);
       merged.addAll(copy.getConfiguration().getStringCollection("tmpjars"));
       jobConf.set("tmpjars", StringUtils.arrayToString(merged.toArray(new String[0])));
+
+      // Get credentials using the configuration instance which has HBase properties
+      JobConf hbaseJobConf = new JobConf(getConf());
+      org.apache.hadoop.hbase.mapred.TableMapReduceUtil.initCredentials(hbaseJobConf);
+      ShimLoader.getHadoopShims().mergeCredentials(jobConf, hbaseJobConf);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -495,34 +544,38 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       HBaseSerDe hBaseSerDe,
       ExprNodeDesc predicate) {
     ColumnMapping keyMapping = hBaseSerDe.getHBaseSerdeParam().getKeyColumnMapping();
+    ColumnMapping tsMapping = hBaseSerDe.getHBaseSerdeParam().getTimestampColumnMapping();
     IndexPredicateAnalyzer analyzer = HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
-        keyMapping.columnName, keyMapping.columnType, keyMapping.binaryStorage.get(0));
-    List<IndexSearchCondition> searchConditions =
-        new ArrayList<IndexSearchCondition>();
+        keyMapping.columnName, keyMapping.isComparable(),
+        tsMapping == null ? null : tsMapping.columnName);
+    List<IndexSearchCondition> conditions = new ArrayList<IndexSearchCondition>();
     ExprNodeGenericFuncDesc residualPredicate =
-        (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, searchConditions);
-    int scSize = searchConditions.size();
-    if (scSize < 1 || 2 < scSize) {
-      // Either there was nothing which could be pushed down (size = 0),
-      // there were complex predicates which we don't support yet.
-      // Currently supported are one of the form:
-      // 1. key < 20                        (size = 1)
-      // 2. key = 20                        (size = 1)
-      // 3. key < 20 and key > 10           (size = 2)
-      return null;
-    }
-    if (scSize == 2 &&
-        (searchConditions.get(0).getComparisonOp()
-        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
-        searchConditions.get(1).getComparisonOp()
-        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
-      // If one of the predicates is =, then any other predicate with it is illegal.
-      return null;
+        (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, conditions);
+
+    for (List<IndexSearchCondition> searchConditions:
+        HiveHBaseInputFormatUtil.decompose(conditions).values()) {
+      int scSize = searchConditions.size();
+      if (scSize < 1 || 2 < scSize) {
+        // Either there was nothing which could be pushed down (size = 0),
+        // there were complex predicates which we don't support yet.
+        // Currently supported are one of the form:
+        // 1. key < 20                        (size = 1)
+        // 2. key = 20                        (size = 1)
+        // 3. key < 20 and key > 10           (size = 2)
+        return null;
+      }
+      if (scSize == 2 &&
+          (searchConditions.get(0).getComparisonOp()
+              .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
+              searchConditions.get(1).getComparisonOp()
+                  .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
+        // If one of the predicates is =, then any other predicate with it is illegal.
+        return null;
+      }
     }
 
     DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
-    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(
-      searchConditions);
+    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(conditions);
     decomposedPredicate.residualPredicate = residualPredicate;
     return decomposedPredicate;
   }

@@ -1,0 +1,318 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- Verify HIVE-8097 with a query that has a Vectorized MapJoin in the Reducer.
+-- Query copied from subquery_in.q
+
+-- non agg, non corr, with join in Parent Query
+explain
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- Verify HIVE-8097 with a query that has a Vectorized MapJoin in the Reducer.
+-- Query copied from subquery_in.q
+
+-- non agg, non corr, with join in Parent Query
+explain
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: li
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((l_partkey is not null and l_orderkey is not null) and (l_linenumber = 1)) (type: boolean)
+                    Statistics: Num rows: 12 Data size: 1439 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: int)
+                        1 l_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                    Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: l_orderkey (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                        Spark HashTable Sink Operator
+                          keys:
+                            0 _col1 (type: int)
+                            1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: l_partkey is not null (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: l_partkey (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 l_partkey (type: int)
+                  outputColumnNames: _col0, _col1, _col3
+                  input vertices:
+                    1 Map 3
+                  Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Left Semi Join 0 to 1
+                    keys:
+                      0 _col1 (type: int)
+                      1 _col0 (type: int)
+                    outputColumnNames: _col0, _col3
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+108570	8571
+115118	7630
+115209	7721
+155190	7706
+2320	9821
+40216	217
+4297	1798
+61336	8855
+64128	9141
+82704	7721
+PREHOOK: query: -- non agg, corr, with join in Parent Query
+explain
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- non agg, corr, with join in Parent Query
+explain
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: li
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((l_partkey is not null and l_orderkey is not null) and l_linenumber is not null) and (l_linenumber = 1)) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: int)
+                        1 l_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((((l_shipmode = 'AIR') and l_orderkey is not null) and l_linenumber is not null) and (l_linenumber = 1)) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: l_orderkey (type: int), 1 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int), _col1 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
+                        Spark HashTable Sink Operator
+                          keys:
+                            0 _col1 (type: int), _col4 (type: int)
+                            1 _col0 (type: int), _col1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: l_partkey is not null (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: l_partkey (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 l_partkey (type: int)
+                  outputColumnNames: _col0, _col1, _col3, _col4
+                  input vertices:
+                    1 Map 3
+                  Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Left Semi Join 0 to 1
+                    keys:
+                      0 _col1 (type: int), _col4 (type: int)
+                      1 _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: _col0, _col3
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+108570	8571
+4297	1798

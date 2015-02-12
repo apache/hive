@@ -18,6 +18,20 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -39,8 +53,6 @@ import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.OrcFileMergeOperator;
-import org.apache.hadoop.hive.ql.exec.RCFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -51,6 +63,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -64,12 +77,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
@@ -93,28 +103,16 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import com.google.common.collect.Interner;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -521,12 +519,11 @@ public final class GenMapRedUtils {
 
     // The table does not have any partitions
     if (aliasPartnDesc == null) {
-      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(parseCtx
-          .getTopToTable().get(topOp)), null);
-
+      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(((TableScanOperator) topOp)
+          .getConf().getTableMetadata()), null);
     }
 
-    Map<String, String> props = parseCtx.getTopToProps().get(topOp);
+    Map<String, String> props = topOp.getConf().getOpProps();
     if (props != null) {
       Properties target = aliasPartnDesc.getProperties();
       if (target == null) {
@@ -578,8 +575,6 @@ public final class GenMapRedUtils {
     //This read entity is a direct read entity and not an indirect read (that is when
     // this is being read because it is a dependency of a view).
     boolean isDirectRead = (parentViewInfo == null);
-    PlanUtils.addInput(inputs,
-        new ReadEntity(parseCtx.getTopToTable().get(topOp), parentViewInfo, isDirectRead));
 
     for (Partition part : parts) {
       if (part.getTable().isPartitioned()) {
@@ -720,7 +715,7 @@ public final class GenMapRedUtils {
       plan.getAliasToWork().put(alias_id, topOp);
     } else {
       // populate local work if needed
-      MapredLocalWork localPlan = plan.getMapLocalWork();
+      MapredLocalWork localPlan = plan.getMapRedLocalWork();
       if (localPlan == null) {
         localPlan = new MapredLocalWork(
             new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
@@ -739,7 +734,7 @@ public final class GenMapRedUtils {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir, tblDesc));
       }
-      plan.setMapLocalWork(localPlan);
+      plan.setMapRedLocalWork(localPlan);
     }
   }
 
@@ -774,7 +769,7 @@ public final class GenMapRedUtils {
       plan.getAliasToWork().put(alias, topOp);
     } else {
       // populate local work if needed
-      MapredLocalWork localPlan = plan.getMapLocalWork();
+      MapredLocalWork localPlan = plan.getMapRedLocalWork();
       if (localPlan == null) {
         localPlan = new MapredLocalWork(
             new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
@@ -785,7 +780,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
       localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
-      plan.setMapLocalWork(localPlan);
+      plan.setMapRedLocalWork(localPlan);
     }
   }
 
@@ -862,6 +857,13 @@ public final class GenMapRedUtils {
           ((MapWork)w).deriveExplainAttributes();
         }
       }
+    } else if (task instanceof SparkTask) {
+      SparkWork work = (SparkWork) task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork) w).deriveExplainAttributes();
+        }
+      }
     }
 
     if (task.getChildTasks() == null) {
@@ -870,6 +872,30 @@ public final class GenMapRedUtils {
 
     for (Task<? extends Serializable> childTask : task.getChildTasks()) {
       setKeyAndValueDescForTaskTree(childTask);
+    }
+  }
+
+  public static void internTableDesc(Task<?> task, Interner<TableDesc> interner) {
+
+    if (task instanceof ConditionalTask) {
+      for (Task tsk : ((ConditionalTask) task).getListTasks()) {
+        internTableDesc(tsk, interner);
+      }
+    } else if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      work.getMapWork().internTable(interner);
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).internTable(interner);
+        }
+      }
+    }
+    if (task.getNumChild() > 0) {
+      for (Task childTask : task.getChildTasks()) {
+        internTableDesc(childTask, interner);
+      }
     }
   }
 
@@ -906,27 +932,9 @@ public final class GenMapRedUtils {
     return mrWork;
   }
 
-  /**
-   * insert in the map for the operator to row resolver.
-   *
-   * @param op
-   *          operator created
-   * @param rr
-   *          row resolver
-   * @param parseCtx
-   *          parse context
-   */
-  @SuppressWarnings("nls")
-  public static Operator<? extends OperatorDesc> putOpInsertMap(
-      Operator<? extends OperatorDesc> op, RowResolver rr, ParseContext parseCtx) {
-    OpParseContext ctx = new OpParseContext(rr);
-    parseCtx.getOpParseCtx().put(op, ctx);
-    return op;
-  }
-
   public static TableScanOperator createTemporaryTableScanOperator(RowSchema rowSchema) {
     TableScanOperator tableScanOp =
-        (TableScanOperator) OperatorFactory.get(new TableScanDesc(), rowSchema);
+        (TableScanOperator) OperatorFactory.get(new TableScanDesc(null), rowSchema);
     // Set needed columns for this dummy TableScanOperator
     List<Integer> neededColumnIds = new ArrayList<Integer>();
     List<String> neededColumnNames = new ArrayList<String>();
@@ -954,7 +962,7 @@ public final class GenMapRedUtils {
    * @param parseCtx
    * @return The TableScanOperator inserted before child.
    */
-  protected static TableScanOperator createTemporaryFile(
+  public static TableScanOperator createTemporaryFile(
       Operator<? extends OperatorDesc> parent, Operator<? extends OperatorDesc> child,
       Path taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
 
@@ -968,19 +976,16 @@ public final class GenMapRedUtils {
       desc.setCompressType(parseCtx.getConf().getVar(
           HiveConf.ConfVars.COMPRESSINTERMEDIATETYPE));
     }
-    Operator<? extends OperatorDesc> fileSinkOp = putOpInsertMap(OperatorFactory
-        .get(desc, parent.getSchema()), null, parseCtx);
+    Operator<? extends OperatorDesc> fileSinkOp = OperatorFactory.get(
+            desc, parent.getSchema());
 
     // Connect parent to fileSinkOp
     parent.replaceChild(child, fileSinkOp);
     fileSinkOp.setParentOperators(Utilities.makeList(parent));
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
-    RowResolver parentRowResolver =
-        parseCtx.getOpParseCtx().get(parent).getRowResolver();
-    TableScanOperator tableScanOp = (TableScanOperator) putOpInsertMap(
-        createTemporaryTableScanOperator(parent.getSchema()),
-        parentRowResolver, parseCtx);
+    TableScanOperator tableScanOp = (TableScanOperator) createTemporaryTableScanOperator(
+            parent.getSchema());
 
     // Connect this TableScanOperator to child.
     tableScanOp.setChildOperators(Utilities.makeList(child));
@@ -1038,17 +1043,23 @@ public final class GenMapRedUtils {
 
     if (needsTagging(cplan.getReduceWork())) {
       Operator<? extends OperatorDesc> reducerOp = cplan.getReduceWork().getReducer();
-      QBJoinTree joinTree = null;
+      String id = null;
       if (reducerOp instanceof JoinOperator) {
-        joinTree = parseCtx.getJoinContext().get(reducerOp);
+        if (parseCtx.getJoinOps().contains(reducerOp)) {
+          id = ((JoinOperator)reducerOp).getConf().getId();
+        }
       } else if (reducerOp instanceof MapJoinOperator) {
-        joinTree = parseCtx.getMapJoinContext().get(reducerOp);
+        if (parseCtx.getMapJoinOps().contains(reducerOp)) {
+          id = ((MapJoinOperator)reducerOp).getConf().getId();
+        }
       } else if (reducerOp instanceof SMBMapJoinOperator) {
-        joinTree = parseCtx.getSmbMapJoinContext().get(reducerOp);
+        if (parseCtx.getSmbMapJoinOps().contains(reducerOp)) {
+          id = ((SMBMapJoinOperator)reducerOp).getConf().getId();
+        }
       }
 
-      if (joinTree != null && joinTree.getId() != null) {
-        streamDesc = joinTree.getId() + ":$INTNAME";
+      if (id != null) {
+        streamDesc = id + ":$INTNAME";
       } else {
         streamDesc = "$INTNAME";
       }
@@ -1263,8 +1274,12 @@ public final class GenMapRedUtils {
           dpCtx != null && dpCtx.getNumDPCols() > 0);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Tez Merge File Work");
+        cplan.setName("File Merge");
         ((TezWork) work).add(cplan);
+      } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+        work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+        cplan.setName("Spark Merge File Work");
+        ((SparkWork) work).add(cplan);
       } else {
         work = cplan;
       }
@@ -1272,8 +1287,12 @@ public final class GenMapRedUtils {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Tez Merge File Work");
+        cplan.setName("File Merge");
         ((TezWork)work).add(cplan);
+      } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+        work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+        cplan.setName("Spark Merge File Work");
+        ((SparkWork) work).add(cplan);
       } else {
         work = new MapredWork();
         ((MapredWork)work).setMapWork(cplan);
@@ -1409,7 +1428,12 @@ public final class GenMapRedUtils {
       if (mrWork.getReduceWork() != null) {
         mrWork.getReduceWork().setGatheringStats(true);
       }
-    } else {
+    } else if (currTask.getWork() instanceof SparkWork) {
+      SparkWork work = (SparkWork) currTask.getWork();
+      for (BaseWork w: work.getAllWork()) {
+        w.setGatheringStats(true);
+      }
+    } else { // must be TezWork
       TezWork work = (TezWork) currTask.getWork();
       for (BaseWork w: work.getAllWork()) {
         w.setGatheringStats(true);
@@ -1485,7 +1509,7 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
-   * @param inputFormatClass 
+   * @param inputFormatClass
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
@@ -1674,6 +1698,9 @@ public final class GenMapRedUtils {
           // tez blurs the boundary between map and reduce, thus it has it's own
           // config
           return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
+        } else if (currTask.getWork() instanceof SparkWork) {
+          // spark has its own config for merging
+          return hconf.getBoolVar(ConfVars.HIVEMERGESPARKFILES);
         }
 
         if (fsOp.getConf().isLinkedFileSink()) {
@@ -1689,7 +1716,7 @@ public final class GenMapRedUtils {
           // There are separate configuration parameters to control whether to
           // merge for a map-only job
           // or for a map-reduce job
-          if (currTask.getWork() instanceof MapredWork) {  
+          if (currTask.getWork() instanceof MapredWork) {
             ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
             boolean mergeMapOnly =
               hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
@@ -1788,7 +1815,7 @@ public final class GenMapRedUtils {
     return Collections.emptyList();
   }
 
-  public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey) 
+  public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey)
     throws SemanticException {
     List<Path> inputPaths = new ArrayList<Path>();
     switch (parseInfo.getTableSpec().specType) {
@@ -1825,6 +1852,7 @@ public final class GenMapRedUtils {
   public static Set<Operator<?>> findTopOps(Operator<?> startOp, final Class<?> clazz) {
     final Set<Operator<?>> operators = new LinkedHashSet<Operator<?>>();
     OperatorUtils.iterateParents(startOp, new NodeUtils.Function<Operator<?>>() {
+      @Override
       public void apply(Operator<?> argument) {
         if (argument.getNumParent() == 0 && (clazz == null || clazz.isInstance(argument))) {
           operators.add(argument);

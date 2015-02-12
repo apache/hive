@@ -174,3 +174,260 @@ sarah garcia	      sarah garcia      	|      sarah garcia|
 zach young	      zach young      	|      zach young|
 david underhill	      david underhill      	|      david underhill|
 yuri carson	      yuri carson      	|      yuri carson|
+PREHOOK: query: ------------------------------------------------------------------------------------------
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: ------------------------------------------------------------------------------------------
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2korc
+PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: default@vectortab2korc
+POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN
+SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: vectortab2korc
+            Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: concat(concat(concat('Quarter ', UDFToString(UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0) + 1.0)))), '-'), UDFToString(year(dt))) (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: string)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 50
+            Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
+    FROM vectortab2korc 
+    GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
+    ORDER BY `field`
+    LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+NULL
+Quarter 1-1970
+Quarter 1-1971
+Quarter 1-1972
+Quarter 1-1973
+Quarter 1-1974
+Quarter 1-1975
+Quarter 1-1976
+Quarter 1-1977
+Quarter 1-1978
+Quarter 1-1979
+Quarter 1-1980
+Quarter 1-1981
+Quarter 1-1982
+Quarter 1-1983
+Quarter 1-1984
+Quarter 1-1985
+Quarter 1-1986
+Quarter 1-1987
+Quarter 1-1988
+Quarter 1-1989
+Quarter 1-1990
+Quarter 1-1991
+Quarter 1-1992
+Quarter 1-1993
+Quarter 1-1994
+Quarter 1-1995
+Quarter 1-1996
+Quarter 1-1997
+Quarter 1-1998
+Quarter 1-1999
+Quarter 1-2000
+Quarter 1-2001
+Quarter 1-2002
+Quarter 1-2003
+Quarter 1-2004
+Quarter 1-2005
+Quarter 1-2006
+Quarter 1-2007
+Quarter 1-2008
+Quarter 1-2009
+Quarter 1-2010
+Quarter 1-2011
+Quarter 1-2012
+Quarter 1-2013
+Quarter 1-2014
+Quarter 1-2015
+Quarter 1-2016
+Quarter 1-2017
+Quarter 1-2018

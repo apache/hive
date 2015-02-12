@@ -19,10 +19,15 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
+import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.HiveStringUtils;
 
 public class WritableHiveVarcharObjectInspector extends AbstractPrimitiveWritableObjectInspector
 implements SettableHiveVarcharObjectInspector {
@@ -43,6 +48,12 @@ implements SettableHiveVarcharObjectInspector {
     if (o == null) {
       return null;
     }
+
+    if (o instanceof Text) {
+      String str = ((Text)o).toString();
+      return new HiveVarchar(str, ((VarcharTypeInfo)typeInfo).getLength());
+    }
+
     HiveVarcharWritable writable = ((HiveVarcharWritable)o);
     if (doesWritableMatchTypeParams(writable)) {
       return writable.getHiveVarchar();
@@ -57,6 +68,14 @@ implements SettableHiveVarcharObjectInspector {
     if (o == null) {
       return null;
     }
+
+    if (o instanceof Text) {
+      String str = ((Text)o).toString();
+      HiveVarcharWritable hcw = new HiveVarcharWritable();
+      hcw.set(str, ((VarcharTypeInfo)typeInfo).getLength());
+      return hcw;
+    }
+
     HiveVarcharWritable writable = ((HiveVarcharWritable)o);
     if (doesWritableMatchTypeParams((HiveVarcharWritable)o)) {
       return writable;
@@ -87,6 +106,14 @@ implements SettableHiveVarcharObjectInspector {
     if (o == null) {
       return null;
     }
+
+    if (o instanceof Text) {
+      String str = ((Text)o).toString();
+      HiveVarcharWritable hcw = new HiveVarcharWritable();
+      hcw.set(str, ((VarcharTypeInfo)typeInfo).getLength());
+      return hcw;
+    }
+
     HiveVarcharWritable writable = (HiveVarcharWritable)o;
     if (doesWritableMatchTypeParams((HiveVarcharWritable)o)) {
       return new HiveVarcharWritable(writable);

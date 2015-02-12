@@ -45,12 +45,12 @@ join test_tbl t3 on (t2.id=t3.id )
 where t2.name='c' and t3.id='a'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -75,31 +75,33 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: t3
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Filter Operator
-              predicate: (id is not null and (id = 'a')) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Reduce Output Operator
-                key expressions: 'a' (type: string)
-                sort order: +
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: 'a' (type: string)
               sort order: +
+              Map-reduce partition columns: 'a' (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
+            alias: t3
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: (id = 'a') (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Reduce Output Operator
+                key expressions: 'a' (type: string)
+                sort order: +
+                Map-reduce partition columns: 'a' (type: string)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 
-            1 
+          keys:
+            0 _col0 (type: string)
+            1 id (type: string)
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
             expressions: 'a' (type: string), 'c' (type: string)

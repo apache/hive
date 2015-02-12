@@ -1,31 +1,31 @@
-PREHOOK: query: drop table char_2
+PREHOOK: query: drop table varchar_2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table char_2
+POSTHOOK: query: drop table varchar_2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table char_2 (
+PREHOOK: query: create table varchar_2 (
   key varchar(10),
   value varchar(20)
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@char_2
-POSTHOOK: query: create table char_2 (
+PREHOOK: Output: default@varchar_2
+POSTHOOK: query: create table varchar_2 (
   key varchar(10),
   value varchar(20)
 ) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@char_2
-PREHOOK: query: insert overwrite table char_2 select * from src
+POSTHOOK: Output: default@varchar_2
+PREHOOK: query: insert overwrite table varchar_2 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@char_2
-POSTHOOK: query: insert overwrite table char_2 select * from src
+PREHOOK: Output: default@varchar_2
+POSTHOOK: query: insert overwrite table varchar_2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@char_2
-POSTHOOK: Lineage: char_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: char_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@varchar_2
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, value
 from src
 order by key asc
@@ -46,12 +46,12 @@ POSTHOOK: Input: default@src
 10	val_10
 100	val_100
 PREHOOK: query: explain select key, value
-from char_2
+from varchar_2
 order by key asc
 limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, value
-from char_2
+from varchar_2
 order by key asc
 limit 5
 POSTHOOK: type: QUERY
@@ -69,7 +69,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: char_2
+                  alias: varchar_2
                   Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: varchar(10)), value (type: varchar(20))
@@ -107,19 +107,19 @@ STAGE PLANS:
 
 PREHOOK: query: -- should match the query from src
 select key, value
-from char_2
+from varchar_2
 order by key asc
 limit 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@char_2
+PREHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
 POSTHOOK: query: -- should match the query from src
 select key, value
-from char_2
+from varchar_2
 order by key asc
 limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@char_2
+POSTHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -146,12 +146,12 @@ POSTHOOK: Input: default@src
 97	val_97
 96	val_96
 PREHOOK: query: explain select key, value
-from char_2
+from varchar_2
 order by key desc
 limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, value
-from char_2
+from varchar_2
 order by key desc
 limit 5
 POSTHOOK: type: QUERY
@@ -169,7 +169,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: char_2
+                  alias: varchar_2
                   Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: varchar(10)), value (type: varchar(20))
@@ -207,30 +207,136 @@ STAGE PLANS:
 
 PREHOOK: query: -- should match the query from src
 select key, value
-from char_2
+from varchar_2
 order by key desc
 limit 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@char_2
+PREHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
 POSTHOOK: query: -- should match the query from src
 select key, value
-from char_2
+from varchar_2
 order by key desc
 limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@char_2
+POSTHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
 98	val_98
 98	val_98
 97	val_97
 97	val_97
 96	val_96
-PREHOOK: query: drop table char_2
+PREHOOK: query: drop table varchar_2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@char_2
-PREHOOK: Output: default@char_2
-POSTHOOK: query: drop table char_2
+PREHOOK: Input: default@varchar_2
+PREHOOK: Output: default@varchar_2
+POSTHOOK: query: drop table varchar_2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@char_2
-POSTHOOK: Output: default@char_2
+POSTHOOK: Input: default@varchar_2
+POSTHOOK: Output: default@varchar_2
+PREHOOK: query: -- Implicit conversion.  Occurs in reduce-side under Tez.
+create table varchar_3 (
+  field varchar(25)
+) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_3
+POSTHOOK: query: -- Implicit conversion.  Occurs in reduce-side under Tez.
+create table varchar_3 (
+  field varchar(25)
+) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_3
+PREHOOK: query: explain
+insert into table varchar_3 select cint from alltypesorc limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert into table varchar_3 select cint from alltypesorc limit 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CAST( _col0 AS varchar(25)) (type: varchar(25))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.varchar_3
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.varchar_3
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert into table varchar_3 select cint from alltypesorc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@varchar_3
+POSTHOOK: query: insert into table varchar_3 select cint from alltypesorc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@varchar_3
+POSTHOOK: Lineage: varchar_3.field EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: drop table varchar_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_3
+PREHOOK: Output: default@varchar_3
+POSTHOOK: query: drop table varchar_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_3
+POSTHOOK: Output: default@varchar_3

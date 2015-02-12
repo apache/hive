@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -61,9 +61,8 @@ public class TestMiniHiveKdc {
     String servicePrinc = miniHiveKdc.getHiveServicePrincipal();
     assertNotNull(servicePrinc);
     miniHiveKdc.loginUser(servicePrinc);
-    assertTrue(ShimLoader.getHadoopShims().isLoginKeytabBased());
-    UserGroupInformation ugi =
-        ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+    assertTrue(UserGroupInformation.isLoginKeytabBased());
+    UserGroupInformation ugi = Utils.getUGI();
     assertEquals(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL, ugi.getShortUserName());
   }
 

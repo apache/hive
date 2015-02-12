@@ -1,0 +1,120 @@
+PREHOOK: query: explain
+SELECT sum(hash(subq.key, tab.value)) 
+FROM 
+(select a.key, a.value from src a where a.key > 10 ) subq 
+JOIN src tab 
+ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
+where tab.value < 200
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT sum(hash(subq.key, tab.value)) 
+FROM 
+(select a.key, a.value from src a where a.key > 10 ) subq 
+JOIN src tab 
+ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
+where tab.value < 200
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((((key > 10) and value is not null) and (key > 20)) and (value < 200)) (type: boolean)
+                    Statistics: Num rows: 9 Data size: 95 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 9 Data size: 95 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: string), _col1 (type: string)
+                          1 key (type: string), value (type: string)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: tab
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((((key > 20) and value is not null) and key is not null) and (value < 200)) (type: boolean)
+                    Statistics: Num rows: 14 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string), _col1 (type: string)
+                        1 key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col3
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 15 Data size: 162 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: sum(hash(_col0,_col3))
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
+FROM 
+(select a.key, a.value from src a where a.key > 10 ) subq 
+JOIN src tab 
+ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
+where tab.value < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
+FROM 
+(select a.key, a.value from src a where a.key > 10 ) subq 
+JOIN src tab 
+ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
+where tab.value < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL

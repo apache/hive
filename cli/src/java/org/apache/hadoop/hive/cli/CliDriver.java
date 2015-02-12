@@ -30,16 +30,21 @@ import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import jline.ArgumentCompletor;
-import jline.ArgumentCompletor.AbstractArgumentDelimiter;
-import jline.ArgumentCompletor.ArgumentDelimiter;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
-import jline.SimpleCompletor;
+import com.google.common.base.Splitter;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.history.FileHistory;
+import jline.console.history.PersistentHistory;
+import jline.console.completer.StringsCompleter;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
+import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,12 +59,13 @@ import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
+import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -67,10 +73,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.service.HiveClient;
-import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.thrift.TException;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -85,6 +88,7 @@ public class CliDriver {
   public static String prompt = null;
   public static String prompt2 = null; // when ';' is not yet seen
   public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
+  public static final int DELIMITED_CANDIDATE_THRESHOLD = 10;
 
   public static final String HIVERCFILE = ".hiverc";
 
@@ -125,7 +129,7 @@ public class CliDriver {
         ret = 1;
       } else {
         try {
-          this.processFile(cmd_1);
+          ret = processFile(cmd_1);
         } catch (IOException e) {
           console.printError("Failed processing file "+ cmd_1 +" "+ e.getLocalizedMessage(),
             stringifyException(e));
@@ -149,50 +153,7 @@ public class CliDriver {
             stringifyException(e));
         ret = 1;
       }
-    } else if (ss.isRemoteMode()) { // remote mode -- connecting to remote hive server
-      HiveClient client = ss.getClient();
-      PrintStream out = ss.out;
-      PrintStream err = ss.err;
-
-      try {
-        client.execute(cmd_trimmed);
-        List<String> results;
-        do {
-          results = client.fetchN(LINES_TO_FETCH);
-          for (String line : results) {
-            out.println(line);
-          }
-        } while (results.size() == LINES_TO_FETCH);
-      } catch (HiveServerException e) {
-        ret = e.getErrorCode();
-        if (ret != 0) { // OK if ret == 0 -- reached the EOF
-          String errMsg = e.getMessage();
-          if (errMsg == null) {
-            errMsg = e.toString();
-          }
-          ret = e.getErrorCode();
-          err.println("[Hive Error]: " + errMsg);
-        }
-      } catch (TException e) {
-        String errMsg = e.getMessage();
-        if (errMsg == null) {
-          errMsg = e.toString();
-        }
-        ret = -10002;
-        err.println("[Thrift Error]: " + errMsg);
-      } finally {
-        try {
-          client.clean();
-        } catch (TException e) {
-          String errMsg = e.getMessage();
-          if (errMsg == null) {
-            errMsg = e.toString();
-          }
-          err.println("[Thrift Error]: Hive server is not cleaned due to thrift exception: "
-              + errMsg);
-        }
-      }
-    } else { // local mode
+    }  else { // local mode
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
         ret = processLocalCmd(cmd, proc, ss);
@@ -321,7 +282,7 @@ public class CliDriver {
    * for the output.
    *
    * @param qp Driver that executed the command
-   * @param out Printstream which to send output to
+   * @param out PrintStream which to send output to
    */
   private void printHeader(Driver qp, PrintStream out) {
     List<FieldSchema> fieldSchemas = qp.getSchema().getFieldSchemas();
@@ -349,20 +310,20 @@ public class CliDriver {
    *
    * @param line
    *          The commands to process
-   * @param allowInterupting
+   * @param allowInterrupting
    *          When true the function will handle SIG_INT (Ctrl+C) by interrupting the processing and
    *          returning -1
    * @return 0 if ok
    */
-  public int processLine(String line, boolean allowInterupting) {
+  public int processLine(String line, boolean allowInterrupting) {
     SignalHandler oldSignal = null;
-    Signal interupSignal = null;
+    Signal interruptSignal = null;
 
-    if (allowInterupting) {
+    if (allowInterrupting) {
       // Remember all threads that were running at the time we started line processing.
       // Hook up the custom Ctrl+C handler while processing this line
-      interupSignal = new Signal("INT");
-      oldSignal = Signal.handle(interupSignal, new SignalHandler() {
+      interruptSignal = new Signal("INT");
+      oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
         private final Thread cliThread = Thread.currentThread();
         private boolean interruptRequested;
 
@@ -384,6 +345,7 @@ public class CliDriver {
 
           // First, kill any running MR jobs
           HadoopJobExecHelper.killRunningJobs();
+          TezJobExecHelper.killRunningJobs();
           HiveInterruptUtils.interrupt();
         }
       });
@@ -421,8 +383,8 @@ public class CliDriver {
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler
-      if (oldSignal != null && interupSignal != null) {
-        Signal.handle(interupSignal, oldSignal);
+      if (oldSignal != null && interruptSignal != null) {
+        Signal.handle(interruptSignal, oldSignal);
       }
     }
   }
@@ -518,59 +480,61 @@ public class CliDriver {
     }
   }
 
-  public static Completor[] getCommandCompletor () {
-    // SimpleCompletor matches against a pre-defined wordlist
+  public static Completer[] getCommandCompleter() {
+    // StringsCompleter matches against a pre-defined wordlist
     // We start with an empty wordlist and build it up
-    SimpleCompletor sc = new SimpleCompletor(new String[0]);
+    List<String> candidateStrings = new ArrayList<String>();
 
     // We add Hive function names
     // For functions that aren't infix operators, we add an open
     // parenthesis at the end.
     for (String s : FunctionRegistry.getFunctionNames()) {
       if (s.matches("[a-z_]+")) {
-        sc.addCandidateString(s + "(");
+        candidateStrings.add(s + "(");
       } else {
-        sc.addCandidateString(s);
+        candidateStrings.add(s);
       }
     }
 
     // We add Hive keywords, including lower-cased versions
     for (String s : HiveParser.getKeywords()) {
-      sc.addCandidateString(s);
-      sc.addCandidateString(s.toLowerCase());
+      candidateStrings.add(s);
+      candidateStrings.add(s.toLowerCase());
     }
+
+    StringsCompleter strCompleter = new StringsCompleter(candidateStrings);
 
     // Because we use parentheses in addition to whitespace
     // as a keyword delimiter, we need to define a new ArgumentDelimiter
     // that recognizes parenthesis as a delimiter.
-    ArgumentDelimiter delim = new AbstractArgumentDelimiter () {
+    ArgumentDelimiter delim = new AbstractArgumentDelimiter() {
       @Override
-      public boolean isDelimiterChar (String buffer, int pos) {
+      public boolean isDelimiterChar(CharSequence buffer, int pos) {
         char c = buffer.charAt(pos);
         return (Character.isWhitespace(c) || c == '(' || c == ')' ||
-          c == '[' || c == ']');
+            c == '[' || c == ']');
       }
     };
 
     // The ArgumentCompletor allows us to match multiple tokens
     // in the same line.
-    final ArgumentCompletor ac = new ArgumentCompletor(sc, delim);
+    final ArgumentCompleter argCompleter = new ArgumentCompleter(delim, strCompleter);
     // By default ArgumentCompletor is in "strict" mode meaning
     // a token is only auto-completed if all prior tokens
     // match. We don't want that since there are valid tokens
     // that are not in our wordlist (eg. table and column names)
-    ac.setStrict(false);
+    argCompleter.setStrict(false);
 
     // ArgumentCompletor always adds a space after a matched token.
     // This is undesirable for function names because a space after
     // the opening parenthesis is unnecessary (and uncommon) in Hive.
     // We stack a custom Completor on top of our ArgumentCompletor
     // to reverse this.
-    Completor completor = new Completor () {
+    Completer customCompletor = new Completer () {
       @Override
       public int complete (String buffer, int offset, List completions) {
         List<String> comp = completions;
-        int ret = ac.complete(buffer, offset, completions);
+        int ret = argCompleter.complete(buffer, offset, completions);
         // ConsoleReader will do the substitution if and only if there
         // is exactly one valid completion, so we ignore other cases.
         if (completions.size() == 1) {
@@ -582,24 +546,61 @@ public class CliDriver {
       }
     };
 
-    HiveConf.ConfVars[] confs = HiveConf.ConfVars.values();
-    String[] vars = new String[confs.length];
-    for (int i = 0; i < vars.length; i++) {
-      vars[i] = confs[i].varname;
+    List<String> vars = new ArrayList<String>();
+    for (HiveConf.ConfVars conf : HiveConf.ConfVars.values()) {
+      vars.add(conf.varname);
     }
-    SimpleCompletor conf = new SimpleCompletor(vars);
-    conf.setDelimiter(".");
 
-    SimpleCompletor set = new SimpleCompletor("set") {
+    StringsCompleter confCompleter = new StringsCompleter(vars) {
       @Override
-      public int complete(String buffer, int cursor, List clist) {
+      public int complete(final String buffer, final int cursor, final List<CharSequence> clist) {
+        int result = super.complete(buffer, cursor, clist);
+        if (clist.isEmpty() && cursor > 1 && buffer.charAt(cursor - 1) == '=') {
+          HiveConf.ConfVars var = HiveConf.getConfVars(buffer.substring(0, cursor - 1));
+          if (var == null) {
+            return result;
+          }
+          if (var.getValidator() instanceof Validator.StringSet) {
+            Validator.StringSet validator = (Validator.StringSet)var.getValidator();
+            clist.addAll(validator.getExpected());
+          } else if (var.getValidator() != null) {
+            clist.addAll(Arrays.asList(var.getValidator().toDescription(), ""));
+          } else {
+            clist.addAll(Arrays.asList("Expects " + var.typeString() + " type value", ""));
+          }
+          return cursor;
+        }
+        if (clist.size() > DELIMITED_CANDIDATE_THRESHOLD) {
+          Set<CharSequence> delimited = new LinkedHashSet<CharSequence>();
+          for (CharSequence candidate : clist) {
+            Iterator<String> it = Splitter.on(".").split(
+                candidate.subSequence(cursor, candidate.length())).iterator();
+            if (it.hasNext()) {
+              String next = it.next();
+              if (next.isEmpty()) {
+                next = ".";
+              }
+              candidate = buffer != null ? buffer.substring(0, cursor) + next : next;
+            }
+            delimited.add(candidate);
+          }
+          clist.clear();
+          clist.addAll(delimited);
+        }
+        return result;
+      }
+    };
+
+    StringsCompleter setCompleter = new StringsCompleter("set") {
+      @Override
+      public int complete(String buffer, int cursor, List<CharSequence> clist) {
         return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
       }
     };
-    ArgumentCompletor propCompletor = new ArgumentCompletor(new Completor[]{set, conf}) {
+
+    ArgumentCompleter propCompleter = new ArgumentCompleter(setCompleter, confCompleter) {
       @Override
-      @SuppressWarnings("unchecked")
-      public int complete(String buffer, int offset, List completions) {
+      public int complete(String buffer, int offset, List<CharSequence> completions) {
         int ret = super.complete(buffer, offset, completions);
         if (completions.size() == 1) {
           completions.set(0, ((String)completions.get(0)).trim());
@@ -607,7 +608,7 @@ public class CliDriver {
         return ret;
       }
     };
-    return new Completor[] {propCompletor, completor};
+    return new Completer[] {propCompleter, customCompletor};
   }
 
   public static void main(String[] args) throws Exception {
@@ -670,53 +671,23 @@ public class CliDriver {
     SessionState.start(ss);
 
     // execute cli driver work
-    int ret = 0;
     try {
-      ret = executeDriver(ss, conf, oproc);
-    } catch (Exception e) {
+      return executeDriver(ss, conf, oproc);
+    } finally {
       ss.close();
-      throw e;
     }
-
-    ss.close();
-    return ret;
   }
 
   /**
    * Execute the cli work
    * @param ss CliSessionState of the CLI driver
-   * @param conf HiveConf for the driver sionssion
-   * @param oproc Opetion processor of the CLI invocation
-   * @return status of the CLI comman execution
+   * @param conf HiveConf for the driver session
+   * @param oproc Operation processor of the CLI invocation
+   * @return status of the CLI command execution
    * @throws Exception
    */
-  private  int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
+  private int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
       throws Exception {
-
-    // connect to Hive Server
-    if (ss.getHost() != null) {
-      ss.connect();
-      if (ss.isRemoteMode()) {
-        prompt = "[" + ss.host + ':' + ss.port + "] " + prompt;
-        char[] spaces = new char[prompt.length()];
-        Arrays.fill(spaces, ' ');
-        prompt2 = new String(spaces);
-      }
-    }
-
-    // CLI remote mode is a thin client: only load auxJars in local mode
-    if (!ss.isRemoteMode()) {
-      // hadoop-20 and above - we need to augment classpath using hiveconf
-      // components
-      // see also: code in ExecDriver.java
-      ClassLoader loader = conf.getClassLoader();
-      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-      if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
-      }
-      conf.setClassLoader(loader);
-      Thread.currentThread().setContextClassLoader(loader);
-    }
 
     CliDriver cli = new CliDriver();
     cli.setHiveVariables(oproc.getHiveVariables());
@@ -744,17 +715,19 @@ public class CliDriver {
     ConsoleReader reader =  getConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-    for (Completor completor : getCommandCompletor()) {
-      reader.addCompletor(completor);
+    for (Completer completer : getCommandCompleter()) {
+      reader.addCompleter(completer);
     }
 
     String line;
     final String HISTORYFILE = ".hivehistory";
     String historyDirectory = System.getProperty("user.home");
+    PersistentHistory history = null;
     try {
       if ((new File(historyDirectory)).exists()) {
         String historyFile = historyDirectory + File.separator + HISTORYFILE;
-        reader.setHistory(new History(new File(historyFile)));
+        history = new FileHistory(new File(historyFile));
+        reader.setHistory(history);
       } else {
         System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
                            " does not exist.   History will not be available during this session.");
@@ -788,6 +761,10 @@ public class CliDriver {
         curPrompt = prompt2 + dbSpaces;
         continue;
       }
+    }
+
+    if (history != null) {
+      history.flush();
     }
     return ret;
   }

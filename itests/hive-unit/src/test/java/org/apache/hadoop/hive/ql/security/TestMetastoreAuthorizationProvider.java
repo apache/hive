@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuth
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -89,6 +90,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         getAuthorizationProvider());
+    setupMetaStoreReadAuthorization();
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         InjectableDummyAuthenticator.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
@@ -108,11 +110,18 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
 
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(clientHiveConf);
+    ugi = Utils.getUGI();
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);
     driver = new Driver(clientHiveConf);
+  }
+
+  protected void setupMetaStoreReadAuthorization() {
+    // read authorization does not work with default/legacy authorization mode
+    // It is a chicken and egg problem granting select privilege to database, as the
+    // grant statement would invoke get_database which needs select privilege
+    System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, "false");
   }
 
   @Override

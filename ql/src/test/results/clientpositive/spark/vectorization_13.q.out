@@ -1,0 +1,506 @@
+PREHOOK: query: EXPLAIN
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((cfloat < 3569.0) and ((10.175 >= cdouble) and (cboolean1 <> 1))) or ((ctimestamp1 > 11) and ((ctimestamp2 <> 12) and (ctinyint < 9763215.5639)))) (type: boolean)
+                    Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                      outputColumnNames: cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+                      Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: max(ctinyint), sum(cfloat), stddev_pop(cfloat), stddev_pop(ctinyint), max(cfloat), min(ctinyint)
+                        keys: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                        Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          sort order: +++++
+                          Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col5 (type: tinyint), _col6 (type: double), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: float), _col10 (type: tinyint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), sum(VALUE._col1), stddev_pop(VALUE._col2), stddev_pop(VALUE._col3), max(VALUE._col4), min(VALUE._col5)
+                keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: boolean), _col1 (type: tinyint), (- _col6) (type: double), (79.553 * _col3) (type: double), _col7 (type: double), _col8 (type: double), (((- _col1) + _col5) - 10.175) (type: double), (- (- _col6)) (type: double), (-26.28 / (- (- _col6))) (type: double), _col9 (type: float), ((_col6 * ((- _col1) + _col5)) / _col1) (type: double), _col2 (type: timestamp), _col10 (type: tinyint), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * ((- _col1) + _col5)) (type: double)
+                  outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col14, _col15, _col16, _col17, _col18, _col19, _col2, _col20, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    sort order: +++++
+                    Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), VALUE._col0 (type: tinyint), VALUE._col1 (type: tinyint), VALUE._col2 (type: tinyint), VALUE._col3 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col5 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: float), VALUE._col13 (type: double), VALUE._col14 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 40
+                  Statistics: Num rows: 40 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 40 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 40
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	-64	1969-12-31 16:00:11.912	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:12.339	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:13.274	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-63	1969-12-31 16:00:11.946	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:12.188	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:15.436	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-62	1969-12-31 16:00:12.388	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.591	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.154	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.247	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.517	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.965	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-61	1969-12-31 16:00:11.842	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:12.454	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:14.192	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:16.558	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-60	1969-12-31 16:00:11.504	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:11.641	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:11.996	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:12.779	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-59	1969-12-31 16:00:12.008	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.6269999999995	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:13.15	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.6269999999995	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:13.625	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.6269999999995	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:15.296	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.6269999999995	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:15.861	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.6269999999995	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-58	1969-12-31 16:00:12.065	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:12.683	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:12.948	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:14.066	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:15.658	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-57	1969-12-31 16:00:11.451	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:11.883	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:12.626	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:13.578	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:15.39	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-56	1969-12-31 16:00:13.602	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.968	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-56	1969-12-31 16:00:13.958	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.968	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-56	1969-12-31 16:00:15.038	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.968	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-55	1969-12-31 16:00:11.38	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
+NULL	-55	1969-12-31 16:00:11.751	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
+PREHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+PREHOOK: type: QUERY
+POSTHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((cfloat < 3569.0) and ((10.175 >= cdouble) and (cboolean1 <> 1))) or ((ctimestamp1 > -1.388) and ((ctimestamp2 <> -1.3359999999999999) and (ctinyint < 9763215.5639)))) (type: boolean)
+                    Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                      outputColumnNames: cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+                      Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: max(ctinyint), sum(cfloat), stddev_pop(cfloat), stddev_pop(ctinyint), max(cfloat), min(ctinyint)
+                        keys: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                        Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          sort order: +++++
+                          Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          Statistics: Num rows: 2730 Data size: 83809 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col5 (type: tinyint), _col6 (type: double), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: float), _col10 (type: tinyint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), sum(VALUE._col1), stddev_pop(VALUE._col2), stddev_pop(VALUE._col3), max(VALUE._col4), min(VALUE._col5)
+                keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: boolean), _col1 (type: tinyint), (- _col6) (type: double), (79.553 * _col3) (type: double), _col7 (type: double), _col8 (type: double), (((- _col1) + _col5) - 10.175) (type: double), (- (- _col6)) (type: double), (-26.28 / (- (- _col6))) (type: double), _col9 (type: float), ((_col6 * ((- _col1) + _col5)) / _col1) (type: double), _col2 (type: timestamp), _col10 (type: tinyint), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * ((- _col1) + _col5)) (type: double)
+                  outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col14, _col15, _col16, _col17, _col18, _col19, _col2, _col20, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    sort order: +++++
+                    Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), VALUE._col0 (type: tinyint), VALUE._col1 (type: tinyint), VALUE._col2 (type: tinyint), VALUE._col3 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col5 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: float), VALUE._col13 (type: double), VALUE._col14 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 40
+                  Statistics: Num rows: 40 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 40 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 40
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)),
+         MAX(ctinyint),
+         ((-(ctinyint)) + MAX(ctinyint)),
+         SUM(cfloat),
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))),
+         (-(SUM(cfloat))),
+         (79.553 * cfloat),
+         STDDEV_POP(cfloat),
+         (-(SUM(cfloat))),
+         STDDEV_POP(ctinyint),
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175),
+         (-((-(SUM(cfloat))))),
+         (-26.28 / (-((-(SUM(cfloat)))))),
+         MAX(cfloat),
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint),
+         MIN(ctinyint)
+FROM     alltypesorc
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+LIMIT 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	-64	1969-12-31 16:00:00.199	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:00.29	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:01.785	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:03.944	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:05.997	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:10.858	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:11.912	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:12.339	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:13.274	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-63	1969-12-31 16:00:01.843	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:03.552	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:06.852	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:07.375	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:10.205	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:11.946	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:12.188	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:15.436	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-62	1969-12-31 16:00:00.037	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.22	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.515	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.734	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:02.373	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:03.85	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:08.198	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:09.025	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:09.889	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.069	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.225	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.485	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.388	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.591	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.154	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.247	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.517	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.965	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-61	1969-12-31 16:00:00.142	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:02.698	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:03.049	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:04.165	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:04.977	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61

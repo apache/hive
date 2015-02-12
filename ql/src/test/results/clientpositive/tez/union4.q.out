@@ -57,7 +57,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
@@ -142,7 +142,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION []
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable

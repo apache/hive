@@ -14,12 +14,16 @@ POSTHOOK: query: CREATE TABLE dest_g3(key STRING, c1 INT, c2 INT) STORED AS TEXT
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g3
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT src.key) WHERE substr(src.key,1,1) >= 5 GROUP BY substr(src.key,1,1)
 INSERT OVERWRITE TABLE dest_g3 SELECT substr(src.key,1,1), count(DISTINCT src.key), count(src.value) WHERE substr(src.key,1,1) < 5 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT src.key) WHERE substr(src.key,1,1) >= 5 GROUP BY substr(src.key,1,1)
 INSERT OVERWRITE TABLE dest_g3 SELECT substr(src.key,1,1), count(DISTINCT src.key), count(src.value) WHERE substr(src.key,1,1) < 5 GROUP BY substr(src.key,1,1)
@@ -41,16 +45,12 @@ STAGE PLANS:
             Filter Operator
               predicate: ((substr(key, 1, 1) >= 5) or (substr(key, 1, 1) < 5)) (type: boolean)
               Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: key, value
+              Reduce Output Operator
+                key expressions: substr(key, 1, 1) (type: string), key (type: string)
+                sort order: ++
+                Map-reduce partition columns: substr(key, 1, 1) (type: string)
                 Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: substr(key, 1, 1) (type: string), key (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: substr(key, 1, 1) (type: string)
-                  Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: value (type: string)
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Forward
           Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE

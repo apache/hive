@@ -1,0 +1,200 @@
+PREHOOK: query: show partitions srcpart
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: show partitions srcpart
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@srcpart
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12
+PREHOOK: query: create table if not exists nzhang_part13 like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_part13
+POSTHOOK: query: create table if not exists nzhang_part13 like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nzhang_part13
+PREHOOK: query: describe extended nzhang_part13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part13
+POSTHOOK: query: describe extended nzhang_part13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part13
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: explain
+insert overwrite table nzhang_part13 partition (ds="2010-03-03", hr) 
+select * from (
+   select key, value, '22'
+   from src
+   where key < 20
+   union all 
+   select key, value, '33'
+   from src 
+   where key > 20 and key < 40) s
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table nzhang_part13 partition (ds="2010-03-03", hr) 
+select * from (
+   select key, value, '22'
+   from src
+   where key < 20
+   union all 
+   select key, value, '33'
+   from src 
+   where key > 20 and key < 40) s
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Filter Operator
+                    predicate: (key < 20) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string), '22' (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part13
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Filter Operator
+                    predicate: ((key > 20) and (key < 40)) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string), '33' (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.nzhang_part13
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2010-03-03
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.nzhang_part13
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table nzhang_part13 partition (ds="2010-03-03", hr) 
+select * from (
+   select key, value, '22'
+   from src
+   where key < 20
+   union all 
+   select key, value, '33'
+   from src 
+   where key > 20 and key < 40) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@nzhang_part13@ds=2010-03-03
+POSTHOOK: query: insert overwrite table nzhang_part13 partition (ds="2010-03-03", hr) 
+select * from (
+   select key, value, '22'
+   from src
+   where key < 20
+   union all 
+   select key, value, '33'
+   from src 
+   where key > 20 and key < 40) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@nzhang_part13@ds=2010-03-03/hr=22
+POSTHOOK: Output: default@nzhang_part13@ds=2010-03-03/hr=33
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions nzhang_part13
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part13
+POSTHOOK: query: show partitions nzhang_part13
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@nzhang_part13
+ds=2010-03-03/hr=22
+ds=2010-03-03/hr=33
+PREHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part13
+PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
+PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
+#### A masked pattern was here ####
+POSTHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part13
+POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
+POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
+#### A masked pattern was here ####
+15	val_15	2010-03-03	22
+17	val_17	2010-03-03	22
+0	val_0	2010-03-03	22
+4	val_4	2010-03-03	22
+12	val_12	2010-03-03	22
+8	val_8	2010-03-03	22
+0	val_0	2010-03-03	22
+0	val_0	2010-03-03	22
+15	val_15	2010-03-03	22
+19	val_19	2010-03-03	22
+10	val_10	2010-03-03	22
+5	val_5	2010-03-03	22
+11	val_11	2010-03-03	22
+5	val_5	2010-03-03	22
+2	val_2	2010-03-03	22
+12	val_12	2010-03-03	22
+5	val_5	2010-03-03	22
+18	val_18	2010-03-03	22
+9	val_9	2010-03-03	22
+18	val_18	2010-03-03	22
+27	val_27	2010-03-03	33
+37	val_37	2010-03-03	33
+35	val_35	2010-03-03	33
+24	val_24	2010-03-03	33
+26	val_26	2010-03-03	33
+35	val_35	2010-03-03	33
+34	val_34	2010-03-03	33
+30	val_30	2010-03-03	33
+33	val_33	2010-03-03	33
+35	val_35	2010-03-03	33
+24	val_24	2010-03-03	33
+26	val_26	2010-03-03	33
+28	val_28	2010-03-03	33
+37	val_37	2010-03-03	33

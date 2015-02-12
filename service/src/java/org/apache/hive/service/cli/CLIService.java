@@ -34,9 +34,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
@@ -44,6 +46,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.HiveServer2;
 
 /**
  * CLIService.
@@ -64,21 +67,29 @@ public class CLIService extends CompositeService implements ICLIService {
   private SessionManager sessionManager;
   private UserGroupInformation serviceUGI;
   private UserGroupInformation httpUGI;
+  // The HiveServer2 instance running this service
+  private final HiveServer2 hiveServer2;
 
-  public CLIService() {
+  public CLIService(HiveServer2 hiveServer2) {
     super(CLIService.class.getSimpleName());
+    this.hiveServer2 = hiveServer2;
   }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+    try {
+      applyAuthorizationConfigPolicy(hiveConf);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
+    }
     this.hiveConf = hiveConf;
-    sessionManager = new SessionManager();
+    sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
-    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
-        this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+        this.serviceUGI = Utils.getUGI();
       } catch (IOException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       } catch (LoginException e) {
@@ -100,7 +111,23 @@ public class CLIService extends CompositeService implements ICLIService {
         }
       }
     }
+    setupBlockedUdfs();
     super.init(hiveConf);
+  }
+
+  private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {
+    // authorization setup using SessionState should be revisited eventually, as
+    // authorization and authentication are not session specific settings
+    SessionState ss = new SessionState(newHiveConf);
+    ss.setIsHiveServerQuery(true);
+    SessionState.start(ss);
+    ss.applyAuthorizationPolicy();
+  }
+
+  private void setupBlockedUdfs() {
+    FunctionRegistry.setupPermissionsForBuiltinUDFs(
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST),
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST));
   }
 
   public UserGroupInformation getServiceUGI() {
@@ -201,7 +228,8 @@ public class CLIService extends CompositeService implements ICLIService {
    * @see org.apache.hive.service.cli.ICLIService#closeSession(org.apache.hive.service.cli.SessionHandle)
    */
   @Override
-  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+  public void closeSession(SessionHandle sessionHandle)
+      throws HiveSQLException {
     sessionManager.closeSession(sessionHandle);
     LOG.debug(sessionHandle + ": closeSession()");
   }

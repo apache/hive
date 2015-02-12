@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
@@ -153,7 +154,9 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
                 partn.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
                 new String[] { partn.getLocation() });
-            Object recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
+            org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
+                (org.apache.hadoop.mapred.RecordReader<?, ?>)
+                inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
             StatsProvidingRecordReader statsRR;
             if (recordReader instanceof StatsProvidingRecordReader) {
               statsRR = (StatsProvidingRecordReader) recordReader;
@@ -163,6 +166,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
               numFiles += 1;
               statsAvailable = true;
             }
+            recordReader.close();
           }
         }
 
@@ -220,7 +224,12 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
     int ret = 0;
 
     try {
-      List<Partition> partitions = getPartitionsList();
+      Collection<Partition> partitions = null;
+      if (work.getPrunedPartitionList() == null) {
+        partitions = getPartitionsList();
+      } else {
+        partitions = work.getPrunedPartitionList().getPartitions();
+      }
 
       // non-partitioned table
       if (partitions == null) {
@@ -254,6 +263,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
                 numFiles += 1;
                 statsAvailable = true;
               }
+              recordReader.close();
             }
           }
 

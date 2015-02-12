@@ -256,13 +256,13 @@ public class TestOrcFile {
     assertEquals(7500, stats[1].getNumberOfValues());
     assertEquals(3750, ((BooleanColumnStatistics) stats[1]).getFalseCount());
     assertEquals(3750, ((BooleanColumnStatistics) stats[1]).getTrueCount());
-    assertEquals("count: 7500 true: 3750", stats[1].toString());
+    assertEquals("count: 7500 hasNull: false true: 3750", stats[1].toString());
 
     assertEquals(2048, ((IntegerColumnStatistics) stats[3]).getMaximum());
     assertEquals(1024, ((IntegerColumnStatistics) stats[3]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[3]).isSumDefined());
     assertEquals(11520000, ((IntegerColumnStatistics) stats[3]).getSum());
-    assertEquals("count: 7500 min: 1024 max: 2048 sum: 11520000",
+    assertEquals("count: 7500 hasNull: false min: 1024 max: 2048 sum: 11520000",
         stats[3].toString());
 
     assertEquals(Long.MAX_VALUE,
@@ -271,17 +271,17 @@ public class TestOrcFile {
         ((IntegerColumnStatistics) stats[5]).getMinimum());
     assertEquals(false, ((IntegerColumnStatistics) stats[5]).isSumDefined());
     assertEquals(
-        "count: 7500 min: 9223372036854775807 max: 9223372036854775807",
+        "count: 7500 hasNull: false min: 9223372036854775807 max: 9223372036854775807",
         stats[5].toString());
 
     assertEquals(-15.0, ((DoubleColumnStatistics) stats[7]).getMinimum());
     assertEquals(-5.0, ((DoubleColumnStatistics) stats[7]).getMaximum());
     assertEquals(-75000.0, ((DoubleColumnStatistics) stats[7]).getSum(),
         0.00001);
-    assertEquals("count: 7500 min: -15.0 max: -5.0 sum: -75000.0",
+    assertEquals("count: 7500 hasNull: false min: -15.0 max: -5.0 sum: -75000.0",
         stats[7].toString());
 
-    assertEquals("count: 7500 min: bye max: hi sum: 0", stats[9].toString());
+    assertEquals("count: 7500 hasNull: false min: bye max: hi sum: 0", stats[9].toString());
 
     // check the inspectors
     StructObjectInspector readerInspector = (StructObjectInspector) reader
@@ -515,6 +515,10 @@ public class TestOrcFile {
       Object row = rows.next(null);
       assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
     }
+    assertEquals(1, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false};
+    boolean[] included = OrcUtils.includeColumns("", "ts", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
   }
 
   @Test
@@ -538,20 +542,33 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
+    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, true};
+    boolean[] included = OrcUtils.includeColumns("string1", "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, false};
+    included = OrcUtils.includeColumns("", "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, false};
+    included = OrcUtils.includeColumns(null, "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(4, stats[0].getNumberOfValues());
-    assertEquals("count: 4", stats[0].toString());
+    assertEquals("count: 4 hasNull: false", stats[0].toString());
 
     assertEquals(3, stats[1].getNumberOfValues());
     assertEquals(15, ((BinaryColumnStatistics) stats[1]).getSum());
-    assertEquals("count: 3 sum: 15", stats[1].toString());
+    assertEquals("count: 3 hasNull: true sum: 15", stats[1].toString());
 
     assertEquals(3, stats[2].getNumberOfValues());
     assertEquals("bar", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals("hi", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals(8, ((StringColumnStatistics) stats[2]).getSum());
-    assertEquals("count: 3 min: bar max: hi sum: 8",
+    assertEquals("count: 3 hasNull: true min: bar max: hi sum: 8",
         stats[2].toString());
 
     // check the inspectors
@@ -634,6 +651,12 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, true, false};
+    boolean[] included = OrcUtils.includeColumns("int1", "int1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     Metadata metadata = reader.getMetadata();
     int numStripes = metadata.getStripeStatistics().size();
     assertEquals(3, numStripes);
@@ -672,7 +695,7 @@ public class TestOrcFile {
     assertEquals(5000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
 
     RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows();
-    OrcProto.RowIndex[] index = recordReader.readRowIndex(0);
+    OrcProto.RowIndex[] index = recordReader.readRowIndex(0, null).getRowGroupIndex();
     assertEquals(3, index.length);
     List<OrcProto.RowIndexEntry> items = index[1].getEntryList();
     assertEquals(1, items.size());
@@ -682,7 +705,7 @@ public class TestOrcFile {
     assertEquals(0, items.get(0).getPositions(2));
     assertEquals(1, 
                  items.get(0).getStatistics().getIntStatistics().getMinimum());
-    index = recordReader.readRowIndex(1);
+    index = recordReader.readRowIndex(1, null).getRowGroupIndex();
     assertEquals(3, index.length);
     items = index[1].getEntryList();
     assertEquals(2, 
@@ -715,6 +738,44 @@ public class TestOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
+    assertEquals(24, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false};
+    boolean[] included = OrcUtils.includeColumns("",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false,
+        false, false, false, false, true,
+        true, true, true, true, true,
+        false, false, false, false, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false,
+        false, false, false, false, true,
+        true, true, true, true, true,
+        false, false, false, false, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns(
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     Metadata metadata = reader.getMetadata();
 
     // check the stats
@@ -722,13 +783,13 @@ public class TestOrcFile {
     assertEquals(2, stats[1].getNumberOfValues());
     assertEquals(1, ((BooleanColumnStatistics) stats[1]).getFalseCount());
     assertEquals(1, ((BooleanColumnStatistics) stats[1]).getTrueCount());
-    assertEquals("count: 2 true: 1", stats[1].toString());
+    assertEquals("count: 2 hasNull: false true: 1", stats[1].toString());
 
     assertEquals(2048, ((IntegerColumnStatistics) stats[3]).getMaximum());
     assertEquals(1024, ((IntegerColumnStatistics) stats[3]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[3]).isSumDefined());
     assertEquals(3072, ((IntegerColumnStatistics) stats[3]).getSum());
-    assertEquals("count: 2 min: 1024 max: 2048 sum: 3072",
+    assertEquals("count: 2 hasNull: false min: 1024 max: 2048 sum: 3072",
         stats[3].toString());
 
     StripeStatistics ss = metadata.getStripeStatistics().get(0);
@@ -740,10 +801,10 @@ public class TestOrcFile {
     assertEquals(-15.0, ((DoubleColumnStatistics) stats[7]).getMinimum());
     assertEquals(-5.0, ((DoubleColumnStatistics) stats[7]).getMaximum());
     assertEquals(-20.0, ((DoubleColumnStatistics) stats[7]).getSum(), 0.00001);
-    assertEquals("count: 2 min: -15.0 max: -5.0 sum: -20.0",
+    assertEquals("count: 2 hasNull: false min: -15.0 max: -5.0 sum: -20.0",
         stats[7].toString());
 
-    assertEquals("count: 2 min: bye max: hi sum: 5", stats[9].toString());
+    assertEquals("count: 2 hasNull: false min: bye max: hi sum: 5", stats[9].toString());
 
     // check the inspectors
     StructObjectInspector readerInspector =
@@ -1183,6 +1244,20 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(6, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, false, false, false, false};
+    boolean[] included = OrcUtils.includeColumns("", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false, true};
+    included = OrcUtils.includeColumns("time,decimal", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, true, true, true, false};
+    included = OrcUtils.includeColumns("union", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
     assertEquals(5309, reader.getNumberOfRows());
     DecimalColumnStatistics stats =

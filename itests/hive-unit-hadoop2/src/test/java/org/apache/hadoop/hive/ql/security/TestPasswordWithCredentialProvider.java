@@ -81,7 +81,7 @@ public class TestPasswordWithCredentialProvider {
     conf.set("hadoop.security.credential.clear-text-fallback", "true");
 
     // Set up CredentialProvider
-    conf.set("hadoop.security.credential.provider.path", "jceks://file/" + tmpDir + "/test.jks");
+    conf.set("hadoop.security.credential.provider.path", "jceks://file/" + tmpDir.toURI().getPath() + "/test.jks");
 
     // CredentialProvider/CredentialProviderFactory may not exist, depending on the version of
     // hadoop-2 being used to build Hive. Use reflection to do the following lines

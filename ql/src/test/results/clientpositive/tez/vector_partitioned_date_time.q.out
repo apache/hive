@@ -1,0 +1,2041 @@
+PREHOOK: query: -- Check if vectorization code is handling partitioning on DATE and the other data types.
+
+
+CREATE TABLE flights_tiny (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_date DATE,
+  arr_delay FLOAT,
+  fl_num INT
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny
+POSTHOOK: query: -- Check if vectorization code is handling partitioning on DATE and the other data types.
+
+
+CREATE TABLE flights_tiny (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_date DATE,
+  arr_delay FLOAT,
+  fl_num INT
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@flights_tiny
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@flights_tiny
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@flights_tiny
+PREHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
+SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
+FROM flights_tiny
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@flights_tiny
+PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny_orc
+POSTHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
+SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
+FROM flights_tiny
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@flights_tiny_orc
+PREHOOK: query: SELECT * FROM flights_tiny_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM flights_tiny_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20	2010-10-20 07:00:00	-30.0	1064
+Baltimore	New York	2010-10-20	2010-10-20 07:00:00	23.0	1142
+Baltimore	New York	2010-10-20	2010-10-20 07:00:00	6.0	1599
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	42.0	361
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	24.0	897
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	15.0	1531
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	-6.0	1610
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	-2.0	3198
+Baltimore	New York	2010-10-21	2010-10-21 07:00:00	17.0	1064
+Baltimore	New York	2010-10-21	2010-10-21 07:00:00	105.0	1142
+Baltimore	New York	2010-10-21	2010-10-21 07:00:00	28.0	1599
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	142.0	361
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	77.0	897
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	53.0	1531
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	-5.0	1610
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	51.0	3198
+Baltimore	New York	2010-10-22	2010-10-22 07:00:00	-12.0	1064
+Baltimore	New York	2010-10-22	2010-10-22 07:00:00	54.0	1142
+Baltimore	New York	2010-10-22	2010-10-22 07:00:00	18.0	1599
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	2.0	361
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	24.0	897
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	16.0	1531
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	-6.0	1610
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	-11.0	3198
+Baltimore	New York	2010-10-23	2010-10-23 07:00:00	18.0	272
+Baltimore	New York	2010-10-23	2010-10-23 07:00:00	-10.0	1805
+Baltimore	New York	2010-10-23	2010-10-23 07:00:00	6.0	3171
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	3.0	384
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	32.0	426
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	1.0	650
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	11.0	3085
+Baltimore	New York	2010-10-24	2010-10-24 07:00:00	12.0	1599
+Baltimore	New York	2010-10-24	2010-10-24 07:00:00	20.0	2571
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	10.0	361
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	113.0	897
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	-5.0	1531
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	-17.0	1610
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	-3.0	3198
+Baltimore	New York	2010-10-25	2010-10-25 07:00:00	-25.0	1064
+Baltimore	New York	2010-10-25	2010-10-25 07:00:00	92.0	1142
+Baltimore	New York	2010-10-25	2010-10-25 07:00:00	106.0	1599
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	31.0	361
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	-1.0	897
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	43.0	1531
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	6.0	1610
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	-16.0	3198
+Baltimore	New York	2010-10-26	2010-10-26 07:00:00	-22.0	1064
+Baltimore	New York	2010-10-26	2010-10-26 07:00:00	123.0	1142
+Baltimore	New York	2010-10-26	2010-10-26 07:00:00	90.0	1599
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	12.0	361
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	0.0	897
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	29.0	1531
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	-17.0	1610
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	6.0	3198
+Baltimore	New York	2010-10-27	2010-10-27 07:00:00	-18.0	1064
+Baltimore	New York	2010-10-27	2010-10-27 07:00:00	49.0	1142
+Baltimore	New York	2010-10-27	2010-10-27 07:00:00	92.0	1599
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	148.0	361
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	-11.0	897
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	70.0	1531
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	8.0	1610
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	21.0	3198
+Baltimore	New York	2010-10-28	2010-10-28 07:00:00	-4.0	1064
+Baltimore	New York	2010-10-28	2010-10-28 07:00:00	-14.0	1142
+Baltimore	New York	2010-10-28	2010-10-28 07:00:00	-14.0	1599
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	2.0	361
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	2.0	897
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	-11.0	1531
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	3.0	1610
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	-18.0	3198
+Baltimore	New York	2010-10-29	2010-10-29 07:00:00	-24.0	1064
+Baltimore	New York	2010-10-29	2010-10-29 07:00:00	21.0	1142
+Baltimore	New York	2010-10-29	2010-10-29 07:00:00	-2.0	1599
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-12.0	361
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-11.0	897
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	15.0	1531
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-18.0	1610
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-4.0	3198
+Baltimore	New York	2010-10-30	2010-10-30 07:00:00	14.0	272
+Baltimore	New York	2010-10-30	2010-10-30 07:00:00	-1.0	1805
+Baltimore	New York	2010-10-30	2010-10-30 07:00:00	5.0	3171
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-6.0	384
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-10.0	426
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-5.0	650
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-5.0	3085
+Baltimore	New York	2010-10-31	2010-10-31 07:00:00	-1.0	1599
+Baltimore	New York	2010-10-31	2010-10-31 07:00:00	-14.0	2571
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-25.0	361
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-18.0	897
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-4.0	1531
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-22.0	1610
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-15.0	3198
+Cleveland	New York	2010-10-30	2010-10-30 07:00:00	-23.0	2018
+Cleveland	New York	2010-10-30	2010-10-30 07:00:00	-12.0	2932
+Cleveland	New York	2010-10-29	2010-10-29 07:00:00	-4.0	2630
+Cleveland	New York	2010-10-29	2010-10-29 07:00:00	-19.0	2646
+Cleveland	New York	2010-10-29	2010-10-29 07:00:00	-12.0	3014
+Cleveland	New York	2010-10-28	2010-10-28 07:00:00	3.0	2630
+Cleveland	New York	2010-10-28	2010-10-28 07:00:00	-6.0	2646
+Cleveland	New York	2010-10-28	2010-10-28 07:00:00	1.0	3014
+Cleveland	New York	2010-10-27	2010-10-27 07:00:00	16.0	2630
+Cleveland	New York	2010-10-27	2010-10-27 07:00:00	27.0	3014
+Cleveland	New York	2010-10-26	2010-10-26 07:00:00	4.0	2630
+Cleveland	New York	2010-10-26	2010-10-26 07:00:00	-27.0	2646
+Cleveland	New York	2010-10-26	2010-10-26 07:00:00	-11.0	2662
+Cleveland	New York	2010-10-26	2010-10-26 07:00:00	13.0	3014
+Cleveland	New York	2010-10-25	2010-10-25 07:00:00	-4.0	2630
+Cleveland	New York	2010-10-25	2010-10-25 07:00:00	81.0	2646
+Cleveland	New York	2010-10-25	2010-10-25 07:00:00	42.0	3014
+Cleveland	New York	2010-10-24	2010-10-24 07:00:00	5.0	2254
+Cleveland	New York	2010-10-24	2010-10-24 07:00:00	-11.0	2630
+Cleveland	New York	2010-10-24	2010-10-24 07:00:00	-20.0	2646
+Cleveland	New York	2010-10-24	2010-10-24 07:00:00	-9.0	3014
+Cleveland	New York	2010-10-23	2010-10-23 07:00:00	-21.0	2932
+Cleveland	New York	2010-10-22	2010-10-22 07:00:00	1.0	2630
+Cleveland	New York	2010-10-22	2010-10-22 07:00:00	-25.0	2646
+Cleveland	New York	2010-10-22	2010-10-22 07:00:00	-3.0	3014
+Cleveland	New York	2010-10-21	2010-10-21 07:00:00	3.0	2630
+Cleveland	New York	2010-10-21	2010-10-21 07:00:00	29.0	2646
+Cleveland	New York	2010-10-21	2010-10-21 07:00:00	72.0	3014
+Cleveland	New York	2010-10-20	2010-10-20 07:00:00	-8.0	2630
+Cleveland	New York	2010-10-20	2010-10-20 07:00:00	-15.0	3014
+Washington	New York	2010-10-23	2010-10-23 07:00:00	-25.0	5832
+Washington	New York	2010-10-23	2010-10-23 07:00:00	-21.0	5904
+Washington	New York	2010-10-23	2010-10-23 07:00:00	-18.0	5917
+Washington	New York	2010-10-30	2010-10-30 07:00:00	-27.0	5904
+Washington	New York	2010-10-30	2010-10-30 07:00:00	-16.0	5917
+Washington	New York	2010-10-20	2010-10-20 07:00:00	-2.0	7291
+Washington	New York	2010-10-21	2010-10-21 07:00:00	22.0	7291
+Washington	New York	2010-10-23	2010-10-23 07:00:00	-16.0	7274
+Washington	New York	2010-10-24	2010-10-24 07:00:00	-26.0	7282
+Washington	New York	2010-10-25	2010-10-25 07:00:00	9.0	7291
+Washington	New York	2010-10-26	2010-10-26 07:00:00	4.0	7291
+Washington	New York	2010-10-27	2010-10-27 07:00:00	26.0	7291
+Washington	New York	2010-10-28	2010-10-28 07:00:00	45.0	7291
+Washington	New York	2010-10-29	2010-10-29 07:00:00	1.0	7291
+Washington	New York	2010-10-31	2010-10-31 07:00:00	-18.0	7282
+PREHOOK: query: select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23	2010-10-23 07:00:00	18.0	272
+Baltimore	New York	2010-10-30	2010-10-30 07:00:00	14.0	272
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	42.0	361
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	142.0	361
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	2.0	361
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	10.0	361
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	31.0	361
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	12.0	361
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	148.0	361
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	2.0	361
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-12.0	361
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-25.0	361
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	3.0	384
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-6.0	384
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	32.0	426
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-10.0	426
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	1.0	650
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-5.0	650
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	24.0	897
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	77.0	897
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	24.0	897
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	113.0	897
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	-1.0	897
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	0.0	897
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	-11.0	897
+PREHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+2010-10-20	11
+2010-10-21	12
+2010-10-22	11
+2010-10-23	12
+2010-10-24	12
+2010-10-25	12
+2010-10-26	13
+2010-10-27	11
+2010-10-28	12
+2010-10-29	12
+2010-10-30	11
+2010-10-31	8
+PREHOOK: query: explain
+select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc
+                  Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: origin_city_name (type: string), dest_city_name (type: string), fl_date (type: date), fl_time (type: timestamp), arr_delay (type: float), fl_num (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col5 (type: int), _col2 (type: date)
+                      sort order: ++
+                      Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col5 (type: int), _col2 (type: date)
+                    sort order: ++
+                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 25
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23	2010-10-23 07:00:00	18.0	272
+Baltimore	New York	2010-10-30	2010-10-30 07:00:00	14.0	272
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	42.0	361
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	142.0	361
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	2.0	361
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	10.0	361
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	31.0	361
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	12.0	361
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	148.0	361
+Chicago	New York	2010-10-28	2010-10-28 07:00:00	2.0	361
+Chicago	New York	2010-10-29	2010-10-29 07:00:00	-12.0	361
+Chicago	New York	2010-10-31	2010-10-31 07:00:00	-25.0	361
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	3.0	384
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-6.0	384
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	32.0	426
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-10.0	426
+Chicago	New York	2010-10-23	2010-10-23 07:00:00	1.0	650
+Chicago	New York	2010-10-30	2010-10-30 07:00:00	-5.0	650
+Chicago	New York	2010-10-20	2010-10-20 07:00:00	24.0	897
+Chicago	New York	2010-10-21	2010-10-21 07:00:00	77.0	897
+Chicago	New York	2010-10-22	2010-10-22 07:00:00	24.0	897
+Chicago	New York	2010-10-24	2010-10-24 07:00:00	113.0	897
+Chicago	New York	2010-10-25	2010-10-25 07:00:00	-1.0	897
+Chicago	New York	2010-10-26	2010-10-26 07:00:00	0.0	897
+Chicago	New York	2010-10-27	2010-10-27 07:00:00	-11.0	897
+PREHOOK: query: explain
+select fl_date, count(*) from flights_tiny_orc group by fl_date
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select fl_date, count(*) from flights_tiny_orc group by fl_date
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc
+                  Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: fl_date (type: date)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: date)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: date)
+                        Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 68 Data size: 19584 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 68 Data size: 19584 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+#### A masked pattern was here ####
+2010-10-20	11
+2010-10-21	12
+2010-10-22	11
+2010-10-23	12
+2010-10-24	12
+2010-10-25	12
+2010-10-26	13
+2010-10-27	11
+2010-10-28	12
+2010-10-29	12
+2010-10-30	11
+2010-10-31	8
+PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_date (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_time TIMESTAMP,
+  arr_delay FLOAT,
+  fl_num INT
+)
+PARTITIONED BY (fl_date DATE)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny_orc_partitioned_date
+POSTHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_date (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_time TIMESTAMP,
+  arr_delay FLOAT,
+  fl_num INT
+)
+PARTITIONED BY (fl_date DATE)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date
+PREHOOK: query: INSERT INTO TABLE flights_tiny_orc_partitioned_date
+PARTITION (fl_date)
+SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
+FROM flights_tiny_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+PREHOOK: Output: default@flights_tiny_orc_partitioned_date
+POSTHOOK: query: INSERT INTO TABLE flights_tiny_orc_partitioned_date
+PARTITION (fl_date)
+SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
+FROM flights_tiny_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-20).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-20).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-20).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-20).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-20).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-21).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-21).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-21).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-21).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-21).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-22).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-22).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-22).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-22).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-22).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-23).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-23).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-23).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-23).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-23).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-24).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-24).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-24).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-24).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-24).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-25).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-25).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-25).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-25).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-25).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-26).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-26).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-26).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-26).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-26).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-27).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-27).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-27).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-27).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-27).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-28).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-28).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-28).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-28).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-28).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-29).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-29).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-29).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-29).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-29).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-30).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-30).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-30).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-30).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-30).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-31).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-31).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-31).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-31).fl_time SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_time, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_date PARTITION(fl_date=2010-10-31).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+PREHOOK: query: select * from flights_tiny_orc_partitioned_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20 07:00:00	-30.0	1064	2010-10-20
+Baltimore	New York	2010-10-20 07:00:00	23.0	1142	2010-10-20
+Baltimore	New York	2010-10-20 07:00:00	6.0	1599	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	42.0	361	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	24.0	897	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	15.0	1531	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	-6.0	1610	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	-2.0	3198	2010-10-20
+Cleveland	New York	2010-10-20 07:00:00	-8.0	2630	2010-10-20
+Cleveland	New York	2010-10-20 07:00:00	-15.0	3014	2010-10-20
+Washington	New York	2010-10-20 07:00:00	-2.0	7291	2010-10-20
+Baltimore	New York	2010-10-21 07:00:00	17.0	1064	2010-10-21
+Baltimore	New York	2010-10-21 07:00:00	105.0	1142	2010-10-21
+Baltimore	New York	2010-10-21 07:00:00	28.0	1599	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	142.0	361	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	77.0	897	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	53.0	1531	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	-5.0	1610	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	51.0	3198	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	3.0	2630	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	29.0	2646	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	72.0	3014	2010-10-21
+Washington	New York	2010-10-21 07:00:00	22.0	7291	2010-10-21
+Baltimore	New York	2010-10-22 07:00:00	-12.0	1064	2010-10-22
+Baltimore	New York	2010-10-22 07:00:00	54.0	1142	2010-10-22
+Baltimore	New York	2010-10-22 07:00:00	18.0	1599	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	2.0	361	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	24.0	897	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	16.0	1531	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	-6.0	1610	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	-11.0	3198	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	1.0	2630	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	-25.0	2646	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	-3.0	3014	2010-10-22
+Baltimore	New York	2010-10-23 07:00:00	18.0	272	2010-10-23
+Baltimore	New York	2010-10-23 07:00:00	-10.0	1805	2010-10-23
+Baltimore	New York	2010-10-23 07:00:00	6.0	3171	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	3.0	384	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	32.0	426	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	1.0	650	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	11.0	3085	2010-10-23
+Cleveland	New York	2010-10-23 07:00:00	-21.0	2932	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-25.0	5832	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-21.0	5904	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-18.0	5917	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-16.0	7274	2010-10-23
+Baltimore	New York	2010-10-24 07:00:00	12.0	1599	2010-10-24
+Baltimore	New York	2010-10-24 07:00:00	20.0	2571	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	10.0	361	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	113.0	897	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-5.0	1531	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-17.0	1610	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-3.0	3198	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	5.0	2254	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-11.0	2630	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-20.0	2646	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-9.0	3014	2010-10-24
+Washington	New York	2010-10-24 07:00:00	-26.0	7282	2010-10-24
+Baltimore	New York	2010-10-25 07:00:00	-25.0	1064	2010-10-25
+Baltimore	New York	2010-10-25 07:00:00	92.0	1142	2010-10-25
+Baltimore	New York	2010-10-25 07:00:00	106.0	1599	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	31.0	361	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	-1.0	897	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	43.0	1531	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	6.0	1610	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	-16.0	3198	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	-4.0	2630	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	81.0	2646	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	42.0	3014	2010-10-25
+Washington	New York	2010-10-25 07:00:00	9.0	7291	2010-10-25
+Baltimore	New York	2010-10-26 07:00:00	-22.0	1064	2010-10-26
+Baltimore	New York	2010-10-26 07:00:00	123.0	1142	2010-10-26
+Baltimore	New York	2010-10-26 07:00:00	90.0	1599	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	12.0	361	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	0.0	897	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	29.0	1531	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	-17.0	1610	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	6.0	3198	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	4.0	2630	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	-27.0	2646	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	-11.0	2662	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	13.0	3014	2010-10-26
+Washington	New York	2010-10-26 07:00:00	4.0	7291	2010-10-26
+Baltimore	New York	2010-10-27 07:00:00	-18.0	1064	2010-10-27
+Baltimore	New York	2010-10-27 07:00:00	49.0	1142	2010-10-27
+Baltimore	New York	2010-10-27 07:00:00	92.0	1599	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	148.0	361	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	-11.0	897	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	70.0	1531	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	8.0	1610	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	21.0	3198	2010-10-27
+Cleveland	New York	2010-10-27 07:00:00	16.0	2630	2010-10-27
+Cleveland	New York	2010-10-27 07:00:00	27.0	3014	2010-10-27
+Washington	New York	2010-10-27 07:00:00	26.0	7291	2010-10-27
+Baltimore	New York	2010-10-28 07:00:00	-4.0	1064	2010-10-28
+Baltimore	New York	2010-10-28 07:00:00	-14.0	1142	2010-10-28
+Baltimore	New York	2010-10-28 07:00:00	-14.0	1599	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	2.0	361	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	2.0	897	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	-11.0	1531	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	3.0	1610	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	-18.0	3198	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	3.0	2630	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	-6.0	2646	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	1.0	3014	2010-10-28
+Washington	New York	2010-10-28 07:00:00	45.0	7291	2010-10-28
+Baltimore	New York	2010-10-29 07:00:00	-24.0	1064	2010-10-29
+Baltimore	New York	2010-10-29 07:00:00	21.0	1142	2010-10-29
+Baltimore	New York	2010-10-29 07:00:00	-2.0	1599	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-12.0	361	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-11.0	897	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	15.0	1531	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-18.0	1610	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-4.0	3198	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-4.0	2630	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-19.0	2646	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-12.0	3014	2010-10-29
+Washington	New York	2010-10-29 07:00:00	1.0	7291	2010-10-29
+Baltimore	New York	2010-10-30 07:00:00	14.0	272	2010-10-30
+Baltimore	New York	2010-10-30 07:00:00	-1.0	1805	2010-10-30
+Baltimore	New York	2010-10-30 07:00:00	5.0	3171	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-6.0	384	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-10.0	426	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-5.0	650	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-5.0	3085	2010-10-30
+Cleveland	New York	2010-10-30 07:00:00	-23.0	2018	2010-10-30
+Cleveland	New York	2010-10-30 07:00:00	-12.0	2932	2010-10-30
+Washington	New York	2010-10-30 07:00:00	-27.0	5904	2010-10-30
+Washington	New York	2010-10-30 07:00:00	-16.0	5917	2010-10-30
+Baltimore	New York	2010-10-31 07:00:00	-1.0	1599	2010-10-31
+Baltimore	New York	2010-10-31 07:00:00	-14.0	2571	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-25.0	361	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-18.0	897	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-4.0	1531	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-22.0	1610	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-15.0	3198	2010-10-31
+Washington	New York	2010-10-31 07:00:00	-18.0	7282	2010-10-31
+PREHOOK: query: select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23 07:00:00	18.0	272	2010-10-23
+Baltimore	New York	2010-10-30 07:00:00	14.0	272	2010-10-30
+Chicago	New York	2010-10-20 07:00:00	42.0	361	2010-10-20
+Chicago	New York	2010-10-21 07:00:00	142.0	361	2010-10-21
+Chicago	New York	2010-10-22 07:00:00	2.0	361	2010-10-22
+Chicago	New York	2010-10-24 07:00:00	10.0	361	2010-10-24
+Chicago	New York	2010-10-25 07:00:00	31.0	361	2010-10-25
+Chicago	New York	2010-10-26 07:00:00	12.0	361	2010-10-26
+Chicago	New York	2010-10-27 07:00:00	148.0	361	2010-10-27
+Chicago	New York	2010-10-28 07:00:00	2.0	361	2010-10-28
+Chicago	New York	2010-10-29 07:00:00	-12.0	361	2010-10-29
+Chicago	New York	2010-10-31 07:00:00	-25.0	361	2010-10-31
+Chicago	New York	2010-10-23 07:00:00	3.0	384	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-6.0	384	2010-10-30
+Chicago	New York	2010-10-23 07:00:00	32.0	426	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-10.0	426	2010-10-30
+Chicago	New York	2010-10-23 07:00:00	1.0	650	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-5.0	650	2010-10-30
+Chicago	New York	2010-10-20 07:00:00	24.0	897	2010-10-20
+Chicago	New York	2010-10-21 07:00:00	77.0	897	2010-10-21
+Chicago	New York	2010-10-22 07:00:00	24.0	897	2010-10-22
+Chicago	New York	2010-10-24 07:00:00	113.0	897	2010-10-24
+Chicago	New York	2010-10-25 07:00:00	-1.0	897	2010-10-25
+Chicago	New York	2010-10-26 07:00:00	0.0	897	2010-10-26
+Chicago	New York	2010-10-27 07:00:00	-11.0	897	2010-10-27
+PREHOOK: query: select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+2010-10-20	11
+2010-10-21	12
+2010-10-22	11
+2010-10-23	12
+2010-10-24	12
+2010-10-25	12
+2010-10-26	13
+2010-10-27	11
+2010-10-28	12
+2010-10-29	12
+2010-10-30	11
+2010-10-31	8
+PREHOOK: query: explain
+select * from flights_tiny_orc_partitioned_date
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from flights_tiny_orc_partitioned_date
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: flights_tiny_orc_partitioned_date
+          Select Operator
+            expressions: origin_city_name (type: string), dest_city_name (type: string), fl_time (type: timestamp), arr_delay (type: float), fl_num (type: int), fl_date (type: date)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+
+PREHOOK: query: select * from flights_tiny_orc_partitioned_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20 07:00:00	-30.0	1064	2010-10-20
+Baltimore	New York	2010-10-20 07:00:00	23.0	1142	2010-10-20
+Baltimore	New York	2010-10-20 07:00:00	6.0	1599	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	42.0	361	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	24.0	897	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	15.0	1531	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	-6.0	1610	2010-10-20
+Chicago	New York	2010-10-20 07:00:00	-2.0	3198	2010-10-20
+Cleveland	New York	2010-10-20 07:00:00	-8.0	2630	2010-10-20
+Cleveland	New York	2010-10-20 07:00:00	-15.0	3014	2010-10-20
+Washington	New York	2010-10-20 07:00:00	-2.0	7291	2010-10-20
+Baltimore	New York	2010-10-21 07:00:00	17.0	1064	2010-10-21
+Baltimore	New York	2010-10-21 07:00:00	105.0	1142	2010-10-21
+Baltimore	New York	2010-10-21 07:00:00	28.0	1599	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	142.0	361	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	77.0	897	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	53.0	1531	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	-5.0	1610	2010-10-21
+Chicago	New York	2010-10-21 07:00:00	51.0	3198	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	3.0	2630	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	29.0	2646	2010-10-21
+Cleveland	New York	2010-10-21 07:00:00	72.0	3014	2010-10-21
+Washington	New York	2010-10-21 07:00:00	22.0	7291	2010-10-21
+Baltimore	New York	2010-10-22 07:00:00	-12.0	1064	2010-10-22
+Baltimore	New York	2010-10-22 07:00:00	54.0	1142	2010-10-22
+Baltimore	New York	2010-10-22 07:00:00	18.0	1599	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	2.0	361	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	24.0	897	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	16.0	1531	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	-6.0	1610	2010-10-22
+Chicago	New York	2010-10-22 07:00:00	-11.0	3198	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	1.0	2630	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	-25.0	2646	2010-10-22
+Cleveland	New York	2010-10-22 07:00:00	-3.0	3014	2010-10-22
+Baltimore	New York	2010-10-23 07:00:00	18.0	272	2010-10-23
+Baltimore	New York	2010-10-23 07:00:00	-10.0	1805	2010-10-23
+Baltimore	New York	2010-10-23 07:00:00	6.0	3171	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	3.0	384	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	32.0	426	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	1.0	650	2010-10-23
+Chicago	New York	2010-10-23 07:00:00	11.0	3085	2010-10-23
+Cleveland	New York	2010-10-23 07:00:00	-21.0	2932	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-25.0	5832	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-21.0	5904	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-18.0	5917	2010-10-23
+Washington	New York	2010-10-23 07:00:00	-16.0	7274	2010-10-23
+Baltimore	New York	2010-10-24 07:00:00	12.0	1599	2010-10-24
+Baltimore	New York	2010-10-24 07:00:00	20.0	2571	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	10.0	361	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	113.0	897	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-5.0	1531	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-17.0	1610	2010-10-24
+Chicago	New York	2010-10-24 07:00:00	-3.0	3198	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	5.0	2254	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-11.0	2630	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-20.0	2646	2010-10-24
+Cleveland	New York	2010-10-24 07:00:00	-9.0	3014	2010-10-24
+Washington	New York	2010-10-24 07:00:00	-26.0	7282	2010-10-24
+Baltimore	New York	2010-10-25 07:00:00	-25.0	1064	2010-10-25
+Baltimore	New York	2010-10-25 07:00:00	92.0	1142	2010-10-25
+Baltimore	New York	2010-10-25 07:00:00	106.0	1599	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	31.0	361	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	-1.0	897	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	43.0	1531	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	6.0	1610	2010-10-25
+Chicago	New York	2010-10-25 07:00:00	-16.0	3198	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	-4.0	2630	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	81.0	2646	2010-10-25
+Cleveland	New York	2010-10-25 07:00:00	42.0	3014	2010-10-25
+Washington	New York	2010-10-25 07:00:00	9.0	7291	2010-10-25
+Baltimore	New York	2010-10-26 07:00:00	-22.0	1064	2010-10-26
+Baltimore	New York	2010-10-26 07:00:00	123.0	1142	2010-10-26
+Baltimore	New York	2010-10-26 07:00:00	90.0	1599	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	12.0	361	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	0.0	897	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	29.0	1531	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	-17.0	1610	2010-10-26
+Chicago	New York	2010-10-26 07:00:00	6.0	3198	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	4.0	2630	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	-27.0	2646	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	-11.0	2662	2010-10-26
+Cleveland	New York	2010-10-26 07:00:00	13.0	3014	2010-10-26
+Washington	New York	2010-10-26 07:00:00	4.0	7291	2010-10-26
+Baltimore	New York	2010-10-27 07:00:00	-18.0	1064	2010-10-27
+Baltimore	New York	2010-10-27 07:00:00	49.0	1142	2010-10-27
+Baltimore	New York	2010-10-27 07:00:00	92.0	1599	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	148.0	361	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	-11.0	897	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	70.0	1531	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	8.0	1610	2010-10-27
+Chicago	New York	2010-10-27 07:00:00	21.0	3198	2010-10-27
+Cleveland	New York	2010-10-27 07:00:00	16.0	2630	2010-10-27
+Cleveland	New York	2010-10-27 07:00:00	27.0	3014	2010-10-27
+Washington	New York	2010-10-27 07:00:00	26.0	7291	2010-10-27
+Baltimore	New York	2010-10-28 07:00:00	-4.0	1064	2010-10-28
+Baltimore	New York	2010-10-28 07:00:00	-14.0	1142	2010-10-28
+Baltimore	New York	2010-10-28 07:00:00	-14.0	1599	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	2.0	361	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	2.0	897	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	-11.0	1531	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	3.0	1610	2010-10-28
+Chicago	New York	2010-10-28 07:00:00	-18.0	3198	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	3.0	2630	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	-6.0	2646	2010-10-28
+Cleveland	New York	2010-10-28 07:00:00	1.0	3014	2010-10-28
+Washington	New York	2010-10-28 07:00:00	45.0	7291	2010-10-28
+Baltimore	New York	2010-10-29 07:00:00	-24.0	1064	2010-10-29
+Baltimore	New York	2010-10-29 07:00:00	21.0	1142	2010-10-29
+Baltimore	New York	2010-10-29 07:00:00	-2.0	1599	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-12.0	361	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-11.0	897	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	15.0	1531	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-18.0	1610	2010-10-29
+Chicago	New York	2010-10-29 07:00:00	-4.0	3198	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-4.0	2630	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-19.0	2646	2010-10-29
+Cleveland	New York	2010-10-29 07:00:00	-12.0	3014	2010-10-29
+Washington	New York	2010-10-29 07:00:00	1.0	7291	2010-10-29
+Baltimore	New York	2010-10-30 07:00:00	14.0	272	2010-10-30
+Baltimore	New York	2010-10-30 07:00:00	-1.0	1805	2010-10-30
+Baltimore	New York	2010-10-30 07:00:00	5.0	3171	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-6.0	384	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-10.0	426	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-5.0	650	2010-10-30
+Chicago	New York	2010-10-30 07:00:00	-5.0	3085	2010-10-30
+Cleveland	New York	2010-10-30 07:00:00	-23.0	2018	2010-10-30
+Cleveland	New York	2010-10-30 07:00:00	-12.0	2932	2010-10-30
+Washington	New York	2010-10-30 07:00:00	-27.0	5904	2010-10-30
+Washington	New York	2010-10-30 07:00:00	-16.0	5917	2010-10-30
+Baltimore	New York	2010-10-31 07:00:00	-1.0	1599	2010-10-31
+Baltimore	New York	2010-10-31 07:00:00	-14.0	2571	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-25.0	361	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-18.0	897	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-4.0	1531	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-22.0	1610	2010-10-31
+Chicago	New York	2010-10-31 07:00:00	-15.0	3198	2010-10-31
+Washington	New York	2010-10-31 07:00:00	-18.0	7282	2010-10-31
+PREHOOK: query: explain
+select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc_partitioned_date
+                  Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: origin_city_name (type: string), dest_city_name (type: string), fl_time (type: timestamp), arr_delay (type: float), fl_num (type: int), fl_date (type: date)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col4 (type: int), _col5 (type: date)
+                      sort order: ++
+                      Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col4 (type: int), _col5 (type: date)
+                    sort order: ++
+                    Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 5775 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 25
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23 07:00:00	18.0	272	2010-10-23
+Baltimore	New York	2010-10-30 07:00:00	14.0	272	2010-10-30
+Chicago	New York	2010-10-20 07:00:00	42.0	361	2010-10-20
+Chicago	New York	2010-10-21 07:00:00	142.0	361	2010-10-21
+Chicago	New York	2010-10-22 07:00:00	2.0	361	2010-10-22
+Chicago	New York	2010-10-24 07:00:00	10.0	361	2010-10-24
+Chicago	New York	2010-10-25 07:00:00	31.0	361	2010-10-25
+Chicago	New York	2010-10-26 07:00:00	12.0	361	2010-10-26
+Chicago	New York	2010-10-27 07:00:00	148.0	361	2010-10-27
+Chicago	New York	2010-10-28 07:00:00	2.0	361	2010-10-28
+Chicago	New York	2010-10-29 07:00:00	-12.0	361	2010-10-29
+Chicago	New York	2010-10-31 07:00:00	-25.0	361	2010-10-31
+Chicago	New York	2010-10-23 07:00:00	3.0	384	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-6.0	384	2010-10-30
+Chicago	New York	2010-10-23 07:00:00	32.0	426	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-10.0	426	2010-10-30
+Chicago	New York	2010-10-23 07:00:00	1.0	650	2010-10-23
+Chicago	New York	2010-10-30 07:00:00	-5.0	650	2010-10-30
+Chicago	New York	2010-10-20 07:00:00	24.0	897	2010-10-20
+Chicago	New York	2010-10-21 07:00:00	77.0	897	2010-10-21
+Chicago	New York	2010-10-22 07:00:00	24.0	897	2010-10-22
+Chicago	New York	2010-10-24 07:00:00	113.0	897	2010-10-24
+Chicago	New York	2010-10-25 07:00:00	-1.0	897	2010-10-25
+Chicago	New York	2010-10-26 07:00:00	0.0	897	2010-10-26
+Chicago	New York	2010-10-27 07:00:00	-11.0	897	2010-10-27
+PREHOOK: query: explain
+select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc_partitioned_date
+                  Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: fl_date (type: date)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: date)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: date)
+                        Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 68 Data size: 15772 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 68 Data size: 15772 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+PREHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-23
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-24
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-25
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-26
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-27
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-28
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
+#### A masked pattern was here ####
+2010-10-20	11
+2010-10-21	12
+2010-10-22	11
+2010-10-23	12
+2010-10-24	12
+2010-10-25	12
+2010-10-26	13
+2010-10-27	11
+2010-10-28	12
+2010-10-29	12
+2010-10-30	11
+2010-10-31	8
+PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_timestamp (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_date DATE,
+  arr_delay FLOAT,
+  fl_num INT
+)
+PARTITIONED BY (fl_time TIMESTAMP)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_timestamp (
+  origin_city_name STRING,
+  dest_city_name STRING,
+  fl_date DATE,
+  arr_delay FLOAT,
+  fl_num INT
+)
+PARTITIONED BY (fl_time TIMESTAMP)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: query: INSERT INTO TABLE flights_tiny_orc_partitioned_timestamp
+PARTITION (fl_time)
+SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
+FROM flights_tiny_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc
+PREHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: query: INSERT INTO TABLE flights_tiny_orc_partitioned_timestamp
+PARTITION (fl_time)
+SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
+FROM flights_tiny_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-20 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-20 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-20 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-20 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-20 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-21 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-21 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-21 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-21 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-21 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-22 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-22 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-22 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-22 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-22 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-23 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-23 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-23 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-23 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-23 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-24 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-24 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-24 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-24 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-24 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-25 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-25 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-25 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-25 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-25 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-26 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-26 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-26 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-26 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-26 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-27 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-27 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-27 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-27 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-27 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-28 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-28 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-28 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-28 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-28 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-29 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-29 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-29 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-29 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-29 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-30 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-30 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-30 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-30 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-30 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-31 07:00:00).arr_delay SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-31 07:00:00).dest_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-31 07:00:00).fl_date SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-31 07:00:00).fl_num SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc_partitioned_timestamp PARTITION(fl_time=2010-10-31 07:00:00).origin_city_name SIMPLE [(flights_tiny_orc)flights_tiny_orc.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+PREHOOK: query: select * from flights_tiny_orc_partitioned_timestamp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_timestamp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20	-30.0	1064	2010-10-20 07:00:00
+Baltimore	New York	2010-10-20	23.0	1142	2010-10-20 07:00:00
+Baltimore	New York	2010-10-20	6.0	1599	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	42.0	361	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	24.0	897	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	15.0	1531	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	-6.0	1610	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	-2.0	3198	2010-10-20 07:00:00
+Cleveland	New York	2010-10-20	-8.0	2630	2010-10-20 07:00:00
+Cleveland	New York	2010-10-20	-15.0	3014	2010-10-20 07:00:00
+Washington	New York	2010-10-20	-2.0	7291	2010-10-20 07:00:00
+Baltimore	New York	2010-10-21	17.0	1064	2010-10-21 07:00:00
+Baltimore	New York	2010-10-21	105.0	1142	2010-10-21 07:00:00
+Baltimore	New York	2010-10-21	28.0	1599	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	142.0	361	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	77.0	897	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	53.0	1531	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	-5.0	1610	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	51.0	3198	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	3.0	2630	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	29.0	2646	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	72.0	3014	2010-10-21 07:00:00
+Washington	New York	2010-10-21	22.0	7291	2010-10-21 07:00:00
+Baltimore	New York	2010-10-22	-12.0	1064	2010-10-22 07:00:00
+Baltimore	New York	2010-10-22	54.0	1142	2010-10-22 07:00:00
+Baltimore	New York	2010-10-22	18.0	1599	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	2.0	361	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	24.0	897	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	16.0	1531	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	-6.0	1610	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	-11.0	3198	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	1.0	2630	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	-25.0	2646	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	-3.0	3014	2010-10-22 07:00:00
+Baltimore	New York	2010-10-23	18.0	272	2010-10-23 07:00:00
+Baltimore	New York	2010-10-23	-10.0	1805	2010-10-23 07:00:00
+Baltimore	New York	2010-10-23	6.0	3171	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	3.0	384	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	32.0	426	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	1.0	650	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	11.0	3085	2010-10-23 07:00:00
+Cleveland	New York	2010-10-23	-21.0	2932	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-25.0	5832	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-21.0	5904	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-18.0	5917	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-16.0	7274	2010-10-23 07:00:00
+Baltimore	New York	2010-10-24	12.0	1599	2010-10-24 07:00:00
+Baltimore	New York	2010-10-24	20.0	2571	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	10.0	361	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	113.0	897	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-5.0	1531	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-17.0	1610	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-3.0	3198	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	5.0	2254	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-11.0	2630	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-20.0	2646	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-9.0	3014	2010-10-24 07:00:00
+Washington	New York	2010-10-24	-26.0	7282	2010-10-24 07:00:00
+Baltimore	New York	2010-10-25	-25.0	1064	2010-10-25 07:00:00
+Baltimore	New York	2010-10-25	92.0	1142	2010-10-25 07:00:00
+Baltimore	New York	2010-10-25	106.0	1599	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	31.0	361	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	-1.0	897	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	43.0	1531	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	6.0	1610	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	-16.0	3198	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	-4.0	2630	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	81.0	2646	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	42.0	3014	2010-10-25 07:00:00
+Washington	New York	2010-10-25	9.0	7291	2010-10-25 07:00:00
+Baltimore	New York	2010-10-26	-22.0	1064	2010-10-26 07:00:00
+Baltimore	New York	2010-10-26	123.0	1142	2010-10-26 07:00:00
+Baltimore	New York	2010-10-26	90.0	1599	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	12.0	361	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	0.0	897	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	29.0	1531	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	-17.0	1610	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	6.0	3198	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	4.0	2630	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	-27.0	2646	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	-11.0	2662	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	13.0	3014	2010-10-26 07:00:00
+Washington	New York	2010-10-26	4.0	7291	2010-10-26 07:00:00
+Baltimore	New York	2010-10-27	-18.0	1064	2010-10-27 07:00:00
+Baltimore	New York	2010-10-27	49.0	1142	2010-10-27 07:00:00
+Baltimore	New York	2010-10-27	92.0	1599	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	148.0	361	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	-11.0	897	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	70.0	1531	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	8.0	1610	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	21.0	3198	2010-10-27 07:00:00
+Cleveland	New York	2010-10-27	16.0	2630	2010-10-27 07:00:00
+Cleveland	New York	2010-10-27	27.0	3014	2010-10-27 07:00:00
+Washington	New York	2010-10-27	26.0	7291	2010-10-27 07:00:00
+Baltimore	New York	2010-10-28	-4.0	1064	2010-10-28 07:00:00
+Baltimore	New York	2010-10-28	-14.0	1142	2010-10-28 07:00:00
+Baltimore	New York	2010-10-28	-14.0	1599	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	2.0	361	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	2.0	897	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	-11.0	1531	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	3.0	1610	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	-18.0	3198	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	3.0	2630	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	-6.0	2646	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	1.0	3014	2010-10-28 07:00:00
+Washington	New York	2010-10-28	45.0	7291	2010-10-28 07:00:00
+Baltimore	New York	2010-10-29	-24.0	1064	2010-10-29 07:00:00
+Baltimore	New York	2010-10-29	21.0	1142	2010-10-29 07:00:00
+Baltimore	New York	2010-10-29	-2.0	1599	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-12.0	361	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-11.0	897	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	15.0	1531	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-18.0	1610	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-4.0	3198	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-4.0	2630	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-19.0	2646	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-12.0	3014	2010-10-29 07:00:00
+Washington	New York	2010-10-29	1.0	7291	2010-10-29 07:00:00
+Baltimore	New York	2010-10-30	14.0	272	2010-10-30 07:00:00
+Baltimore	New York	2010-10-30	-1.0	1805	2010-10-30 07:00:00
+Baltimore	New York	2010-10-30	5.0	3171	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-6.0	384	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-10.0	426	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-5.0	650	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-5.0	3085	2010-10-30 07:00:00
+Cleveland	New York	2010-10-30	-23.0	2018	2010-10-30 07:00:00
+Cleveland	New York	2010-10-30	-12.0	2932	2010-10-30 07:00:00
+Washington	New York	2010-10-30	-27.0	5904	2010-10-30 07:00:00
+Washington	New York	2010-10-30	-16.0	5917	2010-10-30 07:00:00
+Baltimore	New York	2010-10-31	-1.0	1599	2010-10-31 07:00:00
+Baltimore	New York	2010-10-31	-14.0	2571	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-25.0	361	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-18.0	897	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-4.0	1531	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-22.0	1610	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-15.0	3198	2010-10-31 07:00:00
+Washington	New York	2010-10-31	-18.0	7282	2010-10-31 07:00:00
+PREHOOK: query: select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23	18.0	272	2010-10-23 07:00:00
+Baltimore	New York	2010-10-30	14.0	272	2010-10-30 07:00:00
+Chicago	New York	2010-10-20	42.0	361	2010-10-20 07:00:00
+Chicago	New York	2010-10-21	142.0	361	2010-10-21 07:00:00
+Chicago	New York	2010-10-22	2.0	361	2010-10-22 07:00:00
+Chicago	New York	2010-10-24	10.0	361	2010-10-24 07:00:00
+Chicago	New York	2010-10-25	31.0	361	2010-10-25 07:00:00
+Chicago	New York	2010-10-26	12.0	361	2010-10-26 07:00:00
+Chicago	New York	2010-10-27	148.0	361	2010-10-27 07:00:00
+Chicago	New York	2010-10-28	2.0	361	2010-10-28 07:00:00
+Chicago	New York	2010-10-29	-12.0	361	2010-10-29 07:00:00
+Chicago	New York	2010-10-31	-25.0	361	2010-10-31 07:00:00
+Chicago	New York	2010-10-23	3.0	384	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-6.0	384	2010-10-30 07:00:00
+Chicago	New York	2010-10-23	32.0	426	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-10.0	426	2010-10-30 07:00:00
+Chicago	New York	2010-10-23	1.0	650	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-5.0	650	2010-10-30 07:00:00
+Chicago	New York	2010-10-20	24.0	897	2010-10-20 07:00:00
+Chicago	New York	2010-10-21	77.0	897	2010-10-21 07:00:00
+Chicago	New York	2010-10-22	24.0	897	2010-10-22 07:00:00
+Chicago	New York	2010-10-24	113.0	897	2010-10-24 07:00:00
+Chicago	New York	2010-10-25	-1.0	897	2010-10-25 07:00:00
+Chicago	New York	2010-10-26	0.0	897	2010-10-26 07:00:00
+Chicago	New York	2010-10-27	-11.0	897	2010-10-27 07:00:00
+PREHOOK: query: select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+2010-10-20 07:00:00	11
+2010-10-21 07:00:00	12
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-24 07:00:00	12
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
+2010-10-28 07:00:00	12
+2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-31 07:00:00	8
+PREHOOK: query: explain
+select * from flights_tiny_orc_partitioned_timestamp
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from flights_tiny_orc_partitioned_timestamp
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: flights_tiny_orc_partitioned_timestamp
+          Select Operator
+            expressions: origin_city_name (type: string), dest_city_name (type: string), fl_date (type: date), arr_delay (type: float), fl_num (type: int), fl_time (type: timestamp)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+
+PREHOOK: query: select * from flights_tiny_orc_partitioned_timestamp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_timestamp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20	-30.0	1064	2010-10-20 07:00:00
+Baltimore	New York	2010-10-20	23.0	1142	2010-10-20 07:00:00
+Baltimore	New York	2010-10-20	6.0	1599	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	42.0	361	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	24.0	897	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	15.0	1531	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	-6.0	1610	2010-10-20 07:00:00
+Chicago	New York	2010-10-20	-2.0	3198	2010-10-20 07:00:00
+Cleveland	New York	2010-10-20	-8.0	2630	2010-10-20 07:00:00
+Cleveland	New York	2010-10-20	-15.0	3014	2010-10-20 07:00:00
+Washington	New York	2010-10-20	-2.0	7291	2010-10-20 07:00:00
+Baltimore	New York	2010-10-21	17.0	1064	2010-10-21 07:00:00
+Baltimore	New York	2010-10-21	105.0	1142	2010-10-21 07:00:00
+Baltimore	New York	2010-10-21	28.0	1599	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	142.0	361	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	77.0	897	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	53.0	1531	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	-5.0	1610	2010-10-21 07:00:00
+Chicago	New York	2010-10-21	51.0	3198	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	3.0	2630	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	29.0	2646	2010-10-21 07:00:00
+Cleveland	New York	2010-10-21	72.0	3014	2010-10-21 07:00:00
+Washington	New York	2010-10-21	22.0	7291	2010-10-21 07:00:00
+Baltimore	New York	2010-10-22	-12.0	1064	2010-10-22 07:00:00
+Baltimore	New York	2010-10-22	54.0	1142	2010-10-22 07:00:00
+Baltimore	New York	2010-10-22	18.0	1599	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	2.0	361	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	24.0	897	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	16.0	1531	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	-6.0	1610	2010-10-22 07:00:00
+Chicago	New York	2010-10-22	-11.0	3198	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	1.0	2630	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	-25.0	2646	2010-10-22 07:00:00
+Cleveland	New York	2010-10-22	-3.0	3014	2010-10-22 07:00:00
+Baltimore	New York	2010-10-23	18.0	272	2010-10-23 07:00:00
+Baltimore	New York	2010-10-23	-10.0	1805	2010-10-23 07:00:00
+Baltimore	New York	2010-10-23	6.0	3171	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	3.0	384	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	32.0	426	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	1.0	650	2010-10-23 07:00:00
+Chicago	New York	2010-10-23	11.0	3085	2010-10-23 07:00:00
+Cleveland	New York	2010-10-23	-21.0	2932	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-25.0	5832	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-21.0	5904	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-18.0	5917	2010-10-23 07:00:00
+Washington	New York	2010-10-23	-16.0	7274	2010-10-23 07:00:00
+Baltimore	New York	2010-10-24	12.0	1599	2010-10-24 07:00:00
+Baltimore	New York	2010-10-24	20.0	2571	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	10.0	361	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	113.0	897	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-5.0	1531	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-17.0	1610	2010-10-24 07:00:00
+Chicago	New York	2010-10-24	-3.0	3198	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	5.0	2254	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-11.0	2630	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-20.0	2646	2010-10-24 07:00:00
+Cleveland	New York	2010-10-24	-9.0	3014	2010-10-24 07:00:00
+Washington	New York	2010-10-24	-26.0	7282	2010-10-24 07:00:00
+Baltimore	New York	2010-10-25	-25.0	1064	2010-10-25 07:00:00
+Baltimore	New York	2010-10-25	92.0	1142	2010-10-25 07:00:00
+Baltimore	New York	2010-10-25	106.0	1599	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	31.0	361	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	-1.0	897	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	43.0	1531	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	6.0	1610	2010-10-25 07:00:00
+Chicago	New York	2010-10-25	-16.0	3198	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	-4.0	2630	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	81.0	2646	2010-10-25 07:00:00
+Cleveland	New York	2010-10-25	42.0	3014	2010-10-25 07:00:00
+Washington	New York	2010-10-25	9.0	7291	2010-10-25 07:00:00
+Baltimore	New York	2010-10-26	-22.0	1064	2010-10-26 07:00:00
+Baltimore	New York	2010-10-26	123.0	1142	2010-10-26 07:00:00
+Baltimore	New York	2010-10-26	90.0	1599	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	12.0	361	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	0.0	897	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	29.0	1531	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	-17.0	1610	2010-10-26 07:00:00
+Chicago	New York	2010-10-26	6.0	3198	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	4.0	2630	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	-27.0	2646	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	-11.0	2662	2010-10-26 07:00:00
+Cleveland	New York	2010-10-26	13.0	3014	2010-10-26 07:00:00
+Washington	New York	2010-10-26	4.0	7291	2010-10-26 07:00:00
+Baltimore	New York	2010-10-27	-18.0	1064	2010-10-27 07:00:00
+Baltimore	New York	2010-10-27	49.0	1142	2010-10-27 07:00:00
+Baltimore	New York	2010-10-27	92.0	1599	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	148.0	361	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	-11.0	897	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	70.0	1531	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	8.0	1610	2010-10-27 07:00:00
+Chicago	New York	2010-10-27	21.0	3198	2010-10-27 07:00:00
+Cleveland	New York	2010-10-27	16.0	2630	2010-10-27 07:00:00
+Cleveland	New York	2010-10-27	27.0	3014	2010-10-27 07:00:00
+Washington	New York	2010-10-27	26.0	7291	2010-10-27 07:00:00
+Baltimore	New York	2010-10-28	-4.0	1064	2010-10-28 07:00:00
+Baltimore	New York	2010-10-28	-14.0	1142	2010-10-28 07:00:00
+Baltimore	New York	2010-10-28	-14.0	1599	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	2.0	361	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	2.0	897	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	-11.0	1531	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	3.0	1610	2010-10-28 07:00:00
+Chicago	New York	2010-10-28	-18.0	3198	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	3.0	2630	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	-6.0	2646	2010-10-28 07:00:00
+Cleveland	New York	2010-10-28	1.0	3014	2010-10-28 07:00:00
+Washington	New York	2010-10-28	45.0	7291	2010-10-28 07:00:00
+Baltimore	New York	2010-10-29	-24.0	1064	2010-10-29 07:00:00
+Baltimore	New York	2010-10-29	21.0	1142	2010-10-29 07:00:00
+Baltimore	New York	2010-10-29	-2.0	1599	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-12.0	361	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-11.0	897	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	15.0	1531	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-18.0	1610	2010-10-29 07:00:00
+Chicago	New York	2010-10-29	-4.0	3198	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-4.0	2630	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-19.0	2646	2010-10-29 07:00:00
+Cleveland	New York	2010-10-29	-12.0	3014	2010-10-29 07:00:00
+Washington	New York	2010-10-29	1.0	7291	2010-10-29 07:00:00
+Baltimore	New York	2010-10-30	14.0	272	2010-10-30 07:00:00
+Baltimore	New York	2010-10-30	-1.0	1805	2010-10-30 07:00:00
+Baltimore	New York	2010-10-30	5.0	3171	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-6.0	384	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-10.0	426	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-5.0	650	2010-10-30 07:00:00
+Chicago	New York	2010-10-30	-5.0	3085	2010-10-30 07:00:00
+Cleveland	New York	2010-10-30	-23.0	2018	2010-10-30 07:00:00
+Cleveland	New York	2010-10-30	-12.0	2932	2010-10-30 07:00:00
+Washington	New York	2010-10-30	-27.0	5904	2010-10-30 07:00:00
+Washington	New York	2010-10-30	-16.0	5917	2010-10-30 07:00:00
+Baltimore	New York	2010-10-31	-1.0	1599	2010-10-31 07:00:00
+Baltimore	New York	2010-10-31	-14.0	2571	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-25.0	361	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-18.0	897	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-4.0	1531	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-22.0	1610	2010-10-31 07:00:00
+Chicago	New York	2010-10-31	-15.0	3198	2010-10-31 07:00:00
+Washington	New York	2010-10-31	-18.0	7282	2010-10-31 07:00:00
+PREHOOK: query: explain
+select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc_partitioned_timestamp
+                  Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: origin_city_name (type: string), dest_city_name (type: string), fl_date (type: date), arr_delay (type: float), fl_num (type: int), fl_time (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col4 (type: int), _col5 (type: timestamp)
+                      sort order: ++
+                      Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col4 (type: int), _col5 (type: timestamp)
+                    sort order: ++
+                    Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
+            Execution mode: vectorized
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 25
+                  Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 6175 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 25
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-23	18.0	272	2010-10-23 07:00:00
+Baltimore	New York	2010-10-30	14.0	272	2010-10-30 07:00:00
+Chicago	New York	2010-10-20	42.0	361	2010-10-20 07:00:00
+Chicago	New York	2010-10-21	142.0	361	2010-10-21 07:00:00
+Chicago	New York	2010-10-22	2.0	361	2010-10-22 07:00:00
+Chicago	New York	2010-10-24	10.0	361	2010-10-24 07:00:00
+Chicago	New York	2010-10-25	31.0	361	2010-10-25 07:00:00
+Chicago	New York	2010-10-26	12.0	361	2010-10-26 07:00:00
+Chicago	New York	2010-10-27	148.0	361	2010-10-27 07:00:00
+Chicago	New York	2010-10-28	2.0	361	2010-10-28 07:00:00
+Chicago	New York	2010-10-29	-12.0	361	2010-10-29 07:00:00
+Chicago	New York	2010-10-31	-25.0	361	2010-10-31 07:00:00
+Chicago	New York	2010-10-23	3.0	384	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-6.0	384	2010-10-30 07:00:00
+Chicago	New York	2010-10-23	32.0	426	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-10.0	426	2010-10-30 07:00:00
+Chicago	New York	2010-10-23	1.0	650	2010-10-23 07:00:00
+Chicago	New York	2010-10-30	-5.0	650	2010-10-30 07:00:00
+Chicago	New York	2010-10-20	24.0	897	2010-10-20 07:00:00
+Chicago	New York	2010-10-21	77.0	897	2010-10-21 07:00:00
+Chicago	New York	2010-10-22	24.0	897	2010-10-22 07:00:00
+Chicago	New York	2010-10-24	113.0	897	2010-10-24 07:00:00
+Chicago	New York	2010-10-25	-1.0	897	2010-10-25 07:00:00
+Chicago	New York	2010-10-26	0.0	897	2010-10-26 07:00:00
+Chicago	New York	2010-10-27	-11.0	897	2010-10-27 07:00:00
+PREHOOK: query: explain
+select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: flights_tiny_orc_partitioned_timestamp
+                  Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: fl_time (type: timestamp)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: timestamp)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: timestamp)
+                        Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 68 Data size: 16860 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 68 Data size: 16860 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+PREHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-23 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-24 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-25 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-26 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-27 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-28 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-29 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
+POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
+#### A masked pattern was here ####
+2010-10-20 07:00:00	11
+2010-10-21 07:00:00	12
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-24 07:00:00	12
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
+2010-10-28 07:00:00	12
+2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-31 07:00:00	8

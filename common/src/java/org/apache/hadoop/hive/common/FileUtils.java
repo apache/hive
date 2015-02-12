@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 
@@ -51,17 +53,19 @@ import org.apache.hadoop.util.Shell;
 public final class FileUtils {
   private static final Log LOG = LogFactory.getLog(FileUtils.class.getName());
 
-  /**
-   * Accept all paths.
-   */
-  private static class AcceptAllPathFilter implements PathFilter {
-    @Override
-    public boolean accept(Path path) {
-      return true;
+  public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
     }
-  }
+  };
 
-  private static final PathFilter allPathFilter = new AcceptAllPathFilter();
+  public static final PathFilter STAGING_DIR_PATH_FILTER = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith(".");
+    }
+  };
 
   /**
    * Variant of Path.makeQualified that qualifies the input path against the default file system
@@ -317,14 +321,7 @@ public final class FileUtils {
       List<FileStatus> results) throws IOException {
 
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), new PathFilter() {
-
-        @Override
-        public boolean accept(Path p) {
-          String name = p.getName();
-          return !name.startsWith("_") && !name.startsWith(".");
-        }
-      })) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
         listStatusRecursively(fs, stat, results);
       }
     } else {
@@ -364,7 +361,6 @@ public final class FileUtils {
    *             check will be performed within a doAs() block to use the access privileges
    *             of this user. In this case the user must be configured to impersonate other
    *             users, otherwise this check will fail with error.
-   * @param groups  List of groups for the user
    * @throws IOException
    * @throws AccessControlException
    * @throws InterruptedException
@@ -373,8 +369,8 @@ public final class FileUtils {
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
       final FileStatus stat, final FsAction action, final String user)
           throws IOException, AccessControlException, InterruptedException, Exception {
-    UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(fs.getConf());
-    String currentUser = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    UserGroupInformation ugi = Utils.getUGI();
+    String currentUser = ugi.getShortUserName();
 
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
@@ -383,8 +379,9 @@ public final class FileUtils {
     }
 
     // Otherwise, try user impersonation. Current user must be configured to do user impersonation.
-    UserGroupInformation proxyUser = ShimLoader.getHadoopShims().createProxyUser(user);
-    ShimLoader.getHadoopShims().doAs(proxyUser, new PrivilegedExceptionAction<Object>() {
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+        user, UserGroupInformation.getLoginUser());
+    proxyUser.doAs(new PrivilegedExceptionAction<Object>() {
       @Override
       public Object run() throws Exception {
         FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
@@ -445,7 +442,7 @@ public final class FileUtils {
    */
   public static boolean isLocalFile(HiveConf conf, String fileName) {
     try {
-      // do best effor to determine if this is a local file
+      // do best effort to determine if this is a local file
       return isLocalFile(conf, new URI(fileName));
     } catch (URISyntaxException e) {
       LOG.warn("Unable to create URI from " + fileName, e);
@@ -461,7 +458,7 @@ public final class FileUtils {
    */
   public static boolean isLocalFile(HiveConf conf, URI fileUri) {
     try {
-      // do best effor to determine if this is a local file
+      // do best effort to determine if this is a local file
       FileSystem fsForFile = FileSystem.get(fileUri, conf);
       return LocalFileSystem.class.isInstance(fsForFile);
     } catch (IOException e) {
@@ -544,10 +541,25 @@ public final class FileUtils {
     boolean deleteSource,
     boolean overwrite,
     HiveConf conf) throws IOException {
-    boolean copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    boolean copied;
+
+    /* Run distcp if source file/dir is too big */
+    if (srcFS.getUri().getScheme().equals("hdfs") &&
+        srcFS.getFileStatus(src).getLen() > conf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE)) {
+      LOG.info("Source is " + srcFS.getFileStatus(src).getLen() + " bytes. (MAX: " + conf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE) + ")");
+      LOG.info("Launch distributed copy (distcp) job.");
+      copied = shims.runDistCp(src, dst, conf);
+      if (copied && deleteSource) {
+        srcFS.delete(src, true);
+      }
+    } else {
+      copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+    }
+
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
-      HadoopShims shims = ShimLoader.getHadoopShims();
       HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, dstFS, dst);
       try {
         shims.setFullFileStatus(conf, fullFileStatus, dstFS, dst);
@@ -568,7 +580,7 @@ public final class FileUtils {
    * @throws IOException
    */
   public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf) throws FileNotFoundException, IOException {
-    FileStatus[] statuses = fs.listStatus(f, allPathFilter);
+    FileStatus[] statuses = fs.listStatus(f, HIDDEN_FILES_PATH_FILTER);
     boolean result = true;
     for (FileStatus status : statuses) {
       result = result & moveToTrash(fs, status.getPath(), conf);
@@ -598,6 +610,25 @@ public final class FileUtils {
       LOG.error("Failed to delete " + f);
     }
     return result;
+  }
+
+  /**
+   * Check if first path is a subdirectory of second path.
+   * Both paths must belong to the same filesystem.
+   *
+   * @param p1 first path
+   * @param p2 second path
+   * @param fs FileSystem, both paths must belong to the same filesystem
+   * @return
+   */
+  public static boolean isSubDir(Path p1, Path p2, FileSystem fs) {
+    String path1 = fs.makeQualified(p1).toString();
+    String path2 = fs.makeQualified(p2).toString();
+    if (path1.startsWith(path2)) {
+      return true;
+    }
+
+    return false;
   }
 
   public static boolean renameWithPerms(FileSystem fs, Path sourcePath,

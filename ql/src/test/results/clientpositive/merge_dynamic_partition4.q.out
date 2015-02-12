@@ -155,26 +155,17 @@ STAGE PLANS:
             alias: srcpart_merge_dp_rc
             Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), if(((key % 2) = 0), 'a1', 'b1') (type: string)
+              expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 2.0) = 0.0), 'a1', 'b1') (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col2 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col2 (type: string)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-      Reduce Operator Tree:
-        Extract
-          Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                name: default.merge_dynamic_part
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.merge_dynamic_part
 
   Stage: Stage-7
     Conditional Operator

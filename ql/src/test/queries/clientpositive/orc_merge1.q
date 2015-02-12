@@ -31,7 +31,7 @@ INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-DESC FORMATTED orcfile_merge1 partition (ds='1', part='0');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1/ds=1/part=0/;
 
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
@@ -46,7 +46,7 @@ INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-DESC FORMATTED orcfile_merge1b partition (ds='1', part='0');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1b/ds=1/part=0/;
 
 set hive.merge.orcfile.stripe.level=true;
 -- auto-merge fast way
@@ -59,7 +59,7 @@ INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-DESC FORMATTED orcfile_merge1c partition (ds='1', part='0');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1c/ds=1/part=0/;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 -- Verify

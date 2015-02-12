@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,23 +36,26 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -67,18 +71,16 @@ public final class HiveFileFormatUtils {
 
   static {
     outputFormatSubstituteMap =
-        new HashMap<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>();
+        new ConcurrentHashMap<Class<?>, Class<? extends OutputFormat>>();
     HiveFileFormatUtils.registerOutputFormatSubstitute(
         IgnoreKeyTextOutputFormat.class, HiveIgnoreKeyTextOutputFormat.class);
     HiveFileFormatUtils.registerOutputFormatSubstitute(
         SequenceFileOutputFormat.class, HiveSequenceFileOutputFormat.class);
   }
 
-  static String realoutputFormat;
-
   @SuppressWarnings("unchecked")
-  private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>
-  outputFormatSubstituteMap;
+  private static Map<Class<?>, Class<? extends OutputFormat>>
+    outputFormatSubstituteMap;
 
   /**
    * register a substitute.
@@ -88,8 +90,7 @@ public final class HiveFileFormatUtils {
    * @param substitute
    */
   @SuppressWarnings("unchecked")
-  public static synchronized void registerOutputFormatSubstitute(
-      Class<? extends OutputFormat> origin,
+  public static void registerOutputFormatSubstitute(Class<?> origin,
       Class<? extends HiveOutputFormat> substitute) {
     outputFormatSubstituteMap.put(origin, substitute);
   }
@@ -98,44 +99,17 @@ public final class HiveFileFormatUtils {
    * get a OutputFormat's substitute HiveOutputFormat.
    */
   @SuppressWarnings("unchecked")
-  public static synchronized Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
-      Class<?> origin, boolean storagehandlerflag) {
-    if (HiveOutputFormat.class.isAssignableFrom(origin)) {
-      return (Class<? extends HiveOutputFormat>) origin;
+  public static Class<? extends OutputFormat> getOutputFormatSubstitute(
+      Class<?> origin) {
+    if (origin == null || HiveOutputFormat.class.isAssignableFrom(origin)) {
+      return (Class<? extends OutputFormat>) origin;  // hive native
     }
-    Class<? extends HiveOutputFormat> result = outputFormatSubstituteMap
-        .get(origin);
-    //register this output format into the map for the first time
-    if ((storagehandlerflag == true) && (result == null)) {
-      HiveFileFormatUtils.setRealOutputFormatClassName(origin.getName());
-      result = HivePassThroughOutputFormat.class;
-      HiveFileFormatUtils.registerOutputFormatSubstitute((Class<? extends OutputFormat>) origin,HivePassThroughOutputFormat.class);
+    Class<? extends OutputFormat> substitute = outputFormatSubstituteMap.get(origin);
+    if (substitute != null) {
+      return substitute;  // substituted
     }
-    return result;
+    return (Class<? extends OutputFormat>) origin;
   }
-
-  /**
-   * get a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
-   */
-  @SuppressWarnings("unchecked")
-  public static String getRealOutputFormatClassName()
-  {
-    return realoutputFormat;
-  }
-
-  /**
-   * set a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
-   */
-  public static void setRealOutputFormatClassName(
-      String destination) {
-    if (destination != null){
-      realoutputFormat = destination;
-    }
-    else {
-      return;
-    }
-  }
-
 
   /**
    * get the final output path of a given FileOutputFormat.
@@ -276,39 +250,34 @@ public final class HiveFileFormatUtils {
   }
 
   public static RecordWriter getRecordWriter(JobConf jc,
-      HiveOutputFormat<?, ?> hiveOutputFormat,
-      final Class<? extends Writable> valueClass, boolean isCompressed,
+      OutputFormat<?, ?> outputFormat,
+      Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProp, Path outPath, Reporter reporter
       ) throws IOException, HiveException {
-    if (hiveOutputFormat != null) {
-      return hiveOutputFormat.getHiveRecordWriter(jc, outPath, valueClass,
-          isCompressed, tableProp, reporter);
+    if (!(outputFormat instanceof HiveOutputFormat)) {
+      outputFormat = new HivePassThroughOutputFormat(outputFormat);
     }
-    return null;
+    return ((HiveOutputFormat)outputFormat).getHiveRecordWriter(
+        jc, outPath, valueClass, isCompressed, tableProp, reporter);
   }
 
-  private static HiveOutputFormat<?, ?> getHiveOutputFormat(JobConf jc, TableDesc tableInfo)
+  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, TableDesc tableDesc)
       throws HiveException {
-    boolean storagehandlerofhivepassthru = false;
-    HiveOutputFormat<?, ?> hiveOutputFormat;
-    try {
-      if (tableInfo.getJobProperties() != null) {
-        if (tableInfo.getJobProperties().get(
-            HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
-          jc.set(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,
-              tableInfo.getJobProperties()
-                  .get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY));
-          storagehandlerofhivepassthru = true;
-        }
-      }
-      if (storagehandlerofhivepassthru) {
-        return ReflectionUtils.newInstance(tableInfo.getOutputFileFormatClass(), jc);
-      } else {
-        return tableInfo.getOutputFileFormatClass().newInstance();
-      }
-    } catch (Exception e) {
-      throw new HiveException(e);
+    return getHiveOutputFormat(conf, tableDesc.getOutputFileFormatClass());
+  }
+
+  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, PartitionDesc partDesc)
+      throws HiveException {
+    return getHiveOutputFormat(conf, partDesc.getOutputFileFormatClass());
+  }
+
+  private static HiveOutputFormat<?, ?> getHiveOutputFormat(
+      Configuration conf, Class<? extends OutputFormat> outputClass) throws HiveException {
+    OutputFormat<?, ?> outputFormat = ReflectionUtils.newInstance(outputClass, conf);
+    if (!(outputFormat instanceof HiveOutputFormat)) {
+      outputFormat = new HivePassThroughOutputFormat(outputFormat);
     }
+    return (HiveOutputFormat<?, ?>) outputFormat;
   }
 
   public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
@@ -540,5 +509,43 @@ public final class HiveFileFormatUtils {
 
   private HiveFileFormatUtils() {
     // prevent instantiation
+  }
+
+  public static class NullOutputCommitter extends OutputCommitter {
+    @Override
+    public void setupJob(JobContext jobContext) { }
+    @Override
+    public void cleanupJob(JobContext jobContext) { }
+
+    @Override
+    public void setupTask(TaskAttemptContext taskContext) { }
+    @Override
+    public boolean needsTaskCommit(TaskAttemptContext taskContext) {
+      return false;
+    }
+    @Override
+    public void commitTask(TaskAttemptContext taskContext) { }
+    @Override
+    public void abortTask(TaskAttemptContext taskContext) { }
+  }
+
+  /**
+   * Hive uses side effect files exclusively for it's output. It also manages
+   * the setup/cleanup/commit of output from the hive client. As a result it does
+   * not need support for the same inside the MR framework
+   *
+   * This routine sets the appropriate options related to bypass setup/cleanup/commit
+   * support in the MR framework, but does not set the OutputFormat class.
+   */
+  public static void prepareJobOutput(JobConf conf) {
+    conf.setOutputCommitter(NullOutputCommitter.class);
+
+    // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false);
+
+    // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false);
   }
 }

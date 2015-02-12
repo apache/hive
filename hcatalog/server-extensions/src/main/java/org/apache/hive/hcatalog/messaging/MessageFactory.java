@@ -19,10 +19,13 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.hcatalog.messaging.json.JSONMessageFactory;
 
@@ -116,6 +119,17 @@ public abstract class MessageFactory {
   public abstract CreateTableMessage buildCreateTableMessage(Table table);
 
   /**
+   * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
+   * which means no message should be sent.  This is because there are many flavors of alter
+   * table (add column, add partition, etc.).  Some are covered elsewhere (like add partition)
+   * and some are not yet supported.
+   * @param before The table before the alter
+   * @param after The table after the alter
+   * @return
+   */
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after);
+
+  /**
    * Factory method for DropTableMessage.
    * @param table The Table being dropped.
    * @return DropTableMessage instance.
@@ -131,10 +145,41 @@ public abstract class MessageFactory {
     public abstract AddPartitionMessage buildAddPartitionMessage(Table table, List<Partition> partitions);
 
   /**
+   * Factory method for AddPartitionMessage.
+   * @param table The Table to which the partitions are added.
+   * @param partitionSpec The set of Partitions being added.
+   * @return AddPartitionMessage instance.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, PartitionSpecProxy partitionSpec);
+
+  /**
+   * Factory method for building AlterPartitionMessage
+   * @param before The partition before it was altered
+   * @param after The partition after it was altered
+   * @return a new AlterPartitionMessage
+   */
+  public abstract AlterPartitionMessage buildAlterPartitionMessage(Partition before,
+                                                                   Partition after);
+
+  /**
    * Factory method for DropPartitionMessage.
    * @param table The Table from which the partition is dropped.
    * @param partition The Partition being dropped.
    * @return DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+
+  /**
+   * Factory method for building insert message
+   * @param db Name of the database the insert occurred in
+   * @param table Name of the table the insert occurred in
+   * @param partVals Partition values for the partition that the insert occurred in, may be null
+   *                 if the insert was done into a non-partitioned table
+   * @param files List of files created as a result of the insert, may be null.
+   * @return instance of InsertMessage
+   */
+  public abstract InsertMessage buildInsertMessage(String db, String table,
+                                                   List<String> partVals, List<String> files);
 }

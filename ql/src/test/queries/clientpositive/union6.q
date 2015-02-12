@@ -1,7 +1,8 @@
 set hive.map.aggr = true;
 
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
+-- SORT_QUERY_RESULTS
 
+-- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
 
 create table tmptable(key string, value string);
 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,17 +104,19 @@ public class QB {
   }
 
   public QB(String outer_id, String alias, boolean isSubQ) {
-    aliasToTabs = new HashMap<String, String>();
-    aliasToSubq = new HashMap<String, QBExpr>();
-    aliasToProps = new HashMap<String, Map<String, String>>();
+    // Must be deterministic order maps - see HIVE-8707
+    aliasToTabs = new LinkedHashMap<String, String>();
+    aliasToSubq = new LinkedHashMap<String, QBExpr>();
+    aliasToProps = new LinkedHashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
     if (alias != null) {
       alias = alias.toLowerCase();
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    ptfNodeToSpec = new HashMap<ASTNode, PTFInvocationSpec>();
-    destToWindowingSpec = new HashMap<String, WindowingSpec>();
+    // Must be deterministic order maps - see HIVE-8707
+    ptfNodeToSpec = new LinkedHashMap<ASTNode, PTFInvocationSpec>();
+    destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
   }
 
@@ -128,6 +131,10 @@ public class QB {
   // the alias is modified to subq1:a and subq2:a from a, to identify the right sub-query.
   public static String getAppendedAliasFromId(String outer_id, String alias) {
     return (outer_id == null ? alias : outer_id + ":" + alias);
+  }
+
+  public String getAlias() {
+    return qbp.getAlias();
   }
 
   public QBParseInfo getParseInfo() {
@@ -248,9 +255,22 @@ public class QB {
     return isQuery;
   }
 
+  // to decide whether to rewrite RR of subquery
+  public boolean isTopLevelSelectStarQuery() {
+    return !isCTAS() && qbp.isTopLevelSimpleSelectStarQuery();
+  }
+
+  // to find target for fetch task conversion optimizer (not allows subqueries)
   public boolean isSimpleSelectQuery() {
-    return qbp.isSimpleSelectQuery() && aliasToSubq.isEmpty() && !isCTAS() &&
-        !qbp.isAnalyzeCommand();
+    if (!qbp.isSimpleSelectQuery() || isCTAS() || qbp.isAnalyzeCommand()) {
+      return false;
+    }
+    for (QBExpr qbexpr : aliasToSubq.values()) {
+      if (!qbexpr.isSimpleSelectQuery()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public boolean hasTableSample(String alias) {
@@ -310,7 +330,8 @@ public class QB {
   }
 
   public void addPTFNodeToSpec(ASTNode node, PTFInvocationSpec spec) {
-    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
+    // Must be deterministic order map - see HIVE-8707
+    ptfNodeToSpec = ptfNodeToSpec == null ? new LinkedHashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
     ptfNodeToSpec.put(node, spec);
   }
 

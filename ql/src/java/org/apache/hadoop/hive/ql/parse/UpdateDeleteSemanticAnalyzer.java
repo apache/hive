@@ -17,6 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -27,17 +35,10 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -128,11 +129,16 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Table mTable;
     try {
       mTable = db.getTable(tableName[0], tableName[1]);
+    } catch (InvalidTableException e) {
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(getDotName(tableName)), e);
     } catch (HiveException e) {
-      LOG.error("Failed to find table " + getDotName(tableName) + " got exception " +
-          e.getMessage());
-      throw new SemanticException(ErrorMsg.INVALID_TABLE, getDotName(tableName));
+      LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
+          + e.getMessage());
+      throw new SemanticException(e.getMessage(), e);
     }
+
     List<FieldSchema> partCols = mTable.getPartCols();
 
     rewrittenQueryStr.append("insert into table ");
@@ -153,7 +159,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryStr.append(" select ROW__ID");
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
-    Set<String> setRCols = new HashSet<String>();
+    // Must be deterministic order set for consistent q-test output across Java versions
+    Set<String> setRCols = new LinkedHashSet<String>();
     if (updating()) {
       // An update needs to select all of the columns, as we rewrite the entire row.  Also,
       // we need to figure out which columns we are going to replace.  We won't write the set
@@ -166,7 +173,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
       // Get the children of the set clause, each of which should be a column assignment
       List<? extends Node> assignments = setClause.getChildren();
-      setCols = new HashMap<String, ASTNode>(assignments.size());
+      // Must be deterministic order map for consistent q-test output across Java versions
+      setCols = new LinkedHashMap<String, ASTNode>(assignments.size());
       setColExprs = new HashMap<Integer, ASTNode>(assignments.size());
       for (Node a : assignments) {
         ASTNode assignment = (ASTNode)a;
@@ -231,7 +239,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID desc ");
+    rewrittenQueryStr.append(" sort by ROW__ID ");
 
     // Parse the rewritten query string
     Context rewrittenCtx;

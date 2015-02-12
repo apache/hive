@@ -140,7 +140,9 @@ STAGE PLANS:
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -224,7 +226,9 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -275,13 +279,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col4 (type: tinyint), -1 (type: int)
+                  key expressions: _col4 (type: tinyint), '_bucket_number' (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _bucket_number
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -331,13 +337,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col4 (type: tinyint), -1 (type: int), _col3 (type: float)
+                  key expressions: _col4 (type: tinyint), '_bucket_number' (type: string), _col3 (type: float)
                   sort order: +++
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _bucket_number
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -463,7 +471,9 @@ STAGE PLANS:
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -547,7 +557,9 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -598,13 +610,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col4 (type: tinyint), -1 (type: int)
+                  key expressions: _col4 (type: tinyint), '_bucket_number' (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _bucket_number
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -654,13 +668,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col4 (type: tinyint), -1 (type: int), _col3 (type: float)
+                  key expressions: _col4 (type: tinyint), '_bucket_number' (type: string), _col3 (type: float)
                   sort order: +++
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _bucket_number
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -783,8 +799,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	16                  
-	rawDataSize         	415                 
+	numRows             	32                  
+	rawDataSize         	830                 
 	totalSize           	862                 
 #### A masked pattern was here ####
 	 	 
@@ -827,8 +843,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	3                   
-	rawDataSize         	78                  
+	numRows             	6                   
+	rawDataSize         	156                 
 	totalSize           	162                 
 #### A masked pattern was here ####
 	 	 
@@ -871,8 +887,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	7                   
-	rawDataSize         	181                 
+	numRows             	14                  
+	rawDataSize         	362                 
 	totalSize           	376                 
 #### A masked pattern was here ####
 	 	 
@@ -915,8 +931,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	3                   
-	rawDataSize         	78                  
+	numRows             	6                   
+	rawDataSize         	156                 
 	totalSize           	162                 
 #### A masked pattern was here ####
 	 	 
@@ -958,8 +974,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	16                  
-	rawDataSize         	415                 
+	numRows             	32                  
+	rawDataSize         	830                 
 	totalSize           	862                 
 #### A masked pattern was here ####
 	 	 
@@ -1001,8 +1017,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	3                   
-	rawDataSize         	78                  
+	numRows             	6                   
+	rawDataSize         	156                 
 	totalSize           	162                 
 #### A masked pattern was here ####
 	 	 
@@ -1044,8 +1060,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	16                  
-	rawDataSize         	415                 
+	numRows             	32                  
+	rawDataSize         	830                 
 	totalSize           	862                 
 #### A masked pattern was here ####
 	 	 
@@ -1087,8 +1103,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
-	numRows             	3                   
-	rawDataSize         	78                  
+	numRows             	6                   
+	rawDataSize         	156                 
 	totalSize           	162                 
 #### A masked pattern was here ####
 	 	 
@@ -1284,11 +1300,254 @@ STAGE PLANS:
               Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part2
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k order by i limit 10) tmp where t is null or t=27
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k order by i limit 10) tmp where t is null or t=27
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4
+              Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col2 (type: int)
+                sort order: +
+                Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (_col0 is null or (_col0 = 27)) (type: boolean)
+              Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col4 (type: tinyint)
+              sort order: +
+              Map-reduce partition columns: _col4 (type: tinyint)
+              Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part2
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (t is null or (t = 27)) (type: boolean)
+              Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                    sort order: +++++
+                    Map-reduce partition columns: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                    Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: smallint), KEY._col1 (type: int), KEY._col2 (type: bigint), KEY._col3 (type: float), KEY._col4 (type: tinyint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.over1k_part2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part2
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: -- tests for HIVE-8162, only partition column 't' should be in last RS operator
+explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+PREHOOK: type: QUERY
+POSTHOOK: query: -- tests for HIVE-8162, only partition column 't' should be in last RS operator
+explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k
+            Statistics: Num rows: 4443 Data size: 106636 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (t is null or (t = 27)) (type: boolean)
+              Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                    sort order: +++++
+                    Map-reduce partition columns: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                    Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: smallint), KEY._col1 (type: int), KEY._col2 (type: bigint), KEY._col3 (type: float), KEY._col4 (type: tinyint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col4 (type: tinyint)
+              sort order: +
+              Map-reduce partition columns: _col4 (type: tinyint)
+              Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1665,9 +1924,11 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: smallint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col4 (type: tinyint)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), KEY.reducesinkkey0 (type: float), VALUE._col3 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -1717,13 +1978,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col4 (type: tinyint), -1 (type: int), _col3 (type: float)
+                  key expressions: _col4 (type: tinyint), '_bucket_number' (type: string), _col3 (type: float)
                   sort order: +++
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _bucket_number
           Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false

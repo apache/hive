@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  * auditing and/or authorization.
  * It is an immutable class. Builder inner class is used instantiate it.
  */
-@LimitedPrivate(value = { "" })
+@LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
 public final class HiveAuthzContext {
 

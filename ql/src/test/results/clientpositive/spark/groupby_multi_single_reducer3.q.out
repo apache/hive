@@ -1,0 +1,706 @@
+PREHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
+create table e1 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e1
+POSTHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
+create table e1 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e1
+PREHOOK: query: create table e2 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e2
+POSTHOOK: query: create table e2 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e2
+PREHOOK: query: explain
+from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
+                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
+                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1
+PREHOOK: Output: default@e2
+POSTHOOK: query: from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1
+POSTHOOK: Output: default@e2
+POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1
+#### A masked pattern was here ####
+100	2
+200	2
+PREHOOK: query: select * from e2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2
+#### A masked pattern was here ####
+400	1
+PREHOOK: query: explain
+from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: key (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 375 Data size: 3984 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1
+PREHOOK: Output: default@e2
+POSTHOOK: query: from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1
+POSTHOOK: Output: default@e2
+POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1
+#### A masked pattern was here ####
+val_100	2
+val_200	2
+PREHOOK: query: select * from e2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2
+#### A masked pattern was here ####
+val_200	2
+PREHOOK: query: explain
+from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
+                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1
+                Filter Operator
+                  predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
+                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1
+PREHOOK: Output: default@e2
+POSTHOOK: query: from src
+insert overwrite table e1
+select key, count(*)
+where src.value in ('val_100', 'val_200', 'val_300') AND key in (100, 150, 200)
+group by key
+insert overwrite table e2
+select key, count(*)
+where src.value in ('val_400', 'val_500') AND key in (400, 450)
+group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1
+POSTHOOK: Output: default@e2
+POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1
+#### A masked pattern was here ####
+100	2
+200	2
+PREHOOK: query: select * from e2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2
+#### A masked pattern was here ####
+400	1
+PREHOOK: query: explain
+from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: key (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Forward
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e1
+                Filter Operator
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
+                  Statistics: Num rows: 375 Data size: 3984 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: KEY._col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 187 Data size: 1986 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.e2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1
+PREHOOK: Output: default@e2
+POSTHOOK: query: from src
+insert overwrite table e1
+select value, count(*)
+where src.key + src.key = 200 or src.key - 100 = 100 or src.key = 300 AND VALUE IS NOT NULL
+group by value
+insert overwrite table e2
+select value, count(*)
+where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
+group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1
+POSTHOOK: Output: default@e2
+POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1
+#### A masked pattern was here ####
+val_100	2
+val_200	2
+PREHOOK: query: select * from e2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2
+#### A masked pattern was here ####
+val_200	2

@@ -40,8 +40,17 @@ import java.util.regex.Pattern;
  * are used by the compactor and cleaner and thus must be format agnostic.
  */
 public class AcidUtils {
+  // This key will be put in the conf file when planning an acid operation
+  public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
+  public static final PathFilter baseFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(BASE_PREFIX);
+    }
+  };
   public static final String DELTA_PREFIX = "delta_";
+  public static final String DELTA_SIDE_FILE_SUFFIX = "_flush_length";
   public static final PathFilter deltaFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -52,7 +61,8 @@ public class AcidUtils {
   public static final PathFilter bucketFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
-      return path.getName().startsWith(BUCKET_PREFIX);
+      return path.getName().startsWith(BUCKET_PREFIX) &&
+          !path.getName().endsWith(DELTA_SIDE_FILE_SUFFIX);
     }
   };
   public static final String BUCKET_DIGITS = "%05d";
@@ -346,7 +356,7 @@ public class AcidUtils {
     long bestBaseTxn = 0;
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
-    final List<FileStatus> original = new ArrayList<FileStatus>();
+    List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
     List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory,
         hiddenFileFilter);
@@ -367,22 +377,32 @@ public class AcidUtils {
         }
       } else if (fn.startsWith(DELTA_PREFIX) && child.isDir()) {
         ParsedDelta delta = parseDelta(child);
-        if (txnList.isTxnRangeCommitted(delta.minTransaction,
+        if (txnList.isTxnRangeValid(delta.minTransaction,
             delta.maxTransaction) !=
             ValidTxnList.RangeResponse.NONE) {
           working.add(delta);
         }
       } else {
-        findOriginals(fs, child, original);
+        // This is just the directory.  We need to recurse and find the actual files.  But don't
+        // do this until we have determined there is no base.  This saves time.  Plus,
+        // it is possible that the cleaner is running and removing these original files,
+        // in which case recursing through them could cause us to get an error.
+        originalDirectories.add(child);
       }
     }
 
+    final List<FileStatus> original = new ArrayList<FileStatus>();
     // if we have a base, the original files are obsolete.
     if (bestBase != null) {
-      obsolete.addAll(original);
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
+    } else {
+      // Okay, we're going to need these originals.  Recurse through them and figure out what we
+      // really need.
+      for (FileStatus origDir : originalDirectories) {
+        findOriginals(fs, origDir, original);
+      }
     }
 
     Collections.sort(working);
@@ -390,7 +410,7 @@ public class AcidUtils {
     for(ParsedDelta next: working) {
       if (next.maxTransaction > current) {
         // are any of the new transactions ones that we care about?
-        if (txnList.isTxnRangeCommitted(current+1, next.maxTransaction) !=
+        if (txnList.isTxnRangeValid(current+1, next.maxTransaction) !=
             ValidTxnList.RangeResponse.NONE) {
           deltas.add(next);
           current = next.maxTransaction;

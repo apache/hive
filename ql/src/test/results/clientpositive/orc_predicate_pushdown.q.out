@@ -137,11 +137,11 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: t (type: tinyint)
-              outputColumnNames: t
+              expressions: hash(t) (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(hash(t))
+                aggregations: sum(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -155,17 +155,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -189,11 +185,11 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: t (type: tinyint)
-              outputColumnNames: t
+              expressions: hash(t) (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(hash(t))
+                aggregations: sum(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -207,17 +203,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -259,7 +251,7 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
 PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred
@@ -268,7 +260,7 @@ POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
-124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
@@ -321,14 +313,14 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
-              Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((t < 0) and (UDFToInteger(t) > -2)) (type: boolean)
+              Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: t (type: tinyint)
-                outputColumnNames: t
-                Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+                expressions: hash(t) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: sum(hash(t))
+                  aggregations: sum(_col0)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -342,17 +334,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -380,17 +368,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
+            filterExpr: ((t < 0) and (UDFToInteger(t) > -2)) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((t is not null and (t < 0)) and (t > -2)) (type: boolean)
-              Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((t < 0) and (UDFToInteger(t) > -2)) (type: boolean)
+              Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: t (type: tinyint)
-                outputColumnNames: t
-                Statistics: Num rows: 58 Data size: 17204 Basic stats: COMPLETE Column stats: NONE
+                expressions: hash(t) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 116 Data size: 34409 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: sum(hash(t))
+                  aggregations: sum(_col0)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -404,17 +392,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

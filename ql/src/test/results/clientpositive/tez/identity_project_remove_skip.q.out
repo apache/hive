@@ -1,0 +1,119 @@
+PREHOOK: query: explain
+select t2.* 
+from
+  (select key,value from (select key,value from src) t1 sort by key) t2
+  join 
+  (select * from src sort by key) t3 
+  on (t2.key=t3.key )
+  where t2.value='val_105' and t3.key='105'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t2.* 
+from
+  (select key,value from (select key,value from src) t1 sort by key) t2
+  join 
+  (select * from src sort by key) t3 
+  on (t2.key=t3.key )
+  where t2.value='val_105' and t3.key='105'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((key is not null and (value = 'val_105')) and (key = '105')) (type: boolean)
+                    Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: '105' (type: string)
+                        sort order: +
+                        Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key = '105') (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: '105' (type: string)
+                        sort order: +
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: '105' (type: string)
+                  sort order: +
+                  Map-reduce partition columns: '' (type: string)
+                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+        Reducer 4 
+            Reduce Operator Tree:
+              Select Operator
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 '105' (type: string)
+                    1 '105' (type: string)
+                  input vertices:
+                    0 Reducer 2
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: '105' (type: string), 'val_105' (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t2.* 
+from
+  (select key,value from (select key,value from src) t1 sort by key) t2
+  join 
+  (select * from src sort by key) t3 
+  on (t2.key=t3.key )
+  where t2.value='val_105' and t3.key='105'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select t2.* 
+from
+  (select key,value from (select key,value from src) t1 sort by key) t2
+  join 
+  (select * from src sort by key) t3 
+  on (t2.key=t3.key )
+  where t2.value='val_105' and t3.key='105'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+105	val_105

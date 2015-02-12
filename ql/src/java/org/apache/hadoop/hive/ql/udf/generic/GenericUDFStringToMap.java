@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -46,7 +46,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
     + " second delimiter sperates key and value. If only one parameter is given, default"
     + " delimiters are used: ',' as delimiter1 and '=' as delimiter2.")
 public class GenericUDFStringToMap extends GenericUDF {
-  private final HashMap<Object, Object> ret = new HashMap<Object, Object>();
+  // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
+  private final LinkedHashMap<Object, Object> ret = new LinkedHashMap<Object, Object>();
   private transient Converter soi_text, soi_de1 = null, soi_de2 = null;
   final static String default_de1 = ",";
   final static String default_de2 = ":";

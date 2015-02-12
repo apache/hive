@@ -207,108 +207,28 @@ POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_mer
 POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
-PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: desc formatted orc_merge5a partition(st=80.0)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_merge5a
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-st                  	double              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[80.0]              	 
-Database:           	default             	 
-Table:              	orc_merge5a         	 
+Found 4 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
+Found 4 items
 #### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
-	numRows             	4                   
-	rawDataSize         	1020                
-	totalSize           	2060                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: desc formatted orc_merge5a partition(st=0.8)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: desc formatted orc_merge5a partition(st=0.8)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_merge5a
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-st                  	double              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[0.8]               	 
-Database:           	default             	 
-Table:              	orc_merge5a         	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	4                   
-	numRows             	8                   
-	rawDataSize         	2040                
-	totalSize           	2188                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: show partitions orc_merge5a
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a
@@ -392,108 +312,28 @@ POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=80.0
 POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=80.0
 PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a
 PREHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
-PREHOOK: query: desc formatted orc_merge5a partition(st=80.0)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: desc formatted orc_merge5a partition(st=80.0)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_merge5a
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-st                  	double              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[80.0]              	 
-Database:           	default             	 
-Table:              	orc_merge5a         	 
+Found 3 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
+Found 3 items
 #### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	3                   
-	numRows             	4                   
-	rawDataSize         	1020                
-	totalSize           	1819                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: desc formatted orc_merge5a partition(st=0.8)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: desc formatted orc_merge5a partition(st=0.8)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_merge5a
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-st                  	double              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[0.8]               	 
-Database:           	default             	 
-Table:              	orc_merge5a         	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	3                   
-	numRows             	8                   
-	rawDataSize         	2040                
-	totalSize           	1928                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: show partitions orc_merge5a
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a

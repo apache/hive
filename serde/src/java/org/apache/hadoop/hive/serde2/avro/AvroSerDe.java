@@ -26,8 +26,10 @@ import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -37,13 +39,30 @@ import org.apache.hadoop.io.Writable;
 /**
  * Read or write Avro data from Hive.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    AvroSerDe.LIST_COLUMN_COMMENTS, AvroSerDe.TABLE_NAME, AvroSerDe.TABLE_COMMENT,
+    AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_URL,
+    AvroSerdeUtils.SCHEMA_NAMESPACE, AvroSerdeUtils.SCHEMA_NAME, AvroSerdeUtils.SCHEMA_DOC})
 public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
 
+  public static final String TABLE_NAME = "name";
+  public static final String TABLE_COMMENT = "comment";
+  public static final String LIST_COLUMN_COMMENTS = "columns.comments";
+
   public static final String DECIMAL_TYPE_NAME = "decimal";
+  public static final String CHAR_TYPE_NAME = "char";
+  public static final String VARCHAR_TYPE_NAME = "varchar";
+  public static final String DATE_TYPE_NAME = "date";
+  public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
+  public static final String AVRO_PROP_MAX_LENGTH = "maxLength";
+  public static final String AVRO_STRING_TYPE_NAME = "string";
+  public static final String AVRO_INT_TYPE_NAME = "int";
+  public static final String AVRO_LONG_TYPE_NAME = "long";
 
   private ObjectInspector oi;
   private List<String> columnNames;
@@ -53,8 +72,6 @@ public class AvroSerDe extends AbstractSerDe {
   private AvroSerializer avroSerializer = null;
 
   private boolean badSchema = false;
-  private static String TABLE_NAME = "name";
-  private static String TABLE_COMMENT = "comment";
 
   @Override
   public void initialize(Configuration configuration, Properties tableProperties,
@@ -75,42 +92,22 @@ public class AvroSerDe extends AbstractSerDe {
     columnNames = null;
     columnTypes = null;
 
-    final String columnNameProperty = properties.getProperty("columns");
-    final String columnTypeProperty = properties.getProperty("columns.types");
-    final String columnCommentProperty = properties.getProperty("columns.comments");
+    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
 
-    if (properties.getProperty(AvroSerdeUtils.SCHEMA_LITERAL) != null
-        || properties.getProperty(AvroSerdeUtils.SCHEMA_URL) != null
+    if (properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()) != null
+        || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = AvroSerdeUtils.determineSchemaOrReturnErrorSchema(properties);
+      schema = determineSchemaOrReturnErrorSchema(configuration, properties);
     } else {
       // Get column names and sort order
       columnNames = Arrays.asList(columnNameProperty.split(","));
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
-      List<String> columnComments;
-      if (columnCommentProperty.isEmpty()) {
-        columnComments = new ArrayList<String>();
-      } else {
-        columnComments = Arrays.asList(columnCommentProperty.split(","));
-        LOG.info("columnComments is " + columnCommentProperty);
-      }
-      if (columnNames.size() != columnTypes.size()) {
-        throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +
-            "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
-            columnTypes);
-      }
-
-      final String tableName = properties.getProperty(TABLE_NAME);
-      final String tableComment = properties.getProperty(TABLE_COMMENT);
-      TypeInfoToSchema typeInfoToSchema = new TypeInfoToSchema();
-      schema = typeInfoToSchema.convert(columnNames, columnTypes, columnComments,
-          properties.getProperty(AvroSerdeUtils.SCHEMA_NAMESPACE),
-          properties.getProperty(AvroSerdeUtils.SCHEMA_NAME, tableName),
-          properties.getProperty(AvroSerdeUtils.SCHEMA_DOC, tableComment));
-
-      properties.setProperty(AvroSerdeUtils.SCHEMA_LITERAL, schema.toString());
+      schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
+      properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
 
     LOG.info("Avro schema is " + schema);
@@ -118,7 +115,8 @@ public class AvroSerDe extends AbstractSerDe {
     if (configuration == null) {
       LOG.info("Configuration null, not inserting schema");
     } else {
-      configuration.set(AvroSerdeUtils.AVRO_SERDE_SCHEMA, schema.toString(false));
+      configuration.set(
+          AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
     }
 
     badSchema = schema.equals(SchemaResolutionProblem.SIGNAL_BAD_SCHEMA);
@@ -127,6 +125,57 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = aoig.getColumnNames();
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+  }
+
+  public static Schema getSchemaFromCols(Properties properties,
+          List<String> columnNames, List<TypeInfo> columnTypes, String columnCommentProperty) {
+    List<String> columnComments;
+    if (columnCommentProperty == null || columnCommentProperty.isEmpty()) {
+      columnComments = new ArrayList<String>();
+    } else {
+      columnComments = Arrays.asList(columnCommentProperty.split(","));
+      LOG.info("columnComments is " + columnCommentProperty);
+    }
+    if (columnNames.size() != columnTypes.size()) {
+      throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +
+          "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
+          columnTypes);
+    }
+
+    final String tableName = properties.getProperty(TABLE_NAME);
+    final String tableComment = properties.getProperty(TABLE_COMMENT);
+    TypeInfoToSchema typeInfoToSchema = new TypeInfoToSchema();
+    return typeInfoToSchema.convert(columnNames, columnTypes, columnComments,
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_NAMESPACE.getPropName()),
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_NAME.getPropName(), tableName),
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_DOC.getPropName(), tableComment));
+
+  }
+
+  /**
+   * Attempt to determine the schema via the usual means, but do not throw
+   * an exception if we fail.  Instead, signal failure via a special
+   * schema.  This is used because Hive calls init on the serde during
+   * any call, including calls to update the serde properties, meaning
+   * if the serde is in a bad state, there is no way to update that state.
+   */
+  public Schema determineSchemaOrReturnErrorSchema(Configuration conf, Properties props) {
+    try {
+      configErrors = "";
+      return AvroSerdeUtils.determineSchemaOrThrowException(conf, props);
+    } catch(AvroSerdeException he) {
+      LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem", he);
+      configErrors = new String("Encountered AvroSerdeException determining schema. Returning " +
+              "signal schema to indicate problem: " + he.getMessage());
+      return schema = SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    } catch (Exception e) {
+      LOG.warn("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem", e);
+      configErrors = new String("Encountered exception determining schema. Returning signal " +
+              "schema to indicate problem: " + e.getMessage());
+      return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
+    }
   }
 
   @Override

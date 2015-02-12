@@ -1,7 +1,11 @@
-PREHOOK: query: explain
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -25,10 +29,6 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 
@@ -45,10 +45,6 @@ STAGE PLANS:
               predicate: (key > 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -68,10 +64,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Right Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 
@@ -649,10 +641,6 @@ STAGE PLANS:
               predicate: (key > 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
-                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -669,10 +657,6 @@ STAGE PLANS:
               predicate: ((key > 10) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
-                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -692,10 +676,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Left Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 
@@ -1273,10 +1253,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {key} {value}
-                  2 {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -1293,10 +1269,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {key} {value}
-                  2 {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -1316,10 +1288,6 @@ STAGE PLANS:
               condition map:
                    Right Outer Join0 to 1
                    Left Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 
                 1 {(key > 10)}
@@ -1909,10 +1877,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -1926,10 +1890,6 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               filter predicates:
                 0 
                 1 {(key > 10)}
@@ -1949,10 +1909,6 @@ STAGE PLANS:
               condition map:
                    Right Outer Join0 to 1
                    Right Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 
                 1 {(key > 10)}
@@ -2000,6 +1956,28 @@ POSTHOOK: query: SELECT * FROM src src1 RIGHT OUTER JOIN src src2 ON (src1.key =
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	2	val_2	2	val_2
+NULL	NULL	4	val_4	4	val_4
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	8	val_8	8	val_8
+NULL	NULL	9	val_9	9	val_9
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -2490,28 +2468,6 @@ NULL	NULL	NULL	NULL	97	val_97
 NULL	NULL	NULL	NULL	97	val_97
 NULL	NULL	NULL	NULL	98	val_98
 NULL	NULL	NULL	NULL	98	val_98
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	2	val_2	2	val_2
-NULL	NULL	4	val_4	4	val_4
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	8	val_8	8	val_8
-NULL	NULL	9	val_9	9	val_9
 PREHOOK: query: explain
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) LEFT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
@@ -2542,10 +2498,6 @@ STAGE PLANS:
               predicate: ((key > 10) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {key} {value}
-                  2 {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2558,10 +2510,6 @@ STAGE PLANS:
               predicate: ((key > 10) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {key} {value}
-                  2 {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2580,10 +2528,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Left Outer Join1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2657,10 +2601,6 @@ STAGE PLANS:
               predicate: ((key > 10) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 
@@ -2677,10 +2617,6 @@ STAGE PLANS:
               predicate: ((key < 10) and (key > 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 
@@ -2700,10 +2636,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Right Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 
                 1 
@@ -3281,10 +3213,6 @@ STAGE PLANS:
               predicate: ((key < 10) and (key > 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
-                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -3301,10 +3229,6 @@ STAGE PLANS:
               predicate: ((key > 10) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
-                  2 {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -3324,10 +3248,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Inner Join 1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 
@@ -3405,10 +3325,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -3425,10 +3341,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -3451,10 +3363,6 @@ STAGE PLANS:
                 condition map:
                      Right Outer Join0 to 1
                      Inner Join 1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
                 filter predicates:
                   0 
                   1 {(key > 10)}
@@ -3551,13 +3459,9 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > 10) and key is not null) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key > 10) and (key < 10)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -3567,13 +3471,9 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key < 10) and key is not null) and (key > 10)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key < 10) and (key > 10)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -3586,40 +3486,36 @@ STAGE PLANS:
             alias: src3
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key > 10) and key is not null) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key > 10) and (key < 10)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
                   2 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
-                Statistics: Num rows: 59 Data size: 629 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 59 Data size: 629 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
                     sort order: ++++++
-                    Statistics: Num rows: 59 Data size: 629 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: string), KEY.reducesinkkey5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 59 Data size: 629 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 59 Data size: 629 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

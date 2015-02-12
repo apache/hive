@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Superclass for all threads in the compactor.
@@ -52,7 +53,8 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   protected CompactionTxnHandler txnHandler;
   protected RawStore rs;
   protected int threadId;
-  protected BooleanPointer stop;
+  protected AtomicBoolean stop;
+  protected AtomicBoolean looped;
 
   @Override
   public void setHiveConf(HiveConf conf) {
@@ -66,8 +68,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   }
 
   @Override
-  public void init(BooleanPointer stop) throws MetaException {
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
     this.stop = stop;
+    this.looped = looped;
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
 

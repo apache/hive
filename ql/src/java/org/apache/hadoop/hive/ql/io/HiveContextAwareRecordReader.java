@@ -66,6 +66,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private boolean wasUsingSortedSearch = false;
   private String genericUDFClassName = null;
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
+  private Map<String, PartitionDesc> pathToPartitionInfo;
 
   protected RecordReader recordReader;
   protected JobConf jobConf;
@@ -116,11 +117,11 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       if(retVal) {
         if(key instanceof RecordIdentifier) {
           //supports AcidInputFormat which uses the KEY pass ROW__ID info
-          ioCxtRef.ri = (RecordIdentifier)key;
+          ioCxtRef.setRecordIdentifier((RecordIdentifier)key);
         }
         else if(recordReader instanceof AcidInputFormat.AcidRecordReader) {
           //supports AcidInputFormat which do not use the KEY pass ROW__ID info
-          ioCxtRef.ri = ((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier();
+          ioCxtRef.setRecordIdentifier(((AcidInputFormat.AcidRecordReader) recordReader).getRecordIdentifier());
         }
       }
       return retVal;
@@ -133,42 +134,43 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   protected void updateIOContext()
       throws IOException {
     long pointerPos = this.getPos();
-    if (!ioCxtRef.isBlockPointer) {
-      ioCxtRef.currentBlockStart = pointerPos;
-      ioCxtRef.currentRow = 0;
+    if (!ioCxtRef.isBlockPointer()) {
+      ioCxtRef.setCurrentBlockStart(pointerPos);
+      ioCxtRef.setCurrentRow(0);
       return;
     }
 
-    ioCxtRef.currentRow++;
+    ioCxtRef.setCurrentRow(ioCxtRef.getCurrentRow() + 1);
 
-    if (ioCxtRef.nextBlockStart == -1) {
-      ioCxtRef.nextBlockStart = pointerPos;
-      ioCxtRef.currentRow = 0;
+    if (ioCxtRef.getNextBlockStart() == -1) {
+      ioCxtRef.setNextBlockStart(pointerPos);
+      ioCxtRef.setCurrentRow(0);
     }
-    if (pointerPos != ioCxtRef.nextBlockStart) {
+    if (pointerPos != ioCxtRef.getNextBlockStart()) {
       // the reader pointer has moved to the end of next block, or the end of
       // current record.
 
-      ioCxtRef.currentRow = 0;
+      ioCxtRef.setCurrentRow(0);
 
-      if (ioCxtRef.currentBlockStart == ioCxtRef.nextBlockStart) {
-        ioCxtRef.currentRow = 1;
+      if (ioCxtRef.getCurrentBlockStart() == ioCxtRef.getNextBlockStart()) {
+        ioCxtRef.setCurrentRow(1);
       }
 
-      ioCxtRef.currentBlockStart = ioCxtRef.nextBlockStart;
-      ioCxtRef.nextBlockStart = pointerPos;
+      ioCxtRef.setCurrentBlockStart(ioCxtRef.getNextBlockStart());
+      ioCxtRef.setNextBlockStart(pointerPos);
     }
   }
 
   public IOContext getIOContext() {
-    return IOContext.get();
+    return IOContext.get(jobConf);
   }
 
-  public void initIOContext(long startPos, boolean isBlockPointer, Path inputPath) {
+  private void initIOContext(long startPos, boolean isBlockPointer,
+      Path inputPath) {
     ioCxtRef = this.getIOContext();
-    ioCxtRef.currentBlockStart = startPos;
-    ioCxtRef.isBlockPointer = isBlockPointer;
-    ioCxtRef.inputPath = inputPath;
+    ioCxtRef.setCurrentBlockStart(startPos);
+    ioCxtRef.setBlockPointer(isBlockPointer);
+    ioCxtRef.setInputPath(inputPath);
     LOG.info("Processing file " + inputPath);
     initDone = true;
   }
@@ -183,7 +185,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
 
     boolean blockPointer = false;
     long blockStart = -1;
-    FileSplit fileSplit = (FileSplit) split;
+    FileSplit fileSplit = split;
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(job);
     if (inputFormatClass.getName().contains("SequenceFile")) {
@@ -202,12 +204,15 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       blockStart = in.getPosition();
       in.close();
     }
+    this.jobConf = job;
     this.initIOContext(blockStart, blockPointer, path.makeQualified(fs));
 
     this.initIOContextSortedProps(split, recordReader, job);
   }
 
   public void initIOContextSortedProps(FileSplit split, RecordReader recordReader, JobConf job) {
+    this.jobConf = job;
+
     this.getIOContext().resetSortingValues();
     this.isSorted = jobConf.getBoolean("hive.input.format.sorted", false);
 
@@ -218,7 +223,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       // Binary search only works if we know the size of the split, and the recordReader is an
       // RCFileRecordReader
       this.getIOContext().setUseSorted(true);
-      this.getIOContext().setIsBinarySearching(true);
+      this.getIOContext().setBinarySearching(true);
       this.wasUsingSortedSearch = true;
     } else {
       // Use the defalut methods for next in the child class
@@ -280,7 +285,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
           // binary search, if the new position at least as big as the size of the split, any
           // matching rows must be in the final block, so we can end the binary search.
           if (newPosition == previousPosition || newPosition >= splitEnd) {
-            this.getIOContext().setIsBinarySearching(false);
+            this.getIOContext().setBinarySearching(false);
             sync(rangeStart);
           }
 
@@ -306,8 +311,10 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         Path filePath = this.ioCxtRef.getInputPath();
         PartitionDesc part = null;
         try {
-          Map<String, PartitionDesc> pathToPartitionInfo = Utilities
+          if (pathToPartitionInfo == null) {
+            pathToPartitionInfo = Utilities
               .getMapWork(jobConf).getPathToPartitionInfo();
+          }
           part = HiveFileFormatUtils
               .getPartitionDescFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
@@ -398,7 +405,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
    */
   private void beginLinearSearch() throws IOException {
     sync(rangeStart);
-    this.getIOContext().setIsBinarySearching(false);
+    this.getIOContext().setBinarySearching(false);
     this.wasUsingSortedSearch = false;
   }
 

@@ -1,46 +1,4 @@
-PREHOOK: query: DROP TABLE part
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE part
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@part
-POSTHOOK: query: -- data setup
-CREATE TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
-PREHOOK: type: LOAD
-#### A masked pattern was here ####
-PREHOOK: Output: default@part
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
-POSTHOOK: type: LOAD
-#### A masked pattern was here ####
-POSTHOOK: Output: default@part
-Warning: Shuffle Join JOIN[4][tables = [p1, p2]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select p1.p_name, p2.p_name
 from part p1 , part p2
 PREHOOK: type: QUERY
@@ -56,35 +14,329 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p2
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-              value expressions: p_name (type: string)
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_name (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
           TableScan
             alias: p1
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-              value expressions: p_name (type: string)
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_name (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col1}
-            1 {VALUE._col1}
-          outputColumnNames: _col1, _col13
-          Statistics: Num rows: 34 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 ,part p2 ,part p3 
+where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 ,part p2 ,part p3 
+where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 1 to 2
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 , (select p_name from part) p2 ,part p3 
+where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 , (select p_name from part) p2 ,part p3 
+where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 1 to 2
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 , part p2 , part p3 
+where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
+from part p1 , part p2 , part p3 
+where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_partkey (type: int), p_name (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: string)
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: ((_col2 + _col0) = _col0) (type: boolean)
+            Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col1 (type: string), _col3 (type: string)
+              outputColumnNames: _col1, _col3
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string)
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col1, _col3, _col4
+          Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: string), _col13 (type: string)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 34 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
+            expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 34 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -96,417 +348,159 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 ,part p2 ,part p3 
-where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
+from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
+where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
+            and p1.p_partkey = p2.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 ,part p2 ,part p3 
-where p1.p_name = p2.p_name and p2.p_name = p3.p_name
+POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
+from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
+where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
+            and p1.p_partkey = p2.p_partkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p3
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: p2
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+              predicate: (p_partkey is not null and p_name is not null) (type: boolean)
+              Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: p1
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+              predicate: (p_partkey is not null and p_name is not null) (type: boolean)
+              Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Inner Join 1 to 2
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
-            2 {KEY.reducesinkkey0}
-          outputColumnNames: _col1, _col13, _col25
-          Statistics: Num rows: 35 Data size: 3601 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: ((_col1 = _col13) and (_col13 = _col25)) (type: boolean)
-            Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col1 (type: string), _col13 (type: string), _col25 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          keys:
+            0 _col0 (type: int), _col1 (type: string)
+            1 _col0 (type: int), _col1 (type: string)
+          outputColumnNames: _col0, _col1, _col3
+          Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 , (select p_name from part) p2 ,part p3 
-where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 , (select p_name from part) p2 ,part p3 
-where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: part
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p_name (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: p3
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: p1
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Inner Join 1 to 2
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
-            2 {KEY.reducesinkkey0}
-          outputColumnNames: _col1, _col12, _col14
-          Statistics: Num rows: 35 Data size: 3601 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: ((_col1 = _col12) and (_col12 = _col14)) (type: boolean)
-            Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col1 (type: string), _col12 (type: string), _col14 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 8 Data size: 823 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          keys:
+            0 _col0 (type: string)
+            1 _col3 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col4
+          Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 , part p2 , part p3 
-where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
-from part p1 , part p2 , part p3 
-where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p2
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                value expressions: p_partkey (type: int), p_name (type: string)
-          TableScan
             alias: p1
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_partkey is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
+          TableScan
             Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-              value expressions: p_partkey (type: int), p_name (type: string)
+              key expressions: _col1 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: int)
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-          outputColumnNames: _col0, _col1, _col12, _col13
-          Statistics: Num rows: 33 Data size: 3490 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (((_col12 + _col0) = _col0) and _col13 is not null) (type: boolean)
-            Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
+          keys:
+            0 _col0 (type: int)
+            1 _col1 (type: int)
+          outputColumnNames: _col1, _col2, _col4, _col6
+          Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col4 (type: string), _col6 (type: string), _col2 (type: string), _col1 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
+              Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
               table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: p3
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col13 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col13 (type: string)
-              Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col12 (type: int)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col12} {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col12, _col13, _col25
-          Statistics: Num rows: 17 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (((_col12 + _col0) = _col0) and (_col25 = _col13)) (type: boolean)
-            Statistics: Num rows: 4 Data size: 423 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col1 (type: string), _col13 (type: string), _col25 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 4 Data size: 423 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 4 Data size: 423 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
-from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
-where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
-            and p1.p_partkey = p2.p_partkey
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
-from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
-where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
-            and p1.p_partkey = p2.p_partkey
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: p2
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (p_name is not null and p_partkey is not null) (type: boolean)
-              Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string), p_partkey (type: int)
-                sort order: ++
-                Map-reduce partition columns: p_name (type: string), p_partkey (type: int)
-                Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: p1
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (p_name is not null and p_partkey is not null) (type: boolean)
-              Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string), p_partkey (type: int)
-                sort order: ++
-                Map-reduce partition columns: p_name (type: string), p_partkey (type: int)
-                Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col12, _col13
-          Statistics: Num rows: 8 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: p3
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col13 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col13 (type: string)
-              Statistics: Num rows: 8 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col12 (type: int)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col12} {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col12, _col13, _col25
-          Statistics: Num rows: 17 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: p4
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_partkey is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_partkey (type: int)
-                sort order: +
-                Map-reduce partition columns: p_partkey (type: int)
-                Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                value expressions: p_name (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 17 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col12 (type: int), _col13 (type: string), _col25 (type: string)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col11} {VALUE._col12} {VALUE._col24}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col12, _col13, _col25, _col36, _col37
-          Statistics: Num rows: 18 Data size: 1980 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (((_col13 = _col25) and (_col0 = _col36)) and (_col0 = _col12)) (type: boolean)
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col1 (type: string), _col13 (type: string), _col25 (type: string), _col37 (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -535,36 +529,44 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p2
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (p_name is not null and p_partkey is not null) (type: boolean)
-              Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string), p_partkey (type: int)
-                sort order: ++
-                Map-reduce partition columns: p_name (type: string), p_partkey (type: int)
-                Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string), _col0 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                  Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: p1
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (p_name is not null and p_partkey is not null) (type: boolean)
-              Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string), p_partkey (type: int)
-                sort order: ++
-                Map-reduce partition columns: p_name (type: string), p_partkey (type: int)
-                Statistics: Num rows: 8 Data size: 846 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string), _col0 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                  Statistics: Num rows: 7 Data size: 847 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col12, _col13
-          Statistics: Num rows: 8 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+          keys:
+            0 _col1 (type: string), _col0 (type: int)
+            1 _col1 (type: string), _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col3
+          Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -576,32 +578,36 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p3
-            Statistics: Num rows: 31 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 16 Data size: 1637 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_name (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
-              key expressions: _col13 (type: string)
+              key expressions: _col3 (type: string)
               sort order: +
-              Map-reduce partition columns: _col13 (type: string)
-              Statistics: Num rows: 8 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col12 (type: int)
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col12} {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
-          outputColumnNames: _col0, _col1, _col12, _col13, _col25
-          Statistics: Num rows: 17 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
+          keys:
+            0 _col0 (type: string)
+            1 _col3 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col4
+          Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -613,47 +619,48 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p4
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_partkey is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_partkey (type: int)
-                sort order: +
-                Map-reduce partition columns: p_partkey (type: int)
-                Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                value expressions: p_name (type: string)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_partkey (type: int), p_name (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: _col1 (type: int)
               sort order: +
-              Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 17 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col12 (type: int), _col13 (type: string), _col25 (type: string)
+              Map-reduce partition columns: _col1 (type: int)
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col11} {VALUE._col12} {VALUE._col24}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-          outputColumnNames: _col0, _col1, _col12, _col13, _col25, _col36, _col37
-          Statistics: Num rows: 18 Data size: 1980 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (((_col13 = _col25) and (_col0 = _col36)) and (_col0 = _col12)) (type: boolean)
-            Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col1 (type: string), _col13 (type: string), _col25 (type: string), _col37 (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          keys:
+            0 _col0 (type: int)
+            1 _col1 (type: int)
+          outputColumnNames: _col1, _col2, _col4, _col6
+          Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col4 (type: string), _col6 (type: string), _col2 (type: string), _col1 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

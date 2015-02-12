@@ -37,15 +37,18 @@ public class MetaStoreSchemaInfo {
   private static String UPGRADE_FILE_PREFIX="upgrade-";
   private static String INIT_FILE_PREFIX="hive-schema-";
   private static String VERSION_UPGRADE_LIST = "upgrade.order";
+  private static String PRE_UPGRADE_PREFIX = "pre-";
   private final String dbType;
   private final String hiveSchemaVersions[];
   private final HiveConf hiveConf;
   private final String hiveHome;
 
-  // Minor version upgrades often don't change schema. So they are equivalent to a version
+  // Some version upgrades often don't change schema. So they are equivalent to
+  // a version
   // that has a corresponding schema. eg "0.13.1" is equivalent to "0.13.0"
   private static final Map<String, String> EQUIVALENT_VERSIONS =
-      ImmutableMap.of("0.13.1", "0.13.0");
+      ImmutableMap.of("0.13.1", "0.13.0",
+          "1.0.0", "0.14.0");
 
   public MetaStoreSchemaInfo(String hiveHome, HiveConf hiveConf, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;
@@ -136,6 +139,10 @@ public class MetaStoreSchemaInfo {
   // format the upgrade script name eg upgrade-x-y-dbType.sql
   private String generateUpgradeFileName(String fileVersion) {
     return UPGRADE_FILE_PREFIX +  fileVersion + "." + dbType + SQL_FILE_EXTENSION;
+  }
+
+  public static String getPreUpgradeScriptName(int index, String upgradeScriptName) {
+    return PRE_UPGRADE_PREFIX + index + "-" + upgradeScriptName;
   }
 
   public static String getHiveSchemaVersion() {

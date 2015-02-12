@@ -20,26 +20,19 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double)
-                outputColumnNames: _col2
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
+                expressions: '100' (type: string), rand() (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -73,36 +66,22 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) = 100.0) and ((rand() <= 0.1) and (rand() > 0.1))) (type: boolean)
+              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double)
-                outputColumnNames: _col2
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col2 (type: double)
-                    outputColumnNames: _col1
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: (_col1 > 0.1) (type: boolean)
-                      Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: '100' (type: string), _col1 (type: double)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-                        Limit
-                          Number of rows: 20
-                          Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                expressions: '100' (type: string), rand() (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -130,28 +109,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: false (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
               Select Operator
-                expressions: rand() (type: double), '4' (type: string)
-                outputColumnNames: _col2, _col3
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col3 <= 3) (type: boolean)
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                expressions: '100' (type: string), rand() (type: double), '4' (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -181,26 +153,19 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((UDFToDouble(value) * 10.0) <= 200.0) and (UDFToDouble(key) = 100.0)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double), (value * 10) (type: double)
-                outputColumnNames: _col2, _col3
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col3 <= 200.0) (type: boolean)
+                expressions: '100' (type: string), rand() (type: double), (UDFToDouble(value) * 10.0) (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double), _col3 (type: double)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -230,26 +195,19 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double)
-                outputColumnNames: _col2
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
+                expressions: '100' (type: string), rand() (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -283,29 +241,22 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) = 100.0) and ((rand() <= 0.1) and (rand() > 0.1))) (type: boolean)
+              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double)
-                outputColumnNames: _col2
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col2 <= 0.1) and (_col2 > 0.1)) (type: boolean)
-                  Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 20
-                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                expressions: '100' (type: string), rand() (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -333,28 +284,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: false (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
               Select Operator
-                expressions: rand() (type: double), '4' (type: string)
-                outputColumnNames: _col2, _col3
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col3 <= 3) (type: boolean)
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                expressions: '100' (type: string), rand() (type: double), '4' (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -384,26 +328,19 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 100) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) = 100.0) and ((UDFToDouble(value) * 10.0) <= 200.0)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: rand() (type: double), (value * 10) (type: double)
-                outputColumnNames: _col2, _col3
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col3 <= 200.0) (type: boolean)
+                expressions: '100' (type: string), rand() (type: double), (UDFToDouble(value) * 10.0) (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '100' (type: string), _col2 (type: double), _col3 (type: double)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

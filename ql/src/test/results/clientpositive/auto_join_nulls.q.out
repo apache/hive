@@ -14,7 +14,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE my
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1
-Warning: Map Join MAPJOIN[13][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -24,7 +24,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 13630578
-Warning: Map Join MAPJOIN[13][bigTable=a] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -34,7 +34,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 13630578
-Warning: Map Join MAPJOIN[13][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

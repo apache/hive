@@ -23,13 +23,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -150,18 +153,12 @@ public class VectorColumnAssignFactory {
 
   private static abstract class VectorDecimalColumnAssign
   extends VectorColumnAssignVectorBase<DecimalColumnVector> {
+
     protected void assignDecimal(HiveDecimal value, int index) {
-      outCol.vector[index].update(value.unscaledValue(), (byte) value.scale());
-    }
-  
-    protected void assignDecimal(Decimal128 value, int index) {
-      outCol.vector[index].update(value);
+      outCol.set(index, value);
     }
     protected void assignDecimal(HiveDecimalWritable hdw, int index) {
-        byte[] internalStorage = hdw.getInternalStorage();
-        int scale = hdw.getScale();
-  
-        outCol.vector[index].fastUpdateFromInternalStorage(internalStorage, (short)scale);
+      outCol.set(index, hdw);
     }
   }
 
@@ -404,11 +401,50 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else {
               Text bw = (Text) val;
               byte[] bytes = bw.getBytes();
               assignBytes(bytes, 0, bw.getLength(), destIndex);
+            }
+          }
+        }.init(outputBatch, (BytesColumnVector) destCol);
+        break;
+      case VARCHAR:
+        outVCA = new VectorBytesColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            } else {
+              // We store VARCHAR type stripped of pads.
+              HiveVarchar hiveVarchar;
+              if (val instanceof HiveVarchar) {
+                hiveVarchar = (HiveVarchar) val;
+              } else {
+                hiveVarchar = ((HiveVarcharWritable) val).getHiveVarchar();
+              }
+              byte[] bytes = hiveVarchar.getValue().getBytes();
+              assignBytes(bytes, 0, bytes.length, destIndex);
+            }
+          }
+        }.init(outputBatch, (BytesColumnVector) destCol);
+        break;
+      case CHAR:
+        outVCA = new VectorBytesColumnAssign() {
+        @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            } else {
+              // We store CHAR type stripped of pads.
+              HiveChar hiveChar;
+              if (val instanceof HiveChar) {
+                hiveChar = (HiveChar) val;
+              } else {
+                hiveChar = ((HiveCharWritable) val).getHiveChar();
+              }
+              byte[] bytes = hiveChar.getStrippedValue().getBytes();
+              assignBytes(bytes, 0, bytes.length, destIndex);
             }
           }
         }.init(outputBatch, (BytesColumnVector) destCol);

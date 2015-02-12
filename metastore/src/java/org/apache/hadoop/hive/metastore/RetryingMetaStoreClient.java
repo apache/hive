@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
@@ -97,7 +98,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             (e.getCause() instanceof TTransportException)) {
           caughtException = (TException) e.getCause();
         } else if ((e.getCause() instanceof MetaException) &&
-            e.getCause().getMessage().matches("JDO[a-zA-Z]*Exception")) {
+            e.getCause().getMessage().matches("(?s).*JDO[a-zA-Z]*Exception.*")) {
           caughtException = (MetaException) e.getCause();
         } else {
           throw e.getCause();
@@ -122,11 +123,16 @@ public class RetryingMetaStoreClient implements InvocationHandler {
    * @throws MetaException
    */
   private void reloginExpiringKeytabUser() throws MetaException {
-    if(!ShimLoader.getHadoopShims().isSecurityEnabled()){
+    if(!UserGroupInformation.isSecurityEnabled()){
       return;
     }
     try {
-      ShimLoader.getHadoopShims().reLoginUserFromKeytab();
+      UserGroupInformation ugi = UserGroupInformation.getLoginUser();
+      //checkTGT calls ugi.relogin only after checking if it is close to tgt expiry
+      //hadoop relogin is actually done only every x minutes (x=10 in hadoop 1.x)
+      if(ugi.isFromKeytab()){
+        ugi.checkTGTAndReloginFromKeytab();
+      }
     } catch (IOException e) {
       String msg = "Error doing relogin using keytab " + e.getMessage();
       LOG.error(msg, e);

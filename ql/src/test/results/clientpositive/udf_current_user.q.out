@@ -1,0 +1,22 @@
+PREHOOK: query: DESCRIBE FUNCTION current_user
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION current_user
+POSTHOOK: type: DESCFUNCTION
+current_user() - Returns current user name
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED current_user
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED current_user
+POSTHOOK: type: DESCFUNCTION
+current_user() - Returns current user name
+SessionState UserFromAuthenticator
+PREHOOK: query: select current_user()
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select current_user()
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+hive_test_user

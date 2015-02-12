@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -83,8 +84,9 @@ public class HCatUtil {
   private static volatile HiveClientCache hiveClientCache;
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
-    if (j.getConfiguration().get("mapred.task.id", "").equals("") &&
-        !("true".equals(j.getConfiguration().get("pig.illustrating")))) {
+    if (j.getConfiguration().get("pig.job.converted.fetch", "").equals("") &&
+          j.getConfiguration().get("mapred.task.id", "").equals("") &&
+          !("true".equals(j.getConfiguration().get("pig.illustrating")))) {
       return false;
     }
     return true;
@@ -120,25 +122,11 @@ public class HCatUtil {
   }
 
   public static String encodeBytes(byte[] bytes) {
-    StringBuilder strBuf = new StringBuilder();
-
-    for (int i = 0; i < bytes.length; i++) {
-      strBuf.append((char) (((bytes[i] >> 4) & 0xF) + ('a')));
-      strBuf.append((char) (((bytes[i]) & 0xF) + ('a')));
-    }
-
-    return strBuf.toString();
+    return new String(Base64.encodeBase64(bytes, false, false));
   }
 
   public static byte[] decodeBytes(String str) {
-    byte[] bytes = new byte[str.length() / 2];
-    for (int i = 0; i < str.length(); i += 2) {
-      char c = str.charAt(i);
-      bytes[i / 2] = (byte) ((c - 'a') << 4);
-      c = str.charAt(i + 1);
-      bytes[i / 2] += (c - 'a');
-    }
-    return bytes;
+    return Base64.decodeBase64(str.getBytes());
   }
 
   public static List<HCatFieldSchema> getHCatFieldSchemaList(

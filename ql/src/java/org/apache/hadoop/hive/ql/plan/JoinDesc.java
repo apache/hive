@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 
 /**
  * Join operator Descriptor implementation.
@@ -87,17 +88,34 @@ public class JoinDesc extends AbstractOperatorDesc {
   // it's resulted from RS-dedup optimization, which removes following RS under some condition
   private boolean fixedAsSorted;
 
+  // used only for explain.
+  private transient ExprNodeDesc [][] joinKeys;
+
+  // Data structures coming originally from QBJoinTree
+  private transient String leftAlias;
+  private transient String[] leftAliases;
+  private transient String[] rightAliases;
+  private transient String[] baseSrc;
+  private transient String id;
+  private transient boolean mapSideJoin;
+  private transient List<String> mapAliases; //map-side join aliases
+  private transient Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
+  private transient boolean leftInputJoin;
+  private transient List<String> streamAliases;
+
   public JoinDesc() {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters) {
+      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
+      ExprNodeDesc[][] joinKeys) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
     this.filters = filters;
+    this.joinKeys = joinKeys;
 
     resetOrder();
   }
@@ -157,22 +175,6 @@ public class JoinDesc extends AbstractOperatorDesc {
     return ret;
   }
 
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds) {
-    this(exprs, outputColumnNames, noOuterJoin, conds, null);
-  }
-
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames) {
-    this(exprs, outputColumnNames, true, null);
-  }
-
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames, final JoinCondDesc[] conds) {
-    this(exprs, outputColumnNames, true, conds, null);
-  }
-
   public JoinDesc(JoinDesc clone) {
     this.bigKeysDirMap = clone.bigKeysDirMap;
     this.conds = clone.conds;
@@ -204,33 +206,16 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.reversedExprs = reversedExprs;
   }
 
-  @Explain(displayName = "condition expressions")
-  public Map<Byte, String> getExprsStringMap() {
-    if (getExprs() == null) {
-      return null;
+  /**
+   * @return the keys in string form
+   */
+  @Explain(displayName = "keys")
+  public Map<Byte, String> getKeysString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (byte i = 0; i < joinKeys.length; i++) {
+      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
     }
-
-    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
-
-    for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getExprs().entrySet()) {
-      StringBuilder sb = new StringBuilder();
-      boolean first = true;
-      if (ent.getValue() != null) {
-        for (ExprNodeDesc expr : ent.getValue()) {
-          if (!first) {
-            sb.append(" ");
-          }
-
-          first = false;
-          sb.append("{");
-          sb.append(expr.getExprString());
-          sb.append("}");
-        }
-      }
-      ret.put(ent.getKey(), sb.toString());
-    }
-
-    return ret;
+    return keyMap;
   }
 
   public void setExprs(final Map<Byte, List<ExprNodeDesc>> exprs) {
@@ -540,4 +525,88 @@ public class JoinDesc extends AbstractOperatorDesc {
   public void setFixedAsSorted(boolean fixedAsSorted) {
     this.fixedAsSorted = fixedAsSorted;
   }
+
+  public String[] getLeftAliases() {
+    return leftAliases;
+  }
+
+  public String[] getBaseSrc() {
+    return baseSrc;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public List<String> getMapAliases() {
+    return mapAliases;
+  }
+
+  public Map<String, Operator<? extends OperatorDesc>> getAliasToOpInfo() {
+    return aliasToOpInfo;
+  }
+
+  public boolean isLeftInputJoin() {
+    return leftInputJoin;
+  }
+
+  public String getLeftAlias() {
+    return leftAlias;
+  }
+
+  public void setLeftAlias(String leftAlias) {
+    this.leftAlias = leftAlias;
+  }
+
+  public String[] getRightAliases() {
+    return rightAliases;
+  }
+
+  public List<String> getStreamAliases() {
+    return streamAliases;
+  }
+
+  public boolean isMapSideJoin() {
+    return mapSideJoin;
+  }
+
+  public void setQBJoinTreeProps(JoinDesc joinDesc) {
+    leftAlias = joinDesc.leftAlias;
+    leftAliases = joinDesc.leftAliases;
+    rightAliases = joinDesc.rightAliases;
+    baseSrc = joinDesc.baseSrc;
+    id = joinDesc.id;
+    mapSideJoin = joinDesc.mapSideJoin;
+    mapAliases = joinDesc.mapAliases;
+    aliasToOpInfo = joinDesc.aliasToOpInfo;
+    leftInputJoin = joinDesc.leftInputJoin;
+    streamAliases = joinDesc.streamAliases;
+  }
+
+  public void setQBJoinTreeProps(QBJoinTree joinTree) {
+    leftAlias = joinTree.getLeftAlias();
+    leftAliases = joinTree.getLeftAliases();
+    rightAliases = joinTree.getRightAliases();
+    baseSrc = joinTree.getBaseSrc();
+    id = joinTree.getId();
+    mapSideJoin = joinTree.isMapSideJoin();
+    mapAliases = joinTree.getMapAliases();
+    aliasToOpInfo = joinTree.getAliasToOpInfo();
+    leftInputJoin = joinTree.getJoinSrc() != null;
+    streamAliases = joinTree.getStreamAliases();
+  }
+
+  public void cloneQBJoinTreeProps(JoinDesc joinDesc) {
+    leftAlias = joinDesc.leftAlias;
+    leftAliases = joinDesc.leftAliases == null ? null : joinDesc.leftAliases.clone();
+    rightAliases = joinDesc.rightAliases == null ? null : joinDesc.rightAliases.clone();
+    baseSrc = joinDesc.baseSrc == null ? null : joinDesc.baseSrc.clone();
+    id = joinDesc.id;
+    mapSideJoin = joinDesc.mapSideJoin;
+    mapAliases = joinDesc.mapAliases == null ? null : new ArrayList<String>(joinDesc.mapAliases);
+    aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>(joinDesc.aliasToOpInfo);
+    leftInputJoin = joinDesc.leftInputJoin;
+    streamAliases = joinDesc.streamAliases == null ? null : new ArrayList<String>(joinDesc.streamAliases);
+  }
+
 }

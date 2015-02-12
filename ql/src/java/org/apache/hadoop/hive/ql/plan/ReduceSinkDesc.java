@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -90,10 +91,28 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   //flag used to control how TopN handled for PTF/Windowing partitions.
   private boolean isPTFReduceSink = false; 
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
-  private Boolean autoParallel = null; // Is reducer auto-parallelism enabled, disabled or unset
+
+  public static enum ReducerTraits {
+    UNSET(0), // unset
+    FIXED(1), // distribution of keys is fixed
+    AUTOPARALLEL(2), // can change reducer count (ORDER BY can concat adjacent buckets)
+    UNIFORM(3); // can redistribute into buckets uniformly (GROUP BY can)
+
+    private final int trait;
+
+    private ReducerTraits(int trait) {
+      this.trait = trait;
+    }
+  };
+
+  // Is reducer auto-parallelism unset (FIXED, UNIFORM, PARALLEL)
+  private EnumSet<ReducerTraits> reduceTraits = EnumSet.of(ReducerTraits.UNSET);
 
   // Write type, since this needs to calculate buckets differently for updates and deletes
   private AcidUtils.Operation writeType;
+
+  // whether we'll enforce the sort order of the RS
+  private transient boolean enforceSort = false;
 
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
@@ -148,7 +167,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setBucketCols(bucketCols);
     desc.setStatistics(this.getStatistics());
     desc.setSkipTag(skipTag);
-    desc.autoParallel = autoParallel;
+    desc.reduceTraits = reduceTraits.clone();
+    desc.setEnforceSort(enforceSort);
     return desc;
   }
 
@@ -216,6 +236,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   public void setPartitionCols(
       final java.util.ArrayList<ExprNodeDesc> partitionCols) {
     this.partitionCols = partitionCols;
+  }
+
+  public boolean isPartitioning() {
+    if (partitionCols != null && !partitionCols.isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   @Explain(displayName = "tag", normalExplain = false)
@@ -318,6 +345,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
         orderStr);
   }
 
+  public boolean isOrdering() {
+    if (this.getOrder() != null && !this.getOrder().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
   public List<List<Integer>> getDistinctColumnIndices() {
     return distinctColumnIndices;
   }
@@ -361,20 +395,42 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "auto parallelism", normalExplain = false)
   public final boolean isAutoParallel() {
-    return (autoParallel != null) && autoParallel;
+    return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
   }
 
-  public final void setAutoParallel(final boolean autoParallel) {
+  public final EnumSet<ReducerTraits> getReducerTraits() {
+    return this.reduceTraits;
+  }
+
+  public final void setReducerTraits(EnumSet<ReducerTraits> traits) {
     // we don't allow turning on auto parallel once it has been
     // explicitly turned off. That is to avoid scenarios where
     // auto parallelism could break assumptions about number of
     // reducers or hash function.
-    if (this.autoParallel == null || this.autoParallel == true) {
-      this.autoParallel = autoParallel;
+
+    boolean wasUnset = this.reduceTraits.remove(ReducerTraits.UNSET);
+    
+    if (this.reduceTraits.contains(ReducerTraits.FIXED)) {
+      return;
+    } else if (traits.contains(ReducerTraits.FIXED)) {
+      this.reduceTraits.removeAll(EnumSet.of(
+          ReducerTraits.AUTOPARALLEL,
+          ReducerTraits.UNIFORM));
+      this.reduceTraits.addAll(traits);
+    } else {
+      this.reduceTraits.addAll(traits);
     }
   }
 
   public AcidUtils.Operation getWriteType() {
     return writeType;
+  }
+
+  public boolean isEnforceSort() {
+    return enforceSort;
+  }
+
+  public void setEnforceSort(boolean isDeduplicated) {
+    this.enforceSort = isDeduplicated;
   }
 }

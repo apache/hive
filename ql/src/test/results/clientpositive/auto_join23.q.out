@@ -1,8 +1,12 @@
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain 
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
 SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
 SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -26,9 +30,6 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 
                   1 
@@ -45,9 +46,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 
                   1 

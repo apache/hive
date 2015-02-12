@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE decimal_mapjoin STORED AS ORC AS 
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,

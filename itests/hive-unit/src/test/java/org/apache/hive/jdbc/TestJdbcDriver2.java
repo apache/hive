@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -104,6 +106,7 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
     Class.forName(driverName);
     Connection con1 = getConnection("default");
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE.varname, "" + true);
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -417,50 +420,18 @@ public class TestJdbcDriver2 {
 
     ///////////////////////////////////////////////
     //////////////////// correct testcase
+    //////////////////// executed twice: once with the typed ps setters, once with the generic setObject
     //////////////////////////////////////////////
     try {
-      PreparedStatement ps = con.prepareStatement(sql);
-
-      ps.setBoolean(1, true);
-      ps.setBoolean(2, true);
-
-      ps.setShort(3, Short.valueOf("1"));
-      ps.setInt(4, 2);
-      ps.setFloat(5, 3f);
-      ps.setDouble(6, Double.valueOf(4));
-      ps.setString(7, "test'string\"");
-      ps.setLong(8, 5L);
-      ps.setByte(9, (byte) 1);
-      ps.setByte(10, (byte) 1);
-      ps.setString(11, "2012-01-01");
-
-      ps.setMaxRows(2);
-
-      assertTrue(true);
-
+      PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
       ResultSet res = ps.executeQuery();
-      assertNotNull(res);
-
-      while (res.next()) {
-        assertEquals("2011-03-25", res.getString("ddate"));
-        assertEquals("10", res.getString("num"));
-        assertEquals((byte) 10, res.getByte("num"));
-        assertEquals("2011-03-25", res.getDate("ddate").toString());
-        assertEquals(Double.valueOf(10).doubleValue(), res.getDouble("num"), 0.1);
-        assertEquals(10, res.getInt("num"));
-        assertEquals(Short.valueOf("10").shortValue(), res.getShort("num"));
-        assertEquals(10L, res.getLong("num"));
-        assertEquals(true, res.getBoolean("bv"));
-        Object o = res.getObject("ddate");
-        assertNotNull(o);
-        o = res.getObject("num");
-        assertNotNull(o);
-      }
-      res.close();
-      assertTrue(true);
-
+      assertPreparedStatementResultAsExpected(res);
       ps.close();
-      assertTrue(true);
+
+      ps = createPreapredStatementUsingSetObject(sql);
+      res = ps.executeQuery();
+      assertPreparedStatementResultAsExpected(res);
+      ps.close();
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -515,6 +486,82 @@ public class TestJdbcDriver2 {
     assertNotNull(
         "Execute the invalid setted sql statement should throw exception",
         expectedException);
+
+    // setObject to the yet unknown type java.util.Date
+    expectedException = null;
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+      ps.setObject(1, new Date());
+      ps.executeQuery();
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    assertNotNull(
+        "Setting to an unknown type should throw an exception",
+        expectedException);
+
+  }
+
+  private PreparedStatement createPreapredStatementUsingSetObject(String sql) throws SQLException {
+    PreparedStatement ps = con.prepareStatement(sql);
+
+    ps.setObject(1, true); //setBoolean
+    ps.setObject(2, true); //setBoolean
+
+    ps.setObject(3, Short.valueOf("1")); //setShort
+    ps.setObject(4, 2); //setInt
+    ps.setObject(5, 3f); //setFloat
+    ps.setObject(6, Double.valueOf(4)); //setDouble
+    ps.setObject(7, "test'string\""); //setString
+    ps.setObject(8, 5L); //setLong
+    ps.setObject(9, (byte) 1); //setByte
+    ps.setObject(10, (byte) 1); //setByte
+    ps.setString(11, "2012-01-01"); //setString
+
+    ps.setMaxRows(2);
+    return ps;
+  }
+
+  private PreparedStatement createPreapredStatementUsingSetXXX(String sql) throws SQLException {
+    PreparedStatement ps = con.prepareStatement(sql);
+
+    ps.setBoolean(1, true); //setBoolean
+    ps.setBoolean(2, true); //setBoolean
+
+    ps.setShort(3, Short.valueOf("1")); //setShort
+    ps.setInt(4, 2); //setInt
+    ps.setFloat(5, 3f); //setFloat
+    ps.setDouble(6, Double.valueOf(4)); //setDouble
+    ps.setString(7, "test'string\""); //setString
+    ps.setLong(8, 5L); //setLong
+    ps.setByte(9, (byte) 1); //setByte
+    ps.setByte(10, (byte) 1); //setByte
+    ps.setString(11, "2012-01-01"); //setString
+
+    ps.setMaxRows(2);
+    return ps;
+  }
+
+  private void assertPreparedStatementResultAsExpected(ResultSet res ) throws SQLException {
+    assertNotNull(res);
+
+    while (res.next()) {
+      assertEquals("2011-03-25", res.getString("ddate"));
+      assertEquals("10", res.getString("num"));
+      assertEquals((byte) 10, res.getByte("num"));
+      assertEquals("2011-03-25", res.getDate("ddate").toString());
+      assertEquals(Double.valueOf(10).doubleValue(), res.getDouble("num"), 0.1);
+      assertEquals(10, res.getInt("num"));
+      assertEquals(Short.valueOf("10").shortValue(), res.getShort("num"));
+      assertEquals(10L, res.getLong("num"));
+      assertEquals(true, res.getBoolean("bv"));
+      Object o = res.getObject("ddate");
+      assertNotNull(o);
+      o = res.getObject("num");
+      assertNotNull(o);
+    }
+    res.close();
+    assertTrue(true);
   }
 
   /**
@@ -578,6 +625,12 @@ public class TestJdbcDriver2 {
   public final void testSelectAll() throws Exception {
     doTestSelectAll(tableName, -1, -1); // tests not setting maxRows (return all)
     doTestSelectAll(tableName, 0, -1); // tests setting maxRows to 0 (return all)
+  }
+
+  @Test
+  public final void testSelectAllFromView() throws Exception {
+    doTestSelectAll(viewName, -1, -1); // tests not setting maxRows (return all)
+    doTestSelectAll(viewName, 0, -1); // tests setting maxRows to 0 (return all)
   }
 
   @Test
@@ -875,17 +928,20 @@ public class TestJdbcDriver2 {
     assertEquals(
         "Unexpected column count", expectedColCount, meta.getColumnCount());
 
-    String colQualifier = ((tableName != null) && !tableName.isEmpty()) ? tableName.toLowerCase() + "."  : "";
     boolean moreRow = res.next();
     while (moreRow) {
       try {
         i++;
-        assertEquals(res.getInt(1), res.getInt(colQualifier + "under_col"));
-        assertEquals(res.getString(1), res.getString(colQualifier + "under_col"));
-        assertEquals(res.getString(2), res.getString(colQualifier + "value"));
+        assertEquals(res.getInt(1), res.getInt(tableName + ".under_col"));
+        assertEquals(res.getInt(1), res.getInt("under_col"));
+        assertEquals(res.getString(1), res.getString(tableName + ".under_col"));
+        assertEquals(res.getString(1), res.getString("under_col"));
+        assertEquals(res.getString(2), res.getString(tableName + ".value"));
+        assertEquals(res.getString(2), res.getString("value"));
         if (isPartitionTable) {
           assertEquals(res.getString(3), partitionedColumnValue);
-          assertEquals(res.getString(3), res.getString(colQualifier + partitionedColumnName));
+          assertEquals(res.getString(3), res.getString(partitionedColumnName));
+          assertEquals(res.getString(3), res.getString(tableName + "."+ partitionedColumnName));
         }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
@@ -1318,6 +1374,42 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testResultSetColumnNameCaseInsensitive() throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet res;
+
+    res = stmt.executeQuery("select c1 from " + dataTypeTableName + " limit 1");
+    try {
+      int count = 0;
+      while (res.next()) {
+        res.findColumn("c1");
+        res.findColumn("C1");
+        count++;
+      }
+      assertEquals(count, 1);
+    } catch (Exception e) {
+      String msg = "Unexpected exception: " + e;
+      LOG.info(msg, e);
+      fail(msg);
+    }
+
+    res = stmt.executeQuery("select c1 C1 from " + dataTypeTableName + " limit 1");
+    try {
+      int count = 0;
+      while (res.next()) {
+        res.findColumn("c1");
+        res.findColumn("C1");
+        count++;
+      }
+      assertEquals(count, 1);
+    } catch (Exception e) {
+      String msg = "Unexpected exception: " + e;
+      LOG.info(msg, e);
+      fail(msg);
+    }
+  }
+
+  @Test
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
 
@@ -1646,29 +1738,24 @@ public class TestJdbcDriver2 {
   }
 
   private static final String[][] HTTP_URL_PROPERTIES = new String[][] {
-    {"jdbc:hive2://server:10002/db;" +
-        "user=foo;password=bar?" +
-        "hive.server2.transport.mode=http;" +
-        "hive.server2.thrift.http.path=hs2", "server", "10002", "db", "http", "hs2"},
-        {"jdbc:hive2://server:10000/testdb;" +
-            "user=foo;password=bar?" +
-            "hive.server2.transport.mode=binary;" +
-            "hive.server2.thrift.http.path=", "server", "10000", "testdb", "binary", ""},
-  };
+      { "jdbc:hive2://server:10002/db;user=foo;password=bar;transportMode=http;httpPath=hs2",
+          "server", "10002", "db", "http", "hs2" },
+      { "jdbc:hive2://server:10000/testdb;user=foo;password=bar;transportMode=binary;httpPath=",
+          "server", "10000", "testdb", "binary", "" }, };
 
-  @Test
-  public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
-      ZooKeeperHiveClientException {
-    new HiveDriver();
-    for (String[] testValues : HTTP_URL_PROPERTIES) {
-      JdbcConnectionParams params = Utils.parseURL(testValues[0]);
-      assertEquals(params.getHost(), testValues[1]);
-      assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
-      assertEquals(params.getDbName(), testValues[3]);
-      assertEquals(params.getHiveConfs().get("hive.server2.transport.mode"), testValues[4]);
-      assertEquals(params.getHiveConfs().get("hive.server2.thrift.http.path"), testValues[5]);
-    }
+@Test
+public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
+    ZooKeeperHiveClientException {
+  new HiveDriver();
+  for (String[] testValues : HTTP_URL_PROPERTIES) {
+    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+    assertEquals(params.getHost(), testValues[1]);
+    assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
+    assertEquals(params.getDbName(), testValues[3]);
+    assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
+    assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
   }
+}
 
   private static void assertDpi(DriverPropertyInfo dpi, String name,
       String value) {
@@ -1729,6 +1816,7 @@ public class TestJdbcDriver2 {
     ResultSet rs = stmt.executeQuery("SELECT 1 AS a, 2 AS a from " + tableName);
     assertTrue(rs.next());
     assertEquals(1, rs.getInt("a"));
+    rs.close();
   }
 
 
@@ -1769,7 +1857,7 @@ public class TestJdbcDriver2 {
         + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "_c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");
@@ -2129,5 +2217,83 @@ public class TestJdbcDriver2 {
       // no-op
     }
     stmt.close();
+  }
+
+  /**
+   * Test getting query log method in Jdbc
+   * @throws Exception
+   */
+  @Test
+  public void testGetQueryLog() throws Exception {
+    // Prepare
+    String[] expectedLogs = {
+        "Parsing command",
+        "Parse Completed",
+        "Starting Semantic Analysis",
+        "Semantic Analysis Completed",
+        "Starting command"
+    };
+    String sql = "select count(*) from " + tableName;
+
+    // Verify the fetched log (from the beginning of log file)
+    HiveStatement stmt = (HiveStatement)con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    stmt.executeQuery(sql);
+    List<String> logs = stmt.getQueryLog(false, 10000);
+    stmt.close();
+    verifyFetchedLog(logs, expectedLogs);
+
+    // Verify the fetched log (incrementally)
+    final HiveStatement statement = (HiveStatement)con.createStatement();
+    assertNotNull("Statement is null", statement);
+    statement.setFetchSize(10000);
+    final List<String> incrementalLogs = new ArrayList<String>();
+
+    Runnable logThread = new Runnable() {
+      @Override
+      public void run() {
+        while (statement.hasMoreLogs()) {
+          try {
+            incrementalLogs.addAll(statement.getQueryLog());
+            Thread.sleep(500);
+          } catch (SQLException e) {
+            LOG.error("Failed getQueryLog. Error message: " + e.getMessage());
+            fail("error in getting log thread");
+          } catch (InterruptedException e) {
+            LOG.error("Getting log thread is interrupted. Error message: " + e.getMessage());
+            fail("error in getting log thread");
+          }
+        }
+      }
+    };
+
+    Thread thread = new Thread(logThread);
+    thread.setDaemon(true);
+    thread.start();
+    statement.executeQuery(sql);
+    thread.interrupt();
+    thread.join(10000);
+    // fetch remaining logs
+    List<String> remainingLogs;
+    do {
+      remainingLogs = statement.getQueryLog();
+      incrementalLogs.addAll(remainingLogs);
+    } while (remainingLogs.size() > 0);
+    statement.close();
+
+    verifyFetchedLog(incrementalLogs, expectedLogs);
+  }
+
+  private void verifyFetchedLog(List<String> logs, String[] expectedLogs) {
+    StringBuilder stringBuilder = new StringBuilder();
+
+    for (String log : logs) {
+      stringBuilder.append(log);
+    }
+
+    String accumulatedLogs = stringBuilder.toString();
+    for (String expectedLog : expectedLogs) {
+      assertTrue(accumulatedLogs.contains(expectedLog));
+    }
   }
 }

@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import java.sql.Timestamp;
 
 class ColumnStatisticsImpl implements ColumnStatistics {
 
@@ -394,7 +394,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (str.minimum != null) {
         if (minimum.compareTo(str.minimum) > 0) {
           minimum = new Text(str.getMinimum());
-        } else if (maximum.compareTo(str.maximum) < 0) {
+        }
+        if (maximum.compareTo(str.maximum) < 0) {
           maximum = new Text(str.getMaximum());
         }
       }
@@ -563,7 +564,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (dec.minimum != null) {
         if (minimum.compareTo(dec.minimum) > 0) {
           minimum = dec.minimum;
-        } else if (maximum.compareTo(dec.maximum) < 0) {
+        }
+        if (maximum.compareTo(dec.maximum) < 0) {
           maximum = dec.maximum;
         }
         if (sum == null || dec.sum == null) {
@@ -671,7 +673,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (dateStats.minimum != null) {
         if (minimum > dateStats.minimum) {
           minimum = dateStats.minimum;
-        } else if (maximum < dateStats.maximum) {
+        }
+        if (maximum < dateStats.maximum) {
           maximum = dateStats.maximum;
         }
       }
@@ -767,7 +770,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (timestampStats.minimum != null) {
         if (minimum > timestampStats.minimum) {
           minimum = timestampStats.minimum;
-        } else if (maximum < timestampStats.maximum) {
+        }
+        if (maximum < timestampStats.maximum) {
           maximum = timestampStats.maximum;
         }
       }
@@ -812,10 +816,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
   }
 
   private long count = 0;
+  private boolean hasNull = false;
 
   ColumnStatisticsImpl(OrcProto.ColumnStatistics stats) {
     if (stats.hasNumberOfValues()) {
       count = stats.getNumberOfValues();
+    }
+
+    if (stats.hasHasNull()) {
+      hasNull = stats.getHasNull();
     }
   }
 
@@ -824,6 +833,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void increment() {
     count += 1;
+  }
+
+  void setNull() {
+    hasNull = true;
   }
 
   void updateBoolean(boolean value) {
@@ -860,10 +873,12 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void merge(ColumnStatisticsImpl stats) {
     count += stats.count;
+    hasNull |= stats.hasNull;
   }
 
   void reset() {
     count = 0;
+    hasNull = false;
   }
 
   @Override
@@ -872,14 +887,20 @@ class ColumnStatisticsImpl implements ColumnStatistics {
   }
 
   @Override
+  public boolean hasNull() {
+    return hasNull;
+  }
+
+  @Override
   public String toString() {
-    return "count: " + count;
+    return "count: " + count + " hasNull: " + hasNull;
   }
 
   OrcProto.ColumnStatistics.Builder serialize() {
     OrcProto.ColumnStatistics.Builder builder =
       OrcProto.ColumnStatistics.newBuilder();
     builder.setNumberOfValues(count);
+    builder.setHasNull(hasNull);
     return builder;
   }
 

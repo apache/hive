@@ -3245,7 +3245,7 @@ class TOpenSessionReq:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'client_protocol', None,     5, ), # 1
+    (1, TType.I32, 'client_protocol', None,     6, ), # 1
     (2, TType.STRING, 'username', None, None, ), # 2
     (3, TType.STRING, 'password', None, None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
@@ -3354,7 +3354,7 @@ class TOpenSessionResp:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
-    (2, TType.I32, 'serverProtocolVersion', None,     5, ), # 2
+    (2, TType.I32, 'serverProtocolVersion', None,     6, ), # 2
     (3, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
   )

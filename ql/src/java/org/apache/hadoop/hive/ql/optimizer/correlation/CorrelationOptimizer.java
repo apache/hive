@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -59,9 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.physical.CommonJoinTaskDispatcher;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -107,7 +107,7 @@ public class CorrelationOptimizer implements Transform {
     // that has both intermediate tables and query input tables as input tables,
     // we should be able to guess if this JoinOperator will be converted to a MapJoin
     // based on hive.auto.convert.join.noconditionaltask.size.
-    for (JoinOperator joinOp: pCtx.getJoinContext().keySet()) {
+    for (JoinOperator joinOp: pCtx.getJoinOps()) {
       boolean isAbleToGuess = true;
       boolean mayConvert = false;
       // Get total size and individual alias's size
@@ -124,7 +124,7 @@ public class CorrelationOptimizer implements Transform {
 
         Set<String> aliases = new LinkedHashSet<String>();
         for (TableScanOperator tsop : topOps) {
-          Table table = pCtx.getTopToTable().get(tsop);
+          Table table = tsop.getConf().getTableMetadata();
           if (table == null) {
             // table should not be null.
             throw new SemanticException("The table of " +
@@ -387,17 +387,16 @@ public class CorrelationOptimizer implements Transform {
         List<ExprNodeDesc> backtrackedPartitionCols =
             ExprNodeDescUtils.backtrack(childPartitionCols, child, current);
 
-        OpParseContext opCtx = pCtx.getOpParseCtx().get(current);
-        RowResolver rowResolver = opCtx.getRowResolver();
+        RowSchema rowSchema = current.getSchema();
         Set<String> tableNeedToCheck = new HashSet<String>();
         for (ExprNodeDesc expr: childKeyCols) {
           if (!(expr instanceof ExprNodeColumnDesc)) {
             return correlatedReduceSinkOperators;
           }
           String colName = ((ExprNodeColumnDesc)expr).getColumn();
-          String[] nm = rowResolver.reverseLookup(colName);
-          if (nm != null) {
-            tableNeedToCheck.add(nm[0]);
+          ColumnInfo columnInfo = rowSchema.getColumnInfo(colName);
+          if (columnInfo != null) {
+            tableNeedToCheck.add(columnInfo.getTabAlias());
           }
         }
         if (current instanceof JoinOperator) {
@@ -405,8 +404,7 @@ public class CorrelationOptimizer implements Transform {
           int expectedNumCorrelatedRsops = current.getParentOperators().size();
           LinkedHashSet<ReduceSinkOperator> correlatedRsops = null;
           for (Operator<? extends OperatorDesc> parent : current.getParentOperators()) {
-            Set<String> tableNames =
-                pCtx.getOpParseCtx().get(parent).getRowResolver().getTableNames();
+            Set<String> tableNames = parent.getSchema().getTableNames();
             for (String tbl : tableNames) {
               if (tableNeedToCheck.contains(tbl)) {
                 correlatedRsops = findCorrelatedReduceSinkOperators(current,

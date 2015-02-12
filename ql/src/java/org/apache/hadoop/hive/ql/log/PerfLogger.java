@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.log;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PerfLogger.
@@ -64,6 +64,19 @@ public class PerfLogger {
   public static final String TEZ_INIT_OPERATORS = "TezInitializeOperators";
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String ORC_GET_SPLITS = "OrcGetSplits";
+
+  public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
+  public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
+  public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
+  public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
+  public static final String SPARK_RUN_JOB = "SparkRunJob";
+  public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";
+  public static final String SPARK_RUN_STAGE = "SparkRunStage.";
+  public static final String SPARK_INIT_OPERATORS = "SparkInitializeOperators";
+  public static final String SPARK_GENERATE_TASK_TREE = "SparkGenerateTaskTree";
+  public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
+  public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
+  public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
@@ -147,10 +160,37 @@ public class PerfLogger {
   }
 
   public Long getStartTime(String method) {
-    return startTimes.get(method);
+    long startTime = 0L;
+
+    if (startTimes.containsKey(method)) {
+      startTime = startTimes.get(method);
+    }
+    return startTime;
   }
 
   public Long getEndTime(String method) {
-    return endTimes.get(method);
+    long endTime = 0L;
+
+    if (endTimes.containsKey(method)) {
+      endTime = endTimes.get(method);
+    }
+    return endTime;
   }
+
+  public boolean startTimeHasMethod(String method) {
+    return startTimes.containsKey(method);
+  }
+
+  public boolean endTimeHasMethod(String method) {
+    return endTimes.containsKey(method);
+  }
+
+  public Long getDuration(String method) {
+    long duration = 0;
+    if (startTimes.containsKey(method) && endTimes.containsKey(method)) {
+      duration = endTimes.get(method) - startTimes.get(method);
+    }
+    return duration;
+  }
+
 }

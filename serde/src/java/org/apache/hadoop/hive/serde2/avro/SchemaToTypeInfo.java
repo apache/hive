@@ -108,8 +108,8 @@ class SchemaToTypeInfo {
   public static TypeInfo generateTypeInfo(Schema schema) throws AvroSerdeException {
     // For bytes type, it can be mapped to decimal.
     Schema.Type type = schema.getType();
-    if (type == Schema.Type.BYTES &&
-        AvroSerDe.DECIMAL_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+    if (type == BYTES && AvroSerDe.DECIMAL_TYPE_NAME
+      .equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
       int precision = 0;
       int scale = 0;
       try {
@@ -126,6 +126,38 @@ class SchemaToTypeInfo {
       }
 
       return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
+    }
+
+    if (type == STRING &&
+      AvroSerDe.CHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      int maxLength = 0;
+      try {
+        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+      }
+      return TypeInfoFactory.getCharTypeInfo(maxLength);
+    }
+
+    if (type == STRING && AvroSerDe.VARCHAR_TYPE_NAME
+      .equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      int maxLength = 0;
+      try {
+        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
+      } catch (Exception ex) {
+        throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+      }
+      return TypeInfoFactory.getVarcharTypeInfo(maxLength);
+    }
+
+    if (type == INT &&
+      AvroSerDe.DATE_TYPE_NAME.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      return TypeInfoFactory.dateTypeInfo;
+    }
+
+    if (type == LONG &&
+      AvroSerDe.TIMESTAMP_TYPE_NAME.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      return TypeInfoFactory.timestampTypeInfo;
     }
 
     return typeInfoCache.retrieve(schema);

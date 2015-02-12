@@ -1,7 +1,11 @@
-PREHOOK: query: explain
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -25,10 +29,6 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 
@@ -45,10 +45,6 @@ STAGE PLANS:
               predicate: (key > 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
-                  2 {key} {value}
                 filter predicates:
                   0 {(key < 10)}
                   1 
@@ -68,10 +64,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Right Outer Join1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               filter predicates:
                 0 {(key < 10)}
                 1 

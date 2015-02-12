@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.JobConf;
@@ -92,8 +93,11 @@ public class TestTezTask {
     path = mock(Path.class);
     when(path.getFileSystem(any(Configuration.class))).thenReturn(fs);
     when(utils.getTezDir(any(Path.class))).thenReturn(path);
-    when(utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class), any(LocalResource.class),
-        any(List.class), any(FileSystem.class), any(Context.class), anyBoolean(), any(TezWork.class))).thenAnswer(new Answer<Vertex>() {
+    when(
+        utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class),
+            any(LocalResource.class), any(List.class), any(FileSystem.class), any(Context.class),
+            anyBoolean(), any(TezWork.class), any(VertexType.class))).thenAnswer(
+        new Answer<Vertex>() {
 
           @Override
           public Vertex answer(InvocationOnMock invocation) throws Throwable {
@@ -103,8 +107,8 @@ public class TestTezTask {
           }
         });
 
-    when(utils.createEdge(any(JobConf.class), any(Vertex.class),
-        any(Vertex.class), any(TezEdgeProperty.class))).thenAnswer(new Answer<Edge>() {
+    when(utils.createEdge(any(JobConf.class), any(Vertex.class), any(Vertex.class),
+            any(TezEdgeProperty.class), any(VertexType.class))).thenAnswer(new Answer<Edge>() {
 
           @Override
           public Edge answer(InvocationOnMock invocation) throws Throwable {
@@ -210,7 +214,7 @@ public class TestTezTask {
         new String[0], Collections.<String,LocalResource> emptyMap());
     // validate close/reopen
     verify(sessionState, times(1)).open(any(HiveConf.class), any(String[].class));
-    verify(sessionState, times(1)).close(eq(false));  // now uses pool after HIVE-7043
+    verify(sessionState, times(1)).close(eq(true)); // now uses pool after HIVE-7043
     verify(session, times(2)).submitDAG(any(DAG.class));
   }
 

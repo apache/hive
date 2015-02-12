@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -56,6 +56,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public class TestOrcRawRecordMerger {
@@ -300,7 +301,7 @@ public class TestOrcRawRecordMerger {
   }
 
   private static ValidTxnList createMaximalTxnList() {
-    return new ValidTxnListImpl(Long.MAX_VALUE + ":");
+    return new ValidReadTxnList(Long.MAX_VALUE + ":");
   }
 
   @Test
@@ -491,7 +492,7 @@ public class TestOrcRawRecordMerger {
         .maximumTransactionId(100);
     of.getRecordUpdater(root, options).close(false);
 
-    ValidTxnList txnList = new ValidTxnListImpl("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:");
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -549,7 +550,7 @@ public class TestOrcRawRecordMerger {
     ru.delete(200, new MyRow("", 8, 0, BUCKET));
     ru.close(false);
 
-    ValidTxnList txnList = new ValidTxnListImpl("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:");
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
@@ -574,12 +575,14 @@ public class TestOrcRawRecordMerger {
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 0, 200), id);
     assertEquals("update 1", getValue(event));
+    assertFalse(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 1, 0), id);
     assertEquals("second", getValue(event));
+    assertFalse(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.UPDATE_OPERATION,
@@ -616,6 +619,7 @@ public class TestOrcRawRecordMerger {
         OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET, 7, 200), id);
     assertNull(OrcRecordUpdater.getRow(event));
+    assertTrue(merger.isDelete(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
@@ -730,7 +734,7 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidTxnList txns = new ValidTxnListImpl("2000:200");
+    ValidTxnList txns = new ValidReadTxnList("2000:200");
     merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             txns, new Reader.Options(),

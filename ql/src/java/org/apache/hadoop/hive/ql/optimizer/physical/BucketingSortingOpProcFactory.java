@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -45,6 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -486,49 +486,13 @@ public class BucketingSortingOpProcFactory {
 
   }
 
-  /**
-   * Processor for Extract operator.
-   *
-   * Only handles the case where the tree looks like
-   *
-   * ReduceSinkOperator --- ExtractOperator
-   *
-   * This is the case for distribute by, sort by, order by, cluster by operators.
-   */
-  public static class ExtractInferrer extends DefaultInferrer implements NodeProcessor {
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
-      ExtractOperator exop = (ExtractOperator)nd;
-
-      // As of writing this, there is no case where this could be false, this is just protection
-      // from possible future changes
-      if (exop.getParentOperators().size() != 1) {
-        return null;
-      }
-
-      Operator<? extends OperatorDesc> parent = exop.getParentOperators().get(0);
-
-      // The caller of this method should guarantee this
-      if (parent instanceof ReduceSinkOperator) {
-        extractTraits(bctx, (ReduceSinkOperator)parent, exop);
-      }
-
-      return null;
-    }
-  }
-
-  static void extractTraits(BucketingSortingCtx bctx, ReduceSinkOperator rop, Operator<?> exop)
+  static void extractTraits(BucketingSortingCtx bctx, ReduceSinkOperator rop, Operator<?> childop)
       throws SemanticException {
 
     List<ExprNodeDesc> outputValues = Collections.emptyList();
-    if (exop instanceof ExtractOperator) {
-      outputValues = rop.getConf().getValueCols();
-    } else if (exop instanceof SelectOperator) {
-      SelectDesc select = ((SelectOperator)exop).getConf();
-      outputValues = ExprNodeDescUtils.backtrack(select.getColList(), exop, rop);
+    if (childop instanceof SelectOperator) {
+      SelectDesc select = ((SelectOperator)childop).getConf();
+      outputValues = ExprNodeDescUtils.backtrack(select.getColList(), childop, rop);
     }
     if (outputValues.isEmpty()) {
       return;
@@ -542,16 +506,16 @@ public class BucketingSortingOpProcFactory {
     // These represent the sorted columns
     List<SortCol> sortCols = extractSortCols(rop, outputValues);
 
-    List<ColumnInfo> colInfos = exop.getSchema().getSignature();
+    List<ColumnInfo> colInfos = childop.getSchema().getSignature();
 
     if (!bucketCols.isEmpty()) {
       List<BucketCol> newBucketCols = getNewBucketCols(bucketCols, colInfos);
-      bctx.setBucketedCols(exop, newBucketCols);
+      bctx.setBucketedCols(childop, newBucketCols);
     }
 
     if (!sortCols.isEmpty()) {
       List<SortCol> newSortCols = getNewSortCols(sortCols, colInfos);
-      bctx.setSortedCols(exop, newSortCols);
+      bctx.setSortedCols(childop, newSortCols);
     }
   }
 
@@ -669,7 +633,7 @@ public class BucketingSortingOpProcFactory {
 
       processGroupByReduceSink((ReduceSinkOperator) rop, gop, bctx);
 
-      return processGroupBy((ReduceSinkOperator)rop , gop, bctx);
+      return processGroupBy(rop , gop, bctx);
     }
 
     /**
@@ -683,12 +647,16 @@ public class BucketingSortingOpProcFactory {
     protected void processGroupByReduceSink(ReduceSinkOperator rop, GroupByOperator gop,
         BucketingSortingCtx bctx){
 
+      GroupByDesc groupByDesc = gop.getConf();
       String sortOrder = rop.getConf().getOrder();
       List<BucketCol> bucketCols = new ArrayList<BucketCol>();
       List<SortCol> sortCols = new ArrayList<SortCol>();
       assert rop.getConf().getKeyCols().size() <= rop.getSchema().getSignature().size();
       // Group by operators select the key cols, so no need to find them in the values
       for (int i = 0; i < rop.getConf().getKeyCols().size(); i++) {
+        if (groupByDesc.pruneGroupingSetId() && groupByDesc.getGroupingSetPosition() == i) {
+          continue;
+        }
         String colName = rop.getSchema().getSignature().get(i).getInternalName();
         bucketCols.add(new BucketCol(colName, i));
         sortCols.add(new SortCol(colName, i, sortOrder.charAt(i)));
@@ -771,10 +739,6 @@ public class BucketingSortingOpProcFactory {
 
   public static NodeProcessor getFileSinkProc() {
     return new FileSinkInferrer();
-  }
-
-  public static NodeProcessor getExtractProc() {
-    return new ExtractInferrer();
   }
 
   public static NodeProcessor getFilterProc() {

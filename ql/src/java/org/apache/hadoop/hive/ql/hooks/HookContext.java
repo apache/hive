@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 /**
  * Hook Context keeps all the necessary information for all the hooks.
@@ -61,7 +62,7 @@ public class HookContext {
     completeTaskList = new ArrayList<TaskRunner>();
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+    ugi = Utils.getUGI();
     linfo= null;
     if(SessionState.get() != null){
       linfo = SessionState.get().getLineageState().getLineageInfo();
@@ -147,7 +148,7 @@ public class HookContext {
  }
 
   public String getOperationName() {
-    return SessionState.get().getHiveOperation().name();
+    return queryPlan.getOperationName();
   }
 
   public String getUserName() {

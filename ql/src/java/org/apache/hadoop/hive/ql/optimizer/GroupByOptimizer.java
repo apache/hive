@@ -304,7 +304,7 @@ public class GroupByOptimizer implements Transform {
       // Create a mapping from the group by columns to the table columns
       Map<String, String> tableColsMapping = new HashMap<String, String>();
       Set<String> constantCols = new HashSet<String>();
-      Table table = pGraphContext.getTopToTable().get(currOp);
+      Table table = tableScanOp.getConf().getTableMetadata();
       for (FieldSchema col : table.getAllCols()) {
         tableColsMapping.put(col.getName(), col.getName());
       }
@@ -332,17 +332,25 @@ public class GroupByOptimizer implements Transform {
               continue;
             }
 
-            ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
-            if (selectColList instanceof ExprNodeColumnDesc) {
+            ExprNodeDesc selectCol = selectDesc.getColList().get(pos);
+            if (selectCol instanceof ExprNodeColumnDesc) {
               String newValue =
-                  tableColsMapping.get(((ExprNodeColumnDesc) selectColList).getColumn());
+                  tableColsMapping.get(((ExprNodeColumnDesc) selectCol).getColumn());
               tableColsMapping.put(outputColumnName, newValue);
             }
             else {
               tableColsMapping.remove(outputColumnName);
-              if ((selectColList instanceof ExprNodeConstantDesc) ||
-                  (selectColList instanceof ExprNodeNullDesc)) {
+              if (selectCol instanceof ExprNodeNullDesc) {
                 newConstantCols.add(outputColumnName);
+              }
+              if (selectCol instanceof ExprNodeConstantDesc) {
+                // Lets see if this constant was folded because of optimization.
+                String origCol = ((ExprNodeConstantDesc) selectCol).getFoldedFromCol();
+                if (origCol != null) {
+                  tableColsMapping.put(outputColumnName, origCol);
+                } else {
+                  newConstantCols.add(outputColumnName);
+                }
               }
             }
           }
@@ -351,7 +359,6 @@ public class GroupByOptimizer implements Transform {
         }
       }
 
-      boolean sortGroupBy = true;
       // compute groupby columns from groupby keys
       List<String> groupByCols = new ArrayList<String>();
       // If the group by expression is anything other than a list of columns,

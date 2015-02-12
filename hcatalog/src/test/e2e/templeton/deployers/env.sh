@@ -22,15 +22,29 @@
 
 # define necessary env vars here and source it in other files
 
-export HADOOP_VERSION=2.4.1-SNAPSHOT
-export HIVE_VERSION=0.14.0-SNAPSHOT
-export PIG_VERSION=0.12.2-SNAPSHOT
+echo ${HADOOP_VERSION};
+
+if [ -z ${HADOOP_VERSION} ]; then
+  export HADOOP_VERSION=2.4.1-SNAPSHOT
+fi
+
+if [ -z ${HIVE_VERSION} ]; then
+  export HIVE_VERSION=0.14.0-SNAPSHOT
+fi
+
+if [ -z ${PIG_VERSION} ]; then
+  export PIG_VERSION=0.12.2-SNAPSHOT
+fi
 
 #Root of project source tree
-export PROJ_HOME=/Users/${USER}/dev/hive
+if [ -z ${PROJ_HOME} ]; then
+  export PROJ_HOME=/Users/${USER}/dev/hive
+fi
 export HIVE_HOME=${PROJ_HOME}/packaging/target/apache-hive-${HIVE_VERSION}-bin/apache-hive-${HIVE_VERSION}-bin
-export HADOOP_HOME=/Users/${USER}/dev/hwxhadoop/hadoop-dist/target/hadoop-${HADOOP_VERSION}
-#export SQOOP_HOME=/
+
+if [ -z ${HADOOP_HOME} ]; then
+  export HADOOP_HOME=/Users/${USER}/dev/hwxhadoop/hadoop-dist/target/hadoop-${HADOOP_VERSION}
+fi
 
 #Make sure Pig is built for the Hadoop version you are running
 export PIG_TAR_PATH=/Users/${USER}/dev/pig-${PIG_VERSION}-src/build

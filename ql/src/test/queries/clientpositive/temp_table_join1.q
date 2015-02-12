@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE src_nontemp AS SELECT * FROM src limit 10;
 CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src limit 10;

@@ -147,6 +147,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_table_with_environment_context\n");
   }
 
+  void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) {
+    // Your implementation goes here
+    printf("alter_table_with_cascade\n");
+  }
+
   void add_partition(Partition& _return, const Partition& new_part) {
     // Your implementation goes here
     printf("add_partition\n");
@@ -600,6 +605,21 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
     // Your implementation goes here
     printf("show_compact\n");
+  }
+
+  void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
+    // Your implementation goes here
+    printf("get_next_notification\n");
+  }
+
+  void get_current_notificationEventId(CurrentNotificationEventId& _return) {
+    // Your implementation goes here
+    printf("get_current_notificationEventId\n");
+  }
+
+  void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
+    // Your implementation goes here
+    printf("fire_listener_event\n");
   }
 
 };

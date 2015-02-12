@@ -1,11 +1,13 @@
 /**
- * Copyright (c) Microsoft Corporation
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,7 +30,7 @@ import org.junit.Test;
 
 
 /**
- * This code was originally written for Microsoft PolyBase.
+ * This code was based on code from Microsoft's PolyBase.
  */
 
 public class TestDecimal128 {
@@ -811,7 +813,7 @@ public class TestDecimal128 {
     assertEquals("0.00923076923", d2.getHiveDecimalString());
 
     Decimal128 d3 = new Decimal128("0.00923076000", (short) 15);
-    assertEquals("0.00923076000", d3.getHiveDecimalString());
+    assertEquals("0.00923076", d3.getHiveDecimalString());
 
     Decimal128 d4 = new Decimal128("4294967296.01", (short) 15);
     assertEquals("4294967296.01", d4.getHiveDecimalString());
@@ -849,37 +851,15 @@ public class TestDecimal128 {
     d11.update(hd6.bigDecimalValue());
     assertEquals(hd6.toString(), d11.getHiveDecimalString());
 
-    // The trailing zeros from a double value are trimmed automatically
-    // by the double data type
     Decimal128 d12 = new Decimal128(27.000, (short)3);
-    HiveDecimal hd7 = HiveDecimal.create(new BigDecimal("27.0"));
+    HiveDecimal hd7 = HiveDecimal.create(new BigDecimal("27.000"));
     assertEquals(hd7.toString(), d12.getHiveDecimalString());
-    assertEquals("27.0", d12.getHiveDecimalString());
+    assertEquals("27", d12.getHiveDecimalString());
 
     Decimal128 d13 = new Decimal128(1234123000, (short)3);
     HiveDecimal hd8 = HiveDecimal.create(new BigDecimal("1234123000"));
     assertEquals(hd8.toString(), d13.getHiveDecimalString());
     assertEquals("1234123000", d13.getHiveDecimalString());
-
-    Decimal128 d14 = new Decimal128(1.33e4, (short)10);
-    HiveDecimal hd9 = HiveDecimal.create(new BigDecimal("1.33e4"));
-    assertEquals(hd9.toString(), d14.getHiveDecimalString());
-    assertEquals("13300", d14.getHiveDecimalString());
-
-    Decimal128 d15 = new Decimal128(1.33e-4, (short)10);
-    HiveDecimal hd10 = HiveDecimal.create(new BigDecimal("1.33e-4"));
-    assertEquals(hd10.toString(), d15.getHiveDecimalString());
-    assertEquals("0.000133", d15.getHiveDecimalString());
-
-    Decimal128 d16 = new Decimal128("1.33e4", (short)10);
-    HiveDecimal hd11 = HiveDecimal.create(new BigDecimal("1.33e4"));
-    assertEquals(hd11.toString(), d16.getHiveDecimalString());
-    assertEquals("13300", d16.getHiveDecimalString());
-
-    Decimal128 d17 = new Decimal128("1.33e-4", (short)10);
-    HiveDecimal hd12 = HiveDecimal.create(new BigDecimal("1.33e-4"));
-    assertEquals(hd12.toString(), d17.getHiveDecimalString());
-    assertEquals("0.000133", d17.getHiveDecimalString());
   }
 
   @Test

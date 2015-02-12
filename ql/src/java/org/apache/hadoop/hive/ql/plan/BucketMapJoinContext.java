@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,6 +175,33 @@ public class BucketMapJoinContext implements Serializable {
   public void setBigTablePartSpecToFileMapping(
       Map<String, List<String>> bigTablePartSpecToFileMapping) {
     this.bigTablePartSpecToFileMapping = bigTablePartSpecToFileMapping;
+  }
+
+  /**
+   * Given a small table input file, find the mapping
+   * big table input file with the smallest bucket number.
+   */
+  public String getMappingBigFile(String alias, String smallFile) {
+    HashSet<String> bigFiles = new HashSet<String>();
+    Map<String, List<String>> mapping = aliasBucketFileNameMapping.get(alias);
+    for (Map.Entry<String, List<String>> entry: mapping.entrySet()) {
+      if (entry.getValue().contains(smallFile)) {
+        bigFiles.add(entry.getKey());
+      }
+    }
+    // There could be several big table input files
+    // mapping to the same small input file.
+    // Find that one with the lowest bucket id.
+    int bucketId = Integer.MAX_VALUE;
+    String bigFile = null;
+    for (String f: bigFiles) {
+      int id = bucketFileNameMapping.get(f);
+      if (id < bucketId) {
+        bucketId = id;
+        bigFile = f;
+      }
+    }
+    return bigFile;
   }
 
   // returns fileId for SMBJoin, which consists part of result file name

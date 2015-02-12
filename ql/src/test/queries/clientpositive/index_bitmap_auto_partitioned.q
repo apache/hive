@@ -1,4 +1,5 @@
 set hive.stats.dbclass=fs;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 

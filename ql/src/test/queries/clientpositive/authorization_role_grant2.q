@@ -20,6 +20,7 @@ show principals src_role_wadmin;
 
 set user.name=user2;
 set role src_role_WadMin;
+show principals src_role_wadmin;
 -- grant role to another user
 grant src_Role_wadmin to user user3;
 

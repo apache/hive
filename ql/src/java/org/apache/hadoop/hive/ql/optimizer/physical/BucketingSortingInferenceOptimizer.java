@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
@@ -103,7 +102,7 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", SelectOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getSelProc());
-      // Matches only GroupByOpeartors which are reducers, rather than map group by operators,
+      // Matches only GroupByOperators which are reducers, rather than map group by operators,
       // or multi group by optimization specific operators
       opRules.put(new RuleExactMatch("R2", GroupByOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getGroupByProc());
@@ -112,9 +111,6 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
           BucketingSortingOpProcFactory.getJoinProc());
       opRules.put(new RuleRegExp("R5", FileSinkOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getFileSinkProc());
-      // Matches only ExtractOperators which are reducers
-      opRules.put(new RuleExactMatch("R6", ExtractOperator.getOperatorName() + "%"),
-          BucketingSortingOpProcFactory.getExtractProc());
       opRules.put(new RuleRegExp("R7", FilterOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getFilterProc());
       opRules.put(new RuleRegExp("R8", LimitOperator.getOperatorName() + "%"),

@@ -1,0 +1,1854 @@
+PREHOOK: query: drop table ss
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ss
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table ss_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ss_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table ss_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ss_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table ss_part_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ss_part_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ss (
+ss_sold_date_sk int,
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ss
+POSTHOOK: query: create table ss (
+ss_sold_date_sk int,
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ss
+PREHOOK: query: create table ss_part (
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+partitioned by (ss_sold_date_sk int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: create table ss_part (
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+partitioned by (ss_sold_date_sk int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ss_part
+PREHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ss
+POSTHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ss
+PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss
+                  Statistics: Num rows: 46 Data size: 553 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: float), _col2 (type: float)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: float), KEY._col2 (type: float)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: float), _col2 (type: float), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.ss_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ss_part
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	151                 
+	totalSize           	162                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+2.1	-2026.3	2452617
+2.99	-11.32	2452617
+85.8	25.61	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+7412.83	2071.68	2452617
+10022.63	3952.8	2452617
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	186                 
+	totalSize           	199                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+0.15	-241.22	2452638
+150.39	-162.12	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
+1327.08	57.97	2452638
+1413.19	178.08	2452638
+1524.33	494.37	2452638
+1971.35	-488.25	2452638
+4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
+10171.1	660.48	2452638
+PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss
+                  Statistics: Num rows: 46 Data size: 553 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: int)
+                        Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ss_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ss_part
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	151                 
+	totalSize           	162                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+10022.63	3952.8	2452617
+2.99	-11.32	2452617
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+565.92	196.48	2452617
+85.8	25.61	2452617
+7412.83	2071.68	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+552.96	-1363.84	2452617
+2.1	-2026.3	2452617
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	186                 
+	totalSize           	199                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+4329.49	-4000.51	2452638
+1413.19	178.08	2452638
+150.39	-162.12	2452638
+1524.33	494.37	2452638
+0.15	-241.22	2452638
+267.01	-3266.36	2452638
+181.03	-207.24	2452638
+1971.35	-488.25	2452638
+1327.08	57.97	2452638
+156.67	-4626.56	2452638
+317.87	-3775.38	2452638
+10171.1	660.48	2452638
+4133.98	-775.72	2452638
+PREHOOK: query: -- SORT DYNAMIC PARTITION DISABLED
+
+explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT DYNAMIC PARTITION DISABLED
+
+explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss
+                  Statistics: Num rows: 46 Data size: 553 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: float), _col2 (type: float)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: float), KEY._col2 (type: float)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: float), _col2 (type: float), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.ss_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ss_part
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	151                 
+	totalSize           	162                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+2.1	-2026.3	2452617
+2.99	-11.32	2452617
+85.8	25.61	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+7412.83	2071.68	2452617
+10022.63	3952.8	2452617
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	186                 
+	totalSize           	199                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+0.15	-241.22	2452638
+150.39	-162.12	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
+1327.08	57.97	2452638
+1413.19	178.08	2452638
+1524.33	494.37	2452638
+1971.35	-488.25	2452638
+4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
+10171.1	660.48	2452638
+PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss
+                  Statistics: Num rows: 46 Data size: 553 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Map-reduce partition columns: _col2 (type: int)
+                        Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ss_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ss_part
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	151                 
+	totalSize           	162                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+565.92	196.48	2452617
+85.8	25.61	2452617
+7412.83	2071.68	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+552.96	-1363.84	2452617
+2.1	-2026.3	2452617
+10022.63	3952.8	2452617
+2.99	-11.32	2452617
+PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part
+POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	186                 
+	totalSize           	199                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part
+PREHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+4329.49	-4000.51	2452638
+1413.19	178.08	2452638
+150.39	-162.12	2452638
+1524.33	494.37	2452638
+0.15	-241.22	2452638
+267.01	-3266.36	2452638
+181.03	-207.24	2452638
+1971.35	-488.25	2452638
+1327.08	57.97	2452638
+156.67	-4626.56	2452638
+317.87	-3775.38	2452638
+10171.1	660.48	2452638
+4133.98	-775.72	2452638
+PREHOOK: query: -- VECTORIZATION IS ENABLED
+
+create table ss_orc (
+ss_sold_date_sk int,
+ss_net_paid_inc_tax float,
+ss_net_profit float) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ss_orc
+POSTHOOK: query: -- VECTORIZATION IS ENABLED
+
+create table ss_orc (
+ss_sold_date_sk int,
+ss_net_paid_inc_tax float,
+ss_net_profit float) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ss_orc
+PREHOOK: query: create table ss_part_orc (
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+partitioned by (ss_sold_date_sk int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ss_part_orc
+POSTHOOK: query: create table ss_part_orc (
+ss_net_paid_inc_tax float,
+ss_net_profit float)
+partitioned by (ss_sold_date_sk int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ss_part_orc
+PREHOOK: query: insert overwrite table ss_orc select * from ss
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss_orc
+POSTHOOK: query: insert overwrite table ss_orc select * from ss
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss_orc
+POSTHOOK: Lineage: ss_orc.ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_orc.ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_orc.ss_sold_date_sk SIMPLE [(ss)ss.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+PREHOOK: query: drop table ss
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss
+POSTHOOK: query: drop table ss
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss
+PREHOOK: query: drop table ss_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ss_part
+PREHOOK: Output: default@ss_part
+POSTHOOK: query: drop table ss_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ss_part
+POSTHOOK: Output: default@ss_part
+PREHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss_orc
+                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: float), _col2 (type: float)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: float), KEY._col2 (type: float)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: float), _col2 (type: float), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.ss_part_orc
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.ss_part_orc
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_orc
+PREHOOK: Output: default@ss_part_orc
+POSTHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+  group by ss_sold_date_sk,
+    ss_net_paid_inc_tax,
+    ss_net_profit
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_orc
+POSTHOOK: Output: default@ss_part_orc@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part_orc@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part_orc
+POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part_orc
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part_orc         	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	88                  
+	totalSize           	433                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part_orc
+PREHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part_orc
+POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+2.1	-2026.3	2452617
+2.99	-11.32	2452617
+85.8	25.61	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+7412.83	2071.68	2452617
+10022.63	3952.8	2452617
+PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part_orc
+POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part_orc
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part_orc         	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	104                 
+	totalSize           	456                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part_orc
+PREHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part_orc
+POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+0.15	-241.22	2452638
+150.39	-162.12	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
+1327.08	57.97	2452638
+1413.19	178.08	2452638
+1524.33	494.37	2452638
+1971.35	-488.25	2452638
+4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
+10171.1	660.48	2452638
+PREHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ss_orc
+                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Map-reduce partition columns: _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.ss_part_orc
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ss_sold_date_sk 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.ss_part_orc
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_orc
+PREHOOK: Output: default@ss_part_orc
+POSTHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
+select ss_net_paid_inc_tax,
+  ss_net_profit,
+  ss_sold_date_sk
+  from ss_orc
+  where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
+    distribute by ss_sold_date_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_orc
+POSTHOOK: Output: default@ss_part_orc@ss_sold_date_sk=2452617
+POSTHOOK: Output: default@ss_part_orc@ss_sold_date_sk=2452638
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part_orc PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_orc)ss_orc.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part_orc
+POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part_orc
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452617]           	 
+Database:           	default             	 
+Table:              	ss_part_orc         	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	11                  
+	rawDataSize         	88                  
+	totalSize           	433                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452617
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part_orc
+PREHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452617
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part_orc
+POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
+#### A masked pattern was here ####
+3423.95	-3164.07	2452617
+5362.01	-600.28	2452617
+565.92	196.48	2452617
+85.8	25.61	2452617
+7412.83	2071.68	2452617
+879.07	-2185.76	2452617
+1765.07	-4648.8	2452617
+552.96	-1363.84	2452617
+2.1	-2026.3	2452617
+10022.63	3952.8	2452617
+2.99	-11.32	2452617
+PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ss_part_orc
+POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ss_part_orc
+# col_name            	data_type           	comment             
+	 	 
+ss_net_paid_inc_tax 	float               	                    
+ss_net_profit       	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ss_sold_date_sk     	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2452638]           	 
+Database:           	default             	 
+Table:              	ss_part_orc         	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	104                 
+	totalSize           	456                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452638
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_part_orc
+PREHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ss_part_orc where ss_sold_date_sk=2452638
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_part_orc
+POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
+#### A masked pattern was here ####
+4329.49	-4000.51	2452638
+1413.19	178.08	2452638
+150.39	-162.12	2452638
+1524.33	494.37	2452638
+0.15	-241.22	2452638
+267.01	-3266.36	2452638
+181.03	-207.24	2452638
+1971.35	-488.25	2452638
+1327.08	57.97	2452638
+156.67	-4626.56	2452638
+317.87	-3775.38	2452638
+10171.1	660.48	2452638
+4133.98	-775.72	2452638
+PREHOOK: query: drop table ss_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ss_orc
+PREHOOK: Output: default@ss_orc
+POSTHOOK: query: drop table ss_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ss_orc
+POSTHOOK: Output: default@ss_orc
+PREHOOK: query: drop table ss_part_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ss_part_orc
+PREHOOK: Output: default@ss_part_orc
+POSTHOOK: query: drop table ss_part_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ss_part_orc
+POSTHOOK: Output: default@ss_part_orc
+PREHOOK: query: drop table if exists hive13_dp1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists hive13_dp1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table if not exists hive13_dp1 (
+    k1 int,
+    k2 int
+)
+PARTITIONED BY(`day` string)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive13_dp1
+POSTHOOK: query: create table if not exists hive13_dp1 (
+    k1 int,
+    k2 int
+)
+PARTITIONED BY(`day` string)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive13_dp1
+PREHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(_col2)
+                      keys: 'day' (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.hive13_dp1
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            day 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.hive13_dp1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hive13_dp1
+POSTHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hive13_dp1@day=day
+POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from hive13_dp1 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive13_dp1
+PREHOOK: Input: default@hive13_dp1@day=day
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive13_dp1 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive13_dp1
+POSTHOOK: Input: default@hive13_dp1@day=day
+#### A masked pattern was here ####
+0	3	day
+10	1	day
+100	2	day
+103	2	day
+104	2	day
+PREHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
+select
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(_col2)
+                      keys: 'day' (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.hive13_dp1
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            day 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.hive13_dp1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
+select 
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hive13_dp1
+POSTHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
+select 
+    key k1,
+    count(value) k2,
+    "day" `day`
+from src
+group by "day", key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hive13_dp1@day=day
+POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from hive13_dp1 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive13_dp1
+PREHOOK: Input: default@hive13_dp1@day=day
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hive13_dp1 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive13_dp1
+POSTHOOK: Input: default@hive13_dp1@day=day
+#### A masked pattern was here ####
+0	3	day
+10	1	day
+100	2	day
+103	2	day
+104	2	day
+PREHOOK: query: drop table hive13_dp1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive13_dp1
+PREHOOK: Output: default@hive13_dp1
+POSTHOOK: query: drop table hive13_dp1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive13_dp1
+POSTHOOK: Output: default@hive13_dp1

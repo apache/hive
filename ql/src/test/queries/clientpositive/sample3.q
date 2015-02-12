@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- no input pruning, sample filter
 EXPLAIN
 SELECT s.key

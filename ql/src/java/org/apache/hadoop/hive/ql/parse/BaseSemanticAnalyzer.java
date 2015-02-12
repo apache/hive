@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Date;
@@ -38,6 +39,8 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -72,14 +75,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * BaseSemanticAnalyzer.
  *
  */
 public abstract class BaseSemanticAnalyzer {
-  private static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
+  protected static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
@@ -406,7 +407,6 @@ public abstract class BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   public static String unescapeSQLString(String b) {
-
     Character enclosure = null;
 
     // Some of the strings can be passed in as unicode. For example, the
@@ -487,7 +487,7 @@ public abstract class BaseSemanticAnalyzer {
         case '\\':
           sb.append("\\");
           break;
-        // The following 2 lines are exactly what MySQL does
+        // The following 2 lines are exactly what MySQL does TODO: why do we do this?
         case '%':
           sb.append("\\%");
           break;
@@ -503,6 +503,58 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return sb.toString();
+  }
+
+  /**
+   * Escapes the string for AST; doesn't enclose it in quotes, however.
+   */
+  public static String escapeSQLString(String b) {
+    // There's usually nothing to escape so we will be optimistic.
+    String result = b;
+    for (int i = 0; i < result.length(); ++i) {
+      char currentChar = result.charAt(i);
+      if (currentChar == '\\' && ((i + 1) < result.length())) {
+        // TODO: do we need to handle the "this is what MySQL does" here?
+        char nextChar = result.charAt(i + 1);
+        if (nextChar == '%' || nextChar == '_') {
+          ++i;
+          continue;
+        }
+      }
+      switch (currentChar) {
+      case '\0': result = spliceString(result, i, "\\0"); ++i; break;
+      case '\'': result = spliceString(result, i, "\\'"); ++i; break;
+      case '\"': result = spliceString(result, i, "\\\""); ++i; break;
+      case '\b': result = spliceString(result, i, "\\b"); ++i; break;
+      case '\n': result = spliceString(result, i, "\\n"); ++i; break;
+      case '\r': result = spliceString(result, i, "\\r"); ++i; break;
+      case '\t': result = spliceString(result, i, "\\t"); ++i; break;
+      case '\\': result = spliceString(result, i, "\\\\"); ++i; break;
+      case '\u001A': result = spliceString(result, i, "\\Z"); ++i; break;
+      default: {
+        if (currentChar < ' ') {
+          String hex = Integer.toHexString(currentChar);
+          String unicode = "\\u";
+          for (int j = 4; j > hex.length(); --j) {
+            unicode += '0';
+          }
+          unicode += hex;
+          result = spliceString(result, i, unicode);
+          i += (unicode.length() - 1);
+        }
+        break; // if not a control character, do nothing
+      }
+      }
+    }
+    return result;
+  }
+
+  private static String spliceString(String str, int i, String replacement) {
+    return spliceString(str, i, 1, replacement);
+  }
+
+  private static String spliceString(String str, int i, int length, String replacement) {
+    return str.substring(0, i) + replacement + str.substring(i + length);
   }
 
   public HashSet<ReadEntity> getInputs() {
@@ -1193,36 +1245,41 @@ public abstract class BaseSemanticAnalyzer {
             inputOI.getTypeName(), outputOI.getTypeName());
       }
 
-      normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);
     }
   }
 
-  @VisibleForTesting
-  static void normalizeColSpec(Map<String, String> partSpec, String colName,
-      String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
-    String normalizedColSpec = originalColSpec;
-    if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
-      normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
-    }
-    if (!normalizedColSpec.equals(originalColSpec)) {
-      STATIC_LOG.warn("Normalizing partition spec - " + colName + " from "
-          + originalColSpec + " to " + normalizedColSpec);
-      partSpec.put(colName, normalizedColSpec);
+  protected WriteEntity toWriteEntity(String location) throws SemanticException {
+    return toWriteEntity(new Path(location));
+  }
+
+  protected WriteEntity toWriteEntity(Path location) throws SemanticException {
+    try {
+      Path path = tryQualifyPath(location);
+      return new WriteEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
   }
 
-  private static String normalizeDateCol(
-      Object colValue, String originalColSpec) throws SemanticException {
-    Date value;
-    if (colValue instanceof DateWritable) {
-      value = ((DateWritable) colValue).get();
-    } else if (colValue instanceof Date) {
-      value = (Date) colValue;
-    } else {
-      throw new SemanticException("Unexpected date type " + colValue.getClass());
+  protected ReadEntity toReadEntity(String location) throws SemanticException {
+    return toReadEntity(new Path(location));
+  }
+
+  protected ReadEntity toReadEntity(Path location) throws SemanticException {
+    try {
+      Path path = tryQualifyPath(location);
+      return new ReadEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
-    return HiveMetaStore.PARTITION_DATE_FORMAT.format(value);
+  }
+
+  private Path tryQualifyPath(Path path) throws IOException {
+    try {
+      return path.getFileSystem(conf).makeQualified(path);
+    } catch (IOException e) {
+      return path;  // some tests expected to pass invalid schema
+    }
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {
@@ -1234,7 +1291,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       database = db.getDatabase(dbName);
     } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName), e);
+      throw new SemanticException(e.getMessage(), e);
     }
     if (database == null && throwException) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
@@ -1264,8 +1321,12 @@ public abstract class BaseSemanticAnalyzer {
     try {
       tab = database == null ? db.getTable(tblName, false)
           : db.getTable(database, tblName, false);
-    } catch (Exception e) {
+    }
+    catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
+    }
+    catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
     }
     if (tab == null && throwException) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));

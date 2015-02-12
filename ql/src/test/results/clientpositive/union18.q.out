@@ -14,7 +14,9 @@ POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2
-PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- union case:map-reduce sub-queries followed by multi-table insert 
 
 explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -23,7 +25,9 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- union case:map-reduce sub-queries followed by multi-table insert 
 
 explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -91,25 +95,21 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dest1
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 501 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 501 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -124,25 +124,21 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 501 Data size: 136272 Basic stats: COMPLETE Column stats: PARTIAL
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 501 Data size: 5584 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 501 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 501 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

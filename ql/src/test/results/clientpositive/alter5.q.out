@@ -36,7 +36,7 @@ PREHOOK: query: --
 --
 alter table alter5 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: parta
+#### A masked pattern was here ####
 PREHOOK: Output: default@alter5
 POSTHOOK: query: --
 -- Here's the interesting bit for HIVE-2117 - partition subdir should be
@@ -44,7 +44,7 @@ POSTHOOK: query: --
 --
 alter table alter5 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: parta
+#### A masked pattern was here ####
 POSTHOOK: Output: default@alter5
 POSTHOOK: Output: default@alter5@dt=a
 PREHOOK: query: describe extended alter5 partition (dt='a')
@@ -125,8 +125,14 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 alltypesorc
+cbo_t1
+cbo_t2
+cbo_t3
+lineitem
+part
 src
 src1
+src_cbo
 src_json
 src_sequencefile
 src_thrift
@@ -179,11 +185,11 @@ POSTHOOK: Output: alter5_db@alter5
 POSTHOOK: Output: database:alter5_db
 PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: parta
+#### A masked pattern was here ####
 PREHOOK: Output: alter5_db@alter5
 POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: parta
+#### A masked pattern was here ####
 POSTHOOK: Output: alter5_db@alter5
 POSTHOOK: Output: alter5_db@alter5@dt=a
 PREHOOK: query: describe extended alter5 partition (dt='a')

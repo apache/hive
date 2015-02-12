@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -83,9 +84,14 @@ public abstract class FolderPermissionBase {
     fs.mkdirs(warehouseDir);
     conf.setVar(ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
 
+    // Assuming the tests are run either in C or D drive in Windows OS!
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
+        .replace("c:", "").replace("C:", "").replace("D:", "").replace("d:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    // Set up scratch directory
+    Path scratchDir = new Path(baseDfsDir, "scratchdir");
+    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, scratchDir.toString());
 
     //set hive conf vars
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -112,6 +118,11 @@ public abstract class FolderPermissionBase {
 
     ret = driver.run("LOAD DATA LOCAL INPATH '" + dataFilePath + "' INTO TABLE mysrc PARTITION (part1='2',part2='2')");
     Assert.assertEquals(0,ret.getResponseCode());
+  }
+
+  @Before
+  public void setupBeforeTest() throws Exception {
+    driver.run("USE default");
   }
 
   @Test
@@ -194,17 +205,88 @@ public abstract class FolderPermissionBase {
 
 
   @Test
-  public void testStaticPartition() throws Exception {
-    String tableName = "staticpart";
-    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string, part2 string)");
-    Assert.assertEquals(0,ret.getResponseCode());
+  public void testInsertNonPartTable() throws Exception {
+    //case 1 is non-partitioned table.
+    String tableName = "nonpart";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    String tableLoc = warehouseDir + "/" + tableName;
+    assertExistence(warehouseDir + "/" + tableName);
+
+    //case1A: insert into non-partitioned table.
+    setPermission(warehouseDir + "/" + tableName);
+    ret = driver.run("insert into table " + tableName + " select key,value from mysrc");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName);
+    Assert.assertTrue(listStatus(tableLoc).size() > 0);
+    for (String child : listStatus(tableLoc)) {
+      verifyPermission(child);
+    }
+
+    //case1B: insert overwrite non-partitioned-table
+    setPermission(warehouseDir + "/" + tableName, 1);
+    ret = driver.run("insert overwrite table " + tableName + " select key,value from mysrc");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName, 1);
+    Assert.assertTrue(listStatus(tableLoc).size() > 0);
+    for (String child : listStatus(tableLoc)) {
+      verifyPermission(child, 1);
+    }
+  }
+
+  @Test
+  public void testInsertStaticSinglePartition() throws Exception {
+    String tableName = "singlestaticpart";
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string)");
+    Assert.assertEquals(0, ret.getResponseCode());
 
     assertExistence(warehouseDir + "/" + tableName);
     setPermission(warehouseDir + "/" + tableName);
 
-    ret = driver.run("insert into table " + tableName + " partition(part1='1', part2='1') select key,value from mysrc where part1='1' and part2='1'");
-    Assert.assertEquals(0,ret.getResponseCode());
+    //insert into test
+    ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
 
+    verifyPermission(warehouseDir + "/" + tableName);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=1");
+
+    Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1").size() > 0);
+    for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1")) {
+      verifyPermission(child);
+    }
+
+    //insert overwrite test
+    setPermission(warehouseDir + "/" + tableName, 1);
+    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName, 1);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=1", 1);
+
+    Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1").size() > 0);
+    for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1")) {
+      verifyPermission(child, 1);
+    }
+  }
+
+  @Test
+  public void testInsertStaticDualPartition() throws Exception {
+    String tableName = "dualstaticpart";
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string, part2 string)");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + tableName);
+    setPermission(warehouseDir + "/" + tableName);
+
+    //insert into test
+    ret = driver.run("insert into table " + tableName + " partition(part1='1', part2='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName);
     verifyPermission(warehouseDir + "/" + tableName + "/part1=1");
     verifyPermission(warehouseDir + "/" + tableName + "/part1=1/part2=1");
 
@@ -212,6 +294,79 @@ public abstract class FolderPermissionBase {
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1")) {
       verifyPermission(child);
     }
+
+    //insert overwrite test
+    setPermission(warehouseDir + "/" + tableName, 1);
+    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1', part2='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName, 1);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=1", 1);
+    verifyPermission(warehouseDir + "/" + tableName + "/part1=1/part2=1", 1);
+
+    Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1").size() > 0);
+    for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1")) {
+      verifyPermission(child, 1);
+    }
+  }
+
+  @Test
+  public void testInsertDualDynamicPartitions() throws Exception {
+    String tableName = "dualdynamicpart";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string, part2 string)");
+    Assert.assertEquals(0, ret.getResponseCode());
+    assertExistence(warehouseDir + "/" + tableName);
+
+    //Insert into test, with permission set 0.
+    setPermission(warehouseDir + "/" + tableName, 0);
+    ret = driver.run("insert into table " + tableName + " partition (part1,part2) select key,value,part1,part2 from mysrc");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyDualPartitionTable(warehouseDir + "/" + tableName, 0);
+
+    //Insert overwrite test, with permission set 1.
+    setPermission(warehouseDir + "/" + tableName, 1);
+    ret = driver.run("insert overwrite table " + tableName + " partition (part1,part2) select key,value,part1,part2 from mysrc");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyDualPartitionTable(warehouseDir + "/" + tableName, 1);
+  }
+
+  @Test
+  public void testInsertSingleDynamicPartition() throws Exception {
+    String tableName = "singledynamicpart";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string)");
+    Assert.assertEquals(0,ret.getResponseCode());
+    String tableLoc = warehouseDir + "/" + tableName;
+    assertExistence(tableLoc);
+
+    //Insert into test, with permission set 0.
+    setPermission(tableLoc, 0);
+    ret = driver.run("insert into table " + tableName + " partition (part1) select key,value,part1 from mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+    verifySinglePartition(tableLoc, 0);
+
+    //Insert overwrite test, with permission set 1.
+    setPermission(tableLoc, 1);
+    ret = driver.run("insert overwrite table " + tableName + " partition (part1) select key,value,part1 from mysrc");
+    Assert.assertEquals(0,ret.getResponseCode());
+    verifySinglePartition(tableLoc, 1);
+
+    //delete and re-insert using insert overwrite.  There's different code paths insert vs insert overwrite for new tables.
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0, ret.getResponseCode());
+    ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string)");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + tableName);
+    setPermission(warehouseDir + "/" + tableName);
+
+    ret = driver.run("insert overwrite table " + tableName + " partition (part1) select key,value,part1 from mysrc");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifySinglePartition(tableLoc, 0);
   }
 
   @Test
@@ -243,37 +398,6 @@ public abstract class FolderPermissionBase {
     }
   }
 
-
-  @Test
-  public void testDynamicPartitions() throws Exception {
-    String tableName = "dynamicpart";
-
-    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 string, part2 string)");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    assertExistence(warehouseDir + "/" + tableName);
-    setPermission(warehouseDir + "/" + tableName);
-
-    ret = driver.run("insert into table " + tableName + " partition (part1,part2) select key,value,part1,part2 from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=1");
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=1/part2=1");
-
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2");
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2");
-
-    Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1").size() > 0);
-    for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1")) {
-      verifyPermission(child);
-    }
-
-    Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2").size() > 0);
-    for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2")) {
-      verifyPermission(child);
-    }
-  }
-
   @Test
   public void testExternalTable() throws Exception {
     String tableName = "externaltable";
@@ -292,70 +416,6 @@ public abstract class FolderPermissionBase {
     Assert.assertTrue(listStatus(myLocation).size() > 0);
     for (String child : listStatus(myLocation)) {
       verifyPermission(child);
-    }
-  }
-
-  @Test
-  public void testInsert() throws Exception {
-    //case 1 is non-partitioned table.
-    String tableName = "insert";
-
-    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    String tableLoc = warehouseDir + "/" + tableName;
-    assertExistence(warehouseDir + "/" + tableName);
-
-    //case1A: insert into non-partitioned table.
-    setPermission(warehouseDir + "/" + tableName);
-    ret = driver.run("insert into table " + tableName + " select key,value from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    Assert.assertTrue(listStatus(tableLoc).size() > 0);
-    for (String child : listStatus(tableLoc)) {
-      verifyPermission(child);
-    }
-
-    //case1B: insert overwrite non-partitioned-table
-    setPermission(warehouseDir + "/" + tableName, 1);
-    ret = driver.run("insert overwrite table " + tableName + " select key,value from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    Assert.assertTrue(listStatus(tableLoc).size() > 0);
-    for (String child : listStatus(tableLoc)) {
-      verifyPermission(child, 1);
-    }
-
-    //case 2 is partitioned table.
-    tableName = "insertpartition";
-
-    ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 int, part2 int)");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1',part2='1') select key,value from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    String partLoc = warehouseDir + "/" + tableName + "/part1=1/part2=1";
-    assertExistence(partLoc);
-
-    //case 2A: insert into partitioned table.
-    setPermission(partLoc);
-    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1',part2='1') select key,value from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    Assert.assertTrue(listStatus(partLoc).size() > 0);
-    for (String child : listStatus(partLoc)) {
-      verifyPermission(child);
-    }
-
-    //case 2B: insert into non-partitioned table.
-    setPermission(partLoc, 1);
-    ret = driver.run("insert overwrite table " + tableName + " partition(part1='1',part2='1') select key,value from mysrc");
-    Assert.assertEquals(0,ret.getResponseCode());
-
-    Assert.assertTrue(listStatus(tableLoc).size() > 0);
-    for (String child : listStatus(partLoc)) {
-      verifyPermission(child, 1);
     }
   }
 
@@ -411,7 +471,7 @@ public abstract class FolderPermissionBase {
     }
 
     //case 2B: insert data overwrite into non-partitioned table.
-    setPermission(partLoc, 1);
+    setPermission(tableLoc, 1);
     ret = driver.run("LOAD DATA LOCAL INPATH '" + dataFilePath + "' OVERWRITE INTO TABLE " + tableName + " PARTITION (part1='1',part2='1')");
     Assert.assertEquals(0,ret.getResponseCode());
 
@@ -476,7 +536,7 @@ public abstract class FolderPermissionBase {
     }
 
     //case 2B: insert data overwrite into non-partitioned table.
-    setPermission(partLoc, 1);
+    setPermission(tableLoc, 1);
     fs.copyFromLocalFile(dataFilePath, new Path(location));
     ret = driver.run("LOAD DATA INPATH '" + location + "' OVERWRITE INTO TABLE " + tableName + " PARTITION (part1='1',part2='1')");
     Assert.assertEquals(0,ret.getResponseCode());
@@ -582,6 +642,74 @@ public abstract class FolderPermissionBase {
     Assert.assertTrue(listStatus(myLocation + "/part1=2/part2=2").size() > 0);
     for (String child : listStatus(myLocation + "/part1=2/part2=2")) {
       verifyPermission(child, 1);
+    }
+  }
+
+  /**
+   * Tests the permission to the table doesn't change after the truncation
+   * @throws Exception
+   */
+  @Test
+  public void testTruncateTable() throws Exception {
+    String tableName = "truncatetable";
+    String partition = warehouseDir + "/" + tableName + "/part1=1";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key STRING, value STRING) PARTITIONED BY (part1 INT)");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    setPermission(warehouseDir + "/" + tableName);
+
+    ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + tableName);
+
+    verifyPermission(warehouseDir + "/" + tableName);
+    verifyPermission(partition);
+
+    ret = driver.run("TRUNCATE TABLE " + tableName);
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName);
+
+    assertExistence(partition);
+    verifyPermission(partition);    
+  }
+  
+  private void verifySinglePartition(String tableLoc, int index) throws Exception {
+    verifyPermission(tableLoc + "/part1=1", index);
+    verifyPermission(tableLoc + "/part1=2", index);
+
+    Assert.assertTrue(listStatus(tableLoc + "/part1=1").size() > 0);
+    for (String child : listStatus(tableLoc + "/part1=1")) {
+      verifyPermission(child, index);
+    }
+
+    Assert.assertTrue(listStatus(tableLoc + "/part1=2").size() > 0);
+    for (String child : listStatus(tableLoc + "/part1=2")) {
+      verifyPermission(child, index);
+    }
+  }
+
+  private void verifyDualPartitionTable(String baseTablePath, int index) throws Exception {
+    verifyPermission(baseTablePath, index);
+    verifyPermission(baseTablePath + "/part1=1", index);
+    verifyPermission(baseTablePath + "/part1=1/part2=1", index);
+
+    verifyPermission(baseTablePath + "/part1=2", index);
+    verifyPermission(baseTablePath + "/part1=2/part2=2", index);
+
+    Assert.assertTrue(listStatus(baseTablePath + "/part1=1/part2=1").size() > 0);
+    for (String child : listStatus(baseTablePath + "/part1=1/part2=1")) {
+      verifyPermission(child, index);
+    }
+
+    Assert.assertTrue(listStatus(baseTablePath + "/part1=2/part2=2").size() > 0);
+    for (String child : listStatus(baseTablePath + "/part1=2/part2=2")) {
+      verifyPermission(child, index);
     }
   }
 

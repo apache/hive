@@ -36,8 +36,14 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 alltypesorc
+cbo_t1
+cbo_t2
+cbo_t3
+lineitem
+part
 src
 src1
+src_cbo
 src_json
 src_sequencefile
 src_thrift
@@ -122,8 +128,14 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 alltypesorc
+cbo_t1
+cbo_t2
+cbo_t3
+lineitem
+part
 src
 src1
+src_cbo
 src_json
 src_sequencefile
 src_thrift

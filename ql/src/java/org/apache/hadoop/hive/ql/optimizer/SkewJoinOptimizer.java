@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -78,11 +78,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class SkewJoinOptimizer implements Transform {
 
   private static final Log LOG = LogFactory.getLog(SkewJoinOptimizer.class.getName());
-  private static ParseContext parseContext;
 
   public static class SkewJoinProc implements NodeProcessor {
-    public SkewJoinProc() {
+    private ParseContext parseContext;
+
+    public SkewJoinProc(ParseContext parseContext) {
       super();
+      this.parseContext = parseContext;
     }
 
     @Override
@@ -170,15 +172,19 @@ public class SkewJoinOptimizer implements Transform {
       } else {
         joinOpClone = (JoinOperator)currOpClone;
       }
+      joinOpClone.getConf().cloneQBJoinTreeProps(joinOp.getConf());
+      parseContext.getJoinOps().add(joinOpClone);
+
+      List<TableScanOperator> tableScanCloneOpsForJoin =
+          new ArrayList<TableScanOperator>();
+      if (!getTableScanOpsForJoin(joinOpClone, tableScanCloneOpsForJoin)) {
+        LOG.debug("Operator tree not properly cloned!");
+        return null;
+      }
 
       // Put the filter "skewed column = skewed keys" in op
       // and "skewed columns != skewed keys" in selectOpClone
       insertSkewFilter(tableScanOpsForJoin, skewedValues, true);
-
-      List<TableScanOperator> tableScanCloneOpsForJoin =
-        new ArrayList<TableScanOperator>();
-      assert
-        getTableScanOpsForJoin(joinOpClone, tableScanCloneOpsForJoin);
 
       insertSkewFilter(tableScanCloneOpsForJoin, skewedValues, false);
 
@@ -188,9 +194,7 @@ public class SkewJoinOptimizer implements Transform {
 
       for (Entry<String, Operator<? extends OperatorDesc>> topOp : topOps.entrySet()) {
         TableScanOperator tso = (TableScanOperator) topOp.getValue();
-        Table origTable = parseContext.getTopToTable().get(ctx.getCloneTSOpMap().get(tso));
         String tabAlias = tso.getConf().getAlias();
-        parseContext.getTopToTable().put(tso, origTable);
         int initCnt = 1;
         String newAlias = "subquery" + initCnt + ":" + tabAlias;
         while (origTopOps.containsKey(newAlias)) {
@@ -199,6 +203,7 @@ public class SkewJoinOptimizer implements Transform {
         }
 
         parseContext.getTopOps().put(newAlias, tso);
+        setUpAlias(joinOp, joinOpClone, tabAlias, newAlias, tso);
       }
 
       // Now do a union of the select operators: selectOp and selectOpClone
@@ -217,9 +222,6 @@ public class SkewJoinOptimizer implements Transform {
         OperatorFactory.getAndMakeChild(
           new UnionDesc(), new RowSchema(currOp.getSchema().getSignature()), oplist);
 
-      RowResolver unionRR = parseContext.getOpParseCtx().get(currOp).getRowResolver();
-      GenMapRedUtils.putOpInsertMap(unionOp, unionRR, parseContext);
-
       // Introduce a select after the union
       List<Operator<? extends OperatorDesc>> unionList =
         new ArrayList<Operator<? extends OperatorDesc>>();
@@ -229,7 +231,6 @@ public class SkewJoinOptimizer implements Transform {
         OperatorFactory.getAndMakeChild(
           new SelectDesc(true),
           new RowSchema(unionOp.getSchema().getSignature()), unionList);
-      GenMapRedUtils.putOpInsertMap(selectUnionOp, unionRR, parseContext);
 
       // add the finalOp after the union
       selectUnionOp.setChildOperators(finalOps);
@@ -395,7 +396,7 @@ public class SkewJoinOptimizer implements Transform {
         if (op instanceof TableScanOperator) {
           TableScanOperator tsOp = (TableScanOperator)op;
           if (tableScanOpsForJoin.contains(tsOp)) {
-            return parseContext.getTopToTable().get(tsOp);
+            return tsOp.getConf().getTableMetadata();
           }
         }
         if ((op.getParentOperators() == null) || (op.getParentOperators().isEmpty()) || 
@@ -466,12 +467,10 @@ public class SkewJoinOptimizer implements Transform {
       currChild.setParentOperators(null);
 
       Operator<FilterDesc> filter = OperatorFactory.getAndMakeChild(
-        new FilterDesc(filterExpr, false), tableScanOp);
-      filter.setSchema(new RowSchema(tableScanOp.getSchema().getSignature()));
+        new FilterDesc(filterExpr, false),
+        new RowSchema(tableScanOp.getSchema().getSignature()),
+        tableScanOp);
       OperatorFactory.makeChild(filter, currChild);
-
-      RowResolver filterRR = parseContext.getOpParseCtx().get(tableScanOp).getRowResolver();
-      GenMapRedUtils.putOpInsertMap(filter, filterRR, parseContext);
     }
 
     /**
@@ -573,8 +572,10 @@ public class SkewJoinOptimizer implements Transform {
 
     private Map<String, Operator<? extends OperatorDesc>> getTopOps(
       Operator<? extends OperatorDesc> op) {
+      // Must be deterministic order map for consistent q-test output across
+      // Java versions
       Map<String, Operator<? extends OperatorDesc>> topOps =
-        new HashMap<String, Operator<? extends OperatorDesc>>();
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       if (op.getParentOperators() == null || op.getParentOperators().size() == 0) {
         topOps.put(((TableScanOperator)op).getConf().getAlias(), op);
       } else {
@@ -596,15 +597,54 @@ public class SkewJoinOptimizer implements Transform {
         ctx.getCloneTSOpMap().put((TableScanOperator)opClone, (TableScanOperator)op);
       }
 
-      GenMapRedUtils.putOpInsertMap(
-        opClone, parseContext.getOpParseCtx().get(op).getRowResolver(), parseContext);
-
       List<Operator<? extends OperatorDesc>> parents = op.getParentOperators();
       List<Operator<? extends OperatorDesc>> parentClones = opClone.getParentOperators();
       if ((parents != null) && (!parents.isEmpty()) &&
         (parentClones != null) && (!parentClones.isEmpty())) {
         for (int pos = 0; pos < parents.size(); pos++) {
           insertRowResolvers(parents.get(pos), parentClones.get(pos), ctx);
+        }
+      }
+    }
+
+    /**
+     * Set alias in the cloned join tree
+     */
+    private static void setUpAlias(JoinOperator origin, JoinOperator cloned, String origAlias,
+        String newAlias, Operator<? extends OperatorDesc> topOp) {
+      cloned.getConf().getAliasToOpInfo().remove(origAlias);
+      cloned.getConf().getAliasToOpInfo().put(newAlias, topOp);
+      if (origin.getConf().getLeftAlias().equals(origAlias)) {
+        cloned.getConf().setLeftAlias(null);
+        cloned.getConf().setLeftAlias(newAlias);
+      }
+      replaceAlias(origin.getConf().getLeftAliases(), cloned.getConf().getLeftAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getRightAliases(), cloned.getConf().getRightAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getBaseSrc(), cloned.getConf().getBaseSrc(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getMapAliases(), cloned.getConf().getMapAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getStreamAliases(), cloned.getConf().getStreamAliases(), origAlias, newAlias);
+    }
+
+    private static void replaceAlias(String[] origin, String[] cloned,
+        String alias, String newAlias) {
+      if (origin == null || cloned == null || origin.length != cloned.length) {
+        return;
+      }
+      for (int i = 0; i < origin.length; i++) {
+        if (origin[i].equals(alias)) {
+          cloned[i] = newAlias;
+        }
+      }
+    }
+
+    private static void replaceAlias(List<String> origin, List<String> cloned,
+        String alias, String newAlias) {
+      if (origin == null || cloned == null || origin.size() != cloned.size()) {
+        return;
+      }
+      for (int i = 0; i < origin.size(); i++) {
+        if (origin.get(i).equals(alias)) {
+          cloned.set(i, newAlias);
         }
       }
     }
@@ -618,7 +658,7 @@ public class SkewJoinOptimizer implements Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    opRules.put(new RuleRegExp("R1", "TS%.*RS%JOIN%"), getSkewJoinProc());
+    opRules.put(new RuleRegExp("R1", "TS%.*RS%JOIN%"), getSkewJoinProc(pctx));
     SkewJoinOptProcCtx skewJoinOptProcCtx = new SkewJoinOptProcCtx(pctx);
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -633,8 +673,8 @@ public class SkewJoinOptimizer implements Transform {
     return pctx;
   }
 
-  private NodeProcessor getSkewJoinProc() {
-    return new SkewJoinProc();
+  private NodeProcessor getSkewJoinProc(ParseContext parseContext) {
+    return new SkewJoinProc(parseContext);
   }
 
   /**

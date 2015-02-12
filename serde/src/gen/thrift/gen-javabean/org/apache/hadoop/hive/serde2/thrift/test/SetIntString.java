@@ -431,7 +431,7 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
                 struct.sIntString = new HashSet<IntString>(2*_set82.size);
                 for (int _i83 = 0; _i83 < _set82.size; ++_i83)
                 {
-                  IntString _elem84; // required
+                  IntString _elem84; // optional
                   _elem84 = new IntString();
                   _elem84.read(iprot);
                   struct.sIntString.add(_elem84);
@@ -530,7 +530,7 @@ public class SetIntString implements org.apache.thrift.TBase<SetIntString, SetIn
           struct.sIntString = new HashSet<IntString>(2*_set87.size);
           for (int _i88 = 0; _i88 < _set87.size; ++_i88)
           {
-            IntString _elem89; // required
+            IntString _elem89; // optional
             _elem89 = new IntString();
             _elem89.read(iprot);
             struct.sIntString.add(_elem89);

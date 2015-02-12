@@ -28,10 +28,10 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.io.parquet.write.ParquetRecordWriterWrapper;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -46,19 +46,19 @@ import parquet.hadoop.ParquetOutputFormat;
  * A Parquet OutputFormat for Hive (with the deprecated package mapred)
  *
  */
-public class MapredParquetOutputFormat extends FileOutputFormat<Void, ArrayWritable> implements
-  HiveOutputFormat<Void, ArrayWritable> {
+public class MapredParquetOutputFormat extends FileOutputFormat<Void, ParquetHiveRecord> implements
+  HiveOutputFormat<Void, ParquetHiveRecord> {
 
   private static final Log LOG = LogFactory.getLog(MapredParquetOutputFormat.class);
 
-  protected ParquetOutputFormat<ArrayWritable> realOutputFormat;
+  protected ParquetOutputFormat<ParquetHiveRecord> realOutputFormat;
 
   public MapredParquetOutputFormat() {
-    realOutputFormat = new ParquetOutputFormat<ArrayWritable>(new DataWritableWriteSupport());
+    realOutputFormat = new ParquetOutputFormat<ParquetHiveRecord>(new DataWritableWriteSupport());
   }
 
-  public MapredParquetOutputFormat(final OutputFormat<Void, ArrayWritable> mapreduceOutputFormat) {
-    realOutputFormat = (ParquetOutputFormat<ArrayWritable>) mapreduceOutputFormat;
+  public MapredParquetOutputFormat(final OutputFormat<Void, ParquetHiveRecord> mapreduceOutputFormat) {
+    realOutputFormat = (ParquetOutputFormat<ParquetHiveRecord>) mapreduceOutputFormat;
   }
 
   @Override
@@ -67,7 +67,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ArrayWrita
   }
 
   @Override
-  public RecordWriter<Void, ArrayWritable> getRecordWriter(
+  public RecordWriter<Void, ParquetHiveRecord> getRecordWriter(
       final FileSystem ignored,
       final JobConf job,
       final String name,
@@ -110,15 +110,19 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ArrayWrita
     }
 
     DataWritableWriteSupport.setSchema(HiveSchemaConverter.convert(columnNames, columnTypes), jobConf);
-    return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(), progress);
+
+    return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
+            progress,tableProperties);
   }
 
   protected ParquetRecordWriterWrapper getParquerRecordWriterWrapper(
-      ParquetOutputFormat<ArrayWritable> realOutputFormat,
+      ParquetOutputFormat<ParquetHiveRecord> realOutputFormat,
       JobConf jobConf,
       String finalOutPath,
-      Progressable progress
+      Progressable progress,
+      Properties tableProperties
       ) throws IOException {
-    return new ParquetRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(), progress);
+    return new ParquetRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
+            progress,tableProperties);
   }
 }

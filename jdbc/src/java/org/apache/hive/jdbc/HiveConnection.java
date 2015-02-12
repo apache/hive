@@ -52,6 +52,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -99,6 +100,7 @@ public class HiveConnection implements java.sql.Connection {
   private JdbcConnectionParams connParams;
   private final boolean isEmbeddedMode;
   private TTransport transport;
+  private boolean assumeSubject;
   // TODO should be replaced by CliServiceClient
   private TCLIService.Iface client;
   private boolean isClosed = true;
@@ -142,7 +144,9 @@ public class HiveConnection implements java.sql.Connection {
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (isEmbeddedMode) {
-      client = new EmbeddedThriftBinaryCLIService();
+      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
+      embeddedClient.init(new HiveConf());
+      client = embeddedClient;
     } else {
       // extract user/password from JDBC connection properties if its not supplied in the
       // connection URL
@@ -177,6 +181,9 @@ public class HiveConnection implements java.sql.Connection {
   private void openTransport() throws SQLException {
     while (true) {
       try {
+        assumeSubject =
+            JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+                .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
         transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
         if (!transport.isOpen()) {
           LOG.info("Will try to open client transport with JDBC Uri: " + jdbcUriString);
@@ -218,7 +225,7 @@ public class HiveConnection implements java.sql.Connection {
     String schemeName = useSsl ? "https" : "http";
     // http path should begin with "/"
     String httpPath;
-    httpPath = hiveConfMap.get(JdbcConnectionParams.HTTP_PATH);
+    httpPath = sessConfMap.get(JdbcConnectionParams.HTTP_PATH);
     if (httpPath == null) {
       httpPath = "/";
     } else if (!httpPath.startsWith("/")) {
@@ -258,18 +265,16 @@ public class HiveConnection implements java.sql.Connection {
     HttpRequestInterceptor requestInterceptor;
     // If Kerberos
     if (isKerberosAuthMode()) {
-      if (useSsl) {
-        String msg = "SSL encryption is currently not supported with " +
-            "kerberos authentication";
-        throw new SQLException(msg, " 08S01");
-      }
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
+       * In https mode, the entire information is encrypted
+       * TODO: Optimize this with a mix of kerberos + using cookie.
        */
-      requestInterceptor = new HttpKerberosRequestInterceptor(
-          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(false));
+      requestInterceptor =
+          new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+              host, getServerHttpUrl(useSsl), assumeSubject);
     }
     else {
       /**
@@ -277,46 +282,46 @@ public class HiveConnection implements java.sql.Connection {
        * In https mode, the entire information is encrypted
        */
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword());
-      // Configure httpClient for SSL
-      if (useSsl) {
-        String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-        String sslTrustStorePassword = sessConfMap.get(
-            JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
-        KeyStore sslTrustStore;
-        SSLSocketFactory socketFactory;
-        /**
-         * The code within the try block throws:
-         * 1. SSLInitializationException
-         * 2. KeyStoreException
-         * 3. IOException
-         * 4. NoSuchAlgorithmException
-         * 5. CertificateException
-         * 6. KeyManagementException
-         * 7. UnrecoverableKeyException
-         * We don't want the client to retry on any of these, hence we catch all
-         * and throw a SQLException.
-         */
-        try {
-          if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
-            // Create a default socket factory based on standard JSSE trust material
-            socketFactory = SSLSocketFactory.getSocketFactory();
-          }
-          else {
-            // Pick trust store config from the given path
-            sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
-            sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-                sslTrustStorePassword.toCharArray());
-            socketFactory = new SSLSocketFactory(sslTrustStore);
-          }
-          socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-          Scheme sslScheme = new Scheme("https", 443, socketFactory);
-          httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
+    }
+    // Configure httpClient for SSL
+    if (useSsl) {
+      String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
+      String sslTrustStorePassword = sessConfMap.get(
+          JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      KeyStore sslTrustStore;
+      SSLSocketFactory socketFactory;
+      /**
+       * The code within the try block throws:
+       * 1. SSLInitializationException
+       * 2. KeyStoreException
+       * 3. IOException
+       * 4. NoSuchAlgorithmException
+       * 5. CertificateException
+       * 6. KeyManagementException
+       * 7. UnrecoverableKeyException
+       * We don't want the client to retry on any of these, hence we catch all
+       * and throw a SQLException.
+       */
+      try {
+        if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
+          // Create a default socket factory based on standard JSSE trust material
+          socketFactory = SSLSocketFactory.getSocketFactory();
         }
-        catch (Exception e) {
-          String msg =  "Could not create an https connection to " +
-              jdbcUriString + ". " + e.getMessage();
-          throw new SQLException(msg, " 08S01", e);
+        else {
+          // Pick trust store config from the given path
+          sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+          sslTrustStore.load(new FileInputStream(sslTrustStorePath),
+              sslTrustStorePassword.toCharArray());
+          socketFactory = new SSLSocketFactory(sslTrustStore);
         }
+        socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        Scheme sslScheme = new Scheme("https", 443, socketFactory);
+        httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
+      }
+      catch (Exception e) {
+        String msg =  "Could not create an https connection to " +
+            jdbcUriString + ". " + e.getMessage();
+        throw new SQLException(msg, " 08S01", e);
       }
     }
     httpClient.addRequestInterceptor(requestInterceptor);
@@ -354,8 +359,6 @@ public class HiveConnection implements java.sql.Connection {
           }
           saslProps.put(Sasl.QOP, saslQOP.toString());
           saslProps.put(Sasl.SERVER_AUTH, "true");
-          boolean assumeSubject = JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
           transport = KerberosSaslHelper.getKerberosTransport(
               sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
               HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps,
@@ -411,8 +414,7 @@ public class HiveConnection implements java.sql.Connection {
     if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
       // check delegation token in job conf if any
       try {
-        tokenStr = ShimLoader.getHadoopShims().
-            getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
+        tokenStr = org.apache.hadoop.hive.shims.Utils.getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
@@ -442,6 +444,12 @@ public class HiveConnection implements java.sql.Connection {
           sessVars.get(HiveAuthFactory.HS2_PROXY_USER));
     }
     openReq.setConfiguration(openConf);
+
+    // Store the user name in the open request in case no non-sasl authentication
+    if (JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
+      openReq.setUsername(sessConfMap.get(JdbcConnectionParams.AUTH_USER));
+      openReq.setPassword(sessConfMap.get(JdbcConnectionParams.AUTH_PASSWD));
+    }
 
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
@@ -485,7 +493,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private boolean isHttpTransportMode() {
-    String transportMode = hiveConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
+    String transportMode = sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
     if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
       return true;
     }

@@ -85,7 +85,7 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeename (type: string), employeeid (type: int)
+              expressions: 4000.0 (type: double), country (type: string), employeename (type: string), employeeid (type: int)
               outputColumnNames: employeesalary, country, employeename, employeeid
               Group By Operator
                 aggregations: compute_stats(employeename, 16), compute_stats(employeeid, 16)
@@ -158,7 +158,7 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeeid (type: int)
+              expressions: 2000.0 (type: double), country (type: string), employeeid (type: int)
               outputColumnNames: employeesalary, country, employeeid
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)

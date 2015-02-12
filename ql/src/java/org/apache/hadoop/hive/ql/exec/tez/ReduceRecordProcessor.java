@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,31 +33,13 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
-import org.apache.hadoop.hive.ql.exec.tez.tools.InputMerger;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -76,39 +56,16 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
   public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
-  private final ExecMapperContext execContext = new ExecMapperContext();
-  private boolean abort = false;
-  private Deserializer inputKeyDeserializer;
-
-  // Input value serde needs to be an array to support different SerDe
-  // for different tags
-  private final SerDe[] inputValueDeserializer = new SerDe[Byte.MAX_VALUE];
-
-  TableDesc keyTableDesc;
-  TableDesc[] valueTableDesc;
-
-  ObjectInspector[] rowObjectInspector;
-  private Operator<?> reducer;
-  private boolean isTagged = false;
-
-  private Object keyObject = null;
-  private BytesWritable groupKey;
 
   private ReduceWork redWork;
 
-  private boolean vectorized = false;
+  private Operator<?> reducer;
 
-  List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
+  private ReduceRecordSource[] sources;
 
-  private DataOutputBuffer buffer;
-  private VectorizedRowBatch[] batches;
-  // number of columns pertaining to keys in a vectorized row batch
-  private int keysColumnOffset;
-  private final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
-  private StructObjectInspector keyStructInspector;
-  private StructObjectInspector[] valueStructInspectors;
-  /* this is only used in the error code path */
-  private List<VectorExpressionWriter>[] valueStringWriters;
+  private final byte position = 0;
+
+  private boolean abort;
 
   @Override
   void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
@@ -117,10 +74,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
-
-    rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
-    ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
-    ObjectInspector keyObjectInspector;
 
     redWork = (ReduceWork) cache.retrieve(REDUCE_PLAN_KEY);
     if (redWork == null) {
@@ -131,95 +84,36 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     reducer = redWork.getReducer();
-    reducer.setParentOperators(null); // clear out any parents as reducer is the
-    // root
-    isTagged = redWork.getNeedsTagging();
-    vectorized = redWork.getVectorMode();
+    reducer.getParentOperators().clear();
+    reducer.setParentOperators(null); // clear out any parents as reducer is the root
 
-    try {
-      keyTableDesc = redWork.getKeyDesc();
-      inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
-          .getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
-      keyObjectInspector = inputKeyDeserializer.getObjectInspector();
-      reducer.setGroupKeyObjectInspector(keyObjectInspector);
-      valueTableDesc = new TableDesc[redWork.getTagToValueDesc().size()];
+    int numTags = redWork.getTagToValueDesc().size();
 
-      if(vectorized) {
-        final int maxTags = redWork.getTagToValueDesc().size();
-        keyStructInspector = (StructObjectInspector)keyObjectInspector;
-        batches = new VectorizedRowBatch[maxTags];
-        valueStructInspectors = new StructObjectInspector[maxTags];
-        valueStringWriters = new List[maxTags];
-        keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
-        buffer = new DataOutputBuffer();
-      }
+    ObjectInspector[] ois = new ObjectInspector[numTags];
+    sources = new ReduceRecordSource[numTags];
 
-      for (int tag = 0; tag < redWork.getTagToValueDesc().size(); tag++) {
-        // We should initialize the SerDe with the TypeInfo when available.
-        valueTableDesc[tag] = redWork.getTagToValueDesc().get(tag);
-        inputValueDeserializer[tag] = (SerDe) ReflectionUtils.newInstance(
-            valueTableDesc[tag].getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
-                                   valueTableDesc[tag].getProperties(), null);
-        valueObjectInspector[tag] = inputValueDeserializer[tag]
-            .getObjectInspector();
+    for (int tag = 0; tag < redWork.getTagToValueDesc().size(); tag++) {
+      TableDesc keyTableDesc = redWork.getKeyDesc();
+      TableDesc valueTableDesc = redWork.getTagToValueDesc().get(tag);
+      KeyValuesReader reader =
+          (KeyValuesReader) inputs.get(redWork.getTagToInput().get(tag)).getReader();
 
-        ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-
-        if(vectorized) {
-          /* vectorization only works with struct object inspectors */
-          valueStructInspectors[tag] = (StructObjectInspector)valueObjectInspector[tag];
-
-          batches[tag] = VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector,
-              valueStructInspectors[tag]);
-          final int totalColumns = keysColumnOffset +
-              valueStructInspectors[tag].getAllStructFieldRefs().size();
-          valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
-          valueStringWriters[tag].addAll(Arrays
-              .asList(VectorExpressionWriterFactory
-                  .genVectorStructExpressionWritables(keyStructInspector)));
-          valueStringWriters[tag].addAll(Arrays
-              .asList(VectorExpressionWriterFactory
-                  .genVectorStructExpressionWritables(valueStructInspectors[tag])));
-
-          /*
-           * The row object inspector used by ReduceWork needs to be a **standard**
-           * struct object inspector, not just any struct object inspector.
-           */
-          ArrayList<String> colNames = new ArrayList<String>();
-          List<? extends StructField> fields = keyStructInspector.getAllStructFieldRefs();
-          for (StructField field: fields) {
-            colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
-            ois.add(field.getFieldObjectInspector());
-          }
-          fields = valueStructInspectors[tag].getAllStructFieldRefs();
-          for (StructField field: fields) {
-            colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            ois.add(field.getFieldObjectInspector());
-          }
-          rowObjectInspector[tag] = ObjectInspectorFactory
-                  .getStandardStructObjectInspector(colNames, ois);
-        } else {
-          ois.add(keyObjectInspector);
-          ois.add(valueObjectInspector[tag]);
-          rowObjectInspector[tag] = ObjectInspectorFactory
-                  .getStandardStructObjectInspector(Utilities.reduceFieldNameList, ois);
-        }
-
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+      sources[tag] = new ReduceRecordSource();
+      sources[tag].init(jconf, reducer, redWork.getVectorMode(), keyTableDesc, valueTableDesc,
+          reader, tag == position, (byte) tag,
+          redWork.getAllScratchColumnVectorTypeMaps());
+      ois[tag] = sources[tag].getObjectInspector();
     }
 
     MapredContext.init(false, new JobConf(jconf));
     ((TezContext) MapredContext.get()).setInputs(inputs);
     ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
+    ((TezContext) MapredContext.get()).setRecordSources(sources);
 
     // initialize reduce operator tree
     try {
       l4j.info(reducer.dump(0));
-      reducer.initialize(jconf, rowObjectInspector);
+      reducer.initialize(jconf, ois);
 
       // Initialization isn't finished until all parents of all operators
       // are initialized. For broadcast joins that means initializing the
@@ -227,7 +121,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       List<HashTableDummyOperator> dummyOps = redWork.getDummyOps();
       if (dummyOps != null) {
         for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
-          dummyOp.setExecContext(execContext);
           dummyOp.initialize(jconf, null);
         }
       }
@@ -271,28 +164,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
     }
 
-    KeyValuesReader kvsReader;
-    try {
-      if(shuffleInputs.size() == 1){
-        //no merging of inputs required
-        kvsReader = (KeyValuesReader) shuffleInputs.get(0).getReader();
-      }else {
-        //get a sort merged input
-        kvsReader = new InputMerger(shuffleInputs);
-      }
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-
-    while(kvsReader.next()){
-      Object key = kvsReader.getCurrentKey();
-      Iterable<Object> values = kvsReader.getCurrentValues();
-      boolean needMore = processRows(key, values);
-      if(!needMore){
-        break;
-      }
-    }
-
+    // run the operator pipeline
+    while (sources[position].pushRecord()) {}
   }
 
   /**
@@ -302,212 +175,22 @@ public class ReduceRecordProcessor  extends RecordProcessor{
    */
   private List<LogicalInput> getShuffleInputs(Map<String, LogicalInput> inputs) {
     //the reduce plan inputs have tags, add all inputs that have tags
-    Map<Integer, String> tag2input = redWork.getTagToInput();
+    Map<Integer, String> tagToinput = redWork.getTagToInput();
     ArrayList<LogicalInput> shuffleInputs = new ArrayList<LogicalInput>();
-    for(String inpStr : tag2input.values()){
+    for(String inpStr : tagToinput.values()){
+      if (inputs.get(inpStr) == null) {
+        throw new AssertionError("Cound not find input: " + inpStr);
+      }
       shuffleInputs.add(inputs.get(inpStr));
     }
     return shuffleInputs;
   }
 
-  /**
-   * @param key
-   * @param values
-   * @return true if it is not done and can take more inputs
-   */
-  private boolean processRows(Object key, Iterable<Object> values) {
-    if(reducer.getDone()){
-      //done - no more records needed
-      return false;
-    }
-
-    // reset the execContext for each new row
-    execContext.resetRow();
-
-    try {
-      BytesWritable keyWritable = (BytesWritable) key;
-      byte tag = 0;
-
-      if (isTagged) {
-        // remove the tag from key coming out of reducer
-        // and store it in separate variable.
-        int size = keyWritable.getLength() - 1;
-        tag = keyWritable.getBytes()[size];
-        keyWritable.setSize(size);
-      }
-
-      //Set the key, check if this is a new group or same group
-      if (!keyWritable.equals(this.groupKey)) {
-        // If a operator wants to do some work at the beginning of a group
-        if (groupKey == null) { // the first group
-          this.groupKey = new BytesWritable();
-        } else {
-          // If a operator wants to do some work at the end of a group
-          if(isLogTraceEnabled) {
-            l4j.trace("End Group");
-          }
-          reducer.endGroup();
-        }
-
-        try {
-          this.keyObject = inputKeyDeserializer.deserialize(keyWritable);
-        } catch (Exception e) {
-          throw new HiveException(
-              "Hive Runtime Error: Unable to deserialize reduce input key from "
-              + Utilities.formatBinaryString(keyWritable.getBytes(), 0,
-              keyWritable.getLength()) + " with properties "
-              + keyTableDesc.getProperties(), e);
-        }
-        groupKey.set(keyWritable.getBytes(), 0, keyWritable.getLength());
-        if (isLogTraceEnabled) {
-          l4j.trace("Start Group");
-        }
-        reducer.setGroupKeyObject(keyObject);
-        reducer.startGroup();
-      }
-      /* this.keyObject passed via reference */
-      if(vectorized) {
-        return processVectors(values, tag);
-      } else {
-        return processKeyValues(values, tag);
-      }
-    } catch (Throwable e) {
-      abort = true;
-      if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory
-        throw (OutOfMemoryError) e;
-      } else {
-        l4j.fatal(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private Object deserializeValue(BytesWritable valueWritable, byte tag) throws HiveException {
-    try {
-      return inputValueDeserializer[tag].deserialize(valueWritable);
-    } catch (SerDeException e) {
-      throw new HiveException(
-          "Hive Runtime Error: Unable to deserialize reduce input value (tag="
-              + tag
-              + ") from "
-              + Utilities.formatBinaryString(valueWritable.getBytes(), 0,
-                  valueWritable.getLength()) + " with properties "
-              + valueTableDesc[tag].getProperties(), e);
-    }
-  }
-
-  /**
-   * @param values
-   * @return true if it is not done and can take more inputs
-   */
-  private boolean processKeyValues(Iterable<Object> values, byte tag) throws HiveException {
-
-    for (Object value : values) {
-      BytesWritable valueWritable = (BytesWritable) value;
-
-      row.clear();
-      row.add(this.keyObject);
-      row.add(deserializeValue(valueWritable, tag));
-
-      try {
-        reducer.processOp(row, tag);
-      } catch (Exception e) {
-        String rowString = null;
-        try {
-          rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag]);
-        } catch (Exception e2) {
-          rowString = "[Error getting row data with exception "
-              + StringUtils.stringifyException(e2) + " ]";
-        }
-        throw new HiveException("Hive Runtime Error while processing row (tag="
-            + tag + ") " + rowString, e);
-      }
-      if (isLogInfoEnabled) {
-        logProgress();
-      }
-    }
-    return true; //give me more
-  }
-
-  /**
-   * @param values
-   * @return true if it is not done and can take more inputs
-   */
-  private boolean processVectors(Iterable<Object> values, byte tag) throws HiveException {
-    VectorizedRowBatch batch = batches[tag];
-    batch.reset();
-    buffer.reset();
-
-    /* deserialize key into columns */
-    VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector,
-        0, 0, batch, buffer);
-    for(int i = 0; i < keysColumnOffset; i++) {
-      VectorizedBatchUtil.setRepeatingColumn(batch, i);
-    }
-
-    int rowIdx = 0;
-    try {
-      for (Object value : values) {
-        /* deserialize value into columns */
-        BytesWritable valueWritable = (BytesWritable) value;
-        Object valueObj = deserializeValue(valueWritable, tag);
-
-        VectorizedBatchUtil.addRowToBatchFrom(valueObj, valueStructInspectors[tag],
-            rowIdx, keysColumnOffset, batch, buffer);
-        rowIdx++;
-        if (rowIdx >= BATCH_SIZE) {
-          VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-          reducer.processOp(batch, tag);
-          rowIdx = 0;
-          buffer.reset();
-          if (isLogInfoEnabled) {
-            logProgress();
-          }
-        }
-      }
-      if (rowIdx > 0) {
-        VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-        reducer.processOp(batch, tag);
-        buffer.reset();
-      }
-      if (isLogInfoEnabled) {
-        logProgress();
-      }
-    } catch (Exception e) {
-      String rowString = null;
-      try {
-        /* batch.toString depends on this */
-        batch.setValueWriters(valueStringWriters[tag]
-            .toArray(new VectorExpressionWriter[0]));
-        rowString = batch.toString();
-      } catch (Exception e2) {
-        rowString = "[Error getting row data with exception "
-            + StringUtils.stringifyException(e2) + " ]";
-      }
-      throw new HiveException("Hive Runtime Error while processing vector batch (tag="
-          + tag + ") " + rowString, e);
-    }
-    return true; // give me more
-  }
-
   @Override
   void close(){
-    // check if there are IOExceptions
-    if (!abort) {
-      abort = execContext.getIoCxt().getIOExceptions();
-    }
-
     try {
-      if (groupKey != null) {
-        // If a operator wants to do some work at the end of a group
-        if(isLogTraceEnabled) {
-          l4j.trace("End Group");
-        }
-        reducer.endGroup();
-      }
-      if (isLogInfoEnabled) {
-        logCloseInfo();
+      for (ReduceRecordSource rs: sources) {
+        abort = abort && rs.close();
       }
 
       reducer.close(abort);
@@ -521,7 +204,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
           dummyOp.close(abort);
         }
       }
-      ReportStats rps = new ReportStats(reporter);
+      ReportStats rps = new ReportStats(reporter, jconf);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {

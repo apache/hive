@@ -46,10 +46,14 @@ POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: explain
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -69,9 +73,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -102,8 +103,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-4	val_4	4	val_4
 10	val_10	10	val_10
+4	val_4	4	val_4
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -124,9 +125,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -158,10 +156,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	10	val_10
 3	val_3	NULL	NULL
 4	val_4	4	val_4
 5	val_5	NULL	NULL
-10	val_10	10	val_10
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -182,9 +180,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -215,8 +210,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-4	val_4	4	val_4
 10	val_10	10	val_10
+4	val_4	4	val_4
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	20	val_20
@@ -241,9 +236,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Outer Join 0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -275,10 +267,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	10	val_10
 3	val_3	NULL	NULL
 4	val_4	4	val_4
 5	val_5	NULL	NULL
-10	val_10	10	val_10
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	20	val_20
@@ -306,9 +298,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -339,8 +328,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-4	val_4	4	val_4
 10	val_10	10	val_10
+4	val_4	4	val_4
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -361,9 +350,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -395,10 +381,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	10	val_10
 3	val_3	NULL	NULL
 4	val_4	4	val_4
 5	val_5	NULL	NULL
-10	val_10	10	val_10
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -419,9 +405,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -452,8 +435,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-4	val_4	4	val_4
 10	val_10	10	val_10
+4	val_4	4	val_4
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	20	val_20
@@ -478,9 +461,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Outer Join 0 to 1
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -512,10 +492,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	10	val_10
 3	val_3	NULL	NULL
 4	val_4	4	val_4
 5	val_5	NULL	NULL
-10	val_10	10	val_10
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	20	val_20

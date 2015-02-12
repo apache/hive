@@ -1,0 +1,1060 @@
+PREHOOK: query: CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people_staging
+POSTHOOK: query: CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_create_people_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt' OVERWRITE INTO TABLE orc_create_people_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_create_people_staging
+PREHOOK: query: -- non-partitioned table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- non-partitioned table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table orc_create_people compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: analyze table orc_create_people compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: desc formatted orc_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	52600               
+	totalSize           	3158                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Lineage: orc_create_people.address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	52600               
+	totalSize           	3158                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- partitioned table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- partitioned table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2055                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2071                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2055                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2071                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- partitioned and bucketed table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+clustered by (first_name)
+sorted by (last_name)
+into 4 buckets
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- partitioned and bucketed table
+-- partial scan gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+clustered by (first_name)
+sorted by (last_name)
+into 4 buckets
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2055                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2071                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+clustered by (first_name)
+sorted by (last_name)
+into 4 buckets
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- auto stats gather
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+clustered by (first_name)
+sorted by (last_name)
+into 4 buckets
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2055                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2071                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- create table with partitions containing text and ORC files.
+-- ORC files implements StatsProvidingRecordReader but text files does not.
+-- So the partition containing text file should not have statistics.
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- create table with partitions containing text and ORC files.
+-- ORC files implements StatsProvidingRecordReader but text files does not.
+-- So the partition containing text file should not have statistics.
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+PREHOOK: query: -- set the table to text format
+ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- set the table to text format
+ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT TEXTFILE
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT TEXTFILE
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: -- load the text data into a new partition
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- load the text data into a new partition
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=OH
+PREHOOK: query: -- set the table back to orc
+ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: -- set the table back to orc
+ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT ORC
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT ORC
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=OH
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=OH
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2055                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="OH")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="OH")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[OH]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: drop table orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people

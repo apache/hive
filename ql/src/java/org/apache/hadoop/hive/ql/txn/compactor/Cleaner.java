@@ -23,16 +23,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
-import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.metastore.api.LockLevel;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -41,7 +38,12 @@ import org.apache.hadoop.util.StringUtils;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -50,48 +52,126 @@ public class Cleaner extends CompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
 
-  private long cleanerCheckInterval = 5000;
+  private long cleanerCheckInterval = 0;
+
+  // List of compactions to clean.
+  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<Long, Set<Long>>();
+  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<Long, CompactionInfo>();
 
   @Override
   public void run() {
-    // Make sure nothing escapes this run method and kills the metastore at large,
-    // so wrap it in a big catch Throwable statement.
+    if (cleanerCheckInterval == 0) {
+      cleanerCheckInterval = conf.getTimeVar(
+          HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
+    }
+
     do {
+      // This is solely for testing.  It checks if the test has set the looped value to false,
+      // and if so remembers that and then sets it to true at the end.  We have to check here
+      // first to make sure we go through a complete iteration of the loop before resetting it.
+      boolean setLooped = !looped.get();
+      // Make sure nothing escapes this run method and kills the metastore at large,
+      // so wrap it in a big catch Throwable statement.
       try {
         long startedAt = System.currentTimeMillis();
 
-        // Now look for new entries ready to be cleaned.
+        // First look for all the compactions that are waiting to be cleaned.  If we have not
+        // seen an entry before, look for all the locks held on that table or partition and
+        // record them.  We will then only clean the partition once all of those locks have been
+        // released.  This way we avoid removing the files while they are in use,
+        // while at the same time avoiding starving the cleaner as new readers come along.
+        // This works because we know that any reader who comes along after the worker thread has
+        // done the compaction will read the more up to date version of the data (either in a
+        // newer delta or in a newer base).
         List<CompactionInfo> toClean = txnHandler.findReadyToClean();
-        for (CompactionInfo ci : toClean) {
-          LockComponent comp = null;
-          comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, ci.dbname);
-          comp.setTablename(ci.tableName);
-          if (ci.partName != null)  comp.setPartitionname(ci.partName);
-          List<LockComponent> components = new ArrayList<LockComponent>(1);
-          components.add(comp);
-          LockRequest rqst = new LockRequest(components, System.getProperty("user.name"),
-              Worker.hostname());
-          LockResponse rsp = txnHandler.lockNoWait(rqst);
+        if (toClean.size() > 0 || compactId2LockMap.size() > 0) {
+          ShowLocksResponse locksResponse = txnHandler.showLocks(new ShowLocksRequest());
+
+          for (CompactionInfo ci : toClean) {
+            // Check to see if we have seen this request before.  If so, ignore it.  If not,
+            // add it to our queue.
+            if (!compactId2LockMap.containsKey(ci.id)) {
+              compactId2LockMap.put(ci.id, findRelatedLocks(ci, locksResponse));
+              compactId2CompactInfoMap.put(ci.id, ci);
+            }
+          }
+
+          // Now, for each entry in the queue, see if all of the associated locks are clear so we
+          // can clean
+          Set<Long> currentLocks = buildCurrentLockSet(locksResponse);
+          List<Long> expiredLocks = new ArrayList<Long>();
+          List<Long> compactionsCleaned = new ArrayList<Long>();
           try {
-            if (rsp.getState() == LockState.ACQUIRED) {
-              clean(ci);
+            for (Map.Entry<Long, Set<Long>> queueEntry : compactId2LockMap.entrySet()) {
+              boolean sawLock = false;
+              for (Long lockId : queueEntry.getValue()) {
+                if (currentLocks.contains(lockId)) {
+                  sawLock = true;
+                  break;
+                } else {
+                  expiredLocks.add(lockId);
+                }
+              }
+
+              if (!sawLock) {
+                // Remember to remove this when we're out of the loop,
+                // we can't do it in the loop or we'll get a concurrent modification exception.
+                compactionsCleaned.add(queueEntry.getKey());
+                clean(compactId2CompactInfoMap.get(queueEntry.getKey()));
+              } else {
+                // Remove the locks we didn't see so we don't look for them again next time
+                for (Long lockId : expiredLocks) {
+                  queueEntry.getValue().remove(lockId);
+                }
+              }
             }
           } finally {
-            if (rsp.getState() == LockState.ACQUIRED) {
-              txnHandler.unlock(new UnlockRequest(rsp.getLockid()));
+            if (compactionsCleaned.size() > 0) {
+              for (Long compactId : compactionsCleaned) {
+                compactId2LockMap.remove(compactId);
+                compactId2CompactInfoMap.remove(compactId);
+              }
             }
           }
         }
 
         // Now, go back to bed until it's time to do this again
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= cleanerCheckInterval || stop.boolVal)  continue;
+        if (elapsedTime >= cleanerCheckInterval || stop.get())  continue;
         else Thread.sleep(cleanerCheckInterval - elapsedTime);
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
             StringUtils.stringifyException(t));
       }
-    } while (!stop.boolVal);
+      if (setLooped) {
+        looped.set(true);
+      }
+    } while (!stop.get());
+  }
+
+  private Set<Long> findRelatedLocks(CompactionInfo ci, ShowLocksResponse locksResponse) {
+    Set<Long> relatedLocks = new HashSet<Long>();
+    for (ShowLocksResponseElement lock : locksResponse.getLocks()) {
+      if (ci.dbname.equals(lock.getDbname())) {
+        if ((ci.tableName == null && lock.getTablename() == null) ||
+            (ci.tableName != null && ci.tableName.equals(lock.getTablename()))) {
+          if ((ci.partName == null && lock.getPartname() == null) ||
+              (ci.partName != null && ci.partName.equals(lock.getPartname()))) {
+            relatedLocks.add(lock.getLockid());
+          }
+        }
+      }
+    }
+
+    return relatedLocks;
+  }
+
+  private Set<Long> buildCurrentLockSet(ShowLocksResponse locksResponse) {
+    Set<Long> currentLocks = new HashSet<Long>(locksResponse.getLocks().size());
+    for (ShowLocksResponseElement lock : locksResponse.getLocks()) {
+      currentLocks.add(lock.getLockid());
+    }
+    return currentLocks;
   }
 
   private void clean(CompactionInfo ci) throws MetaException {
@@ -103,7 +183,7 @@ public class Cleaner extends CompactorThread {
       // Create a bogus validTxnList with a high water mark set to MAX_LONG and no open
       // transactions.  This assures that all deltas are treated as valid and all we return are
       // obsolete files.
-      final ValidTxnList txnList = new ValidTxnListImpl();
+      final ValidTxnList txnList = new ValidReadTxnList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);

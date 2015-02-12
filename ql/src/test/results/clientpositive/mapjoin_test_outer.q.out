@@ -1,10 +1,14 @@
-PREHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 create table dest_1 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_1
-POSTHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 create table dest_1 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -66,7 +70,6 @@ POSTHOOK: Input: default@dest_1
 POSTHOOK: Input: default@dest_2
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-NULL	NULL	333444	555666	333444	555666
 					
 					
 					
@@ -231,6 +234,7 @@ NULL	NULL	333444	555666	333444	555666
 146	val_146	146	val_146	146	val_146
 224		224		224	
 369		369		369	
+NULL	NULL	333444	555666	333444	555666
 PREHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
@@ -264,10 +268,6 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -275,12 +275,8 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
-            Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -296,10 +292,6 @@ STAGE PLANS:
               condition map:
                    Right Outer Join0 to 1
                    Inner Join 1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -353,7 +345,6 @@ POSTHOOK: Input: default@dest_1
 POSTHOOK: Input: default@dest_2
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-NULL	NULL	333444	555666	333444	555666
 					
 					
 					
@@ -518,6 +509,7 @@ NULL	NULL	333444	555666	333444	555666
 146	val_146	146	val_146	146	val_146
 224		224		224	
 369		369		369	
+NULL	NULL	333444	555666	333444	555666
 PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
   JOIN dest_2 src3 ON (src1.key = src3.key)
@@ -1097,10 +1089,6 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -1108,12 +1096,8 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
-            Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {value}
-                1 {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -1129,10 +1113,6 @@ STAGE PLANS:
               condition map:
                    Right Outer Join0 to 1
                    Inner Join 1 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
               keys:
                 0 key (type: string)
                 1 key (type: string)
@@ -1186,7 +1166,6 @@ POSTHOOK: Input: default@dest_1
 POSTHOOK: Input: default@dest_2
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-NULL	NULL	333444	555666	333444	555666
 					
 					
 					
@@ -1351,3 +1330,4 @@ NULL	NULL	333444	555666	333444	555666
 146	val_146	146	val_146	146	val_146
 224		224		224	
 369		369		369	
+NULL	NULL	333444	555666	333444	555666

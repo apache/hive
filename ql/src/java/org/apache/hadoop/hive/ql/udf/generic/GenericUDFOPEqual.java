@@ -49,7 +49,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   FilterLongScalarEqualLongColumn.class, FilterLongScalarEqualDoubleColumn.class,
   FilterDoubleScalarEqualLongColumn.class, FilterDoubleScalarEqualDoubleColumn.class,
   FilterDecimalColEqualDecimalColumn.class, FilterDecimalColEqualDecimalScalar.class,
-  FilterDecimalScalarEqualDecimalColumn.class})
+  FilterDecimalScalarEqualDecimalColumn.class,
+  TimestampColEqualTimestampScalar.class, TimestampScalarEqualTimestampColumn.class,
+  FilterTimestampColEqualTimestampScalar.class, FilterTimestampScalarEqualTimestampColumn.class,
+  TimestampColEqualLongScalar.class, LongScalarEqualTimestampColumn.class,
+  FilterTimestampColEqualLongScalar.class, FilterLongScalarEqualTimestampColumn.class,
+  TimestampColEqualDoubleScalar.class, DoubleScalarEqualTimestampColumn.class,
+  FilterTimestampColEqualDoubleScalar.class, FilterDoubleScalarEqualTimestampColumn.class
+  })
 public class GenericUDFOPEqual extends GenericUDFBaseCompare {
   public GenericUDFOPEqual(){
     this.opName = "EQUAL";

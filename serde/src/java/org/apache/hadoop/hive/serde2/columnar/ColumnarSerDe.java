@@ -27,13 +27,16 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -50,6 +53,14 @@ import org.apache.hadoop.io.Writable;
  * (2) ColumnarSerDe initialize ColumnarStruct's field directly. But under the
  * field level, it works like LazySimpleSerDe<br>
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
+    serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+    serdeConstants.ESCAPE_CHAR,
+    serdeConstants.SERIALIZATION_ENCODING,
+    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS})
 public class ColumnarSerDe extends ColumnarSerDeBase {
 
   @Override
@@ -86,9 +97,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
-        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence(), serdeParams
-            .isEscaped(), serdeParams.getEscapeChar());
+        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 
     int size = serdeParams.getColumnTypes().size();
     List<Integer> notSkipIDs = new ArrayList<Integer>();
@@ -103,7 +112,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
         cachedObjectInspector, notSkipIDs, serdeParams.getNullSequence());
 
     super.initialize(size);
-    LOG.info("ColumnarSerDe initialized with: columnNames="
+    LOG.debug("ColumnarSerDe initialized with: columnNames="
         + serdeParams.getColumnNames() + " columnTypes="
         + serdeParams.getColumnTypes() + " separator="
         + Arrays.asList(serdeParams.getSeparators()) + " nullstring="

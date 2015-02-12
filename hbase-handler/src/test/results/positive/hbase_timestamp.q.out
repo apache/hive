@@ -1,0 +1,357 @@
+PREHOOK: query: DROP TABLE hbase_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE hbase_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time timestamp)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time timestamp)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: DESC extended hbase_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table
+POSTHOOK: query: DESC extended hbase_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+time                	timestamp           	from deserializer   
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, "2012-02-23 10:14:52" WHERE (key % 17) = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, "2012-02-23 10:14:52" WHERE (key % 17) = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: SELECT * FROM hbase_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hbase_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+0	val_0	2012-02-23 10:14:52
+119	val_119	2012-02-23 10:14:52
+136	val_136	2012-02-23 10:14:52
+153	val_153	2012-02-23 10:14:52
+17	val_17	2012-02-23 10:14:52
+170	val_170	2012-02-23 10:14:52
+187	val_187	2012-02-23 10:14:52
+221	val_221	2012-02-23 10:14:52
+238	val_238	2012-02-23 10:14:52
+255	val_255	2012-02-23 10:14:52
+272	val_272	2012-02-23 10:14:52
+289	val_289	2012-02-23 10:14:52
+306	val_306	2012-02-23 10:14:52
+323	val_323	2012-02-23 10:14:52
+34	val_34	2012-02-23 10:14:52
+374	val_374	2012-02-23 10:14:52
+459	val_459	2012-02-23 10:14:52
+493	val_493	2012-02-23 10:14:52
+51	val_51	2012-02-23 10:14:52
+85	val_85	2012-02-23 10:14:52
+PREHOOK: query: DROP TABLE hbase_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: DROP TABLE hbase_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754000 WHERE (key % 17) = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754000 WHERE (key % 17) = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+0	val_0	2012-02-22 17:15:54
+119	val_119	2012-02-22 17:15:54
+136	val_136	2012-02-22 17:15:54
+153	val_153	2012-02-22 17:15:54
+17	val_17	2012-02-22 17:15:54
+170	val_170	2012-02-22 17:15:54
+187	val_187	2012-02-22 17:15:54
+221	val_221	2012-02-22 17:15:54
+238	val_238	2012-02-22 17:15:54
+255	val_255	2012-02-22 17:15:54
+272	val_272	2012-02-22 17:15:54
+289	val_289	2012-02-22 17:15:54
+306	val_306	2012-02-22 17:15:54
+323	val_323	2012-02-22 17:15:54
+34	val_34	2012-02-22 17:15:54
+374	val_374	2012-02-22 17:15:54
+459	val_459	2012-02-22 17:15:54
+493	val_493	2012-02-22 17:15:54
+51	val_51	2012-02-22 17:15:54
+85	val_85	2012-02-22 17:15:54
+PREHOOK: query: DROP TABLE hbase_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: DROP TABLE hbase_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: insert overwrite table hbase_table select key,value,ts FROM
+(
+  select key, value, 100000000000 as ts from src WHERE (key % 33) = 0
+  UNION ALL
+  select key, value, 200000000000 as ts from src WHERE (key % 37) = 0
+) T
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table
+POSTHOOK: query: insert overwrite table hbase_table select key,value,ts FROM
+(
+  select key, value, 100000000000 as ts from src WHERE (key % 33) = 0
+  UNION ALL
+  select key, value, 200000000000 as ts from src WHERE (key % 37) = 0
+) T
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table
+PREHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hbase_table
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time < 200000000000)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time < 200000000000))) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+165	val_165	1973-03-03 01:46:40
+396	val_396	1973-03-03 01:46:40
+PREHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hbase_table
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time > 100000000000)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time > 100000000000))) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+111	val_111	1976-05-03 12:33:20
+222	val_222	1976-05-03 12:33:20
+296	val_296	1976-05-03 12:33:20
+333	val_333	1976-05-03 12:33:20
+PREHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hbase_table
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time <= 100000000000)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time <= 100000000000))) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+165	val_165	1973-03-03 01:46:40
+396	val_396	1973-03-03 01:46:40
+PREHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hbase_table
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time >= 200000000000)) (type: boolean)
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time >= 200000000000))) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table
+#### A masked pattern was here ####
+111	val_111	1976-05-03 12:33:20
+222	val_222	1976-05-03 12:33:20
+296	val_296	1976-05-03 12:33:20
+333	val_333	1976-05-03 12:33:20

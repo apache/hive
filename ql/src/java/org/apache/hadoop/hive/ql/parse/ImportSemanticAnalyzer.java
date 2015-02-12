@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -48,10 +47,8 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -63,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.mapred.OutputFormat;
 
 /**
  * ImportSemanticAnalyzer.
@@ -96,8 +94,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
       Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(),
           fromURI.getPath());
-      boolean isLocal = FileUtils.isLocalFile(conf, fromURI);
-      inputs.add(new ReadEntity(fromPath, isLocal));
+      inputs.add(toReadEntity(fromPath));
       try {
         Path metadataPath = new Path(fromPath, METADATA_NAME);
         Map.Entry<org.apache.hadoop.hive.metastore.api.Table,
@@ -167,6 +164,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_TABLELOCATION:
           String location = unescapeSQLString(child.getChild(0).getText());
           location = EximUtil.relativeToAbsolutePath(conf, location);
+          inputs.add(toReadEntity(location));
           tblDesc.setLocation(location);
           break;
         case HiveParser.TOK_TAB:
@@ -360,7 +358,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throws IOException, SemanticException {
     LOG.debug("checking emptiness of " + targetPath.toString());
     if (fs.exists(targetPath)) {
-      FileStatus[] status = fs.listStatus(targetPath);
+      FileStatus[] status = fs.listStatus(targetPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       if (status.length > 0) {
         LOG.debug("Files inc. " + status[0].getPath().toString()
             + " found in path : " + targetPath.toString());
@@ -462,8 +460,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
        */
       try {
         Class<?> origin = Class.forName(importedofc, true, Utilities.getSessionSpecifiedClassLoader());
-        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
-            .getOutputFormatSubstitute(origin,false);
+        Class<? extends OutputFormat> replaced = HiveFileFormatUtils
+            .getOutputFormatSubstitute(origin);
         if (replaced == null) {
           throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
             .getMsg());

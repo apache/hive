@@ -19,21 +19,18 @@
 package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
 
 /**
  * A storage implementation based on storing everything in ZooKeeper.
@@ -60,29 +57,29 @@ public class ZooKeeperStorage implements TempletonStorage {
 
   private static final Log LOG = LogFactory.getLog(ZooKeeperStorage.class);
 
-  private ZooKeeper zk;
+  private CuratorFramework zk;
 
   /**
    * Open a ZooKeeper connection for the JobState.
    */
-  public static ZooKeeper zkOpen(String zkHosts, int zkSessionTimeout)
+  public static CuratorFramework zkOpen(String zkHosts, int zkSessionTimeoutMs)
     throws IOException {
-    return new ZooKeeper(zkHosts,
-      zkSessionTimeout,
-      new Watcher() {
-        @Override
-        synchronized public void process(WatchedEvent event) {
-        }
-      });
+    //do we need to add a connection status listener?  What will that do?
+    ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
+    CuratorFramework zk = CuratorFrameworkFactory.newClient(zkHosts, zkSessionTimeoutMs,
+      CuratorFrameworkFactory.builder().getConnectionTimeoutMs(), retryPolicy);
+    zk.start();
+    return zk;
   }
 
   /**
    * Open a ZooKeeper connection for the JobState.
    */
-  public static ZooKeeper zkOpen(Configuration conf)
-    throws IOException {
+  public static CuratorFramework zkOpen(Configuration conf) throws IOException {
+    /*the silly looking call to Builder below is to get the default value of session timeout
+    from Curator which itself exposes it as system property*/
     return zkOpen(conf.get(ZK_HOSTS),
-      conf.getInt(ZK_SESSION_TIMEOUT, 30000));
+      conf.getInt(ZK_SESSION_TIMEOUT, CuratorFrameworkFactory.builder().getSessionTimeoutMs()));
   }
 
   public ZooKeeperStorage() {
@@ -93,15 +90,9 @@ public class ZooKeeperStorage implements TempletonStorage {
   /**
    * Close this ZK connection.
    */
-  public void close()
-    throws IOException {
+  public void close() throws IOException {
     if (zk != null) {
-      try {
-        zk.close();
-        zk = null;
-      } catch (InterruptedException e) {
-        throw new IOException("Closing ZooKeeper connection", e);
-      }
+      zk.close();
     }
   }
 
@@ -118,48 +109,54 @@ public class ZooKeeperStorage implements TempletonStorage {
    */
   public void create(Type type, String id)
     throws IOException {
+    boolean wasCreated = false;
     try {
-      String[] paths = getPaths(makeZnode(type, id));
-      boolean wasCreated = false;
-      for (String znode : paths) {
+      zk.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).withACL(Ids.OPEN_ACL_UNSAFE).forPath(makeZnode(type, id));
+      wasCreated = true;
+    }
+    catch(KeeperException.NodeExistsException ex) {
+      //we just created top level node for this jobId
+    }
+    catch(Exception ex) {
+      throw new IOException("Error creating " + makeZnode(type, id), ex);
+    }
+    if(wasCreated) {
+      try {
+        // Really not sure if this should go here.  Will have
+        // to see how the storage mechanism evolves.
+        if (type.equals(Type.JOB)) {
+          JobStateTracker jt = new JobStateTracker(id, zk, false, job_trackingpath);
+          jt.create();
+        }
+      } catch (Exception e) {
+        LOG.error("Error tracking (jobId=" + id + "): " + e.getMessage());
+        // If we couldn't create the tracker node, don't create the main node.
         try {
-          zk.create(znode, new byte[0],
-            Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-          wasCreated = true;
-        } catch (KeeperException.NodeExistsException e) {
+          zk.delete().forPath(makeZnode(type, id));//default version is -1
+        }
+        catch(Exception ex) {
+          //EK: it's not obvious that this is the right logic, if we don't record the 'callback'
+          //for example and never notify the client of job completion
+          throw new IOException("Failed to delete " + makeZnode(type, id) + ":" + ex);
         }
       }
-      if (wasCreated) {
-        try {
-          // Really not sure if this should go here.  Will have
-          // to see how the storage mechanism evolves.
-          if (type.equals(Type.JOB)) {
-            JobStateTracker jt = new JobStateTracker(id, zk, false,
-              job_trackingpath);
-            jt.create();
-          }
-        } catch (Exception e) {
-          LOG.warn("Error tracking: " + e.getMessage());
-          // If we couldn't create the tracker node, don't
-          // create the main node.
-          zk.delete(makeZnode(type, id), -1);
-        }
-      }
-      if (zk.exists(makeZnode(type, id), false) == null)
+    }
+    try {
+      if (zk.checkExists().forPath(makeZnode(type, id)) == null) {
         throw new IOException("Unable to create " + makeZnode(type, id));
-      if (wasCreated) {
-        try {
-          saveField(type, id, "created",
-            Long.toString(System.currentTimeMillis()));
-        } catch (NotFoundException nfe) {
-          // Wow, something's really wrong.
-          throw new IOException("Couldn't write to node " + id, nfe);
-        }
       }
-    } catch (KeeperException e) {
-      throw new IOException("Creating " + id, e);
-    } catch (InterruptedException e) {
-      throw new IOException("Creating " + id, e);
+    }
+    catch (Exception ex) {
+      throw new IOException(ex);
+    }
+    if (wasCreated) {
+      try {
+        saveField(type, id, "created",
+          Long.toString(System.currentTimeMillis()));
+      } catch (NotFoundException nfe) {
+        // Wow, something's really wrong.
+        throw new IOException("Couldn't write to node " + id, nfe);
+      }
     }
   }
 
@@ -198,25 +195,14 @@ public class ZooKeeperStorage implements TempletonStorage {
 
   /**
    * A helper method that sets a field value.
-   * @param type
-   * @param id
-   * @param name
-   * @param val
-   * @throws KeeperException
-   * @throws UnsupportedEncodingException
-   * @throws InterruptedException
+   * @throws java.lang.Exception
    */
-  private void setFieldData(Type type, String id, String name, String val)
-    throws KeeperException, UnsupportedEncodingException, InterruptedException {
+  private void setFieldData(Type type, String id, String name, String val) throws Exception {
     try {
-      zk.create(makeFieldZnode(type, id, name),
-        val.getBytes(ENCODING),
-        Ids.OPEN_ACL_UNSAFE,
-        CreateMode.PERSISTENT);
+      zk.create().withMode(CreateMode.PERSISTENT).withACL(Ids.OPEN_ACL_UNSAFE)
+        .forPath(makeFieldZnode(type, id, name), val.getBytes(ENCODING));
     } catch (KeeperException.NodeExistsException e) {
-      zk.setData(makeFieldZnode(type, id, name),
-        val.getBytes(ENCODING),
-        -1);
+      zk.setData().forPath(makeFieldZnode(type, id, name), val.getBytes(ENCODING));
     }
   }
 
@@ -251,7 +237,7 @@ public class ZooKeeperStorage implements TempletonStorage {
   @Override
   public String getField(Type type, String id, String key) {
     try {
-      byte[] b = zk.getData(makeFieldZnode(type, id, key), false, null);
+      byte[] b = zk.getData().forPath(makeFieldZnode(type, id, key));
       return new String(b, ENCODING);
     } catch (Exception e) {
       return null;
@@ -259,26 +245,12 @@ public class ZooKeeperStorage implements TempletonStorage {
   }
 
   @Override
-  public Map<String, String> getFields(Type type, String id) {
-    HashMap<String, String> map = new HashMap<String, String>();
-    try {
-      for (String node : zk.getChildren(makeZnode(type, id), false)) {
-        byte[] b = zk.getData(makeFieldZnode(type, id, node),
-          false, null);
-        map.put(node, new String(b, ENCODING));
-      }
-    } catch (Exception e) {
-      return map;
-    }
-    return map;
-  }
-
-  @Override
   public boolean delete(Type type, String id) throws NotFoundException {
     try {
-      for (String child : zk.getChildren(makeZnode(type, id), false)) {
+      
+      for (String child : zk.getChildren().forPath(makeZnode(type, id))) {
         try {
-          zk.delete(makeFieldZnode(type, id, child), -1);
+          zk.delete().forPath(makeFieldZnode(type, id, child));
         } catch (Exception e) {
           // Other nodes may be trying to delete this at the same time,
           // so just log errors and skip them.
@@ -287,7 +259,7 @@ public class ZooKeeperStorage implements TempletonStorage {
         }
       }
       try {
-        zk.delete(makeZnode(type, id), -1);
+        zk.delete().forPath(makeZnode(type, id));
       } catch (Exception e) {
         // Same thing -- might be deleted by other nodes, so just go on.
         throw new NotFoundException("Couldn't delete " +
@@ -302,55 +274,12 @@ public class ZooKeeperStorage implements TempletonStorage {
   }
 
   @Override
-  public List<String> getAll() {
-    ArrayList<String> allNodes = new ArrayList<String>();
-    for (Type type : Type.values()) {
-      allNodes.addAll(getAllForType(type));
-    }
-    return allNodes;
-  }
-
-  @Override
   public List<String> getAllForType(Type type) {
     try {
-      return zk.getChildren(getPath(type), false);
+      return zk.getChildren().forPath(getPath(type));
     } catch (Exception e) {
       return new ArrayList<String>();
     }
-  }
-
-  @Override
-  public List<String> getAllForKey(String key, String value) {
-    ArrayList<String> allNodes = new ArrayList<String>();
-    try {
-      for (Type type : Type.values()) {
-        allNodes.addAll(getAllForTypeAndKey(type, key, value));
-      }
-    } catch (Exception e) {
-      LOG.info("Couldn't find children.");
-    }
-    return allNodes;
-  }
-
-  @Override
-  public List<String> getAllForTypeAndKey(Type type, String key, String value) {
-    ArrayList<String> allNodes = new ArrayList<String>();
-    try {
-      for (String id : zk.getChildren(getPath(type), false)) {
-        for (String field : zk.getChildren(id, false)) {
-          if (field.endsWith("/" + key)) {
-            byte[] b = zk.getData(field, false, null);
-            if (new String(b, ENCODING).equals(value)) {
-              allNodes.add(id);
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      // Log and go to the next type -- this one might not exist
-      LOG.info("Couldn't find children of " + getPath(type));
-    }
-    return allNodes;
   }
 
   @Override

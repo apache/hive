@@ -9,7 +9,6 @@ select * from src limit 10;
 explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10;
 select * from srcpart where ds='2008-04-08' AND hr='11' limit 10;
 
--- negative, select expression
 explain select key from src limit 10;
 select key from src limit 10;
 
@@ -62,6 +61,16 @@ select * from src TABLESAMPLE (0.25 PERCENT);
 explain select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (0.25 PERCENT);
 select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (0.25 PERCENT);
 
+-- sub query
+explain
+select key, value from (select value key,key value from src where key > 200) a where value < 250 limit 20;
+select key, value from (select value key,key value from src where key > 200) a where value < 250 limit 20;
+
+-- lateral view
+explain
+select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20;
+select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20;
+
 -- non deterministic func
 explain select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1;
 select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1;
@@ -77,9 +86,6 @@ explain create table srcx as select distinct key, value from src;
 
 -- negative, analyze
 explain analyze table src compute statistics;
-
--- negative, subq
-explain select a.* from (select * from src) a;
 
 -- negative, join
 explain select * from src join src src2 on src.key=src2.key;

@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -28,7 +28,6 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <optiq.version>0.9.1-incubating-SNAPSHOT</optiq.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
@@ -59,6 +58,11 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>spark-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->
@@ -112,6 +116,11 @@
       <version>${log4j.version}</version>
     </dependency>
     <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>apache-log4j-extras</artifactId>
+      <version>${log4j-extras.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
       <version>${antlr.version}</version>
@@ -131,6 +140,12 @@
       <artifactId>avro-mapred</artifactId>
       <classifier>hadoop2</classifier>
       <version>${avro.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -158,6 +173,23 @@
       <version>${zookeeper.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+      <version>${curator.version}</version>
+    </dependency>
+    <dependency>
+    <groupId>org.apache.curator</groupId>
+      <artifactId>apache-curator</artifactId>
+      <version>${curator.version}</version>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-test</artifactId>
+      <version>${curator.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
@@ -183,9 +215,9 @@
       <version>${datanucleus-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.optiq</groupId>
-      <artifactId>optiq-core</artifactId>
-      <version>${optiq.version}</version>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-core</artifactId>
+      <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus. 
@@ -201,9 +233,9 @@
       </exclusions>
     </dependency>   
     <dependency>
-      <groupId>org.apache.optiq</groupId>
-      <artifactId>optiq-avatica</artifactId>
-      <version>${optiq.version}</version>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-avatica</artifactId>
+      <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus. 
@@ -274,6 +306,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>${jline.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <version>${tez.version}</version>
@@ -302,6 +339,10 @@
        <exclusion>
          <groupId>org.apache.hadoop</groupId>
          <artifactId>hadoop-yarn-client</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
        </exclusion>
       </exclusions>
     </dependency>
@@ -401,6 +442,12 @@
        </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -427,6 +474,12 @@
           <version>${hadoop-20S.version}</version>
          <optional>true</optional>
         </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-tools</artifactId>
+          <version>${hadoop-20S.version}</version>
+          <optional>true</optional>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
@@ -435,6 +488,12 @@
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-archives</artifactId>
           <version>${hadoop-23.version}</version>
           <optional>true</optional>
         </dependency>
@@ -617,12 +676,10 @@
                   <include>org.json:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
-                  <include>org.apache.hive.shims:hive-shims-0.20</include>
                   <include>org.apache.hive.shims:hive-shims-0.20S</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-common</include>
-                  <include>org.apache.hive.shims:hive-shims-common-secure</include>
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
@@ -631,6 +688,8 @@
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
+                  <include>org.apache.hive:spark-client</include>
+                  <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>
               <relocations>

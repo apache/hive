@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -134,14 +132,29 @@ public final class VectorExpressionWriterFactory {
      * The base implementation must be overridden by the Decimal specialization
      */
     @Override
-    public Object writeValue(Decimal128 value) throws HiveException {
+    public Object writeValue(HiveDecimal value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
 
     /**
      * The base implementation must be overridden by the Decimal specialization
      */
-    public Object setValue(Object field, Decimal128 value) throws HiveException {
+    @Override
+    public Object writeValue(HiveDecimalWritable value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the Decimal specialization
+     */
+    public Object setValue(Object field, HiveDecimalWritable value) throws HiveException {
+      throw new HiveException("Internal error: should not reach here");
+    }
+
+    /**
+     * The base implementation must be overridden by the Decimal specialization
+     */
+    public Object setValue(Object field, HiveDecimal value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
   }
@@ -465,24 +478,35 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object writeValue(Decimal128 value) throws HiveException {
-        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj,
-            HiveDecimal.create(value.toBigDecimal()));
+      public Object writeValue(HiveDecimalWritable value) throws HiveException {
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj, value);
       }
 
       @Override
-      public Object setValue(Object field, Decimal128 value) {
+      public Object writeValue(HiveDecimal value) throws HiveException {
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(obj, value);
+      }
+
+      @Override
+      public Object setValue(Object field, HiveDecimalWritable value) {
         if (null == field) {
           field = initValue(null);
         }
-        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field,
-            HiveDecimal.create(value.toBigDecimal()));
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field, value);
+      }
+
+      @Override
+      public Object setValue(Object field, HiveDecimal value) {
+        if (null == field) {
+          field = initValue(null);
+        }
+        return ((SettableHiveDecimalObjectInspector) this.objectInspector).set(field, value);
       }
 
       @Override
       public Object initValue(Object ignored) {
         return ((SettableHiveDecimalObjectInspector) this.objectInspector).create(
-            HiveDecimal.create(BigDecimal.ZERO));
+            HiveDecimal.ZERO);
       }
     }.init(fieldObjInspector);
   }
@@ -1060,6 +1084,31 @@ public final class VectorExpressionWriterFactory {
     closure.assign(writers, oids);
   }
 
+  /**
+   * Creates the value writers for an struct object inspector.
+   * Creates an appropriate output object inspector.
+   */
+  public static void processVectorInspector(
+      StructObjectInspector structObjInspector,
+      SingleOIDClosure closure)
+      throws HiveException {
+    List<? extends StructField> fields = structObjInspector.getAllStructFieldRefs();
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[fields.size()];
+    List<ObjectInspector> oids = new ArrayList<ObjectInspector>(writers.length);
+    ArrayList<String> columnNames = new ArrayList<String>();
+    int i = 0;
+    for(StructField field : fields) {
+      ObjectInspector fieldObjInsp = field.getFieldObjectInspector();
+      writers[i] = VectorExpressionWriterFactory.
+                genVectorExpressionWritable(fieldObjInsp);
+      columnNames.add(field.getFieldName());
+      oids.add(writers[i].getObjectInspector());
+      i++;
+    }
+    ObjectInspector objectInspector = ObjectInspectorFactory.
+        getStandardStructObjectInspector(columnNames,oids);
+    closure.assign(writers, objectInspector);
+  }
 
   /**
    * Returns {@link VectorExpressionWriter} objects for the fields in the given

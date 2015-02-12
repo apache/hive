@@ -25,9 +25,11 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 
 public class ZooKeeperHiveClientHelper {
   public static final Log LOG = LogFactory.getLog(ZooKeeperHiveClientHelper.class.getName());
@@ -53,16 +55,18 @@ public class ZooKeeperHiveClientHelper {
     String zooKeeperEnsemble = connParams.getZooKeeperEnsemble();
     String zooKeeperNamespace =
         connParams.getSessionVars().get(JdbcConnectionParams.ZOOKEEPER_NAMESPACE);
+    if ((zooKeeperNamespace == null) || (zooKeeperNamespace.isEmpty())) {
+      zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_DEFAULT_NAMESPACE;
+    }
     List<String> serverHosts;
     Random randomizer = new Random();
     String serverNode;
-    // Pick a random HiveServer2 host from the ZooKeeper namspace
+    CuratorFramework zooKeeperClient =
+        CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
+            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+    zooKeeperClient.start();
     try {
-      ZooKeeper zooKeeperClient =
-          new ZooKeeper(zooKeeperEnsemble, JdbcConnectionParams.ZOOKEEPER_SESSION_TIMEOUT,
-              new ZooKeeperHiveClientHelper.DummyWatcher());
-      // All the HiveServer2 host nodes that are in ZooKeeper currently
-      serverHosts = zooKeeperClient.getChildren("/" + zooKeeperNamespace, false);
+      serverHosts = zooKeeperClient.getChildren().forPath("/" + zooKeeperNamespace);
       // Remove the znodes we've already tried from this list
       serverHosts.removeAll(connParams.getRejectedHostZnodePaths());
       if (serverHosts.isEmpty()) {
@@ -72,15 +76,19 @@ public class ZooKeeperHiveClientHelper {
       // Now pick a host randomly
       serverNode = serverHosts.get(randomizer.nextInt(serverHosts.size()));
       connParams.setCurrentHostZnodePath(serverNode);
-      // Read the value from the node (UTF-8 enoded byte array) and convert it to a String
       String serverUri =
-          new String(zooKeeperClient.getData("/" + zooKeeperNamespace + "/" + serverNode, false,
-              null), Charset.forName("UTF-8"));
+          new String(
+              zooKeeperClient.getData().forPath("/" + zooKeeperNamespace + "/" + serverNode),
+              Charset.forName("UTF-8"));
       LOG.info("Selected HiveServer2 instance with uri: " + serverUri);
       return serverUri;
     } catch (Exception e) {
       throw new ZooKeeperHiveClientException("Unable to read HiveServer2 uri from ZooKeeper", e);
+    } finally {
+      // Close the client connection with ZooKeeper
+      if (zooKeeperClient != null) {
+        zooKeeperClient.close();
+      }
     }
   }
-
 }

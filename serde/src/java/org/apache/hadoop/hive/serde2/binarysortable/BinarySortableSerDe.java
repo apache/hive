@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -78,7 +79,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -110,6 +110,9 @@ import org.apache.hadoop.io.Writable;
  * fields in the same top-level field will have the same sort order.
  *
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.SERIALIZATION_SORT_ORDER})
 public class BinarySortableSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(BinarySortableSerDe.class.getName());
@@ -776,7 +779,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
         // get the scale factor to turn big decimal into a decimal < 1
         int factor = dec.precision() - dec.scale();
-        factor = sign != -1 ? factor : -factor;
+        factor = sign == 1 ? factor : -factor;
 
         // convert the absolute big decimal to string
         dec.scaleByPowerOfTen(Math.abs(dec.scale()));

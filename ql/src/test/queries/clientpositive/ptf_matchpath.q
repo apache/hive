@@ -12,6 +12,8 @@ FL_NUM string
 
 LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny;
 
+-- SORT_QUERY_RESULTS
+
 -- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
@@ -32,5 +34,15 @@ from matchpath(on
       arg2('LATE'), arg3(arr_delay > 15), 
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
-where fl_num = 1142;       
+where fl_num = 1142;
+
+-- 3. empty partition.
+select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
+from matchpath(on
+        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        sort by fl_num, year, month, day_of_month
+      arg1('LATE.LATE+'),
+      arg2('LATE'), arg3(arr_delay > 15),
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
+   );
    

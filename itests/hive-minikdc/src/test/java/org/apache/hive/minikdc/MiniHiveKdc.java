@@ -30,7 +30,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.security.GroupMappingServiceProvider;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -129,9 +129,9 @@ public class MiniHiveKdc {
    */
   public UserGroupInformation loginUser(String principal)
       throws Exception {
-    ShimLoader.getHadoopShims().loginUserFromKeytab(principal,
+    UserGroupInformation.loginUserFromKeytab(principal,
         getKeyTabFile(principal));
-    return ShimLoader.getHadoopShims().getUGIForConf(conf);
+    return Utils.getUGI();
   }
 
   public Properties getKdcConf() {

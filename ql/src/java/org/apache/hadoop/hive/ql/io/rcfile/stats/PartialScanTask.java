@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.mr.Throttle;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -50,7 +51,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -102,7 +102,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
         CombineHiveInputFormat.class.getName());
     success = true;
-    ShimLoader.getHadoopShims().prepareJobOutput(job);
+    HiveFileFormatUtils.prepareJobOutput(job);
     job.setOutputFormat(HiveOutputFormatImpl.class);
     job.setMapperClass(work.getMapperClass());
 
@@ -140,9 +140,6 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     }
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
-    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
 
     LOG.info("Using " + inpFormat);
 
@@ -150,7 +147,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       job.setInputFormat((Class<? extends InputFormat>) (Class
           .forName(inpFormat)));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
     job.setOutputKeyClass(NullWritable.class);

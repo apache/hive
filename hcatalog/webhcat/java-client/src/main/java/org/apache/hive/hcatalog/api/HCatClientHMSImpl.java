@@ -23,18 +23,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -329,8 +336,7 @@ public class HCatClientHMSImpl extends HCatClient {
     throws HCatException {
     List<HCatPartition> hcatPtns = new ArrayList<HCatPartition>();
     try {
-      Table table = hmsClient.getTable(dbName, tblName);
-      HCatTable hcatTable = new HCatTable(table);
+      HCatTable hcatTable = getTable(dbName, tblName);
       List<Partition> hivePtns = hmsClient.listPartitions(
         checkDB(dbName), tblName, (short) -1);
       for (Partition ptn : hivePtns) {
@@ -354,6 +360,31 @@ public class HCatClientHMSImpl extends HCatClient {
     return listPartitionsByFilter(dbName, tblName, getFilterString(partitionSpec));
   }
 
+  @Override
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public HCatPartitionSpec getPartitionSpecs(String dbName, String tableName, int maxPartitions) throws HCatException {
+    try {
+      return new HCatPartitionSpec(getTable(dbName, tableName),
+                                   hmsClient.listPartitionSpecs(dbName, tableName, maxPartitions));
+    }
+    catch (NoSuchObjectException e) {
+      throw new ObjectNotFoundException(
+          "NoSuchObjectException while retrieving partition.", e);
+    } catch (MetaException e) {
+      throw new HCatException(
+          "MetaException while retrieving partition.", e);
+    } catch (TException e) {
+      throw new ConnectionFailureException(
+          "TException while retrieving partition.", e);
+    }
+  }
+
+  @Override
+  public HCatPartitionSpec getPartitionSpecs(String dbName, String tableName, Map<String, String> partitionSelector, int maxPartitions) throws HCatException {
+    return listPartitionSpecsByFilter(dbName, tableName, getFilterString(partitionSelector), maxPartitions);
+  }
+
   private static String getFilterString(Map<String, String> partitionSpec) {
     final String AND = " AND ";
 
@@ -374,7 +405,7 @@ public class HCatClientHMSImpl extends HCatClient {
                     Map<String, String> partitionSpec) throws HCatException {
     HCatPartition partition = null;
     try {
-      HCatTable hcatTable = getTable(checkDB(dbName), tableName);
+      HCatTable hcatTable = getTable(dbName, tableName);
       List<HCatFieldSchema> partitionColumns = hcatTable.getPartCols();
       if (partitionColumns.size() != partitionSpec.size()) {
         throw new HCatException("Partition-spec doesn't have the right number of partition keys.");
@@ -414,7 +445,7 @@ public class HCatClientHMSImpl extends HCatClient {
     Table tbl = null;
     try {
       tbl = hmsClient.getTable(partInfo.getDatabaseName(),
-        partInfo.getTableName());
+          partInfo.getTableName());
       // TODO: Should be moved out.
       if (tbl.getPartitionKeysSize() == 0) {
         throw new HCatException("The table " + partInfo.getTableName()
@@ -494,7 +525,7 @@ public class HCatClientHMSImpl extends HCatClient {
     try {
       HCatTable table = getTable(dbName, tblName);
       List<Partition> hivePtns = hmsClient.listPartitionsByFilter(
-        checkDB(dbName), tblName, filter, (short) -1);
+          table.getDbName(), table.getTableName(), filter, (short) -1);
       for (Partition ptn : hivePtns) {
         hcatPtns.add(new HCatPartition(table, ptn));
       }
@@ -509,6 +540,28 @@ public class HCatClientHMSImpl extends HCatClient {
         "TException while fetching partitions.", e);
     }
     return hcatPtns;
+  }
+
+  @Override
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public HCatPartitionSpec listPartitionSpecsByFilter(String dbName, String tblName, String filter, int maxPartitions)
+      throws HCatException {
+    try {
+      return new HCatPartitionSpec(getTable(dbName, tblName),
+                                   hmsClient.listPartitionSpecsByFilter(dbName, tblName, filter, maxPartitions));
+    }
+    catch(MetaException e) {
+      throw new HCatException("MetaException while fetching partitions.", e);
+    }
+    catch (NoSuchObjectException e) {
+      throw new ObjectNotFoundException(
+          "NoSuchObjectException while fetching partitions.", e);
+    }
+    catch (TException e) {
+      throw new ConnectionFailureException(
+        "TException while fetching partitions.", e);
+    }
   }
 
   @Override
@@ -573,7 +626,7 @@ public class HCatClientHMSImpl extends HCatClient {
     String token = null;
     try {
       token = hmsClient.getDelegationToken(owner,
-        renewerKerberosPrincipalName);
+          renewerKerberosPrincipalName);
     } catch (MetaException e) {
       throw new HCatException(
         "MetaException while getting delegation token.", e);
@@ -751,9 +804,34 @@ public class HCatClientHMSImpl extends HCatClient {
   }
 
   @Override
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public int addPartitionSpec(HCatPartitionSpec partitionSpec) throws HCatException {
+
+    try {
+      return hmsClient.add_partitions_pspec(partitionSpec.toPartitionSpecProxy());
+    } catch (InvalidObjectException e) {
+      throw new HCatException(
+          "InvalidObjectException while adding partition.", e);
+    } catch (AlreadyExistsException e) {
+      throw new HCatException(
+          "AlreadyExistsException while adding partition.", e);
+    } catch (MetaException e) {
+      throw new HCatException("MetaException while adding partition.", e);
+    } catch (NoSuchObjectException e) {
+      throw new ObjectNotFoundException("The table "
+          + "could not be found.", e);
+    } catch (TException e) {
+      throw new ConnectionFailureException(
+          "TException while adding partition.", e);
+    }
+  }
+
+  @Override
   public String getMessageBusTopicName(String dbName, String tableName) throws HCatException {
     try {
-      return hmsClient.getTable(dbName, tableName).getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
+      return hmsClient.getTable(dbName, tableName).getParameters().get(
+          HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
     }
     catch (MetaException e) {
       throw new HCatException("MetaException while retrieving JMS Topic name.", e);
@@ -764,7 +842,36 @@ public class HCatClientHMSImpl extends HCatClient {
           "TException while retrieving JMS Topic name.", e);
     }
   }
-  
+
+  @Override
+  public List<HCatNotificationEvent> getNextNotification(long lastEventId, int maxEvents,
+                                                         IMetaStoreClient.NotificationFilter filter)
+      throws HCatException {
+    try {
+      List<HCatNotificationEvent> events = new ArrayList<HCatNotificationEvent>();
+      NotificationEventResponse rsp = hmsClient.getNextNotification(lastEventId, maxEvents, filter);
+      if (rsp != null && rsp.getEvents() != null) {
+        for (NotificationEvent event : rsp.getEvents()) {
+          events.add(new HCatNotificationEvent(event));
+        }
+      }
+      return events;
+    } catch (TException e) {
+      throw new ConnectionFailureException("TException while getting notifications", e);
+    }
+  }
+
+  @Override
+  public long getCurrentNotificationEventId() throws HCatException {
+    try {
+      CurrentNotificationEventId id = hmsClient.getCurrentNotificationEventId();
+      return id.getEventId();
+    } catch (TException e) {
+      throw new ConnectionFailureException("TException while getting current notification event " +
+          "id " , e);
+    }
+  }
+
   @Override
   public String serializeTable(HCatTable hcatTable) throws HCatException {
     return MetadataSerializer.get().serializeTable(hcatTable);
@@ -824,5 +931,19 @@ public class HCatClientHMSImpl extends HCatClient {
       partitions.add(partition);
     }
     return partitions;
+  }
+
+  @Override
+  public List<String> serializePartitionSpec(HCatPartitionSpec partitionSpec) throws HCatException {
+    return MetadataSerializer.get().serializePartitionSpec(partitionSpec);
+  }
+
+  @Override
+  public HCatPartitionSpec deserializePartitionSpec(List<String> hcatPartitionSpecStrings) throws HCatException {
+    HCatPartitionSpec hcatPartitionSpec = MetadataSerializer.get()
+        .deserializePartitionSpec(hcatPartitionSpecStrings);
+    hcatPartitionSpec
+        .hcatTable(getTable(hcatPartitionSpec.getDbName(), hcatPartitionSpec.getTableName()));
+    return hcatPartitionSpec;
   }
 }

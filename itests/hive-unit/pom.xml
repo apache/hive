@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <spark.home>${basedir}/${hive.path.to.root}/itests/hive-unit/target/spark</spark.home>
   </properties>
 
   <dependencies>
@@ -109,6 +110,12 @@
       <classifier>tests</classifier>
     </dependency>
     <!-- test inter-project -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -257,6 +264,20 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
+          <execution>
+            <id>download-spark</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <exec executable="bash" dir="${basedir}" failonerror="true">
+                  <arg line="../target/download.sh"/>
+                </exec>
+              </target>
+            </configuration>
+          </execution>
           <execution>
             <id>setup-metastore-scripts</id>
             <phase>process-test-resources</phase>

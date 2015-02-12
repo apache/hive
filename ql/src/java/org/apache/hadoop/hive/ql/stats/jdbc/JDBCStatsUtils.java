@@ -124,14 +124,24 @@ public class JDBCStatsUtils {
    * Prepares CREATE TABLE query
    */
   public static String getCreate(String comment) {
-    String create = "CREATE TABLE /* " + comment + " */ " + JDBCStatsUtils.getStatTableName() +
-          " (" + getTimestampColumnName() + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-          JDBCStatsUtils.getIdColumnName() + " VARCHAR(255) PRIMARY KEY ";
+    String create = "CREATE TABLE /* " + comment + " */ " + JDBCStatsUtils.getStatTableName()
+        + " (" + getTimestampColumnName() + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+        + JDBCStatsUtils.getIdColumnName() + " VARCHAR("
+        + JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE + ") PRIMARY KEY ";
     for (int i = 0; i < supportedStats.size(); i++) {
       create += ", " + getStatColumnName(supportedStats.get(i)) + " BIGINT ";
     }
     create += ")";
     return create;
+  }
+
+  /**
+   * Prepares ALTER TABLE query
+   */
+  public static String getAlterIdColumn() {
+    return "ALTER TABLE " + JDBCStatsUtils.getStatTableName() + " ALTER COLUMN "
+        + JDBCStatsUtils.getIdColumnName() + " VARCHAR("
+        + JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE + ")";
   }
 
   /**
@@ -191,4 +201,12 @@ public class JDBCStatsUtils {
     return delete;
   }
 
+  /**
+   * Make sure the row ID fits into the row ID column in the table.
+   */
+  public static void validateRowId(String rowId) {
+    if (rowId.length() > JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE) {
+      throw new RuntimeException("ID is too big, client should have truncated it: " + rowId);
+    }
+  }
 }

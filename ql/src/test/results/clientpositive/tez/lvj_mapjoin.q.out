@@ -1,0 +1,292 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table sour1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table sour1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table sour2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table sour2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table expod1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table expod1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table expod2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table expod2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table sour1(id int, av1 string, av2 string, av3 string) row format delimited fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sour1
+POSTHOOK: query: create table sour1(id int, av1 string, av2 string, av3 string) row format delimited fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sour1
+PREHOOK: query: create table sour2(id int, bv1 string, bv2 string, bv3 string) row format delimited fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sour2
+POSTHOOK: query: create table sour2(id int, bv1 string, bv2 string, bv3 string) row format delimited fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sour2
+PREHOOK: query: load data local inpath '../../data/files/sour1.txt' into table sour1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sour1
+POSTHOOK: query: load data local inpath '../../data/files/sour1.txt' into table sour1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sour1
+PREHOOK: query: load data local inpath '../../data/files//sour2.txt' into table sour2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sour2
+POSTHOOK: query: load data local inpath '../../data/files//sour2.txt' into table sour2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sour2
+PREHOOK: query: create table expod1(aid int, av array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@expod1
+POSTHOOK: query: create table expod1(aid int, av array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@expod1
+PREHOOK: query: create table expod2(bid int, bv array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@expod2
+POSTHOOK: query: create table expod2(bid int, bv array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@expod2
+PREHOOK: query: insert overwrite table expod1 select id, array(av1,av2,av3) from sour1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sour1
+PREHOOK: Output: default@expod1
+POSTHOOK: query: insert overwrite table expod1 select id, array(av1,av2,av3) from sour1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sour1
+POSTHOOK: Output: default@expod1
+POSTHOOK: Lineage: expod1.aid SIMPLE [(sour1)sour1.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: expod1.av EXPRESSION [(sour1)sour1.FieldSchema(name:av1, type:string, comment:null), (sour1)sour1.FieldSchema(name:av2, type:string, comment:null), (sour1)sour1.FieldSchema(name:av3, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table expod2 select id, array(bv1,bv2,bv3) from sour2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sour2
+PREHOOK: Output: default@expod2
+POSTHOOK: query: insert overwrite table expod2 select id, array(bv1,bv2,bv3) from sour2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sour2
+POSTHOOK: Output: default@expod2
+POSTHOOK: Lineage: expod2.bid SIMPLE [(sour2)sour2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: expod2.bv EXPRESSION [(sour2)sour2.FieldSchema(name:bv1, type:string, comment:null), (sour2)sour2.FieldSchema(name:bv2, type:string, comment:null), (sour2)sour2.FieldSchema(name:bv3, type:string, comment:null), ]
+PREHOOK: query: explain with sub1 as
+(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
+sub2 as
+(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
+select sub1.aid, sub1.avalue, sub2.bvalue
+from sub1,sub2
+where sub1.aid=sub2.bid
+PREHOOK: type: QUERY
+POSTHOOK: query: explain with sub1 as
+(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
+sub2 as
+(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
+select sub1.aid, sub1.avalue, sub2.bvalue
+from sub1,sub2
+where sub1.aid=sub2.bid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: expod1
+                  Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: aid is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                    Lateral View Forward
+                      Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: aid (type: int)
+                        outputColumnNames: aid
+                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col5
+                          Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col0 (type: int), _col5 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Map Join Operator
+                              condition map:
+                                   Inner Join 0 to 1
+                              keys:
+                                0 _col0 (type: int)
+                                1 _col0 (type: int)
+                              outputColumnNames: _col0, _col1, _col2, _col3
+                              input vertices:
+                                1 Map 2
+                              Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                              Filter Operator
+                                predicate: (_col0 = _col2) (type: boolean)
+                                Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                Select Operator
+                                  expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                                  outputColumnNames: _col0, _col1, _col2
+                                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                  File Output Operator
+                                    compressed: false
+                                    Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                    table:
+                                        input format: org.apache.hadoop.mapred.TextInputFormat
+                                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Select Operator
+                        expressions: av (type: array<string>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        UDTF Operator
+                          Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col5
+                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Select Operator
+                              expressions: _col0 (type: int), _col5 (type: string)
+                              outputColumnNames: _col0, _col1
+                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              Map Join Operator
+                                condition map:
+                                     Inner Join 0 to 1
+                                keys:
+                                  0 _col0 (type: int)
+                                  1 _col0 (type: int)
+                                outputColumnNames: _col0, _col1, _col2, _col3
+                                input vertices:
+                                  1 Map 2
+                                Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                                Filter Operator
+                                  predicate: (_col0 = _col2) (type: boolean)
+                                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                  Select Operator
+                                    expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                                    outputColumnNames: _col0, _col1, _col2
+                                    Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                    File Output Operator
+                                      compressed: false
+                                      Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                      table:
+                                          input format: org.apache.hadoop.mapred.TextInputFormat
+                                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: expod2
+                  Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: bid is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                    Lateral View Forward
+                      Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: bid (type: int)
+                        outputColumnNames: bid
+                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col5
+                          Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col0 (type: int), _col5 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col1 (type: string)
+                      Select Operator
+                        expressions: bv (type: array<string>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                        UDTF Operator
+                          Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col5
+                            Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                            Select Operator
+                              expressions: _col0 (type: int), _col5 (type: string)
+                              outputColumnNames: _col0, _col1
+                              Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                              Reduce Output Operator
+                                key expressions: _col0 (type: int)
+                                sort order: +
+                                Map-reduce partition columns: _col0 (type: int)
+                                Statistics: Num rows: 4 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                                value expressions: _col1 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: with sub1 as
+(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
+sub2 as
+(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
+select sub1.aid, sub1.avalue, sub2.bvalue
+from sub1,sub2
+where sub1.aid=sub2.bid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@expod1
+PREHOOK: Input: default@expod2
+#### A masked pattern was here ####
+POSTHOOK: query: with sub1 as
+(select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
+sub2 as
+(select bid, bvalue from expod2 lateral view explode(bv) bvs as bvalue)
+select sub1.aid, sub1.avalue, sub2.bvalue
+from sub1,sub2
+where sub1.aid=sub2.bid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@expod1
+POSTHOOK: Input: default@expod2
+#### A masked pattern was here ####
+1	a1	b1
+1	a1	b11
+1	a1	b111
+1	a11	b1
+1	a11	b11
+1	a11	b111
+1	a111	b1
+1	a111	b11
+1	a111	b111
+2	a2	b2
+2	a2	b22
+2	a2	b222
+2	a22	b2
+2	a22	b22
+2	a22	b222
+2	a222	b2
+2	a222	b22
+2	a222	b222

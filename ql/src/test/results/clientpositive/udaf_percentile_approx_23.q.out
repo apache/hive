@@ -504,3 +504,125 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t12
 #### A masked pattern was here ####
 [26.0,255.5,479.0,491.0]
+PREHOOK: query: -- NaN
+explain 
+select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+PREHOOK: type: QUERY
+POSTHOOK: query: -- NaN
+explain 
+select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: bucket
+            Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: double)
+              outputColumnNames: key
+              Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: percentile_approx(CASE WHEN ((key < 100.0)) THEN (UDFToDouble('NaN')) ELSE (key) END, 0.5)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col0 (type: array<double>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: percentile_approx(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket
+#### A masked pattern was here ####
+341.5
+PREHOOK: query: -- with CBO
+explain 
+select percentile_approx(key, 0.5) from bucket
+PREHOOK: type: QUERY
+POSTHOOK: query: -- with CBO
+explain 
+select percentile_approx(key, 0.5) from bucket
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: bucket
+            Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: double)
+              outputColumnNames: key
+              Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: percentile_approx(key, 0.5)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col0 (type: array<double>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: percentile_approx(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select percentile_approx(key, 0.5) from bucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(key, 0.5) from bucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket
+#### A masked pattern was here ####
+255.5

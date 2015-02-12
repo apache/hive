@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.datanucleus.exceptions.NucleusException;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -41,34 +42,34 @@ public class RetryingHMSHandler implements InvocationHandler {
 
   private static final Log LOG = LogFactory.getLog(RetryingHMSHandler.class);
 
-  private final IHMSHandler base;
+  private final IHMSHandler baseHandler;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
 
-  private final HiveConf hiveConf;            // base configuration
-  private final Configuration configuration;  // active configuration
+  private final HiveConf origConf;            // base configuration
+  private final Configuration activeConf;  // active configuration
 
-  private RetryingHMSHandler(HiveConf hiveConf, String name, boolean local) throws MetaException {
-    this.hiveConf = hiveConf;
-    this.base = new HiveMetaStore.HMSHandler(name, hiveConf, false);
+  private RetryingHMSHandler(HiveConf hiveConf, IHMSHandler baseHandler, boolean local) throws MetaException {
+    this.origConf = hiveConf;
+    this.baseHandler = baseHandler;
     if (local) {
-      base.setConf(hiveConf); // tests expect configuration changes applied directly to metastore
+      baseHandler.setConf(hiveConf); // tests expect configuration changes applied directly to metastore
     }
-    configuration = base.getConf();
+    activeConf = baseHandler.getConf();
 
     // This has to be called before initializing the instance of HMSHandler
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
-    MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
+    MetaStoreInit.updateConnectionURL(hiveConf, getActiveConf(), null, metaStoreInitData);
 
-    base.init();
+    baseHandler.init();
   }
 
-  public static IHMSHandler getProxy(HiveConf hiveConf, String name, boolean local)
+  public static IHMSHandler getProxy(HiveConf hiveConf, IHMSHandler baseHandler, boolean local)
       throws MetaException {
 
-    RetryingHMSHandler handler = new RetryingHMSHandler(hiveConf, name, local);
+    RetryingHMSHandler handler = new RetryingHMSHandler(hiveConf, baseHandler, local);
 
     return (IHMSHandler) Proxy.newProxyInstance(
       RetryingHMSHandler.class.getClassLoader(),
@@ -79,15 +80,15 @@ public class RetryingHMSHandler implements InvocationHandler {
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
     boolean gotNewConnectUrl = false;
-    boolean reloadConf = HiveConf.getBoolVar(hiveConf,
+    boolean reloadConf = HiveConf.getBoolVar(origConf,
         HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF);
-    long retryInterval = HiveConf.getTimeVar(hiveConf,
+    long retryInterval = HiveConf.getTimeVar(origConf,
         HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
-    int retryLimit = HiveConf.getIntVar(hiveConf,
+    int retryLimit = HiveConf.getIntVar(origConf,
         HiveConf.ConfVars.HMSHANDLERATTEMPTS);
 
     if (reloadConf) {
-      MetaStoreInit.updateConnectionURL(hiveConf, getConf(),
+      MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
         null, metaStoreInitData);
     }
 
@@ -96,9 +97,9 @@ public class RetryingHMSHandler implements InvocationHandler {
     while (true) {
       try {
         if (reloadConf || gotNewConnectUrl) {
-          base.setConf(getConf());
+          baseHandler.setConf(getActiveConf());
         }
-        return method.invoke(base, args);
+        return method.invoke(baseHandler, args);
 
       } catch (javax.jdo.JDOException e) {
         caughtException = e;
@@ -132,8 +133,9 @@ public class RetryingHMSHandler implements InvocationHandler {
           }
           throw e.getCause();
         } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-            && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-          // The JDOException may be wrapped further in a MetaException
+            && (e.getCause().getCause() instanceof javax.jdo.JDOException || 
+            	e.getCause().getCause() instanceof NucleusException)) {
+          // The JDOException or the Nucleus Exception may be wrapped further in a MetaException
           caughtException = e.getCause().getCause();
         } else {
           LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
@@ -158,13 +160,13 @@ public class RetryingHMSHandler implements InvocationHandler {
       Thread.sleep(retryInterval);
       // If we have a connection error, the JDO connection URL hook might
       // provide us with a new URL to access the datastore.
-      String lastUrl = MetaStoreInit.getConnectionURL(getConf());
-      gotNewConnectUrl = MetaStoreInit.updateConnectionURL(hiveConf, getConf(),
+      String lastUrl = MetaStoreInit.getConnectionURL(getActiveConf());
+      gotNewConnectUrl = MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
         lastUrl, metaStoreInitData);
     }
   }
 
-  public Configuration getConf() {
-    return configuration;
+  public Configuration getActiveConf() {
+    return activeConf;
   }
 }

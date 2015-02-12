@@ -39,8 +39,9 @@
       <useStrictFiltering>true</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
+        <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
-		<exclude>org.slf4j:*</exclude>
+		    <exclude>org.slf4j:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -88,6 +89,7 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>lib/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
       </excludes>
 
       <includes>
@@ -326,6 +328,11 @@
       <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j.properties</source>
       <outputDirectory>conf</outputDirectory>
       <destName>hive-exec-log4j.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>beeline-log4j.properties.template</destName>
     </file>
     <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>

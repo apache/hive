@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
@@ -29,10 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -42,6 +40,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
@@ -78,17 +77,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -154,23 +148,27 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.WriterContext callbackContext;
   private final OrcFile.EncodingStrategy encodingStrategy;
   private final OrcFile.CompressionStrategy compressionStrategy;
+  private final boolean[] bloomFilterColumns;
+  private final double bloomFilterFpp;
 
   WriterImpl(FileSystem fs,
-             Path path,
-             Configuration conf,
-             ObjectInspector inspector,
-             long stripeSize,
-             CompressionKind compress,
-             int bufferSize,
-             int rowIndexStride,
-             MemoryManager memoryManager,
-             boolean addBlockPadding,
-             OrcFile.Version version,
-             OrcFile.WriterCallback callback,
-             OrcFile.EncodingStrategy encodingStrategy,
-             CompressionStrategy compressionStrategy,
-             float paddingTolerance,
-             long blockSizeValue) throws IOException {
+      Path path,
+      Configuration conf,
+      ObjectInspector inspector,
+      long stripeSize,
+      CompressionKind compress,
+      int bufferSize,
+      int rowIndexStride,
+      MemoryManager memoryManager,
+      boolean addBlockPadding,
+      OrcFile.Version version,
+      OrcFile.WriterCallback callback,
+      EncodingStrategy encodingStrategy,
+      CompressionStrategy compressionStrategy,
+      float paddingTolerance,
+      long blockSizeValue,
+      String bloomFilterColumnNames,
+      double bloomFilterFpp) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
@@ -199,7 +197,13 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     this.memoryManager = memoryManager;
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
-    this.bufferSize = getEstimatedBufferSize(bufferSize);
+    String allColumns = conf.get(IOConstants.COLUMNS);
+    if (allColumns == null) {
+      allColumns = getColumnNamesFromInspector(inspector);
+    }
+    this.bufferSize = getEstimatedBufferSize(allColumns, bufferSize);
+    this.bloomFilterColumns = OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    this.bloomFilterFpp = bloomFilterFpp;
     treeWriter = createTreeWriter(inspector, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
       throw new IllegalArgumentException("Row stride must be at least " +
@@ -210,8 +214,25 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     memoryManager.addWriter(path, stripeSize, this);
   }
 
+  private String getColumnNamesFromInspector(ObjectInspector inspector) {
+    List<String> fieldNames = Lists.newArrayList();
+    Joiner joiner = Joiner.on(",");
+    if (inspector instanceof StructObjectInspector) {
+      StructObjectInspector soi = (StructObjectInspector) inspector;
+      List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      for(StructField sf : fields) {
+        fieldNames.add(sf.getFieldName());
+      }
+    }
+    return joiner.join(fieldNames);
+  }
+
+  @VisibleForTesting
   int getEstimatedBufferSize(int bs) {
-    String colNames = conf.get(IOConstants.COLUMNS);
+      return getEstimatedBufferSize(conf.get(IOConstants.COLUMNS), bs);
+  }
+
+  int getEstimatedBufferSize(String colNames, int bs) {
     long availableMem = getMemoryAvailableForORC();
     if (colNames != null) {
       final int numCols = colNames.split(",").length;
@@ -468,26 +489,27 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       final EnumSet<CompressionCodec.Modifier> modifiers;
 
       switch (kind) {
-      case DATA:
-      case DICTIONARY_DATA:
-        if (getCompressionStrategy() == CompressionStrategy.SPEED) {
-          modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
-        } else {
-          modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
-        }
-        break;
-      case LENGTH:
-      case DICTIONARY_COUNT:
-      case PRESENT:
-      case ROW_INDEX:
-      case SECONDARY:
-        // easily compressed using the fastest modes
-        modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
-        break;
-      default:
-        LOG.warn("Missing ORC compression modifiers for " + kind);
-        modifiers = null;
-        break;
+        case BLOOM_FILTER:
+        case DATA:
+        case DICTIONARY_DATA:
+          if (getCompressionStrategy() == CompressionStrategy.SPEED) {
+            modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
+          } else {
+            modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
+          }
+          break;
+        case LENGTH:
+        case DICTIONARY_COUNT:
+        case PRESENT:
+        case ROW_INDEX:
+        case SECONDARY:
+          // easily compressed using the fastest modes
+          modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
+          break;
+        default:
+          LOG.warn("Missing ORC compression modifiers for " + kind);
+          modifiers = null;
+          break;
       }
 
       BufferedStream result = streams.get(name);
@@ -505,6 +527,15 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      */
     public int getNextColumnId() {
       return columnCount++;
+    }
+
+    /**
+     * Get the current column id. After creating all tree writers this count should tell how many
+     * columns (including columns within nested complex objects) are created in total.
+     * @return current column id
+     */
+    public int getCurrentColumnId() {
+      return columnCount;
     }
 
     /**
@@ -547,6 +578,22 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
+     * Get the bloom filter columns
+     * @return bloom filter columns
+     */
+    public boolean[] getBloomFilterColumns() {
+      return bloomFilterColumns;
+    }
+
+    /**
+     * Get bloom filter false positive percentage.
+     * @return fpp
+     */
+    public double getBloomFilterFPP() {
+      return bloomFilterFpp;
+    }
+
+    /**
      * Get the writer's configuration.
      * @return configuration
      */
@@ -581,6 +628,11 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     private final OrcProto.RowIndex.Builder rowIndex;
     private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
     private final PositionedOutputStream rowIndexStream;
+    private final PositionedOutputStream bloomFilterStream;
+    protected final BloomFilter bloomFilter;
+    protected final boolean createBloomFilter;
+    private final OrcProto.BloomFilterIndex.Builder bloomFilterIndex;
+    private final OrcProto.BloomFilter.Builder bloomFilterEntry;
     private boolean foundNulls;
     private OutStream isPresentOutStream;
     private final List<StripeStatistics.Builder> stripeStatsBuilders;
@@ -607,6 +659,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         isPresent = null;
       }
       this.foundNulls = false;
+      createBloomFilter = streamFactory.getBloomFilterColumns()[columnId];
       indexStatistics = ColumnStatisticsImpl.create(inspector);
       stripeColStatistics = ColumnStatisticsImpl.create(inspector);
       fileStatistics = ColumnStatisticsImpl.create(inspector);
@@ -616,10 +669,21 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       rowIndexPosition = new RowIndexPositionRecorder(rowIndexEntry);
       stripeStatsBuilders = Lists.newArrayList();
       if (streamFactory.buildIndex()) {
-        rowIndexStream = streamFactory.createStream(id,
-            OrcProto.Stream.Kind.ROW_INDEX);
+        rowIndexStream = streamFactory.createStream(id, OrcProto.Stream.Kind.ROW_INDEX);
       } else {
         rowIndexStream = null;
+      }
+      if (createBloomFilter) {
+        bloomFilterEntry = OrcProto.BloomFilter.newBuilder();
+        bloomFilterIndex = OrcProto.BloomFilterIndex.newBuilder();
+        bloomFilterStream = streamFactory.createStream(id, OrcProto.Stream.Kind.BLOOM_FILTER);
+        bloomFilter = new BloomFilter(streamFactory.getRowIndexStride(),
+            streamFactory.getBloomFilterFPP());
+      } else {
+        bloomFilterEntry = null;
+        bloomFilterIndex = null;
+        bloomFilterStream = null;
+        bloomFilter = null;
       }
     }
 
@@ -639,7 +703,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       return rowIndexEntry;
     }
 
-    IntegerWriter createIntegerWriter(PositionedOutputStream output,
+    IntegerWriter createIntegerWriter(OutStream output,
                                       boolean signed, boolean isDirectV2,
                                       StreamFactory writer) {
       if (isDirectV2) {
@@ -665,6 +729,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     void write(Object obj) throws IOException {
       if (obj != null) {
         indexStatistics.increment();
+      } else {
+        indexStatistics.setNull();
       }
       if (isPresent != null) {
         isPresent.write(obj == null ? 0 : 1);
@@ -732,6 +798,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       }
       rowIndex.clear();
       rowIndexEntry.clear();
+
+      // write the bloom filter to out stream
+      if (bloomFilterStream != null) {
+        bloomFilterIndex.build().writeTo(bloomFilterStream);
+        bloomFilterStream.flush();
+        bloomFilterIndex.clear();
+        bloomFilterEntry.clear();
+      }
     }
 
     private void writeStripeStatistics(OrcProto.StripeStatistics.Builder builder,
@@ -770,9 +844,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       indexStatistics.reset();
       rowIndex.addEntry(rowIndexEntry);
       rowIndexEntry.clear();
+      addBloomFilterEntry();
       recordPosition(rowIndexPosition);
       for(TreeWriter child: childrenWriters) {
         child.createRowIndexEntry();
+      }
+    }
+
+    void addBloomFilterEntry() {
+      if (createBloomFilter) {
+        bloomFilterEntry.setNumHashFunctions(bloomFilter.getNumHashFunctions());
+        bloomFilterEntry.addAllBitset(Longs.asList(bloomFilter.getBitSet()));
+        bloomFilterIndex.addBloomFilter(bloomFilterEntry.build());
+        bloomFilter.reset();
+        bloomFilterEntry.clear();
       }
     }
 
@@ -858,6 +943,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         byte val = ((ByteObjectInspector) inspector).get(obj);
         indexStatistics.updateInteger(val);
+        if (createBloomFilter) {
+          bloomFilter.addLong(val);
+        }
         writer.write(val);
       }
     }
@@ -889,7 +977,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                       StreamFactory writer,
                       boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
-      PositionedOutputStream out = writer.createStream(id,
+      OutStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
@@ -933,6 +1021,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           val = shortInspector.get(obj);
         }
         indexStatistics.updateInteger(val);
+        if (createBloomFilter) {
+          // integers are converted to longs in column statistics and during SARG evaluation
+          bloomFilter.addLong(val);
+        }
         writer.write(val);
       }
     }
@@ -973,6 +1065,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         float val = ((FloatObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
+        if (createBloomFilter) {
+          // floats are converted to doubles in column statistics and during SARG evaluation
+          bloomFilter.addDouble(val);
+        }
         utils.writeFloat(stream, val);
       }
     }
@@ -1013,6 +1109,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         double val = ((DoubleObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
+        if (createBloomFilter) {
+          bloomFilter.addDouble(val);
+        }
         utils.writeDouble(stream, val);
       }
     }
@@ -1106,6 +1205,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           directLengthOutput.write(val.getLength());
         }
         indexStatistics.updateString(val);
+        if (createBloomFilter) {
+          bloomFilter.addBytes(val.getBytes(), val.getLength());
+        }
       }
     }
 
@@ -1169,6 +1271,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         // Write the dictionary by traversing the red-black tree writing out
         // the bytes and lengths; and creating the map from the original order
         // to the final sorted order.
+        if (dictionary.size() == 0) {
+          if (LOG.isWarnEnabled()) {
+            LOG.warn("Empty dictionary. Suppressing dictionary stream.");
+          }
+          stringOutput.suppress();
+          lengthOutput.suppress();
+        }
+
         dictionary.visit(new StringRedBlackTree.Visitor() {
           private int currentId = 0;
           @Override
@@ -1257,6 +1367,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       OrcProto.RowIndexEntry base = rowIndexEntry.build();
       savedRowIndex.add(base);
       rowIndexEntry.clear();
+      addBloomFilterEntry();
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(Long.valueOf(rows.size()));
       if (strideDictionaryCheck) {
@@ -1367,6 +1478,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         stream.write(val.getBytes(), 0, val.getLength());
         length.write(val.getLength());
         indexStatistics.updateBinary(val);
+        if (createBloomFilter) {
+          bloomFilter.addBytes(val.getBytes(), val.getLength());
+        }
       }
     }
 
@@ -1429,6 +1543,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         indexStatistics.updateTimestamp(val);
         seconds.write((val.getTime() / MILLIS_PER_SECOND) - BASE_TIMESTAMP);
         nanos.write(formatNanos(val.getNanos()));
+        if (createBloomFilter) {
+          bloomFilter.addLong(val.getTime());
+        }
       }
     }
 
@@ -1474,7 +1591,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                    StreamFactory writer,
                    boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
-      PositionedOutputStream out = writer.createStream(id,
+      OutStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
@@ -1489,6 +1606,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         DateWritable val = ((DateObjectInspector) inspector).getPrimitiveWritableObject(obj);
         indexStatistics.updateDate(val);
         writer.write(val.getDays());
+        if (createBloomFilter) {
+          bloomFilter.addLong(val.getDays());
+        }
       }
     }
 
@@ -1557,6 +1677,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             decimal.unscaledValue());
         scaleStream.write(decimal.scale());
         indexStatistics.updateDecimal(decimal);
+        if (createBloomFilter) {
+          bloomFilter.addString(decimal.toString());
+        }
       }
     }
 
@@ -1656,6 +1779,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         ListObjectInspector insp = (ListObjectInspector) inspector;
         int len = insp.getListLength(obj);
         lengths.write(len);
+        if (createBloomFilter) {
+          bloomFilter.addLong(len);
+        }
         for(int i=0; i < len; ++i) {
           childrenWriters[0].write(insp.getListElement(obj, i));
         }
@@ -1720,6 +1846,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         // accessor in the MapObjectInspector.
         Map<?, ?> valueMap = insp.getMap(obj);
         lengths.write(valueMap.size());
+        if (createBloomFilter) {
+          bloomFilter.addLong(valueMap.size());
+        }
         for(Map.Entry<?, ?> entry: valueMap.entrySet()) {
           childrenWriters[0].write(entry.getKey());
           childrenWriters[1].write(entry.getValue());
@@ -1772,6 +1901,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         UnionObjectInspector insp = (UnionObjectInspector) inspector;
         byte tag = insp.getTag(obj);
         tags.write(tag);
+        if (createBloomFilter) {
+          bloomFilter.addLong(tag);
+        }
         childrenWriters[tag].write(insp.getField(obj));
       }
     }
@@ -2230,7 +2362,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         .setMetadataLength(metadataLength)
         .setMagic(OrcFile.MAGIC)
         .addVersion(version.getMajor())
-        .addVersion(version.getMinor());
+        .addVersion(version.getMinor())
+        .setWriterVersion(OrcFile.WriterVersion.HIVE_8732.getId());
     if (compress != CompressionKind.NONE) {
       builder.setCompressionBlockSize(bufferSize);
     }
@@ -2386,13 +2519,23 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private void updateFileStatistics(OrcProto.StripeStatistics stripeStatistics) {
     List<OrcProto.ColumnStatistics> cs = stripeStatistics.getColStatsList();
+    List<TreeWriter> allWriters = getAllColumnTreeWriters(treeWriter);
+    for (int i = 0; i < allWriters.size(); i++) {
+      allWriters.get(i).fileStatistics.merge(ColumnStatisticsImpl.deserialize(cs.get(i)));
+    }
+  }
 
-    // root element
-    treeWriter.fileStatistics.merge(ColumnStatisticsImpl.deserialize(cs.get(0)));
-    TreeWriter[] childWriters = treeWriter.getChildrenWriters();
-    for (int i = 0; i < childWriters.length; i++) {
-      childWriters[i].fileStatistics.merge(
-          ColumnStatisticsImpl.deserialize(cs.get(i + 1)));
+  private List<TreeWriter> getAllColumnTreeWriters(TreeWriter rootTreeWriter) {
+    List<TreeWriter> result = Lists.newArrayList();
+    getAllColumnTreeWritersImpl(rootTreeWriter, result);
+    return result;
+  }
+
+  private void getAllColumnTreeWritersImpl(TreeWriter tw,
+      List<TreeWriter> result) {
+    result.add(tw);
+    for (TreeWriter child : tw.childrenWriters) {
+      getAllColumnTreeWritersImpl(child, result);
     }
   }
 

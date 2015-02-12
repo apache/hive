@@ -88,6 +88,14 @@ public abstract class Phase {
     }
     return toListOfResults(futures);
   }
+  protected List<SSHResult> execHostsIgnoreErrors(String command)
+      throws Exception {
+    List<ListenableFuture<SSHResult>> futures = Lists.newArrayList();
+    for(HostExecutor hostExecutor : hostExecutors) {
+      futures.add(hostExecutor.execIgnoreAllErrors(command));
+    }
+    return toListOfResults(futures, false);
+  }
   // clean prep
   protected List<RemoteCommandResult> execInstances(String command)
       throws Exception {
@@ -159,10 +167,15 @@ public abstract class Phase {
   }
   private <T extends RemoteCommandResult> List<T> toListOfResults(List<ListenableFuture<T>> futures)
       throws Exception {
+    return toListOfResults(futures, true);
+  }
+  private <T extends RemoteCommandResult> List<T> toListOfResults(List<ListenableFuture<T>> futures,
+      boolean reportErrors)
+      throws Exception {
     List<T> results = Lists.newArrayList();
     for(T result : Futures.allAsList(futures).get()) {
       if(result != null) {
-        if(result.getException() != null || result.getExitCode() != 0) {
+        if(reportErrors && (result.getException() != null || result.getExitCode() != 0)) {
           throw new SSHExecutionException(result);
         }
         results.add(result);

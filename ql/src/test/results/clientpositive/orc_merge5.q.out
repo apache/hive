@@ -90,50 +90,15 @@ POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema
 PREHOOK: query: -- 3 files total
 analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: -- 3 files total
 analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: desc formatted orc_merge5b
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5b
-POSTHOOK: query: desc formatted orc_merge5b
-POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_merge5b
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
+POSTHOOK: Output: default@orc_merge5b
+Found 3 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	3                   
-	numRows             	3                   
-	rawDataSize         	765                 
-	totalSize           	1133                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
@@ -243,50 +208,15 @@ POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema
 PREHOOK: query: -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: desc formatted orc_merge5b
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5b
-POSTHOOK: query: desc formatted orc_merge5b
-POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_merge5b
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
+POSTHOOK: Output: default@orc_merge5b
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	3                   
-	rawDataSize         	765                 
-	totalSize           	899                 
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
@@ -313,49 +243,14 @@ POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(nam
 POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: desc formatted orc_merge5b
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5b
-POSTHOOK: query: desc formatted orc_merge5b
-POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_merge5b
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
+POSTHOOK: Output: default@orc_merge5b
+Found 3 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	3                   
-	numRows             	3                   
-	rawDataSize         	765                 
-	totalSize           	1133                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
@@ -403,50 +298,15 @@ POSTHOOK: Output: default@orc_merge5b
 PREHOOK: query: -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: desc formatted orc_merge5b
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_merge5b
-POSTHOOK: query: desc formatted orc_merge5b
-POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_merge5b
-# col_name            	data_type           	comment             
-	 	 
-userid              	bigint              	                    
-string1             	string              	                    
-subtype             	double              	                    
-decimal1            	decimal(10,0)       	                    
-ts                  	timestamp           	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
+POSTHOOK: Output: default@orc_merge5b
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	3                   
-	rawDataSize         	765                 
-	totalSize           	899                 
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b

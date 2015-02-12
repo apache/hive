@@ -89,11 +89,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics: Num rows: 3 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 384 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 3 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 384 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- table level analyze statistics
@@ -122,11 +122,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- column level partial statistics
@@ -155,11 +155,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- all selected columns have statistics
@@ -171,33 +171,21 @@ POSTHOOK: query: -- all selected columns have statistics
 explain select deptid from emp_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: emp_orc
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: deptid (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: emp_orc
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: deptid (type: int)
+            outputColumnNames: _col0
+            Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
 
 PREHOOK: query: -- column level complete statistics
 analyze table emp_orc compute statistics for columns lastname,deptid
@@ -225,11 +213,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4560 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
@@ -239,33 +227,21 @@ POSTHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select lastname from emp_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: emp_orc
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: lastname (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 48 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 48 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: emp_orc
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: lastname (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 48 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select deptid from emp_orc
@@ -274,33 +250,21 @@ POSTHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select deptid from emp_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: emp_orc
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: deptid (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: emp_orc
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: deptid (type: int)
+            outputColumnNames: _col0
+            Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select lastname,deptid from emp_orc
@@ -309,31 +273,19 @@ POSTHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain select lastname,deptid from emp_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: emp_orc
-            Statistics: Num rows: 48 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: lastname (type: string), deptid (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 48 Data size: 4560 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 48 Data size: 4560 Basic stats: COMPLETE Column stats: COMPLETE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: emp_orc
+          Statistics: Num rows: 48 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: lastname (type: string), deptid (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 48 Data size: 4560 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
 
