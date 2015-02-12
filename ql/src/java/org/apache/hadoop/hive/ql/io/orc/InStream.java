@@ -587,6 +587,10 @@ public abstract class InStream extends InputStream {
         long originalOffset = bc.offset;
         int compressedBytesConsumed = addOneCompressionBuffer(bc, ranges, zcr, bufferSize,
             cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
+        if (compressedBytesConsumed == -1) {
+          // endCOffset is an estimate; we have a partially-read compression block, ignore it
+          break;
+        }
         currentCOffset = originalOffset + compressedBytesConsumed;
       }
       if ((endCOffset >= 0 && currentCOffset >= endCOffset) || !ranges.hasNext()) {
@@ -713,6 +717,9 @@ public abstract class InStream extends InputStream {
     }
     int consumedLength = chunkLength + OutStream.HEADER_SIZE;
     long cbEndOffset = cbStartOffset + consumedLength;
+    if (current.end < cbEndOffset) {
+      return -1; // This is impossible to read from this chunk,
+    }
     boolean isUncompressed = ((b0 & 0x01) == 1);
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Found CB at " + cbStartOffset + ", chunk length " + chunkLength + ", total "
