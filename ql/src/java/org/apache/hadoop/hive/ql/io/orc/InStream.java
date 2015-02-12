@@ -542,9 +542,9 @@ public abstract class InStream extends InputStream {
   public static void uncompressStream(String fileName, long baseOffset,
       ZeroCopyReaderShim zcr, ListIterator<DiskRange> ranges,
       CompressionCodec codec, int bufferSize, LowLevelCache cache,
-      long cOffset, long endCOffset, StreamBuffer colBuffer)
+      long cOffset, long endCOffset, StreamBuffer streamBuffer)
           throws IOException {
-    colBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
+    streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     List<ProcCacheChunk> toDecompress = null;
     List<ByteBuffer> toRelease = null;
 
@@ -571,7 +571,7 @@ public abstract class InStream extends InputStream {
         if (cc.setReused()) {
           cache.notifyReused(cc.buffer);
         }
-        colBuffer.cacheBuffers.add(cc.buffer);
+        streamBuffer.cacheBuffers.add(cc.buffer);
         currentCOffset = cc.end;
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
@@ -586,7 +586,7 @@ public abstract class InStream extends InputStream {
         }
         long originalOffset = bc.offset;
         int compressedBytesConsumed = addOneCompressionBuffer(bc, ranges, zcr, bufferSize,
-            cache, colBuffer.cacheBuffers, toDecompress, toRelease);
+            cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
         currentCOffset = originalOffset + compressedBytesConsumed;
       }
       if ((endCOffset >= 0 && currentCOffset >= endCOffset) || !ranges.hasNext()) {
@@ -825,12 +825,11 @@ public abstract class InStream extends InputStream {
       ranges.set(cc);
     } else {
       DiskRange before = ranges.previous();
-      ranges.add(cc);
-      ranges.next(); // TODO: This is really stupid.
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Adding " + cc + " before " + before + " in the buffers");
       }
+      ranges.add(cc);
+      // At this point, next() should return before, which is the 2nd part of the split buffer.
     }
   }
-
 }

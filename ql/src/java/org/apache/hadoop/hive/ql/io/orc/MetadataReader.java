@@ -59,14 +59,13 @@ public class MetadataReader {
     for (OrcProto.Stream stream : footer.getStreamsList()) {
       if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
         int col = stream.getColumn();
-        if ((included == null || included[col]) && indexes[col] == null) {
-          byte[] buffer = new byte[(int) stream.getLength()];
-          file.seek(offset);
-          file.readFully(buffer);
-          indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
-              Lists.<DiskRange>newArrayList(new BufferChunk(ByteBuffer.wrap(buffer), 0)),
-              stream.getLength(), codec, bufferSize, null));
-        }
+        if ((included != null && !included[col]) || indexes[col] != null) continue;
+        byte[] buffer = new byte[(int) stream.getLength()];
+        file.seek(offset);
+        file.readFully(buffer);
+        indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
+            Lists.<DiskRange>newArrayList(new BufferChunk(ByteBuffer.wrap(buffer), 0)),
+            stream.getLength(), codec, bufferSize, null));
       }
       offset += stream.getLength();
     }

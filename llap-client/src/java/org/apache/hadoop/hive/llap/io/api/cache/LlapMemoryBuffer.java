@@ -28,5 +28,7 @@ public abstract class LlapMemoryBuffer {
     this.byteBuffer.position(offset);
     this.byteBuffer.limit(offset + length);
   }
+  /** Note - position/limit of this should NOT be modified after it's in cache.
+      We could add a wrapper to enforce that, but for now it's shared and should be duplicated. */
   public ByteBuffer byteBuffer;
 }
