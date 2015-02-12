@@ -215,8 +215,8 @@ SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
-  AVG(cfloat),
-  STDDEV_POP(cdouble)
+  ROUND(AVG(cfloat), 5),
+  ROUND(STDDEV_POP(cdouble),5)
 FROM parquet_types
 GROUP BY ctinyint
 ORDER BY ctinyint
@@ -229,17 +229,17 @@ SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
-  AVG(cfloat),
-  STDDEV_POP(cdouble)
+  ROUND(AVG(cfloat), 5),
+  ROUND(STDDEV_POP(cdouble),5)
 FROM parquet_types
 GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types
 #### A masked pattern was here ####
-1	121	1	8	1.1749999970197678	2.0621590627301285
-2	119	1	7	1.2142857142857142	1.8
-3	120	1	7	1.171428578240531	1.7999999999999996
+1	121	1	8	1.175	2.06216
+2	119	1	7	1.21429	1.8
+3	120	1	7	1.17143	1.8
 PREHOOK: query: SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types
