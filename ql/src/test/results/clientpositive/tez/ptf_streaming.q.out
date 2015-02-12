@@ -721,15 +721,15 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: +++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
         Reducer 2 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -737,15 +737,15 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -871,15 +871,15 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: +++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
         Reducer 2 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -887,15 +887,15 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -1021,15 +1021,15 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: +++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
         Reducer 2 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -1037,15 +1037,15 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -1361,8 +1361,8 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
@@ -1377,8 +1377,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col5 (type: int)
@@ -1391,8 +1391,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
@@ -1540,8 +1540,8 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
@@ -1554,8 +1554,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
@@ -1568,8 +1568,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: string), _col5 (type: int)
@@ -1724,8 +1724,8 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
@@ -1740,8 +1740,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col5 (type: int)
