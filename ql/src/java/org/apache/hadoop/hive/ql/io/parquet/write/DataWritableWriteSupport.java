@@ -16,7 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.write;
 import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 
 import parquet.hadoop.api.WriteSupport;
 import parquet.io.api.RecordConsumer;
@@ -28,7 +28,7 @@ import parquet.schema.MessageTypeParser;
  * DataWritableWriteSupport is a WriteSupport for the DataWritableWriter
  *
  */
-public class DataWritableWriteSupport extends WriteSupport<ArrayWritable> {
+public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   public static final String PARQUET_HIVE_SCHEMA = "parquet.hive.schema";
 
@@ -55,7 +55,7 @@ public class DataWritableWriteSupport extends WriteSupport<ArrayWritable> {
   }
 
   @Override
-  public void write(final ArrayWritable record) {
+  public void write(final ParquetHiveRecord record) {
     writer.write(record);
   }
 }

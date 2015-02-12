@@ -13,6 +13,7 @@
  */
 package parquet.hive;
 
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 
@@ -29,7 +30,7 @@ public class MapredParquetOutputFormat extends org.apache.hadoop.hive.ql.io.parq
     super();
   }
 
-  public MapredParquetOutputFormat(final OutputFormat<Void, ArrayWritable> mapreduceOutputFormat) {
+  public MapredParquetOutputFormat(final OutputFormat<Void, ParquetHiveRecord> mapreduceOutputFormat) {
     super(mapreduceOutputFormat);
   }
 }

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ArrayWritable;
@@ -96,9 +97,9 @@ public class TestParquetSerDe extends TestCase {
     assertEquals("deserialization gives the wrong object", t, row);
 
     // Serialize
-    final ArrayWritable serializedArr = (ArrayWritable) serDe.serialize(row, oi);
-    assertEquals("size correct after serialization", serDe.getSerDeStats().getRawDataSize(), serializedArr.get().length);
-    assertTrue("serialized object should be equal to starting object", arrayWritableEquals(t, serializedArr));
+    final ParquetHiveRecord serializedArr = (ParquetHiveRecord) serDe.serialize(row, oi);
+    assertEquals("size correct after serialization", serDe.getSerDeStats().getRawDataSize(), ((ArrayWritable)serializedArr.getObject()).get().length);
+    assertTrue("serialized object should be equal to starting object", arrayWritableEquals(t, (ArrayWritable)serializedArr.getObject()));
   }
 
   private Properties createProperties() {

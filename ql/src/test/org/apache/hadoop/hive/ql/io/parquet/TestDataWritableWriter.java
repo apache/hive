@@ -13,9 +13,27 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriter;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -27,6 +45,10 @@ import parquet.schema.MessageType;
 import parquet.schema.MessageTypeParser;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -62,6 +84,10 @@ public class TestDataWritableWriter {
     inOrder.verify(mockRecordConsumer).addInteger(value);
   }
 
+  private void addLong(int value) {
+    inOrder.verify(mockRecordConsumer).addLong(value);
+  }
+
   private void addFloat(float value) {
     inOrder.verify(mockRecordConsumer).addFloat(value);
   }
@@ -87,6 +113,12 @@ public class TestDataWritableWriter {
   }
 
   private Writable createNull() { return null; }
+
+  private ByteWritable createTinyInt(byte value) { return new ByteWritable(value); }
+
+  private ShortWritable createSmallInt(short value) { return new ShortWritable(value); }
+
+  private LongWritable createBigInt(long value) { return new LongWritable(value); }
 
   private IntWritable createInt(int value) {
     return new IntWritable(value);
@@ -116,20 +148,68 @@ public class TestDataWritableWriter {
     return new ArrayWritable(Writable.class, createGroup(values).get());
   }
 
-  private void writeParquetRecord(String schemaStr, ArrayWritable record) {
-    MessageType schema = MessageTypeParser.parseMessageType(schemaStr);
-    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, schema);
+  private List<String> createHiveColumnsFrom(final String columnNamesStr) {
+    List<String> columnNames;
+    if (columnNamesStr.length() == 0) {
+      columnNames = new ArrayList<String>();
+    } else {
+      columnNames = Arrays.asList(columnNamesStr.split(","));
+    }
+
+    return columnNames;
+  }
+
+  private List<TypeInfo> createHiveTypeInfoFrom(final String columnsTypeStr) {
+    List<TypeInfo> columnTypes;
+
+    if (columnsTypeStr.length() == 0) {
+      columnTypes = new ArrayList<TypeInfo>();
+    } else {
+      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnsTypeStr);
+    }
+
+    return columnTypes;
+  }
+
+  private ArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {
+    List<TypeInfo> columnTypeList = createHiveTypeInfoFrom(columnTypes);
+    List<String> columnNameList = createHiveColumnsFrom(columnNames);
+    StructTypeInfo rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNameList, columnTypeList);
+
+    return new ArrayWritableObjectInspector(rowTypeInfo);
+  }
+
+  private ParquetHiveRecord getParquetWritable(String columnNames, String columnTypes, ArrayWritable record) throws SerDeException {
+    Properties recordProperties = new Properties();
+    recordProperties.setProperty("columns", columnNames);
+    recordProperties.setProperty("columns.types", columnTypes);
+
+    ParquetHiveSerDe serDe = new ParquetHiveSerDe();
+    SerDeUtils.initializeSerDe(serDe, new Configuration(), recordProperties, null);
+
+    return new ParquetHiveRecord(serDe.deserialize(record), getObjectInspector(columnNames, columnTypes));
+  }
+
+  private void writeParquetRecord(String schema, ParquetHiveRecord record) throws SerDeException {
+    MessageType fileSchema = MessageTypeParser.parseMessageType(schema);
+    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema);
     hiveParquetWriter.write(record);
   }
 
   @Test
   public void testSimpleType() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String columnNames = "int,double,boolean,float,string,tinyint,smallint,bigint";
+    String columnTypes = "int,double,boolean,float,string,tinyint,smallint,bigint";
+
+    String fileSchema = "message hive_schema {\n"
         + "  optional int32 int;\n"
         + "  optional double double;\n"
         + "  optional boolean boolean;\n"
         + "  optional float float;\n"
-        + "  optional binary string;\n"
+        + "  optional binary string (UTF8);\n"
+        + "  optional int32 tinyint;\n"
+        + "  optional int32 smallint;\n"
+        + "  optional int64 bigint;\n"
         + "}\n";
 
     ArrayWritable hiveRecord = createGroup(
@@ -137,11 +217,14 @@ public class TestDataWritableWriter {
         createDouble(1.0),
         createBoolean(true),
         createFloat(1.0f),
-        createString("one")
+        createString("one"),
+        createTinyInt((byte)1),
+        createSmallInt((short)1),
+        createBigInt((long)1)
     );
 
     // Write record to Parquet format
-    writeParquetRecord(schemaStr, hiveRecord);
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
 
     // Verify record was written correctly to Parquet
     startMessage();
@@ -160,12 +243,24 @@ public class TestDataWritableWriter {
       startField("string", 4);
         addString("one");
       endField("string", 4);
+      startField("tinyint", 5);
+        addInteger(1);
+      endField("tinyint", 5);
+      startField("smallint", 6);
+        addInteger(1);
+      endField("smallint", 6);
+      startField("bigint", 7);
+        addLong(1);
+      endField("bigint", 7);
     endMessage();
   }
 
   @Test
   public void testStructType() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String columnNames = "structCol";
+    String columnTypes = "struct<a:int,b:double,c:boolean>";
+
+    String fileSchema = "message hive_schema {\n"
         + "  optional group structCol {\n"
         + "    optional int32 a;\n"
         + "    optional double b;\n"
@@ -182,7 +277,7 @@ public class TestDataWritableWriter {
     );
 
     // Write record to Parquet format
-    writeParquetRecord(schemaStr, hiveRecord);
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
 
     // Verify record was written correctly to Parquet
     startMessage();
@@ -204,9 +299,12 @@ public class TestDataWritableWriter {
 
   @Test
   public void testArrayType() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String columnNames = "arrayCol";
+    String columnTypes = "array<int>";
+
+    String fileSchema = "message hive_schema {\n"
         + "  optional group arrayCol (LIST) {\n"
-        + "    repeated group bag {\n"
+        + "    repeated group array {\n"
         + "      optional int32 array_element;\n"
         + "    }\n"
         + "  }\n"
@@ -223,13 +321,13 @@ public class TestDataWritableWriter {
     );
 
     // Write record to Parquet format
-    writeParquetRecord(schemaStr, hiveRecord);
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
 
     // Verify record was written correctly to Parquet
     startMessage();
       startField("arrayCol", 0);
         startGroup();
-          startField("bag", 0);
+          startField("array", 0);
             startGroup();
               startField("array_element", 0);
                 addInteger(1);
@@ -242,7 +340,7 @@ public class TestDataWritableWriter {
               addInteger(2);
             endField("array_element", 0);
             endGroup();
-          endField("bag", 0);
+          endField("array", 0);
         endGroup();
       endField("arrayCol", 0);
     endMessage();
@@ -250,7 +348,10 @@ public class TestDataWritableWriter {
 
   @Test
   public void testMapType() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String columnNames = "mapCol";
+    String columnTypes = "map<string,int>";
+
+    String fileSchema = "message hive_schema {\n"
         + "  optional group mapCol (MAP) {\n"
         + "    repeated group map (MAP_KEY_VALUE) {\n"
         + "      required binary key;\n"
@@ -279,7 +380,7 @@ public class TestDataWritableWriter {
     );
 
     // Write record to Parquet format
-    writeParquetRecord(schemaStr, hiveRecord);
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
 
     // Verify record was written correctly to Parquet
     startMessage();
@@ -315,12 +416,15 @@ public class TestDataWritableWriter {
 
   @Test
   public void testArrayOfArrays() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String columnNames = "array_of_arrays";
+    String columnTypes = "array<array<int>>";
+
+    String fileSchema = "message hive_schema {\n"
         + "  optional group array_of_arrays (LIST) {\n"
         + "    repeated group array {\n"
-        + "      required group element (LIST) {\n"
+        + "      optional group array_element (LIST) {\n"
         + "        repeated group array {\n"
-        + "          required int32 element;\n"
+        + "          optional int32 array_element;\n"
         + "        }\n"
         + "      }\n"
         + "    }\n"
@@ -341,7 +445,7 @@ public class TestDataWritableWriter {
     );
 
     // Write record to Parquet format
-    writeParquetRecord(schemaStr, hiveRecord);
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
 
     // Verify record was written correctly to Parquet
     startMessage();
@@ -349,22 +453,22 @@ public class TestDataWritableWriter {
         startGroup();
           startField("array", 0);
             startGroup();
-              startField("element", 0);
+              startField("array_element", 0);
                 startGroup();
                   startField("array", 0);
                     startGroup();
-                      startField("element", 0);
+                      startField("array_element", 0);
                         addInteger(1);
-                      endField("element", 0);
+                      endField("array_element", 0);
                     endGroup();
                     startGroup();
-                      startField("element", 0);
+                      startField("array_element", 0);
                         addInteger(2);
-                      endField("element", 0);
+                      endField("array_element", 0);
                     endGroup();
                   endField("array", 0);
                 endGroup();
-              endField("element", 0);
+              endField("array_element", 0);
             endGroup();
           endField("array", 0);
         endGroup();
@@ -373,95 +477,63 @@ public class TestDataWritableWriter {
   }
 
   @Test
-  public void testGroupFieldIsNotArrayWritable() throws Exception {
-    String schemaStr = "message hive_schema {\n"
-        + "  optional group a {\n"
-        + "    optional int32 b;\n"
-        + "  }\n"
-        + "}\n";
+  public void testExpectedStructTypeOnRecord() throws Exception {
+    String columnNames = "structCol";
+    String columnTypes = "int";
 
     ArrayWritable hiveRecord = createGroup(
-          createInt(1)
+        createInt(1)
     );
 
+    String fileSchema = "message hive_schema {\n"
+        + "  optional group structCol {\n"
+      + "      optional int32 int;\n"
+      + "    }\n"
+        + "}\n";
+
     try {
-      // Write record to Parquet format
-      writeParquetRecord(schemaStr, hiveRecord);
+      writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
       fail();
     } catch (RuntimeException e) {
-      assertEquals("Parquet record is malformed: Field value is not an ArrayWritable object: " +
-          "optional group a {\n  optional int32 b;\n}", e.getMessage());
+      assertEquals("Parquet record is malformed: Invalid data type: expected STRUCT type, but found: PRIMITIVE", e.getMessage());
     }
   }
 
   @Test
-  public void testArrayGroupElementIsNotArrayWritable() throws Exception {
-    String schemaStr = "message hive_schema {\n"
-        + "  optional group array_of_arrays (LIST) {\n"
-        + "    repeated group array {\n"
-        + "      required group element (LIST) {\n"
-        + "        required int32 element;\n"
-        + "      }\n"
+  public void testExpectedArrayTypeOnRecord() throws Exception {
+    String columnNames = "arrayCol";
+    String columnTypes = "int";
+
+    ArrayWritable hiveRecord = createGroup(
+        createInt(1)
+    );
+
+    String fileSchema = "message hive_schema {\n"
+        + "  optional group arrayCol (LIST) {\n"
+        + "    repeated group bag {\n"
+        + "      optional int32 array_element;\n"
         + "    }\n"
         + "  }\n"
         + "}\n";
 
-    ArrayWritable hiveRecord = createGroup(
-        createGroup(
-            createArray(
-                createInt(1)
-            )
-        )
-    );
-
     try {
-      // Write record to Parquet format
-      writeParquetRecord(schemaStr, hiveRecord);
+      writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
       fail();
     } catch (RuntimeException e) {
-      assertEquals("Parquet record is malformed: Field value is not an ArrayWritable object: " +
-          "required group element (LIST) {\n  required int32 element;\n}", e.getMessage());
+      assertEquals("Parquet record is malformed: Invalid data type: expected LIST type, but found: PRIMITIVE", e.getMessage());
     }
   }
 
   @Test
-  public void testMapElementIsNotArrayWritable() throws Exception {
-    String schemaStr = "message hive_schema {\n"
-        + "  optional group mapCol (MAP) {\n"
-        + "    repeated group map (MAP_KEY_VALUE) {\n"
-        + "      required binary key;\n"
-        + "      optional group value {\n"
-        + "        required int32 value;"
-        + "      }\n"
-        + "    }\n"
-        + "  }\n"
-        + "}\n";
+  public void testExpectedMapTypeOnRecord() throws Exception {
+    String columnNames = "mapCol";
+    String columnTypes = "int";
 
     ArrayWritable hiveRecord = createGroup(
-        createGroup(
-            createArray(
-                createGroup(
-                    createString("key1"),
-                    createInt(1)
-                )
-            )
-        )
+        createInt(1)
     );
 
-    try {
-      // Write record to Parquet format
-      writeParquetRecord(schemaStr, hiveRecord);
-      fail();
-    } catch (RuntimeException e) {
-      assertEquals(
-          "Parquet record is malformed: Field value is not an ArrayWritable object: " +
-              "optional group value {\n  required int32 value;\n}", e.getMessage());
-    }
-  }
-
-  @Test
-  public void testMapKeyValueIsNotArrayWritable() throws Exception {
-    String schemaStr = "message hive_schema {\n"
+    String fileSchema = "message hive_schema {\n"
         + "  optional group mapCol (MAP) {\n"
         + "    repeated group map (MAP_KEY_VALUE) {\n"
         + "      required binary key;\n"
@@ -470,49 +542,11 @@ public class TestDataWritableWriter {
         + "  }\n"
         + "}\n";
 
-    ArrayWritable hiveRecord = createGroup(
-        createGroup(
-            createArray(
-                createString("key1"),
-                createInt(1)
-            )
-        )
-    );
-
     try {
-      // Write record to Parquet format
-      writeParquetRecord(schemaStr, hiveRecord);
+      writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
       fail();
     } catch (RuntimeException e) {
-      assertEquals("Parquet record is malformed: Map key-value pair is not an ArrayWritable object on record 0", e.getMessage());
-    }
-  }
-
-  @Test
-  public void testMapKeyValueIsNull() throws Exception {
-    String schemaStr = "message hive_schema {\n"
-        + "  optional group mapCol (MAP) {\n"
-        + "    repeated group map (MAP_KEY_VALUE) {\n"
-        + "      required binary key;\n"
-        + "      optional int32 value;\n"
-        + "    }\n"
-        + "  }\n"
-        + "}\n";
-
-    ArrayWritable hiveRecord = createGroup(
-        createGroup(
-            createArray(
-                createNull()
-            )
-        )
-    );
-
-    try {
-      // Write record to Parquet format
-      writeParquetRecord(schemaStr, hiveRecord);
-      fail();
-    } catch (RuntimeException e) {
-      assertEquals("Parquet record is malformed: Map key-value pair is null on record 0", e.getMessage());
+      assertEquals("Parquet record is malformed: Invalid data type: expected MAP type, but found: PRIMITIVE", e.getMessage());
     }
   }
 }

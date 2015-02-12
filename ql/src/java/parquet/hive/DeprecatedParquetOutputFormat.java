@@ -14,6 +14,7 @@
 package parquet.hive;
 
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 
@@ -30,7 +31,7 @@ public class DeprecatedParquetOutputFormat extends MapredParquetOutputFormat {
     super();
   }
 
-  public DeprecatedParquetOutputFormat(final OutputFormat<Void, ArrayWritable> mapreduceOutputFormat) {
+  public DeprecatedParquetOutputFormat(final OutputFormat<Void, ParquetHiveRecord> mapreduceOutputFormat) {
     super(mapreduceOutputFormat);
   }
 }
