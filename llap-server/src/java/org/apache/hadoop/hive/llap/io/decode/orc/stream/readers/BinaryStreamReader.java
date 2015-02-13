@@ -30,15 +30,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
+public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private IntStreamReader(int columnId, InStream present,
-      InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, encoding);
+  private BinaryStreamReader(int columnId, InStream present,
+      InStream data, InStream length, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding, OrcProto.RowIndexEntry rowIndex) throws IOException {
+    super(columnId, present, data, length, encoding);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -56,6 +55,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
+    private EncodedColumnBatch.StreamBuffer lengthStream;
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
@@ -81,6 +81,11 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
+    public StreamReaderBuilder setLengthStream(EncodedColumnBatch.StreamBuffer secondaryStream) {
+      this.lengthStream = secondaryStream;
+      return this;
+    }
+
     public StreamReaderBuilder setCompressionCodec(CompressionCodec compressionCodec) {
       this.compressionCodec = compressionCodec;
       return this;
@@ -101,7 +106,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public IntStreamReader build() throws IOException {
+    public BinaryStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -116,7 +121,13 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
                 dataStream);
       }
 
-      return new IntStreamReader(columnIndex, present, data,
+      InStream length = null;
+      if (lengthStream != null) {
+        length = StreamUtils
+            .createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName, null, bufferSize,
+                lengthStream);
+      }
+      return new BinaryStreamReader(columnIndex, present, data, length,
           compressionCodec != null, columnEncoding, rowIndex);
     }
   }
@@ -124,5 +135,4 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }

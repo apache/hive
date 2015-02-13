@@ -36,9 +36,9 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
 
   private LongStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding.Kind kind, boolean skipCorrupt,
+      OrcProto.ColumnEncoding encoding, boolean skipCorrupt,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, kind, skipCorrupt);
+    super(columnId, present, data, encoding, skipCorrupt);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -59,7 +59,7 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
-    private OrcProto.ColumnEncoding.Kind columnEncodingKind;
+    private OrcProto.ColumnEncoding columnEncoding;
     private boolean skipCorrupt;
 
     public StreamReaderBuilder setFileName(String fileName) {
@@ -97,8 +97,8 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setColumnEncodingKind(OrcProto.ColumnEncoding.Kind kind) {
-      this.columnEncodingKind = kind;
+    public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
+      this.columnEncoding = encoding;
       return this;
     }
 
@@ -123,7 +123,7 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
       }
 
       return new LongStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncodingKind, skipCorrupt, rowIndex);
+          compressionCodec != null, columnEncoding, skipCorrupt, rowIndex);
     }
   }
 

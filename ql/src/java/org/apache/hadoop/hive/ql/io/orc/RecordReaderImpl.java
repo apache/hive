@@ -286,7 +286,7 @@ public class RecordReaderImpl implements RecordReader {
       seek(index[columnId]);
     }
 
-    void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index) throws IOException {
       if (present != null) {
         present.seek(index);
       }
@@ -351,7 +351,14 @@ public class RecordReaderImpl implements RecordReader {
     private BitFieldReader reader = null;
 
     public BooleanTreeReader(int columnId) throws IOException {
-      super(columnId);
+      this(columnId, null, null);
+    }
+
+    public BooleanTreeReader(int columnId, InStream present, InStream data) throws IOException {
+      super(columnId, present);
+      if (data != null) {
+        reader = new BitFieldReader(data, 1);
+      }
     }
 
     @Override
@@ -412,11 +419,16 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class ByteTreeReader extends TreeReader{
+  public static class ByteTreeReader extends TreeReader{
     private RunLengthByteReader reader = null;
 
     ByteTreeReader(int columnId) throws IOException {
-      super(columnId);
+      this(columnId, null, null);
+    }
+
+    public ByteTreeReader(int columnId, InStream present, InStream data) throws IOException {
+      super(columnId, present);
+      this.reader = new RunLengthByteReader(data);
     }
 
     @Override
@@ -485,11 +497,12 @@ public class RecordReaderImpl implements RecordReader {
     }
 
     public ShortTreeReader(int columnId, InStream present, InStream data,
-        OrcProto.ColumnEncoding.Kind encoding)
+        OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
       if (data != null && encoding != null) {
-        this.reader = createIntegerReader(encoding, data, true, false);
+        checkEncoding(encoding);
+        this.reader = createIntegerReader(encoding.getKind(), data, true, false);
       }
     }
 
@@ -570,11 +583,12 @@ public class RecordReaderImpl implements RecordReader {
     }
 
     public IntTreeReader(int columnId, InStream present, InStream data,
-        OrcProto.ColumnEncoding.Kind encoding)
+        OrcProto.ColumnEncoding encoding)
         throws IOException {
       super(columnId, present);
       if (data != null && encoding != null) {
-        this.reader = createIntegerReader(encoding, data, true, false);
+        checkEncoding(encoding);
+        this.reader = createIntegerReader(encoding.getKind(), data, true, false);
       }
     }
 
@@ -649,20 +663,19 @@ public class RecordReaderImpl implements RecordReader {
 
   public static class LongTreeReader extends TreeReader{
     private IntegerReader reader = null;
-    private final boolean skipCorrupt;
 
     LongTreeReader(int columnId, boolean skipCorrupt) throws IOException {
       this(columnId, null, null, null, skipCorrupt);
     }
 
     public LongTreeReader(int columnId, InStream present, InStream data,
-        OrcProto.ColumnEncoding.Kind encoding,
+        OrcProto.ColumnEncoding encoding,
         boolean skipCorrupt)
         throws IOException {
       super(columnId, present);
-      this.skipCorrupt = skipCorrupt;
       if (data != null && encoding != null) {
-        this.reader = createIntegerReader(encoding, data, true, skipCorrupt);
+        checkEncoding(encoding);
+        this.reader = createIntegerReader(encoding.getKind(), data, true, skipCorrupt);
       }
     }
 
@@ -917,15 +930,25 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class BinaryTreeReader extends TreeReader{
+  public static class BinaryTreeReader extends TreeReader{
     protected InStream stream;
     protected IntegerReader lengths = null;
 
     protected final LongColumnVector scratchlcv;
 
     BinaryTreeReader(int columnId) throws IOException {
-      super(columnId);
+      this(columnId, null, null, null, null);
+    }
+
+    public BinaryTreeReader(int columnId, InStream present, InStream data, InStream length,
+        OrcProto.ColumnEncoding encoding) throws IOException {
+      super(columnId, present);
       scratchlcv = new LongColumnVector();
+      this.stream = data;
+      if (length != null && encoding != null) {
+        checkEncoding(encoding);
+        this.lengths = createIntegerReader(encoding.getKind(), length, false, false);
+      }
     }
 
     @Override
@@ -1013,15 +1036,31 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class TimestampTreeReader extends TreeReader {
+  public static class TimestampTreeReader extends TreeReader {
     private IntegerReader data = null;
     private IntegerReader nanos = null;
-    private final LongColumnVector nanoVector = new LongColumnVector();
     private final boolean skipCorrupt;
 
     TimestampTreeReader(int columnId, boolean skipCorrupt) throws IOException {
-      super(columnId);
+      this(columnId, null, null, null, null, skipCorrupt);
+    }
+
+    public TimestampTreeReader(int columnId, InStream presentStream, InStream dataStream,
+        InStream nanosStream, OrcProto.ColumnEncoding encoding, boolean skipCorrupt)
+        throws IOException {
+      super(columnId, presentStream);
       this.skipCorrupt = skipCorrupt;
+      if (encoding != null) {
+        checkEncoding(encoding);
+
+        if (dataStream != null) {
+          this.data = createIntegerReader(encoding.getKind(), dataStream, true, skipCorrupt);
+        }
+
+        if (nanosStream != null) {
+          this.nanos = createIntegerReader(encoding.getKind(), nanosStream, false, skipCorrupt);
+        }
+      }
     }
 
     @Override
@@ -1130,11 +1169,20 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class DateTreeReader extends TreeReader{
+  public static class DateTreeReader extends TreeReader{
     private IntegerReader reader = null;
 
     DateTreeReader(int columnId) throws IOException {
-      super(columnId);
+      this(columnId, null, null, null);
+    }
+
+    public DateTreeReader(int columnId, InStream present, InStream data,
+        OrcProto.ColumnEncoding encoding) throws IOException {
+      super(columnId, present);
+      if (data != null && encoding != null) {
+        checkEncoding(encoding);
+        reader = createIntegerReader(encoding.getKind(), data, true, false);
+      }
     }
 
     @Override
@@ -1205,18 +1253,30 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class DecimalTreeReader extends TreeReader{
+  public static class DecimalTreeReader extends TreeReader{
     private InStream valueStream;
-    private IntegerReader scaleStream = null;
-    private LongColumnVector scratchScaleVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    private IntegerReader scaleReader = null;
+    private LongColumnVector scratchScaleVector;
 
     private final int precision;
     private final int scale;
 
     DecimalTreeReader(int columnId, int precision, int scale) throws IOException {
-      super(columnId);
+      this(columnId, precision, scale, null, null, null, null);
+    }
+
+    public DecimalTreeReader(int columnId, int precision, int scale, InStream present,
+        InStream valueStream, InStream scaleStream, OrcProto.ColumnEncoding encoding)
+        throws IOException {
+      super(columnId, present);
       this.precision = precision;
       this.scale = scale;
+      this.scratchScaleVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      this.valueStream = valueStream;
+      if (scaleStream != null && encoding != null) {
+        checkEncoding(encoding);
+        this.scaleReader = createIntegerReader(encoding.getKind(), scaleStream, true, false);
+      }
     }
 
     @Override
@@ -1235,7 +1295,7 @@ public class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       valueStream = streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA));
-      scaleStream = createIntegerReader(encodings.get(columnId).getKind(), streams.get(
+      scaleReader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(
           new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true, false);
     }
 
@@ -1248,7 +1308,7 @@ public class RecordReaderImpl implements RecordReader {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       valueStream.seek(index);
-      scaleStream.seek(index);
+      scaleReader.seek(index);
     }
 
     @Override
@@ -1262,7 +1322,7 @@ public class RecordReaderImpl implements RecordReader {
           result = (HiveDecimalWritable) previous;
         }
         result.set(HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
-            (int) scaleStream.next()));
+            (int) scaleReader.next()));
         return HiveDecimalUtils.enforcePrecisionScale(result, precision, scale);
       }
       return null;
@@ -1287,7 +1347,7 @@ public class RecordReaderImpl implements RecordReader {
       if (result.isRepeating) {
         if (!result.isNull[0]) {
           BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
-          short scaleInData = (short) scaleStream.next();
+          short scaleInData = (short) scaleReader.next();
           HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
           dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
           result.set(0, dec);
@@ -1295,7 +1355,7 @@ public class RecordReaderImpl implements RecordReader {
       } else {
         // result vector has isNull values set, use the same to read scale vector.
         scratchScaleVector.isNull = result.isNull;
-        scaleStream.nextVector(scratchScaleVector, batchSize);
+        scaleReader.nextVector(scratchScaleVector, batchSize);
         for (int i = 0; i < batchSize; i++) {
           if (!result.isNull[i]) {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
@@ -1317,7 +1377,7 @@ public class RecordReaderImpl implements RecordReader {
       for(int i=0; i < items; i++) {
         SerializationUtils.readBigInteger(valueStream);
       }
-      scaleStream.skip(items);
+      scaleReader.skip(items);
     }
   }
 
@@ -1326,11 +1386,33 @@ public class RecordReaderImpl implements RecordReader {
    * stripe, it creates an internal reader based on whether a direct or
    * dictionary encoding was used.
    */
-  private static class StringTreeReader extends TreeReader {
-    private TreeReader reader;
+  public static class StringTreeReader extends TreeReader {
+    protected TreeReader reader;
 
-    StringTreeReader(int columnId) throws IOException {
+    public StringTreeReader(int columnId) throws IOException {
       super(columnId);
+    }
+
+    public StringTreeReader(int columnId, InStream present, InStream data, InStream length,
+        InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
+      super(columnId, present);
+      if (encoding != null) {
+        switch (encoding.getKind()) {
+          case DIRECT:
+          case DIRECT_V2:
+            reader = new StringDirectTreeReader(columnId, present, data, length,
+                encoding.getKind());
+            break;
+          case DICTIONARY:
+          case DICTIONARY_V2:
+            reader = new StringDictionaryTreeReader(columnId, present, data, length, dictionary,
+                encoding);
+            break;
+          default:
+            throw new IllegalArgumentException("Unsupported encoding " +
+                encoding.getKind());
+        }
+      }
     }
 
     @Override
@@ -1460,15 +1542,23 @@ public class RecordReaderImpl implements RecordReader {
    * A reader for string columns that are direct encoded in the current
    * stripe.
    */
-  private static class StringDirectTreeReader extends TreeReader {
+  public static class StringDirectTreeReader extends TreeReader {
     private InStream stream;
     private IntegerReader lengths;
-
     private final LongColumnVector scratchlcv;
 
     StringDirectTreeReader(int columnId) throws IOException {
-      super(columnId);
-      scratchlcv = new LongColumnVector();
+      this(columnId, null, null, null, null);
+    }
+
+    public StringDirectTreeReader(int columnId, InStream present, InStream data, InStream length,
+        OrcProto.ColumnEncoding.Kind encoding) throws IOException {
+      super(columnId, present);
+      this.scratchlcv = new LongColumnVector();
+      this.stream = data;
+      if (length != null && encoding != null) {
+        this.lengths = createIntegerReader(encoding, length, false, false);
+      }
     }
 
     @Override
@@ -1562,7 +1652,7 @@ public class RecordReaderImpl implements RecordReader {
    * A reader for string columns that are dictionary encoded in the current
    * stripe.
    */
-  private static class StringDictionaryTreeReader extends TreeReader {
+  public static class StringDictionaryTreeReader extends TreeReader {
     private DynamicByteArray dictionaryBuffer;
     private int[] dictionaryOffsets;
     private IntegerReader reader;
@@ -1571,8 +1661,25 @@ public class RecordReaderImpl implements RecordReader {
     private final LongColumnVector scratchlcv;
 
     StringDictionaryTreeReader(int columnId) throws IOException {
-      super(columnId);
+      this(columnId, null, null, null, null, null);
+    }
+
+    public StringDictionaryTreeReader(int columnId, InStream present, InStream data,
+        InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding)
+        throws IOException{
+      super(columnId, present);
       scratchlcv = new LongColumnVector();
+      if (data != null && encoding != null) {
+        this.reader = createIntegerReader(encoding.getKind(), data, false, false);
+      }
+
+      if (dictionary != null && encoding != null) {
+        readDictionaryStream(dictionary);
+      }
+
+      if (length != null && encoding != null) {
+        readDictionaryLengthStream(length, encoding);
+      }
     }
 
     @Override
@@ -1591,28 +1698,27 @@ public class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
 
       // read the dictionary blob
-      int dictionarySize = encodings.get(columnId).getDictionarySize();
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       InStream in = streams.get(name);
-      if (in != null) { // Guard against empty dictionary stream.
-        if (in.available() > 0) {
-          dictionaryBuffer = new DynamicByteArray(64, in.available());
-          dictionaryBuffer.readAll(in);
-          // Since its start of strip invalidate the cache.
-          dictionaryBufferInBytesCache = null;
-        }
-        in.close();
-      } else {
-        dictionaryBuffer = null;
-      }
+      readDictionaryStream(in);
 
       // read the lengths
       name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
       in = streams.get(name);
+      readDictionaryLengthStream(in, encodings.get(columnId));
+
+      // set up the row reader
+      name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
+      reader = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(name), false, false);
+    }
+
+    private void readDictionaryLengthStream(InStream in, OrcProto.ColumnEncoding encoding)
+        throws IOException {
+      int dictionarySize = encoding.getDictionarySize();
       if (in != null) { // Guard against empty LENGTH stream.
-        IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
-            .getKind(), in, false, false);
+        IntegerReader lenReader = createIntegerReader(encoding.getKind(), in, false, false);
         int offset = 0;
         if (dictionaryOffsets == null ||
             dictionaryOffsets.length < dictionarySize + 1) {
@@ -1626,10 +1732,20 @@ public class RecordReaderImpl implements RecordReader {
         in.close();
       }
 
-      // set up the row reader
-      name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(),
-          streams.get(name), false, false);
+    }
+
+    private void readDictionaryStream(InStream in) throws IOException {
+      if (in != null) { // Guard against empty dictionary stream.
+        if (in.available() > 0) {
+          dictionaryBuffer = new DynamicByteArray(64, in.available());
+          dictionaryBuffer.readAll(in);
+          // Since its start of strip invalidate the cache.
+          dictionaryBufferInBytesCache = null;
+        }
+        in.close();
+      } else {
+        dictionaryBuffer = null;
+      }
     }
 
     @Override
@@ -1742,11 +1858,16 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class CharTreeReader extends StringTreeReader {
+  public static class CharTreeReader extends StringTreeReader {
     int maxLength;
 
-    CharTreeReader(int columnId, int maxLength) throws IOException {
-      super(columnId);
+    public CharTreeReader(int columnId, int maxLength) throws IOException {
+      this(columnId, maxLength, null, null, null, null, null);
+    }
+
+    public CharTreeReader(int columnId, int maxLength, InStream present, InStream data,
+        InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
+      super(columnId, present, data, length, dictionary, encoding);
       this.maxLength = maxLength;
     }
 
@@ -1806,11 +1927,16 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static class VarcharTreeReader extends StringTreeReader {
+  public static class VarcharTreeReader extends StringTreeReader {
     int maxLength;
 
-    VarcharTreeReader(int columnId, int maxLength) throws IOException {
-      super(columnId);
+    public VarcharTreeReader(int columnId, int maxLength) throws IOException {
+      this(columnId, maxLength, null, null, null, null, null);
+    }
+
+    public VarcharTreeReader(int columnId, int maxLength, InStream present, InStream data,
+        InStream length, InStream dictionary, OrcProto.ColumnEncoding encoding) throws IOException {
+      super(columnId, present, data, length, dictionary, encoding);
       this.maxLength = maxLength;
     }
 

@@ -36,9 +36,9 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
 
   private ShortStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding.Kind kind,
+      OrcProto.ColumnEncoding encoding,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, kind);
+    super(columnId, present, data, encoding);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -59,7 +59,7 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
-    private OrcProto.ColumnEncoding.Kind columnEncodingKind;
+    private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -96,8 +96,8 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setColumnEncodingKind(OrcProto.ColumnEncoding.Kind kind) {
-      this.columnEncodingKind = kind;
+    public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
+      this.columnEncoding = encoding;
       return this;
     }
 
@@ -117,7 +117,7 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
       }
 
       return new ShortStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncodingKind, rowIndex);
+          compressionCodec != null, columnEncoding, rowIndex);
     }
   }
 

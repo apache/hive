@@ -30,15 +30,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
+public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private IntStreamReader(int columnId, InStream present,
-      InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, encoding);
+  private DecimalStreamReader(int columnId, int precision, int scale, InStream presentStream,
+      InStream valueStream, InStream scaleStream, boolean isFileCompressed,
+      OrcProto.RowIndexEntry rowIndex, OrcProto.ColumnEncoding encoding) throws IOException {
+    super(columnId, precision, scale, presentStream, valueStream, scaleStream, encoding);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -55,7 +54,10 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private String fileName;
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
-    private EncodedColumnBatch.StreamBuffer dataStream;
+    private EncodedColumnBatch.StreamBuffer valueStream;
+    private EncodedColumnBatch.StreamBuffer scaleStream;
+    private int scale;
+    private int precision;
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
@@ -71,13 +73,28 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
+    public StreamReaderBuilder setPrecision(int precision) {
+      this.precision = precision;
+      return this;
+    }
+
+    public StreamReaderBuilder setScale(int scale) {
+      this.scale = scale;
+      return this;
+    }
+
     public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
       this.presentStream = presentStream;
       return this;
     }
 
-    public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
-      this.dataStream = dataStream;
+    public StreamReaderBuilder setValueStream(EncodedColumnBatch.StreamBuffer valueStream) {
+      this.valueStream = valueStream;
+      return this;
+    }
+
+    public StreamReaderBuilder setScaleStream(EncodedColumnBatch.StreamBuffer scaleStream) {
+      this.scaleStream = scaleStream;
       return this;
     }
 
@@ -101,28 +118,34 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public IntStreamReader build() throws IOException {
-      InStream present = null;
+    public DecimalStreamReader build() throws IOException {
+      InStream presentInStream = null;
       if (presentStream != null) {
-        present = StreamUtils
+        presentInStream = StreamUtils
             .createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName, null, bufferSize,
                 presentStream);
       }
 
-      InStream data = null;
-      if (dataStream != null) {
-        data = StreamUtils
+      InStream valueInStream = null;
+      if (valueStream != null) {
+        valueInStream = StreamUtils
             .createInStream(OrcProto.Stream.Kind.DATA.name(), fileName, null, bufferSize,
-                dataStream);
+                valueStream);
       }
 
-      return new IntStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncoding, rowIndex);
+      InStream scaleInStream = null;
+      if (scaleStream != null) {
+        scaleInStream = StreamUtils
+            .createInStream(OrcProto.Stream.Kind.SECONDARY.name(), fileName, null, bufferSize,
+                scaleStream);
+      }
+
+      return new DecimalStreamReader(columnIndex, precision, scale, presentInStream, valueInStream,
+          scaleInStream, compressionCodec != null, rowIndex, columnEncoding);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,11 +27,19 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BooleanStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.ByteStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.CharacterStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.DateStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.DecimalStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.DoubleStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.FloatStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.IntStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.LongStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.ShortStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.StringStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.TimestampStreamReader;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
@@ -43,8 +50,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-
-import com.google.common.collect.Lists;
 
 public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer edp;
@@ -96,6 +101,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       for (int i = 0; i < maxBatchesRG; i++) {
         if (i == maxBatchesRG - 1) {
           batchSize = (int) (nonNullRowCount % VectorizedRowBatch.DEFAULT_SIZE);
+          cvb.size = batchSize;
         }
 
         for (int idx = 0; idx < batch.columnIxs.length; idx++) {
@@ -168,6 +174,41 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       }
 
       switch (colType.getKind()) {
+        case BINARY:
+          treeReaders[i] = BinaryStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setLengthStream(lengths)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .build();
+          break;
+        case BOOLEAN:
+          treeReaders[i] = BooleanStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .build();
+          break;
+        case BYTE:
+          treeReaders[i] = ByteStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .build();
+          break;
         case SHORT:
           treeReaders[i] = ShortStreamReader.builder()
               .setFileName(file)
@@ -177,7 +218,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndex)
-              .setColumnEncodingKind(columnEncoding.getKind())
+              .setColumnEncoding(columnEncoding)
               .build();
           break;
         case INT:
@@ -189,7 +230,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndex)
-              .setColumnEncodingKind(columnEncoding.getKind())
+              .setColumnEncoding(columnEncoding)
               .build();
           break;
         case LONG:
@@ -201,7 +242,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndex)
-              .setColumnEncodingKind(columnEncoding.getKind())
+              .setColumnEncoding(columnEncoding)
               .skipCorrupt(skipCorrupt)
               .build();
           break;
@@ -229,34 +270,81 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
           break;
         case CHAR:
         case VARCHAR:
+          treeReaders[i] = CharacterStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setMaxLength(colType.getMaximumLength())
+              .setCharacterType(colType)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setLengthStream(lengths)
+              .setDictionaryStream(dictionary)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .build();
+          break;
         case STRING:
-//          columnStreams[i] = new StringColumnStream(file, colIx, present, data, dictionary, lengths,
-//              columnEncoding, codec, bufferSize, rowIndex);
+          treeReaders[i] = StringStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setLengthStream(lengths)
+              .setDictionaryStream(dictionary)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .build();
+          break;
+        case DECIMAL:
+          treeReaders[i] = DecimalStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPrecision(colType.getPrecision())
+              .setScale(colType.getScale())
+              .setPresentStream(present)
+              .setValueStream(data)
+              .setScaleStream(secondary)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .build();
+          break;
+        case TIMESTAMP:
+          treeReaders[i] = TimestampStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setSecondsStream(data)
+              .setNanosStream(secondary)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .skipCorrupt(skipCorrupt)
+              .build();
+          break;
+        case DATE:
+          treeReaders[i] = DateStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncoding(columnEncoding)
+              .build();
           break;
         default:
           throw new UnsupportedOperationException("Data type not supported yet! " + colType);
       }
     }
     return treeReaders;
-  }
-
-  private List<OrcProto.Stream> getDataStreams(int colIx, List<OrcProto.Stream> streams) {
-    List<OrcProto.Stream> result = Lists.newArrayList();
-    for (OrcProto.Stream stream : streams) {
-      if (stream.getColumn() == colIx) {
-        switch (stream.getKind()) {
-          case PRESENT:
-          case DATA:
-          case LENGTH:
-          case DICTIONARY_DATA:
-          case SECONDARY:
-            result.add(stream);
-          default:
-            // ignore
-        }
-      }
-    }
-    return result;
   }
 
   private long getRowCount(OrcProto.RowIndexEntry rowIndexEntry) {

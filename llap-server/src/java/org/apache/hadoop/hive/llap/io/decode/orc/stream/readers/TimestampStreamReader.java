@@ -30,15 +30,15 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
+public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private IntStreamReader(int columnId, InStream present,
-      InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
+  private TimestampStreamReader(int columnId, InStream present,
+      InStream data, InStream nanos, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding, boolean skipCorrupt,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, encoding);
+    super(columnId, present, data, nanos, encoding, skipCorrupt);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -56,10 +56,12 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
+    private EncodedColumnBatch.StreamBuffer nanosStream;
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
+    private boolean skipCorrupt;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -76,8 +78,13 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+    public StreamReaderBuilder setSecondsStream(EncodedColumnBatch.StreamBuffer dataStream) {
       this.dataStream = dataStream;
+      return this;
+    }
+
+    public StreamReaderBuilder setNanosStream(EncodedColumnBatch.StreamBuffer secondaryStream) {
+      this.nanosStream = secondaryStream;
       return this;
     }
 
@@ -101,7 +108,12 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public IntStreamReader build() throws IOException {
+    public StreamReaderBuilder skipCorrupt(boolean skipCorrupt) {
+      this.skipCorrupt = skipCorrupt;
+      return this;
+    }
+
+    public TimestampStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -116,13 +128,18 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
                 dataStream);
       }
 
-      return new IntStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncoding, rowIndex);
+      InStream nanos = null;
+      if (nanosStream != null) {
+        nanos = StreamUtils
+            .createInStream(OrcProto.Stream.Kind.SECONDARY.name(), fileName, null, bufferSize,
+                nanosStream);
+      }
+      return new TimestampStreamReader(columnIndex, present, data, nanos,
+          compressionCodec != null, columnEncoding, skipCorrupt, rowIndex);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }

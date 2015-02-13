@@ -30,11 +30,11 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
+public class DateStreamReader extends RecordReaderImpl.DateTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private IntStreamReader(int columnId, InStream present,
+  private DateStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
       OrcProto.ColumnEncoding encoding,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
@@ -101,7 +101,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public IntStreamReader build() throws IOException {
+    public DateStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -116,7 +116,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
                 dataStream);
       }
 
-      return new IntStreamReader(columnIndex, present, data,
+      return new DateStreamReader(columnIndex, present, data,
           compressionCodec != null, columnEncoding, rowIndex);
     }
   }
@@ -124,5 +124,4 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }

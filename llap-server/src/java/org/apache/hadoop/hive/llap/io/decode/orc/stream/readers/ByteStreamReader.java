@@ -30,15 +30,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
+public class ByteStreamReader extends RecordReaderImpl.ByteTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private IntStreamReader(int columnId, InStream present,
+  private ByteStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, encoding);
+    super(columnId, present, data);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -59,7 +58,6 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
-    private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -96,12 +94,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
-      this.columnEncoding = encoding;
-      return this;
-    }
-
-    public IntStreamReader build() throws IOException {
+    public ByteStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -116,13 +109,11 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
                 dataStream);
       }
 
-      return new IntStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncoding, rowIndex);
+      return new ByteStreamReader(columnIndex, present, data, compressionCodec != null, rowIndex);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }
