@@ -1219,7 +1219,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
-
+        handleInsertStatementSpecPhase1(ast, qbp, ctx_1);
         if (qbp.getClauseNamesForDest().size() > 1) {
           queryProperties.setMultiDestQuery(true);
         }
@@ -1447,6 +1447,96 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return phase1Result;
+  }
+
+  /**
+   * This is phase1 of supporting specifying schema in insert statement
+   * insert into foo(z,y) select a,b from bar;
+   * @see #handleInsertStatementSpec(java.util.List, String, RowResolver, RowResolver, QB, ASTNode) 
+   * @throws SemanticException
+   */
+  private void handleInsertStatementSpecPhase1(ASTNode ast, QBParseInfo qbp, Phase1Ctx ctx_1) throws SemanticException {
+    ASTNode tabColName = (ASTNode)ast.getChild(1);
+    if(ast.getType() == HiveParser.TOK_INSERT_INTO && tabColName != null && tabColName.getType() == HiveParser.TOK_TABCOLNAME) {
+      //we have "insert into foo(a,b)..."; parser will enforce that 1+ columns are listed if TOK_TABCOLNAME is present
+      List<String> targetColNames = new ArrayList<String>();
+      for(Node col : tabColName.getChildren()) {
+        assert ((ASTNode)col).getType() == HiveParser.Identifier :
+          "expected token " + HiveParser.Identifier + " found " + ((ASTNode)col).getType();
+        targetColNames.add(((ASTNode)col).getText());
+      }
+      String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
+        SessionState.get().getCurrentDatabase());
+      qbp.setDestSchemaForClause(ctx_1.dest, targetColNames);
+      Set<String> targetColumns = new HashSet<String>();
+      targetColumns.addAll(targetColNames);
+      if(targetColNames.size() != targetColumns.size()) {
+        throw new SemanticException(generateErrorMessage(tabColName,
+          "Duplicate column name detected in " + fullTableName + " table schema specification"));
+      }
+      Table targetTable = null;
+      try {
+        targetTable = db.getTable(fullTableName, false);
+      }
+      catch (HiveException ex) {
+        LOG.error("Error processing HiveParser.TOK_DESTINATION: " + ex.getMessage(), ex);
+        throw new SemanticException(ex);
+      }
+      if(targetTable == null) {
+        throw new SemanticException(generateErrorMessage(ast,
+          "Unable to access metadata for table " + fullTableName));
+      }
+      for(FieldSchema f : targetTable.getCols()) {
+        //parser only allows foo(a,b), not foo(foo.a, foo.b)
+        targetColumns.remove(f.getName());
+      }
+      if(!targetColumns.isEmpty()) {//here we need to see if remaining columns are dynamic partition columns
+            /* We just checked the user specified schema columns among regular table column and found some which are not
+            'regular'.  Now check is they are dynamic partition columns
+              For dynamic partitioning,
+              Given "create table multipart(a int, b int) partitioned by (c int, d int);"
+              for "insert into multipart partition(c='1',d)(d,a) values(2,3);" we expect parse tree to look like this
+               (TOK_INSERT_INTO
+                (TOK_TAB
+                  (TOK_TABNAME multipart)
+                  (TOK_PARTSPEC
+                    (TOK_PARTVAL c '1')
+                    (TOK_PARTVAL d)
+                  )
+                )
+                (TOK_TABCOLNAME d a)
+               )*/
+        List<String> dynamicPartitionColumns = new ArrayList<String>();
+        if(ast.getChild(0) != null && ast.getChild(0).getType() == HiveParser.TOK_TAB) {
+          ASTNode tokTab = (ASTNode)ast.getChild(0);
+          ASTNode tokPartSpec = (ASTNode)tokTab.getFirstChildWithType(HiveParser.TOK_PARTSPEC);
+          if(tokPartSpec != null) {
+            for(Node n : tokPartSpec.getChildren()) {
+              ASTNode tokPartVal = null;
+              if(n instanceof ASTNode) {
+                tokPartVal = (ASTNode)n;
+              }
+              if(tokPartVal != null && tokPartVal.getType() == HiveParser.TOK_PARTVAL && tokPartVal.getChildCount() == 1) {
+                assert tokPartVal.getChild(0).getType() == HiveParser.Identifier :
+                  "Expected column name; found tokType=" + tokPartVal.getType();
+                dynamicPartitionColumns.add(tokPartVal.getChild(0).getText());
+              }
+            }
+          }
+        }
+        for(String colName : dynamicPartitionColumns) {
+          targetColumns.remove(colName);
+        }
+        if(!targetColumns.isEmpty()) {
+          //Found some columns in user specified schema which are neither regular not dynamic partition columns
+          throw new SemanticException(generateErrorMessage(tabColName,
+            "'" + (targetColumns.size() == 1 ? targetColumns.iterator().next() : targetColumns) +
+              "' in insert schema specification " + (targetColumns.size() == 1 ? "is" : "are") +
+              " not found among regular columns of " +
+              fullTableName + " nor dynamic partition columns."));
+        }
+      }
+    }
   }
 
   private void getMetaData(QBExpr qbexpr, ReadEntity parentInput)
@@ -3553,7 +3643,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
       Operator<?> inputForSelectStar) throws SemanticException {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
-    Operator<?> op = genSelectPlan(selExprList, qb, input, inputForSelectStar, false);
+    Operator<?> op = genSelectPlan(dest, selExprList, qb, input, inputForSelectStar, false);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Select Plan for clause: " + dest);
@@ -3563,7 +3653,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator<?> genSelectPlan(ASTNode selExprList, QB qb, Operator<?> input,
+  private Operator<?> genSelectPlan(String dest, ASTNode selExprList, QB qb, Operator<?> input,
       Operator<?> inputForSelectStar, boolean outerLV) throws SemanticException {
 
     if (LOG.isDebugEnabled()) {
@@ -3801,6 +3891,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
+    handleInsertStatementSpec(col_list, dest, out_rwsch, inputRR, qb, selExprList);
+
     ArrayList<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < col_list.size(); i++) {
@@ -3828,6 +3920,100 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  /**
+   * This modifies the Select projections when the Select is part of an insert statement and
+   * the insert statement specifies a column list for the target table, e.g.
+   * create table source (a int, b int);
+   * create table target (x int, y int, z int);
+   * insert into target(z,x) select * from source
+   * 
+   * Once the * is resolved to 'a,b', this list needs to rewritten to 'b,null,a' so that it looks
+   * as if the original query was written as
+   * insert into target select b, null, a from source
+   * 
+   * if target schema is not specified, this is no-op
+   * 
+   * @see #handleInsertStatementSpecPhase1(ASTNode, QBParseInfo, org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx) 
+   * @throws SemanticException
+   */
+  private void handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
+                                         RowResolver out_rwsch, RowResolver inputRR, QB qb,
+                                         ASTNode selExprList) throws SemanticException {
+    //(z,x)
+    List<String> targetTableSchema = qb.getParseInfo().getDestSchemaForClause(dest);//specified in the query
+    if(targetTableSchema == null) {
+      //no insert schema was specified
+      return;
+    }
+    if(targetTableSchema.size() != col_list.size()) {
+      Table target = qb.getMetaData().getDestTableForAlias(dest);
+      Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
+      throw new SemanticException(generateErrorMessage(selExprList,
+        "Expected " + targetTableSchema.size() + " columns for " + dest +
+          (target != null ? "/" + target.getCompleteName() : (partition != null ? "/" + partition.getCompleteName() : "")) +
+          "; select produces " + col_list.size() + " columns"));
+    }
+    //e.g. map z->expr for a
+    Map<String, ExprNodeDesc> targetCol2Projection = new HashMap<String, ExprNodeDesc>();
+    //e.g. map z->ColumnInfo for a
+    Map<String, ColumnInfo> targetCol2ColumnInfo = new HashMap<String, ColumnInfo>();
+    int colListPos = 0;
+    for(String targetCol : targetTableSchema) {
+      targetCol2ColumnInfo.put(targetCol, out_rwsch.getColumnInfos().get(colListPos));
+      targetCol2Projection.put(targetCol, col_list.get(colListPos++));
+    }
+    Table target = qb.getMetaData().getDestTableForAlias(dest);
+    Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
+    if(target == null && partition == null) {
+      throw new SemanticException(generateErrorMessage(selExprList, 
+        "No table/partition found in QB metadata for dest='" + dest + "'"));
+    }
+    ArrayList<ExprNodeDesc> new_col_list = new ArrayList<ExprNodeDesc>();
+    ArrayList<ColumnInfo> newSchema = new ArrayList<ColumnInfo>();
+    colListPos = 0;
+    List<FieldSchema> targetTableCols = target != null ? target.getCols() : partition.getCols();
+    List<String> targetTableColNames = new ArrayList<String>();
+    for(FieldSchema fs : targetTableCols) {
+      targetTableColNames.add(fs.getName());
+    }
+    Map<String, String> partSpec = qb.getMetaData().getPartSpecForAlias(dest);
+    if(partSpec != null) {
+      //find dynamic partition columns
+      //relies on consistent order via LinkedHashMap
+      for(Map.Entry<String, String> partKeyVal : partSpec.entrySet()) {
+        if (partKeyVal.getValue() == null) {
+          targetTableColNames.add(partKeyVal.getKey());//these must be after non-partition cols
+        }
+      }
+    }
+    //now make the select produce <regular columns>,<dynamic partition columns> with
+    //where missing columns are NULL-filled
+    for(String f : targetTableColNames) {
+      if(targetCol2Projection.containsKey(f)) {
+        //put existing column in new list to make sure it is in the right position
+        new_col_list.add(targetCol2Projection.get(f));
+        ColumnInfo ci = targetCol2ColumnInfo.get(f);//todo: is this OK?
+        ci.setInternalName(getColumnInternalName(colListPos));
+        newSchema.add(ci);
+      }
+      else {
+        //add new 'synthetic' columns for projections not provided by Select
+        TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+        CommonToken t = new CommonToken(HiveParser.TOK_NULL);
+        t.setText("TOK_NULL");
+        ExprNodeDesc exp = genExprNodeDesc(new ASTNode(t), inputRR, tcCtx);
+        new_col_list.add(exp);
+        final String tableAlias = "";//is this OK? this column doesn't come from any table
+        ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),
+          exp.getWritableObjectInspector(), tableAlias, false);
+        newSchema.add(colInfo);
+      }
+      colListPos++;
+    }
+    col_list.clear();
+    col_list.addAll(new_col_list);
+    out_rwsch.setRowSchema(new RowSchema(newSchema));
+  }
   String recommendName(ExprNodeDesc exp, String colAlias) {
     if (!colAlias.startsWith(autogenColAliasPrfxLbl)) {
       return null;
@@ -9811,7 +9997,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int allColumns = allPathRR.getColumnInfos().size();
     // Get the UDTF Path
     QB blankQb = new QB(null, null, false);
-    Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
+    Operator udtfPath = genSelectPlan(null, (ASTNode) lateralViewTree
         .getChild(0), blankQb, lvForward, null,
         lateralViewTree.getType() == HiveParser.TOK_LATERAL_VIEW_OUTER);
     // add udtf aliases to QB

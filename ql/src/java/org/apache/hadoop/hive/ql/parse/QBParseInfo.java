@@ -43,7 +43,15 @@ public class QBParseInfo {
   private ASTNode joinExpr;
   private ASTNode hints;
   private final HashMap<String, ASTNode> aliasToSrc;
+  /**
+   * insclause-0 -> TOK_TAB ASTNode
+   */
   private final HashMap<String, ASTNode> nameToDest;
+  /**
+   * For 'insert into FOO(x,y) select ...' this stores the
+   * insclause-0 -> x,y mapping
+   */
+  private final Map<String, List<String>> nameToDestSchema;
   private final HashMap<String, TableSample> nameToSample;
   private final Map<ASTNode, String> exprToColumnAlias;
   private final Map<String, ASTNode> destToSelExpr;
@@ -111,6 +119,7 @@ public class QBParseInfo {
   public QBParseInfo(String alias, boolean isSubQ) {
     aliasToSrc = new HashMap<String, ASTNode>();
     nameToDest = new HashMap<String, ASTNode>();
+    nameToDestSchema = new HashMap<String, List<String>>();
     nameToSample = new HashMap<String, TableSample>();
     exprToColumnAlias = new HashMap<ASTNode, String>();
     destToLateralView = new HashMap<String, ASTNode>();
@@ -232,6 +241,13 @@ public class QBParseInfo {
 
   public void setDestForClause(String clause, ASTNode ast) {
     nameToDest.put(clause, ast);
+  }
+
+  List<String> setDestSchemaForClause(String clause, List<String> columnList) {
+    return nameToDestSchema.put(clause, columnList);
+  }
+  List<String> getDestSchemaForClause(String clause) {
+    return nameToDestSchema.get(clause);
   }
 
   /**

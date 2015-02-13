@@ -1,0 +1,360 @@
+PREHOOK: query: -- set of tests HIVE-9481
+
+drop database if exists x314 cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- set of tests HIVE-9481
+
+drop database if exists x314 cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database x314
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:x314
+POSTHOOK: query: create database x314
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:x314
+PREHOOK: query: use x314
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:x314
+POSTHOOK: query: use x314
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:x314
+PREHOOK: query: create table source(s1 int, s2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@source
+POSTHOOK: query: create table source(s1 int, s2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@source
+PREHOOK: query: create table target1(x int, y int, z int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@target1
+POSTHOOK: query: create table target1(x int, y int, z int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@target1
+PREHOOK: query: create table target2(x int, y int, z int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@target2
+POSTHOOK: query: create table target2(x int, y int, z int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@target2
+PREHOOK: query: insert into source(s2,s1) values(2,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__1
+PREHOOK: Output: x314@source
+POSTHOOK: query: insert into source(s2,s1) values(2,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__1
+POSTHOOK: Output: x314@source
+POSTHOOK: Lineage: source.s1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: source.s2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- expect source to contain 1 row (1,2)
+select * from source
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@source
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect source to contain 1 row (1,2)
+select * from source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@source
+#### A masked pattern was here ####
+1	2
+PREHOOK: query: insert into target1(z,x) select * from source
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@source
+PREHOOK: Output: x314@target1
+POSTHOOK: query: insert into target1(z,x) select * from source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@source
+POSTHOOK: Output: x314@target1
+POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.y EXPRESSION []
+POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+PREHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
+select * from target1
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target1
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
+select * from target1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target1
+#### A masked pattern was here ####
+2	NULL	1
+PREHOOK: query: -- note that schema spec for target1 and target2 are different
+from source insert into target1(x,y) select * insert into target2(x,z) select s2,s1
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@source
+PREHOOK: Output: x314@target1
+PREHOOK: Output: x314@target2
+POSTHOOK: query: -- note that schema spec for target1 and target2 are different
+from source insert into target1(x,y) select * insert into target2(x,z) select s2,s1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@source
+POSTHOOK: Output: x314@target1
+POSTHOOK: Output: x314@target2
+POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.y SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.z EXPRESSION []
+POSTHOOK: Lineage: target2.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.y EXPRESSION []
+POSTHOOK: Lineage: target2.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+PREHOOK: query: --expect target1 to have 2rows (2,NULL,1), (1,2,NULL)
+select * from target1 order by x,y,z
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target1
+#### A masked pattern was here ####
+POSTHOOK: query: --expect target1 to have 2rows (2,NULL,1), (1,2,NULL)
+select * from target1 order by x,y,z
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target1
+#### A masked pattern was here ####
+1	2	NULL
+2	NULL	1
+PREHOOK: query: -- expect target2 to have 1 row: (2,NULL,1)
+select * from target2
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target2
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect target2 to have 1 row: (2,NULL,1)
+select * from target2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target2
+#### A masked pattern was here ####
+2	NULL	1
+PREHOOK: query: from source insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source.*
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@source
+PREHOOK: Output: x314@target1
+PREHOOK: Output: x314@target2
+POSTHOOK: query: from source insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source.*
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@source
+POSTHOOK: Output: x314@target1
+POSTHOOK: Output: x314@target2
+POSTHOOK: Lineage: target1.x EXPRESSION []
+POSTHOOK: Lineage: target1.y SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.x EXPRESSION []
+POSTHOOK: Lineage: target2.y SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.z SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+PREHOOK: query: -- expect target1 to have 3 rows: (2,NULL,1), (1,2,NULL), (NULL, 1,2)
+select * from target1 order by x,y,z
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target1
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect target1 to have 3 rows: (2,NULL,1), (1,2,NULL), (NULL, 1,2)
+select * from target1 order by x,y,z
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target1
+#### A masked pattern was here ####
+NULL	1	2
+1	2	NULL
+2	NULL	1
+PREHOOK: query: -- expect target2 to have 2 rows: (2,NULL,1), (NULL, 1,2)
+select * from target2 order by x,y,z
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target2
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect target2 to have 2 rows: (2,NULL,1), (NULL, 1,2)
+select * from target2 order by x,y,z
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target2
+#### A masked pattern was here ####
+NULL	1	2
+2	NULL	1
+PREHOOK: query: truncate table target1
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: x314@target1
+POSTHOOK: query: truncate table target1
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: x314@target1
+PREHOOK: query: create table source2(s1 int, s2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@source2
+POSTHOOK: query: create table source2(s1 int, s2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@source2
+PREHOOK: query: insert into target1 (x,z) select source.s1,source2.s2 from source left outer join source2 on source.s1=source2.s2
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@source
+PREHOOK: Input: x314@source2
+PREHOOK: Output: x314@target1
+POSTHOOK: query: insert into target1 (x,z) select source.s1,source2.s2 from source left outer join source2 on source.s1=source2.s2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@source
+POSTHOOK: Input: x314@source2
+POSTHOOK: Output: x314@target1
+POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.y EXPRESSION []
+POSTHOOK: Lineage: target1.z SIMPLE [(source2)source2.FieldSchema(name:s2, type:int, comment:null), ]
+PREHOOK: query: --expect target1 to have 1 row (1,NULL,NULL)
+select * from target1
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@target1
+#### A masked pattern was here ####
+POSTHOOK: query: --expect target1 to have 1 row (1,NULL,NULL)
+select * from target1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@target1
+#### A masked pattern was here ####
+1	NULL	NULL
+PREHOOK: query: -- partitioned tables
+CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@pageviews
+POSTHOOK: query: -- partitioned tables
+CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@pageviews
+PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp = '2014-09-23', i = 1)(userid,link) VALUES ('jsmith', 'mail.com')
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__2
+PREHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=1
+POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp = '2014-09-23', i = 1)(userid,link) VALUES ('jsmith', 'mail.com')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__2
+POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=1
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).link SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).userid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- expect 1 row: ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
+select * from pageviews
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@pageviews
+PREHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=1
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect 1 row: ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
+select * from pageviews
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@pageviews
+POSTHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=1
+#### A masked pattern was here ####
+jsmith	mail.com	NULL	2014-09-23	1
+PREHOOK: query: -- dynamic partitioning 
+
+
+
+INSERT INTO TABLE pageviews PARTITION (datestamp='2014-09-23',i)(userid,i,link) VALUES ('jsmith', 7, '7mail.com')
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__3
+PREHOOK: Output: x314@pageviews@datestamp=2014-09-23
+POSTHOOK: query: -- dynamic partitioning 
+
+
+
+INSERT INTO TABLE pageviews PARTITION (datestamp='2014-09-23',i)(userid,i,link) VALUES ('jsmith', 7, '7mail.com')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__3
+POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=7
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).link SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).userid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23')
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__4
+PREHOOK: Output: x314@pageviews
+POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__4
+POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=17
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).link SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).userid EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24')
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__5
+PREHOOK: Output: x314@pageviews
+POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__5
+POSTHOOK: Output: x314@pageviews@datestamp=2014-09-24/i=19
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).link SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).userid EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- here the 'datestamp' partition column is not provided and will be NULL-filled
+INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link) VALUES ('jsmith', 23, '23mail.com')
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@values__tmp__table__6
+PREHOOK: Output: x314@pageviews
+POSTHOOK: query: -- here the 'datestamp' partition column is not provided and will be NULL-filled
+INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link) VALUES ('jsmith', 23, '23mail.com')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@values__tmp__table__6
+POSTHOOK: Output: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).link SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).userid EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- expect 5 rows:
+-- expect ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
+-- expect ('jsmith', '7mail.com', NULL) in partition '2014-09-23'/'7'
+-- expect ('jsmith', '17mail.com', NULL) in partition '2014-09-23'/'17'
+-- expect ('jsmith', '19mail.com', NULL) in partition '2014-09-24'/'19'
+-- expect ('jsmith', '23mail.com', NULL) in partition '__HIVE_DEFAULT_PARTITION__'/'23'
+select * from pageviews order by link
+PREHOOK: type: QUERY
+PREHOOK: Input: x314@pageviews
+PREHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=1
+PREHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=17
+PREHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=7
+PREHOOK: Input: x314@pageviews@datestamp=2014-09-24/i=19
+PREHOOK: Input: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
+#### A masked pattern was here ####
+POSTHOOK: query: -- expect 5 rows:
+-- expect ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
+-- expect ('jsmith', '7mail.com', NULL) in partition '2014-09-23'/'7'
+-- expect ('jsmith', '17mail.com', NULL) in partition '2014-09-23'/'17'
+-- expect ('jsmith', '19mail.com', NULL) in partition '2014-09-24'/'19'
+-- expect ('jsmith', '23mail.com', NULL) in partition '__HIVE_DEFAULT_PARTITION__'/'23'
+select * from pageviews order by link
+POSTHOOK: type: QUERY
+POSTHOOK: Input: x314@pageviews
+POSTHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=1
+POSTHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=17
+POSTHOOK: Input: x314@pageviews@datestamp=2014-09-23/i=7
+POSTHOOK: Input: x314@pageviews@datestamp=2014-09-24/i=19
+POSTHOOK: Input: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
+#### A masked pattern was here ####
+jsmith	17mail.com	NULL	2014-09-23	17
+jsmith	19mail.com	NULL	2014-09-24	19
+jsmith	23mail.com	NULL	__HIVE_DEFAULT_PARTITION__	23
+jsmith	7mail.com	NULL	2014-09-23	7
+jsmith	mail.com	NULL	2014-09-23	1
+PREHOOK: query: drop database if exists x314 cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:x314
+PREHOOK: Output: database:x314
+PREHOOK: Output: x314@pageviews
+PREHOOK: Output: x314@source
+PREHOOK: Output: x314@source2
+PREHOOK: Output: x314@target1
+PREHOOK: Output: x314@target2
+PREHOOK: Output: x314@values__tmp__table__1
+PREHOOK: Output: x314@values__tmp__table__2
+PREHOOK: Output: x314@values__tmp__table__3
+PREHOOK: Output: x314@values__tmp__table__4
+PREHOOK: Output: x314@values__tmp__table__5
+PREHOOK: Output: x314@values__tmp__table__6
+POSTHOOK: query: drop database if exists x314 cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:x314
+POSTHOOK: Output: database:x314
+POSTHOOK: Output: x314@pageviews
+POSTHOOK: Output: x314@source
+POSTHOOK: Output: x314@source2
+POSTHOOK: Output: x314@target1
+POSTHOOK: Output: x314@target2
+POSTHOOK: Output: x314@values__tmp__table__1
+POSTHOOK: Output: x314@values__tmp__table__2
+POSTHOOK: Output: x314@values__tmp__table__3
+POSTHOOK: Output: x314@values__tmp__table__4
+POSTHOOK: Output: x314@values__tmp__table__5
+POSTHOOK: Output: x314@values__tmp__table__6

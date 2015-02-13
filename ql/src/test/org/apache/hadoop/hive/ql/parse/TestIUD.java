@@ -208,6 +208,26 @@ public class TestIUD {
           "(tok_where (= (tok_table_or_col b) 9))))",
       ast.toStringTree());
   }
+  /**
+   * same as testInsertIntoTableAsSelectFromNamedVirtTable but with column list on target table
+   * @throws ParseException
+   */
+  @Test
+  public void testInsertIntoTableAsSelectFromNamedVirtTableNamedCol() throws ParseException {
+    ASTNode ast = parse("insert into page_view(c1,c2) select a,b as c from (values (1,2),(3,4)) as VC(a,b) where b = 9");
+    Assert.assertEquals("AST doesn't match",
+      "(tok_query " +
+        "(tok_from " +
+        "(tok_virtual_table " +
+        "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
+        "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
+        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view)) (tok_tabcolname c1 c2)) " +
+        "(tok_select " +
+        "(tok_selexpr (tok_table_or_col a)) " +
+        "(tok_selexpr (tok_table_or_col b) c)) " +
+        "(tok_where (= (tok_table_or_col b) 9))))",
+      ast.toStringTree());
+  }
   @Test
   public void testInsertIntoTableFromAnonymousTable1Row() throws ParseException {
     ASTNode ast = parse("insert into page_view values(1,2)");
@@ -220,6 +240,32 @@ public class TestIUD {
         "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
         "(tok_select (tok_selexpr tok_allcolref))))",
       ast.toStringTree());
+  }
+  /**
+   * Same as testInsertIntoTableFromAnonymousTable1Row but with column list on target table
+   * @throws ParseException
+   */
+  @Test
+  public void testInsertIntoTableFromAnonymousTable1RowNamedCol() throws ParseException {
+    ASTNode ast = parse("insert into page_view(a,b) values(1,2)");
+    Assert.assertEquals("AST doesn't match",
+      "(tok_query " +
+        "(tok_from " +
+          "(tok_virtual_table " +
+            "(tok_virtual_tabref tok_anonymous) " +
+            "(tok_values_table (tok_value_row 1 2))" +
+          ")" +
+        ") " +
+        "(tok_insert " +
+          "(tok_insert_into " +
+            "(tok_tab (tok_tabname page_view)) " +
+            "(tok_tabcolname a b)" +//this is "extra" piece we get vs previous query
+          ") " +
+          "(tok_select " +
+            "(tok_selexpr tok_allcolref)" +
+          ")" +
+        ")" +
+      ")", ast.toStringTree());
   }
   @Test
   public void testInsertIntoTableFromAnonymousTable() throws ParseException {
