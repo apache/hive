@@ -216,6 +216,7 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_RELOADFUNCTION;
 TOK_CREATEMACRO;
 TOK_DROPMACRO;
 TOK_TEMPORARY;
@@ -702,6 +703,7 @@ ddlStatement
     | createIndexStatement
     | dropIndexStatement
     | dropFunctionStatement
+    | reloadFunctionStatement
     | dropMacroStatement
     | analyzeStatement
     | lockStatement
@@ -1624,6 +1626,11 @@ dropFunctionStatement
     -> {$temp != null}? ^(TOK_DROPFUNCTION functionIdentifier ifExists? TOK_TEMPORARY)
     ->                  ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
+
+reloadFunctionStatement
+@init { pushMsg("reload function statement", state); }
+@after { popMsg(state); }
+    : KW_RELOAD KW_FUNCTION -> ^(TOK_RELOADFUNCTION);
 
 createMacroStatement
 @init { pushMsg("create macro statement", state); }
