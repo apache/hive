@@ -2284,8 +2284,8 @@ insertClause
 @after { popMsg(state); }
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
-   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition
-       -> ^(TOK_INSERT_INTO tableOrPartition)
+   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition (LPAREN targetCols=columnNameList RPAREN)?
+       -> ^(TOK_INSERT_INTO tableOrPartition $targetCols?)
    ;
 
 destination
