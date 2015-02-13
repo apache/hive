@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -474,6 +475,12 @@ public class TezCompiler extends TaskCompiler {
       physicalCtx = new StageIDsRearranger().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping stage id rearranger");
+    }
+
+    if ("llap".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      physicalCtx = new LlapDecider().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping llap decider");
     }
     return;
   }

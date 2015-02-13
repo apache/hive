@@ -149,8 +149,17 @@ public class ReduceWork extends BaseWork {
   }
 
   @Explain(displayName = "Execution mode")
-  public String getVectorModeOn() {
-    return vectorMode ? "vectorized" : null;
+  public String getExecutionMode() {
+    if (vectorMode) {
+      if (llapMode) {
+	return "vectorized, llap";
+      } else {
+	return "vectorized";
+      }
+    } else if (llapMode) {
+      return "llap";
+    }
+    return null;
   }
 
   @Explain(displayName = "Reduce Operator Tree")

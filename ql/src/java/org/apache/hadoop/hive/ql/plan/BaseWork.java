@@ -60,6 +60,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // Vectorization.
   protected Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = null;
   protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
+
+  protected boolean llapMode = false;
   protected boolean vectorMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
@@ -182,6 +184,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public boolean getVectorMode() {
     return vectorMode;
+  }
+
+  public void setLlapMode(boolean llapMode) {
+    this.llapMode = llapMode;
+  }
+
+  public boolean getLlapMode() {
+    return llapMode;
   }
 
   public abstract void configureJobConf(JobConf job);

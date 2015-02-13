@@ -2011,6 +2011,20 @@ public class HiveConf extends Configuration {
     LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024, ""),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", false, ""),
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f, ""),
+    LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
+	"Enforce that all parents are in llap, before considering vertex"),
+    LLAP_AUTO_ENFORCE_VECTORIZED("hive.llap.auto.enforce.vectorized", true,
+	"Enforce that inputs are vectorized, before considering vertex"),
+    LLAP_AUTO_ENFORCE_STATS("hive.llap.auto.enforce.stats", true,
+	"Enforce that col stats are available, before considering vertex"),
+    LLAP_AUTO_MAX_INPUT("hive.llap.auto.max.input.size", 10*1024*1024*1024L,
+	"Check input size, before considering vertex (-1 disables check)"),
+    LLAP_AUTO_MAX_OUTPUT("hive.llap.auto.max.output.size", 1*1024*1024*1024L,
+	"Check output size, before considering vertex (-1 disables check)"),
+    LLAP_EXECUTION_MODE("hive.llap.execution.mode", "auto",
+	new StringSet("auto", "none", "all", "map"),
+        "Chooses whether query fragments will run in container or in llap"),
+
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
@@ -2034,7 +2048,8 @@ public class HiveConf extends Configuration {
     SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
-      "Name of the SASL mechanism to use for authentication.");    ;
+	"Name of the SASL mechanism to use for authentication.")
+    ;
 
     public final String varname;
     private final String defaultExpr;
