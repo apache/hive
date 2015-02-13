@@ -2815,15 +2815,6 @@ public class RecordReaderImpl implements RecordReader {
 
   public static class CacheChunk extends DiskRange {
     public LlapMemoryBuffer buffer;
-    /** When we get (or allocate+put) memory buffer to cache, it's locked for us once. All is well
-     * if we unlock it once; but if we use the same buffer for 2+ RGs, we need to incRef again,
-     * or track our own separate refcount so we don't unlock more than once. We do the former.
-     * Every time we get or allocate, we put buffer in one cache chunk that is later used by all
-     * future lookups that happen to land within this DiskRange. When they call "setReused", they
-     * get back previous value. If we have not used this range for any RG yet, we don't need to
-     * notify cache; if it's called more than once, we are re-using this buffer and will incref.
-     */
-    private boolean isReused = false;
 
     public CacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
       super(offset, end);
@@ -2838,12 +2829,6 @@ public class RecordReaderImpl implements RecordReader {
     @Override
     public ByteBuffer getData() {
       return buffer.byteBuffer;
-    }
-
-    public boolean setReused() {
-      boolean result = isReused;
-      isReused = true;
-      return result;
     }
 
     @Override

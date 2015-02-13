@@ -526,7 +526,6 @@ public abstract class InStream extends InputStream {
       super(targetBuffer, cbStartOffset, cbEndOffset);
       this.isCompressed = isCompressed;
       this.originalData = originalData;
-      setReused(); // This block is immediately used by code that does the decompression.
     }
 
     boolean isCompressed;
@@ -568,9 +567,7 @@ public abstract class InStream extends InputStream {
       if (current instanceof CacheChunk) {
         // 2a. This is a cached compression buffer, add as is.
         CacheChunk cc = (CacheChunk)current;
-        if (cc.setReused()) {
-          cache.notifyReused(cc.buffer);
-        }
+        cache.notifyReused(cc.buffer);
         streamBuffer.cacheBuffers.add(cc.buffer);
         currentCOffset = cc.end;
         if (DebugUtils.isTraceOrcEnabled()) {
@@ -626,6 +623,7 @@ public abstract class InStream extends InputStream {
       }
       chunk.buffer.byteBuffer.position(startPos);
       chunk.originalData = null;
+      cache.notifyReused(chunk.buffer);
     }
 
     // 5. Release original compressed buffers to zero-copy reader if needed.
@@ -717,9 +715,6 @@ public abstract class InStream extends InputStream {
     }
     int consumedLength = chunkLength + OutStream.HEADER_SIZE;
     long cbEndOffset = cbStartOffset + consumedLength;
-    if (current.end < cbEndOffset) {
-      return -1; // This is impossible to read from this chunk,
-    }
     boolean isUncompressed = ((b0 & 0x01) == 1);
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Found CB at " + cbStartOffset + ", chunk length " + chunkLength + ", total "
@@ -740,6 +735,9 @@ public abstract class InStream extends InputStream {
       }
       return consumedLength;
     }
+    if (current.end < cbEndOffset && !ranges.hasNext()) {
+      return -1; // This is impossible to read from this chunk.
+    }
 
     // TODO: we could remove extra copy for isUncompressed case by copying directly to cache.
     // We need to consolidate 2 or more buffers into one to decompress.
@@ -759,12 +757,13 @@ public abstract class InStream extends InputStream {
       }
     }
 
+    DiskRange nextRange = null;
     while (ranges.hasNext()) {
-      DiskRange range = ranges.next();
-      if (!(range instanceof BufferChunk)) {
+      nextRange = ranges.next();
+      if (!(nextRange instanceof BufferChunk)) {
         throw new IOException("Trying to extend compressed block into uncompressed block");
       }
-      compressed = range.getData();
+      compressed = nextRange.getData();
       if (compressed.remaining() >= remaining) {
         // This is the last range for this compression block. Yay!
         slice = compressed.slice();
@@ -773,9 +772,9 @@ public abstract class InStream extends InputStream {
         addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset,
             cbEndOffset, remaining, ranges, current, cache, toDecompress, cacheBuffers);
         if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Adjusting " + range + " to consume " + remaining);
+          LOG.info("Adjusting " + nextRange + " to consume " + remaining);
         }
-        range.offset += remaining;
+        nextRange.offset += remaining;
         if (compressed.remaining() <= 0 && zcr != null) {
           zcr.releaseBuffer(compressed); // We copied the entire buffer.
         }
@@ -787,12 +786,11 @@ public abstract class InStream extends InputStream {
         zcr.releaseBuffer(compressed); // We copied the entire buffer.
       }
       if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Removing " + range + " from ranges");
+        LOG.info("Removing " + nextRange + " from ranges");
       }
       ranges.remove();
     }
-    throw new IOException("EOF in while trying to read "
-        + chunkLength + " bytes at " + cbStartOffset);
+    return -1; // This is impossible to read from this chunk.
   }
 
   /**

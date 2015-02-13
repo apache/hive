@@ -172,7 +172,6 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
-        assert !buffer.isLocked(); // TODO: is this always true? does put happen before reuse?
         buffer.incRef();
         long offset = ranges[i].offset + baseOffset;
         buffer.declaredLength = ranges[i].getLength();
@@ -414,7 +413,6 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   @Override
   public void notifyReused(LlapMemoryBuffer buffer) {
-    int newVal = ((LlapCacheableBuffer)buffer).incRef();
-    assert newVal > 1;
+    ((LlapCacheableBuffer)buffer).incRef();
   }
 }

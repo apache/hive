@@ -37,5 +37,5 @@ from alltypesorc cross join cross_numbers;
 select count(*) from orc_llap;
 
 SET hive.llap.io.enabled=true;
-
-select cstring1, ctimestamp1, cboolean1, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000;
+  
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000;
