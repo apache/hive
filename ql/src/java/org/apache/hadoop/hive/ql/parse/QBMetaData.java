@@ -103,6 +103,9 @@ public class QBMetaData {
     return nameToDestType.get(alias.toLowerCase());
   }
 
+  /**
+   * @param alias this is actually dest name, like insclause-0
+   */
   public Table getDestTableForAlias(String alias) {
     return nameToDestTable.get(alias.toLowerCase());
   }
