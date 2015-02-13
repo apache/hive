@@ -90,12 +90,6 @@ public class GenericUDFField extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length >= 2);
-
-    final StringBuilder sb = new StringBuilder();
-    sb.append("field(");
-    sb.append(StringUtils.join(children, ", "));
-    sb.append(")");
-
-    return sb.toString();
+    return getStandardDisplayString("field", children);
   }
 }
