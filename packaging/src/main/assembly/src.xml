@@ -40,6 +40,7 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>itests/thirdparty/**</exclude>
+        <exclude>testutils/ptest2/velocity.log*</exclude>
       </excludes>
 
       <includes>
@@ -74,6 +75,8 @@
         <include>jdbc/**/*</include>
         <include>contrib/**/*</include>
         <include>metastore/**/*</include>
+        <include>lib/**/*</include>
+        <include>findbugs/**/*</include>
         <include>odbc/**/*</include>
         <include>packaging/pom.xml</include>
         <include>packaging/src/**/*</include>
