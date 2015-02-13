@@ -297,6 +297,7 @@ KW_REWRITE : 'REWRITE';
 KW_AUTHORIZATION: 'AUTHORIZATION';
 KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
+KW_RELOAD: 'RELOAD';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

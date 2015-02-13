@@ -348,7 +348,7 @@ public class PartitionPruner implements Transform {
     if (!(expr instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)expr)) {
+    if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc) expr)) {
       return true;
     }
     for (ExprNodeDesc child : expr.getChildren()) {

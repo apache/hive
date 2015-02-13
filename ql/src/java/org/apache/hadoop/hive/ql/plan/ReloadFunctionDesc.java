@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
 
-/**
- * Interface for common functionality between FunctionInfo/WindowFunctionInfo
- */
-public interface CommonFunctionInfo {
-  Class<?> getFunctionClass();
+package org.apache.hadoop.hive.ql.plan;
+
+import java.io.Serializable;
+
+@Explain(displayName = "Reload Function")
+public class ReloadFunctionDesc implements Serializable {
+  private static final long serialVersionUID = 1L;
 }
