@@ -29,7 +29,6 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,8 +48,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -98,6 +95,8 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -152,6 +151,31 @@ public class Hive {
       super.remove();
     }
   };
+
+  // register all permanent functions. need improvement
+  static {
+    try {
+      reloadFunctions();
+    } catch (Exception e) {
+      LOG.warn("Failed to access metastore. This class should not accessed in runtime.",e);
+    }
+  }
+
+  public static void reloadFunctions() throws HiveException {
+    Hive db = Hive.get();
+    for (String dbName : db.getAllDatabases()) {
+      for (String functionName : db.getFunctions(dbName, "*")) {
+        Function function = db.getFunction(dbName, functionName);
+        try {
+          FunctionRegistry.registerPermanentFunction(functionName, function.getClassName(), false,
+              FunctionTask.toFunctionResource(function.getResourceUris()));
+        } catch (Exception e) {
+          LOG.warn("Failed to register persistent function " +
+              functionName + ":" + function.getClassName() + ". Ignore and continue.");
+        }
+      }
+    }
+  }
 
   public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
     return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
@@ -1583,10 +1607,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
       throws HiveException {
     Table tbl = getTable(tableName);
+    HiveConf sessionConf = SessionState.getSessionConf();
     if (replace) {
-      tbl.replaceFiles(loadPath, isSrcLocal);
+      Path tableDest = tbl.getPath();
+      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
     } else {
-      tbl.copyFiles(loadPath, isSrcLocal, isAcid);
+      FileSystem fs;
+      try {
+        fs = tbl.getDataLocation().getFileSystem(sessionConf);
+        copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid);
+      } catch (IOException e) {
+        throw new HiveException("addFiles: filesystem error in check phase", e);
+      }
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 

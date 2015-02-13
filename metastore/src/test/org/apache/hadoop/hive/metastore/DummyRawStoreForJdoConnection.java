@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
 import junit.framework.Assert;
 
@@ -28,7 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -44,12 +43,10 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -145,13 +142,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> getDatabases(String pattern) throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> getAllDatabases() throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -214,7 +211,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<Partition> getPartitions(String dbName, String tableName, int max)
       throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -227,41 +224,41 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<Table> getTableObjectsByName(String dbname, List<String> tableNames)
       throws MetaException, UnknownDBException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> getAllTables(String dbName) throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short max_tables)
       throws MetaException, UnknownDBException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> listPartitionNames(String db_name, String tbl_name, short max_parts)
       throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> listPartitionNamesByFilter(String db_name, String tbl_name, String filter,
       short max_parts) throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -310,7 +307,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<String> listIndexNames(String dbName, String origTableName, short max)
       throws MetaException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -324,14 +321,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
       short maxParts) throws MetaException, NoSuchObjectException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -425,35 +422,35 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MTablePrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MPartitionPrivilege> listPrincipalPartitionGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName, String partName) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName, String columnName) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -461,7 +458,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       PrincipalType principalType, String dbName, String tableName, String partName,
       String columnName) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -487,18 +484,18 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> listRoleNames() {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<MRoleMap> listRoleMembers(String roleName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -514,14 +511,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       String userName, List<String> groupNames) throws MetaException, NoSuchObjectException,
       InvalidObjectException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> listPartitionNamesPs(String db_name, String tbl_name, List<String> part_vals,
       short max_parts) throws MetaException, NoSuchObjectException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -529,7 +526,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
 
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -555,7 +552,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<String> getAllTokenIdentifiers() {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -574,67 +571,67 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public String[] getMasterKeys() {
-    return null;
+    return new String[0];
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
       String principalName, PrincipalType principalType) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
       String principalName, PrincipalType principalType) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
       String principalName, PrincipalType principalType) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
       String principalName, PrincipalType principalType) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
       String principalName, PrincipalType principalType) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listGlobalGrantsAll() {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String dbName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(String dbName, String tableName, String partitionName, String columnName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPartitionGrantsAll(String dbName, String tableName, String partitionName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<HiveObjectPrivilege> listTableColumnGrantsAll(String dbName, String tableName, String columnName) {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -689,7 +686,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
       String tblName, List<String> colNames, List<String> partNames)
       throws MetaException, NoSuchObjectException {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
@@ -738,7 +735,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override

@@ -428,6 +428,7 @@ public enum ErrorMsg {
   ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED(10300,
       "Alter table partition type {0} does not support cascade", true),
 
+  DROP_NATIVE_FUNCTION(10301, "Cannot drop native function"),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
