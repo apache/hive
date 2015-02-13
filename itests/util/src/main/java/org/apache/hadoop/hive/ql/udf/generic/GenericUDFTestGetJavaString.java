@@ -50,6 +50,6 @@ public class GenericUDFTestGetJavaString extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "GenericUDFTestGetJavaString(" + children[0] + ")";
+    return getStandardDisplayString("GenericUDFTestGetJavaString", children);
   }
 }

@@ -287,7 +287,7 @@ public class GenericUDFTranslate extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 3);
-    return "translate(" + children[0] + ", " + children[1] + ", " + children[2] + ")";
+    return getStandardDisplayString("translate", children);
   }
 
 }

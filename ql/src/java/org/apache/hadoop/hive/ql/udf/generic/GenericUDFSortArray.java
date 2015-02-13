@@ -111,6 +111,6 @@ public class GenericUDFSortArray extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "sort_array(" + children[0] + ")";
+    return getStandardDisplayString("sort_array", children);
  }
 }

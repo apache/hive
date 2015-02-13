@@ -76,6 +76,6 @@ public class GenericUDFEvaluateNPE extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "evaluate_npe(" + children[0] + ")";
+    return getStandardDisplayString("evaluate_npe", children);
   }
 }

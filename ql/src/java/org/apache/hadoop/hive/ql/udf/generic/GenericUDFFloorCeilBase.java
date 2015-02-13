@@ -128,7 +128,7 @@ public abstract class GenericUDFFloorCeilBase extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return opDisplayName + "(" + children[0] + ")";
+    return getStandardDisplayString(opDisplayName, children);
   }
 
 }

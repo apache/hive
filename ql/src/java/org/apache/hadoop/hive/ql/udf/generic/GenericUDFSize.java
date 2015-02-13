@@ -79,6 +79,6 @@ public class GenericUDFSize extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "size(" + children[0] + ")";
+    return getStandardDisplayString("size", children);
   }
 }

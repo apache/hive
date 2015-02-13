@@ -232,4 +232,23 @@ public abstract class GenericUDF implements Closeable {
       throw new UDFArgumentLengthException(sb.toString());
     }
   }
+
+  protected String getStandardDisplayString(String name, String[] children) {
+    return getStandardDisplayString(name, children, ", ");
+  }
+
+  protected String getStandardDisplayString(String name, String[] children, String delim) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(name);
+    sb.append("(");
+    if (children.length > 0) {
+      sb.append(children[0]);
+      for (int i = 1; i < children.length; i++) {
+        sb.append(delim);
+        sb.append(children[i]);
+      }
+    }
+    sb.append(")");
+    return sb.toString();
+  }
 }

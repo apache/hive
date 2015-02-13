@@ -101,16 +101,7 @@ public abstract class AbstractGenericUDFReflect extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(functionName()).append('(');
-    for (int i = 0; i < children.length; i++) {
-      if (i > 0) {
-        sb.append(',');
-      }
-      sb.append(children[i]);
-    }
-    sb.append(')');
-    return sb.toString();
+    return getStandardDisplayString(functionName(), children, ",");
   }
 
   protected abstract String functionName();

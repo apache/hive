@@ -128,14 +128,6 @@ public class GenericUDFSentences extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length >= 1 && children.length <= 3);
-    String display = "sentences(" + children[0];
-    if(children.length > 1) {
-      display += ", " + children[1];
-      if(children.length > 2) {
-        display += ", " + children[2];
-      }
-    }
-    display += ")";
-    return display;
+    return getStandardDisplayString("sentences", children);
   }
 }

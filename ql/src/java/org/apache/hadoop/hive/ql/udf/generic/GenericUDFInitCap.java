@@ -108,16 +108,6 @@ public class GenericUDFInitCap extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("initcap(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(",");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("initcap", children);
   }
 }

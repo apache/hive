@@ -78,7 +78,7 @@ public abstract class GenericUDFBaseTrim extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    return udfName + "(" + StringUtils.join(children, ", ") + ")";
+    return getStandardDisplayString(udfName, children);
   }
 
   protected abstract String performOp(String val);

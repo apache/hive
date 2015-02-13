@@ -54,6 +54,6 @@ public class GenericUDFTestGetJavaBoolean extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    return "TestGetJavaBoolean(" + children[0] + ")";
+    return getStandardDisplayString("TestGetJavaBoolean", children);
   }
 }
