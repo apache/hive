@@ -68,6 +68,6 @@ public class GenericUDFMapValues extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert children.length == 1;
-    return "map_values(" + children[0] + ")";
+    return getStandardDisplayString("map_values", children);
   }
 }
