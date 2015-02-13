@@ -3,7 +3,6 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
@@ -65,8 +64,8 @@ public class HiveCollectionConverter extends HiveGroupConverter {
 
   @Override
   public void end() {
-    parent.set(index, wrapList(new ArrayWritable(
-        Writable.class, list.toArray(new Writable[list.size()]))));
+    parent.set(index, new ArrayWritable(
+        Writable.class, list.toArray(new Writable[0])));
   }
 
   @Override
