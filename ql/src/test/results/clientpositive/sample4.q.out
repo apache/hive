@@ -64,6 +64,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: true
               predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
+              sampleDesc: BUCKET 1 OUT OF 2
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

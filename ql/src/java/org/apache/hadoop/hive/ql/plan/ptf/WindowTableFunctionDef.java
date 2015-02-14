@@ -18,21 +18,26 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.plan.Explain;
+
 import java.util.List;
 
-
+@Explain(displayName = "Windowing table definition")
 public class WindowTableFunctionDef extends PartitionedTableFunctionDef {
   List<WindowFunctionDef> windowFunctions;
   
   int rankLimit = -1;
   int rankLimitFunction;
 
+  @Explain(displayName = "window functions")
   public List<WindowFunctionDef> getWindowFunctions() {
     return windowFunctions;
   }
+  
   public void setWindowFunctions(List<WindowFunctionDef> windowFunctions) {
     this.windowFunctions = windowFunctions;
   }
+
   public int getRankLimit() {
     return rankLimit;
   }

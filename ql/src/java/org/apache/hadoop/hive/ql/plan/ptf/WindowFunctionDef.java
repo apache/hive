@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan.ptf;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 
+@Explain(displayName = "window function definition")
 public class WindowFunctionDef extends WindowExpressionDef {
   String name;
   boolean isStar;
@@ -32,6 +34,7 @@ public class WindowFunctionDef extends WindowExpressionDef {
   GenericUDAFEvaluator wFnEval;
   boolean pivotResult;
 
+  @Explain(displayName = "name")
   public String getName() {
     return name;
   }
@@ -40,6 +43,7 @@ public class WindowFunctionDef extends WindowExpressionDef {
     this.name = name;
   }
 
+  @Explain(displayName = "isStar", displayOnlyOnTrue = true)
   public boolean isStar() {
     return isStar;
   }
@@ -48,6 +52,7 @@ public class WindowFunctionDef extends WindowExpressionDef {
     this.isStar = isStar;
   }
 
+  @Explain(displayName = "isDistinct", displayOnlyOnTrue = true)
   public boolean isDistinct() {
     return isDistinct;
   }
@@ -69,12 +74,32 @@ public class WindowFunctionDef extends WindowExpressionDef {
     args.add(arg);
   }
 
+  @Explain(displayName = "arguments")
+  public String getArgsExplain() {
+    if (args == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (PTFExpressionDef expression : args) {
+      if (builder.length() > 0) {
+        builder.append(", ");
+      }
+      builder.append(expression.getExprNode().getExprString());
+    }
+    return builder.toString();
+  }
+
   public WindowFrameDef getWindowFrame() {
     return windowFrame;
   }
 
   public void setWindowFrame(WindowFrameDef windowFrame) {
     this.windowFrame = windowFrame;
+  }
+
+  @Explain(displayName = "window frame")
+  public String getWindowFrameExplain() {
+    return windowFrame == null ? null : windowFrame.toString();
   }
 
   public GenericUDAFEvaluator getWFnEval() {
@@ -85,6 +110,12 @@ public class WindowFunctionDef extends WindowExpressionDef {
     this.wFnEval = wFnEval;
   }
 
+  @Explain(displayName = "window function")
+  public String getWFnEvalExplain() {
+    return wFnEval == null ? null : wFnEval.getClass().getSimpleName();
+  }
+
+  @Explain(displayName = "isPivotResult", displayOnlyOnTrue = true)
   public boolean isPivotResult() {
     return pivotResult;
   }

@@ -929,7 +929,7 @@ public final class PlanUtils {
     return null;
   }
 
-  public static String getExprListString(Collection<ExprNodeDesc> exprs) {
+  public static String getExprListString(Collection<?  extends ExprNodeDesc> exprs) {
     StringBuffer sb = new StringBuffer();
     boolean first = true;
     for (ExprNodeDesc expr: exprs) {

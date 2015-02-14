@@ -95,7 +95,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -593,7 +593,7 @@ public final class GenMapRedUtils {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path[] paths = null;
-      sampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
+      SampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
 
       // Lookup list bucketing pruner
       Map<String, ExprNodeDesc> partToPruner = parseCtx.getOpToPartToSkewedPruner().get(topOp);
