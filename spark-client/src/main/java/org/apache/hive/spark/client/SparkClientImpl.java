@@ -69,6 +69,7 @@ class SparkClientImpl implements SparkClient {
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
   private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
+  private static final String EXECUTOR_EXTRA_CLASSPATH = "spark.executor.extraClassPath";
 
   private final Map<String, String> conf;
   private final HiveConf hiveConf;
@@ -250,14 +251,25 @@ class SparkClientImpl implements SparkClient {
       allProps.put(DRIVER_OPTS_KEY, driverJavaOpts);
       allProps.put(EXECUTOR_OPTS_KEY, executorJavaOpts);
 
-      String hiveHadoopTestClasspath = Strings.nullToEmpty(System.getenv("HIVE_HADOOP_TEST_CLASSPATH"));
-      if (!hiveHadoopTestClasspath.isEmpty()) {
-        String extraClasspath = Strings.nullToEmpty((String)allProps.get(DRIVER_EXTRA_CLASSPATH));
-        if (extraClasspath.isEmpty()) {
-          allProps.put(DRIVER_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
-        } else {
-          extraClasspath = extraClasspath.endsWith(File.pathSeparator) ? extraClasspath : extraClasspath + File.pathSeparator;
-          allProps.put(DRIVER_EXTRA_CLASSPATH, extraClasspath + hiveHadoopTestClasspath);
+      String isTesting = conf.get("spark.testing");
+      if (isTesting != null && isTesting.equalsIgnoreCase("true")) {
+        String hiveHadoopTestClasspath = Strings.nullToEmpty(System.getenv("HIVE_HADOOP_TEST_CLASSPATH"));
+        if (!hiveHadoopTestClasspath.isEmpty()) {
+          String extraDriverClasspath = Strings.nullToEmpty((String)allProps.get(DRIVER_EXTRA_CLASSPATH));
+          if (extraDriverClasspath.isEmpty()) {
+            allProps.put(DRIVER_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
+          } else {
+            extraDriverClasspath = extraDriverClasspath.endsWith(File.pathSeparator) ? extraDriverClasspath : extraDriverClasspath + File.pathSeparator;
+            allProps.put(DRIVER_EXTRA_CLASSPATH, extraDriverClasspath + hiveHadoopTestClasspath);
+          }
+
+          String extraExecutorClasspath = Strings.nullToEmpty((String)allProps.get(EXECUTOR_EXTRA_CLASSPATH));
+          if (extraExecutorClasspath.isEmpty()) {
+            allProps.put(EXECUTOR_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
+          } else {
+            extraExecutorClasspath = extraExecutorClasspath.endsWith(File.pathSeparator) ? extraExecutorClasspath : extraExecutorClasspath + File.pathSeparator;
+            allProps.put(EXECUTOR_EXTRA_CLASSPATH, extraExecutorClasspath + hiveHadoopTestClasspath);
+          }
         }
       }
 
@@ -360,6 +372,9 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
+      if (isTesting != null) {
+        pb.environment().put("SPARK_TESTING", isTesting);
+      }
       final Process child = pb.start();
 
       int childId = childIdGenerator.incrementAndGet();
