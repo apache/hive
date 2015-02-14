@@ -18,7 +18,7 @@
 package org.apache.hive.spark.client;
 
 import java.io.Serializable;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -68,10 +68,10 @@ public interface SparkClient extends Serializable {
    * in cluster mode, it may reside on a different host, meaning "file:" URLs have to exist
    * on that node (and not on the client machine).
    *
-   * @param url The location of the jar file.
+   * @param uri The location of the jar file.
    * @return A future that can be used to monitor the operation.
    */
-  Future<?> addJar(URL url);
+  Future<?> addJar(URI uri);
 
   /**
    * Adds a file to the running remote context.
@@ -80,10 +80,10 @@ public interface SparkClient extends Serializable {
    * in cluster mode, it may reside on a different host, meaning "file:" URLs have to exist
    * on that node (and not on the client machine).
    *
-   * @param url The location of the file.
+   * @param uri The location of the file.
    * @return A future that can be used to monitor the operation.
    */
-  Future<?> addFile(URL url);
+  Future<?> addFile(URI uri);
 
   /**
    * Get the count of executors.
