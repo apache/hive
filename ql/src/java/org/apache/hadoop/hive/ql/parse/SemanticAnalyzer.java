@@ -557,7 +557,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public static String generateErrorMessage(ASTNode ast, String message) {
     StringBuilder sb = new StringBuilder();
     if (ast == null) {
-      sb.append("The abstract syntax tree is null");
+      sb.append(message).append(". Cannot tell the position of null AST.");
       return sb.toString();
     }
     sb.append(ast.getLine());
@@ -8941,30 +8941,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (leftmap.size() != rightmap.size()) {
       throw new SemanticException("Schema of both sides of union should match.");
     }
-    for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-      String field = lEntry.getKey();
+    
+    RowResolver unionoutRR = new RowResolver();
+    
+    Iterator<Map.Entry<String, ColumnInfo>> lIter = leftmap.entrySet().iterator();
+    Iterator<Map.Entry<String, ColumnInfo>> rIter = rightmap.entrySet().iterator();
+    while (lIter.hasNext()) {
+      Map.Entry<String, ColumnInfo> lEntry = lIter.next();
+      Map.Entry<String, ColumnInfo> rEntry = rIter.next();
       ColumnInfo lInfo = lEntry.getValue();
-      ColumnInfo rInfo = rightmap.get(field);
-      if (rInfo == null) {
-        throw new SemanticException(generateErrorMessage(tabref,
-            "Schema of both sides of union should match. " + rightalias
-                + " does not have the field " + field));
-      }
-      if (lInfo == null) {
-        throw new SemanticException(generateErrorMessage(tabref,
-            "Schema of both sides of union should match. " + leftalias
-                + " does not have the field " + field));
-      }
-      if (!lInfo.getInternalName().equals(rInfo.getInternalName())) {
-        throw new SemanticException(generateErrorMessage(tabref,
-            "Schema of both sides of union should match: field " + field + ":"
-                + " appears on the left side of the UNION at column position: " +
-                getPositionFromInternalName(lInfo.getInternalName())
-                + ", and on the right side of the UNION at column position: " +
-                getPositionFromInternalName(rInfo.getInternalName())
-                + ". Column positions should match for a UNION"));
-      }
-      // try widening coversion, otherwise fail union
+      ColumnInfo rInfo = rEntry.getValue();
+
+      String field = lEntry.getKey(); // use left alias (~mysql, postgresql) 
+      // try widening conversion, otherwise fail union
       TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
           rInfo.getType());
       if (commonTypeInfo == null) {
@@ -8974,14 +8963,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 + " on first table and type " + rInfo.getType().getTypeName()
                 + " on second table"));
       }
-    }
-
-    // construct the forward operator
-    RowResolver unionoutRR = new RowResolver();
-    for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-      String field = lEntry.getKey();
-      ColumnInfo lInfo = lEntry.getValue();
-      ColumnInfo rInfo = rightmap.get(field);
       ColumnInfo unionColInfo = new ColumnInfo(lInfo);
       unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
           rInfo.getType()));
@@ -9107,17 +9088,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String origInputAlias, RowResolver unionoutRR, String unionalias)
       throws SemanticException {
 
+    HashMap<String, ColumnInfo> fieldMap = unionoutRR.getFieldMap(unionalias);
+
+    Iterator<ColumnInfo> oIter = origInputFieldMap.values().iterator();
+    Iterator<ColumnInfo> uIter = fieldMap.values().iterator();
+    
     List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
     boolean needsCast = false;
-    for (Map.Entry<String, ColumnInfo> unionEntry : unionoutRR.getFieldMap(unionalias).entrySet()) {
-      String field = unionEntry.getKey();
-      ColumnInfo lInfo = origInputFieldMap.get(field);
-      ExprNodeDesc column = new ExprNodeColumnDesc(lInfo.getType(), lInfo.getInternalName(),
-          lInfo.getTabAlias(), lInfo.getIsVirtualCol(), lInfo.isSkewedCol());
-      if (!lInfo.getType().equals(unionEntry.getValue().getType())) {
+    while (oIter.hasNext()) {
+      ColumnInfo oInfo = oIter.next();
+      ColumnInfo uInfo = uIter.next();
+      ExprNodeDesc column = new ExprNodeColumnDesc(oInfo.getType(), oInfo.getInternalName(),
+          oInfo.getTabAlias(), oInfo.getIsVirtualCol(), oInfo.isSkewedCol());
+      if (!oInfo.getType().equals(uInfo.getType())) {
         needsCast = true;
         column = ParseUtils.createConversionCast(
-            column, (PrimitiveTypeInfo)unionEntry.getValue().getType());
+            column, (PrimitiveTypeInfo)uInfo.getType());
       }
       columns.add(column);
     }

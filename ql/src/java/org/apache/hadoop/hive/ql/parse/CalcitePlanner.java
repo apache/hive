@@ -866,49 +866,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       ASTNode tabref = getQB().getAliases().isEmpty() ? null : getQB().getParseInfo()
           .getSrcForAlias(getQB().getAliases().get(0));
-      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-        String field = lEntry.getKey();
-        ColumnInfo lInfo = lEntry.getValue();
-        ColumnInfo rInfo = rightmap.get(field);
-        if (rInfo == null) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match. " + rightalias
-                  + " does not have the field " + field));
-        }
-        if (lInfo == null) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match. " + leftalias
-                  + " does not have the field " + field));
-        }
-        if (!lInfo.getInternalName().equals(rInfo.getInternalName())) {
-          throw new CalciteSemanticException(SemanticAnalyzer.generateErrorMessage(
-              tabref,
-              "Schema of both sides of union should match: field " + field + ":"
-                  + " appears on the left side of the UNION at column position: "
-                  + SemanticAnalyzer.getPositionFromInternalName(lInfo.getInternalName())
-                  + ", and on the right side of the UNION at column position: "
-                  + SemanticAnalyzer.getPositionFromInternalName(rInfo.getInternalName())
-                  + ". Column positions should match for a UNION"));
-        }
-        // try widening coversion, otherwise fail union
-        TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
-            rInfo.getType());
-        if (commonTypeInfo == null) {
-          throw new CalciteSemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match: Column " + field + " is of type "
-                  + lInfo.getType().getTypeName() + " on first table and type "
-                  + rInfo.getType().getTypeName() + " on second table"));
-        }
-      }
 
       // 3. construct Union Output RR using original left & right Input
       RowResolver unionoutRR = new RowResolver();
-      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-        String field = lEntry.getKey();
+
+      Iterator<Map.Entry<String, ColumnInfo>> lIter = leftmap.entrySet().iterator();
+      Iterator<Map.Entry<String, ColumnInfo>> rIter = rightmap.entrySet().iterator();
+      while (lIter.hasNext()) {
+        Map.Entry<String, ColumnInfo> lEntry = lIter.next();
+        Map.Entry<String, ColumnInfo> rEntry = rIter.next();
         ColumnInfo lInfo = lEntry.getValue();
-        ColumnInfo rInfo = rightmap.get(field);
+        ColumnInfo rInfo = rEntry.getValue();
+
+        String field = lEntry.getKey();
+        // try widening conversion, otherwise fail union
+        TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
+            rInfo.getType());
+        if (commonTypeInfo == null) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match: Column " + field
+                  + " is of type " + lInfo.getType().getTypeName()
+                  + " on first table and type " + rInfo.getType().getTypeName()
+                  + " on second table"));
+        }
         ColumnInfo unionColInfo = new ColumnInfo(lInfo);
-        unionColInfo.setTabAlias(unionalias);
         unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
             rInfo.getType()));
         unionoutRR.put(unionalias, field, unionColInfo);
@@ -2644,6 +2625,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Created Plan for Query Block " + qb.getId());
       }
 
+      setQB(qb);
       return srcRel;
     }
 
