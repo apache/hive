@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -204,7 +204,7 @@ public class TestSparkClient {
           jarFile.closeEntry();
           jarFile.close();
 
-          client.addJar(new URL("file:" + jar.getAbsolutePath()))
+          client.addJar(new URI("file:" + jar.getAbsolutePath()))
             .get(TIMEOUT, TimeUnit.SECONDS);
 
           // Need to run a Spark job to make sure the jar is added to the class loader. Monitoring
@@ -220,7 +220,7 @@ public class TestSparkClient {
           fileStream.write("test file".getBytes("UTF-8"));
           fileStream.close();
 
-          client.addJar(new URL("file:" + file.getAbsolutePath()))
+          client.addJar(new URI("file:" + file.getAbsolutePath()))
             .get(TIMEOUT, TimeUnit.SECONDS);
 
           // The same applies to files added with "addFile". They're only guaranteed to be available
