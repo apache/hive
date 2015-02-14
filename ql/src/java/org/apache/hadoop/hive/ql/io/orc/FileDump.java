@@ -17,11 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -29,8 +27,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 
 /**
  * A tool for printing out the file structure of ORC files.
@@ -98,9 +94,10 @@ public final class FileDump {
         OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
         long sectionStart = stripeStart;
         for(OrcProto.Stream section: footer.getStreamsList()) {
+          String kind = section.hasKind() ? section.getKind().name() : "UNKNOWN";
           System.out.println("    Stream: column " + section.getColumn() +
-            " section " + section.getKind() + " start: " + sectionStart +
-            " length " + section.getLength());
+              " section " + kind + " start: " + sectionStart +
+              " length " + section.getLength());
           sectionStart += section.getLength();
         }
         for (int i = 0; i < footer.getColumnsCount(); ++i) {

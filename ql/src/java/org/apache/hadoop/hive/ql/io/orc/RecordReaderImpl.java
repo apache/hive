@@ -2835,7 +2835,7 @@ class RecordReaderImpl implements RecordReader {
     // figure out which columns have a present stream
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
-      if (stream.getKind() == OrcProto.Stream.Kind.PRESENT) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.PRESENT)) {
         hasNull[stream.getColumn()] = true;
       }
     }
@@ -2843,7 +2843,9 @@ class RecordReaderImpl implements RecordReader {
       long length = stream.getLength();
       int column = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
-      if (StreamName.getArea(streamKind) == StreamName.Area.DATA &&
+      // since stream kind is optional, first check if it exists
+      if (stream.hasKind() &&
+          (StreamName.getArea(streamKind) == StreamName.Area.DATA) &&
           includedColumns[column]) {
         // if we aren't filtering or it is a dictionary, load it.
         if (includedRowGroups == null ||
@@ -2980,8 +2982,10 @@ class RecordReaderImpl implements RecordReader {
     long offset = 0;
     for(OrcProto.Stream streamDesc: streamDescriptions) {
       int column = streamDesc.getColumn();
+      // do not create stream if stream kind does not exist
       if ((includeColumn == null || includeColumn[column]) &&
-          StreamName.getArea(streamDesc.getKind()) == StreamName.Area.DATA) {
+          streamDesc.hasKind() &&
+          (StreamName.getArea(streamDesc.getKind()) == StreamName.Area.DATA)) {
         long length = streamDesc.getLength();
         int first = -1;
         int last = -2;
@@ -3217,7 +3221,7 @@ class RecordReaderImpl implements RecordReader {
       indexes = new OrcProto.RowIndex[this.indexes.length];
     }
     for(OrcProto.Stream stream: stripeFooter.getStreamsList()) {
-      if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX)) {
         int col = stream.getColumn();
         if ((included == null || included[col]) && indexes[col] == null) {
           byte[] buffer = new byte[(int) stream.getLength()];
