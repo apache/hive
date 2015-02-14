@@ -68,9 +68,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Spark
+    Tez
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -193,9 +193,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Spark
+    Tez
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -308,9 +308,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Spark
+    Tez
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

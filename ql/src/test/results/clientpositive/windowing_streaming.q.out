@@ -80,6 +80,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
+            Function definitions:
+                Input definition
+                  input alias: ptf_0
+                  output shape: _col0: string, _col1: string
+                  type: WINDOWING
+                Windowing table definition
+                  input alias: ptf_1
+                  name: windowingtablefunction
+                  order by: _col0
+                  partition by: _col1
+                  raw input shape:
+                  window functions:
+                      window function definition
+                        alias: _wcol0
+                        arguments: _col0
+                        name: rank
+                        window function: GenericUDAFRankEvaluator
+                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        isPivotResult: true
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _wcol0 (type: int)
@@ -136,6 +155,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
+            Function definitions:
+                Input definition
+                  input alias: ptf_0
+                  output shape: _col0: string, _col1: string
+                  type: WINDOWING
+                Windowing table definition
+                  input alias: ptf_1
+                  name: windowingtablefunction
+                  order by: _col0
+                  partition by: _col1
+                  raw input shape:
+                  window functions:
+                      window function definition
+                        alias: _wcol0
+                        arguments: _col0
+                        name: rank
+                        window function: GenericUDAFRankEvaluator
+                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        isPivotResult: true
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (_wcol0 < 4) (type: boolean)
@@ -290,6 +328,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
+            Function definitions:
+                Input definition
+                  input alias: ptf_0
+                  output shape: _col0: tinyint, _col1: double
+                  type: WINDOWING
+                Windowing table definition
+                  input alias: ptf_1
+                  name: windowingtablefunction
+                  order by: _col1
+                  partition by: _col0
+                  raw input shape:
+                  window functions:
+                      window function definition
+                        alias: _wcol0
+                        arguments: _col1
+                        name: rank
+                        window function: GenericUDAFRankEvaluator
+                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        isPivotResult: true
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (_wcol0 < 5) (type: boolean)
