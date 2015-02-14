@@ -18,11 +18,19 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.all;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.auto;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.map;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.none;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -30,8 +38,13 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -46,13 +59,16 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
-import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.*;
+import com.google.common.base.Joiner;
 
 /**
  * LlapDecider takes care of tagging certain vertices in the execution
@@ -133,7 +149,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       // first we check if we *can* run in llap. If we need to use
       // user code to do so (script/udf) we don't.
       if (!evaluateOperators(work)) {
-	LOG.info("some operators cannot be run in llap");
+        LOG.info("some operators cannot be run in llap");
         return false;
       }
 
@@ -195,15 +211,109 @@ public class LlapDecider implements PhysicalPlanResolver {
       return true;
     }
 
+    private boolean checkExpression(ExprNodeDesc expr) {
+      Deque<ExprNodeDesc> exprs = new LinkedList<ExprNodeDesc>();
+      exprs.add(expr);
+      while (!exprs.isEmpty()) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(String.format("Checking '%s'",expr.getExprString()));
+        }
+
+        ExprNodeDesc cur = exprs.removeFirst();
+        if (cur == null) continue;
+        if (cur.getChildren() != null) {
+	  exprs.addAll(cur.getChildren());
+	}
+
+        if (cur instanceof ExprNodeGenericFuncDesc) {
+	  // getRequiredJars is currently broken (requires init in some cases before you can call it)
+          // String[] jars = ((ExprNodeGenericFuncDesc)cur).getGenericUDF().getRequiredJars();
+          // if (jars != null && !(jars.length == 0)) {
+          //   LOG.info(String.format("%s requires %s", cur.getExprString(), Joiner.on(", ").join(jars)));
+          //   return false;
+          // }
+
+          if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)cur)) {
+            LOG.info("Not a built-in function: " + cur.getExprString());
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    private boolean checkAggregator(AggregationDesc agg) throws SemanticException {
+      if (LOG.isDebugEnabled()) {
+	LOG.debug(String.format("Checking '%s'", agg.getExprString()));
+      }
+
+      boolean result = checkExpressions(agg.getParameters());
+      FunctionInfo fi = FunctionRegistry.getFunctionInfo(agg.getGenericUDAFName());
+      result = result && (fi != null) && fi.isNative();
+      if (!result) {
+        LOG.info("Aggregator is not native: " + agg.getExprString());
+      }
+      return result;
+    }
+
+    private boolean checkExpressions(Collection<ExprNodeDesc> exprs) {
+      boolean result = true;
+      for (ExprNodeDesc expr: exprs) {
+        result = result && checkExpression(expr);
+      }
+      return result;
+    }
+
+    private boolean checkAggregators(Collection<AggregationDesc> aggs) {
+      boolean result = true;
+      try {
+	for (AggregationDesc agg: aggs) {
+	  result = result && checkAggregator(agg);
+	}
+      } catch (SemanticException e) {
+	LOG.warn("Exception testing aggregators.",e);
+	result = false;
+      }
+      return result;
+    }
+
     private Map<Rule, NodeProcessor> getRules() {
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + ".*"),
+      opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             return new Boolean(false);
           }
         });
+      opRules.put(new RuleRegExp("No user code in fil",
+              FilterOperator.getOperatorName() + "%"),
+          new NodeProcessor() {
+          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
+              Object... os) {
+            ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
+            return new Boolean(checkExpression(expr));
+          }
+        });
+      opRules.put(new RuleRegExp("No user code in gby",
+              GroupByOperator.getOperatorName() + "%"),
+          new NodeProcessor() {
+          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
+              Object... os) {
+            List<AggregationDesc> aggs = ((GroupByOperator)n).getConf().getAggregators();
+            return new Boolean(checkAggregators(aggs));
+          }
+        });
+      opRules.put(new RuleRegExp("No user code in select",
+              SelectOperator.getOperatorName() + "%"),
+          new NodeProcessor() {
+          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
+              Object... os) {
+            List<ExprNodeDesc> exprs = ((SelectOperator)n).getConf().getColList();
+            return new Boolean(checkExpressions(exprs));
+          }
+        });
+
       return opRules;
     }
 

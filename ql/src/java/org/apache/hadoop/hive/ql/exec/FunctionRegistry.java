@@ -1654,18 +1654,6 @@ public final class FunctionRegistry {
   }
 
   /**
-   * Get the UDF class from an exprNodeDesc. Returns null if the exprNodeDesc
-   * does not contain a UDF class.
-   */
-  private static Class<? extends GenericUDF> getUDFClassFromExprDesc(ExprNodeDesc desc) {
-    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
-      return null;
-    }
-    ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
-    return genericFuncDesc.getGenericUDF().getClass();
-  }
-
-  /**
    * Returns whether a GenericUDF is deterministic or not.
    */
   public static boolean isDeterministic(GenericUDF genericUDF) {
@@ -1755,7 +1743,7 @@ public final class FunctionRegistry {
    * Returns whether the exprNodeDesc is a node of "positive".
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {
-    Class<? extends GenericUDF> udfClass = getUDFClassFromExprDesc(desc);
+    Class<? extends GenericUDF> udfClass = getGenericUDFClassFromExprDesc(desc);
     return GenericUDFOPPositive.class == udfClass;
   }
 
@@ -2040,10 +2028,15 @@ public final class FunctionRegistry {
    * @return True iff the fnExpr represents a hive built-in function.
    */
   public static boolean isNativeFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
-    Class<?> udfClass = getUDFClassFromExprDesc(fnExpr);
-    if (udfClass == null) {
-      udfClass = getGenericUDFClassFromExprDesc(fnExpr);
+    Class<?> udfClass = null;
+
+    GenericUDF udf = fnExpr.getGenericUDF();
+    if (udf instanceof GenericUDFBridge) {
+      udfClass = ((GenericUDFBridge) udf).getUdfClass();
+    } else {
+      udfClass = udf.getClass();
     }
+
     return nativeUdfs.contains(udfClass);
   }
 

@@ -49,3 +49,11 @@ EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s
 set hive.llap.execution.mode=all;
 
 EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value;
+
+set hive.llap.execution.mode=auto;
+
+CREATE TEMPORARY FUNCTION test_udf_get_java_string AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
+
+EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1;
+EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1;
+EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(test_udf_get_java_string(cast(key as string)) as int) > 1;
