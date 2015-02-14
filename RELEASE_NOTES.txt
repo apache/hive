@@ -56,6 +56,8 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9493] - Failed job may not throw exceptions [Spark Branch]
 
 ** Bug
+    * [HIVE-9425] - Add jar/file doesn't work with yarn-cluster mode [Spark Branch]
+    * [HIVE-9684] - Incorrect disk range computation in ORC because of optional stream kind
     * [HIVE-1344] - error in select disinct
     * [HIVE-1654] - select distinct should allow column name regex
     * [HIVE-1869] - TestMTQueries failing on jenkins
@@ -282,6 +284,9 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9651] - FileSinkOperator does not pass in conf to serde.initialize
 
 ** Improvement
+    * [HIVE-9211] - Research on build mini HoS cluster on YARN for unit test
+    * [HIVE-9515] - Check hive.vectorized.execution.reduce.enabled
+    * [HIVE-9691] - Include a few more files include the source tarball
     * [HIVE-2828] - make timestamp accessible in the hbase KeyValue 
     * [HIVE-3187] - support ISO-2012 timestamp literals
     * [HIVE-3280] - Make HiveMetaStoreClient a public API
