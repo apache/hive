@@ -152,7 +152,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -244,7 +244,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private int destTableId;
   private UnionProcContext uCtx;
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
-  private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
@@ -300,7 +300,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
     opToPartPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
     opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
-    opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
+    opToSamplePruner = new HashMap<TableScanOperator, SampleDesc>();
     nameToSplitSample = new HashMap<String, SplitSample>();
     // Must be deterministic order maps - see HIVE-8707
     topOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
@@ -9367,7 +9367,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ExprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols,
             colsEqual, alias, rwsch, qb.getMetaData(), null);
         tableOp = OperatorFactory.getAndMakeChild(new FilterDesc(
-            samplePredicate, true, new sampleDesc(ts.getNumerator(), ts
+            samplePredicate, true, new SampleDesc(ts.getNumerator(), ts
                 .getDenominator(), tabBucketCols, true)),
             new RowSchema(rwsch.getColumnInfos()), top);
       } else {
@@ -9408,7 +9408,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 .getBucketCols(), true, alias, rwsch, qb.getMetaData(), null);
             tableOp = OperatorFactory
                 .getAndMakeChild(new FilterDesc(samplePred, true,
-                    new sampleDesc(tsSample.getNumerator(), tsSample
+                    new SampleDesc(tsSample.getNumerator(), tsSample
                         .getDenominator(), tab.getBucketCols(), true)),
                     new RowSchema(rwsch.getColumnInfos()), top);
             LOG.info("No need for sample filter");
