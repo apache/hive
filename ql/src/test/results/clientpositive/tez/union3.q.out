@@ -1,4 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
@@ -17,7 +17,7 @@ FROM (
   CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
