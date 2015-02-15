@@ -346,9 +346,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder) fmt.out()).setLength(0);
 
-      String address;
+      String address = null;
       if (useSasl) {
-        address = saslServer.getRemoteAddress().toString();
+        if (saslServer != null && saslServer.getRemoteAddress() != null) {
+          address = String.valueOf(saslServer.getRemoteAddress());
+        }
       } else {
         address = getIpAddress();
       }
