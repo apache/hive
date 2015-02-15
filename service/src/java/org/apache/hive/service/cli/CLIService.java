@@ -77,11 +77,6 @@ public class CLIService extends CompositeService implements ICLIService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    try {
-      applyAuthorizationConfigPolicy(hiveConf);
-    } catch (HiveException e) {
-      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
-    }
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
@@ -110,6 +105,12 @@ public class CLIService extends CompositeService implements ICLIService {
           LOG.warn("SPNego httpUGI creation failed: ", e);
         }
       }
+    }
+    // creates connection to HMS and thus *must* occur after kerberos login above
+    try {
+      applyAuthorizationConfigPolicy(hiveConf);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
     }
     setupBlockedUdfs();
     super.init(hiveConf);
