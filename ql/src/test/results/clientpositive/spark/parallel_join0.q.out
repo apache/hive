@@ -1,5 +1,5 @@
 Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 
@@ -9,7 +9,7 @@ SELECT src1.key as k1, src1.value as v1,
   (SELECT * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 
