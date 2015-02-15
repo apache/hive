@@ -1,4 +1,7 @@
 -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
+
+-- SORT_QUERY_RESULTS
+
 create table e1 (key string, count int);
 create table e2 (key string, count int);
 

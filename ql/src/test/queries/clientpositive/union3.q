@@ -1,4 +1,4 @@
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 
 explain
 SELECT *
