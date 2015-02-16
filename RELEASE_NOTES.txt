@@ -56,6 +56,9 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9493] - Failed job may not throw exceptions [Spark Branch]
 
 ** Bug
+    * [HIVE-9701] - JMH module does not compile under hadoop-1 profile
+    * [HIVE-9686] - HiveMetastore.logAuditEvent can be used before sasl server is started
+    * [HIVE-9685] - CLIService should create SessionState after logging into kerberos
     * [HIVE-9425] - Add jar/file doesn't work with yarn-cluster mode [Spark Branch]
     * [HIVE-9684] - Incorrect disk range computation in ORC because of optional stream kind
     * [HIVE-1344] - error in select disinct
