@@ -104,19 +104,7 @@ public class GenericUDFStringToMap extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("str_to_map(");
     assert (children.length <= 3);
-    boolean firstChild = true;
-    for (String child : children) {
-      if (firstChild) {
-        firstChild = false;
-      } else {
-        sb.append(",");
-      }
-      sb.append(child);
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("str_to_map", children, ",");
   }
 }

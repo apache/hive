@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloMapColumnMapping;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -56,12 +56,12 @@ public class AccumuloRowSerializer {
 
   private final int rowIdOffset;
   private final ByteStream.Output output;
-  private final SerDeParameters serDeParams;
+  private final LazySerDeParameters serDeParams;
   private final List<ColumnMapping> mappings;
   private final ColumnVisibility visibility;
   private final AccumuloRowIdFactory rowIdFactory;
 
-  public AccumuloRowSerializer(int primaryKeyOffset, SerDeParameters serDeParams,
+  public AccumuloRowSerializer(int primaryKeyOffset, LazySerDeParameters serDeParams,
       List<ColumnMapping> mappings, ColumnVisibility visibility, AccumuloRowIdFactory rowIdFactory) {
     Preconditions.checkArgument(primaryKeyOffset >= 0,
         "A valid offset to the mapping for the Accumulo RowID is required, received "
@@ -254,7 +254,7 @@ public class AccumuloRowSerializer {
 
   /**
    * Recursively serialize an Object using its {@link ObjectInspector}, respecting the
-   * separators defined by the {@link SerDeParameters}.
+   * separators defined by the {@link LazySerDeParameters}.
    * @param oi ObjectInspector for the current object
    * @param value The current object
    * @param output A buffer output is written to

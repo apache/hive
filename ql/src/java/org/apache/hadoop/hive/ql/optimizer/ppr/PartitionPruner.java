@@ -119,7 +119,7 @@ public class PartitionPruner implements Transform {
       return false;
     }
 
-    // All columns of the expression must be parttioned columns
+    // All columns of the expression must be partitioned columns
     List<ExprNodeDesc> children = expr.getChildren();
     if (children != null) {
       for (int i = 0; i < children.size(); i++) {
@@ -158,16 +158,18 @@ public class PartitionPruner implements Transform {
    *          cached result for the table
    * @return the partition list for the table that satisfies the partition
    *         pruner condition.
-   * @throws HiveException
+   * @throws SemanticException
    */
   public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
           throws SemanticException {
 
-    LOG.trace("Started pruning partiton");
-    LOG.trace("dbname = " + tab.getDbName());
-    LOG.trace("tabname = " + tab.getTableName());
-    LOG.trace("prune Expression = " + prunerExpr == null ? "" : prunerExpr);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Started pruning partiton");
+      LOG.trace("dbname = " + tab.getDbName());
+      LOG.trace("tabname = " + tab.getTableName());
+      LOG.trace("prune Expression = " + (prunerExpr == null ? "" : prunerExpr));
+    }
 
     String key = tab.getDbName() + "." + tab.getTableName() + ";";
 
@@ -198,15 +200,19 @@ public class PartitionPruner implements Transform {
     	// For null and true values, return every partition
     	if (!isFalseExpr(compactExpr)) {
     		// Non-strict mode, and all the predicates are on non-partition columns - get everything.
-    		LOG.debug("Filter " + oldFilter + " was null after compacting");
+        if (LOG.isDebugEnabled()) {
+    		  LOG.debug("Filter " + oldFilter + " was null after compacting");
+        }
     		return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     	} else {
     		return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(new ArrayList<Partition>()),
     				new ArrayList<String>(), false);
     	}
     }
-    LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
-        + "; filter w/o compacting: " + oldFilter);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
+          + "; filter w/o compacting: " + oldFilter);
+    }
 
     key = key + compactExpr.getExprString();
     PrunedPartitionList ppList = prunedPartitionsMap.get(key);
@@ -342,7 +348,7 @@ public class PartitionPruner implements Transform {
     if (!(expr instanceof ExprNodeGenericFuncDesc)) {
       return false;
     }
-    if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)expr)) {
+    if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc) expr)) {
       return true;
     }
     for (ExprNodeDesc child : expr.getChildren()) {
@@ -506,12 +512,16 @@ public class PartitionPruner implements Transform {
       if (isUnknown && values.contains(defaultPartitionName)) {
         // Reject default partitions if we couldn't determine whether we should include it or not.
         // Note that predicate would only contains partition column parts of original predicate.
-        LOG.debug("skipping default/bad partition: " + partName);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("skipping default/bad partition: " + partName);
+        }
         partIter.remove();
         continue;
       }
       hasUnknownPartitions |= isUnknown;
-      LOG.debug("retained " + (isUnknown ? "unknown " : "") + "partition: " + partName);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("retained " + (isUnknown ? "unknown " : "") + "partition: " + partName);
+      }
     }
     if (!inPlace) {
       partNames.clear();

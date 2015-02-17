@@ -97,10 +97,10 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value > 'val_11') and (key is null or (value is null or key is null))) (type: boolean)
-              Statistics: Num rows: 249 Data size: 2645 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((value > 'val_11') and (key is null or value is null)) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 249 Data size: 2645 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -252,10 +252,10 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value > 'val_11') and (key is null or (value is null or key is null))) (type: boolean)
-              Statistics: Num rows: 249 Data size: 2645 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((value > 'val_11') and (key is null or value is null)) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 249 Data size: 2645 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

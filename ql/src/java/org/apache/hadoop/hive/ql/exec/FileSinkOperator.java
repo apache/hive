@@ -341,7 +341,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
       statsFromRecordWriter = new boolean[numFiles];
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      serializer.initialize(null, conf.getTableInfo().getProperties());
+      serializer.initialize(hconf, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
 
       if (isLogInfoEnabled) {
@@ -418,11 +418,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       numRows = 0;
 
-      String context = jc.get(Operator.CONTEXT_NAME_KEY, "");
-      if (context != null && !context.isEmpty()) {
-        context = "_" + context.replace(" ","_");
+      String suffix = Integer.toString(conf.getDestTableId());
+      String fullName = conf.getTableInfo().getTableName();
+      if (fullName != null) {
+        suffix = suffix + "_" + fullName.toLowerCase();
       }
-      statsMap.put(Counter.RECORDS_OUT + context, row_count);
+
+      statsMap.put(Counter.RECORDS_OUT + "_" + suffix, row_count);
 
       initializeChildren(hconf);
     } catch (HiveException e) {

@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyArray;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyMap;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyString;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
@@ -389,7 +389,7 @@ public class TestAccumuloSerDe {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(types));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     byte[] seps = serDeParams.getSeparators();
 

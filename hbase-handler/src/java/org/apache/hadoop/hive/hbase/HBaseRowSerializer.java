@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -44,7 +44,7 @@ public class HBaseRowSerializer {
 
   private final HBaseKeyFactory keyFactory;
   private final HBaseSerDeParameters hbaseParam;
-  private final LazySimpleSerDe.SerDeParameters serdeParam;
+  private final LazySerDeParameters serdeParam;
 
   private final int keyIndex;
   private final int timestampIndex;
@@ -54,9 +54,7 @@ public class HBaseRowSerializer {
   private final byte[] separators;      // the separators array
   private final boolean escaped;        // whether we need to escape the data when writing out
   private final byte escapeChar;        // which char to use as the escape char, e.g. '\\'
-  private final boolean[] needsEscape;  // which chars need to be escaped. This array should have size
-                                        // of 128. Negative byte values (or byte values >= 128) are
-                                        // never escaped.
+  private final boolean[] needsEscape;  // which chars need to be escaped. 
 
   private final long putTimestamp;
   private final ByteStream.Output output = new ByteStream.Output();

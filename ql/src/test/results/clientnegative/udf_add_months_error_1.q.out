@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:18 Argument type mismatch '14567893456': ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got LONG

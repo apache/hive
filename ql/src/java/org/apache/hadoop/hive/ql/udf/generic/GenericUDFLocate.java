@@ -109,7 +109,6 @@ public class GenericUDFLocate extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2 || children.length == 3);
-    return "locate(" + children[0] + children[1]
-        + (children.length == 3 ? children[2] : "") + ")";
+    return getStandardDisplayString("locate", children);
   }
 }

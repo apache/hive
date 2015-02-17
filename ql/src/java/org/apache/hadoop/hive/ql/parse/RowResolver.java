@@ -465,4 +465,15 @@ public class RowResolver implements Serializable{
     }
     return combinedRR;
   }
+
+  public RowResolver duplicate() {
+    RowResolver resolver = new RowResolver();
+    resolver.rowSchema = new RowSchema(rowSchema);
+    resolver.rslvMap.putAll(rslvMap);
+    resolver.invRslvMap.putAll(invRslvMap);
+    resolver.altInvRslvMap.putAll(altInvRslvMap);
+    resolver.expressionMap.putAll(expressionMap);
+    resolver.isExprResolver = isExprResolver;
+    return resolver;
+  }
 }

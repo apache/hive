@@ -11,6 +11,6 @@ SELECT covar_samp(b, c) FROM covar_tab WHERE a < 1;
 SELECT covar_samp(b, c) FROM covar_tab WHERE a < 3;
 SELECT covar_samp(b, c) FROM covar_tab WHERE a = 3;
 SELECT a, covar_samp(b, c) FROM covar_tab GROUP BY a ORDER BY a;
-SELECT covar_samp(b, c) FROM covar_tab;
+SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab;
 
 DROP TABLE covar_tab;

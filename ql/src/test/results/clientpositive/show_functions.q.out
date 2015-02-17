@@ -54,6 +54,7 @@ cume_dist
 current_database
 current_date
 current_timestamp
+current_user
 date_add
 date_sub
 datediff
@@ -123,6 +124,7 @@ minute
 month
 named_struct
 negative
+next_day
 ngrams
 noop
 noopstreaming
@@ -232,6 +234,7 @@ cume_dist
 current_database
 current_date
 current_timestamp
+current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'

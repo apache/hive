@@ -98,6 +98,12 @@ abstract class InStream extends InputStream {
 
     public void seek(long desired) {
       for(int i = 0; i < bytes.length; ++i) {
+        if (desired == 0 && bytes[i].remaining() == 0) {
+          if (LOG.isWarnEnabled()) {
+            LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
+          }
+          return;
+        }
         if (offsets[i] <= desired &&
             desired - offsets[i] < bytes[i].remaining()) {
           currentOffset = desired;

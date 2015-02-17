@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:16 Argument type mismatch '145622345': next_day() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got INT

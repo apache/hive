@@ -346,7 +346,7 @@ STAGE PLANS:
                   columns _col0
                   columns.types bigint
                   escape.delim \
-                  hive.serialization.extend.nesting.levels true
+                  hive.serialization.extend.additional.nesting.levels true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -622,7 +622,7 @@ STAGE PLANS:
                   columns _col0
                   columns.types bigint
                   escape.delim \
-                  hive.serialization.extend.nesting.levels true
+                  hive.serialization.extend.additional.nesting.levels true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

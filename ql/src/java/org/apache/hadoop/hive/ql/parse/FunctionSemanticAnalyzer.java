@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.ReloadFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -53,11 +55,12 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    if (ast.getToken().getType() == HiveParser.TOK_CREATEFUNCTION) {
+    if (ast.getType() == HiveParser.TOK_CREATEFUNCTION) {
       analyzeCreateFunction(ast);
-    }
-    if (ast.getToken().getType() == HiveParser.TOK_DROPFUNCTION) {
-        analyzeDropFunction(ast);
+    } else if (ast.getType() == HiveParser.TOK_DROPFUNCTION) {
+      analyzeDropFunction(ast);
+    } else if (ast.getType() == HiveParser.TOK_RELOADFUNCTION) {
+      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc()), conf));
     }
 
     LOG.info("analyze done");
@@ -93,13 +96,16 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean throwException =
       !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
 
-    if (FunctionRegistry.getFunctionInfo(functionName) == null) {
+    FunctionInfo info = FunctionRegistry.getFunctionInfo(functionName);
+    if (info == null) {
       if (throwException) {
         throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
       } else {
         // Fail silently
         return;
       }
+    } else if (info.isBuiltIn()) {
+      throw new SemanticException(ErrorMsg.DROP_NATIVE_FUNCTION.getMsg(functionName));
     }
 
     boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);

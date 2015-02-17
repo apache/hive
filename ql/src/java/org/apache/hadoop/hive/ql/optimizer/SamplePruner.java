@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 
 /**
  * The transformation step that does sample pruning.
@@ -61,17 +61,17 @@ public class SamplePruner implements Transform {
    *
    */
   public static class SamplePrunerCtx implements NodeProcessorCtx {
-    HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+    HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
 
     public SamplePrunerCtx(
-        HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+        HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
       this.opToSamplePruner = opToSamplePruner;
     }
 
     /**
      * @return the opToSamplePruner
      */
-    public HashMap<TableScanOperator, sampleDesc> getOpToSamplePruner() {
+    public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
       return opToSamplePruner;
     }
 
@@ -80,7 +80,7 @@ public class SamplePruner implements Transform {
      *          the opToSamplePruner to set
      */
     public void setOpToSamplePruner(
-        HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+        HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
       this.opToSamplePruner = opToSamplePruner;
     }
   }
@@ -135,7 +135,7 @@ public class SamplePruner implements Transform {
         Object... nodeOutputs) throws SemanticException {
       FilterOperator filOp = (FilterOperator) nd;
       FilterDesc filOpDesc = filOp.getConf();
-      sampleDesc sampleDescr = filOpDesc.getSampleDescr();
+      SampleDesc sampleDescr = filOpDesc.getSampleDescr();
 
       if ((sampleDescr == null) || !sampleDescr.getInputPruning()) {
         return null;
@@ -182,7 +182,7 @@ public class SamplePruner implements Transform {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  public static Path[] prune(Partition part, sampleDesc sampleDescr)
+  public static Path[] prune(Partition part, SampleDesc sampleDescr)
       throws SemanticException {
     int num = sampleDescr.getNumerator();
     int den = sampleDescr.getDenominator();

@@ -18,7 +18,6 @@
 package org.apache.hive.service.auth;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -33,6 +32,9 @@ import javax.security.sasl.Sasl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -108,8 +110,11 @@ public class HiveAuthFactory {
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
         // start delegation token manager
         try {
-          saslServer.startDelegationTokenSecretManager(conf, null, ServerMode.HIVESERVER2);
-        } catch (IOException e) {
+          HMSHandler baseHandler = new HiveMetaStore.HMSHandler(
+              "new db based metaserver", conf, true);
+          saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS(), ServerMode.HIVESERVER2);
+        }
+        catch (MetaException|IOException e) {
           throw new TTransportException("Failed to start token manager", e);
         }
       }

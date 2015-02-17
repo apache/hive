@@ -75,15 +75,6 @@ public class GenericUDFAssertTrue extends GenericUDF {
 
  @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("assert_true(");
-    for (int i = 0; i < children.length; ++i) {
-      sb.append(children[i]);
-      if (i != children.length - 1) {
-        sb.append(", ");
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("assert_true", children);
   }  
 }
