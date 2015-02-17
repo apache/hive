@@ -37,6 +37,8 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
   private OrderDef order;
   private TableFunctionEvaluator tFunction;
   boolean transformsRawInput;
+  
+  private transient List<String> referencedColumns;
 
   @Explain(displayName = "name")
   public String getName() {
@@ -184,5 +186,14 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
 
   public void setResolverClassName(String resolverClassName) {
     this.resolverClassName = resolverClassName;
+  }
+
+  @Explain(displayName = "referenced columns")
+  public List<String> getReferencedColumns() {
+    return referencedColumns;
+  }
+
+  public void setReferencedColumns(List<String> referencedColumns) {
+    this.referencedColumns = referencedColumns;
   }
 }
