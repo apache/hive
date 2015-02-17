@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,6 +96,10 @@ public class PTFDesc extends AbstractOperatorDesc {
 
   public boolean forWindowing() {
     return funcDef instanceof WindowTableFunctionDef;
+  }
+
+  public boolean forNoop() {
+    return funcDef.getTFunction() instanceof Noop;
   }
 
   @Explain(displayName = "Map-side function", displayOnlyOnTrue = true)

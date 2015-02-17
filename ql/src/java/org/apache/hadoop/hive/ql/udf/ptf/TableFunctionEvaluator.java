@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /*
@@ -60,7 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 
 /**
- * Based on Hive {@link GenericUDAFEvaluator}. Break up the responsibility of the old AsbtractTableFunction
+ * Based on Hive {@link GenericUDAFEvaluator}. Break up the responsibility of the old AbstractTableFunction
  * class into a Resolver and Evaluator.
  * <p>
  * The Evaluator also holds onto the {@link TableFunctionDef}. This provides information
@@ -79,7 +78,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 public abstract class TableFunctionEvaluator {
   /*
-   * how is this different from the OutpuShape set on the TableDef.
+   * how is this different from the OutputShape set on the TableDef.
    * This is the OI of the object coming out of the PTF.
    * It is put in an output Partition whose Serde is usually LazyBinarySerde.
    * So the next PTF (or Operator) in the chain gets a LazyBinaryStruct.
