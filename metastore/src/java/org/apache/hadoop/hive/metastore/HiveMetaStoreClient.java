@@ -324,7 +324,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI " + store);
         try {
-          transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+          transport = new TSocketKeepAlive(store.getHost(), store.getPort(), clientSocketTimeout);
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
