@@ -86,7 +86,6 @@
         <include>service/**/*</include>
         <include>shims/**/*</include>
         <include>spark-client/**/*</include>
-        <include>testlibs/**/*</include>
         <include>testutils/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
