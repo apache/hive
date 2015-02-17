@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.spark.SparkConf;
 
 /**
  * Contains utilities methods used as part of Spark tasks.
@@ -69,7 +70,7 @@ public class SparkUtilities {
   }
 
   /**
-   * Copies local file to HDFS in yarn-cluster mode.
+   * Uploads a local file to HDFS
    *
    * @param source
    * @param conf
@@ -77,18 +78,18 @@ public class SparkUtilities {
    * @throws IOException
    */
   public static URI uploadToHDFS(URI source, HiveConf conf) throws IOException {
-    URI result = source;
-    if (conf.get("spark.master").equals("yarn-cluster")) {
-      if (!source.getScheme().equals("hdfs")) {
-        Path tmpDir = SessionState.getHDFSSessionPath(conf);
-        FileSystem fileSystem = FileSystem.get(conf);
-        fileSystem.copyFromLocalFile(new Path(source.getPath()), tmpDir);
-        String filePath = tmpDir + File.separator + getFileName(source);
-        Path fullPath = fileSystem.getFileStatus(new Path(filePath)).getPath();
-        result = fullPath.toUri();
-      }
-    }
-    return result;
+    Path tmpDir = SessionState.getHDFSSessionPath(conf);
+    FileSystem fileSystem = FileSystem.get(conf);
+    fileSystem.copyFromLocalFile(new Path(source.getPath()), tmpDir);
+    String filePath = tmpDir + File.separator + getFileName(source);
+    Path fullPath = fileSystem.getFileStatus(new Path(filePath)).getPath();
+    return fullPath.toUri();
+  }
+
+  // checks if a resource has to be uploaded to HDFS for yarn-cluster mode
+  public static boolean needUploadToHDFS(URI source, SparkConf sparkConf) {
+    return sparkConf.get("spark.master").equals("yarn-cluster") &&
+        !source.getScheme().equals("hdfs");
   }
 
   private static String getFileName(URI uri) {
