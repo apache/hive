@@ -56,6 +56,8 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9493] - Failed job may not throw exceptions [Spark Branch]
 
 ** Bug
+    * [HIVE-9705] - All curator deps should be listed in dependency management section
+    * [HIVE-9707] - ExecDriver does not get token from environment
     * [HIVE-9701] - JMH module does not compile under hadoop-1 profile
     * [HIVE-9686] - HiveMetastore.logAuditEvent can be used before sasl server is started
     * [HIVE-9685] - CLIService should create SessionState after logging into kerberos
@@ -287,6 +289,7 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9651] - FileSinkOperator does not pass in conf to serde.initialize
 
 ** Improvement
+    * [HIVE-9708] - Remove testlibs directory
     * [HIVE-9211] - Research on build mini HoS cluster on YARN for unit test
     * [HIVE-9515] - Check hive.vectorized.execution.reduce.enabled
     * [HIVE-9691] - Include a few more files include the source tarball
