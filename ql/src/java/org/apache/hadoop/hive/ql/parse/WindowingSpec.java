@@ -216,7 +216,8 @@ public class WindowingSpec {
    * - A Window Specification with no Order and no Window Frame is interpreted as:
          ROW BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
    */
-  private void effectiveWindowFrame(WindowFunctionSpec wFn, WindowSpec wdwSpec) {
+  private void effectiveWindowFrame(WindowFunctionSpec wFn, WindowSpec wdwSpec)
+      throws SemanticException {
 
     WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn.getName());
     boolean supportsWindowing = wFnInfo == null ? true : wFnInfo.isSupportsWindow();

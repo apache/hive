@@ -22,16 +22,16 @@ POSTHOOK: Output: default@tst
 POSTHOOK: Output: default@tst@d=2009-02-02
 PREHOOK: query: explain
 select * from (
-  select * from tst x where x.d='2009-01-01' limit 10
+  select * from (select * from tst x where x.d='2009-01-01' limit 10)a
     union all
-  select * from tst x where x.d='2009-02-02' limit 10
+  select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from (
-  select * from tst x where x.d='2009-01-01' limit 10
+  select * from (select * from tst x where x.d='2009-01-01' limit 10)a
     union all
-  select * from tst x where x.d='2009-02-02' limit 10
+  select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -144,9 +144,9 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select * from (
-  select * from tst x where x.d='2009-01-01' limit 10
+  select * from (select * from tst x where x.d='2009-01-01' limit 10)a
     union all
-  select * from tst x where x.d='2009-02-02' limit 10
+  select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst
@@ -154,9 +154,9 @@ PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (
-  select * from tst x where x.d='2009-01-01' limit 10
+  select * from (select * from tst x where x.d='2009-01-01' limit 10)a
     union all
-  select * from tst x where x.d='2009-02-02' limit 10
+  select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst

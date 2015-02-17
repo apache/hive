@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 
   protected AccumuloSerDeParameters accumuloSerDeParams;
-  protected LazySimpleSerDe.SerDeParameters serdeParams;
+  protected LazySerDeParameters serdeParams;
   protected Properties properties;
   protected HiveAccumuloRowIdColumnMapping rowIdMapping;
   protected AccumuloRowSerializer serializer;

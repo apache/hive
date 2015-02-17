@@ -190,7 +190,7 @@ public final class IndexUtils {
 
     List<Index> indexesOnTable;
     try {
-      indexesOnTable = baseTableMetaData.getAllIndexes((short) -1); // get all indexes
+      indexesOnTable = getAllIndexes(baseTableMetaData, (short) -1); // get all indexes
     } catch (HiveException e) {
       throw new SemanticException("Error accessing metastore", e);
     }
@@ -204,6 +204,14 @@ public final class IndexUtils {
     return matchingIndexes;
   }
 
+  /**
+   * @return List containing Indexes names if there are indexes on this table
+   * @throws HiveException
+   **/
+  public static List<Index> getAllIndexes(Table table, short max) throws HiveException {
+    Hive hive = Hive.get();
+    return hive.getIndexes(table.getTTable().getDbName(), table.getTTable().getTableName(), max);
+  }
 
   public static Task<?> createRootTask(HiveConf builderConf, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, StringBuilder command,

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -43,8 +44,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -228,8 +228,8 @@ public class DbNotificationListener extends MetaStoreEventListener {
   @Override
   public void onInsert(InsertEvent insertEvent) throws MetaException {
     NotificationEvent event = new NotificationEvent(0, now(), HCatConstants.HCAT_INSERT_EVENT,
-        msgFactory.buildInsertMessage(insertEvent.getDb(), insertEvent.getTable(), insertEvent
-            .getPartitions()).toString());
+        msgFactory.buildInsertMessage(insertEvent.getDb(), insertEvent.getTable(),
+            insertEvent.getPartitions(), insertEvent.getFiles()).toString());
     event.setDbName(insertEvent.getDb());
     event.setTableName(insertEvent.getTable());
     enqueue(event);

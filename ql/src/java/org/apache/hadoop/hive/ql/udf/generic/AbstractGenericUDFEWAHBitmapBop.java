@@ -141,16 +141,6 @@ abstract public class AbstractGenericUDFEWAHBitmapBop extends GenericUDF {
   
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(name);
-    sb.append("(");
-    for (int i = 0; i < children.length; i++) {
-      sb.append(children[i]);
-      if (i + 1 != children.length) {
-        sb.append(",");
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString(name, children, ",");
   }
 }

@@ -95,15 +95,6 @@ public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumen
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("EWAH_BITMAP_EMPTY(");
-    for (int i = 0; i < children.length; i++) {
-      sb.append(children[i]);
-      if (i + 1 != children.length) {
-        sb.append(",");
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("EWAH_BITMAP_EMPTY", children);
   }
 }

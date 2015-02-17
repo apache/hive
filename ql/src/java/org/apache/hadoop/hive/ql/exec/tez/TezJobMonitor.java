@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -165,6 +166,9 @@ public class TezJobMonitor {
     try {
       // isatty system call will return 1 if the file descriptor is terminal else 0
       if (isatty(STDOUT_FILENO) == 0) {
+        return false;
+      }
+      if (isatty(STDERR_FILENO) == 0) {
         return false;
       }
     } catch (NoClassDefFoundError ignore) {
@@ -699,22 +703,25 @@ public class TezJobMonitor {
 
   // Map 1 ..........
   private String getNameWithProgress(String s, int complete, int total) {
-    float percent = total == 0 ? 0.0f : (float) complete / (float) total;
-    // lets use the remaining space in column 1 as progress bar
-    int spaceRemaining = COLUMN_1_WIDTH - s.length() - 1;
-    String trimmedVName = s;
+    String result = "";
+    if (s != null) {
+      float percent = total == 0 ? 0.0f : (float) complete / (float) total;
+      // lets use the remaining space in column 1 as progress bar
+      int spaceRemaining = COLUMN_1_WIDTH - s.length() - 1;
+      String trimmedVName = s;
 
-    // if the vertex name is longer than column 1 width, trim it down
-    // "Tez Merge File Work" will become "Tez Merge File.."
-    if (s != null && s.length() > COLUMN_1_WIDTH) {
-      trimmedVName = s.substring(0, COLUMN_1_WIDTH - 1);
-      trimmedVName = trimmedVName + "..";
-    }
+      // if the vertex name is longer than column 1 width, trim it down
+      // "Tez Merge File Work" will become "Tez Merge File.."
+      if (s.length() > COLUMN_1_WIDTH) {
+        trimmedVName = s.substring(0, COLUMN_1_WIDTH - 1);
+        trimmedVName = trimmedVName + "..";
+      }
 
-    String result = trimmedVName + " ";
-    int toFill = (int) (spaceRemaining * percent);
-    for (int i = 0; i < toFill; i++) {
-      result += ".";
+      result = trimmedVName + " ";
+      int toFill = (int) (spaceRemaining * percent);
+      for (int i = 0; i < toFill; i++) {
+        result += ".";
+      }
     }
     return result;
   }

@@ -638,7 +638,7 @@ public class TestLazyArrayMapStruct extends TestCase {
   private void testNestedinArrayAtLevelExtended(int nestingLevel,
       ObjectInspector.Category dtype) throws SerDeException {
     Properties tableProp = new Properties();
-    tableProp.setProperty(LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
+    tableProp.setProperty(LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
     testNestedinArrayAtLevel(nestingLevel, dtype, tableProp);
   }
 
@@ -693,9 +693,10 @@ public class TestLazyArrayMapStruct extends TestCase {
     tableProp.setProperty("columns", "narray");
     tableProp.setProperty("columns.types", schema.toString());
     SerDeUtils.initializeSerDe(serDe, conf, tableProp, null);
-
+    LazySerDeParameters serdeParams = new LazySerDeParameters(conf, tableProp, LazySimpleSerDe.class.getName());
+    
     //create the serialized string for type
-    byte[] separators = serDe.serdeParams.getSeparators();
+    byte[] separators = serdeParams.getSeparators();
     System.err.println("Using separator " +  (char)separators[nestingLevel]);
     byte [] serializedRow = null;
     switch(dtype){

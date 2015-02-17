@@ -139,11 +139,6 @@ public class GenericUDFIf extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 3);
-    StringBuilder sb = new StringBuilder();
-    sb.append("if(");
-    sb.append(children[0]).append(", ");
-    sb.append(children[1]).append(", ");
-    sb.append(children[2]).append(")");
-    return sb.toString();
+    return getStandardDisplayString("if", children);
   }
 }

@@ -68,7 +68,7 @@ public class GenericUDFLastDay extends GenericUDF {
     }
     if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + arguments[0].getTypeName() + " is passed. as first arguments");
+          + arguments[0].getTypeName() + " is passed");
     }
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -91,9 +91,8 @@ public class GenericUDFLastDay extends GenericUDF {
           PrimitiveObjectInspectorFactory.writableDateObjectInspector);
       break;
     default:
-      throw new UDFArgumentException(
-          " LAST_DAY() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
-              + inputType1);
+      throw new UDFArgumentTypeException(0,
+          "LAST_DAY() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
     return outputOI;
   }
@@ -112,23 +111,21 @@ public class GenericUDFLastDay extends GenericUDF {
       } catch (ParseException e) {
         return null;
       }
-      lastDay(date);
       break;
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
           .getTimestamp();
       date = ts;
-      lastDay(date);
       break;
     case DATE:
       DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
       date = dw.get();
-      lastDay(date);
       break;
     default:
-      throw new UDFArgumentException(
+      throw new UDFArgumentTypeException(0,
           "LAST_DAY() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
+    lastDay(date);
     Date newDate = calendar.getTime();
     output.set(formatter.format(newDate));
     return output;
@@ -136,17 +133,7 @@ public class GenericUDFLastDay extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("last_day(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("last_day", children);
   }
 
   protected Calendar lastDay(Date d) {

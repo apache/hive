@@ -89,7 +89,7 @@ public class GenericUDFDateAdd extends GenericUDF {
     if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(1,
         "Only primitive type arguments are accepted but "
-        + arguments[2].getTypeName() + " is passed. as second arguments");
+        + arguments[1].getTypeName() + " is passed. as second arguments");
     }
 
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
@@ -196,16 +196,6 @@ public class GenericUDFDateAdd extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("date_add(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("date_add", children);
   }
 }

@@ -30,8 +30,7 @@ import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.log4j.Logger;
@@ -62,7 +61,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
 
   private Properties tableProperties;
   private String serdeName;
-  private SerDeParameters lazySerDeParameters;
+  private LazySerDeParameters lazySerDeParameters;
   private AccumuloRowIdFactory rowIdFactory;
 
   public AccumuloSerDeParameters(Configuration conf, Properties tableProperties, String serdeName)
@@ -71,7 +70,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     this.tableProperties = tableProperties;
     this.serdeName = serdeName;
 
-    lazySerDeParameters = LazySimpleSerDe.initSerdeParams(conf, tableProperties, serdeName);
+    lazySerDeParameters = new LazySerDeParameters(conf, tableProperties, serdeName);
 
     // The default encoding for this table when not otherwise specified
     String defaultStorage = tableProperties.getProperty(DEFAULT_STORAGE_TYPE);
@@ -134,7 +133,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     return new DefaultAccumuloRowIdFactory();
   }
 
-  public SerDeParameters getSerDeParameters() {
+  public LazySerDeParameters getSerDeParameters() {
     return lazySerDeParameters;
   }
 

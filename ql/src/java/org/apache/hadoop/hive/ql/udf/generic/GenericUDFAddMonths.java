@@ -73,11 +73,11 @@ public class GenericUDFAddMonths extends GenericUDF {
     }
     if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + arguments[0].getTypeName() + " is passed. as first arguments");
+          + arguments[0].getTypeName() + " is passed as first arguments");
     }
     if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(1, "Only primitive type arguments are accepted but "
-          + arguments[2].getTypeName() + " is passed. as second arguments");
+          + arguments[1].getTypeName() + " is passed as second arguments");
     }
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -100,14 +100,14 @@ public class GenericUDFAddMonths extends GenericUDF {
           PrimitiveObjectInspectorFactory.writableDateObjectInspector);
       break;
     default:
-      throw new UDFArgumentException(
-          " ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
+      throw new UDFArgumentTypeException(0,
+          "ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
               + inputType1);
     }
     inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
     if (inputType2 != PrimitiveCategory.INT) {
-      throw new UDFArgumentException(" ADD_MONTHS() only takes INT types as second argument, got "
-          + inputType2);
+      throw new UDFArgumentTypeException(1,
+          "ADD_MONTHS() only takes INT types as second argument, got " + inputType2);
     }
     intWritableConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[1],
@@ -144,7 +144,7 @@ public class GenericUDFAddMonths extends GenericUDF {
       date = dw.get();
       break;
     default:
-      throw new UDFArgumentException(
+      throw new UDFArgumentTypeException(0,
           "ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
     int numMonth = toBeAdded.get();
@@ -156,17 +156,7 @@ public class GenericUDFAddMonths extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("add_months(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("add_months", children);
   }
 
   protected Calendar addMonth(Date d, int numMonths) {

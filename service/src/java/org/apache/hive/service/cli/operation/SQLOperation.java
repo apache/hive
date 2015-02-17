@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -92,6 +93,14 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     try {
       driver = new Driver(sqlOperationConf, getParentSession().getUserName());
+
+      // set the operation handle information in Driver, so that thrift API users
+      // can use the operation handle they receive, to lookup query information in
+      // Yarn ATS
+      String guid64 = Base64.encodeBase64URLSafeString(getHandle().getHandleIdentifier()
+          .toTHandleIdentifier().getGuid()).trim();
+      driver.setOperationId(guid64);
+
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.

@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -53,7 +54,7 @@ public class DelimitedJSONSerDe extends LazySimpleSerDe {
 
   @Override
   protected void serializeField(ByteStream.Output out, Object obj, ObjectInspector objInspector,
-      SerDeParameters serdeParams) throws SerDeException {
+      LazySerDeParameters serdeParams) throws SerDeException {
     if (!objInspector.getCategory().equals(Category.PRIMITIVE) || (objInspector.getTypeName().equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME))) {
       //do this for all complex types and binary
       try {

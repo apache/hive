@@ -33,9 +33,9 @@ UNION all
 SELECT key as key from src
 ) tab group by key;
 
-select k from (SELECT '1' as k from src limit 0 union all select key as k from src limit 1)tab;
+select k from (select * from (SELECT '1' as k from src limit 0)a union all select key as k from src limit 1)tab;
 
-select k from (SELECT '1' as k from src limit 1 union all select key as k from src limit 0)tab;
+select k from (select * from (SELECT '1' as k from src limit 1)a union all select key as k from src limit 0)tab;
 
 select max(ds) from srcpart;
 

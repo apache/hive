@@ -1,0 +1,1 @@
+FAILED: ParseException line 6:19 Failed to recognize predicate '<EOF>'. Failed rule: 'orderByClause clusterByClause distributeByClause sortByClause limitClause can only be applied to the whole union.' in statement
