@@ -666,7 +666,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     if(UserGroupInformation.isSecurityEnabled()){
-      String hadoopAuthToken = UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION;
+      String hadoopAuthToken = System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION);
       if(hadoopAuthToken != null){
         conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
       }
