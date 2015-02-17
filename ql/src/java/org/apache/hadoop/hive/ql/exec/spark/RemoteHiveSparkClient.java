@@ -165,7 +165,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI fileUri = SparkUtilities.getURI(addedFile);
         if (fileUri != null && !localFiles.contains(fileUri)) {
-          fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
+          if (SparkUtilities.needUploadToHDFS(fileUri, sparkConf)) {
+            fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
+          }
           localFiles.add(fileUri);
           remoteClient.addFile(fileUri);
         }
@@ -180,7 +182,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI jarUri = SparkUtilities.getURI(addedJar);
         if (jarUri != null && !localJars.contains(jarUri)) {
-          jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
+          if (SparkUtilities.needUploadToHDFS(jarUri, sparkConf)) {
+            jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
+          }
           localJars.add(jarUri);
           remoteClient.addJar(jarUri);
         }
