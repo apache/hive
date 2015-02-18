@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
  */
 public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
   private boolean isFileCompressed;
-  private OrcProto.RowIndexEntry rowIndex;
+  private boolean isDictionaryEncoding;
 
   private CharacterStreamReader(int columnId, int maxLength, OrcProto.Type charType,
       InStream present,
@@ -41,7 +41,7 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
       OrcProto.ColumnEncoding encoding,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
     super(columnId);
-
+    this.isDictionaryEncoding = dictionary != null;
     if (charType.getKind() == OrcProto.Type.Kind.CHAR) {
       reader = new RecordReaderImpl.CharTreeReader(columnId, maxLength, present, data, length,
           dictionary, encoding);
@@ -55,12 +55,34 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
     this.isFileCompressed = isFileCompressed;
 
     // position the readers based on the specified row index
-    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
-    seek(positionProvider);
+    seek(StreamUtils.getPositionProvider(rowIndex));
   }
 
-  public void seek(PositionProvider positionProvider) throws IOException {
-    reader.seek(positionProvider);
+  @Override
+  public void seek(PositionProvider index) throws IOException {
+    if (present != null) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      present.seek(index);
+    }
+
+    if (isDictionaryEncoding) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDictionaryTreeReader)reader).reader.seek(index);
+    } else {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDirectTreeReader)reader).stream.seek(index);
+
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDirectTreeReader)reader).lengths.seek(index);
+    }
   }
 
   public static class StreamReaderBuilder {

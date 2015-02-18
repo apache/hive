@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
  */
 public class StringStreamReader extends RecordReaderImpl.StringTreeReader {
   private boolean isFileCompressed;
-  private OrcProto.RowIndexEntry rowIndex;
+  private boolean isDictionaryEncoding;
 
   private StringStreamReader(int columnId, InStream present,
       InStream data, InStream length, InStream dictionary,
@@ -40,15 +40,38 @@ public class StringStreamReader extends RecordReaderImpl.StringTreeReader {
       OrcProto.ColumnEncoding encoding,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
     super(columnId, present, data, length, dictionary, encoding);
+    this.isDictionaryEncoding = dictionary != null;
     this.isFileCompressed = isFileCompressed;
 
     // position the readers based on the specified row index
-    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
-    seek(positionProvider);
+    seek(StreamUtils.getPositionProvider(rowIndex));
   }
 
-  public void seek(PositionProvider positionProvider) throws IOException {
-    super.seek(positionProvider);
+  @Override
+  public void seek(PositionProvider index) throws IOException {
+    if (present != null) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      present.seek(index);
+    }
+
+    if (isDictionaryEncoding) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDictionaryTreeReader)reader).reader.seek(index);
+    } else {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDirectTreeReader)reader).stream.seek(index);
+
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      ((RecordReaderImpl.StringDirectTreeReader)reader).lengths.seek(index);
+    }
   }
 
   public static class StreamReaderBuilder {

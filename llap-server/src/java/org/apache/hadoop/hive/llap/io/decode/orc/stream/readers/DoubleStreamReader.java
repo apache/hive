@@ -32,21 +32,30 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
  */
 public class DoubleStreamReader extends RecordReaderImpl.DoubleTreeReader {
   private boolean isFileCompressed;
-  private OrcProto.RowIndexEntry rowIndex;
 
   private DoubleStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
     super(columnId, present, data);
-    this.rowIndex = rowIndex;
+    this.isFileCompressed = isFileCompressed;
 
     // position the readers based on the specified row index
-    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
-    seek(positionProvider);
+    seek(StreamUtils.getPositionProvider(rowIndex));
   }
 
-  public void seek(PositionProvider positionProvider) throws IOException {
-    super.seek(positionProvider);
+  @Override
+  public void seek(PositionProvider index) throws IOException {
+    if (present != null) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      present.seek(index);
+    }
+
+    if (isFileCompressed) {
+      index.getNext();
+    }
+    stream.seek(index);
   }
 
   public static class StreamReaderBuilder {

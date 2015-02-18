@@ -32,22 +32,35 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
  */
 public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
   private boolean isFileCompressed;
-  private OrcProto.RowIndexEntry rowIndex;
 
   private DecimalStreamReader(int columnId, int precision, int scale, InStream presentStream,
       InStream valueStream, InStream scaleStream, boolean isFileCompressed,
       OrcProto.RowIndexEntry rowIndex, OrcProto.ColumnEncoding encoding) throws IOException {
     super(columnId, precision, scale, presentStream, valueStream, scaleStream, encoding);
     this.isFileCompressed = isFileCompressed;
-    this.rowIndex = rowIndex;
 
     // position the readers based on the specified row index
-    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
-    seek(positionProvider);
+    seek(StreamUtils.getPositionProvider(rowIndex));
   }
 
-  public void seek(PositionProvider positionProvider) throws IOException {
-    super.seek(positionProvider);
+  @Override
+  public void seek(PositionProvider index) throws IOException {
+    if (present != null) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      present.seek(index);
+    }
+
+    if (isFileCompressed) {
+      index.getNext();
+    }
+    valueStream.seek(index);
+
+    if (isFileCompressed) {
+      index.getNext();
+    }
+    scaleReader.seek(index);
   }
 
   public static class StreamReaderBuilder {

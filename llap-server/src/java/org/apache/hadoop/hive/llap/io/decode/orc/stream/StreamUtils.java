@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.InStream;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
@@ -44,5 +46,11 @@ public class StreamUtils {
       totalLength += lmb.byteBuffer.limit();
     }
     return InStream.create(fileName, streamName, input, totalLength, codec, bufferSize, null);
+  }
+
+
+  public static PositionProvider getPositionProvider(OrcProto.RowIndexEntry rowIndex) {
+    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
+    return positionProvider;
   }
 }

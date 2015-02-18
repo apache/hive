@@ -21,15 +21,13 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
-import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
 /**
  * A reader that reads a sequence of bytes. A control byte is read before
  * each run with positive values 0 to 127 meaning 3 to 130 repetitions. If the
  * byte is -1 to -128, 1 to 128 literal byte values follow.
  */
-class RunLengthByteReader {
+public class RunLengthByteReader {
   private final InStream input;
   private final byte[] literals =
     new byte[RunLengthByteWriter.MAX_LITERAL_SIZE];
@@ -113,7 +111,7 @@ class RunLengthByteReader {
     }
   }
 
-  void seek(PositionProvider index) throws IOException {
+  public void seek(PositionProvider index) throws IOException {
     input.seek(index);
     int consumed = (int) index.getNext();
     if (consumed != 0) {

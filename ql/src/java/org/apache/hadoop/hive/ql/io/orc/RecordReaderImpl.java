@@ -223,7 +223,7 @@ public class RecordReaderImpl implements RecordReader {
 
   public abstract static class TreeReader {
     protected final int columnId;
-    private BitFieldReader present = null;
+    protected BitFieldReader present = null;
     protected boolean valuePresent = false;
 
     public TreeReader(int columnId) throws IOException {
@@ -348,7 +348,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class BooleanTreeReader extends TreeReader {
-    private BitFieldReader reader = null;
+    protected BitFieldReader reader = null;
 
     public BooleanTreeReader(int columnId) throws IOException {
       this(columnId, null, null);
@@ -420,7 +420,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class ByteTreeReader extends TreeReader{
-    private RunLengthByteReader reader = null;
+    protected RunLengthByteReader reader = null;
 
     ByteTreeReader(int columnId) throws IOException {
       this(columnId, null, null);
@@ -490,7 +490,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class ShortTreeReader extends TreeReader{
-    private IntegerReader reader = null;
+    protected IntegerReader reader = null;
 
     public ShortTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
@@ -576,7 +576,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class IntTreeReader extends TreeReader{
-    private IntegerReader reader = null;
+    protected IntegerReader reader = null;
 
     public IntTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
@@ -662,7 +662,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class LongTreeReader extends TreeReader{
-    private IntegerReader reader = null;
+    protected IntegerReader reader = null;
 
     LongTreeReader(int columnId, boolean skipCorrupt) throws IOException {
       this(columnId, null, null, null, skipCorrupt);
@@ -749,7 +749,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class FloatTreeReader extends TreeReader{
-    private InStream stream;
+    protected InStream stream;
     private final SerializationUtils utils;
 
     public FloatTreeReader(int columnId) throws IOException {
@@ -841,7 +841,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class DoubleTreeReader extends TreeReader{
-    private InStream stream;
+    protected InStream stream;
     private final SerializationUtils utils;
 
     public DoubleTreeReader(int columnId) throws IOException {
@@ -1037,8 +1037,8 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class TimestampTreeReader extends TreeReader {
-    private IntegerReader data = null;
-    private IntegerReader nanos = null;
+    protected IntegerReader data = null;
+    protected IntegerReader nanos = null;
     private final boolean skipCorrupt;
 
     TimestampTreeReader(int columnId, boolean skipCorrupt) throws IOException {
@@ -1170,7 +1170,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class DateTreeReader extends TreeReader{
-    private IntegerReader reader = null;
+    protected IntegerReader reader = null;
 
     DateTreeReader(int columnId) throws IOException {
       this(columnId, null, null, null);
@@ -1254,8 +1254,8 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class DecimalTreeReader extends TreeReader{
-    private InStream valueStream;
-    private IntegerReader scaleReader = null;
+    protected InStream valueStream;
+    protected IntegerReader scaleReader = null;
     private LongColumnVector scratchScaleVector;
 
     private final int precision;
@@ -1543,8 +1543,8 @@ public class RecordReaderImpl implements RecordReader {
    * stripe.
    */
   public static class StringDirectTreeReader extends TreeReader {
-    private InStream stream;
-    private IntegerReader lengths;
+    public InStream stream;
+    public IntegerReader lengths;
     private final LongColumnVector scratchlcv;
 
     StringDirectTreeReader(int columnId) throws IOException {
@@ -1655,7 +1655,7 @@ public class RecordReaderImpl implements RecordReader {
   public static class StringDictionaryTreeReader extends TreeReader {
     private DynamicByteArray dictionaryBuffer;
     private int[] dictionaryOffsets;
-    private IntegerReader reader;
+    public IntegerReader reader;
 
     private byte[] dictionaryBufferInBytesCache = null;
     private final LongColumnVector scratchlcv;
