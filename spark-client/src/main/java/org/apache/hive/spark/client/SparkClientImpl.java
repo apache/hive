@@ -17,6 +17,14 @@
 
 package org.apache.hive.spark.client;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -30,14 +38,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,14 +54,6 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.SparkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 class SparkClientImpl implements SparkClient {
   private static final long serialVersionUID = 1L;
@@ -155,13 +153,13 @@ class SparkClientImpl implements SparkClient {
   }
 
   @Override
-  public Future<?> addJar(URL url) {
-    return run(new AddJarJob(url.toString()));
+  public Future<?> addJar(URI uri) {
+    return run(new AddJarJob(uri.toString()));
   }
 
   @Override
-  public Future<?> addFile(URL url) {
-    return run(new AddFileJob(url.toString()));
+  public Future<?> addFile(URI uri) {
+    return run(new AddFileJob(uri.toString()));
   }
 
   @Override

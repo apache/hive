@@ -68,6 +68,6 @@ public class GenericUDFMapKeys extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert children.length == 1;
-    return "map_keys(" + children[0] + ")";
+    return getStandardDisplayString("map_keys", children);
   }
 }

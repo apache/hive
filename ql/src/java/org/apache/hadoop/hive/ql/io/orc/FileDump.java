@@ -129,9 +129,10 @@ public final class FileDump {
         OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
         long sectionStart = stripeStart;
         for(OrcProto.Stream section: footer.getStreamsList()) {
+          String kind = section.hasKind() ? section.getKind().name() : "UNKNOWN";
           System.out.println("    Stream: column " + section.getColumn() +
-            " section " + section.getKind() + " start: " + sectionStart +
-            " length " + section.getLength());
+              " section " + kind + " start: " + sectionStart +
+              " length " + section.getLength());
           sectionStart += section.getLength();
         }
         for (int i = 0; i < footer.getColumnsCount(); ++i) {

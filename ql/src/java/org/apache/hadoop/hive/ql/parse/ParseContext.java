@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -64,7 +64,7 @@ public class ParseContext {
   private QB qb;
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
   private Set<JoinOperator> joinOps;
@@ -152,7 +152,7 @@ public class ParseContext {
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<String, PrunedPartitionList> prunedPartitions,
-      HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
+      HashMap<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
@@ -373,7 +373,7 @@ public class ParseContext {
   /**
    * @return the opToSamplePruner
    */
-  public HashMap<TableScanOperator, sampleDesc> getOpToSamplePruner() {
+  public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
     return opToSamplePruner;
   }
 
@@ -382,7 +382,7 @@ public class ParseContext {
    *          the opToSamplePruner to set
    */
   public void setOpToSamplePruner(
-      HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+      HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
     this.opToSamplePruner = opToSamplePruner;
   }
 

@@ -314,6 +314,25 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col5
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col5
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (_wcol0 <= 2) (type: boolean)
@@ -463,6 +482,25 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col5
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col5
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((_wcol0 <= 2) and _col2 is not null) (type: boolean)

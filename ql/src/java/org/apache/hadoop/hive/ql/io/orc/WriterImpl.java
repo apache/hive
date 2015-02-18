@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -202,7 +203,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       allColumns = getColumnNamesFromInspector(inspector);
     }
     this.bufferSize = getEstimatedBufferSize(allColumns, bufferSize);
-    this.bloomFilterColumns = OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    if (version == OrcFile.Version.V_0_11) {
+      /* do not write bloom filters for ORC v11 */
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(null, allColumns, inspector);
+    } else {
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    }
     this.bloomFilterFpp = bloomFilterFpp;
     treeWriter = createTreeWriter(inspector, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {

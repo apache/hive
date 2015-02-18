@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -371,5 +370,12 @@ public class HiveV1Authorizer implements HiveAuthorizer {
 
   @Override
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) {
+  }
+
+  @Override
+  public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
+      HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+    // do no filtering in old authorizer
+    return listObjs;
   }
 }

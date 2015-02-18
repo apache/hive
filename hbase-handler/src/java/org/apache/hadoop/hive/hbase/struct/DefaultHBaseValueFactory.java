@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.hbase.HBaseSerDeParameters;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * */
 public class DefaultHBaseValueFactory implements HBaseValueFactory {
 
-  protected LazySimpleSerDe.SerDeParameters serdeParams;
+  protected LazySerDeParameters serdeParams;
   protected ColumnMappings columnMappings;
   protected HBaseSerDeParameters hbaseParams;
   protected Properties properties;

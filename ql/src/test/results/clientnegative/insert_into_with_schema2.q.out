@@ -1,0 +1,35 @@
+PREHOOK: query: -- set of tests HIVE-9481
+drop database if exists x314n cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- set of tests HIVE-9481
+drop database if exists x314n cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database x314n
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:x314n
+POSTHOOK: query: create database x314n
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:x314n
+PREHOOK: query: use x314n
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:x314n
+POSTHOOK: query: use x314n
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:x314n
+PREHOOK: query: create table source(s1 int, s2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314n
+PREHOOK: Output: x314n@source
+POSTHOOK: query: create table source(s1 int, s2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314n
+POSTHOOK: Output: x314n@source
+PREHOOK: query: create table target1(x int, y int, z int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314n
+PREHOOK: Output: x314n@target1
+POSTHOOK: query: create table target1(x int, y int, z int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314n
+POSTHOOK: Output: x314n@target1
+FAILED: SemanticException 0:0 Expected 3 columns for insclause-0/x314n@target1; select produces 2 columns. Error encountered near token 'source.s2'

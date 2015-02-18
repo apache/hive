@@ -216,6 +216,7 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_RELOADFUNCTION;
 TOK_CREATEMACRO;
 TOK_DROPMACRO;
 TOK_TEMPORARY;
@@ -702,6 +703,7 @@ ddlStatement
     | createIndexStatement
     | dropIndexStatement
     | dropFunctionStatement
+    | reloadFunctionStatement
     | dropMacroStatement
     | analyzeStatement
     | lockStatement
@@ -1625,6 +1627,11 @@ dropFunctionStatement
     ->                  ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
+reloadFunctionStatement
+@init { pushMsg("reload function statement", state); }
+@after { popMsg(state); }
+    : KW_RELOAD KW_FUNCTION -> ^(TOK_RELOADFUNCTION);
+
 createMacroStatement
 @init { pushMsg("create macro statement", state); }
 @after { popMsg(state); }
@@ -2277,8 +2284,8 @@ insertClause
 @after { popMsg(state); }
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
-   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition
-       -> ^(TOK_INSERT_INTO tableOrPartition)
+   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition (LPAREN targetCols=columnNameList RPAREN)?
+       -> ^(TOK_INSERT_INTO tableOrPartition $targetCols?)
    ;
 
 destination

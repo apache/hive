@@ -58,7 +58,7 @@ public class GenericUDFHash extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    return "hash(" + StringUtils.join(children, ',') + ")";
+    return getStandardDisplayString("hash", children, ",");
   }
 
 }

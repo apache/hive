@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -246,10 +247,8 @@ public class Partition implements Serializable {
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
       try {
-        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
+        deserializer = MetaStoreUtils.getDeserializer(SessionState.getSessionConf(),
             tPartition, table.getTTable());
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
       } catch (MetaException e) {
         throw new RuntimeException(e);
       }
@@ -367,7 +366,7 @@ public class Partition implements Serializable {
     try {
       // Previously, this got the filesystem of the Table, which could be
       // different from the filesystem of the partition.
-      FileSystem fs = getDataLocation().getFileSystem(Hive.get().getConf());
+      FileSystem fs = getDataLocation().getFileSystem(SessionState.getSessionConf());
       String pathPattern = getDataLocation().toString();
       if (getBucketCount() > 0) {
         pathPattern = pathPattern + "/*";
@@ -495,11 +494,11 @@ public class Partition implements Serializable {
   public List<FieldSchema> getCols() {
 
     try {
-      if (Table.hasMetastoreBasedSchema(Hive.get().getConf(), tPartition.getSd())) {
+      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), tPartition.getSd())) {
         return tPartition.getSd().getCols();
       }
-      return Hive.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
-    } catch (HiveException e) {
+      return MetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
+    } catch (Exception e) {
       LOG.error("Unable to get cols from serde: " +
           tPartition.getSd().getSerdeInfo().getSerializationLib(), e);
     }

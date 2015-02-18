@@ -70,9 +70,9 @@ public final class JavaUtils {
     return classLoader;
   }
 
-  public static void closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
+  public static boolean closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
     if (!isValidHierarchy(current, stop)) {
-      return;
+      return false;
     }
     for (; current != null && current != stop; current = current.getParent()) {
       try {
@@ -82,6 +82,7 @@ public final class JavaUtils {
             Arrays.toString(((URLClassLoader) current).getURLs()), e);
       }
     }
+    return true;
   }
 
   // check before closing loaders, not to close app-classloader, etc. by mistake

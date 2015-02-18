@@ -189,7 +189,15 @@ public class GenSparkUtils {
     throws SemanticException {
 
     List<Operator<?>> roots = new ArrayList<Operator<?>>();
-    roots.addAll(work.getAllRootOperators());
+
+    // For MapWork, getAllRootOperators is not suitable, since it checks
+    // getPathToAliases, and will return null if this is empty. Here we are
+    // replacing getAliasToWork, so should use that information instead.
+    if (work instanceof MapWork) {
+      roots.addAll(((MapWork) work).getAliasToWork().values());
+    } else {
+      roots.addAll(work.getAllRootOperators());
+    }
     if (work.getDummyOps() != null) {
       roots.addAll(work.getDummyOps());
     }

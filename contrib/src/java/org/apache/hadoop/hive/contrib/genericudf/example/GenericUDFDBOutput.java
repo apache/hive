@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -159,17 +158,7 @@ public class GenericUDFDBOutput extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("dboutput(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(",");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("dboutput", children, ",");
   }
 
 }

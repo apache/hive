@@ -113,10 +113,6 @@ public class GenericUDFDecode extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    StringBuilder sb = new StringBuilder();
-    sb.append("decode(");
-    sb.append(children[0]).append(",");
-    sb.append(children[1]).append(")");
-    return sb.toString();
+    return getStandardDisplayString("decode", children, ",");
   }
 }

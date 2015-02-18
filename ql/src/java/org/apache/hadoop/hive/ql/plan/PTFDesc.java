@@ -22,13 +22,16 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
-import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
-import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputType;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Explain(displayName = "PTF Operator")
 public class PTFDesc extends AbstractOperatorDesc {
@@ -62,6 +65,19 @@ public class PTFDesc extends AbstractOperatorDesc {
     return funcDef == null ? null : funcDef.getStartOfChain();
   }
 
+  @Explain(displayName = "Function definitions")
+  public List<PTFInputDef> getFuncDefExplain() {
+    if (funcDef == null) {
+      return null;
+    }
+    List<PTFInputDef> inputs = new ArrayList<PTFInputDef>();
+    for (PTFInputDef current = funcDef; current != null; current = current.getInput()) {
+      inputs.add(current);
+    }
+    Collections.reverse(inputs);
+    return inputs;
+  }
+
   public LeadLagInfo getLlInfo() {
     return llInfo;
   }
@@ -70,10 +86,23 @@ public class PTFDesc extends AbstractOperatorDesc {
     this.llInfo = llInfo;
   }
 
-  public boolean forWindowing() {
-    return funcDef != null && (funcDef instanceof WindowTableFunctionDef);
+  @Explain(displayName = "Lead/Lag information")
+  public String getLlInfoExplain() {
+    if (llInfo != null && llInfo.getLeadLagExprs() != null) {
+      return PlanUtils.getExprListString(llInfo.getLeadLagExprs());
+    }
+    return null;
   }
 
+  public boolean forWindowing() {
+    return funcDef instanceof WindowTableFunctionDef;
+  }
+
+  public boolean forNoop() {
+    return funcDef.getTFunction() instanceof Noop;
+  }
+
+  @Explain(displayName = "Map-side function", displayOnlyOnTrue = true)
   public boolean isMapSide() {
     return isMapSide;
   }
@@ -89,5 +118,4 @@ public class PTFDesc extends AbstractOperatorDesc {
   public void setCfg(Configuration cfg) {
     this.cfg = cfg;
   }
-
 }

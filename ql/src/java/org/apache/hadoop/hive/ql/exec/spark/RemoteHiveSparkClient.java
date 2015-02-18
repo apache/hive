@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +77,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient SparkConf sparkConf;
   private transient HiveConf hiveConf;
 
-  private transient List<URL> localJars = new ArrayList<URL>();
-  private transient List<URL> localFiles = new ArrayList<URL>();
+  private transient List<URI> localJars = new ArrayList<URI>();
+  private transient List<URI> localFiles = new ArrayList<URI>();
 
   private final transient long sparkClientTimtout;
 
@@ -128,7 +128,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     return new RemoteSparkJobRef(hiveConf, jobHandle, sparkJobStatus);
   }
 
-  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {
+  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
     // add hive-exec jar
     addJars((new JobConf(this.getClass())).getJar());
 
@@ -160,30 +160,32 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     addResources(addedArchives);
   }
 
-  private void addResources(String addedFiles) {
+  private void addResources(String addedFiles) throws IOException {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
       try {
-        URL fileUrl = SparkUtilities.getURL(addedFile);
-        if (fileUrl != null && !localFiles.contains(fileUrl)) {
-          localFiles.add(fileUrl);
-          remoteClient.addFile(fileUrl);
+        URI fileUri = SparkUtilities.getURI(addedFile);
+        if (fileUri != null && !localFiles.contains(fileUri)) {
+          fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
+          localFiles.add(fileUri);
+          remoteClient.addFile(fileUri);
         }
-      } catch (MalformedURLException e) {
-        LOG.warn("Failed to add file:" + addedFile);
+      } catch (URISyntaxException e) {
+        LOG.warn("Failed to add file:" + addedFile, e);
       }
     }
   }
 
-  private void addJars(String addedJars) {
+  private void addJars(String addedJars) throws IOException {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
       try {
-        URL jarUrl = SparkUtilities.getURL(addedJar);
-        if (jarUrl != null && !localJars.contains(jarUrl)) {
-          localJars.add(jarUrl);
-          remoteClient.addJar(jarUrl);
+        URI jarUri = SparkUtilities.getURI(addedJar);
+        if (jarUri != null && !localJars.contains(jarUri)) {
+          jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
+          localJars.add(jarUri);
+          remoteClient.addJar(jarUri);
         }
-      } catch (MalformedURLException e) {
-        LOG.warn("Failed to add jar:" + addedJar);
+      } catch (URISyntaxException e) {
+        LOG.warn("Failed to add jar:" + addedJar, e);
       }
     }
   }

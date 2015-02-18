@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -69,7 +70,7 @@ public class IndexUpdater {
     for (LoadTableDesc ltd : loadTableWork) {
       TableDesc td = ltd.getTable();
       Table srcTable = hive.getTable(td.getTableName());
-      List<Index> tblIndexes = srcTable.getAllIndexes((short)-1);
+      List<Index> tblIndexes = IndexUtils.getAllIndexes(srcTable, (short)-1);
       Map<String, String> partSpec = ltd.getPartitionSpec();
       if (partSpec == null || partSpec.size() == 0) {
         //unpartitioned table, update whole index
