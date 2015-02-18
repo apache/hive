@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.util.Iterator;
+
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 
 import scala.Tuple2;
-
-import java.util.Iterator;
 
 public class HiveReduceFunction extends HivePairFlatMapFunction<
   Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
@@ -42,7 +42,7 @@ public class HiveReduceFunction extends HivePairFlatMapFunction<
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
     HiveReduceFunctionResultList result =
-        new HiveReduceFunctionResultList(jobConf, it, reducerRecordhandler);
+        new HiveReduceFunctionResultList(it, reducerRecordhandler);
     reducerRecordhandler.init(jobConf, result, sparkReporter);
 
     return result;
