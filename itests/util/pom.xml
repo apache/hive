@@ -35,10 +35,6 @@
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
     <dependency>
-      <groupId>org.apache.accumulo</groupId>
-      <artifactId>accumulo-minicluster</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-accumulo-handler</artifactId>
       <version>${project.version}</version>
@@ -102,6 +98,16 @@
       </activation>
       <dependencies>
         <dependency>
+          <groupId>org.apache.accumulo</groupId>
+          <artifactId>accumulo-minicluster</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.hadoop</groupId>
+              <artifactId>hadoop-minicluster</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
           <version>${hadoop-20S.version}</version>
@@ -137,6 +143,10 @@
    <profile>
       <id>hadoop-2</id>
       <dependencies>
+        <dependency>
+          <groupId>org.apache.accumulo</groupId>
+          <artifactId>accumulo-minicluster</artifactId>
+        </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
