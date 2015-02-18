@@ -32,11 +32,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TextConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.Text;
 
 @Description(name = "from_utc_timestamp",
              value = "from_utc_timestamp(timestamp, string timezone) - "
-                     + "Assumes given timestamp ist UTC and converts to given timezone (as of Hive 0.8.0)")
+                     + "Assumes given timestamp is UTC and converts to given timezone (as of Hive 0.8.0)")
 public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
   static final Log LOG = LogFactory.getLog(GenericUDFFromUtcTimestamp.class);
@@ -48,17 +47,14 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
-    if (arguments.length < 2) {
-      throw new UDFArgumentLengthException(
-          "The function " + getName() + " requires at least two "
+    if (arguments.length != 2) {
+      throw new UDFArgumentLengthException("The function " + getName() + " requires two "
           + "argument, got " + arguments.length);
     }
     try {
       argumentOIs = new PrimitiveObjectInspector[2];
       argumentOIs[0] = (PrimitiveObjectInspector) arguments[0];
-      if (arguments.length > 1) {
-        argumentOIs[1] = (PrimitiveObjectInspector) arguments[1];
-      }
+      argumentOIs[1] = (PrimitiveObjectInspector) arguments[1];
     } catch (ClassCastException e) {
       throw new UDFArgumentException(
           "The function " + getName() + " takes only primitive types");
@@ -73,19 +69,16 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object o0 = arguments[0].get();
-    TimeZone timezone = null;
     if (o0 == null) {
       return null;
     }
-
-    if (arguments.length > 1 && arguments[1] != null) {
-      Text text = textConverter.convert(arguments[1].get());
-      if (text != null) {
-        timezone = TimeZone.getTimeZone(text.toString());
-      }
-    } else {
+    Object o1 = arguments[1].get();
+    if (o1 == null) {
       return null;
     }
+
+    String tzStr = textConverter.convert(o1).toString();
+    TimeZone timezone = TimeZone.getTimeZone(tzStr);
 
     Timestamp timestamp = ((TimestampWritable) timestampConverter.convert(o0))
         .getTimestamp();
