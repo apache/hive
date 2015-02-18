@@ -114,6 +114,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // whether we'll enforce the sort order of the RS
   private transient boolean enforceSort = false;
 
+  // used by spark mode to decide whether global order is needed
+  private transient boolean hasOrderBy = false;
+
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
@@ -169,6 +172,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setSkipTag(skipTag);
     desc.reduceTraits = reduceTraits.clone();
     desc.setEnforceSort(enforceSort);
+    desc.setHasOrderBy(hasOrderBy);
     return desc;
   }
 
@@ -432,5 +436,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setEnforceSort(boolean isDeduplicated) {
     this.enforceSort = isDeduplicated;
+  }
+
+  public boolean hasOrderBy() {
+    return hasOrderBy;
+  }
+
+  public void setHasOrderBy(boolean hasOrderBy) {
+    this.hasOrderBy = hasOrderBy;
   }
 }
