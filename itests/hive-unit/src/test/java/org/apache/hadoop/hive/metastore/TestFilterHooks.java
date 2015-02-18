@@ -17,19 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -53,7 +53,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterDatabases(List<String> dbList) {
+    public List<String> filterDatabases(List<String> dbList) throws MetaException  {
       if (blockResults) {
         return new ArrayList<String>();
       }
@@ -69,7 +69,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterTableNames(String dbName, List<String> tableList) {
+    public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
       if (blockResults) {
         return new ArrayList<String>();
       }
@@ -85,7 +85,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<Table> filterTables(List<Table> tableList) {
+    public List<Table> filterTables(List<Table> tableList) throws MetaException {
       if (blockResults) {
         return new ArrayList<Table>();
       }
@@ -93,7 +93,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<Partition> filterPartitions(List<Partition> partitionList) {
+    public List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException {
       if (blockResults) {
         return new ArrayList<Partition>();
       }
@@ -102,7 +102,7 @@ public class TestFilterHooks {
 
     @Override
     public List<PartitionSpec> filterPartitionSpecs(
-        List<PartitionSpec> partitionSpecList) {
+        List<PartitionSpec> partitionSpecList) throws MetaException {
       if (blockResults) {
         return new ArrayList<PartitionSpec>();
       }
@@ -119,7 +119,7 @@ public class TestFilterHooks {
 
     @Override
     public List<String> filterPartitionNames(String dbName, String tblName,
-        List<String> partitionNames) {
+        List<String> partitionNames) throws MetaException {
       if (blockResults) {
         return new ArrayList<String>();
       }
@@ -136,7 +136,7 @@ public class TestFilterHooks {
 
     @Override
     public List<String> filterIndexNames(String dbName, String tblName,
-        List<String> indexList) {
+        List<String> indexList) throws MetaException {
       if (blockResults) {
         return new ArrayList<String>();
       }
@@ -144,7 +144,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<Index> filterIndexes(List<Index> indexeList) {
+    public List<Index> filterIndexes(List<Index> indexeList) throws MetaException {
       if (blockResults) {
         return new ArrayList<Index>();
       }

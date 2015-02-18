@@ -149,6 +149,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
+      HiveConf.ConfVars.METASTORE_FILTER_HOOK,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
       HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
@@ -592,7 +593,8 @@ public class HiveConf extends Configuration {
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
         "* implies all the keys will get inherited."),
     METASTORE_FILTER_HOOK("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
-        "Metastore hook class for filtering the metadata read results"),
+        "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
+        + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
         " to fire events for DML operations"),
 
