@@ -88,10 +88,16 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   private static final String HBASE_SNAPSHOT_TABLE_DIR_KEY = "hbase.TableSnapshotInputFormat.table.dir";
   /** HBase-internal config by which input format received restore dir after HBASE-11335. */
   private static final String HBASE_SNAPSHOT_RESTORE_DIR_KEY = "hbase.TableSnapshotInputFormat.restore.dir";
-  /** HBase config by which a SlabCache is sized. */
-  private static final String HBASE_OFFHEAP_PCT_KEY = "hbase.offheapcache.percentage";
-  /** HBase config by which a BucketCache is sized. */
-  private static final String HBASE_BUCKETCACHE_SIZE_KEY = "hbase.bucketcache.size";
+  private static final String[] HBASE_CACHE_KEYS = new String[] {
+      /** HBase config by which a SlabCache is sized. From HBase [0.98.3, 1.0.0) */
+      "hbase.offheapcache.percentage",
+      /** HBase config by which a BucketCache is sized. */
+      "hbase.bucketcache.size",
+      /** HBase config by which the bucket cache implementation is chosen. From HBase 0.98.10+ */
+      "hbase.bucketcache.ioengine",
+      /** HBase config by which a BlockCache is sized. */
+      "hfile.block.cache.size"
+  };
 
   final static public String DEFAULT_PREFIX = "default.";
 
@@ -395,8 +401,14 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
           TableMapReduceUtil.resetCacheConfig(hbaseConf);
           // copy over configs touched by above method
-          jobProperties.put(HBASE_OFFHEAP_PCT_KEY, hbaseConf.get(HBASE_OFFHEAP_PCT_KEY));
-          jobProperties.put(HBASE_BUCKETCACHE_SIZE_KEY, hbaseConf.get(HBASE_BUCKETCACHE_SIZE_KEY));
+          for (String cacheKey : HBASE_CACHE_KEYS) {
+            final String value = hbaseConf.get(cacheKey);
+            if (value != null) {
+              jobProperties.put(cacheKey, value);
+            } else {
+              jobProperties.remove(cacheKey);
+            }
+          }
         } catch (IOException e) {
           throw new IllegalArgumentException(e);
         }
