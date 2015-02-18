@@ -154,6 +154,21 @@ public interface HiveAuthorizer {
       List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
+
+  /**
+   * Filter out any objects that should not be shown to the user, from the list of
+   * tables or databases coming from a 'show tables' or 'show databases' command
+   * @param listObjs List of all objects obtained as result of a show command
+   * @param context
+   * @return filtered list of objects that will be returned to the user invoking the command
+   * @throws HiveAuthzPluginException
+   * @throws HiveAccessControlException
+   */
+  List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
+      HiveAuthzContext context)
+          throws HiveAuthzPluginException, HiveAccessControlException;
+
+
   /**
    * @return all existing roles
    * @throws HiveAuthzPluginException

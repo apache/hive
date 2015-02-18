@@ -419,7 +419,7 @@ public class SessionState {
     return hdfsEncryptionShim;
   }
 
-  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call 
+  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
   private static class SessionStates {
     private SessionState state;
     private HiveConf conf;
@@ -435,7 +435,7 @@ public class SessionState {
       }
     }
   }
-  
+
   /**
    * Singleton Session object per thread.
    *
@@ -705,7 +705,7 @@ public class SessionState {
           clsStr, authenticator, true);
 
       if (authorizer == null) {
-        // if it was null, the new authorization plugin must be specified in
+        // if it was null, the new (V2) authorization plugin must be specified in
         // config
         HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(conf,
             HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
@@ -717,13 +717,14 @@ public class SessionState {
 
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
+        setAuthorizerV2Config();
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf);
       }
       // create the create table grants with new config
       createTableGrants = CreateTableAutomaticGrant.create(conf);
 
     } catch (HiveException e) {
+      LOG.error("Error setting up authorization: " + e.getMessage(), e);
       throw new RuntimeException(e);
     }
 
@@ -732,6 +733,28 @@ public class SessionState {
       LOG.debug("Session is using authorization class " + authorizationClass.getClass());
     }
     return;
+  }
+
+  private void setAuthorizerV2Config() throws HiveException {
+    // avoid processing the same config multiple times, check marker
+    if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
+      return;
+    }
+    conf.setVar(ConfVars.METASTORE_FILTER_HOOK,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook");
+
+    authorizerV2.applyAuthorizationConfigPolicy(conf);
+    // update config in Hive thread local as well and init the metastore client
+    try {
+      Hive.get(conf).getMSC();
+    } catch (Exception e) {
+      // catch-all due to some exec time dependencies on session state
+      // that would cause ClassNoFoundException otherwise
+      throw new HiveException(e.getMessage(), e);
+    }
+
+    // set a marker that this conf has been processed.
+    conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
   }
 
   public Object getActiveAuthorizer() {
@@ -1416,20 +1439,7 @@ public class SessionState {
    * any security configuration changes.
    */
   public void applyAuthorizationPolicy() throws HiveException {
-    if(!isAuthorizationModeV2()){
-      // auth v1 interface does not have this functionality
-      return;
-    }
-
-    // avoid processing the same config multiple times, check marker
-    if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
-      return;
-    }
-
-    authorizerV2.applyAuthorizationConfigPolicy(conf);
-    // set a marker that this conf has been processed.
-    conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
-
+    setupAuth();
   }
 
   public Map<String, Map<String, Table>> getTempTables() {
