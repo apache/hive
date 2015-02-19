@@ -194,8 +194,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean isLocalMode(Configuration conf) {
-    return "local".equals(conf.get("mapreduce.framework.name")) ||
-      "local".equals(conf.get("mapred.job.tracker"));
+    if (isMR2()) {
+      return "local".equals(conf.get("mapreduce.framework.name"));
+    }
+    return "local".equals(conf.get("mapred.job.tracker"));
   }
 
   @Override
