@@ -622,7 +622,14 @@ public class HBaseStore implements RawStore {
 
   @Override
   public List<String> listRoleNames() {
-    throw new UnsupportedOperationException();
+    try {
+      List<Role> roles = getHBase().scanRoles();
+      List<String> roleNames = new ArrayList<String>(roles.size());
+      for (Role role : roles) roleNames.add(role.getRoleName());
+      return roleNames;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

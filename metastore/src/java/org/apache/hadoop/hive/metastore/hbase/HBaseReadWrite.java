@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -142,6 +143,8 @@ class HBaseReadWrite {
 
   private HBaseReadWrite(Configuration configuration) {
     conf = configuration;
+    HBaseConfiguration.addHbaseResources(conf);
+
     try {
       conn = HConnectionManager.createConnection(conf);
     } catch (IOException e) {
@@ -434,6 +437,22 @@ class HBaseReadWrite {
     RoleWritable role = new RoleWritable();
     HBaseUtils.deserialize(role, serialized);
     return role.role;
+  }
+
+  /**
+   * Get a list of roles.
+   * @return list of all known roles.
+   * @throws IOException
+   */
+  List<Role> scanRoles() throws IOException {
+    Iterator<Result> iter = scanWithFilter(ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
+    List<Role> roles = new ArrayList<Role>();
+    while (iter.hasNext()) {
+      RoleWritable role = new RoleWritable();
+      HBaseUtils.deserialize(role, iter.next().getValue(CATALOG_CF, CATALOG_COL));
+      roles.add(role.role);
+    }
+    return roles;
   }
 
   /**
