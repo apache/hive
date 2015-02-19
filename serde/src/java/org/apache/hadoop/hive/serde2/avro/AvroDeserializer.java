@@ -335,7 +335,8 @@ class AvroDeserializer {
         currentFileSchema = fileSchema;
       }
     }
-    return worker(datum, currentFileSchema, schema, SchemaToTypeInfo.generateTypeInfo(schema));
+    return worker(datum, currentFileSchema, schema,
+      SchemaToTypeInfo.generateTypeInfo(schema, null));
 
   }
 

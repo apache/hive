@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import org.apache.avro.reflect.ReflectData;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -486,4 +487,47 @@ public class TestAvroSerializer {
     assertArrayEquals(fixed.bytes(), ((GenericData.Fixed) r.get("fixed1")).bytes());
   }
 
+  @Test
+  public void canSerializeCyclesInSchema() throws SerDeException, IOException {
+    // Create parent-child avro-record and avro-schema
+    AvroCycleParent parent = new AvroCycleParent();
+    AvroCycleChild child = new AvroCycleChild();
+    parent.setChild (child);
+    Schema parentS = ReflectData.AllowNull.get().getSchema(AvroCycleParent.class);
+    GenericData.Record parentRec = new GenericData.Record(parentS);
+    Schema childS = ReflectData.AllowNull.get().getSchema(AvroCycleChild.class);
+    GenericData.Record childRec  = new GenericData.Record(childS);
+    parentRec.put("child", childRec);
+
+    // Initialize Avro SerDe
+    AvroSerializer as = new AvroSerializer();
+    AvroDeserializer ad = new AvroDeserializer();
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(parentS);
+    ObjectInspector oi = aoig.getObjectInspector();
+    List<String> columnNames = aoig.getColumnNames();
+    List<TypeInfo> columnTypes = aoig.getColumnTypes();
+
+    // Check serialization and deserialization
+    AvroGenericRecordWritable agrw = Utils.serializeAndDeserializeRecord(parentRec);
+    Object obj = ad.deserialize(columnNames, columnTypes, agrw, parentS);
+
+    Writable result = as.serialize(obj, oi, columnNames, columnTypes, parentS);
+    assertTrue(result instanceof AvroGenericRecordWritable);
+    GenericRecord r2 = ((AvroGenericRecordWritable) result).getRecord();
+    assertEquals(parentS, r2.getSchema());
+  }
+
+  private static class AvroCycleParent {
+    AvroCycleChild child;
+    public AvroCycleChild getChild () {return child;}
+    public void setChild (AvroCycleChild child) {this.child = child;}
+  }
+
+  private static class AvroCycleChild {
+    AvroCycleParent parent;
+    AvroCycleChild next;
+    Map <String, AvroCycleParent> map;
+    public AvroCycleParent getParent () {return parent;}
+    public void setParent (AvroCycleParent parent) {this.parent = parent;}
+  }
 }

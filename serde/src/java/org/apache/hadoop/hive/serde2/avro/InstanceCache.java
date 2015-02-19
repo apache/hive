@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,7 +33,7 @@ import java.util.Set;
  */
 public abstract class InstanceCache<SeedObject, Instance> {
   private static final Log LOG = LogFactory.getLog(InstanceCache.class);
-  Map<SeedObject, Instance> cache = new HashMap<SeedObject, Instance>();
+  HashMap<Integer, Instance> cache = new HashMap<Integer, Instance>();
   
   public InstanceCache() {}
 
@@ -43,19 +42,29 @@ public abstract class InstanceCache<SeedObject, Instance> {
    * SeedObject
    */
   public Instance retrieve(SeedObject hv) throws AvroSerdeException {
+    return retrieve(hv, null);
+  }
+
+  /**
+   * Retrieve (or create if it doesn't exist) the correct Instance for this
+   * SeedObject using 'seenSchemas' to resolve circular references
+   */
+  public Instance retrieve(SeedObject hv,
+      Set<SeedObject> seenSchemas) throws AvroSerdeException {
     if(LOG.isDebugEnabled()) LOG.debug("Checking for hv: " + hv.toString());
 
-    if(cache.containsKey(hv)) {
+    if(cache.containsKey(hv.hashCode())) {
       if(LOG.isDebugEnabled()) LOG.debug("Returning cache result.");
-      return cache.get(hv);
+      return cache.get(hv.hashCode());
     }
 
     if(LOG.isDebugEnabled()) LOG.debug("Creating new instance and storing in cache");
 
-    Instance instance = makeInstance(hv);
-    cache.put(hv, instance);
+    Instance instance = makeInstance(hv, seenSchemas);
+    cache.put(hv.hashCode(), instance);
     return instance;
   }
 
-  protected abstract Instance makeInstance(SeedObject hv) throws AvroSerdeException;
+  protected abstract Instance makeInstance(SeedObject hv,
+      Set<SeedObject> seenSchemas) throws AvroSerdeException;
 }
