@@ -57,11 +57,9 @@ public class NonBlockingOpDeDupProc implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    String SEL = SelectOperator.getOperatorName();
     String FIL = FilterOperator.getOperatorName();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", SEL + "%" + SEL + "%"), new SelectDedup(pctx));
-    opRules.put(new RuleRegExp("R2", FIL + "%" + FIL + "%"), new FilterDedup());
+    opRules.put(new RuleRegExp("R1", FIL + "%" + FIL + "%"), new FilterDedup());
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
@@ -72,7 +70,11 @@ public class NonBlockingOpDeDupProc implements Transform {
     return pctx;
   }
 
+  @Deprecated
   private class SelectDedup implements NodeProcessor {
+
+    // This is taken care of now by
+    // {@link org.apache.hadoop.hive.ql.optimizer.IdentityProjectRemover}
 
     private ParseContext pctx;
 

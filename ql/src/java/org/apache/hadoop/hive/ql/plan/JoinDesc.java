@@ -107,6 +107,13 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
+          List<String> outputColumnNames, final boolean noOuterJoin,
+          final JoinCondDesc[] conds, ExprNodeDesc[][] joinKeys) {
+    this (exprs, outputColumnNames, noOuterJoin, conds,
+            new HashMap<Byte, List<ExprNodeDesc>>(), joinKeys);
+  }
+
+  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
       final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
       ExprNodeDesc[][] joinKeys) {

@@ -33,15 +33,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.type.SqlTypeUtil;
 
 /*
  * convert a RexNode to an ExprNodeDesc
@@ -51,22 +48,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   RelDataType rType;
   String      tabAlias;
   boolean     partitioningExpr;
-  private final RelDataTypeFactory dTFactory;
 
-  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr, RelDataTypeFactory dTFactory) {
+  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr) {
     super(true);
-    /*
-     * hb: 6/25/14 for now we only support expressions that only contain
-     * partition cols. there is no use case for supporting generic expressions.
-     * for supporting generic exprs., we need to give the converter information
-     * on whether a column is a partition column or not, whether a column is a
-     * virtual column or not.
-     */
-    assert partitioningExpr == true;
     this.tabAlias = tabAlias;
     this.rType = rType;
     this.partitioningExpr = partitioningExpr;
-    this.dTFactory = dTFactory;
   }
 
   @Override
@@ -76,6 +63,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         partitioningExpr);
   }
 
+  /**
+   * TODO: Handle 1) cast 2) Field Access 3) Windowing Over() 4, Windowing Agg Call
+   */
   @Override
   public ExprNodeDesc visitCall(RexCall call) {
     ExprNodeGenericFuncDesc gfDesc = null;
@@ -90,15 +80,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       args.add(operand.accept(this));
     }
 
-    // If Call is a redundant cast then bail out. Ex: cast(true)BOOLEAN
-    if (call.isA(SqlKind.CAST)
-        && (call.operands.size() == 1)
-        && SqlTypeUtil.equalSansNullability(dTFactory, call.getType(),
-            call.operands.get(0).getType())) {
-      return args.get(0);
-    } else if (ASTConverter.isFlat(call)) {
-      // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
-      // exprnode
+    // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
+    // exprnode
+    if (ASTConverter.isFlat(call)) {
       ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
       tmpExprArgs.addAll(args.subList(0, 2));
       gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
@@ -123,6 +107,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     return gfDesc;
   }
 
+  /**
+   * TODO: 1. Handle NULL
+   */
   @Override
   public ExprNodeDesc visitLiteral(RexLiteral literal) {
     RelDataType lType = literal.getType();

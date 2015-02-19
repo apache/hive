@@ -528,14 +528,15 @@ public final class ColumnPrunerProcFactory {
 
       Operator<? extends OperatorDesc> child = op.getChildOperators().get(0);
 
-      List<String> childCols;
+      List<String> childCols = null;
       if (child instanceof CommonJoinOperator) {
-        childCols = cppCtx.getJoinPrunedColLists().get(child)
-            .get((byte) conf.getTag());
+        childCols = cppCtx.getJoinPrunedColLists().get(child) == null
+                ? null : cppCtx.getJoinPrunedColLists().get(child)
+                        .get((byte) conf.getTag());
       } else {
         childCols = cppCtx.getPrunedColList(child);
-
       }
+
       List<ExprNodeDesc> valCols = conf.getValueCols();
       List<String> valColNames = conf.getOutputValueColumnNames();
 
@@ -746,6 +747,7 @@ public final class ColumnPrunerProcFactory {
         conf.setOutputColumnNames(newOutputColumnNames);
         handleChildren(op, cols, cppCtx);
       }
+
       return null;
     }
 
@@ -968,16 +970,16 @@ public final class ColumnPrunerProcFactory {
         .getChildOperators();
 
     LOG.info("JOIN " + op.getIdentifier() + " oldExprs: " + conf.getExprs());
+
     List<String> childColLists = cppCtx.genColLists(op);
     if (childColLists == null) {
-        return;
-      }
+      return;
+    }
 
-
-  Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
-  for (byte tag : conf.getTagOrder()) {
-    prunedColLists.put(tag, new ArrayList<String>());
-  }
+    Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
+    for (byte tag : conf.getTagOrder()) {
+      prunedColLists.put(tag, new ArrayList<String>());
+    }
 
     //add the columns in join filters
     Set<Map.Entry<Byte, List<ExprNodeDesc>>> filters =
@@ -1073,6 +1075,7 @@ public final class ColumnPrunerProcFactory {
     }
 
     LOG.info("JOIN " + op.getIdentifier() + " newExprs: " + conf.getExprs());
+
     op.setColumnExprMap(newColExprMap);
     conf.setOutputColumnNames(outputCols);
     op.getSchema().setSignature(rs);

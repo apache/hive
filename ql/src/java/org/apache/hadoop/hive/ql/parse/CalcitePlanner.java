@@ -132,8 +132,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
@@ -215,39 +217,43 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (cboCtx.type == PreCboCtx.Type.CTAS) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
-      runCBO = canHandleAstForCbo(queryForCbo, getQB(), cboCtx);
+      runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
 
       if (runCBO) {
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
 
         try {
-          // 1. Gen Optimized AST
-          ASTNode newAST = getOptimizedAST();
+          if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+            sinkOp = getOptimizedHiveOPDag();
+          } else {
+            // 1. Gen Optimized AST
+            ASTNode newAST = getOptimizedAST();
 
-          // 1.1. Fix up the query for insert/ctas
-          newAST = fixUpCtasAndInsertAfterCbo(ast, newAST, cboCtx);
+            // 1.1. Fix up the query for insert/ctas
+            newAST = fixUpCtasAndInsertAfterCbo(ast, newAST, cboCtx);
 
-          // 2. Regen OP plan from optimized AST
-          init(false);
-          if (cboCtx.type == PreCboCtx.Type.CTAS) {
-            // Redo create-table analysis, because it's not part of doPhase1.
-            setAST(newAST);
-            newAST = reAnalyzeCtasAfterCbo(newAST);
+            // 2. Regen OP plan from optimized AST
+            init(false);
+            if (cboCtx.type == PreCboCtx.Type.CTAS) {
+              // Redo create-table analysis, because it's not part of doPhase1.
+              setAST(newAST);
+              newAST = reAnalyzeCtasAfterCbo(newAST);
+            }
+            Phase1Ctx ctx_1 = initPhase1Ctx();
+            if (!doPhase1(newAST, getQB(), ctx_1, null)) {
+              throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
+            }
+            // unfortunately making prunedPartitions immutable is not possible
+            // here with SemiJoins not all tables are costed in CBO, so their
+            // PartitionList is not evaluated until the run phase.
+            getMetaData(getQB());
+
+            disableJoinMerge = false;
+            sinkOp = genPlan(getQB());
+            LOG.info("CBO Succeeded; optimized logical plan.");
+            LOG.debug(newAST.dump());
           }
-          Phase1Ctx ctx_1 = initPhase1Ctx();
-          if (!doPhase1(newAST, getQB(), ctx_1, null)) {
-            throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
-          }
-          // unfortunately making prunedPartitions immutable is not possible
-          // here with SemiJoins not all tables are costed in CBO, so their
-          // PartitionList is not evaluated until the run phase.
-          getMetaData(getQB());
-
-          disableJoinMerge = false;
-          sinkOp = genPlan(getQB());
-          LOG.info("CBO Succeeded; optimized logical plan.");
-          LOG.debug(newAST.dump());
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
@@ -304,7 +310,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *         If top level QB is query then everything below it must also be
    *         Query.
    */
-  boolean canHandleAstForCbo(ASTNode ast, QB qb, PreCboCtx cboCtx) {
+  boolean canCBOHandleAst(ASTNode ast, QB qb, PreCboCtx cboCtx) {
     int root = ast.getToken().getType();
     boolean needToLogMessage = STATIC_LOG.isInfoEnabled();
     boolean isSupportedRoot = root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN
@@ -578,6 +584,31 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return optiqOptimizedAST;
   }
 
+  /**
+   * Get Optimized Hive Operator DAG for the given QB tree in the semAnalyzer.
+   *
+   * @return Optimized Hive operator tree
+   * @throws SemanticException
+   */
+  Operator getOptimizedHiveOPDag() throws SemanticException {
+    RelNode optimizedOptiqPlan = null;
+    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(prunedPartitions);
+
+    try {
+      optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
+          .newConfigBuilder().typeSystem(new HiveTypeSystemImpl()).build());
+    } catch (Exception e) {
+      rethrowCalciteException(e);
+      throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
+    }
+    
+    Operator hiveRoot = new HiveOpConverter(topOps, HiveOpConverter.getAggOPMode(conf),
+        conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(optimizedOptiqPlan);
+    RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
+    opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
+    return genFileSinkPlan(getQB().getParseInfo().getClauseNames().iterator().next(), getQB(), hiveRoot);
+  }
+
   /***
    * Unwraps Calcite Invocation exceptions coming meta data provider chain and
    * obtains the real cause.
@@ -652,6 +683,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private boolean isUselessCause(Throwable t) {
     return t instanceof RuntimeException || t instanceof InvocationTargetException
         || t instanceof UndeclaredThrowableException;
+  }
+
+  private RowResolver genRowResolver(Operator op, QB qb) {
+    RowResolver rr = new RowResolver();
+    String subqAlias = (qb.getAliases().size() == 1 && qb.getSubqAliases().size() == 1) ? qb
+        .getAliases().get(0) : null;
+
+    for (ColumnInfo ci : op.getSchema().getSignature()) {
+      try {
+        rr.putWithCheck((subqAlias != null) ? subqAlias : ci.getTabAlias(),
+            ci.getAlias() != null ? ci.getAlias() : ci.getInternalName(), ci.getInternalName(),
+            new ColumnInfo(ci));
+      } catch (SemanticException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    return rr;
   }
 
   /**
@@ -773,6 +822,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ReduceExpressionsRule.PROJECT_INSTANCE,
           ReduceExpressionsRule.FILTER_INSTANCE,
           ReduceExpressionsRule.JOIN_INSTANCE,
+          HiveJoinAddNotNullRule.INSTANCE,
           new HiveFilterProjectTransposeRule(
           Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
           HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
@@ -1167,7 +1217,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 2. Get Table Metadata
-        Table tab = qb.getMetaData().getSrcForAlias(tableAlias);
+        Table tabMetaData = qb.getMetaData().getSrcForAlias(tableAlias);
 
         // 3. Get Table Logical Schema (Row Type)
         // NOTE: Table logical schema = Non Partition Cols + Partition Cols +
@@ -1175,7 +1225,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 3.1 Add Column info for non partion cols (Object Inspector fields)
         @SuppressWarnings("deprecation")
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tab.getDeserializer()
+        StructObjectInspector rowObjectInspector = (StructObjectInspector) tabMetaData.getDeserializer()
             .getObjectInspector();
         List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
         ColumnInfo colInfo;
@@ -1197,7 +1247,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
 
         // 3.2 Add column info corresponding to partition columns
-        for (FieldSchema part_col : tab.getPartCols()) {
+        for (FieldSchema part_col : tabMetaData.getPartCols()) {
           colName = part_col.getName();
           colInfo = new ColumnInfo(colName,
               TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), tableAlias, true);
@@ -1207,6 +1257,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 3.3 Add column info corresponding to virtual columns
+        List<VirtualColumn> virtualCols = new ArrayList<VirtualColumn>();
         Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
         while (vcs.hasNext()) {
           VirtualColumn vc = vcs.next();
@@ -1214,24 +1265,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
               vc.getIsHidden());
           rr.put(tableAlias, vc.getName(), colInfo);
           cInfoLst.add(colInfo);
+          virtualCols.add(vc);
         }
 
         // 3.4 Build row type from field <type, name>
         RelDataType rowType = TypeConverter.getType(cluster, rr, null);
 
         // 4. Build RelOptAbstractTable
-        String fullyQualifiedTabName = tab.getDbName();
-        if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty())
-          fullyQualifiedTabName = fullyQualifiedTabName + "." + tab.getTableName();
-        else
-          fullyQualifiedTabName = tab.getTableName();
+        String fullyQualifiedTabName = tabMetaData.getDbName();
+        if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
+          fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName()
+                  + "." + tableAlias;
+        }
+        else {
+          fullyQualifiedTabName = tabMetaData.getTableName() + "." + tableAlias;
+        }
         RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-            tableAlias, rowType, tab, nonPartitionColumns, partitionColumns, conf, partitionCache,
-            noColsMissingStats);
+            tableAlias, rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+            partitionCache, noColsMissingStats, getAliasId(tableAlias, qb));
 
         // 5. Build Hive Table Scan Rel
-        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
-            rowType);
+        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable);
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToCalciteColMap = buildHiveToCalciteColumnMap(rr,

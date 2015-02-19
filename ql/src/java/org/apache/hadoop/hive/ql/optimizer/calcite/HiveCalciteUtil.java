@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -42,13 +43,16 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -311,11 +315,11 @@ public class HiveCalciteUtil {
       return this.mapOfProjIndxInJoinSchemaToLeafPInfo;
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveJoin j) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j) {
       return constructJoinPredicateInfo(j, j.getCondition());
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveJoin j, RexNode predicate) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j, RexNode predicate) {
       JoinPredicateInfo jpi = null;
       JoinLeafPredicateInfo jlpi = null;
       List<JoinLeafPredicateInfo> equiLPIList = new ArrayList<JoinLeafPredicateInfo>();
@@ -424,6 +428,16 @@ public class HiveCalciteUtil {
           .copyOf(projsFromRightPartOfJoinKeysInJoinSchema);
     }
 
+    public List<RexNode> getJoinKeyExprs(int input) {
+      if (input == 0) {
+        return this.joinKeyExprsFromLeft;
+      }
+      if (input == 1) {
+        return this.joinKeyExprsFromRight;
+      }
+      return null;
+    }
+
     public List<RexNode> getJoinKeyExprsFromLeft() {
       return this.joinKeyExprsFromLeft;
     }
@@ -453,7 +467,7 @@ public class HiveCalciteUtil {
       return this.projsFromRightPartOfJoinKeysInJoinSchema;
     }
 
-    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(HiveJoin j, RexNode pe) {
+    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(Join j, RexNode pe) {
       JoinLeafPredicateInfo jlpi = null;
       List<Integer> filterNulls = new ArrayList<Integer>();
       List<RexNode> joinKeyExprsFromLeft = new ArrayList<RexNode>();
@@ -551,4 +565,53 @@ public class HiveCalciteUtil {
 
     return deterministic;
   }
+
+  public static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols,
+      int startIndx) {
+    Builder<Integer, ColumnInfo> bldr = ImmutableMap.<Integer, ColumnInfo> builder();
+
+    int indx = startIndx;
+    for (ColumnInfo ci : hiveCols) {
+      bldr.put(indx, ci);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+  
+  public static ImmutableMap<Integer, VirtualColumn> shiftVColsMap(Map<Integer, VirtualColumn> hiveVCols,
+      int shift) {
+    Builder<Integer, VirtualColumn> bldr = ImmutableMap.<Integer, VirtualColumn> builder();
+
+    for (Integer pos : hiveVCols.keySet()) {
+      bldr.put(shift + pos, hiveVCols.get(pos));
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<Integer, VirtualColumn> getVColsMap(List<VirtualColumn> hiveVCols,
+      int startIndx) {
+    Builder<Integer, VirtualColumn> bldr = ImmutableMap.<Integer, VirtualColumn> builder();
+
+    int indx = startIndx;
+    for (VirtualColumn vc : hiveVCols) {
+      bldr.put(indx, vc);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<String, Integer> getColNameIndxMap(List<FieldSchema> tableFields) {
+    Builder<String, Integer> bldr = ImmutableMap.<String, Integer> builder();
+
+    int indx = 0;
+    for (FieldSchema fs : tableFields) {
+      bldr.put(fs.getName(), indx);
+      indx++;
+    }
+
+    return bldr.build();
+  }  
 }

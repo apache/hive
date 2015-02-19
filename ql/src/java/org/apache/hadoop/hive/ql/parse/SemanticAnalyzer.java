@@ -228,9 +228,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  private HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private final HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
-  private final LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
+  protected HashMap<String, Operator<? extends OperatorDesc>> topOps;
+  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private final Map<JoinOperator, QBJoinTree> joinContext;
@@ -6123,7 +6123,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genFileSinkPlan(String dest, QB qb, Operator input)
+  protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
@@ -9226,7 +9226,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return equalsExpr;
   }
 
-  private String getAliasId(String alias, QB qb) {
+  protected String getAliasId(String alias, QB qb) {
     return (qb.getId() == null ? alias : qb.getId() + ":" + alias).toLowerCase();
   }
 

@@ -54,8 +54,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @param table
    *          HiveDB table
    */
-  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      RelDataType rowtype) {
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
   }
@@ -64,6 +63,17 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
     assert inputs.isEmpty();
     return this;
+  }
+
+  /**
+   * Copy TableScan operator with a new Row Schema. The new Row Schema can only
+   * be a subset of this TS schema.
+   * 
+   * @param rowtype
+   * @return
+   */
+  public HiveTableScan copy(RelDataType newRowtype) {
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype));
   }
 
   @Override
@@ -85,8 +95,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public double getRows() {
     return ((RelOptHiveTable) table).getRowCount();
   }
-
+  
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
     return ((RelOptHiveTable) table).getColStat(projIndxLst);
   }
+
 }
