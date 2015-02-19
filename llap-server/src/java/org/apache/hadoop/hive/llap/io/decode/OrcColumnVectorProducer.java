@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BooleanStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.ByteStreamReader;
@@ -98,6 +99,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       int numCols = batch.columnIxs.length;
       RecordReaderImpl.TreeReader[] columnStreams = createTreeReaders(numCols, batch, fileMetadata,
           stripeMetadata);
+
       for (int i = 0; i < maxBatchesRG; i++) {
         if (i == maxBatchesRG - 1) {
           batchSize = (int) (nonNullRowCount % VectorizedRowBatch.DEFAULT_SIZE);
@@ -128,7 +130,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     for (int i = 0; i < numCols; i++) {
       int colIx = batch.columnIxs[i];
       int rgIdx = batch.batchKey.rgIx;
-      OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexes()[colIx].getEntry(rgIdx);
+
       EncodedColumnBatch.StreamBuffer[] streamBuffers = batch.columnData[i];
       OrcProto.Type colType = fileMetadata.getTypes().get(colIx);
       // TODO: EncodedColumnBatch is already decompressed, we don't really need to pass codec.
@@ -141,24 +143,40 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       OrcProto.ColumnEncoding columnEncoding = stripeMetadata.getEncodings().get(colIx);
       ColumnVector cv = null;
 
+      OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[colIx];
+      OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rgIdx);
+
       EncodedColumnBatch.StreamBuffer present = null;
       EncodedColumnBatch.StreamBuffer data = null;
       EncodedColumnBatch.StreamBuffer dictionary = null;
       EncodedColumnBatch.StreamBuffer lengths = null;
       EncodedColumnBatch.StreamBuffer secondary = null;
+
+      int presentCBIdx = -1;
+      int dataCBIdx = -1;
+      int lengthsCBIdx = -1;
+      int secondaryCBIdx = -1;
+
       for (EncodedColumnBatch.StreamBuffer streamBuffer : streamBuffers) {
+        int[] cbIndices = StreamUtils.getCompressionBufferIndex(rgIdx, rowIndex, columnEncoding,
+            colType, OrcProto.Stream.Kind.valueOf(streamBuffer.streamKind),
+            present != null, codec != null);
+
         switch(streamBuffer.streamKind) {
           case 0:
             // PRESENT stream
             present = streamBuffer;
+            presentCBIdx = cbIndices[0];
             break;
           case 1:
             // DATA stream
             data = streamBuffer;
+            dataCBIdx = cbIndices[0];
             break;
           case 2:
             // LENGTH stream
             lengths = streamBuffer;
+            lengthsCBIdx = cbIndices[0];
             break;
           case 3:
             // DICTIONARY_DATA stream
@@ -167,6 +185,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
           case 5:
             // SECONDARY stream
             secondary = streamBuffer;
+            secondaryCBIdx = cbIndices[0];
             break;
           default:
             throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
@@ -179,11 +198,14 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
+              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -192,10 +214,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case BYTE:
@@ -203,10 +227,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case SHORT:
@@ -214,10 +240,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -226,10 +254,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -238,10 +268,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .skipCorrupt(skipCorrupt)
               .build();
@@ -251,10 +283,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case DOUBLE:
@@ -262,10 +296,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case CHAR:
@@ -276,12 +312,15 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setMaxLength(colType.getMaximumLength())
               .setCharacterType(colType)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
+              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -290,12 +329,15 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
+              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -306,11 +348,14 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPrecision(colType.getPrecision())
               .setScale(colType.getScale())
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setValueStream(data)
+              .setValueCompressionBufferIndex(dataCBIdx)
               .setScaleStream(secondary)
+              .setScaleCompressionBufferIndex(secondaryCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -319,11 +364,14 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setSecondsStream(data)
+              .setSecondsCompressionBufferIndex(dataCBIdx)
               .setNanosStream(secondary)
+              .setNanosCompressionBufferIndex(secondaryCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .skipCorrupt(skipCorrupt)
               .build();
@@ -333,10 +381,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
+              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
+              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
-              .setRowIndex(rowIndex)
+              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;

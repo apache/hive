@@ -68,6 +68,8 @@ public class DateStreamReader extends RecordReaderImpl.DateTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
+    private int presentCBIdx;
+    private int dataCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -109,23 +111,27 @@ public class DateStreamReader extends RecordReaderImpl.DateTreeReader {
       return this;
     }
 
+    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
+      this.presentCBIdx = presentCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setDataCompressionBufferIndex(int dataCBIdx) {
+      this.dataCBIdx = dataCBIdx;
+      return this;
+    }
+
     public DateStreamReader build() throws IOException {
-      InStream present = null;
-      if (presentStream != null) {
-        present = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName, null, bufferSize,
-                presentStream);
-      }
+      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
+          null, bufferSize, presentStream, presentCBIdx);
 
-      InStream data = null;
-      if (dataStream != null) {
-        data = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.DATA.name(), fileName, null, bufferSize,
-                dataStream);
-      }
 
-      return new DateStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncoding, rowIndex);
+      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          null, bufferSize, dataStream, presentCBIdx);
+
+      boolean isFileCompressed = compressionCodec != null;
+      return new DateStreamReader(columnIndex, present, data, isFileCompressed,
+          columnEncoding, rowIndex);
     }
   }
 

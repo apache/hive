@@ -98,6 +98,9 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
+    private int presentCBIdx;
+    private int dataCBIdx;
+    private int lengthCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -159,36 +162,37 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
       return this;
     }
 
+    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
+      this.presentCBIdx = presentCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setDataCompressionBufferIndex(int dataCBIdx) {
+      this.dataCBIdx = dataCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setLengthCompressionBufferIndex(int lengthsCBIdx) {
+      this.lengthCBIdx = lengthsCBIdx;
+      return this;
+    }
+
     public CharacterStreamReader build() throws IOException {
-      InStream present = null;
-      if (presentStream != null) {
-        present = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName, null, bufferSize,
-                presentStream);
-      }
+      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
+          null, bufferSize, presentStream, presentCBIdx);
 
-      InStream data = null;
-      if (dataStream != null) {
-        data = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.DATA.name(), fileName, null, bufferSize,
-                dataStream);
-      }
+      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          null, bufferSize, dataStream, dataCBIdx);
 
-      InStream length = null;
-      if (lengthStream != null) {
-        length = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName, null, bufferSize,
-                lengthStream);
-      }
+      InStream length = StreamUtils.createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
+          null, bufferSize, lengthStream, lengthCBIdx);
 
-      InStream dictionary = null;
-      if (dictionaryStream != null) {
-        dictionary = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileName, null, bufferSize,
-                dictionaryStream);
-      }
+      InStream dictionary = StreamUtils.createInStream(OrcProto.Stream.Kind.DICTIONARY_DATA.name(),
+            fileName, null, bufferSize, dictionaryStream);
+
+      boolean isFileCompressed = compressionCodec != null;
       return new CharacterStreamReader(columnIndex, maxLength, charType, present, data, length,
-          dictionary, compressionCodec != null, columnEncoding, rowIndex);
+          dictionary, isFileCompressed, columnEncoding, rowIndex);
     }
   }
 

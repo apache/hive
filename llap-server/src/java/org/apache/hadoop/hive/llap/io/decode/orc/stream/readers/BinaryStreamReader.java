@@ -73,6 +73,9 @@ public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
+    private int presentCBIdx;
+    private int dataCBIdx;
+    private int lengthCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -119,29 +122,34 @@ public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
       return this;
     }
 
+    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
+      this.presentCBIdx = presentCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setDataCompressionBufferIndex(int dataCBIdx) {
+      this.dataCBIdx = dataCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setLengthCompressionBufferIndex(int lengthsCBIdx) {
+      this.lengthCBIdx = lengthsCBIdx;
+      return this;
+    }
+
     public BinaryStreamReader build() throws IOException {
-      InStream present = null;
-      if (presentStream != null) {
-        present = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName, null, bufferSize,
-                presentStream);
-      }
+      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
+            null, bufferSize, presentStream, presentCBIdx);
 
-      InStream data = null;
-      if (dataStream != null) {
-        data = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.DATA.name(), fileName, null, bufferSize,
-                dataStream);
-      }
+      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+            null, bufferSize, dataStream, dataCBIdx);
 
-      InStream length = null;
-      if (lengthStream != null) {
-        length = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName, null, bufferSize,
-                lengthStream);
-      }
-      return new BinaryStreamReader(columnIndex, present, data, length,
-          compressionCodec != null, columnEncoding, rowIndex);
+      InStream length = StreamUtils.createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
+            null, bufferSize, lengthStream, lengthCBIdx);
+
+      boolean isFileCompressed = compressionCodec != null;
+      return new BinaryStreamReader(columnIndex, present, data, length, isFileCompressed,
+          columnEncoding, rowIndex);
     }
   }
 

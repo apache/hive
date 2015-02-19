@@ -41,7 +41,7 @@ import com.google.common.collect.ComparisonChain;
 /**
  * Stateless methods shared between RecordReaderImpl and EncodedReaderImpl.
  */
-class RecordReaderUtils {
+public class RecordReaderUtils {
   static boolean[] findPresentStreamsByColumn(
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];

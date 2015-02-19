@@ -75,6 +75,9 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
     private boolean skipCorrupt;
+    private int presentCBIdx;
+    private int secondsCBIdx;
+    private int nanosCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -126,29 +129,34 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
       return this;
     }
 
+    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
+      this.presentCBIdx = presentCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setSecondsCompressionBufferIndex(int secondsCBIdx) {
+      this.secondsCBIdx = secondsCBIdx;
+      return this;
+    }
+
+    public StreamReaderBuilder setNanosCompressionBufferIndex(int nanosCBIdx) {
+      this.nanosCBIdx = nanosCBIdx;
+      return this;
+    }
+
     public TimestampStreamReader build() throws IOException {
-      InStream present = null;
-      if (presentStream != null) {
-        present = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName, null, bufferSize,
-                presentStream);
-      }
+      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
+          null, bufferSize, presentStream, presentCBIdx);
 
-      InStream data = null;
-      if (dataStream != null) {
-        data = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.DATA.name(), fileName, null, bufferSize,
-                dataStream);
-      }
+      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          null, bufferSize, dataStream, secondsCBIdx);
 
-      InStream nanos = null;
-      if (nanosStream != null) {
-        nanos = StreamUtils
-            .createInStream(OrcProto.Stream.Kind.SECONDARY.name(), fileName, null, bufferSize,
-                nanosStream);
-      }
+      InStream nanos = StreamUtils.createInStream(OrcProto.Stream.Kind.SECONDARY.name(), fileName,
+          null, bufferSize, nanosStream, nanosCBIdx);
+
+      boolean isFileCompressed = compressionCodec != null;
       return new TimestampStreamReader(columnIndex, present, data, nanos,
-          compressionCodec != null, columnEncoding, skipCorrupt, rowIndex);
+          isFileCompressed, columnEncoding, skipCorrupt, rowIndex);
     }
   }
 
