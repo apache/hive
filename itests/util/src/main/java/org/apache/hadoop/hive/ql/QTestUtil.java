@@ -518,7 +518,14 @@ public class QTestUtil {
     boolean excludeQuery = false;
     boolean includeQuery = false;
     Set<String> versionSet = new HashSet<String>();
-    String hadoopVer = ShimLoader.getMajorVersion();
+    // in CDH hadoop version 0.23/2.x contains MR1 as such we need special
+    // rules to ensure we don't run files for MR2 under MR1 and vice versa
+    String hadoopVer;
+    if (org.apache.hadoop.mapred.MRVersion.isMR2()) {
+      hadoopVer = "0.23";
+    } else {
+      hadoopVer = "0.20S";
+    }
 
     Matcher matcher = pattern.matcher(query);
 
