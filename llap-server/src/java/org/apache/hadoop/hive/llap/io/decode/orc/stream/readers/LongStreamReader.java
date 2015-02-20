@@ -69,8 +69,6 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
     private boolean skipCorrupt;
-    private int presentCBIdx;
-    private int dataCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -117,22 +115,12 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
-      this.presentCBIdx = presentCBIdx;
-      return this;
-    }
-
-    public StreamReaderBuilder setDataCompressionBufferIndex(int dataCBIdx) {
-      this.dataCBIdx = dataCBIdx;
-      return this;
-    }
-
     public LongStreamReader build() throws IOException {
       InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-            null, bufferSize, presentStream, presentCBIdx);
+            null, bufferSize, presentStream);
 
       InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-            null, bufferSize, dataStream, dataCBIdx);
+            null, bufferSize, dataStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new LongStreamReader(columnIndex, present, data, isFileCompressed,

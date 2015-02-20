@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BooleanStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.ByteStreamReader;
@@ -55,7 +54,6 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer edp;
   private final OrcMetadataCache metadataCache;
-  private ColumnVectorBatch cvb;
   private boolean skipCorrupt;
 
   public OrcColumnVectorProducer(
@@ -63,7 +61,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     super(executor);
     this.edp = edp;
     this.metadataCache = OrcMetadataCache.getInstance();
-    this.cvb = null;
     this.skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
   }
 
@@ -86,9 +83,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       // metadata, set row group index to 0. That's how it is cached. See OrcEncodedDataProducer
       stripeKey.rgIx = 0;
       OrcStripeMetadata stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
-      if (cvb == null) {
-        cvb = new ColumnVectorBatch(batch.columnIxs.length);
-      }
 
       // Get non null row count from root column
       int rgIdx = batch.batchKey.rgIx;
@@ -101,6 +95,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
           stripeMetadata);
 
       for (int i = 0; i < maxBatchesRG; i++) {
+        ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
+
         if (i == maxBatchesRG - 1) {
           batchSize = (int) (nonNullRowCount % VectorizedRowBatch.DEFAULT_SIZE);
           cvb.size = batchSize;
@@ -113,9 +109,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
         // we are done reading a batch, send it to consumer for processing
         downstreamConsumer.consumeData(cvb);
       }
-    } catch (IOException ioe) {
-      downstreamConsumer.setError(ioe);
-    } catch (CloneNotSupportedException e) {
+    } catch (IOException | CloneNotSupportedException e) {
       downstreamConsumer.setError(e);
     }
   }
@@ -141,8 +135,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       CompressionCodec codec = fileMetadata.getCompressionCodec();
       int bufferSize = fileMetadata.getCompressionBufferSize();
       OrcProto.ColumnEncoding columnEncoding = stripeMetadata.getEncodings().get(colIx);
-      ColumnVector cv = null;
-
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[colIx];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rgIdx);
 
@@ -152,31 +144,20 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       EncodedColumnBatch.StreamBuffer lengths = null;
       EncodedColumnBatch.StreamBuffer secondary = null;
 
-      int presentCBIdx = -1;
-      int dataCBIdx = -1;
-      int lengthsCBIdx = -1;
-      int secondaryCBIdx = -1;
 
       for (EncodedColumnBatch.StreamBuffer streamBuffer : streamBuffers) {
-        int[] cbIndices = StreamUtils.getCompressionBufferIndex(rgIdx, rowIndex, columnEncoding,
-            colType, OrcProto.Stream.Kind.valueOf(streamBuffer.streamKind),
-            present != null, codec != null);
-
         switch(streamBuffer.streamKind) {
           case 0:
             // PRESENT stream
             present = streamBuffer;
-            presentCBIdx = cbIndices[0];
             break;
           case 1:
             // DATA stream
             data = streamBuffer;
-            dataCBIdx = cbIndices[0];
             break;
           case 2:
             // LENGTH stream
             lengths = streamBuffer;
-            lengthsCBIdx = cbIndices[0];
             break;
           case 3:
             // DICTIONARY_DATA stream
@@ -185,7 +166,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
           case 5:
             // SECONDARY stream
             secondary = streamBuffer;
-            secondaryCBIdx = cbIndices[0];
             break;
           default:
             throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
@@ -198,11 +178,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
-              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -214,9 +191,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -227,9 +202,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -240,9 +213,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -254,9 +225,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -268,9 +237,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -283,9 +250,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -296,9 +261,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -312,11 +275,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setMaxLength(colType.getMaximumLength())
               .setCharacterType(colType)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
-              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
@@ -329,11 +289,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setLengthStream(lengths)
-              .setLengthCompressionBufferIndex(lengthsCBIdx)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
@@ -348,11 +305,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPrecision(colType.getPrecision())
               .setScale(colType.getScale())
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setValueStream(data)
-              .setValueCompressionBufferIndex(dataCBIdx)
               .setScaleStream(secondary)
-              .setScaleCompressionBufferIndex(secondaryCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -364,11 +318,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setSecondsStream(data)
-              .setSecondsCompressionBufferIndex(dataCBIdx)
               .setNanosStream(secondary)
-              .setNanosCompressionBufferIndex(secondaryCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)
@@ -381,9 +332,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setFileName(file)
               .setColumnIndex(colIx)
               .setPresentStream(present)
-              .setPresentCompressionBufferIndex(presentCBIdx)
               .setDataStream(data)
-              .setDataCompressionBufferIndex(dataCBIdx)
               .setCompressionCodec(codec)
               .setBufferSize(bufferSize)
               .setRowIndex(rowIndexEntry)

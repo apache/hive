@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
 
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
 public class TestRunLengthIntegerReader {
 
@@ -54,7 +54,7 @@ public class TestRunLengthIntegerReader {
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     RunLengthIntegerReader in = new RunLengthIntegerReader(InStream.create
-        ("test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
+        (null, "test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
             codec, 1000), true);
     for(int i=0; i < 2048; ++i) {
       int x = (int) in.next();
@@ -106,7 +106,7 @@ public class TestRunLengthIntegerReader {
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     RunLengthIntegerReader in = new RunLengthIntegerReader(InStream.create
-        ("test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
+        (null, "test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
             null, 100), true);
     for(int i=0; i < 2048; i += 10) {
       int x = (int) in.next();

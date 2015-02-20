@@ -75,9 +75,6 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
-    private int presentCBIdx;
-    private int valueCBIdx;
-    private int scaleCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -134,30 +131,15 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
-      this.presentCBIdx = presentCBIdx;
-      return this;
-    }
-
-    public StreamReaderBuilder setValueCompressionBufferIndex(int valueCBIdx) {
-      this.valueCBIdx = valueCBIdx;
-      return this;
-    }
-
-    public StreamReaderBuilder setScaleCompressionBufferIndex(int scaleCBIdx) {
-      this.scaleCBIdx = scaleCBIdx;
-      return this;
-    }
-
     public DecimalStreamReader build() throws IOException {
       InStream presentInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(),
-          fileName, null, bufferSize, presentStream, presentCBIdx);
+          fileName, null, bufferSize, presentStream);
 
       InStream valueInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(),
-          fileName, null, bufferSize, valueStream, valueCBIdx);
+          fileName, null, bufferSize, valueStream);
 
       InStream scaleInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.SECONDARY.name(),
-          fileName, null, bufferSize, scaleStream, scaleCBIdx);
+          fileName, null, bufferSize, scaleStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new DecimalStreamReader(columnIndex, precision, scale, presentInStream, valueInStream,

@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
@@ -120,6 +121,13 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       OrcFileMetadata metadata = null;
       try {
         metadata = getOrReadFileMetadata();
+        int bufferSize = metadata.getCompressionBufferSize();
+        int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
+        if (bufferSize != minAllocSize) {
+          throw new IOException("ORC compression buffer size (" + bufferSize + ") is smaller than" +
+              " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease the" +
+              " value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());
+        }
         if (columnIds == null) {
           columnIds = createColumnIds(metadata);
         }
@@ -258,13 +266,15 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
           // consumer. It is potentially holding locked buffers, and must perform its own cleanup.
           stripeReader.readEncodedColumns(stripeIx, si, stripeMetadata.getRowIndexes(),
               stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes, colRgs);
-          stripeReader.close();
         } catch (Throwable t) {
           consumer.setError(t);
           cleanupReaders(stripeReader);
           return null;
         }
       }
+
+      // close the stripe reader, we are done reading
+      stripeReader.close();
 
       // Done with all the things.
       consumer.setDone();

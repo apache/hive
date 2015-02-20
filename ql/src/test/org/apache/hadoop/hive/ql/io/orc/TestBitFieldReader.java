@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
-import java.util.Random;
 
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
 public class TestBitFieldReader {
 
@@ -47,7 +46,7 @@ public class TestBitFieldReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    BitFieldReader in = new BitFieldReader(InStream.create("test",
+    BitFieldReader in = new BitFieldReader(InStream.create(null, "test",
         new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
         codec, 500), 1);
     for(int i=0; i < COUNT; ++i) {
@@ -97,7 +96,7 @@ public class TestBitFieldReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    BitFieldReader in = new BitFieldReader(InStream.create("test",
+    BitFieldReader in = new BitFieldReader(InStream.create(null, "test",
         new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
         null, 500), 3);
     for(int i=0; i < COUNT; ++i) {
@@ -128,7 +127,7 @@ public class TestBitFieldReader {
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     BitFieldReader in = new BitFieldReader(InStream.create
-        ("test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
+        (null, "test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
             null, 100), 1);
     for(int i=0; i < COUNT; i += 5) {
       int x = (int) in.next();

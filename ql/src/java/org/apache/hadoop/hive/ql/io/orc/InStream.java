@@ -470,7 +470,8 @@ public abstract class InStream extends InputStream {
 
   /**
    * Create an input stream from a list of buffers.
-   * @param name the name of the stream
+   * @param fileName name of the file
+   * @param streamName the name of the stream
    * @param buffers the list of ranges of bytes for the stream
    * @param offsets a list of offsets (the same length as input) that must
    *                contain the first offset of the each set of bytes in input
@@ -482,7 +483,8 @@ public abstract class InStream extends InputStream {
    */
   @VisibleForTesting
   @Deprecated
-  public static InStream create(String name,
+  public static InStream create(String fileName,
+                                String streamName,
                                 ByteBuffer[] buffers,
                                 long[] offsets,
                                 long length,
@@ -492,7 +494,7 @@ public abstract class InStream extends InputStream {
     for (int i = 0; i < buffers.length; ++i) {
       input.add(new BufferChunk(buffers[i], offsets[i]));
     }
-    return create(null, name, input, length, codec, bufferSize, null);
+    return create(fileName, streamName, input, length, codec, bufferSize, null);
   }
 
   /**

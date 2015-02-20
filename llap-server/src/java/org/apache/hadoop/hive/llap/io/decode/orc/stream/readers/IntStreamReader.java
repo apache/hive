@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
  */
 public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
   private boolean isFileCompressed;
+  private InStream data;
 
   private IntStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
@@ -39,6 +40,7 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       OrcProto.RowIndexEntry rowIndex) throws IOException {
     super(columnId, present, data, encoding);
     this.isFileCompressed = isFileCompressed;
+    this.data = data;
 
     // position the readers based on the specified row index
     seek(StreamUtils.getPositionProvider(rowIndex));
@@ -53,10 +55,13 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       present.seek(index);
     }
 
-    if (isFileCompressed) {
-      index.getNext();
+    // data stream could be empty stream. This could happen if all values in row group are nulls.
+    if (reader != null && data.getStreamLength() > 0) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      reader.seek(index);
     }
-    reader.seek(index);
   }
 
   public static class StreamReaderBuilder {
@@ -68,8 +73,6 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
-    private int presentCBIdx;
-    private int dataCBIdx;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -111,22 +114,12 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setPresentCompressionBufferIndex(int presentCBIdx) {
-      this.presentCBIdx = presentCBIdx;
-      return this;
-    }
-
-    public StreamReaderBuilder setDataCompressionBufferIndex(int dataCBIdx) {
-      this.dataCBIdx = dataCBIdx;
-      return this;
-    }
-
     public IntStreamReader build() throws IOException {
       InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-            null, bufferSize, presentStream, presentCBIdx);
+            null, bufferSize, presentStream);
 
       InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-            null, bufferSize, dataStream, dataCBIdx);
+            null, bufferSize, dataStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new IntStreamReader(columnIndex, present, data, isFileCompressed,

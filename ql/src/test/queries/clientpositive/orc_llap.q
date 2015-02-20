@@ -3,12 +3,12 @@ SET hive.vectorized.execution.enabled=true;
 SET hive.llap.io.enabled=false;
 SET hive.llap.io.cache.orc.arena.size=16777216;
 SET hive.llap.io.cache.orc.size=67108864;
+SET hive.llap.io.cache.orc.alloc.min=32768;
 SET hive.llap.io.use.lrfu=false;
 SET hive.llap.io.cache.direct=false;
 
 SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
-
 
 CREATE TABLE orc_llap(
     ctinyint TINYINT,

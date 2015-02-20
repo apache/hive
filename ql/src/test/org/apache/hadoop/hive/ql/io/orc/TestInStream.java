@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -28,8 +29,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import org.junit.Test;
 
 public class TestInStream {
 
@@ -93,7 +93,7 @@ public class TestInStream {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    InStream in = InStream.create("test", new ByteBuffer[]{inBuf},
+    InStream in = InStream.create(null, "test", new ByteBuffer[]{inBuf},
         new long[]{0}, inBuf.remaining(), null, 100);
     assertEquals("uncompressed stream test position: 0 length: 1024" +
                  " range: 0 offset: 0 limit: 0",
@@ -125,7 +125,7 @@ public class TestInStream {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    InStream in = InStream.create("test", new ByteBuffer[]{inBuf},
+    InStream in = InStream.create(null, "test", new ByteBuffer[]{inBuf},
         new long[]{0}, inBuf.remaining(), codec, 300);
     assertEquals("compressed stream test position: 0 length: 961 range: 0" +
                  " offset: 0 limit: 0 range 0 = 0 to 961",
@@ -158,7 +158,7 @@ public class TestInStream {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    InStream in = InStream.create("test", new ByteBuffer[]{inBuf},
+    InStream in = InStream.create(null, "test", new ByteBuffer[]{inBuf},
         new long[]{0}, inBuf.remaining(), codec, 100);
     byte[] contents = new byte[1024];
     try {
@@ -173,7 +173,7 @@ public class TestInStream {
     inBuf.put((byte) 32);
     inBuf.put((byte) 0);
     inBuf.flip();
-    in = InStream.create("test2", new ByteBuffer[]{inBuf}, new long[]{0},
+    in = InStream.create(null, "test2", new ByteBuffer[]{inBuf}, new long[]{0},
         inBuf.remaining(), codec, 300);
     try {
       in.read();
@@ -209,7 +209,7 @@ public class TestInStream {
     for(int i=0; i < inBuf.length; ++i) {
       inBuf[i].flip();
     }
-    InStream in = InStream.create("test", inBuf,
+    InStream in = InStream.create(null, "test", inBuf,
         new long[]{0,483, 1625}, 1674, codec, 400);
     assertEquals("compressed stream test position: 0 length: 1674 range: 0" +
                  " offset: 0 limit: 0 range 0 = 0 to 483;" +
@@ -226,7 +226,7 @@ public class TestInStream {
       assertEquals(i, inStream.readInt());
     }
 
-    in = InStream.create("test", new ByteBuffer[]{inBuf[1], inBuf[2]},
+    in = InStream.create(null, "test", new ByteBuffer[]{inBuf[1], inBuf[2]},
         new long[]{483, 1625}, 1674, codec, 400);
     inStream = new DataInputStream(in);
     positions[303].reset();
@@ -235,7 +235,7 @@ public class TestInStream {
       assertEquals(i, inStream.readInt());
     }
 
-    in = InStream.create("test", new ByteBuffer[]{inBuf[0], inBuf[2]},
+    in = InStream.create(null, "test", new ByteBuffer[]{inBuf[0], inBuf[2]},
         new long[]{0, 1625}, 1674, codec, 400);
     inStream = new DataInputStream(in);
     positions[1001].reset();
@@ -273,7 +273,7 @@ public class TestInStream {
     for(int i=0; i < inBuf.length; ++i) {
       inBuf[i].flip();
     }
-    InStream in = InStream.create("test", inBuf,
+    InStream in = InStream.create(null, "test", inBuf,
         new long[]{0, 1024, 3072}, 4096, null, 400);
     assertEquals("uncompressed stream test position: 0 length: 4096" +
                  " range: 0 offset: 0 limit: 0",
@@ -289,7 +289,7 @@ public class TestInStream {
       assertEquals(i, inStream.readInt());
     }
 
-    in = InStream.create("test", new ByteBuffer[]{inBuf[1], inBuf[2]},
+    in = InStream.create(null, "test", new ByteBuffer[]{inBuf[1], inBuf[2]},
         new long[]{1024, 3072}, 4096, null, 400);
     inStream = new DataInputStream(in);
     positions[256].reset();
@@ -298,7 +298,7 @@ public class TestInStream {
       assertEquals(i, inStream.readInt());
     }
 
-    in = InStream.create("test", new ByteBuffer[]{inBuf[0], inBuf[2]},
+    in = InStream.create(null, "test", new ByteBuffer[]{inBuf[0], inBuf[2]},
         new long[]{0, 3072}, 4096, null, 400);
     inStream = new DataInputStream(in);
     positions[768].reset();
