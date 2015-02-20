@@ -19,12 +19,9 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.orc.BitFieldReader;
 
 public class LlapUtils {
-  public static final Log LOG = LogFactory.getLog(LlapUtils.class);
   public static final int DOUBLE_GROUP_SIZE = 64; // just happens to be equal to bitmask size
 
   /** Helper for readPresentStream. */

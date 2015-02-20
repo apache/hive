@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.cache.Allocator;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
@@ -48,6 +49,7 @@ import org.apache.hadoop.mapred.InputSplit;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
+  public static final LogLevels LOGL = new LogLevels(LOG);
 
   private final OrcColumnVectorProducer cvp;
   private final OrcEncodedDataProducer edp;

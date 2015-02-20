@@ -114,7 +114,9 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
     @Override
     public Void call() throws IOException {
-      LlapIoImpl.LOG.info("Processing split for " + internedFilePath);
+      if (LlapIoImpl.LOGL.isInfoEnabled()) {
+        LlapIoImpl.LOG.info("Processing split for " + internedFilePath);
+      }
       if (isStopped) return null;
       orcReader = null;
       // 1. Get FILE metadata from cache, or create the reader and read it.
@@ -457,7 +459,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       long offset = split.getStart(), maxOffset = offset + split.getLength();
       stripeIxFrom = -1;
       int stripeIxTo = -1;
-      if (LlapIoImpl.LOG.isDebugEnabled()) {
+      if (LlapIoImpl.LOGL.isDebugEnabled()) {
         String tmp = "FileSplit {" + split.getStart() + ", " + split.getLength() + "}; stripes ";
         for (StripeInformation stripe : stripes) {
           tmp += "{" + stripe.getOffset() + ", " + stripe.getLength() + "}, ";

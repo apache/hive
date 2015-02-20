@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
@@ -40,6 +41,8 @@ import com.google.common.annotations.VisibleForTesting;
 public abstract class InStream extends InputStream {
 
   private static final Log LOG = LogFactory.getLog(InStream.class);
+  private static final LogLevels LOGL = new LogLevels(LOG);
+
   protected final String fileName;
   protected final String name;
   protected final long length;
@@ -463,7 +466,7 @@ public abstract class InStream extends InputStream {
   public abstract void seek(PositionProvider index) throws IOException;
 
   private static void logEmptySeek(String name) {
-    if (LOG.isWarnEnabled()) {
+    if (LOGL.isWarnEnabled()) {
       LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
     }
   }

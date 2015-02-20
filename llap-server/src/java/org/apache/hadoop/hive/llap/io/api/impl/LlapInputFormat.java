@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
@@ -48,7 +46,6 @@ import org.apache.hadoop.mapred.Reporter;
 
 public class LlapInputFormat
   implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface {
-  private static final Log LOG = LogFactory.getLog(LlapInputFormat.class);
   private final LlapIoImpl llapIo;
   private InputFormat sourceInputFormat;
 
@@ -65,7 +62,7 @@ public class LlapInputFormat
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean isVectorMode = Utilities.isVectorMode(job);
     if (!isVectorMode) {
-      LOG.error("No llap in non-vectorized mode");
+      LlapIoImpl.LOG.error("No llap in non-vectorized mode");
       throw new UnsupportedOperationException("No llap in non-vectorized mode");
     }
     FileSplit fileSplit = (FileSplit)split;
@@ -160,7 +157,7 @@ public class LlapInputFormat
         // We are waiting for next block. Either we will get it, or be told we are done.
         boolean doLogBlocking = DebugUtils.isTraceMttEnabled() && isNothingToReport();
         if (doLogBlocking) {
-          LlapIoImpl.LOG.info("next will block"); // TODO: separate log objects
+          LlapIoImpl.LOG.info("next will block");
         }
         while (isNothingToReport()) {
           pendingData.wait(100);
@@ -202,7 +199,7 @@ public class LlapInputFormat
 
     @Override
     public void close() throws IOException {
-      if (DebugUtils.isTraceEnabled()) {
+      if (DebugUtils.isTraceMttEnabled()) {
         LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
             + ", err " + pendingError + ", pending " + pendingData.size());
       }
@@ -220,8 +217,8 @@ public class LlapInputFormat
 
     @Override
     public void setDone() {
-      if (DebugUtils.isTraceEnabled()) {
-        LlapIoImpl.LOG.info("setDone called; cclosed " + isClosed
+      if (DebugUtils.isTraceMttEnabled()) {
+        LlapIoImpl.LOG.info("setDone called; closed " + isClosed
           + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
       }
       synchronized (pendingData) {
@@ -232,7 +229,7 @@ public class LlapInputFormat
 
     @Override
     public void consumeData(ColumnVectorBatch data) {
-      if (DebugUtils.isTraceEnabled()) {
+      if (DebugUtils.isTraceMttEnabled()) {
         LlapIoImpl.LOG.info("consume called; closed " + isClosed + ", done " + isDone
             + ", err " + pendingError + ", pending " + pendingData.size());
       }
