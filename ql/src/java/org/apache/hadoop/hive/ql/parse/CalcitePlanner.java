@@ -133,6 +133,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
@@ -602,7 +603,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
-    
+
     Operator hiveRoot = new HiveOpConverter(topOps, HiveOpConverter.getAggOPMode(conf),
         conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(optimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
@@ -786,6 +787,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPlanner.setRoot(rootRel);
 
       calciteOptimizedPlan = hepPlanner.findBestExp();
+
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+        // run rules to aid in translation from Optiq tree -> Hive tree
+        hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
+            .addRuleInstance(new HiveInsertExchange4JoinRule()).build();
+        hepPlanner = new HepPlanner(hepPgm);
+
+        hepPlanner.registerMetadataProviders(list);
+        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+        hepPlanner.setRoot(calciteOptimizedPlan);
+        calciteOptimizedPlan = hepPlanner.findBestExp();
+      }
 
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
