@@ -50,6 +50,7 @@ import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationImpl;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
@@ -756,7 +757,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(HiveDefaultRelMetadataProvider.INSTANCE);
       RelTraitSet desiredTraits = cluster
-          .traitSetOf(HiveRelNode.CONVENTION, RelCollationImpl.EMPTY);
+          .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
 
       HepProgram hepPgm = null;
       HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
@@ -2084,7 +2085,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (limit != null) {
         RexNode fetch = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limit));
         RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
-        RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.EMPTY);
+        RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
         sortRel = new HiveSort(cluster, traitSet, srcRel, canonizedCollation, null, fetch);
 
         RowResolver outputRR = new RowResolver();
