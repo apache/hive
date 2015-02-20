@@ -186,7 +186,6 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       try {
         stripeReader = orcReader.encodedReader(lowLevelCache, consumer);
       } catch (Throwable t) {
-        // produceDataFromCache handles its own cleanup.
         consumer.setError(t);
         cleanupReaders(null);
         return null;

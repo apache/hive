@@ -55,6 +55,11 @@ public class TestLowLevelCacheImpl {
     @Override
     public void deallocate(LlapMemoryBuffer buffer) {
     }
+
+    @Override
+    public boolean isDirectAlloc() {
+      return false;
+    }
   }
 
   private static class DummyCachePolicy extends LowLevelCachePolicyBase {

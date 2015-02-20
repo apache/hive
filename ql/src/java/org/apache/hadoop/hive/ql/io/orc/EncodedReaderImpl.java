@@ -71,6 +71,10 @@ public class EncodedReaderImpl implements EncodedReader {
     this.rowIndexStride = strideRate;
     this.cache = cache;
     this.consumer = consumer;
+    if (zcr != null && !cache.isDirectAlloc()) {
+      throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
+          + "buffers; either disable zero-copy or enable direct cache allocation");
+    }
   }
 
 
@@ -223,8 +227,8 @@ public class EncodedReaderImpl implements EncodedReader {
             + "): " + RecordReaderUtils.stringifyDiskRanges(rangesToRead));
       }
     }
-    // Force direct buffers, since we will be decompressing to cache.
-    RecordReaderUtils.readDiskRanges(file, zcr, stripeOffset, rangesToRead, true);
+    // Force direct buffers if we will be decompressing to direct cache.
+    RecordReaderUtils.readDiskRanges(file, zcr, stripeOffset, rangesToRead, cache.isDirectAlloc());
 
     // 2.1. Separate buffers (relative to stream offset) for each stream from the data we have.
     // TODO: given how we read, we could potentially get rid of this step?

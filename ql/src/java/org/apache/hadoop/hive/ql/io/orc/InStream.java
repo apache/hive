@@ -617,7 +617,7 @@ public abstract class InStream extends InputStream {
     for (ProcCacheChunk chunk : toDecompress) {
       int startPos = chunk.buffer.byteBuffer.position();
       if (chunk.isCompressed) {
-        decompressDirectBuffer(codec, chunk.originalData, chunk.buffer.byteBuffer);
+        codec.decompress(chunk.originalData, chunk.buffer.byteBuffer);
       } else {
         chunk.buffer.byteBuffer.put(chunk.originalData); // Copy uncompressed data to cache.
       }
@@ -638,23 +638,6 @@ public abstract class InStream extends InputStream {
     cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
   }
 
-  /**
-   * Decompresses direct buffers; if shim is missing, does horrible things to make q files work.
-   */
-  private static void decompressDirectBuffer(
-      CompressionCodec codec, ByteBuffer fromBb, ByteBuffer toBb) throws IOException {
-    try {
-      codec.decompress(fromBb, toBb);
-    } catch (UnsatisfiedLinkError er) {
-      LOG.error("Something horrible is happening. We hope this is a test run.");
-      // Q tests do not have the native decompressor. We need it. So...
-      ByteBuffer from = ByteBuffer.allocate(fromBb.remaining()),
-          to = ByteBuffer.allocate(toBb.remaining());
-      fromBb.get(from.array(), from.arrayOffset(), fromBb.remaining());
-      codec.decompress(from, to);
-      toBb.put(to.array(), to.arrayOffset(), to.remaining());
-    }
-  }
 
   /** Finds compressed offset in a stream and makes sure iter points to its position.
      This may be necessary for obscure combinations of compression and encoding boundaries. */

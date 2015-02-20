@@ -22,4 +22,5 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 public interface Allocator {
   boolean allocateMultiple(LlapMemoryBuffer[] dest, int size);
   void deallocate(LlapMemoryBuffer buffer);
+  boolean isDirectAlloc();
 }

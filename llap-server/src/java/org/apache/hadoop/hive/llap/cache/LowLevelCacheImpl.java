@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,8 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.DebugUtils;
@@ -41,8 +38,6 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import com.google.common.annotations.VisibleForTesting;
 
 public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
-  private static final Log LOG = LogFactory.getLog(LowLevelCacheImpl.class);
-
   private final Allocator allocator;
 
   private AtomicInteger newEvictions = new AtomicInteger(0);
@@ -414,5 +409,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   @Override
   public void notifyReused(LlapMemoryBuffer buffer) {
     ((LlapCacheableBuffer)buffer).incRef();
+  }
+
+  @Override
+  public boolean isDirectAlloc() {
+    return allocator.isDirectAlloc();
   }
 }

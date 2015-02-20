@@ -55,4 +55,6 @@ public interface LowLevelCache {
   LlapMemoryBuffer createUnallocated();
 
   void notifyReused(LlapMemoryBuffer buffer);
+
+  boolean isDirectAlloc();
 }

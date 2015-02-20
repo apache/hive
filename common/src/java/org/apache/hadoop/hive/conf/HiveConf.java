@@ -2009,6 +2009,7 @@ public class HiveConf extends Configuration {
     LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024, ""),
     LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.io.cache.orc.arena.size", 128 * 1024 * 1024, ""),
     LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024, ""),
+    LLAP_ORC_CACHE_ALLOCATE_DIRECT("hive.llap.io.cache.direct", true, ""),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", false, ""),
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f, ""),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,

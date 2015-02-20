@@ -21,17 +21,12 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
 public final class BuddyAllocator implements Allocator {
-  private static final Log LOG = LogFactory.getLog(BuddyAllocator.class);
-
-
   private final Arena[] arenas;
   private AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -41,8 +36,10 @@ public final class BuddyAllocator implements Allocator {
   private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas;
   private final int minAllocation, maxAllocation, arenaSize;
   private final long maxSize;
+  private final boolean isDirect;
 
   public BuddyAllocator(Configuration conf, MemoryManager memoryManager) {
+    isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT);
     minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
     arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
@@ -135,6 +132,11 @@ public final class BuddyAllocator implements Allocator {
     arenas[buf.arenaIndex].deallocate(buf);
   }
 
+  @Override
+  public boolean isDirectAlloc() {
+    return isDirect;
+  }
+
   public String debugDump() {
     StringBuilder result = new StringBuilder(
         "NOTE: with multiple threads the dump is not guaranteed to be consistent");
@@ -153,7 +155,7 @@ public final class BuddyAllocator implements Allocator {
     private FreeList[] freeLists;
 
     void init() {
-      data = ByteBuffer.allocateDirect(arenaSize);
+      data = isDirect ? ByteBuffer.allocateDirect(arenaSize) : ByteBuffer.allocate(arenaSize);
       int maxMinAllocs = 1 << (arenaSizeLog2 - minAllocLog2);
       headers = new byte[maxMinAllocs];
       int allocLog2Diff = maxAllocLog2 - minAllocLog2, freeListCount = allocLog2Diff + 1;
