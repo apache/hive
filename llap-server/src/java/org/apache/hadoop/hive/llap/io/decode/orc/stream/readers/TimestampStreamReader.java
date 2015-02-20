@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for timestamp column type.
  */
 public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader {
   private boolean isFileCompressed;

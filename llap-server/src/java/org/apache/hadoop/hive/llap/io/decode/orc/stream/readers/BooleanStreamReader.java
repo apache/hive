@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for boolean column type.
  */
 public class BooleanStreamReader extends RecordReaderImpl.BooleanTreeReader {
   private boolean isFileCompressed;

@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for long column type.
  */
 public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
   private boolean isFileCompressed;

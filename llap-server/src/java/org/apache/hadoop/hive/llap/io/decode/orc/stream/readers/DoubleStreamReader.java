@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for double column type.
  */
 public class DoubleStreamReader extends RecordReaderImpl.DoubleTreeReader {
   private boolean isFileCompressed;

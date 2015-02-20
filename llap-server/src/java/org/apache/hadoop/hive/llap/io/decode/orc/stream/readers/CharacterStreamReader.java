@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for char and varchar column types.
  */
 public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
   private boolean isFileCompressed;

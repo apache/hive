@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for binary column type.
  */
 public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
   private boolean isFileCompressed;

@@ -32,10 +32,21 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 /**
- *
+ * Stream utility.
  */
 public class StreamUtils {
 
+  /**
+   * Create InStream from stream buffer.
+   *
+   * @param streamName - stream name
+   * @param fileName - file name
+   * @param codec - compression codec
+   * @param bufferSize - compression buffer size
+   * @param streamBuffer - stream buffer
+   * @return - InStream
+   * @throws IOException
+   */
   public static InStream createInStream(String streamName, String fileName, CompressionCodec codec,
       int bufferSize, EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
     if (streamBuffer == null) {
@@ -49,6 +60,7 @@ public class StreamUtils {
     for (int i = 0; i < numBuffers; i++) {
       ByteBuffer data = streamBuffer.cacheBuffers.get(i).byteBuffer.duplicate();
       input.add(data);
+      // offset start at where previous stream buffer left off
       offsetsList.add(totalLength);
       totalLength += data.remaining();
     }
@@ -57,6 +69,12 @@ public class StreamUtils {
     return InStream.create(fileName, streamName, buffers, offsets, totalLength, codec, bufferSize);
   }
 
+  /**
+   * Converts row index entry to position provider.
+   *
+   * @param rowIndex - row index entry
+   * @return - position provider
+   */
   public static PositionProvider getPositionProvider(OrcProto.RowIndexEntry rowIndex) {
     PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
     return positionProvider;

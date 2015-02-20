@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for integer column type.
  */
 public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
   private boolean isFileCompressed;

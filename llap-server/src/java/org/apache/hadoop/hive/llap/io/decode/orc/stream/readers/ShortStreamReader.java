@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for short column type.
  */
 public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
   private boolean isFileCompressed;

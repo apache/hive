@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for date column type.
  */
 public class DateStreamReader extends RecordReaderImpl.DateTreeReader {
   private boolean isFileCompressed;

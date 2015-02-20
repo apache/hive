@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for decimal column type.
  */
 public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
   private boolean isFileCompressed;

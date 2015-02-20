@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 /**
- *
+ * Stream reader for float column type.
  */
 public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
   private boolean isFileCompressed;
