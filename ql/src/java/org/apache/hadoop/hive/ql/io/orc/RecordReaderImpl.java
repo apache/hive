@@ -43,6 +43,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
@@ -103,7 +105,7 @@ public class RecordReaderImpl implements RecordReader {
   private long rowCountInStripe = 0;
   private final Map<StreamName, InStream> streams =
       new HashMap<StreamName, InStream>();
-  List<DiskRange> bufferChunks = new ArrayList<DiskRange>(0);
+  DiskRangeList bufferChunks = null;
   private final TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
   private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
@@ -2956,15 +2958,17 @@ public class RecordReaderImpl implements RecordReader {
     for(InStream is: streams.values()) {
       is.close();
     }
-    if(bufferChunks != null) {
+    if (bufferChunks != null) {
       if (zcr != null) {
-        for (DiskRange range : bufferChunks) {
+        DiskRangeList range = bufferChunks;
+        while (range != null) {
           if (range instanceof BufferChunk) {
             zcr.releaseBuffer(((BufferChunk)range).chunk);
           }
+          range = range.next;
         }
       }
-      bufferChunks.clear();
+      bufferChunks = null;
     }
     streams.clear();
   }
@@ -3019,18 +3023,15 @@ public class RecordReaderImpl implements RecordReader {
     return stripe;
   }
 
-  private void readAllDataStreams(StripeInformation stripe
-                                  ) throws IOException {
+  private void readAllDataStreams(StripeInformation stripe) throws IOException {
     long start = stripe.getIndexLength();
     long end = start + stripe.getDataLength();
     // explicitly trigger 1 big read
-    LinkedList<DiskRange> rangesToRead = Lists.newLinkedList();
-    rangesToRead.add(new DiskRange(start, end));
+    DiskRangeList toRead = new DiskRangeList(start, end);
     if (this.cache != null) {
-      cache.getFileData(fileName, rangesToRead, stripe.getOffset());
+      toRead = cache.getFileData(fileName, toRead, stripe.getOffset());
     }
-    RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, false);
-    bufferChunks = rangesToRead;
+    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(
         streamDescriptions, bufferChunks, null, codec, bufferSize, streams, cache);
@@ -3041,7 +3042,7 @@ public class RecordReaderImpl implements RecordReader {
    * The sections of stripe that we have read.
    * This might not match diskRange - 1 disk range can be multiple buffer chunks, depending on DFS block boundaries.
    */
-  public static class BufferChunk extends DiskRange {
+  public static class BufferChunk extends DiskRangeList {
     final ByteBuffer chunk;
 
     BufferChunk(ByteBuffer chunk, long offset) {
@@ -3065,8 +3066,8 @@ public class RecordReaderImpl implements RecordReader {
     public DiskRange slice(long offset, long end) {
       assert offset <= end && offset >= this.offset && end <= this.end;
       ByteBuffer sliceBuf = chunk.slice();
-      int newPos = chunk.position() + (int)(offset - this.offset);
-      int newLimit = chunk.limit() - chunk.position() - (int)(this.end - end);
+      int newPos = (int)(offset - this.offset);
+      int newLimit = newPos + (int)(end - offset);
       sliceBuf.position(newPos);
       sliceBuf.limit(newLimit);
       return new BufferChunk(sliceBuf, offset);
@@ -3078,7 +3079,7 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  public static class CacheChunk extends DiskRange {
+  public static class CacheChunk extends DiskRangeList {
     public LlapMemoryBuffer buffer;
 
     public CacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
@@ -3115,7 +3116,7 @@ public class RecordReaderImpl implements RecordReader {
    * @param compressionSize the compression block size
    * @return the list of disk ranges that will be loaded
    */
-  static LinkedList<DiskRange> planReadPartialDataStreams
+  static DiskRangeList planReadPartialDataStreams
       (List<OrcProto.Stream> streamList,
        OrcProto.RowIndex[] indexes,
        boolean[] includedColumns,
@@ -3123,12 +3124,12 @@ public class RecordReaderImpl implements RecordReader {
        boolean isCompressed,
        List<OrcProto.ColumnEncoding> encodings,
        List<OrcProto.Type> types,
-       int compressionSize) {
-    LinkedList<DiskRange> result = new LinkedList<DiskRange>();
+       int compressionSize,
+       boolean doMergeBuffers) {
     long offset = 0;
     // figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
-    DiskRange lastRange = null;
+    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int column = stream.getColumn();
@@ -3140,16 +3141,16 @@ public class RecordReaderImpl implements RecordReader {
         // if we aren't filtering or it is a dictionary, load it.
         if (includedRowGroups == null
             || RecordReaderUtils.isDictionary(streamKind, encodings.get(column))) {
-          lastRange = RecordReaderUtils.addEntireStreamToRanges(offset, length, lastRange, result);
+          RecordReaderUtils.addEntireStreamToRanges(offset, length, list, doMergeBuffers);
         } else {
-          lastRange = RecordReaderUtils.addRgFilteredStreamToRanges(stream, includedRowGroups,
+          RecordReaderUtils.addRgFilteredStreamToRanges(stream, includedRowGroups,
               isCompressed, indexes[column], encodings.get(column), types.get(column),
-              compressionSize, hasNull[column], offset, length, lastRange, result);
+              compressionSize, hasNull[column], offset, length, list, doMergeBuffers);
         }
       }
       offset += length;
     }
-    return result;
+    return list.extract();
   }
 
   /**
@@ -3157,24 +3158,21 @@ public class RecordReaderImpl implements RecordReader {
    * assumes that the ranges are sorted.
    * @param ranges the list of disk ranges to merge
    */
-  static void mergeDiskRanges(List<DiskRange> ranges) {
-    DiskRange prev = null;
-    for(int i=0; i < ranges.size(); ++i) {
-      DiskRange current = ranges.get(i);
-      if (prev != null && RecordReaderUtils.overlap(prev.offset, prev.end,
-          current.offset, current.end)) {
-        prev.offset = Math.min(prev.offset, current.offset);
-        prev.end = Math.max(prev.end, current.end);
-        ranges.remove(i);
-        i -= 1;
+  static void mergeDiskRanges(DiskRangeList range) {
+    while (range != null && range.next != null) {
+      DiskRangeList next = range.next;
+      if (RecordReaderUtils.overlap(range.offset, range.end, next.offset, next.end)) {
+        range.offset = Math.min(range.offset, next.offset);
+        range.end = Math.max(range.end, next.end);
+        range.removeAfter();
       } else {
-        prev = current;
+        range = next;
       }
     }
   }
 
   void createStreams(List<OrcProto.Stream> streamDescriptions,
-                            List<DiskRange> ranges,
+                            DiskRangeList ranges,
                             boolean[] includeColumn,
                             CompressionCodec codec,
                             int bufferSize,
@@ -3205,21 +3203,19 @@ public class RecordReaderImpl implements RecordReader {
 
   private void readPartialDataStreams(StripeInformation stripe) throws IOException {
     List<OrcProto.Stream> streamList = stripeFooter.getStreamsList();
-    LinkedList<DiskRange> rangesToRead =
-        planReadPartialDataStreams(streamList,
+    DiskRangeList toRead = planReadPartialDataStreams(streamList,
             indexes, included, includedRowGroups, codec != null,
-            stripeFooter.getColumnsList(), types, bufferSize);
+            stripeFooter.getColumnsList(), types, bufferSize, true);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(rangesToRead));
+      LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
-    mergeDiskRanges(rangesToRead);
+    mergeDiskRanges(toRead);
     if (this.cache != null) {
-      cache.getFileData(fileName, rangesToRead, stripe.getOffset());
+      toRead = cache.getFileData(fileName, toRead, stripe.getOffset());
     }
-    RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, false);
-    bufferChunks = rangesToRead;
+    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("merge = " + RecordReaderUtils.stringifyDiskRanges(rangesToRead));
+      LOG.debug("merge = " + RecordReaderUtils.stringifyDiskRanges(bufferChunks));
     }
 
     createStreams(streamList, bufferChunks, included, codec, bufferSize, streams, cache);

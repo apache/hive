@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
@@ -71,22 +73,30 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public void getFileData(String fileName, LinkedList<DiskRange> ranges, long baseOffset) {
+  public DiskRangeList getFileData(String fileName, DiskRangeList ranges, long baseOffset) {
+    if (ranges == null) return null;
     FileCache subCache = cache.get(fileName);
-    if (subCache == null || !subCache.incRef()) return;
+    if (subCache == null || !subCache.incRef()) return ranges;
     try {
-      ListIterator<DiskRange> dr = ranges.listIterator();
-      while (dr.hasNext()) {
-        getOverlappingRanges(baseOffset, dr, subCache.cache);
+      DiskRangeList prev = ranges.prev;
+      if (prev == null) {
+        prev = new DiskRangeListMutateHelper(ranges);
       }
+      DiskRangeList current = ranges;
+      while (current != null) {
+        // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
+        DiskRangeList next = current.next;
+        getOverlappingRanges(baseOffset, current, subCache.cache);
+        current = next;
+      }
+      return prev.next;
     } finally {
       subCache.decRef();
     }
   }
 
-  private void getOverlappingRanges(long baseOffset, ListIterator<DiskRange> drIter,
+  private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
       ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache) {
-    DiskRange currentNotCached = drIter.next();
     Iterator<Map.Entry<Long, LlapCacheableBuffer>> matches = cache.subMap(
         currentNotCached.offset + baseOffset, currentNotCached.end + baseOffset)
         .entrySet().iterator();
@@ -108,46 +118,46 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       }
       cacheEnd = cacheOffset + buffer.declaredLength;
       CacheChunk currentCached = new CacheChunk(buffer, cacheOffset, cacheEnd);
-      currentNotCached = addCachedBufferToIter(drIter, currentNotCached, currentCached);
+      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached);
       // Now that we've added it into correct position, we can adjust it by base offset.
       currentCached.shiftBy(-baseOffset);
     }
   }
 
-  private DiskRange addCachedBufferToIter(ListIterator<DiskRange> drIter,
-      DiskRange currentNotCached, CacheChunk currentCached) {
+  /**
+   * Adds cached buffer to buffer list.
+   * @param currentNotCached Pointer to the list node where we are inserting.
+   * @param currentCached The cached buffer found for this node, to insert.
+   * @return The new currentNotCached pointer, following the cached buffer insertion.
+   */
+  private DiskRangeList addCachedBufferToIter(
+      DiskRangeList currentNotCached, CacheChunk currentCached) {
     // Both currentNotCached and currentCached already include baseOffset.
     if (currentNotCached.offset == currentCached.offset) {
       if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
-        drIter.set(currentCached);
-        currentNotCached = null;
+        currentNotCached.replaceSelfWith(currentCached);
+        return null;
       } else {
         // Insert the new cache range before the disk range.
         currentNotCached.offset = currentCached.end;
-        drIter.previous();
-        drIter.add(currentCached); 
-        DiskRange dr = drIter.next();
-        assert dr == currentNotCached;
+        currentNotCached.insertBefore(currentCached);
+        return currentNotCached;
       }
     } else {
       assert currentNotCached.offset < currentCached.offset;
       long originalEnd = currentNotCached.end;
       currentNotCached.end = currentCached.offset;
-      drIter.add(currentCached);
+      currentNotCached.insertAfter(currentCached);
       if (originalEnd <= currentCached.end) { // we assume it's always "==" now
-        // We have reached the end of the range and truncated the last non-cached range.
-        currentNotCached = null;
+        return null;  // No more matches expected...
       } else {
         // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRange(currentCached.end, originalEnd);
-        drIter.add(currentNotCached);
-        DiskRange dr = drIter.previous();
-        assert dr == currentNotCached;
-        drIter.next();
+        currentNotCached = new DiskRangeList(currentCached.end, originalEnd);
+        currentCached.insertAfter(currentNotCached);
+        return currentNotCached;
       }
     }
-    return currentNotCached;
   }
 
   private boolean lockBuffer(LlapCacheableBuffer buffer) {

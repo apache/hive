@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +29,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
@@ -106,8 +107,8 @@ public class TestLowLevelCacheImpl {
   }
 
   private void verifyCacheGet(LowLevelCacheImpl cache, String fileName, Object... stuff) {
-    LinkedList<DiskRange> input = new LinkedList<DiskRange>();
-    Iterator<DiskRange> iter = null;
+    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+    DiskRangeList iter = null;
     int intCount = 0, lastInt = -1;
     int resultCount = stuff.length;
     for (Object obj : stuff) {
@@ -118,26 +119,24 @@ public class TestLowLevelCacheImpl {
           lastInt = (Integer)obj;
           intCount = 1;
         } else {
-          input.add(new DiskRange(lastInt, (Integer)obj));
+          list.addOrMerge(lastInt, (Integer)obj, true, true);
           intCount = 0;
         }
         continue;
       } else if (intCount >= 0) {
         assertTrue(intCount == 0);
-        assertFalse(input.isEmpty());
         intCount = -1;
-        cache.getFileData(fileName, input, 0);
-        assertEquals(resultCount, input.size());
-        iter = input.iterator();
+        iter = cache.getFileData(fileName, list.get(), 0);
+        assertEquals(resultCount, iter.listSize());
       }
-      assertTrue(iter.hasNext());
-      DiskRange next = iter.next();
+      assertTrue(iter != null);
       if (obj instanceof LlapMemoryBuffer) {
-        assertTrue(next instanceof CacheChunk);
-        assertSame(obj, ((CacheChunk)next).buffer);
+        assertTrue(iter instanceof CacheChunk);
+        assertSame(obj, ((CacheChunk)iter).buffer);
       } else {
-        assertTrue(next.equals(obj));
+        assertTrue(iter.equals(obj));
       }
+      iter = iter.next;
     }
   }
 
@@ -217,25 +216,36 @@ public class TestLowLevelCacheImpl {
             String fileName = isFn1 ? fn1 : fn2;
             int fileIndex = isFn1 ? 1 : 2;
             int count = rdm.nextInt(offsetsToUse);
-            LinkedList<DiskRange> input = new LinkedList<DiskRange>();
-            int[] offsets = new int[count];
-            for (int j = 0; j < count; ++j) {
-              int next = rdm.nextInt(offsetsToUse);
-              input.add(dr(next, next + 1));
-              offsets[j] = next;
-            }
             if (isGet) {
-              cache.getFileData(fileName, input, 0);
+              DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+              int[] offsets = new int[count];
+              for (int j = 0; j < count; ++j) {
+                int next = rdm.nextInt(offsetsToUse);
+                list.addOrMerge(next, next + 1, true, false);
+                offsets[j] = next;
+              }
+              DiskRangeList iter = cache.getFileData(fileName, list.get(), 0);
               int j = -1;
-              for (DiskRange dr : input) {
+              while (iter != null) {
                 ++j;
-                if (!(dr instanceof CacheChunk)) continue;
+                if (!(iter instanceof CacheChunk)) {
+                  iter = iter.next;
+                  continue;
+                }
                 ++gets;
-                LlapCacheableBuffer result = (LlapCacheableBuffer)((CacheChunk)dr).buffer;
+                LlapCacheableBuffer result = (LlapCacheableBuffer)((CacheChunk)iter).buffer;
                 assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.arenaIndex);
                 cache.releaseBuffer(result);
+                iter = iter.next;
               }
             } else {
+              DiskRange[] ranges = new DiskRange[count];
+              int[] offsets = new int[count];
+              for (int j = 0; j < count; ++j) {
+                int next = rdm.nextInt(offsetsToUse);
+                ranges[j] = dr(next, next + 1);
+                offsets[j] = next;
+              }
               LlapMemoryBuffer[] buffers = new LlapMemoryBuffer[count];
               for (int j = 0; j < offsets.length; ++j) {
                 LlapCacheableBuffer buf = LowLevelCacheImpl.allocateFake();
@@ -243,8 +253,7 @@ public class TestLowLevelCacheImpl {
                 buf.arenaIndex = makeFakeArenaIndex(fileIndex, offsets[j]);
                 buffers[j] = buf;
               }
-              long[] mask = cache.putFileData(
-                  fileName, input.toArray(new DiskRange[count]), buffers, 0);
+              long[] mask = cache.putFileData(fileName, ranges, buffers, 0);
               puts += buffers.length;
               long maskVal = 0;
               if (mask != null) {
@@ -276,18 +285,15 @@ public class TestLowLevelCacheImpl {
       public Integer call() {
         boolean isFirstFile = false;
         Random rdm = new Random(1234 + Thread.currentThread().getId());
-        LinkedList<DiskRange> input = new LinkedList<DiskRange>();
-        DiskRange allOffsets = new DiskRange(0, offsetsToUse + 1);
         int evictions = 0;
         syncThreadStart(cdlIn, cdlOut);
         while (rdmsDone.get() < 3) {
-          input.clear();
-          input.add(allOffsets);
+          DiskRangeList head = new DiskRangeList(0, offsetsToUse + 1);
           isFirstFile = !isFirstFile;
           String fileName = isFirstFile ? fn1 : fn2;
-          cache.getFileData(fileName, input, 0);
-          DiskRange[] results = input.toArray(new DiskRange[input.size()]);
-          int startIndex = rdm.nextInt(input.size()), index = startIndex;
+          head = cache.getFileData(fileName, head, 0);
+          DiskRange[] results = head.listToArray();
+          int startIndex = rdm.nextInt(results.length), index = startIndex;
           LlapCacheableBuffer victim = null;
           do {
             DiskRange r = results[index];
@@ -371,8 +377,8 @@ public class TestLowLevelCacheImpl {
     return fake;
   }
 
-  private DiskRange dr(int from, int to) {
-    return new DiskRange(from, to);
+  private DiskRangeList dr(int from, int to) {
+    return new DiskRangeList(from, to);
   }
 
   private DiskRange[] drs(int... offsets) {

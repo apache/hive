@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.llap.io.api.cache;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
 
 
 public interface LowLevelCache {
@@ -29,8 +29,9 @@ public interface LowLevelCache {
    * Gets file data for particular offsets. Null entries mean no data.
    * @param file File name; MUST be interned.
    * @param base base offset for the ranges (stripe offset in case of ORC).
+   * @return 
    */
-  void getFileData(String fileName, LinkedList<DiskRange> ranges, long base);
+  DiskRangeList getFileData(String fileName, DiskRangeList range, long baseOffset);
 
   /**
    * Puts file data into cache.

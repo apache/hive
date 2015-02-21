@@ -28,6 +28,9 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
@@ -38,6 +41,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 
@@ -129,7 +133,7 @@ public class EncodedReaderImpl implements EncodedReader {
     public final int streamIndexOffset;
     public final OrcProto.Stream.Kind kind;
     /** Iterators for the buffers; used to maintain position in per-rg reading. */
-    ListIterator<DiskRange> bufferIter;
+    DiskRangeList bufferIter;
     /** Saved stripe-level stream, to reuse for each RG (e.g. dictionaries). */
     StreamBuffer stripeLevelStream;
 
@@ -152,14 +156,12 @@ public class EncodedReaderImpl implements EncodedReader {
     // We are also not supposed to call setDone, since we are only part of the operation.
     long stripeOffset = stripe.getOffset();
     // 1. Figure out what we have to read.
-    LinkedList<DiskRange> rangesToRead = new LinkedList<DiskRange>();
     long offset = 0; // Stream offset in relation to the stripe.
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("The following columns have PRESENT streams: " + DebugUtils.toString(hasNull));
     }
-    DiskRange lastRange = null;
 
     // We assume stream list is sorted by column and that non-data
     // streams do not interleave data streams for the same column.
@@ -168,6 +170,8 @@ public class EncodedReaderImpl implements EncodedReader {
     ColumnReadContext[] colCtxs = new ColumnReadContext[colRgs.length];
     boolean[] includedRgs = null;
     boolean isCompressed = (codec != null);
+
+    DiskRangeListCreateHelper listToRead = new DiskRangeListCreateHelper();
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int colIx = stream.getColumn();
@@ -202,71 +206,61 @@ public class EncodedReaderImpl implements EncodedReader {
             + ", " + length + ", index position " + indexIx);
       }
       if (includedRgs == null || RecordReaderUtils.isDictionary(streamKind, encodings.get(colIx))) {
-        lastRange = RecordReaderUtils.addEntireStreamToRanges(
-            offset, length, lastRange, rangesToRead);
+        RecordReaderUtils.addEntireStreamToRanges(offset, length, listToRead, true);
         if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Will read whole stream " + streamKind + "; added to " + lastRange);
+          LOG.info("Will read whole stream " + streamKind + "; added to " + listToRead.getTail());
         }
       } else {
-        lastRange = RecordReaderUtils.addRgFilteredStreamToRanges(stream, includedRgs,
+        RecordReaderUtils.addRgFilteredStreamToRanges(stream, includedRgs,
             codec != null, indexes[colIx], encodings.get(colIx), types.get(colIx),
-            bufferSize, hasNull[colIx], offset, length, lastRange, rangesToRead);
+            bufferSize, hasNull[colIx], offset, length, listToRead, true);
       }
       offset += length;
     }
 
     // 2. Now, read all of the ranges from cache or disk.
+    DiskRangeListMutateHelper toRead = new DiskRangeListMutateHelper(listToRead.get());
     if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Resulting disk ranges to read: "
-          + RecordReaderUtils.stringifyDiskRanges(rangesToRead));
+      LOG.info("Resulting disk ranges to read: " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
     if (cache != null) {
-      cache.getFileData(fileName, rangesToRead, stripeOffset);
+      cache.getFileData(fileName, toRead.next, stripeOffset);
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Disk ranges after cache (base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(rangesToRead));
+            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead));
       }
     }
-    // Force direct buffers if we will be decompressing to direct cache.
-    RecordReaderUtils.readDiskRanges(file, zcr, stripeOffset, rangesToRead, cache.isDirectAlloc());
 
-    // 2.1. Separate buffers (relative to stream offset) for each stream from the data we have.
-    // TODO: given how we read, we could potentially get rid of this step?
-    for (ColumnReadContext colCtx : colCtxs) {
-      for (int i = 0; i < colCtx.streamCount; ++i) {
-        StreamContext sctx = colCtx.streams[i];
-        List<DiskRange> sb = RecordReaderUtils.getStreamBuffers(
-            rangesToRead, sctx.offset, sctx.length);
-        sctx.bufferIter = sb.listIterator();
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Column " + colCtx.colIx + " stream " + sctx.kind + " at " + sctx.offset + ","
-              + sctx.length + " got ranges (relative to stream) "
-              + RecordReaderUtils.stringifyDiskRanges(sb));
-        }
-      }
+    // Force direct buffers if we will be decompressing to direct cache.
+    RecordReaderUtils.readDiskRanges(file, zcr, stripeOffset, toRead.next, cache.isDirectAlloc());
+
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Disk ranges after disk read  (base offset " + stripeOffset
+            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
     // 3. Finally, decompress data, map per RG, and return to caller.
     // We go by RG and not by column because that is how data is processed.
     int rgCount = (int)Math.ceil((double)stripe.getNumberOfRows() / rowIndexStride);
+    DiskRangeList iter = toRead.next; // Keep "toRead" list for future use, don't extract().
     for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
-      boolean isLastRg = rgCount - rgIx - 1 == 0;
+      boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
       EncodedColumnBatch<OrcBatchKey> ecb = new EncodedColumnBatch<OrcBatchKey>(
           new OrcBatchKey(fileName, stripeIx, rgIx), colRgs.length, 0);
       boolean isRGSelected = true;
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
+          // RG x col filtered.
           isRGSelected = false;
-          continue;
-        } // RG x col filtered.
+          continue; // TODO#: this would be invalid with HL cache, where RG x col can be excluded.
+        }
         ColumnReadContext ctx = colCtxs[colIxMod];
         RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
             nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
         ecb.initColumn(colIxMod, ctx.colIx, ctx.streamCount);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
-          long absStreamOffset = stripeOffset + sctx.offset;
           StreamBuffer cb = null;
           if (RecordReaderUtils.isDictionary(sctx.kind, ctx.encoding)) {
             // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
@@ -274,13 +268,26 @@ public class EncodedReaderImpl implements EncodedReader {
               LOG.info("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
                   + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
             }
-            cb = getStripeLevelStream(absStreamOffset, sctx, cache, isLastRg);
+            if (sctx.stripeLevelStream == null) {
+              sctx.stripeLevelStream = new StreamBuffer(sctx.kind.getNumber());
+              // We will be using this for each RG while also sending RGs to processing.
+              // To avoid buffers being unlocked, run refcount one ahead; we will not increase
+              // it when building the last RG, so each RG processing will decref once, and the
+              // last one will unlock the buffers.
+              sctx.stripeLevelStream.incRef();
+              iter = InStream.uncompressStream(fileName, stripeOffset, iter, sctx.offset,
+                  sctx.offset + sctx.length, zcr, codec, bufferSize, cache, sctx.stripeLevelStream);
+            }
+            if (!isLastRg) {
+              sctx.stripeLevelStream.incRef();
+            }
+            cb = sctx.stripeLevelStream;
           } else {
             // This stream can be separated by RG using index. Let's do that.
-            long cOffset = index.getPositions(sctx.streamIndexOffset),
-                endCOffset = RecordReaderUtils.estimateRgEndOffset(isCompressed, isLastRg,
-                    isLastRg ? sctx.length : nextIndex.getPositions(sctx.streamIndexOffset),
-                    sctx.length, bufferSize);
+            long cOffset = index.getPositions(sctx.streamIndexOffset) + sctx.offset,
+                nextCOffset = isLastRg ? sctx.length : nextIndex.getPositions(sctx.streamIndexOffset),
+                endCOffset = RecordReaderUtils.estimateRgEndOffset(
+                    isCompressed, isLastRg, nextCOffset, sctx.length, bufferSize) + sctx.offset;
             cb = new StreamBuffer(sctx.kind.getNumber());
             cb.incRef();
             if (DebugUtils.isTraceOrcEnabled()) {
@@ -289,8 +296,11 @@ public class EncodedReaderImpl implements EncodedReader {
                   + sctx.length + " index position " + sctx.streamIndexOffset + ": compressed ["
                   + cOffset + ", " + endCOffset + ")");
             }
-            InStream.uncompressStream(fileName, absStreamOffset, zcr, sctx.bufferIter,
-                codec, bufferSize, cache, cOffset, endCOffset, cb);
+            boolean isStartOfStream = sctx.bufferIter == null;
+            DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
+            DiskRangeList next = InStream.uncompressStream(fileName, stripeOffset, range, cOffset,
+                endCOffset, zcr, codec, bufferSize, cache, cb);
+            sctx.bufferIter = iter = next; // Reset iter just to ensure it's valid
           }
           ecb.setStreamData(colIxMod, streamIx, cb);
         }
@@ -299,31 +309,14 @@ public class EncodedReaderImpl implements EncodedReader {
         consumer.consumeData(ecb);
       }
     }
-    // TODO: WE NEED TO DECREF ALL THE CACHE BUFFERS ONCE
-  }
 
-  /**
-   * Reads the entire stream for a column (e.g. a dictionary stream), or gets it from context.
-   * @param isLastRg Whether the stream is being read for last RG in stripe.
-   * @return StreamBuffer that contains the entire stream.
-   */
-  private StreamBuffer getStripeLevelStream(long baseOffset, StreamContext ctx,
-      LowLevelCache cache, boolean isLastRg) throws IOException {
-    if (ctx.stripeLevelStream == null) {
-      ctx.stripeLevelStream = new StreamBuffer(ctx.kind.getNumber());
-      // We will be using this for each RG while also sending RGs to processing.
-      // To avoid buffers being unlocked, run refcount one ahead; we will not increase
-      // it when building the last RG, so each RG processing will decref once, and the
-      // last one will unlock the buffers.
-      ctx.stripeLevelStream.incRef();
-      InStream.uncompressStream(fileName, baseOffset, zcr,
-          ctx.bufferIter, codec, bufferSize, cache, -1, -1, ctx.stripeLevelStream);
-      ctx.bufferIter = null;
+    DiskRangeList toFree = toRead.next;
+    while (toFree != null) {
+      if (toFree instanceof CacheChunk) {
+        cache.releaseBuffer(((CacheChunk)toFree).buffer);
+      }
+      toFree = toFree.next;
     }
-    if (!isLastRg) {
-      ctx.stripeLevelStream.incRef();
-    }
-    return ctx.stripeLevelStream;
   }
 
   @Override

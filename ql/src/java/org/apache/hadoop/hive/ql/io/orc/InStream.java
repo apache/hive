@@ -21,12 +21,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
@@ -142,7 +144,7 @@ public abstract class InStream extends InputStream {
             (desired - curRange.offset) < curRange.getLength()) {
           currentOffset = desired;
           currentRange = i;
-          this.range = curRange.getData();
+          this.range = curRange.getData().duplicate();
           int pos = range.position();
           pos += (int)(desired - curRange.offset); // this is why we duplicate
           this.range.position(pos);
@@ -549,13 +551,22 @@ public abstract class InStream extends InputStream {
   /**
    * Uncompresses part of the stream. RGs can overlap, so we cannot just go and decompress
    * and remove what we have returned. We will keep iterator as a "hint" point.
-   * TODO: Java LinkedList and iter have a really stupid interface. Replace with own simple one?
-   * @param zcr
+   * @param fileName File name for cache keys.
+   * @param baseOffset Absolute offset of boundaries and ranges relative to file, for cache keys.
+   * @param start Ordered ranges containing file data. Helpful if they point close to cOffset.
+   * @param cOffset Start offset to decompress.
+   * @param endCOffset End offset to decompress; estimate, partial CBs will be ignored.
+   * @param zcr Zero-copy reader, if any, to release discarded buffers.
+   * @param codec Compression codec.
+   * @param bufferSize Compressed buffer (CB) size.
+   * @param cache Low-level cache to cache new data.
+   * @param streamBuffer Stream buffer, to add the results.
+   * @return Last buffer cached during decomrpession. Cache buffers are never removed from
+   *         the master list, so they are safe to keep as iterators for various streams.
    */
-  public static void uncompressStream(String fileName, long baseOffset,
-      ZeroCopyReaderShim zcr, ListIterator<DiskRange> ranges,
-      CompressionCodec codec, int bufferSize, LowLevelCache cache,
-      long cOffset, long endCOffset, StreamBuffer streamBuffer)
+  public static DiskRangeList uncompressStream(String fileName, long baseOffset,
+      DiskRangeList start, long cOffset, long endCOffset, ZeroCopyReaderShim zcr,
+      CompressionCodec codec,int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer)
           throws IOException {
     streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     List<ProcCacheChunk> toDecompress = null;
@@ -564,20 +575,20 @@ public abstract class InStream extends InputStream {
     // 1. Find our bearings in the stream. Normally, iter will already point either to where we
     // want to be, or just before. However, RGs can overlap due to encoding, so we may have
     // to return to a previous block.
-    DiskRange current = findCompressedPosition(ranges, cOffset);
+    DiskRangeList current = findCompressedPosition(start, cOffset);
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Starting uncompressStream for [" + cOffset + "," + endCOffset + ") at " + current);
     }
 
     // 2. Go thru the blocks; add stuff to results and prepare the decompression work (see below).
-    if (cOffset >= 0 && cOffset != current.offset) {
-      // We adjust offsets as we decompress, we expect to decompress sequentially, and we cache and
-      // decompress entire CBs (obviously). Therefore the offset in the next DiskRange should
-      // always be the start offset of a CB. TODO: what about at start?
-      throw new AssertionError("Unexpected offset - for " + cOffset + ", got " + current.offset);
+    if (cOffset > current.offset) {
+      // Target compression block is in the middle of the range; slice the range in two.
+      current = current.split(cOffset).next;
     }
     long currentCOffset = cOffset;
+    DiskRangeList lastCached = null;
     while (true) {
+      DiskRangeList next = null;
       if (current instanceof CacheChunk) {
         // 2a. This is a cached compression buffer, add as is.
         CacheChunk cc = (CacheChunk)current;
@@ -587,6 +598,8 @@ public abstract class InStream extends InputStream {
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
         }
+        lastCached = current;
+        next = current.next;
       } else {
         // 2b. This is a compressed buffer. We need to uncompress it; the buffer can comprise
         // several disk ranges, so we might need to combine them.
@@ -596,18 +609,21 @@ public abstract class InStream extends InputStream {
           toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
         }
         long originalOffset = bc.offset;
-        int compressedBytesConsumed = addOneCompressionBuffer(bc, ranges, zcr, bufferSize,
+        next = addOneCompressionBuffer(bc, zcr, bufferSize,
             cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
-        if (compressedBytesConsumed == -1) {
-          // endCOffset is an estimate; we have a partially-read compression block, ignore it
-          break;
+        if (next != null) {
+          currentCOffset = next.offset;
+          lastCached = next.prev;
+          // addOne... always adds one CC and returns next range after it
+          assert lastCached instanceof CacheChunk;
+        } else {
+          currentCOffset = originalOffset;
         }
-        currentCOffset = originalOffset + compressedBytesConsumed;
       }
-      if ((endCOffset >= 0 && currentCOffset >= endCOffset) || !ranges.hasNext()) {
+      if ((endCOffset >= 0 && currentCOffset >= endCOffset) || next == null) {
         break;
       }
-      current = ranges.next();
+      current = next;
     }
 
     // 3. Allocate the buffers, prepare cache keys.
@@ -615,7 +631,7 @@ public abstract class InStream extends InputStream {
     // data and some unallocated membufs for decompression. toDecompress contains all the work we
     // need to do, and each item points to one of the membufs in cacheBuffers as target. The iter
     // has also been adjusted to point to these buffers instead of compressed data for the ranges.
-    if (toDecompress == null) return; // Nothing to decompress.
+    if (toDecompress == null) return lastCached; // Nothing to decompress.
 
     LlapMemoryBuffer[] targetBuffers = new LlapMemoryBuffer[toDecompress.size()];
     DiskRange[] cacheKeys = new DiskRange[toDecompress.size()];
@@ -650,36 +666,23 @@ public abstract class InStream extends InputStream {
 
     // 6. Finally, put data to cache.
     cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
+    return lastCached;
   }
 
 
   /** Finds compressed offset in a stream and makes sure iter points to its position.
      This may be necessary for obscure combinations of compression and encoding boundaries. */
-  private static DiskRange findCompressedPosition(
-      ListIterator<DiskRange> ranges, long cOffset) {
-    if (cOffset < 0) return ranges.next();
-    DiskRange current = null;
-    boolean doCallNext = false;
-    if (ranges.hasNext()) {
-      current = ranges.next();
-    } else if (ranges.hasPrevious()) {
-      current = ranges.previous();
-      doCallNext = true;
-    }
+  private static DiskRangeList findCompressedPosition(
+      DiskRangeList ranges, long cOffset) {
+    if (cOffset < 0) return ranges;
     // We expect the offset to be valid TODO: rather, validate
-    while (current.end <= cOffset) {
-      current = ranges.next();
-      doCallNext = false;
+    while (ranges.end <= cOffset) {
+      ranges = ranges.next;
     }
-    while (current.offset > cOffset) {
-      current = ranges.previous();
-      doCallNext = true;
+    while (ranges.offset > cOffset) {
+      ranges = ranges.prev;
     }
-    if (doCallNext) {
-      // TODO: WTF?
-      ranges.next(); // We called previous, make sure next is the real next and not current.
-    }
-    return current;
+    return ranges;
   }
 
 
@@ -695,9 +698,8 @@ public abstract class InStream extends InputStream {
    * @param toRelease The list of buffers to release to zcr because they are no longer in use.
    * @return The total number of compressed bytes consumed.
    */
-  private static int addOneCompressionBuffer(BufferChunk current,
-      ListIterator<DiskRange> ranges, ZeroCopyReaderShim zcr, int bufferSize,
-      LowLevelCache cache, List<LlapMemoryBuffer> cacheBuffers,
+  private static DiskRangeList addOneCompressionBuffer(BufferChunk current, ZeroCopyReaderShim zcr,
+      int bufferSize, LowLevelCache cache, List<LlapMemoryBuffer> cacheBuffers,
       List<ProcCacheChunk> toDecompress, List<ByteBuffer> toRelease) throws IOException {
     ByteBuffer slice = null;
     ByteBuffer compressed = current.chunk;
@@ -721,19 +723,15 @@ public abstract class InStream extends InputStream {
       // Simple case - CB fits entirely in the disk range.
       slice = compressed.slice();
       slice.limit(chunkLength);
-      addOneCompressionBlockByteBuffer(slice, isUncompressed, cbStartOffset, cbEndOffset,
-          chunkLength, ranges, current, cache, toDecompress, cacheBuffers);
-      if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Adjusting " + current + " to consume " + consumedLength);
-      }
-      current.offset += consumedLength;
+      DiskRangeList next = addOneCompressionBlockByteBuffer(slice, isUncompressed, cbStartOffset,
+          cbEndOffset, chunkLength, consumedLength, current, cache, toDecompress, cacheBuffers);
       if (compressed.remaining() <= 0 && zcr != null) {
         toRelease.add(compressed);
       }
-      return consumedLength;
+      return next;
     }
-    if (current.end < cbEndOffset && !ranges.hasNext()) {
-      return -1; // This is impossible to read from this chunk.
+    if (current.end < cbEndOffset && current.next == null) {
+      return null; // This is impossible to read from this chunk.
     }
 
     // TODO: we could remove extra copy for isUncompressed case by copying directly to cache.
@@ -742,10 +740,11 @@ public abstract class InStream extends InputStream {
     int remaining = chunkLength - compressed.remaining();
     int originalPos = compressed.position();
     copy.put(compressed);
-    ranges.remove();
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Removing " + current + " from ranges");
     }
+    DiskRangeList next = current.next;
+    current.removeSelf();
     if (zcr != null) {
       if (originalPos == 0) {
         zcr.releaseBuffer(compressed); // We copied the entire buffer.
@@ -754,40 +753,40 @@ public abstract class InStream extends InputStream {
       }
     }
 
-    DiskRange nextRange = null;
-    while (ranges.hasNext()) {
-      nextRange = ranges.next();
-      if (!(nextRange instanceof BufferChunk)) {
+    while (next != null) {
+      if (!(next instanceof BufferChunk)) {
         throw new IOException("Trying to extend compressed block into uncompressed block");
       }
-      compressed = nextRange.getData();
+      compressed = next.getData();
       if (compressed.remaining() >= remaining) {
         // This is the last range for this compression block. Yay!
         slice = compressed.slice();
         slice.limit(remaining);
         copy.put(slice);
-        addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset,
-            cbEndOffset, remaining, ranges, current, cache, toDecompress, cacheBuffers);
+        next = addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset, cbEndOffset,
+            remaining, remaining, (BufferChunk)next, cache, toDecompress, cacheBuffers);
         if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Adjusting " + nextRange + " to consume " + remaining);
+          LOG.info("Adjusting " + next + " to consume " + remaining);
         }
-        nextRange.offset += remaining;
         if (compressed.remaining() <= 0 && zcr != null) {
           zcr.releaseBuffer(compressed); // We copied the entire buffer.
         }
-        return consumedLength;
+        return next;
       }
       remaining -= compressed.remaining();
       copy.put(compressed);
       if (zcr != null) {
         zcr.releaseBuffer(compressed); // We copied the entire buffer.
       }
+      DiskRangeList tmp = next;
       if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Removing " + nextRange + " from ranges");
+        LOG.info("Removing " + tmp + " from ranges");
       }
-      ranges.remove();
+      next = next.next;
+      tmp.removeSelf();
     }
-    return -1; // This is impossible to read from this chunk.
+    return null; // This is impossible to read from this chunk.
+    // TODO: dbl check this is valid; we just did a bunch of changes to the list.
   }
 
   /**
@@ -797,17 +796,18 @@ public abstract class InStream extends InputStream {
    * @param cbStartOffset Compressed start offset of the fCB.
    * @param cbEndOffset Compressed end offset of the fCB.
    * @param lastRange The buffer from which the last (or all) bytes of fCB come.
-   * @param lastPartLength The number of bytes consumed from lastRange into fCB.
+   * @param lastPartChunkLength The number of compressed bytes consumed from last *chunk* into fullCompressionBlock.
+   * @param lastPartConsumedLength The number of compressed bytes consumed from last *range* into fullCompressionBlock.
+   *                               Can be different from lastPartChunkLength due to header.
    * @param ranges The iterator of all compressed ranges for the stream, pointing at lastRange.
    * @param lastChunk 
    * @param toDecompress See addOneCompressionBuffer.
    * @param cacheBuffers See addOneCompressionBuffer.
    */
-  private static void addOneCompressionBlockByteBuffer(ByteBuffer fullCompressionBlock,
-      boolean isUncompressed, long cbStartOffset, long cbEndOffset, int lastPartLength,
-      ListIterator<DiskRange> ranges, BufferChunk lastChunk,
-      LowLevelCache cache, List<ProcCacheChunk> toDecompress,
-      List<LlapMemoryBuffer> cacheBuffers) {
+  private static DiskRangeList addOneCompressionBlockByteBuffer(ByteBuffer fullCompressionBlock,
+      boolean isUncompressed, long cbStartOffset, long cbEndOffset, int lastPartChunkLength,
+      int lastPartConsumedLength, BufferChunk lastChunk, LowLevelCache cache,
+      List<ProcCacheChunk> toDecompress, List<LlapMemoryBuffer> cacheBuffers) {
     // Prepare future cache buffer.
     LlapMemoryBuffer futureAlloc = cache.createUnallocated();
     // Add it to result in order we are processing.
@@ -817,21 +817,27 @@ public abstract class InStream extends InputStream {
         cbStartOffset, cbEndOffset, !isUncompressed, fullCompressionBlock, futureAlloc);
     toDecompress.add(cc);
     // Adjust the compression block position.
-    lastChunk.chunk.position(lastChunk.chunk.position() + lastPartLength);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Adjusting " + lastChunk + " to consume " + lastPartChunkLength
+          + " compressed / " + lastPartConsumedLength + " total bytes");
+    }
+    lastChunk.chunk.position(lastChunk.chunk.position() + lastPartChunkLength);
+    lastChunk.offset += lastPartConsumedLength;
     // Finally, put it in the ranges list for future use (if shared between RGs).
     // Before anyone else accesses it, it would have been allocated and decompressed locally.
     if (lastChunk.chunk.remaining() <= 0) {
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Replacing " + lastChunk + " with " + cc + " in the buffers");
       }
-      ranges.set(cc);
+      assert lastChunk.offset == lastChunk.end;
+      lastChunk.replaceSelfWith(cc);
+      return cc.next;
     } else {
-      DiskRange before = ranges.previous();
       if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Adding " + cc + " before " + before + " in the buffers");
+        LOG.info("Adding " + cc + " before " + lastChunk + " in the buffers");
       }
-      ranges.add(cc);
-      // At this point, next() should return before, which is the 2nd part of the split buffer.
+      lastChunk.insertBefore(cc);
+      return lastChunk;
     }
   }
 }

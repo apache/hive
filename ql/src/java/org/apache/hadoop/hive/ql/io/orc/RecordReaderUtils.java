@@ -21,16 +21,16 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
@@ -68,24 +68,15 @@ public class RecordReaderUtils {
     return rightB >= leftA;
   }
 
-
-  static DiskRange addEntireStreamToRanges(long offset, long length,
-      DiskRange lastRange, LinkedList<DiskRange> result) {
-    long end = offset + length;
-    if (lastRange != null && overlap(lastRange.offset, lastRange.end, offset, end)) {
-      lastRange.offset = Math.min(lastRange.offset, offset);
-      lastRange.end = Math.max(lastRange.end, end);
-    } else {
-      lastRange = new DiskRange(offset, end);
-      result.add(lastRange);
-    }
-    return lastRange;
+  static void addEntireStreamToRanges(
+      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
+    list.addOrMerge(offset, offset + length, doMergeBuffers, false);
   }
 
-  static DiskRange addRgFilteredStreamToRanges(OrcProto.Stream stream,
+  static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
       boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
       OrcProto.ColumnEncoding encoding, OrcProto.Type type, int compressionSize, boolean hasNull,
-      long offset, long length, DiskRange lastRange, LinkedList<DiskRange> result) {
+      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
     for (int group = 0; group < includedRowGroups.length; ++group) {
       if (!includedRowGroups[group]) continue;
       int posn = getIndexPosition(
@@ -98,19 +89,8 @@ public class RecordReaderUtils {
       start += offset;
       long end = offset + estimateRgEndOffset(
           isCompressed, isLast, nextGroupOffset, length, compressionSize);
-      if (lastRange != null && overlap(lastRange.offset, lastRange.end, start, end)) {
-        lastRange.offset = Math.min(lastRange.offset, start);
-        lastRange.end = Math.max(lastRange.end, end);
-      } else {
-        if (DebugUtils.isTraceOrcEnabled()) {
-          RecordReaderImpl.LOG.info("Creating new range for RG read; last range (which can "
-              + "include some previous RGs) was " + lastRange);
-        }
-        lastRange = new DiskRange(start, end);
-        result.add(lastRange);
-      }
+      list.addOrMerge(start, end, doMergeBuffers, true);
     }
-    return lastRange;
   }
 
   static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
@@ -218,14 +198,17 @@ public class RecordReaderUtils {
    * @param ranges ranges to stringify
    * @return the resulting string
    */
-  static String stringifyDiskRanges(List<DiskRange> ranges) {
+  static String stringifyDiskRanges(DiskRangeList range) {
     StringBuilder buffer = new StringBuilder();
     buffer.append("[");
-    for(int i=0; i < ranges.size(); ++i) {
-      if (i != 0) {
+    boolean isFirst = true;
+    while (range != null) {
+      if (!isFirst) {
         buffer.append(", ");
       }
-      buffer.append(ranges.get(i).toString());
+      isFirst = false;
+      buffer.append(range.toString());
+      range = range.next;
     }
     buffer.append("]");
     return buffer.toString();
@@ -240,15 +223,21 @@ public class RecordReaderUtils {
    *    ranges
    * @throws IOException
    */
-  static void readDiskRanges(FSDataInputStream file,
+  static DiskRangeList readDiskRanges(FSDataInputStream file,
                                  ZeroCopyReaderShim zcr,
                                  long base,
-                                 LinkedList<DiskRange> ranges,
+                                 DiskRangeList range,
                                  boolean doForceDirect) throws IOException {
-    ListIterator<DiskRange> rangeIter = ranges.listIterator();
-    while (rangeIter.hasNext()) {
-      DiskRange range = rangeIter.next();
-      if (range.hasData()) continue;
+    if (range == null) return null;
+    DiskRangeList prev = range.prev;
+    if (prev == null) {
+      prev = new DiskRangeListMutateHelper(range);
+    }
+    while (range != null) {
+      if (range.hasData()) {
+        range = range.next;
+        continue;
+      }
       int len = (int) (range.end - range.offset);
       long off = range.offset;
       file.seek(base + off);
@@ -258,11 +247,12 @@ public class RecordReaderUtils {
           ByteBuffer partial = zcr.readBuffer(len, false);
           BufferChunk bc = new BufferChunk(partial, off);
           if (!hasReplaced) {
-            rangeIter.set(bc);
+            range.replaceSelfWith(bc);
             hasReplaced = true;
           } else {
-            rangeIter.add(bc);
+            range.insertAfter(bc);
           }
+          range = bc;
           int read = partial.remaining();
           len -= read;
           off += read;
@@ -282,24 +272,29 @@ public class RecordReaderUtils {
           directBuf.put(buffer);
         }
         directBuf.position(0);
-        rangeIter.set(new BufferChunk(directBuf, range.offset));
+        range = range.replaceSelfWith(new BufferChunk(directBuf, range.offset));
       } else {
         byte[] buffer = new byte[len];
         file.readFully(buffer, 0, buffer.length);
-        rangeIter.set(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
+        range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
       }
+      range = range.next;
     }
+    return prev.next;
   }
 
 
-  static List<DiskRange> getStreamBuffers(List<DiskRange> ranges, long offset, long length) {
+  static List<DiskRange> getStreamBuffers(DiskRangeList range, long offset, long length) {
     // This assumes sorted ranges (as do many other parts of ORC code.
     ArrayList<DiskRange> buffers = new ArrayList<DiskRange>();
     long streamEnd = offset + length;
     boolean inRange = false;
-    for (DiskRange range : ranges) {
+    while (range != null) {
       if (!inRange) {
-        if (range.end <= offset) continue; // Skip until we are in range.
+        if (range.end <= offset) {
+          range = range.next;
+          continue; // Skip until we are in range.
+        }
         inRange = true;
         if (range.offset < offset) {
           // Partial first buffer, add a slice of it.
@@ -307,6 +302,7 @@ public class RecordReaderUtils {
           partial.shiftBy(-offset);
           buffers.add(partial);
           if (range.end >= streamEnd) break; // Partial first buffer is also partial last buffer.
+          range = range.next;
           continue;
         }
       } else if (range.offset >= streamEnd) {
@@ -326,6 +322,7 @@ public class RecordReaderUtils {
       full.shiftBy(-offset);
       buffers.add(full);
       if (range.end == streamEnd) break;
+      range = range.next;
     }
     return buffers;
   }
