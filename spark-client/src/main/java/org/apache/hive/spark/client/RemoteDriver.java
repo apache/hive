@@ -57,6 +57,8 @@ import org.apache.spark.scheduler.SparkListenerTaskEnd;
 import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
 import org.apache.spark.scheduler.SparkListenerTaskStart;
 import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
+import org.apache.spark.scheduler.SparkListenerExecutorRemoved;
+import org.apache.spark.scheduler.SparkListenerExecutorAdded;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -423,6 +425,16 @@ public class RemoteDriver {
   private class ClientListener implements SparkListener {
 
     private final Map<Integer, Integer> stageToJobId = Maps.newHashMap();
+
+    @Override
+    public void onExecutorRemoved(SparkListenerExecutorRemoved removed) {
+
+    }
+
+    @Override
+    public void onExecutorAdded(SparkListenerExecutorAdded added) {
+
+    }
 
     @Override
     public void onJobStart(SparkListenerJobStart jobStart) {
