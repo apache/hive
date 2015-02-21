@@ -155,7 +155,7 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.2.0</spark.version>
+    <spark.version>1.3.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -210,6 +210,16 @@
        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
        <releases>
          <enabled>false</enabled>
+       </releases>
+       <snapshots>
+         <enabled>false</enabled>
+       </snapshots>
+    </repository>
+     <repository>
+       <id>spark-1.3</id>
+       <url>http://ec2-50-18-79-139.us-west-1.compute.amazonaws.com/data/spark_2.10-1.3-rc1/</url>
+       <releases>
+         <enabled>true</enabled>
        </releases>
        <snapshots>
          <enabled>false</enabled>

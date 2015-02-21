@@ -438,6 +438,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       mr = new MiniSparkOnYARNCluster("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
+      conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
