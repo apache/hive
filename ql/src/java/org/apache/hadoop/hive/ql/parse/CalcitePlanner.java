@@ -78,12 +78,14 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Schemas;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlExplainLevel;
@@ -716,7 +718,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
-      hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
+      hepPgmBldr.addRuleInstance(ProjectRemoveRule.NAME_CALC_INSTANCE);
       hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
 
       hepPgm = hepPgmBldr.build();
@@ -790,7 +792,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
           RelFactories.DEFAULT_SEMI_JOIN_FACTORY, HiveSort.HIVE_SORT_REL_FACTORY,
-          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
+          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY, true);
       basePlan = fieldTrimmer.trim(basePlan);
 
       // 5. Rerun PPD through Project as column pruning would have introduced DT
@@ -833,6 +835,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       basePlan.getCluster().setMetadataProvider(
           new CachingRelMetadataProvider(chainedProvider, planner));
 
+      // Executor is required for constant-reduction rules; see [CALCITE-566]
+      final RexExecutorImpl executor =
+          new RexExecutorImpl(Schemas.createDataContext(null));
+      basePlan.getCluster().getPlanner().setExecutor(executor);
+
       planner.setRoot(basePlan);
       optimizedRelNode = planner.findBestExp();
 
@@ -859,49 +866,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       ASTNode tabref = getQB().getAliases().isEmpty() ? null : getQB().getParseInfo()
           .getSrcForAlias(getQB().getAliases().get(0));
-      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-        String field = lEntry.getKey();
-        ColumnInfo lInfo = lEntry.getValue();
-        ColumnInfo rInfo = rightmap.get(field);
-        if (rInfo == null) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match. " + rightalias
-                  + " does not have the field " + field));
-        }
-        if (lInfo == null) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match. " + leftalias
-                  + " does not have the field " + field));
-        }
-        if (!lInfo.getInternalName().equals(rInfo.getInternalName())) {
-          throw new CalciteSemanticException(SemanticAnalyzer.generateErrorMessage(
-              tabref,
-              "Schema of both sides of union should match: field " + field + ":"
-                  + " appears on the left side of the UNION at column position: "
-                  + SemanticAnalyzer.getPositionFromInternalName(lInfo.getInternalName())
-                  + ", and on the right side of the UNION at column position: "
-                  + SemanticAnalyzer.getPositionFromInternalName(rInfo.getInternalName())
-                  + ". Column positions should match for a UNION"));
-        }
-        // try widening coversion, otherwise fail union
-        TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
-            rInfo.getType());
-        if (commonTypeInfo == null) {
-          throw new CalciteSemanticException(SemanticAnalyzer.generateErrorMessage(tabref,
-              "Schema of both sides of union should match: Column " + field + " is of type "
-                  + lInfo.getType().getTypeName() + " on first table and type "
-                  + rInfo.getType().getTypeName() + " on second table"));
-        }
-      }
 
       // 3. construct Union Output RR using original left & right Input
       RowResolver unionoutRR = new RowResolver();
-      for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
-        String field = lEntry.getKey();
+
+      Iterator<Map.Entry<String, ColumnInfo>> lIter = leftmap.entrySet().iterator();
+      Iterator<Map.Entry<String, ColumnInfo>> rIter = rightmap.entrySet().iterator();
+      while (lIter.hasNext()) {
+        Map.Entry<String, ColumnInfo> lEntry = lIter.next();
+        Map.Entry<String, ColumnInfo> rEntry = rIter.next();
         ColumnInfo lInfo = lEntry.getValue();
-        ColumnInfo rInfo = rightmap.get(field);
+        ColumnInfo rInfo = rEntry.getValue();
+
+        String field = lEntry.getKey();
+        // try widening conversion, otherwise fail union
+        TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
+            rInfo.getType());
+        if (commonTypeInfo == null) {
+          throw new SemanticException(generateErrorMessage(tabref,
+              "Schema of both sides of union should match: Column " + field
+                  + " is of type " + lInfo.getType().getTypeName()
+                  + " on first table and type " + rInfo.getType().getTypeName()
+                  + " on second table"));
+        }
         ColumnInfo unionColInfo = new ColumnInfo(lInfo);
-        unionColInfo.setTabAlias(unionalias);
         unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
             rInfo.getType()));
         unionoutRR.put(unionalias, field, unionColInfo);
@@ -2637,6 +2625,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Created Plan for Query Block " + qb.getId());
       }
 
+      setQB(qb);
       return srcRel;
     }
 

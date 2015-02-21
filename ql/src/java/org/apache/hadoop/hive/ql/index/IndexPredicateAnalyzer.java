@@ -204,7 +204,7 @@ public class IndexPredicateAnalyzer {
   private ExprNodeDesc analyzeExpr(
     ExprNodeGenericFuncDesc expr,
     List<IndexSearchCondition> searchConditions,
-    Object... nodeOutputs) {
+    Object... nodeOutputs) throws SemanticException {
 
     if (FunctionRegistry.isOpAnd(expr)) {
       assert(nodeOutputs.length == 2);

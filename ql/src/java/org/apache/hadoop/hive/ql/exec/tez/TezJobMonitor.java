@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -165,6 +166,9 @@ public class TezJobMonitor {
     try {
       // isatty system call will return 1 if the file descriptor is terminal else 0
       if (isatty(STDOUT_FILENO) == 0) {
+        return false;
+      }
+      if (isatty(STDERR_FILENO) == 0) {
         return false;
       }
     } catch (NoClassDefFoundError ignore) {

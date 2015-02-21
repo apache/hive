@@ -28,6 +28,7 @@ import java.net.URLClassLoader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -49,8 +50,8 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
@@ -261,6 +262,8 @@ public class SessionState {
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
 
+  private final Registry registry = new Registry();
+
   /**
    * CURRENT_TIMESTAMP value for query
    */
@@ -416,11 +419,33 @@ public class SessionState {
     return hdfsEncryptionShim;
   }
 
+  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
+  private static class SessionStates {
+    private SessionState state;
+    private HiveConf conf;
+    private void attach(SessionState state) {
+      this.state = state;
+      attach(state.getConf());
+    }
+    private void attach(HiveConf conf) {
+      this.conf = conf;
+      ClassLoader classLoader = conf.getClassLoader();
+      if (classLoader != null) {
+        Thread.currentThread().setContextClassLoader(classLoader);
+      }
+    }
+  }
+
   /**
    * Singleton Session object per thread.
    *
    **/
-  private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState>();
+  private static ThreadLocal<SessionStates> tss = new ThreadLocal<SessionStates>() {
+    @Override
+    protected SessionStates initialValue() {
+      return new SessionStates();
+    }
+  };
 
   /**
    * start a new session and set it to current session.
@@ -434,8 +459,7 @@ public class SessionState {
    * Sets the given session state in the thread local var for sessions.
    */
   public static void setCurrentSessionState(SessionState startSs) {
-    tss.set(startSs);
-    Thread.currentThread().setContextClassLoader(startSs.getConf().getClassLoader());
+    tss.get().attach(startSs);
   }
 
   public static void detachSession() {
@@ -702,9 +726,6 @@ public class SessionState {
     } catch (HiveException e) {
       LOG.error("Error setting up authorization: " + e.getMessage(), e);
       throw new RuntimeException(e);
-    } catch (MetaException e) {
-      LOG.error("Error setting up authorization: " + e.getMessage(), e);
-      throw new RuntimeException(e);
     }
 
     if(LOG.isDebugEnabled()){
@@ -714,7 +735,7 @@ public class SessionState {
     return;
   }
 
-  private void setAuthorizerV2Config() throws MetaException, HiveException {
+  private void setAuthorizerV2Config() throws HiveException {
     // avoid processing the same config multiple times, check marker
     if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
@@ -724,7 +745,13 @@ public class SessionState {
 
     authorizerV2.applyAuthorizationConfigPolicy(conf);
     // update config in Hive thread local as well and init the metastore client
-    Hive.get(conf).getMSC();
+    try {
+      Hive.get(conf).getMSC();
+    } catch (Exception e) {
+      // catch-all due to some exec time dependencies on session state
+      // that would cause ClassNoFoundException otherwise
+      throw new HiveException(e.getMessage(), e);
+    }
 
     // set a marker that this conf has been processed.
     conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
@@ -781,11 +808,32 @@ public class SessionState {
    * get the current session.
    */
   public static SessionState get() {
-    return tss.get();
+    return tss.get().state;
+  }
+
+  public static HiveConf getSessionConf() {
+    SessionStates state = tss.get();
+    if (state.conf == null) {
+      state.attach(new HiveConf());
+    }
+    return state.conf;
+  }
+
+  public static Registry getRegistry() {
+    SessionState session = get();
+    return session != null ? session.registry : null;
+  }
+
+  public static Registry getRegistryForWrite() {
+    Registry registry = getRegistry();
+    if (registry == null) {
+      throw new RuntimeException("Function registery for session is not initialized");
+    }
+    return registry;
   }
 
   /**
-   * get hiveHitsory object which does structured logging.
+   * get hiveHistory object which does structured logging.
    *
    * @return The hive history object
    */
@@ -1080,13 +1128,13 @@ public class SessionState {
     return added.get(0);
   }
 
-  public List<String> add_resources(ResourceType t, List<String> values)
+  public List<String> add_resources(ResourceType t, Collection<String> values)
       throws RuntimeException {
     // By default don't convert to unix
     return add_resources(t, values, false);
   }
 
-  public List<String> add_resources(ResourceType t, List<String> values, boolean convertToUnix)
+  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
       throws RuntimeException {
     Set<String> resourceMap = getResourceMap(t);
 
@@ -1300,6 +1348,7 @@ public class SessionState {
   }
 
   public void close() throws IOException {
+    registry.clear();;
     if (txnMgr != null) txnMgr.closeTxnManager();
     JavaUtils.closeClassLoadersTo(conf.getClassLoader(), parentLoader);
     File resourceDir =
@@ -1388,9 +1437,8 @@ public class SessionState {
   /**
    * If authorization mode is v2, then pass it through authorizer so that it can apply
    * any security configuration changes.
-   * @throws MetaException
    */
-  public void applyAuthorizationPolicy() throws HiveException, MetaException {
+  public void applyAuthorizationPolicy() throws HiveException {
     setupAuth();
   }
 

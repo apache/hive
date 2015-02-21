@@ -68,8 +68,6 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
-import com.google.common.base.Joiner;
-
 /**
  * LlapDecider takes care of tagging certain vertices in the execution
  * graph as "llap", which in turn causes them to be submitted to an
@@ -233,7 +231,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           //   return false;
           // }
 
-          if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)cur)) {
+          if (!FunctionRegistry.isBuiltInFuncExpr((ExprNodeGenericFuncDesc)cur)) {
             LOG.info("Not a built-in function: " + cur.getExprString());
             return false;
           }

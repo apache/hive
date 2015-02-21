@@ -42,12 +42,12 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[2]
-    Row group index column 2:
-      Entry 0:count: 1000 hasNull: false min: RG1 max: RG1 sum: 3000 positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,66,488
-      Entry 2:count: 1000 hasNull: false min: RG3 max: RG3 sum: 3000 positions: 0,2,125,0,0,66,488
-      Entry 3:count: 0 hasNull: true positions: 0,4,125,0,0,136,488
-      Entry 4:count: 0 hasNull: true positions: 0,6,125,0,0,136,488
+    Row group indices for column 2:
+      Entry 0: count: 1000 hasNull: false min: RG1 max: RG1 sum: 3000 positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,66,488
+      Entry 2: count: 1000 hasNull: false min: RG3 max: RG3 sum: 3000 positions: 0,2,125,0,0,66,488
+      Entry 3: count: 0 hasNull: true positions: 0,4,125,0,0,136,488
+      Entry 4: count: 0 hasNull: true positions: 0,6,125,0,0,136,488
   Stripe: offset: 424 data: 156 rows: 5000 tail: 55 index: 119
     Stream: column 0 section ROW_INDEX start: 424 length 17
     Stream: column 1 section ROW_INDEX start: 441 length 63
@@ -59,12 +59,12 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
-    Row group index column 2:
-      Entry 0:count: 0 hasNull: true positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,0,0
-      Entry 2:count: 0 hasNull: true positions: 0,2,120,0,0,0,0
-      Entry 3:count: 0 hasNull: true positions: 0,4,115,0,0,0,0
-      Entry 4:count: 0 hasNull: true positions: 0,6,110,0,0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 0 hasNull: true positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,0,0
+      Entry 2: count: 0 hasNull: true positions: 0,2,120,0,0,0,0
+      Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
+      Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
   Stripe: offset: 754 data: 186 rows: 5000 tail: 60 index: 148
     Stream: column 0 section ROW_INDEX start: 754 length 17
     Stream: column 1 section ROW_INDEX start: 771 length 63
@@ -77,12 +77,12 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[1]
-    Row group index column 2:
-      Entry 0:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,0,0
-      Entry 1:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,66,488
-      Entry 2:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,198,464
-      Entry 3:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,330,440
-      Entry 4:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,462,416
+    Row group indices for column 2:
+      Entry 0: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,0,0
+      Entry 1: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,66,488
+      Entry 2: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,198,464
+      Entry 3: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,330,440
+      Entry 4: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,462,416
   Stripe: offset: 1148 data: 156 rows: 5000 tail: 55 index: 119
     Stream: column 0 section ROW_INDEX start: 1148 length 17
     Stream: column 1 section ROW_INDEX start: 1165 length 63
@@ -94,12 +94,12 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
-    Row group index column 2:
-      Entry 0:count: 0 hasNull: true positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,0,0
-      Entry 2:count: 0 hasNull: true positions: 0,2,120,0,0,0,0
-      Entry 3:count: 0 hasNull: true positions: 0,4,115,0,0,0,0
-      Entry 4:count: 0 hasNull: true positions: 0,6,110,0,0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 0 hasNull: true positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,0,0
+      Entry 2: count: 0 hasNull: true positions: 0,2,120,0,0,0,0
+      Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
+      Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
 
 File length: 1728 bytes
 Padding length: 0 bytes

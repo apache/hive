@@ -333,7 +333,7 @@ public class HiveConf extends Configuration {
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
-        "Do not report an error if DROP TABLE/VIEW/Index specifies a non-existent table/view/index"),
+        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/index/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 
@@ -593,8 +593,8 @@ public class HiveConf extends Configuration {
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
         "* implies all the keys will get inherited."),
     METASTORE_FILTER_HOOK("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
-        "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager\n" +
-         "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
+        "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
+        + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
         " to fire events for DML operations"),
 

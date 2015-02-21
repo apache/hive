@@ -41,7 +41,6 @@ extended = "Example:\n"
 @VectorizedExpressions({FuncPowerLongToDouble.class, FuncPowerDoubleToDouble.class})
 public class GenericUDFPower extends GenericUDF {
   private final String opName;
-  private final String opDisplayName;
 
   private transient PrimitiveObjectInspector baseOI;
   private transient PrimitiveObjectInspector powerOI;
@@ -54,7 +53,6 @@ public class GenericUDFPower extends GenericUDF {
 
   public GenericUDFPower() {
     opName = getClass().getSimpleName();
-    opDisplayName = "power";
     resultOI = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
   }
 
@@ -103,7 +101,7 @@ public class GenericUDFPower extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    return opDisplayName + "(" + children[0] + ", " + children[1] + ")";
+    return getStandardDisplayString("power", children);
   }
 
   @Override

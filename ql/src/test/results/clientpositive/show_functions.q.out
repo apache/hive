@@ -105,6 +105,7 @@ lcase
 lead
 least
 length
+levenshtein
 like
 ln
 locate
@@ -124,6 +125,7 @@ minute
 month
 named_struct
 negative
+next_day
 ngrams
 noop
 noopstreaming

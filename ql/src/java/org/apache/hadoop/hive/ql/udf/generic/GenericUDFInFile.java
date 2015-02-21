@@ -165,6 +165,6 @@ public class GenericUDFInFile extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    return "in_file(" + children[0] + ", " + children[1] + ")";
+    return getStandardDisplayString("in_file", children);
   }
 }

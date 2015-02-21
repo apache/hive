@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
@@ -42,8 +40,7 @@ public class TestHiveKVResultCache {
   @Test
   public void testSimple() throws Exception {
     // Create KV result cache object, add one (k,v) pair and retrieve them.
-    HiveConf conf = new HiveConf();
-    HiveKVResultCache cache = new HiveKVResultCache(conf);
+    HiveKVResultCache cache = new HiveKVResultCache();
 
     HiveKey key = new HiveKey("key".getBytes(), "key".hashCode());
     BytesWritable value = new BytesWritable("value".getBytes());
@@ -60,10 +57,9 @@ public class TestHiveKVResultCache {
 
   @Test
   public void testSpilling() throws Exception {
-    HiveConf conf = new HiveConf();
-    HiveKVResultCache cache = new HiveKVResultCache(conf);
+    HiveKVResultCache cache = new HiveKVResultCache();
 
-    final int recordCount = HiveKVResultCache.IN_MEMORY_CACHE_SIZE * 3;
+    final int recordCount = HiveKVResultCache.IN_MEMORY_NUM_ROWS * 3;
 
     // Test using the same cache where first n rows are inserted then cache is cleared.
     // Next reuse the same cache and insert another m rows and verify the cache stores correctly.
@@ -104,10 +100,18 @@ public class TestHiveKVResultCache {
   @Test
   public void testResultList() throws Exception {
     scanAndVerify(10000, 0, 0, "a", "b");
+    scanAndVerify(10000, 511, 0, "a", "b");
+    scanAndVerify(10000, 511 * 2, 0, "a", "b");
+    scanAndVerify(10000, 511, 10, "a", "b");
+    scanAndVerify(10000, 511 * 2, 10, "a", "b");
     scanAndVerify(10000, 512, 0, "a", "b");
     scanAndVerify(10000, 512 * 2, 0, "a", "b");
-    scanAndVerify(10000, 512, 10, "a", "b");
-    scanAndVerify(10000, 512 * 2, 10, "a", "b");
+    scanAndVerify(10000, 512, 3, "a", "b");
+    scanAndVerify(10000, 512 * 6, 10, "a", "b");
+    scanAndVerify(10000, 512 * 7, 5, "a", "b");
+    scanAndVerify(10000, 512 * 9, 19, "a", "b");
+    scanAndVerify(10000, 1, 0, "a", "b");
+    scanAndVerify(10000, 1, 1, "a", "b");
   }
 
   private static void scanAndVerify(
@@ -176,8 +180,8 @@ public class TestHiveKVResultCache {
     // A queue to notify separateRowGenerator to generate the next batch of rows.
     private LinkedBlockingQueue<Boolean> queue;
 
-    MyHiveFunctionResultList(Configuration conf, Iterator inputIterator) {
-      super(conf, inputIterator);
+    MyHiveFunctionResultList(Iterator inputIterator) {
+      super(inputIterator);
     }
 
     void init(long rows, int threshold, int separate, String p1, String p2) {
@@ -258,8 +262,7 @@ public class TestHiveKVResultCache {
   private static long scanResultList(long rows, int threshold, int separate,
       List<Tuple2<HiveKey, BytesWritable>> output, String prefix1, String prefix2) {
     final long iteratorCount = threshold == 0 ? 1 : rows * (100 - separate) / 100 / threshold;
-    MyHiveFunctionResultList resultList = new MyHiveFunctionResultList(
-        new HiveConf(), new Iterator() {
+    MyHiveFunctionResultList resultList = new MyHiveFunctionResultList(new Iterator() {
       // Input record iterator, not used
       private int i = 0;
       @Override

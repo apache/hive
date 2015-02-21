@@ -17,6 +17,14 @@
 
 package org.apache.hive.spark.client;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -30,14 +38,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,14 +55,6 @@ import org.apache.spark.SparkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 class SparkClientImpl implements SparkClient {
   private static final long serialVersionUID = 1L;
 
@@ -65,6 +63,8 @@ class SparkClientImpl implements SparkClient {
   private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
 
   private static final String OSX_TEST_OPTS = "SPARK_OSX_TEST_OPTS";
+  private static final String SPARK_HOME_ENV = "SPARK_HOME";
+  private static final String SPARK_HOME_KEY = "spark.home";
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
   private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
@@ -153,13 +153,13 @@ class SparkClientImpl implements SparkClient {
   }
 
   @Override
-  public Future<?> addJar(URL url) {
-    return run(new AddJarJob(url.toString()));
+  public Future<?> addJar(URI uri) {
+    return run(new AddJarJob(uri.toString()));
   }
 
   @Override
-  public Future<?> addFile(URL url) {
-    return run(new AddFileJob(url.toString()));
+  public Future<?> addFile(URI uri) {
+    return run(new AddFileJob(uri.toString()));
   }
 
   @Override
@@ -213,9 +213,12 @@ class SparkClientImpl implements SparkClient {
       // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
       // SparkSubmit class directly, which has some caveats (like having to provide a proper
       // version of Guava on the classpath depending on the deploy mode).
-      String sparkHome = conf.get("spark.home");
+      String sparkHome = conf.get(SPARK_HOME_KEY);
       if (sparkHome == null) {
-        sparkHome = System.getProperty("spark.home");
+        sparkHome = System.getenv(SPARK_HOME_ENV);
+      }
+      if (sparkHome == null) {
+        sparkHome = System.getProperty(SPARK_HOME_KEY);
       }
       String sparkLogDir = conf.get("hive.spark.log.dir");
       if (sparkLogDir == null) {

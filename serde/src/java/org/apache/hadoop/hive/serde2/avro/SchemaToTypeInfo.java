@@ -30,8 +30,10 @@ import static org.apache.avro.Schema.Type.STRING;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -82,12 +84,28 @@ class SchemaToTypeInfo {
    * @throws AvroSerdeException for problems during conversion.
    */
   public static List<TypeInfo> generateColumnTypes(Schema schema) throws AvroSerdeException {
+    return generateColumnTypes (schema, null);
+  }
+
+  /**
+   * Generate a list of of TypeInfos from an Avro schema.  This method is
+   * currently public due to some weirdness in deserializing unions, but
+   * will be made private once that is resolved.
+   * @param schema Schema to generate field types for
+   * @param seenSchemas stores schemas processed in the parsing done so far,
+   *         helping to resolve circular references in the schema
+   * @return List of TypeInfos, each element of which is a TypeInfo derived
+   *         from the schema.
+   * @throws AvroSerdeException for problems during conversion.
+   */
+  public static List<TypeInfo> generateColumnTypes(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     List<Schema.Field> fields = schema.getFields();
 
     List<TypeInfo> types = new ArrayList<TypeInfo>(fields.size());
 
     for (Schema.Field field : fields) {
-      types.add(generateTypeInfo(field.schema()));
+      types.add(generateTypeInfo(field.schema(), seenSchemas));
     }
 
     return types;
@@ -95,17 +113,22 @@ class SchemaToTypeInfo {
 
   static InstanceCache<Schema, TypeInfo> typeInfoCache = new InstanceCache<Schema, TypeInfo>() {
                                   @Override
-                                  protected TypeInfo makeInstance(Schema s) throws AvroSerdeException {
-                                    return generateTypeInfoWorker(s);
+                                  protected TypeInfo makeInstance(Schema s,
+                                      Set<Schema> seenSchemas)
+                                      throws AvroSerdeException {
+                                    return generateTypeInfoWorker(s, seenSchemas);
                                   }
                                 };
   /**
    * Convert an Avro Schema into an equivalent Hive TypeInfo.
    * @param schema to record. Must be of record type.
+   * @param seenSchemas stores schemas processed in the parsing done so far,
+   *         helping to resolve circular references in the schema
    * @return TypeInfo matching the Avro schema
    * @throws AvroSerdeException for any problems during conversion.
    */
-  public static TypeInfo generateTypeInfo(Schema schema) throws AvroSerdeException {
+  public static TypeInfo generateTypeInfo(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     // For bytes type, it can be mapped to decimal.
     Schema.Type type = schema.getType();
     if (type == BYTES && AvroSerDe.DECIMAL_TYPE_NAME
@@ -160,14 +183,16 @@ class SchemaToTypeInfo {
       return TypeInfoFactory.timestampTypeInfo;
     }
 
-    return typeInfoCache.retrieve(schema);
+    return typeInfoCache.retrieve(schema, seenSchemas);
   }
 
-  private static TypeInfo generateTypeInfoWorker(Schema schema) throws AvroSerdeException {
+  private static TypeInfo generateTypeInfoWorker(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     // Avro requires NULLable types to be defined as unions of some type T
     // and NULL.  This is annoying and we're going to hide it from the user.
     if(AvroSerdeUtils.isNullableType(schema)) {
-      return generateTypeInfo(AvroSerdeUtils.getOtherTypeFromNullableType(schema));
+      return generateTypeInfo(
+        AvroSerdeUtils.getOtherTypeFromNullableType(schema), seenSchemas);
     }
 
     Schema.Type type = schema.getType();
@@ -176,17 +201,25 @@ class SchemaToTypeInfo {
     }
 
     switch(type) {
-      case RECORD: return generateRecordTypeInfo(schema);
-      case MAP:    return generateMapTypeInfo(schema);
-      case ARRAY:  return generateArrayTypeInfo(schema);
-      case UNION:  return generateUnionTypeInfo(schema);
+      case RECORD: return generateRecordTypeInfo(schema, seenSchemas);
+      case MAP:    return generateMapTypeInfo(schema, seenSchemas);
+      case ARRAY:  return generateArrayTypeInfo(schema, seenSchemas);
+      case UNION:  return generateUnionTypeInfo(schema, seenSchemas);
       case ENUM:   return generateEnumTypeInfo(schema);
       default:     throw new AvroSerdeException("Do not yet support: " + schema);
     }
   }
 
-  private static TypeInfo generateRecordTypeInfo(Schema schema) throws AvroSerdeException {
+  private static TypeInfo generateRecordTypeInfo(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     assert schema.getType().equals(Schema.Type.RECORD);
+
+    if (seenSchemas == null) {
+        seenSchemas = Collections.newSetFromMap(new IdentityHashMap<Schema, Boolean>());
+    } else if (seenSchemas.contains(schema)) {
+        return primitiveTypeToTypeInfo.get(Schema.Type.NULL);
+    }
+    seenSchemas.add(schema);
 
     List<Schema.Field> fields = schema.getFields();
     List<String> fieldNames = new ArrayList<String>(fields.size());
@@ -194,7 +227,7 @@ class SchemaToTypeInfo {
 
     for(int i = 0; i < fields.size(); i++) {
       fieldNames.add(i, fields.get(i).name());
-      typeInfos.add(i, generateTypeInfo(fields.get(i).schema()));
+      typeInfos.add(i, generateTypeInfo(fields.get(i).schema(), seenSchemas));
     }
 
     return TypeInfoFactory.getStructTypeInfo(fieldNames, typeInfos);
@@ -204,23 +237,26 @@ class SchemaToTypeInfo {
    * Generate a TypeInfo for an Avro Map.  This is made slightly simpler in that
    * Avro only allows maps with strings for keys.
    */
-  private static TypeInfo generateMapTypeInfo(Schema schema) throws AvroSerdeException {
+  private static TypeInfo generateMapTypeInfo(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     assert schema.getType().equals(Schema.Type.MAP);
     Schema valueType = schema.getValueType();
-    TypeInfo ti = generateTypeInfo(valueType);
+    TypeInfo ti = generateTypeInfo(valueType, seenSchemas);
 
     return TypeInfoFactory.getMapTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("string"), ti);
   }
 
-  private static TypeInfo generateArrayTypeInfo(Schema schema) throws AvroSerdeException {
+  private static TypeInfo generateArrayTypeInfo(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     assert schema.getType().equals(Schema.Type.ARRAY);
     Schema itemsType = schema.getElementType();
-    TypeInfo itemsTypeInfo = generateTypeInfo(itemsType);
+    TypeInfo itemsTypeInfo = generateTypeInfo(itemsType, seenSchemas);
 
     return TypeInfoFactory.getListTypeInfo(itemsTypeInfo);
   }
 
-  private static TypeInfo generateUnionTypeInfo(Schema schema) throws AvroSerdeException {
+  private static TypeInfo generateUnionTypeInfo(Schema schema,
+      Set<Schema> seenSchemas) throws AvroSerdeException {
     assert schema.getType().equals(Schema.Type.UNION);
     List<Schema> types = schema.getTypes();
 
@@ -228,7 +264,7 @@ class SchemaToTypeInfo {
     List<TypeInfo> typeInfos = new ArrayList<TypeInfo>(types.size());
 
     for(Schema type : types) {
-      typeInfos.add(generateTypeInfo(type));
+      typeInfos.add(generateTypeInfo(type, seenSchemas));
     }
 
     return TypeInfoFactory.getUnionTypeInfo(typeInfos);

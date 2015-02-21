@@ -35,18 +35,18 @@ public class NumDistinctValueEstimator {
    * independent. As a consequence, the hash values will not distribute uniformly from 0 to 2^p-1
    * thus introducing errors in the estimates.
    */
-  private static final int bitVectorSize = 31;
-  private int numBitVectors;
+  private static final int BIT_VECTOR_SIZE = 31;
+  private final int numBitVectors;
 
   // Refer to Flajolet-Martin'86 for the value of phi
-  private final double phi =  0.77351;
+  private static final double PHI = 0.77351;
 
-  private int[] a;
-  private int[] b;
-  private  FastBitSet[] bitVector = new FastBitSet[numBitVectors];
+  private final int[] a;
+  private final int[] b;
+  private final FastBitSet[] bitVector;
 
-  private Random aValue;
-  private Random bValue;
+  private final Random aValue;
+  private final Random bValue;
 
   /* Create a new distinctValueEstimator
    */
@@ -54,7 +54,7 @@ public class NumDistinctValueEstimator {
     this.numBitVectors = numBitVectors;
     bitVector = new FastBitSet[numBitVectors];
     for (int i=0; i< numBitVectors; i++) {
-      bitVector[i] = new FastBitSet(bitVectorSize);
+      bitVector[i] = new FastBitSet(BIT_VECTOR_SIZE);
     }
 
     a = new int[numBitVectors];
@@ -98,23 +98,30 @@ public class NumDistinctValueEstimator {
       b[i] = randVal;
 
       if (a[i] < 0) {
-        a[i] = a[i] + (1 << bitVectorSize - 1);
+        a[i] = a[i] + (1 << BIT_VECTOR_SIZE - 1);
       }
 
       if (b[i] < 0) {
-        b[i] = b[i] + (1 << bitVectorSize - 1);
+        b[i] = b[i] + (1 << BIT_VECTOR_SIZE - 1);
       }
     }
   }
 
   public NumDistinctValueEstimator(String s, int numBitVectors) {
-    FastBitSet b[] = deserialize(s, numBitVectors);
+    this.numBitVectors = numBitVectors;
+    FastBitSet bitVectorDeser[] = deserialize(s, numBitVectors);
     bitVector = new FastBitSet[numBitVectors];
     for(int i=0; i <numBitVectors; i++) {
-       bitVector[i] = new FastBitSet(bitVectorSize);
+       bitVector[i] = new FastBitSet(BIT_VECTOR_SIZE);
        bitVector[i].clear();
-       bitVector[i].or(b[i]);
+       bitVector[i].or(bitVectorDeser[i]);
     }
+
+    a = null;
+    b = null;
+
+    aValue = null;
+    bValue = null;
   }
 
   /**
@@ -135,7 +142,7 @@ public class NumDistinctValueEstimator {
   }
 
   public int getBitVectorSize() {
-    return bitVectorSize;
+    return BIT_VECTOR_SIZE;
   }
 
   public void printNumDistinctValueEstimator() {
@@ -145,7 +152,7 @@ public class NumDistinctValueEstimator {
     LOG.debug("Number of Vectors:");
     LOG.debug(numBitVectors);
     LOG.debug("Vector Size: ");
-    LOG.debug(bitVectorSize);
+    LOG.debug(BIT_VECTOR_SIZE);
 
     for (int i=0; i < numBitVectors; i++) {
       t = t + bitVector[i].toString();
@@ -173,7 +180,7 @@ public class NumDistinctValueEstimator {
   private FastBitSet[] deserialize(String s, int numBitVectors) {
     FastBitSet[] b = new FastBitSet[numBitVectors];
     for (int j=0; j < numBitVectors; j++) {
-      b[j] = new FastBitSet(bitVectorSize);
+      b[j] = new FastBitSet(BIT_VECTOR_SIZE);
       b[j].clear();
     }
 
@@ -219,7 +226,7 @@ public class NumDistinctValueEstimator {
   }
 
   private int generateHash(long v, int hashNum) {
-    int mod = (1<<bitVectorSize) - 1;
+    int mod = (1<<BIT_VECTOR_SIZE) - 1;
     long tempHash = a[hashNum] * v  + b[hashNum];
     tempHash %= mod;
     int hash = (int) tempHash;
@@ -234,7 +241,7 @@ public class NumDistinctValueEstimator {
   }
 
   private int generateHashForPCSA(long v) {
-    int mod = 1 << (bitVectorSize - 1) - 1;
+    int mod = 1 << (BIT_VECTOR_SIZE - 1) - 1;
     long tempHash = a[0] * v + b[0];
     tempHash %= mod;
     int hash = (int) tempHash;
@@ -259,8 +266,8 @@ public class NumDistinctValueEstimator {
       int index;
 
       // Find the index of the least significant bit that is 1
-      for (index=0; index<bitVectorSize; index++) {
-        if (hash % 2 == 1) {
+      for (index=0; index<BIT_VECTOR_SIZE; index++) {
+        if (hash % 2 != 0) {
           break;
         }
         hash = hash >> 1;
@@ -277,8 +284,8 @@ public class NumDistinctValueEstimator {
     int index;
 
     // Find the index of the least significant bit that is 1
-    for (index=0; index<bitVectorSize; index++) {
-      if (rho % 2 == 1) {
+    for (index=0; index<BIT_VECTOR_SIZE; index++) {
+      if (rho % 2 != 0) {
         break;
       }
       rho = rho >> 1;
@@ -321,13 +328,13 @@ public class NumDistinctValueEstimator {
 
     for (int i=0; i < numBitVectors; i++) {
       int index = 0;
-      while (bitVector[i].get(index) && index < bitVectorSize) {
+      while (bitVector[i].get(index) && index < BIT_VECTOR_SIZE) {
         index = index + 1;
       }
       S = S + index;
     }
 
-    numDistinctValues = ((numBitVectors/phi) * Math.pow(2.0, S/numBitVectors));
+    numDistinctValues = ((numBitVectors/PHI) * Math.pow(2.0, S/numBitVectors));
     return ((long)numDistinctValues);
   }
 
@@ -345,7 +352,7 @@ public class NumDistinctValueEstimator {
     }
 
     avgLeastSigZero =
-        (double)(sumLeastSigZero/(numBitVectors * 1.0)) - (Math.log(phi)/Math.log(2.0));
+        (double)(sumLeastSigZero/(numBitVectors * 1.0)) - (Math.log(PHI)/Math.log(2.0));
     numDistinctValues = Math.pow(2.0, avgLeastSigZero);
     return ((long)(numDistinctValues));
   }

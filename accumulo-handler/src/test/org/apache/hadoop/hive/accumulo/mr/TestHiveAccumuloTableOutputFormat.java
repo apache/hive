@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
@@ -150,7 +150,7 @@ public class TestHiveAccumuloTableOutputFormat {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(types));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     AccumuloRowSerializer serializer = new AccumuloRowSerializer(0, serDeParams,
         accumuloSerDeParams.getColumnMappings(), AccumuloSerDeParameters.DEFAULT_VISIBILITY_LABEL,
@@ -243,7 +243,7 @@ public class TestHiveAccumuloTableOutputFormat {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(types));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     AccumuloRowSerializer serializer = new AccumuloRowSerializer(0, serDeParams,
         accumuloSerDeParams.getColumnMappings(), new ColumnVisibility("foo"),
@@ -332,7 +332,7 @@ public class TestHiveAccumuloTableOutputFormat {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(types));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     AccumuloRowSerializer serializer = new AccumuloRowSerializer(0, serDeParams,
         accumuloSerDeParams.getColumnMappings(), AccumuloSerDeParameters.DEFAULT_VISIBILITY_LABEL,
@@ -432,7 +432,7 @@ public class TestHiveAccumuloTableOutputFormat {
     tableProperties.setProperty(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE, ColumnEncoding.BINARY.getName());
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     AccumuloRowSerializer serializer = new AccumuloRowSerializer(0, serDeParams,
         accumuloSerDeParams.getColumnMappings(), AccumuloSerDeParameters.DEFAULT_VISIBILITY_LABEL,

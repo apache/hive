@@ -51,17 +51,17 @@ explain
 insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a;
 
 insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a;
 
 show partitions outputTbl2;
@@ -70,17 +70,17 @@ desc formatted outputTbl2 partition(ds='2008-04-08');
 explain insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a;
 
 insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a;
 
 show partitions outputTbl3;

@@ -29,11 +29,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class NoopWithMap extends Noop
 {
-  @Override
-  public PTFPartition execute(PTFPartition iPart) throws HiveException
-  {
-    return iPart;
-  }
 
   @Override
   protected PTFPartition _transformRawInput(PTFPartition iPart) throws HiveException

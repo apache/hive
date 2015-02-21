@@ -69,8 +69,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException {
     ArrayList<List<?>> oColumns = new ArrayList<List<?>>();
     PTFPartition iPart = pItr.getPartition();
-    StructObjectInspector inputOI;
-    inputOI = (StructObjectInspector) iPart.getOutputOI();
+    StructObjectInspector inputOI = iPart.getOutputOI();
 
     WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
     Order order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
@@ -145,7 +144,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return true;
   }
 
-  private boolean streamingPossible(Configuration cfg, WindowFunctionDef wFnDef) {
+  private boolean streamingPossible(Configuration cfg, WindowFunctionDef wFnDef)
+      throws HiveException {
     WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
     WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFnDef
         .getName());
@@ -202,7 +202,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
    * So no Unbounded Preceding or Following.
    */
   @SuppressWarnings("resource")
-  private int[] setCanAcceptInputAsStream(Configuration cfg) {
+  private int[] setCanAcceptInputAsStream(Configuration cfg) throws HiveException {
 
     canAcceptInputAsStream = false;
 
@@ -514,7 +514,6 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       i++;
     }
 
-    i=0;
     for(i=0; i < iPart.getOutputOI().getAllStructFieldRefs().size(); i++) {
       output.add(null);
     }

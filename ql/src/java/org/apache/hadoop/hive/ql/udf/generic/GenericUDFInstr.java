@@ -93,6 +93,6 @@ public class GenericUDFInstr extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    return "instr(" + children[0] + children[1] + ")";
+    return getStandardDisplayString("instr", children);
   }
 }

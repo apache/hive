@@ -1,0 +1,367 @@
+PREHOOK: query: SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
+!
+!=
+%
+&
+*
++
+-
+/
+<
+<=
+<=>
+<>
+=
+==
+>
+>=
+^
+abs
+acos
+add_months
+and
+array
+array_contains
+ascii
+asin
+assert_true
+atan
+avg
+base64
+between
+bin
+case
+ceil
+ceiling
+coalesce
+collect_list
+collect_set
+compute_stats
+concat
+concat_ws
+context_ngrams
+conv
+corr
+cos
+count
+covar_pop
+covar_samp
+create_union
+cume_dist
+current_database
+current_date
+current_timestamp
+current_user
+date_add
+date_sub
+datediff
+day
+dayofmonth
+decode
+default.qtest_get_java_boolean
+degrees
+dense_rank
+div
+e
+elt
+encode
+ewah_bitmap
+ewah_bitmap_and
+ewah_bitmap_empty
+ewah_bitmap_or
+exp
+explode
+field
+find_in_set
+first_value
+floor
+format_number
+from_unixtime
+from_utc_timestamp
+get_json_object
+greatest
+hash
+hex
+histogram_numeric
+hour
+if
+in
+in_file
+index
+initcap
+inline
+instr
+isnotnull
+isnull
+java_method
+json_tuple
+lag
+last_day
+last_value
+lcase
+lead
+least
+length
+like
+ln
+locate
+log
+log10
+log2
+lower
+lpad
+ltrim
+map
+map_keys
+map_values
+matchpath
+max
+min
+minute
+month
+named_struct
+negative
+ngrams
+noop
+noopstreaming
+noopwithmap
+noopwithmapstreaming
+not
+ntile
+nvl
+or
+parse_url
+parse_url_tuple
+percent_rank
+percentile
+percentile_approx
+pi
+pmod
+posexplode
+positive
+pow
+power
+printf
+radians
+rand
+rank
+reflect
+reflect2
+regexp
+regexp_extract
+regexp_replace
+repeat
+reverse
+rlike
+round
+row_number
+rpad
+rtrim
+second
+sentences
+sign
+sin
+size
+sort_array
+space
+split
+sqrt
+stack
+std
+stddev
+stddev_pop
+stddev_samp
+str_to_map
+struct
+substr
+substring
+sum
+tan
+to_date
+to_unix_timestamp
+to_utc_timestamp
+translate
+trim
+ucase
+unbase64
+unhex
+unix_timestamp
+upper
+var_pop
+var_samp
+variance
+weekofyear
+when
+windowingtablefunction
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+year
+|
+~
+PREHOOK: query: SHOW FUNCTIONS '^c.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '^c.*'
+POSTHOOK: type: SHOWFUNCTIONS
+case
+ceil
+ceiling
+coalesce
+collect_list
+collect_set
+compute_stats
+concat
+concat_ws
+context_ngrams
+conv
+corr
+cos
+count
+covar_pop
+covar_samp
+create_union
+cume_dist
+current_database
+current_date
+current_timestamp
+current_user
+PREHOOK: query: SHOW FUNCTIONS '.*e$'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '.*e$'
+POSTHOOK: type: SHOWFUNCTIONS
+assert_true
+case
+coalesce
+current_database
+current_date
+decode
+e
+encode
+explode
+first_value
+from_unixtime
+in_file
+inline
+json_tuple
+last_value
+lcase
+like
+locate
+minute
+negative
+ntile
+parse_url_tuple
+percentile
+posexplode
+positive
+regexp_replace
+reverse
+rlike
+size
+space
+to_date
+translate
+ucase
+variance
+xpath_double
+PREHOOK: query: SHOW FUNCTIONS 'log.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS 'log.*'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+PREHOOK: query: SHOW FUNCTIONS '.*date.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
+POSTHOOK: type: SHOWFUNCTIONS
+current_date
+date_add
+date_sub
+datediff
+to_date
+PREHOOK: query: SHOW FUNCTIONS '***'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '***'
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+when
+PREHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+POSTHOOK: type: SHOWFUNCTIONS
+max
+min
+PREHOOK: query: SHOW FUNCTIONS LIKE 'xpath*|m*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'xpath*|m*'
+POSTHOOK: type: SHOWFUNCTIONS
+map
+map_keys
+map_values
+matchpath
+max
+min
+minute
+month
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+PREHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS LIKE "log"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE `log`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log*'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+PREHOOK: query: SHOW FUNCTIONS LIKE "log*"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log*"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+PREHOOK: query: SHOW FUNCTIONS LIKE `log*`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log*`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2

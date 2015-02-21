@@ -85,7 +85,8 @@ TOK_ORDERBY;
 TOK_CLUSTERBY;
 TOK_DISTRIBUTEBY;
 TOK_SORTBY;
-TOK_UNION;
+TOK_UNIONALL;
+TOK_UNIONDISTINCT;
 TOK_JOIN;
 TOK_LEFTOUTERJOIN;
 TOK_RIGHTOUTERJOIN;
@@ -215,6 +216,7 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_RELOADFUNCTION;
 TOK_CREATEMACRO;
 TOK_DROPMACRO;
 TOK_TEMPORARY;
@@ -612,9 +614,11 @@ import java.util.HashMap;
 
   // counter to generate unique union aliases
   private int aliasCounter;
-  
   private String generateUnionAlias() {
     return "_u" + (++aliasCounter);
+  }
+  private CommonTree throwSetOpException() throws RecognitionException {
+    throw new FailedPredicateException(input, "orderByClause clusterByClause distributeByClause sortByClause limitClause can only be applied to the whole union.", "");
   }
 }
 
@@ -699,6 +703,7 @@ ddlStatement
     | createIndexStatement
     | dropIndexStatement
     | dropFunctionStatement
+    | reloadFunctionStatement
     | dropMacroStatement
     | analyzeStatement
     | lockStatement
@@ -1622,6 +1627,11 @@ dropFunctionStatement
     ->                  ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
+reloadFunctionStatement
+@init { pushMsg("reload function statement", state); }
+@after { popMsg(state); }
+    : KW_RELOAD KW_FUNCTION -> ^(TOK_RELOADFUNCTION);
+
 createMacroStatement
 @init { pushMsg("create macro statement", state); }
 @after { popMsg(state); }
@@ -2043,7 +2053,8 @@ unionType
 setOperator
 @init { pushMsg("set operator", state); }
 @after { popMsg(state); }
-    : KW_UNION KW_ALL -> ^(TOK_UNION)
+    : KW_UNION KW_ALL -> ^(TOK_UNIONALL)
+    | KW_UNION KW_DISTINCT? -> ^(TOK_UNIONDISTINCT)
     ;
 
 queryStatementExpression[boolean topLevel]
@@ -2131,41 +2142,98 @@ regularBody[boolean topLevel]
    selectStatement[topLevel]
    ;
 
- selectStatement[boolean topLevel]
- : (singleSelectStatement -> singleSelectStatement)
-   (u=setOperator b=singleSelectStatement
-       -> ^($u {$selectStatement.tree} $b)
-   )*
-   -> {u != null && topLevel}? ^(TOK_QUERY
-         ^(TOK_FROM
-           ^(TOK_SUBQUERY
-             {$selectStatement.tree}
+selectStatement[boolean topLevel]
+   :
+   (
+   s=selectClause
+   f=fromClause?
+   w=whereClause?
+   g=groupByClause?
+   h=havingClause?
+   o=orderByClause?
+   c=clusterByClause?
+   d=distributeByClause?
+   sort=sortByClause?
+   win=window_clause?
+   l=limitClause?
+   -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                     $s $w? $g? $h? $o? $c?
+                     $d? $sort? $win? $l?))
+   )
+   (set=setOpSelectStatement[$selectStatement.tree, topLevel])?
+   -> {set == null}?
+      {$selectStatement.tree}
+   -> {o==null && c==null && d==null && sort==null && l==null}?
+      {$set.tree}
+   -> {throwSetOpException()}
+   ;
+
+setOpSelectStatement[CommonTree t, boolean topLevel]
+   :
+   (u=setOperator b=simpleSelectStatement
+   -> {$setOpSelectStatement.tree != null && u.tree.getType()==HiveParser.TOK_UNIONDISTINCT}?
+      ^(TOK_QUERY
+          ^(TOK_FROM
+            ^(TOK_SUBQUERY
+              ^(TOK_UNIONALL {$setOpSelectStatement.tree} $b)
               {adaptor.create(Identifier, generateUnionAlias())}
              )
           )
-         ^(TOK_INSERT 
-            ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-            ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+          ^(TOK_INSERT
+             ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+             ^(TOK_SELECTDI ^(TOK_SELEXPR TOK_ALLCOLREF))
           )
-        )
-    -> {$selectStatement.tree}
- ;
+       )
+   -> {$setOpSelectStatement.tree != null && u.tree.getType()!=HiveParser.TOK_UNIONDISTINCT}?
+      ^(TOK_UNIONALL {$setOpSelectStatement.tree} $b)
+   -> {$setOpSelectStatement.tree == null && u.tree.getType()==HiveParser.TOK_UNIONDISTINCT}?
+      ^(TOK_QUERY
+          ^(TOK_FROM
+            ^(TOK_SUBQUERY
+              ^(TOK_UNIONALL {$t} $b)
+              {adaptor.create(Identifier, generateUnionAlias())}
+             )
+           )
+          ^(TOK_INSERT
+            ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+            ^(TOK_SELECTDI ^(TOK_SELEXPR TOK_ALLCOLREF))
+         )
+       )
+   -> ^(TOK_UNIONALL {$t} $b)
+   )+
+   o=orderByClause?
+   c=clusterByClause?
+   d=distributeByClause?
+   sort=sortByClause?
+   win=window_clause?
+   l=limitClause?
+   -> {o==null && c==null && d==null && sort==null && win==null && l==null && !topLevel}?
+      {$setOpSelectStatement.tree}
+   -> ^(TOK_QUERY
+          ^(TOK_FROM
+            ^(TOK_SUBQUERY
+              {$setOpSelectStatement.tree}
+              {adaptor.create(Identifier, generateUnionAlias())}
+             )
+          )
+          ^(TOK_INSERT
+             ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+             ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+             $o? $c? $d? $sort? $win? $l?
+          )
+       )
+   ;
 
-singleSelectStatement
+simpleSelectStatement
    :
    selectClause
    fromClause?
    whereClause?
    groupByClause?
    havingClause?
-   orderByClause?
-   clusterByClause?
-   distributeByClause?
-   sortByClause?
    window_clause?
-   limitClause? -> ^(TOK_QUERY fromClause? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?))
+   -> ^(TOK_QUERY fromClause? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                     selectClause whereClause? groupByClause? havingClause? window_clause?))
    ;
 
 selectStatementWithCTE
@@ -2216,8 +2284,8 @@ insertClause
 @after { popMsg(state); }
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
-   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition
-       -> ^(TOK_INSERT_INTO tableOrPartition)
+   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition (LPAREN targetCols=columnNameList RPAREN)?
+       -> ^(TOK_INSERT_INTO tableOrPartition $targetCols?)
    ;
 
 destination

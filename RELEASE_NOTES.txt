@@ -1,3 +1,481 @@
+Release Notes - Hive - Version 1.1.0
+
+** Sub-task
+    * [HIVE-7073] - Implement Binary in ParquetSerDe
+    * [HIVE-8121] - Create micro-benchmarks for ParquetSerde and evaluate performance
+    * [HIVE-8122] - Make use of SearchArgument classes for Parquet SERDE
+    * [HIVE-8130] - Support Date in Avro
+    * [HIVE-8131] - Support timestamp in Avro
+    * [HIVE-8362] - Investigate flaky test parallel.q
+    * [HIVE-8651] - CBO: sort column changed in infer_bucket_sort test
+    * [HIVE-8707] - Fix ordering differences due to Java 8 HashMap function
+    * [HIVE-8718] - Refactoring: move mapLocalWork field from MapWork to BaseWork
+    * [HIVE-8773] - Fix TestWebHCatE2e#getStatus for Java8
+    * [HIVE-8862] - Fix ordering diferences on TestParse tests due to Java8
+    * [HIVE-8922] - CBO: assorted date and timestamp issues
+    * [HIVE-8923] - HIVE-8512 needs to be fixed also for CBO
+    * [HIVE-8936] - Add SORT_QUERY_RESULTS for join tests that do not guarantee order
+    * [HIVE-8962] - Add SORT_QUERY_RESULTS for join tests that do not guarantee order #2
+    * [HIVE-9030] - CBO: Plans with comparison of values with different types
+    * [HIVE-9033] - Fix ordering differences due to Java8 (part 2)
+    * [HIVE-9034] - CBO: type change in literal_ints.q
+    * [HIVE-9035] - CBO: Disable PPD when functions are non-deterministic (ppd_random.q  - non-deterministic udf rand() pushed above join)
+    * [HIVE-9043] - HiveException: Conflict on row inspector for {table}
+    * [HIVE-9066] - temporarily disable CBO for non-deterministic functions
+    * [HIVE-9104] - windowing.q failed when mapred.reduce.tasks is set to larger than one
+    * [HIVE-9109] - Add support for Java 8 specific q-test out files
+    * [HIVE-9127] - Improve CombineHiveInputFormat.getSplit performance
+    * [HIVE-9133] - CBO (Calcite Return Path): Refactor Semantic Analyzer to Move CBO code out 
+    * [HIVE-9153] - Perf enhancement on CombineHiveInputFormat and HiveInputFormat
+    * [HIVE-9161] - Fix ordering differences on UDF functions due to Java8
+    * [HIVE-9181] - Fix SkewJoinOptimizer related Java 8 ordering differences
+    * [HIVE-9193] - Fix ordering differences due to Java 8 (Part 3)
+    * [HIVE-9194] - Support select distinct *
+    * [HIVE-9200] - CBO (Calcite Return Path): Inline Join, Properties
+    * [HIVE-9206] - Fix Desc Formatted related Java 8 ordering differences
+    * [HIVE-9222] - Fix ordering differences due to Java 8 (Part 4)
+    * [HIVE-9224] - CBO (Calcite Return Path): Inline Table, Properties
+    * [HIVE-9239] - Fix ordering differences due to Java 8 (Part 5)
+    * [HIVE-9241] - Fix TestCliDriver.testCliDriver_subquery_multiinsert
+    * [HIVE-9257] - Merge from spark to trunk January 2015
+    * [HIVE-9259] - Fix ClassCastException when CBO is enabled for HOS [Spark Branch]
+    * [HIVE-9264] - Merge encryption branch to trunk
+    * [HIVE-9292] - CBO (Calcite Return Path): Inline GroupBy, Properties
+    * [HIVE-9315] - CBO (Calcite Return Path): Inline FileSinkOperator, Properties
+    * [HIVE-9352] - Merge from spark to trunk (follow-up of HIVE-9257)
+    * [HIVE-9409] - Avoid ser/de loggers as logging framework can be incompatible on driver and workers
+    * [HIVE-9410] - ClassNotFoundException occurs during hive query case execution with UDF defined [Spark Branch]
+    * [HIVE-9428] - LocalSparkJobStatus may return failed job as successful [Spark Branch]
+    * [HIVE-9431] - CBO (Calcite Return Path): Removing AST from ParseContext
+    * [HIVE-9434] - Shim the method Path.getPathWithoutSchemeAndAuthority
+    * [HIVE-9444] - CBO (Calcite Return Path): Rewrite GlobalLimitOptimizer
+    * [HIVE-9449] - Push YARN configuration to Spark while deply Spark on YARN[Spark Branch]
+    * [HIVE-9450] - [Parquet] Check all data types work for Parquet in Group By operator
+    * [HIVE-9477] - No error thrown when global limit optimization failed to find enough number of rows [Spark Branch]
+    * [HIVE-9487] - Make Remote Spark Context secure [Spark Branch]
+    * [HIVE-9493] - Failed job may not throw exceptions [Spark Branch]
+
+** Bug
+    * [HIVE-1344] - error in select disinct
+    * [HIVE-1654] - select distinct should allow column name regex
+    * [HIVE-1869] - TestMTQueries failing on jenkins
+    * [HIVE-3781] - Index related events should be delivered to metastore event listener
+    * [HIVE-4009] - CLI Tests fail randomly due to MapReduce LocalJobRunner race condition
+    * [HIVE-5536] - Incorrect Operation Name is passed to hookcontext
+    * [HIVE-5631] - Index creation on a skew table fails
+    * [HIVE-5664] - Drop cascade database fails when the db has any tables with indexes
+    * [HIVE-5865] - AvroDeserializer incorrectly assumes keys to Maps will always be of type 'org.apache.avro.util.Utf8'
+    * [HIVE-6165] - Unify HivePreparedStatement from jdbc:hive and jdbc:hive2
+    * [HIVE-6198] - ORC file and struct column names are case sensitive
+    * [HIVE-6308] - COLUMNS_V2 Metastore table not populated for tables created without an explicit column list.
+    * [HIVE-6421] - abs() should preserve precision/scale of decimal input
+    * [HIVE-6468] - HS2 & Metastore using SASL out of memory error when curl sends a get request
+    * [HIVE-6623] - Add "owner" tag to ptest2 created instances
+    * [HIVE-6679] - HiveServer2 should support configurable the server side socket timeout and keepalive for various transports types where applicable
+    * [HIVE-6683] - Beeline does not accept comments at end of line
+    * [HIVE-6914] - parquet-hive cannot write nested map (map value is map)
+    * [HIVE-7024] - Escape control characters for explain result
+    * [HIVE-7069] - Zookeeper connection leak
+    * [HIVE-7270] - SerDe Properties are not considered by show create table Command
+    * [HIVE-7932] - It may cause NP exception when add accessed columns to ReadEntity
+    * [HIVE-7951] - InputFormats implementing (Job)Configurable should not be cached
+    * [HIVE-7997] - Potential null pointer reference in ObjectInspectorUtils#compareTypes()
+    * [HIVE-8099] - IN operator for partition column fails when the partition column type is DATE
+    * [HIVE-8182] - beeline fails when executing multiple-line queries with trailing spaces
+    * [HIVE-8257] - Accumulo introduces old hadoop-client dependency
+    * [HIVE-8266] - create function using <resource> statement compilation should include resource URI entity
+    * [HIVE-8284] - Equality comparison is done between two floating point variables in HiveRelMdUniqueKeys#getUniqueKeys()
+    * [HIVE-8295] - Add batch retrieve partition objects for metastore direct sql 
+    * [HIVE-8308] - Acid related table properties should be defined in one place and should be case insensitive
+    * [HIVE-8317] - WebHCat pom should explicitly depend on jersey-core
+    * [HIVE-8326] - Using DbTxnManager with concurrency off results in run time error
+    * [HIVE-8330] - HiveResultSet.findColumn() parameters are case sensitive
+    * [HIVE-8338] - Add ip and command to semantic analyzer hook context
+    * [HIVE-8345] - q-test for Avro date support
+    * [HIVE-8359] - Map containing null values are not correctly written in Parquet files
+    * [HIVE-8374] - schematool fails on Postgres versions < 9.2
+    * [HIVE-8381] - Update hive version on trunk to 0.15
+    * [HIVE-8387] - add retry logic to ZooKeeperStorage in WebHCat
+    * [HIVE-8448] - Union All might not work due to the type conversion issue
+    * [HIVE-8450] - Create table like does not copy over table properties
+    * [HIVE-8485] - HMS on Oracle incompatibility
+    * [HIVE-8491] - Fix build name in ptest pre-commit message
+    * [HIVE-8500] - beeline does not need to set hive.aux.jars.path
+    * [HIVE-8512] - queries with star and gby produce incorrect results
+    * [HIVE-8518] - Compile time skew join optimization returns duplicated results
+    * [HIVE-8523] - Potential null dereference in DDLSemanticAnalyzer#addInputsOutputsAlterTable()
+    * [HIVE-8532] - return code of "source xxx" clause is missing
+    * [HIVE-8556] - introduce overflow control and sanity check to BytesBytesMapJoin
+    * [HIVE-8564] - DROP TABLE IF EXISTS throws exception if the table does not exist.  
+    * [HIVE-8565] - beeline may go into an infinite loop when using EOF
+    * [HIVE-8576] - Guaranteed NPE in StatsRulesProcFactory
+    * [HIVE-8594] - Wrong condition in SettableConfigUpdater#setHiveConfWhiteList()
+    * [HIVE-8600] - Add option to log explain output for query
+    * [HIVE-8610] - Compile time skew join optimization doesn't work with auto map join
+    * [HIVE-8611] - grant/revoke syntax should support additional objects for authorization plugins
+    * [HIVE-8612] - Support metadata result filter hooks
+    * [HIVE-8613] - percentile_approx raise a comparator error
+    * [HIVE-8627] - Compute stats on a table from impala caused the table to be corrupted
+    * [HIVE-8634] - HiveServer2 fair scheduler queue mapping doesn't handle the secondary groups rules correctly
+    * [HIVE-8636] - CBO: split cbo_correctness test
+    * [HIVE-8666] - hive.metastore.server.max.threads default is too high
+    * [HIVE-8680] - Set Max Message for Binary Thrift endpoints
+    * [HIVE-8693] - Separate out fair scheduler dependency from hadoop 0.23 shim
+    * [HIVE-8706] - Table statistic collection on counter failed due to table name character case.
+    * [HIVE-8708] - Add query id to explain log option
+    * [HIVE-8715] - Hive 14 upgrade scripts can fail for statistics if database was created using auto-create
+    * [HIVE-8720] - Update orc_merge tests to make it consistent across OS'es
+    * [HIVE-8728] - Fix ptf.q determinism
+    * [HIVE-8730] - schemaTool failure when date partition has non-date value
+    * [HIVE-8736] - add ordering to cbo_correctness to make result consistent
+    * [HIVE-8739] - handle Derby and Oracle errors with joins and filters in Direct SQL in a invalid-DB-specific path
+    * [HIVE-8757] - YARN dep in scheduler shim should be optional
+    * [HIVE-8762] - HiveMetaStore.BooleanPointer should be replaced with an AtomicBoolean
+    * [HIVE-8784] - Querying partition does not work with JDO enabled against PostgreSQL
+    * [HIVE-8791] - Hive permission inheritance throws exception S3
+    * [HIVE-8796] - TestCliDriver acid tests with decimal needs benchmark to be updated
+    * [HIVE-8797] - Simultaneous dynamic inserts can result in "partition already exists" error
+    * [HIVE-8803] - DESC SCHEMA <DATABASE-NAME> is not working
+    * [HIVE-8805] - CBO skipped due to SemanticException: Line 0:-1 Both left and right aliases encountered in JOIN 'avg_cs_ext_discount_amt'
+    * [HIVE-8808] - HiveInputFormat caching cannot work with all input formats
+    * [HIVE-8811] - Dynamic partition pruning can result in NPE during query compilation
+    * [HIVE-8812] - TestMinimrCliDriver failure if run in the same command as TestHBaseNegativeCliDriver
+    * [HIVE-8825] - SQLCompletor catches Throwable and ignores it
+    * [HIVE-8827] - Remove SSLv2Hello from list of disabled protocols
+    * [HIVE-8830] - hcatalog process don't exit because of non daemon thread
+    * [HIVE-8845] - Switch to Tez 0.5.2
+    * [HIVE-8847] - Fix bugs in jenkins scripts
+    * [HIVE-8848] - data loading from text files or text file processing doesn't handle nulls correctly
+    * [HIVE-8850] - ObjectStore:: rollbackTransaction() needs to be looked into further.
+    * [HIVE-8863] - Cannot drop table with uppercase name after "compute statistics for columns"
+    * [HIVE-8866] - Vectorization on partitioned table throws ArrayIndexOutOfBoundsException when partitions are not of same #of columns
+    * [HIVE-8869] - RowSchema not updated for some ops when columns are pruned
+    * [HIVE-8870] - errors when selecting a struct field within an array from ORC based tables
+    * [HIVE-8872] - Hive view of HBase range scan intermittently returns incorrect data.
+    * [HIVE-8873] - Switch to calcite 0.9.2
+    * [HIVE-8874] - Error Accessing HBase from Hive via Oozie on Kerberos 5.0.1 cluster
+    * [HIVE-8875] - hive.optimize.sort.dynamic.partition should be turned off for ACID
+    * [HIVE-8876] - incorrect upgrade script for Oracle (13->14)
+    * [HIVE-8877] - improve context logging during job submission via WebHCat
+    * [HIVE-8879] - Upgrade derby version to address race candition
+    * [HIVE-8880] - non-synchronized access to split list in OrcInputFormat
+    * [HIVE-8881] - Receiving json "{"error":"Could not find job job_1415748506143_0002"}" when web client tries to fetch all jobs from webhcat where HDFS does not have the data.
+    * [HIVE-8886] - Some Vectorized String CONCAT expressions result in runtime error Vectorization: Unsuported vector output type: StringGroup
+    * [HIVE-8888] - Mapjoin with LateralViewJoin generates wrong plan in Tez
+    * [HIVE-8889] - JDBC Driver ResultSet.getXXXXXX(String columnLabel) methods Broken
+    * [HIVE-8890] - HiveServer2 dynamic service discovery: use persistent ephemeral nodes curator recipe
+    * [HIVE-8891] - Another possible cause to NucleusObjectNotFoundException from drops/rollback
+    * [HIVE-8893] - Implement whitelist for builtin UDFs to avoid untrused code execution in multiuser mode
+    * [HIVE-8901] - increase retry attempt, interval on metastore database errors
+    * [HIVE-8909] - Hive doesn't correctly read Parquet nested types
+    * [HIVE-8914] - HDFSCleanup thread holds reference to FileSystem
+    * [HIVE-8916] - Handle user@domain username under LDAP authentication
+    * [HIVE-8917] - HIVE-5679 adds two thread safety problems
+    * [HIVE-8926] - Projections that only swap input columns are identified incorrectly as identity projections
+    * [HIVE-8938] - Compiler should save the transform URI as input entity
+    * [HIVE-8944] - TestCompactor fails with IncompatibleClassChangeError
+    * [HIVE-8947] - HIVE-8876 also affects Postgres < 9.2
+    * [HIVE-8948] - TestStreaming is flaky
+    * [HIVE-8964] - Some TestMiniTezCliDriver tests taking two hours
+    * [HIVE-8965] - Enhance PTest to kill all processes between tests and to report when a TEST*.xml file is not generated
+    * [HIVE-8967] - Fix bucketmapjoin7.q determinism
+    * [HIVE-8975] - Possible performance regression on bucket_map_join_tez2.q
+    * [HIVE-8978] - Fix test determinism issue for qfile: smb_mapjoin_1.q etc
+    * [HIVE-8990] - mapjoin_mapjoin.q is failing on Tez (missed golden file update)
+    * [HIVE-9001] - Ship with log4j.properties file that has a reliable time based rolling policy
+    * [HIVE-9003] - Vectorized IF expr broken for the scalar and scalar case
+    * [HIVE-9006] - hiveserver thrift api version is still 6
+    * [HIVE-9011] - Fix parquet_join.q determinism
+    * [HIVE-9024] - NullPointerException when starting webhcat server if templeton.hive.properties is not set
+    * [HIVE-9025] - join38.q (without map join) produces incorrect result when testing with multiple reducers
+    * [HIVE-9032] - Help for orcfiledump script does not reflect new options
+    * [HIVE-9048] - Hive build failed on hadoop-1 after HIVE-8828.
+    * [HIVE-9051] - TezJobMonitor in-place updates logs too often to logfile
+    * [HIVE-9053] - select constant in union all followed by group by gives wrong result
+    * [HIVE-9055] - Tez: union all followed by group by followed by another union all gives error
+    * [HIVE-9060] - Fix child operator references after NonBlockingOpDeDupProc
+    * [HIVE-9067] - OrcFileMergeOperator may create merge file that does not match properties of input files
+    * [HIVE-9077] - Set completer in CliDriver is not working
+    * [HIVE-9090] - Rename "Tez File Merge Work" to smaller name
+    * [HIVE-9096] - GenericUDF may be left unclosed in PartitionPrune#visitCall()
+    * [HIVE-9108] - Fix for HIVE-8735 is incorrect (stats with long paths)
+    * [HIVE-9111] - Potential NPE in OrcStruct for list and map types
+    * [HIVE-9112] - Query may generate different results depending on the number of reducers
+    * [HIVE-9113] - Explain on query failed with NPE
+    * [HIVE-9114] - union all query in cbo test has undefined ordering
+    * [HIVE-9120] - Hive Query log does not work when hive.exec.parallel is true
+    * [HIVE-9122] - Need to remove additional references to hive-shims-common-secure, hive-shims-0.20
+    * [HIVE-9126] - Backport HIVE-8827 (Remove SSLv2Hello from list of disabled protocols) to 0.14 branch
+    * [HIVE-9129] - Migrate to newer Calcite snapshot, where ByteString is now in org.apache.calcite.avatica.util
+    * [HIVE-9130] -  vector_partition_diff_num_cols result is not updated after CBO upgrade
+    * [HIVE-9131] - MiniTez optimize_nullscan test is unstable
+    * [HIVE-9141] - HiveOnTez: mix of union all, distinct, group by generates error
+    * [HIVE-9149] - Add unit test to test implicit conversion during dynamic partitioning/distribute by
+    * [HIVE-9150] - Unrelated types are compared in GenTezWork#getFollowingWorkIndex()
+    * [HIVE-9154] - Cache pathToPartitionInfo in context aware record reader
+    * [HIVE-9155] - HIVE_LOCKS uses int instead of bigint hive-txn-schema-0.14.0.mssql.sql
+    * [HIVE-9162] - stats19 test is environment-dependant
+    * [HIVE-9166] - Place an upper bound for SARG CNF conversion
+    * [HIVE-9168] - Vectorized Coalesce for strings is broken
+    * [HIVE-9177] - Fix child operator references after NonBlockingOpDeDupProc (II)
+    * [HIVE-9195] - CBO changes constant to column type
+    * [HIVE-9197] - fix lvj_mapjoin.q diff in trunk
+    * [HIVE-9199] - Excessive exclusive lock used in some DDLs with DummyTxnManager
+    * [HIVE-9203] - CREATE TEMPORARY FUNCTION hangs trying to acquire lock
+    * [HIVE-9205] - Change default tez install directory to use /tmp instead of /user and create the directory if it does not exist
+    * [HIVE-9215] - Some mapjoin queries broken with IdentityProjectRemover with PPD
+    * [HIVE-9221] - Remove deprecation warning for hive.metastore.local
+    * [HIVE-9234] - HiveServer2 leaks FileSystem objects in FileSystem.CACHE
+    * [HIVE-9242] - Many places in CBO code eat exceptions
+    * [HIVE-9243] - Static Map in IOContext is not thread safe
+    * [HIVE-9249] - java.lang.ClassCastException: org.apache.hadoop.hive.serde2.io.HiveVarcharWritable cannot be cast to org.apache.hadoop.hive.common.type.HiveVarchar when joining tables
+    * [HIVE-9255] - Fastpath for limited fetches from unpartitioned tables
+    * [HIVE-9296] - Need to add schema upgrade changes for queueing events in the database
+    * [HIVE-9299] - Reuse Configuration in AvroSerdeUtils
+    * [HIVE-9300] - Make TCompactProtocol configurable
+    * [HIVE-9301] - Potential null dereference in MoveTask#createTargetPath()
+    * [HIVE-9309] - schematool fails on Postgres 8.1
+    * [HIVE-9310] - CLI JLine does not flush history back to ~/.hivehistory
+    * [HIVE-9316] - TestSqoop tests in WebHCat testsuite hardcode libdir path to hdfs
+    * [HIVE-9317] - move Microsoft copyright to NOTICE file
+    * [HIVE-9321] - Notification message size can be arbitrarily long, DbNotificationListener limits to 1024
+    * [HIVE-9330] - DummyTxnManager will throw NPE if WriteEntity writeType has not been set
+    * [HIVE-9331] - get rid of pre-optimized-hashtable memory optimizations
+    * [HIVE-9344] - Fix flaky test optimize_nullscan
+    * [HIVE-9347] - Bug with max() together with rank() and grouping sets
+    * [HIVE-9351] - Running Hive Jobs with Tez cause templeton to never report percent complete
+    * [HIVE-9353] - make TABLE keyword optional in INSERT INTO TABLE foo...
+    * [HIVE-9359] - Export of a large table causes OOM in Metastore and Client
+    * [HIVE-9361] - Intermittent NPE in SessionHiveMetaStoreClient.alterTempTable
+    * [HIVE-9366] - wrong date in description annotation in date_add() and date_sub() udf
+    * [HIVE-9369] - fix arguments length checking in Upper and Lower UDF
+    * [HIVE-9377] - UDF in_file() in WHERE predicate causes NPE.
+    * [HIVE-9381] - HCatalog hardcodes maximum append limit to 1000.
+    * [HIVE-9382] - Query got rerun with Global Limit optimization on and Fetch optimization off
+    * [HIVE-9386] - FileNotFoundException when using in_file()
+    * [HIVE-9390] - Enhance retry logic wrt DB access in TxnHandler
+    * [HIVE-9393] - reduce noisy log level of ColumnarSerDe.java:116 from INFO to DEBUG
+    * [HIVE-9396] - date_add()/date_sub() should allow tinyint/smallint/bigint arguments in addition to int
+    * [HIVE-9401] - Backport: Fastpath for limited fetches from unpartitioned tables
+    * [HIVE-9404] - NPE in org.apache.hadoop.hive.metastore.txn.TxnHandler.determineDatabaseProduct()
+    * [HIVE-9414] - Fixup post HIVE-9264 - Merge encryption branch to trunk
+    * [HIVE-9437] - Beeline does not add any existing HADOOP_CLASSPATH
+    * [HIVE-9440] - Folders may not be pruned for Hadoop 2
+    * [HIVE-9441] - Remove call to deprecated Calcite method
+    * [HIVE-9443] - ORC PPD - fix fuzzy case evaluation of IS_NULL
+    * [HIVE-9445] - Revert HIVE-5700 - enforce single date format for partition column storage
+    * [HIVE-9446] - JDBC DatabaseMetadata.getColumns() does not work for temporary tables
+    * [HIVE-9448] - Merge spark to trunk 1/23/15
+    * [HIVE-9454] - Test failures due to new Calcite version
+    * [HIVE-9462] - HIVE-8577 - breaks type evolution
+    * [HIVE-9473] - sql std auth should disallow built-in udfs that allow any java methods to be called
+    * [HIVE-9475] - HiveMetastoreClient.tableExists does not work
+    * [HIVE-9476] - Beeline fails to start on trunk
+    * [HIVE-9502] - Parquet cannot read Map types from files written with Hive <= 0.12
+    * [HIVE-9514] - schematool is broken in hive 1.0.0
+    * [HIVE-9519] - Bump up spark client connection timeout
+    * [HIVE-9593] - ORC Reader should ignore unknown metadata streams 
+    * [HIVE-9610] - Continuation of HIVE-9438 - The standalone-jdbc jar missing some classes
+    * [HIVE-9611] - Allow SPARK_HOME as well as spark.home to define sparks location
+    * [HIVE-9621] - HiveServer2 http mode - embedded jetty should use SynchronousQueue
+    * [HIVE-9646] - Beeline doesn't show Spark job progress info [Spark Branch]
+    * [HIVE-9651] - FileSinkOperator does not pass in conf to serde.initialize
+
+** Improvement
+    * [HIVE-2828] - make timestamp accessible in the hbase KeyValue 
+    * [HIVE-3187] - support ISO-2012 timestamp literals
+    * [HIVE-3280] - Make HiveMetaStoreClient a public API
+    * [HIVE-4639] - Add has null flag to ORC internal index
+    * [HIVE-4766] - Support HS2 client login timeout when the thrift thread max# is reached
+    * [HIVE-4809] - ReduceSinkOperator of PTFOperator can have redundant key columns
+    * [HIVE-5718] - Support direct fetch for lateral views, sub queries, etc.
+    * [HIVE-6148] - Support arbitrary structs stored in HBase
+    * [HIVE-7032] - Remove Triple Negative in Error 10129
+    * [HIVE-7313] - Allow in-memory/ssd session-level temp-tables
+    * [HIVE-7408] - HCatPartition needs getPartCols method
+    * [HIVE-7550] - Extend cached evaluation to multiple expressions
+    * [HIVE-7605] - add more javadoc to HivePrivilegeObject
+    * [HIVE-7685] - Parquet memory manager
+    * [HIVE-7858] - Parquet compression should be configurable via table property
+    * [HIVE-7868] - AvroSerDe error handling could be improved
+    * [HIVE-7896] - orcfiledump should be able to dump data
+    * [HIVE-7977] - Avoid creating serde for partitions if possible in FetchTask
+    * [HIVE-8094] - add LIKE keyword support for SHOW FUNCTIONS
+    * [HIVE-8155] -  In select statement after * any random characters are allowed in hive but in RDBMS its not allowed
+    * [HIVE-8337] - Change default of hive.warehouse.subdir.inherit.perms to true
+    * [HIVE-8347] - Use base-64 encoding instead of custom encoding for serialized objects
+    * [HIVE-8357] - Path type entities should use qualified path rather than string
+    * [HIVE-8395] - CBO: enable by default
+    * [HIVE-8424] - Support fair scheduler user queue mapping in non-impersonation mode
+    * [HIVE-8449] - webhcat startup does not create the log directory
+    * [HIVE-8469] - Add parquet.compression as a Serde Property
+    * [HIVE-8552] - Remove hard code of offline and make addHost api public
+    * [HIVE-8642] - Hive stack() UDTF Doesn't Support NULL Insert Values
+    * [HIVE-8661] - JDBC MinimizeJAR should be configurable in pom.xml
+    * [HIVE-8710] - Add more tests for transactional inserts
+    * [HIVE-8813] - Allow tests to be excluded based on pattern/regex
+    * [HIVE-8823] - Add additional serde properties for parquet
+    * [HIVE-8829] - Upgrade to Thrift 0.9.2
+    * [HIVE-8839] - Support "alter table .. add/replace columns cascade"
+    * [HIVE-8910] - Refactoring of PassThroughOutputFormat 
+    * [HIVE-8933] - Check release builds for SNAPSHOT dependencies
+    * [HIVE-8971] - HIVE-8965 exposed some classes which start with Test but are not tests
+    * [HIVE-8976] - Make nine additional tests deterministic
+    * [HIVE-8977] - TestParquetDirect should be abstract
+    * [HIVE-8983] - PTest Backup spark.log in addition to hive.log
+    * [HIVE-8988] - Support advanced aggregation in Hive to Calcite path 
+    * [HIVE-8996] - Rename getUGIForConf
+    * [HIVE-9037] - Improve explain plan to show joining keys for shuffle join
+    * [HIVE-9049] - Metastore should use TCompactProtocol as opposed to TBinaryProtocol
+    * [HIVE-9062] - Explain plan doesn't print join keys for Tez shuffle join
+    * [HIVE-9106] - improve the performance of null scan optimizer when several table scans share a physical path
+    * [HIVE-9119] - ZooKeeperHiveLockManager does not use zookeeper in the proper way
+    * [HIVE-9140] - Add Calcite's ReduceExpressionRules to Hive
+    * [HIVE-9158] - Multiple LDAP server URLs in hive.server2.authentication.ldap.url
+    * [HIVE-9176] - Delegation token interval should be configurable in HadoopThriftAuthBridge
+    * [HIVE-9189] - Add ProjectRemove rule on CBO path
+    * [HIVE-9226] - Beeline interweaves the query result and query log sometimes
+    * [HIVE-9244] - Upgrade 0.23 hadoop-shims to latest stable hadoop-2.6.0
+    * [HIVE-9314] - Writable object inspector should use Writable classes from Hadoop for get
+    * [HIVE-9318] - Add UnionMerge rule on cbo path
+    * [HIVE-9341] - Apply ColumnPrunning for noop PTFs
+    * [HIVE-9357] - Create ADD_MONTHS UDF
+    * [HIVE-9358] - Create LAST_DAY UDF
+    * [HIVE-9367] - CombineFileInputFormatShim#getDirIndices is expensive
+    * [HIVE-9372] - Parallel checking non-combinable paths in CombineHiveInputFormat
+    * [HIVE-9383] - Improve schema verification error message
+    * [HIVE-9538] - Exclude thirdparty directory from tarballs
+    * [HIVE-9549] - Include missing directories in source tarball
+    * [HIVE-9586] - Too verbose log can hurt performance, we should always check log level first
+    * [HIVE-9608] - Define SPARK_HOME if not defined automagically
+
+** New Feature
+    * [HIVE-3405] - UDF initcap to obtain a string with the first letter of each word in uppercase other letters in lowercase
+    * [HIVE-7122] - Storage format for create like table
+    * [HIVE-8435] - Add identity project remover optimization
+    * [HIVE-9174] - Enable queuing of HCatalog notification events in metastore DB
+    * [HIVE-9175] - Add alters to list of events handled by NotificationListener
+    * [HIVE-9184] - Modify HCatClient to support new notification methods in HiveMetaStoreClient
+
+** Task
+    * [HIVE-6977] - Delete Hiveserver1
+    * [HIVE-7111] - Extend join transitivity PPD to non-column expressions
+    * [HIVE-8351] - Allow testing of both hadoop-1 and hadoop-2 for precommits
+    * [HIVE-8370] - Fix tabs in DefaultHBaseValueFactory
+    * [HIVE-8465] - Fix some minor test fails on trunk
+    * [HIVE-8608] - Move jenkins scripts to source control
+    * [HIVE-8609] - Move beeline to jline2
+    * [HIVE-8826] - Remove jdbm from top level license file
+    * [HIVE-8828] - Remove hadoop 20 shims
+    * [HIVE-8894] - Move calcite.version to root pom
+    * [HIVE-8935] - Add debug logging around token stores
+    * [HIVE-8974] - Upgrade to Calcite 1.0.0-SNAPSHOT (with lots of renames)
+    * [HIVE-8979] - Merge shims/common-secure into shims/common
+    * [HIVE-8989] - Make groupby_multi_single_reducer.q and smb_mapjoin_3.q deterministic
+    * [HIVE-9183] - Compilation against HBase 1.0.0 fails due to missing dependency on high_scale_lib.Counter
+    * [HIVE-9304] - [Refactor] remove unused method in SemAly
+    * [HIVE-9345] - Add encryption branch to pre-commit script
+    * [HIVE-9402] - Create GREATEST and LEAST udf
+    * [HIVE-9407] - Fix spacing in pom
+    * [HIVE-9408] - Add hook interface so queries can be redacted before being placed in job.xml
+    * [HIVE-9527] - Include dot files in tarball
+    * [HIVE-9554] - Rename 0.15 upgrade scripts to 1.1
+    * [HIVE-9672] - Update RELEASE_NOTES on trunk to reflect the 1.0.0 release
+
+** Test
+    * [HIVE-7924] - auto_sortmerge_join_8 sometimes fails with OOM
+    * [HIVE-8256] - Add SORT_QUERY_RESULTS for test that doesn't guarantee order #2
+    * [HIVE-8327] - mvn site -Pfindbugs
+    * [HIVE-8573] - Fix some non-deterministic vectorization tests
+    * [HIVE-8601] - Fix auto_sortmerge_join_16 determinism
+    * [HIVE-8602] - Add SORT_QUERY_RESULTS for skewjoinopt2
+    * [HIVE-8753] - TestMiniTezCliDriver.testCliDriver_vector_mapjoin_reduce failing on trunk
+    * [HIVE-8801] - Make orc_merge_incompat1.q deterministic across platforms
+    * [HIVE-8929] - incorrect error message for cbo path
+    * [HIVE-9091] - Add additional unit tests for HiveSQLException
+    * [HIVE-9173] - Fix auto_join29.q, auto_join_without_localtask.q determinism
+    * [HIVE-9290] - Make some test results deterministic
+    * [HIVE-9360] - TestSparkClient throws Timeoutexception
+    * [HIVE-9403] - File tests determinism with multiple reducers
+    * [HIVE-9417] - Fix failing test groupby_grouping_window.q on trunk
+    * [HIVE-9435] - Fix auto_join21.q for Tez
+
+
+
+Release Notes - Hive - Version 1.0.0
+
+** Bug
+    * [HIVE-5631] - Index creation on a skew table fails
+    * [HIVE-5664] - Drop cascade database fails when the db has any tables with indexes
+    * [HIVE-6198] - ORC file and struct column names are case sensitive
+    * [HIVE-6468] - HS2 & Metastore using SASL out of memory error when curl sends a get request
+    * [HIVE-7270] - SerDe Properties are not considered by show create table Command
+    * [HIVE-8099] - IN operator for partition column fails when the partition column type is DATE
+    * [HIVE-8295] - Add batch retrieve partition objects for metastore direct sql 
+    * [HIVE-8374] - schematool fails on Postgres versions < 9.2
+    * [HIVE-8485] - HMS on Oracle incompatibility
+    * [HIVE-8706] - Table statistic collection on counter failed due to table name character case.
+    * [HIVE-8715] - Hive 14 upgrade scripts can fail for statistics if database was created using auto-create
+    * [HIVE-8739] - handle Derby and Oracle errors with joins and filters in Direct SQL in a invalid-DB-specific path
+    * [HIVE-8784] - Querying partition does not work with JDO enabled against PostgreSQL
+    * [HIVE-8805] - CBO skipped due to SemanticException: Line 0:-1 Both left and right aliases encountered in JOIN 'avg_cs_ext_discount_amt'
+    * [HIVE-8807] - Obsolete default values in webhcat-default.xml
+    * [HIVE-8811] - Dynamic partition pruning can result in NPE during query compilation
+    * [HIVE-8827] - Remove SSLv2Hello from list of disabled protocols
+    * [HIVE-8830] - hcatalog process don't exit because of non daemon thread
+    * [HIVE-8845] - Switch to Tez 0.5.2
+    * [HIVE-8866] - Vectorization on partitioned table throws ArrayIndexOutOfBoundsException when partitions are not of same #of columns
+    * [HIVE-8870] - errors when selecting a struct field within an array from ORC based tables
+    * [HIVE-8873] - Switch to calcite 0.9.2
+    * [HIVE-8876] - incorrect upgrade script for Oracle (13->14)
+    * [HIVE-8880] - non-synchronized access to split list in OrcInputFormat
+    * [HIVE-8886] - Some Vectorized String CONCAT expressions result in runtime error Vectorization: Unsuported vector output type: StringGroup
+    * [HIVE-8888] - Mapjoin with LateralViewJoin generates wrong plan in Tez
+    * [HIVE-8947] - HIVE-8876 also affects Postgres < 9.2
+    * [HIVE-8966] - Delta files created by hive hcatalog streaming cannot be compacted
+    * [HIVE-9003] - Vectorized IF expr broken for the scalar and scalar case
+    * [HIVE-9025] - join38.q (without map join) produces incorrect result when testing with multiple reducers
+    * [HIVE-9038] - Join tests fail on Tez
+    * [HIVE-9051] - TezJobMonitor in-place updates logs too often to logfile
+    * [HIVE-9053] - select constant in union all followed by group by gives wrong result
+    * [HIVE-9067] - OrcFileMergeOperator may create merge file that does not match properties of input files
+    * [HIVE-9090] - Rename "Tez File Merge Work" to smaller name
+    * [HIVE-9108] - Fix for HIVE-8735 is incorrect (stats with long paths)
+    * [HIVE-9111] - Potential NPE in OrcStruct for list and map types
+    * [HIVE-9112] - Query may generate different results depending on the number of reducers
+    * [HIVE-9114] - union all query in cbo test has undefined ordering
+    * [HIVE-9126] - Backport HIVE-8827 (Remove SSLv2Hello from list of disabled protocols) to 0.14 branch
+    * [HIVE-9141] - HiveOnTez: mix of union all, distinct, group by generates error
+    * [HIVE-9155] - HIVE_LOCKS uses int instead of bigint hive-txn-schema-0.14.0.mssql.sql
+    * [HIVE-9162] - stats19 test is environment-dependant
+    * [HIVE-9166] - Place an upper bound for SARG CNF conversion
+    * [HIVE-9168] - Vectorized Coalesce for strings is broken
+    * [HIVE-9205] - Change default tez install directory to use /tmp instead of /user and create the directory if it does not exist
+    * [HIVE-9234] - HiveServer2 leaks FileSystem objects in FileSystem.CACHE
+    * [HIVE-9249] - java.lang.ClassCastException: org.apache.hadoop.hive.serde2.io.HiveVarcharWritable cannot be cast to org.apache.hadoop.hive.common.type.HiveVarchar when joining tables
+    * [HIVE-9278] - Cached expression feature broken in one case
+    * [HIVE-9317] - move Microsoft copyright to NOTICE file
+    * [HIVE-9359] - Export of a large table causes OOM in Metastore and Client
+    * [HIVE-9361] - Intermittent NPE in SessionHiveMetaStoreClient.alterTempTable
+    * [HIVE-9390] - Enhance retry logic wrt DB access in TxnHandler
+    * [HIVE-9401] - Backport: Fastpath for limited fetches from unpartitioned tables
+    * [HIVE-9404] - NPE in org.apache.hadoop.hive.metastore.txn.TxnHandler.determineDatabaseProduct()
+    * [HIVE-9436] - RetryingMetaStoreClient does not retry JDOExceptions
+    * [HIVE-9473] - sql std auth should disallow built-in udfs that allow any java methods to be called
+    * [HIVE-9514] - schematool is broken in hive 1.0.0
+
+
+** Improvement
+    * [HIVE-3280] - Make HiveMetaStoreClient a public API
+    * [HIVE-8933] - Check release builds for SNAPSHOT dependencies
+
+
+** Task
+    * [HIVE-6977] - Delete Hiveserver1
+
+
+
+
 Release Notes - Hive - Version 0.14.0
 
 ** Sub-task
@@ -4496,6 +4974,5 @@ Release Notes - Hive - Version 0.6.0
     * [HIVE-1236] - test HBase input format plus CombinedHiveInputFormat
     * [HIVE-1279] - temporarily disable HBase test execution
     * [HIVE-1359] - Unit test should be shim-aware
-
 
 

@@ -1916,6 +1916,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: true
             predicate: (((hash(key) & 2147483647) % 16) = 1) (type: boolean)
+            sampleDesc: BUCKET 2 OUT OF 16
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: string), ds (type: string)
@@ -2007,6 +2008,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: true
             predicate: (((hash(key) & 2147483647) % 16) = 1) (type: boolean)
+            sampleDesc: BUCKET 2 OUT OF 16
             Statistics: Num rows: 514 Data size: 5484 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: string), ds (type: string)

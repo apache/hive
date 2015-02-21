@@ -830,3 +830,20 @@ alice allen	65609	20.0
 alice allen	65662	20.0
 alice allen	65670	20.0
 alice allen	65720	20.0
+PREHOOK: query: -- HIVE-9228 
+select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: -- HIVE-9228 
+select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	65545
+alice allen	65557
+alice allen	65600
+alice allen	65609
+alice allen	65662
+alice allen	65670
+alice allen	65720

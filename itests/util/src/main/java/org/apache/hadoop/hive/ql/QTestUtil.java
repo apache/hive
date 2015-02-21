@@ -1051,7 +1051,7 @@ public class QTestUtil {
       }
       command = "";
     }
-    if (SessionState.get() != null) {
+    if (rc == 0 && SessionState.get() != null) {
       SessionState.get().setLastCommand(null);  // reset
     }
     return rc;

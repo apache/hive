@@ -1,5 +1,7 @@
 set hive.map.aggr = true;
 
+-- SORT_QUERY_RESULTS
+
 -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
 
 

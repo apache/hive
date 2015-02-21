@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:30 Argument type mismatch '4': next_day() only takes STRING_GROUP types as second argument, got INT

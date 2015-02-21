@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -68,9 +69,11 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
-import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -260,81 +263,122 @@ public final class ColumnPrunerProcFactory {
       PTFDesc conf = op.getConf();
       //Since we cannot know what columns will be needed by a PTF chain,
       //we do not prune columns on PTFOperator for PTF chains.
-      if (!conf.forWindowing() && !Noop.class.isInstance(conf.getFuncDef().getTFunction())) {
+      PartitionedTableFunctionDef funcDef = conf.getFuncDef();
+      List<String> referencedColumns = funcDef.getReferencedColumns();
+      if (!conf.forWindowing() && !conf.forNoop() && referencedColumns == null) {
         return super.process(nd, stack, cppCtx, nodeOutputs);
       }
 
       List<String> prunedCols = cppCtx.getPrunedColList(op.getChildOperators().get(0));
-
-      WindowTableFunctionDef def = null;
       if (conf.forWindowing()) {
-        def = (WindowTableFunctionDef) conf.getFuncDef();
-        prunedCols = prunedColumnsList(prunedCols, def);
+        WindowTableFunctionDef def = (WindowTableFunctionDef) funcDef;
+        prunedCols = Utilities.mergeUniqElems(getWindowFunctionColumns(def), prunedCols);
+      } else if (conf.forNoop()) {
+        prunedCols = new ArrayList(cppCtx.getPrunedColList(op.getChildOperators().get(0)));
+      } else {
+        prunedCols = referencedColumns;
       }
+      
+      List<ColumnInfo> newRS = prunedColumnsList(prunedCols, op.getSchema(), funcDef);      
+      
+      op.getSchema().setSignature(new ArrayList<ColumnInfo>(newRS));
 
-      RowSchema oldRS = op.getSchema();
-      ArrayList<ColumnInfo> sig = buildPrunedRR(prunedCols, oldRS);
-      op.getSchema().setSignature(sig);
-
-      prunedCols = def == null ? prunedCols : prunedInputList(prunedCols, def);
-      cppCtx.getPrunedColLists().put(op, prunedCols);
+      ShapeDetails outputShape = funcDef.getStartOfChain().getInput().getOutputShape();
+      cppCtx.getPrunedColLists().put(op, outputShape.getColumnNames());
       return null;
     }
 
-    private static ArrayList<ColumnInfo> buildPrunedRR(List<String> prunedCols,
-        RowSchema oldRS) throws SemanticException{
+    private List<ColumnInfo> buildPrunedRS(List<String> prunedCols, RowSchema oldRS) 
+        throws SemanticException {
       ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
       HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
-      for(ColumnInfo cInfo : oldRS.getSignature()) {
-        if ( prunedColsSet.contains(cInfo.getInternalName())) {
+      for (ColumnInfo cInfo : oldRS.getSignature()) {
+        if (prunedColsSet.contains(cInfo.getInternalName())) {
           sig.add(cInfo);
         }
       }
       return sig;
     }
 
+    // always should be in this order (see PTFDeserializer#initializeWindowing)
+    private List<String> getWindowFunctionColumns(WindowTableFunctionDef tDef) {
+      List<String> columns = new ArrayList<String>();
+      if (tDef.getWindowFunctions() != null) {
+        for (WindowFunctionDef wDef : tDef.getWindowFunctions()) {
+          columns.add(wDef.getAlias());
+        }
+      }
+      return columns;
+    }
+    
+    private RowResolver buildPrunedRR(List<String> prunedCols, RowSchema oldRS)
+        throws SemanticException {
+      RowResolver resolver = new RowResolver();
+      HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
+      for (ColumnInfo cInfo : oldRS.getSignature()) {
+        if (prunedColsSet.contains(cInfo.getInternalName())) {
+          resolver.put(cInfo.getTabAlias(), cInfo.getAlias(), cInfo);
+        }
+      }
+      return resolver;
+    }
+
     /*
      * add any input columns referenced in WindowFn args or expressions.
      */
-    private ArrayList<String> prunedColumnsList(List<String> prunedCols, 
-        WindowTableFunctionDef tDef) {
-      //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
-      ArrayList<String> mergedColList = new ArrayList<String>(prunedCols);
-      if ( tDef.getWindowFunctions() != null ) {
-        for(WindowFunctionDef wDef : tDef.getWindowFunctions() ) {
-          if ( wDef.getArgs() == null) {
-            continue;
-          }
-          for(PTFExpressionDef arg : wDef.getArgs()) {
-            ExprNodeDesc exprNode = arg.getExprNode();
-            Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
+    private List<ColumnInfo> prunedColumnsList(List<String> prunedCols, RowSchema oldRS,
+        PartitionedTableFunctionDef pDef) throws SemanticException {
+      pDef.getOutputShape().setRr(null);
+      pDef.getOutputShape().setColumnNames(null);
+      if (pDef instanceof WindowTableFunctionDef) {
+        WindowTableFunctionDef tDef = (WindowTableFunctionDef) pDef;
+        if (tDef.getWindowFunctions() != null) {
+          for (WindowFunctionDef wDef : tDef.getWindowFunctions()) {
+            if (wDef.getArgs() == null) {
+              continue;
+            }
+            for (PTFExpressionDef arg : wDef.getArgs()) {
+              ExprNodeDesc exprNode = arg.getExprNode();
+              Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+            }
           }
         }
+        if (tDef.getPartition() != null) {
+          for (PTFExpressionDef col : tDef.getPartition().getExpressions()) {
+            ExprNodeDesc exprNode = col.getExprNode();
+            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+          }
+        }
+        if (tDef.getOrder() != null) {
+          for (PTFExpressionDef col : tDef.getOrder().getExpressions()) {
+            ExprNodeDesc exprNode = col.getExprNode();
+            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+          }
+        }
+      } else {
+        pDef.getOutputShape().setRr(buildPrunedRR(prunedCols, oldRS));
       }
-     if(tDef.getPartition() != null){
-         for(PTFExpressionDef col : tDef.getPartition().getExpressions()){
-           ExprNodeDesc exprNode = col.getExprNode();
-           Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
-         }
-       }
-       if(tDef.getOrder() != null){
-         for(PTFExpressionDef col : tDef.getOrder().getExpressions()){
-           ExprNodeDesc exprNode = col.getExprNode();
-           Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
-         }
-       }
-      return mergedColList;
+      
+      PTFInputDef input = pDef.getInput();
+      if (input instanceof PartitionedTableFunctionDef) {
+        return prunedColumnsList(prunedCols, oldRS, (PartitionedTableFunctionDef)input);
+      }
+      
+      ArrayList<String> inputColumns = prunedInputList(prunedCols, input);
+      input.getOutputShape().setRr(buildPrunedRR(inputColumns, oldRS));
+      input.getOutputShape().setColumnNames(inputColumns);
+
+      return buildPrunedRS(prunedCols, oldRS);
     }
 
     /*
      * from the prunedCols list filter out columns that refer to WindowFns or WindowExprs
      * the returned list is set as the prunedList needed by the PTFOp.
      */
-    private ArrayList<String> prunedInputList(List<String> prunedCols,
-        WindowTableFunctionDef tDef) {
+    private ArrayList<String> prunedInputList(List<String> prunedCols, PTFInputDef tDef) {
       ArrayList<String> prunedInputCols = new ArrayList<String>();
 
-      StructObjectInspector OI = tDef.getInput().getOutputShape().getOI();
+      StructObjectInspector OI = tDef.getOutputShape().getOI();
       for(StructField f : OI.getAllStructFieldRefs()) {
         String fName = f.getFieldName();
         if ( prunedCols.contains(fName)) {

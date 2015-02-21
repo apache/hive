@@ -515,6 +515,10 @@ public class TestOrcFile {
       Object row = rows.next(null);
       assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
     }
+    assertEquals(1, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false};
+    boolean[] included = OrcUtils.includeColumns("", "ts", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
   }
 
   @Test
@@ -537,6 +541,19 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, true};
+    boolean[] included = OrcUtils.includeColumns("string1", "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, false};
+    included = OrcUtils.includeColumns("", "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, false};
+    included = OrcUtils.includeColumns(null, "bytes1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
 
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
@@ -634,6 +651,12 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(3, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, true, false};
+    boolean[] included = OrcUtils.includeColumns("int1", "int1,string1", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     Metadata metadata = reader.getMetadata();
     int numStripes = metadata.getStripeStatistics().size();
     assertEquals(3, numStripes);
@@ -672,7 +695,7 @@ public class TestOrcFile {
     assertEquals(5000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
 
     RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows();
-    OrcProto.RowIndex[] index = recordReader.readRowIndex(0, null);
+    OrcProto.RowIndex[] index = recordReader.readRowIndex(0, null).getRowGroupIndex();
     assertEquals(3, index.length);
     List<OrcProto.RowIndexEntry> items = index[1].getEntryList();
     assertEquals(1, items.size());
@@ -682,7 +705,7 @@ public class TestOrcFile {
     assertEquals(0, items.get(0).getPositions(2));
     assertEquals(1, 
                  items.get(0).getStatistics().getIntStatistics().getMinimum());
-    index = recordReader.readRowIndex(1, null);
+    index = recordReader.readRowIndex(1, null).getRowGroupIndex();
     assertEquals(3, index.length);
     items = index[1].getEntryList();
     assertEquals(2, 
@@ -714,6 +737,44 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(24, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false, false,
+        false, false, false, false};
+    boolean[] included = OrcUtils.includeColumns("",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false,
+        false, false, false, false, true,
+        true, true, true, true, true,
+        false, false, false, false, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false,
+        false, false, false, false, true,
+        true, true, true, true, true,
+        false, false, false, false, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns("boolean1,string1,middle,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true, true,
+        true, true, true, true};
+    included = OrcUtils.includeColumns(
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map",
+        "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
 
     Metadata metadata = reader.getMetadata();
 
@@ -1183,6 +1244,20 @@ public class TestOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+
+    assertEquals(6, OrcUtils.getFlattenedColumnsCount(inspector));
+    boolean[] expected = new boolean[] {false, false, false, false, false, false};
+    boolean[] included = OrcUtils.includeColumns("", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, true, false, false, false, true};
+    included = OrcUtils.includeColumns("time,decimal", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
+    expected = new boolean[] {false, false, true, true, true, false};
+    included = OrcUtils.includeColumns("union", "time,union,decimal", inspector);
+    assertEquals(true, Arrays.equals(expected, included));
+
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
     assertEquals(5309, reader.getNumberOfRows());
     DecimalColumnStatistics stats =

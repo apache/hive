@@ -102,7 +102,7 @@
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.0.0-incubating-SNAPSHOT</calcite.version>
+    <calcite.version>1.0.0-incubating</calcite.version>
     <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.10</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
@@ -173,6 +173,7 @@
   </properties>
 
   <repositories>
+   <!-- This needs to be removed before checking in-->
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -488,7 +489,17 @@
       </dependency>
       <dependency>
         <groupId>org.apache.curator</groupId>
+        <artifactId>curator-client</artifactId>
+        <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
         <artifactId>curator-framework</artifactId>
+        <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-recipes</artifactId>
         <version>${curator.version}</version>
       </dependency>
       <dependency>

@@ -46,7 +46,7 @@ public class RecordReaderUtils {
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
-      if (stream.getKind() == OrcProto.Stream.Kind.PRESENT) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.PRESENT)) {
         hasNull[stream.getColumn()] = true;
       }
     }

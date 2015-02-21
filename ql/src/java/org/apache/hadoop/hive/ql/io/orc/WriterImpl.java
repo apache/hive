@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
@@ -77,7 +79,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 
@@ -145,23 +149,27 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.WriterContext callbackContext;
   private final OrcFile.EncodingStrategy encodingStrategy;
   private final OrcFile.CompressionStrategy compressionStrategy;
+  private final boolean[] bloomFilterColumns;
+  private final double bloomFilterFpp;
 
   WriterImpl(FileSystem fs,
-             Path path,
-             Configuration conf,
-             ObjectInspector inspector,
-             long stripeSize,
-             CompressionKind compress,
-             int bufferSize,
-             int rowIndexStride,
-             MemoryManager memoryManager,
-             boolean addBlockPadding,
-             OrcFile.Version version,
-             OrcFile.WriterCallback callback,
-             OrcFile.EncodingStrategy encodingStrategy,
-             CompressionStrategy compressionStrategy,
-             float paddingTolerance,
-             long blockSizeValue) throws IOException {
+      Path path,
+      Configuration conf,
+      ObjectInspector inspector,
+      long stripeSize,
+      CompressionKind compress,
+      int bufferSize,
+      int rowIndexStride,
+      MemoryManager memoryManager,
+      boolean addBlockPadding,
+      OrcFile.Version version,
+      OrcFile.WriterCallback callback,
+      EncodingStrategy encodingStrategy,
+      CompressionStrategy compressionStrategy,
+      float paddingTolerance,
+      long blockSizeValue,
+      String bloomFilterColumnNames,
+      double bloomFilterFpp) throws IOException {
     this.fs = fs;
     this.path = path;
     this.conf = conf;
@@ -190,7 +198,20 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     this.memoryManager = memoryManager;
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
-    this.bufferSize = getEstimatedBufferSize(bufferSize);
+    String allColumns = conf.get(IOConstants.COLUMNS);
+    if (allColumns == null) {
+      allColumns = getColumnNamesFromInspector(inspector);
+    }
+    this.bufferSize = getEstimatedBufferSize(allColumns, bufferSize);
+    if (version == OrcFile.Version.V_0_11) {
+      /* do not write bloom filters for ORC v11 */
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(null, allColumns, inspector);
+    } else {
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    }
+    this.bloomFilterFpp = bloomFilterFpp;
     treeWriter = createTreeWriter(inspector, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
       throw new IllegalArgumentException("Row stride must be at least " +
@@ -201,8 +222,25 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     memoryManager.addWriter(path, stripeSize, this);
   }
 
+  private String getColumnNamesFromInspector(ObjectInspector inspector) {
+    List<String> fieldNames = Lists.newArrayList();
+    Joiner joiner = Joiner.on(",");
+    if (inspector instanceof StructObjectInspector) {
+      StructObjectInspector soi = (StructObjectInspector) inspector;
+      List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      for(StructField sf : fields) {
+        fieldNames.add(sf.getFieldName());
+      }
+    }
+    return joiner.join(fieldNames);
+  }
+
+  @VisibleForTesting
   int getEstimatedBufferSize(int bs) {
-    String colNames = conf.get(IOConstants.COLUMNS);
+      return getEstimatedBufferSize(conf.get(IOConstants.COLUMNS), bs);
+  }
+
+  int getEstimatedBufferSize(String colNames, int bs) {
     long availableMem = getMemoryAvailableForORC();
     if (colNames != null) {
       final int numCols = colNames.split(",").length;
@@ -459,26 +497,27 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       final EnumSet<CompressionCodec.Modifier> modifiers;
 
       switch (kind) {
-      case DATA:
-      case DICTIONARY_DATA:
-        if (getCompressionStrategy() == CompressionStrategy.SPEED) {
-          modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
-        } else {
-          modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
-        }
-        break;
-      case LENGTH:
-      case DICTIONARY_COUNT:
-      case PRESENT:
-      case ROW_INDEX:
-      case SECONDARY:
-        // easily compressed using the fastest modes
-        modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
-        break;
-      default:
-        LOG.warn("Missing ORC compression modifiers for " + kind);
-        modifiers = null;
-        break;
+        case BLOOM_FILTER:
+        case DATA:
+        case DICTIONARY_DATA:
+          if (getCompressionStrategy() == CompressionStrategy.SPEED) {
+            modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
+          } else {
+            modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
+          }
+          break;
+        case LENGTH:
+        case DICTIONARY_COUNT:
+        case PRESENT:
+        case ROW_INDEX:
+        case SECONDARY:
+          // easily compressed using the fastest modes
+          modifiers = EnumSet.of(Modifier.FASTEST, Modifier.BINARY);
+          break;
+        default:
+          LOG.warn("Missing ORC compression modifiers for " + kind);
+          modifiers = null;
+          break;
       }
 
       BufferedStream result = streams.get(name);
@@ -496,6 +535,15 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      */
     public int getNextColumnId() {
       return columnCount++;
+    }
+
+    /**
+     * Get the current column id. After creating all tree writers this count should tell how many
+     * columns (including columns within nested complex objects) are created in total.
+     * @return current column id
+     */
+    public int getCurrentColumnId() {
+      return columnCount;
     }
 
     /**
@@ -538,6 +586,22 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
+     * Get the bloom filter columns
+     * @return bloom filter columns
+     */
+    public boolean[] getBloomFilterColumns() {
+      return bloomFilterColumns;
+    }
+
+    /**
+     * Get bloom filter false positive percentage.
+     * @return fpp
+     */
+    public double getBloomFilterFPP() {
+      return bloomFilterFpp;
+    }
+
+    /**
      * Get the writer's configuration.
      * @return configuration
      */
@@ -572,6 +636,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final OrcProto.RowIndex.Builder rowIndex;
     private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
     private final PositionedOutputStream rowIndexStream;
+    private final PositionedOutputStream bloomFilterStream;
+    protected final BloomFilter bloomFilter;
+    protected final boolean createBloomFilter;
+    private final OrcProto.BloomFilterIndex.Builder bloomFilterIndex;
+    private final OrcProto.BloomFilter.Builder bloomFilterEntry;
     private boolean foundNulls;
     private OutStream isPresentOutStream;
     private final List<StripeStatistics.Builder> stripeStatsBuilders;
@@ -598,6 +667,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         isPresent = null;
       }
       this.foundNulls = false;
+      createBloomFilter = streamFactory.getBloomFilterColumns()[columnId];
       indexStatistics = ColumnStatisticsImpl.create(inspector);
       stripeColStatistics = ColumnStatisticsImpl.create(inspector);
       fileStatistics = ColumnStatisticsImpl.create(inspector);
@@ -607,10 +677,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       rowIndexPosition = new RowIndexPositionRecorder(rowIndexEntry);
       stripeStatsBuilders = Lists.newArrayList();
       if (streamFactory.buildIndex()) {
-        rowIndexStream = streamFactory.createStream(id,
-            OrcProto.Stream.Kind.ROW_INDEX);
+        rowIndexStream = streamFactory.createStream(id, OrcProto.Stream.Kind.ROW_INDEX);
       } else {
         rowIndexStream = null;
+      }
+      if (createBloomFilter) {
+        bloomFilterEntry = OrcProto.BloomFilter.newBuilder();
+        bloomFilterIndex = OrcProto.BloomFilterIndex.newBuilder();
+        bloomFilterStream = streamFactory.createStream(id, OrcProto.Stream.Kind.BLOOM_FILTER);
+        bloomFilter = new BloomFilter(streamFactory.getRowIndexStride(),
+            streamFactory.getBloomFilterFPP());
+      } else {
+        bloomFilterEntry = null;
+        bloomFilterIndex = null;
+        bloomFilterStream = null;
+        bloomFilter = null;
       }
     }
 
@@ -725,6 +806,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       }
       rowIndex.clear();
       rowIndexEntry.clear();
+
+      // write the bloom filter to out stream
+      if (bloomFilterStream != null) {
+        bloomFilterIndex.build().writeTo(bloomFilterStream);
+        bloomFilterStream.flush();
+        bloomFilterIndex.clear();
+        bloomFilterEntry.clear();
+      }
     }
 
     private void writeStripeStatistics(OrcProto.StripeStatistics.Builder builder,
@@ -763,9 +852,20 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       indexStatistics.reset();
       rowIndex.addEntry(rowIndexEntry);
       rowIndexEntry.clear();
+      addBloomFilterEntry();
       recordPosition(rowIndexPosition);
       for(TreeWriter child: childrenWriters) {
         child.createRowIndexEntry();
+      }
+    }
+
+    void addBloomFilterEntry() {
+      if (createBloomFilter) {
+        bloomFilterEntry.setNumHashFunctions(bloomFilter.getNumHashFunctions());
+        bloomFilterEntry.addAllBitset(Longs.asList(bloomFilter.getBitSet()));
+        bloomFilterIndex.addBloomFilter(bloomFilterEntry.build());
+        bloomFilter.reset();
+        bloomFilterEntry.clear();
       }
     }
 
@@ -851,6 +951,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         byte val = ((ByteObjectInspector) inspector).get(obj);
         indexStatistics.updateInteger(val);
+        if (createBloomFilter) {
+          bloomFilter.addLong(val);
+        }
         writer.write(val);
       }
     }
@@ -926,6 +1029,10 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           val = shortInspector.get(obj);
         }
         indexStatistics.updateInteger(val);
+        if (createBloomFilter) {
+          // integers are converted to longs in column statistics and during SARG evaluation
+          bloomFilter.addLong(val);
+        }
         writer.write(val);
       }
     }
@@ -966,6 +1073,10 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         float val = ((FloatObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
+        if (createBloomFilter) {
+          // floats are converted to doubles in column statistics and during SARG evaluation
+          bloomFilter.addDouble(val);
+        }
         utils.writeFloat(stream, val);
       }
     }
@@ -1006,6 +1117,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         double val = ((DoubleObjectInspector) inspector).get(obj);
         indexStatistics.updateDouble(val);
+        if (createBloomFilter) {
+          bloomFilter.addDouble(val);
+        }
         utils.writeDouble(stream, val);
       }
     }
@@ -1099,6 +1213,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           directLengthOutput.write(val.getLength());
         }
         indexStatistics.updateString(val);
+        if (createBloomFilter) {
+          bloomFilter.addBytes(val.getBytes(), val.getLength());
+        }
       }
     }
 
@@ -1258,6 +1375,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       OrcProto.RowIndexEntry base = rowIndexEntry.build();
       savedRowIndex.add(base);
       rowIndexEntry.clear();
+      addBloomFilterEntry();
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(Long.valueOf(rows.size()));
       if (strideDictionaryCheck) {
@@ -1368,6 +1486,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         stream.write(val.getBytes(), 0, val.getLength());
         length.write(val.getLength());
         indexStatistics.updateBinary(val);
+        if (createBloomFilter) {
+          bloomFilter.addBytes(val.getBytes(), val.getLength());
+        }
       }
     }
 
@@ -1430,6 +1551,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         indexStatistics.updateTimestamp(val);
         seconds.write((val.getTime() / MILLIS_PER_SECOND) - BASE_TIMESTAMP);
         nanos.write(formatNanos(val.getNanos()));
+        if (createBloomFilter) {
+          bloomFilter.addLong(val.getTime());
+        }
       }
     }
 
@@ -1490,6 +1614,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         DateWritable val = ((DateObjectInspector) inspector).getPrimitiveWritableObject(obj);
         indexStatistics.updateDate(val);
         writer.write(val.getDays());
+        if (createBloomFilter) {
+          bloomFilter.addLong(val.getDays());
+        }
       }
     }
 
@@ -1558,6 +1685,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
             decimal.unscaledValue());
         scaleStream.write(decimal.scale());
         indexStatistics.updateDecimal(decimal);
+        if (createBloomFilter) {
+          bloomFilter.addString(decimal.toString());
+        }
       }
     }
 
@@ -1657,6 +1787,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         ListObjectInspector insp = (ListObjectInspector) inspector;
         int len = insp.getListLength(obj);
         lengths.write(len);
+        if (createBloomFilter) {
+          bloomFilter.addLong(len);
+        }
         for(int i=0; i < len; ++i) {
           childrenWriters[0].write(insp.getListElement(obj, i));
         }
@@ -1721,6 +1854,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         // accessor in the MapObjectInspector.
         Map<?, ?> valueMap = insp.getMap(obj);
         lengths.write(valueMap.size());
+        if (createBloomFilter) {
+          bloomFilter.addLong(valueMap.size());
+        }
         for(Map.Entry<?, ?> entry: valueMap.entrySet()) {
           childrenWriters[0].write(entry.getKey());
           childrenWriters[1].write(entry.getValue());
@@ -1773,6 +1909,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         UnionObjectInspector insp = (UnionObjectInspector) inspector;
         byte tag = insp.getTag(obj);
         tags.write(tag);
+        if (createBloomFilter) {
+          bloomFilter.addLong(tag);
+        }
         childrenWriters[tag].write(insp.getField(obj));
       }
     }

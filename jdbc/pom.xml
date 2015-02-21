@@ -162,14 +162,13 @@
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-common</artifact>
                   <includes>
-                    <include>org/apache/hadoop/hive/shims/*</include>
-                    <include>org/apache/hadoop/hive/thrift/*</include>
+                    <include>**</include>
                   </includes>
                 </filter>
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
                   <includes>
-                    <include>org/apache/hadoop/hive/thrift/*</include>
+                    <include>**</include>
                   </includes>
                 </filter>
                 <filter>

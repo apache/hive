@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
@@ -150,11 +151,23 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       int stride = metadata.getRowIndexStride();
       ArrayList<OrcStripeMetadata> stripeMetadatas = null;
       boolean[] globalIncludes = null;
+      boolean[] sargColumns = null;
       try {
         globalIncludes = OrcInputFormat.genIncludedColumns(metadata.getTypes(), columnIds, true);
         if (sarg != null && stride != 0) {
+          // TODO: move this to a common method
+          int[] filterColumns = RecordReaderImpl.mapSargColumns(sarg.getLeaves(), columnNames, 0);
+          // included will not be null, row options will fill the array with trues if null
+          sargColumns = new boolean[globalIncludes.length];
+          for (int i : filterColumns) {
+            // filter columns may have -1 as index which could be partition column in SARG.
+            if (i > 0) {
+              sargColumns[i] = true;
+            }
+          }
+
           // If SARG is present, get relevant stripe metadata from cache or readers.
-          stripeMetadatas = readStripesMetadata(metadata, globalIncludes);
+          stripeMetadatas = readStripesMetadata(metadata, globalIncludes, sargColumns);
         }
 
         // Now, apply SARG if any; w/o sarg, this will just initialize readState.
@@ -245,7 +258,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
             stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
             if (stripeMetadata == null) {
               ensureMetadataReader();
-              stripeMetadata = new OrcStripeMetadata(metadataReader, si, stripeIncludes);
+              stripeMetadata = new OrcStripeMetadata(metadataReader, si, stripeIncludes, sargColumns);
               if (DebugUtils.isTraceOrcEnabled()) {
                 LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                     + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
@@ -260,7 +273,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
                   + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
             }
             ensureMetadataReader();
-            updateLoadedIndexes(stripeMetadata, si, stripeIncludes);
+            updateLoadedIndexes(stripeMetadata, si, stripeIncludes, sargColumns);
           }
           // 6.3. Finally, hand off to the stripe reader to produce the data.
           //      This is a sync call that will feed data to the consumer.
@@ -302,12 +315,12 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      * the missing one. This is a temporary cludge until real metadata cache becomes available.
      */
     private void updateLoadedIndexes(OrcStripeMetadata stripeMetadata,
-        StripeInformation stripe, boolean[] stripeIncludes) throws IOException {
+        StripeInformation stripe, boolean[] stripeIncludes, boolean[] sargColumns) throws IOException {
       // We only synchronize on write for now - design of metadata cache is very temporary;
       // we pre-allocate the array and never remove entries; so readers should be safe.
       synchronized (stripeMetadata) {
         if (stripeMetadata.hasAllIndexes(stripeIncludes)) return;
-        stripeMetadata.loadMissingIndexes(metadataReader, stripe, stripeIncludes);
+        stripeMetadata.loadMissingIndexes(metadataReader, stripe, stripeIncludes, sargColumns);
       }
     }
 
@@ -360,7 +373,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      * Reads the metadata for all stripes in the file.
      */
     private ArrayList<OrcStripeMetadata> readStripesMetadata(
-        OrcFileMetadata metadata, boolean[] globalInc) throws IOException {
+        OrcFileMetadata metadata, boolean[] globalInc, boolean[] sargColumns) throws IOException {
       ArrayList<OrcStripeMetadata> result = new ArrayList<OrcStripeMetadata>(readState.length);
       OrcBatchKey stripeKey = new OrcBatchKey(internedFilePath, 0, 0);
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
@@ -374,7 +387,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
                 + si.getOffset() + ", " + si.getLength());
           }
           if (value == null) {
-            value = new OrcStripeMetadata(metadataReader, si, globalInc);
+            value = new OrcStripeMetadata(metadataReader, si, globalInc, sargColumns);
             metadataCache.putStripeMetadata(stripeKey, value);
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
@@ -387,7 +400,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
               LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
                   + " metadata for includes: " + DebugUtils.toString(globalInc));
             }
-            updateLoadedIndexes(value, si, globalInc);
+            updateLoadedIndexes(value, si, globalInc, sargColumns);
           }
         }
         result.add(value);
@@ -419,7 +432,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         ensureOrcReader();
         String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
             columnNames, types, globalIncludes, OrcInputFormat.isOriginal(orcReader));
-        sargApp = new SargApplier(sarg, colNamesForSarg, rowIndexStride);
+        sargApp = new SargApplier(sarg, colNamesForSarg, rowIndexStride, types);
       }
       // readState should have been initialized by this time with an empty array.
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {

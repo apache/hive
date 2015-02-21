@@ -8,11 +8,11 @@ create table orc1
     select rn
     from
     (
-      select cast(1 as int) as rn from src limit 1
+      select * from (select cast(1 as int) as rn from src limit 1)a
       union all
-      select cast(100 as int) as rn from src limit 1
+      select * from (select cast(100 as int) as rn from src limit 1)b
       union all
-      select cast(10000 as int) as rn from src limit 1
+      select * from (select cast(10000 as int) as rn from src limit 1)c
     ) t;
 
 create table orc_rn1 (rn int);

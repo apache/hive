@@ -101,10 +101,7 @@ public class LazyMapObjectInspector implements MapObjectInspector {
 
   @Override
   public Object getMapValueElement(Object data, Object key) {
-    if (data == null) {
-      return null;
-    }
-    return ((LazyMap) data).getMapValueElement(key);
+    return ((data==null || key == null)? null : ((LazyMap) data).getMapValueElement(key));
   }
 
   @Override

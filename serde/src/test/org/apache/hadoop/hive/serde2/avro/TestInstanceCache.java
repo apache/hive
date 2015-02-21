@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.util.Set;
 import org.junit.Test;
 
 import static org.junit.Assert.assertSame;
@@ -41,18 +42,19 @@ public class TestInstanceCache {
   public void instanceCachesOnlyCreateOneInstance() throws AvroSerdeException {
     InstanceCache<Foo, Wrapper<Foo>> ic = new InstanceCache<Foo, Wrapper<Foo>>() {
                                            @Override
-                                           protected Wrapper makeInstance(Foo hv) {
+                                           protected Wrapper makeInstance(Foo hv,
+                                               Set<Foo> seenSchemas) {
                                              return new Wrapper(hv);
                                            }
                                           };
     Foo f1 = new Foo();
 
-    Wrapper fc = ic.retrieve(f1);
+    Wrapper fc = ic.retrieve(f1, null);
     assertSame(f1, fc.wrapped); // Our original foo should be in the wrapper
 
     Foo f2 = new Foo(); // Different instance, same value
 
-    Wrapper fc2 = ic.retrieve(f2);
+    Wrapper fc2 = ic.retrieve(f2, null);
     assertSame(fc2,fc); // Since equiv f, should get back first container
     assertSame(fc2.wrapped, f1);
   }
@@ -60,19 +62,20 @@ public class TestInstanceCache {
   @Test
   public void instanceCacheReturnsCorrectInstances() throws AvroSerdeException {
     InstanceCache<String, Wrapper<String>> ic = new InstanceCache<String, Wrapper<String>>() {
-                                                    @Override
-                                                    protected Wrapper<String> makeInstance(String hv) {
-                                                      return new Wrapper<String>(hv);
-                                                    }
-                                                  };
+                                   @Override
+                                   protected Wrapper<String> makeInstance(
+                                       String hv, Set<String> seenSchemas) {
+                                     return new Wrapper<String>(hv);
+                                   }
+                                 };
 
-    Wrapper<String> one = ic.retrieve("one");
-    Wrapper<String> two = ic.retrieve("two");
+    Wrapper<String> one = ic.retrieve("one", null);
+    Wrapper<String> two = ic.retrieve("two", null);
 
-    Wrapper<String> anotherOne = ic.retrieve("one");
+    Wrapper<String> anotherOne = ic.retrieve("one", null);
     assertSame(one, anotherOne);
 
-    Wrapper<String> anotherTwo = ic.retrieve("two");
+    Wrapper<String> anotherTwo = ic.retrieve("two", null);
     assertSame(two, anotherTwo);
   }
 }

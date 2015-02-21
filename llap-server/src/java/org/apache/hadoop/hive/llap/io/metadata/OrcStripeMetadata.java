@@ -25,40 +25,42 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
 public class OrcStripeMetadata {
   List<ColumnEncoding> encodings;
   List<Stream> streams;
-  RowIndex[] rowIndexes;
+  RecordReaderImpl.Index rowIndex;
 
-  public OrcStripeMetadata(
-      MetadataReader mr, StripeInformation stripe, boolean[] includes) throws IOException {
+  public OrcStripeMetadata(MetadataReader mr, StripeInformation stripe,
+      boolean[] includes, boolean[] sargColumns) throws IOException {
     StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
-    rowIndexes = mr.readRowIndex(stripe, footer, includes, null);
+    rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
   }
 
   public boolean hasAllIndexes(boolean[] includes) {
     for (int i = 0; i < includes.length; ++i) {
-      if (includes[i] && rowIndexes[i] == null) return false;
+      if (includes[i] && rowIndex.getRowGroupIndex()[i] == null) return false;
     }
     return true;
   }
 
-  public void loadMissingIndexes(
-      MetadataReader mr, StripeInformation stripe, boolean[] includes) throws IOException {
+  public void loadMissingIndexes(MetadataReader mr, StripeInformation stripe, boolean[] includes,
+      boolean[] sargColumns) throws IOException {
     // TODO: should we save footer to avoid a read here?
-    rowIndexes = mr.readRowIndex(stripe, null, includes, rowIndexes);
+    rowIndex = mr.readRowIndex(stripe, null, includes, rowIndex.getRowGroupIndex(),
+        sargColumns, rowIndex.getBloomFilterIndex());
   }
 
   public RowIndex[] getRowIndexes() {
-    return rowIndexes;
+    return rowIndex.getRowGroupIndex();
   }
 
   public void setRowIndexes(RowIndex[] rowIndexes) {
-    this.rowIndexes = rowIndexes;
+    this.rowIndex.setRowGroupIndex(rowIndexes);
   }
 
   public List<ColumnEncoding> getEncodings() {

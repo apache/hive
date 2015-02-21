@@ -471,6 +471,15 @@ public abstract class InStream extends InputStream {
     }
   }
 
+  public static InStream create(String streamName,
+      ByteBuffer[] buffers,
+      long[] offsets,
+      long length,
+      CompressionCodec codec,
+      int bufferSize) throws IOException {
+    return create(null, streamName, buffers, offsets, length, codec, bufferSize);
+  }
+
   /**
    * Create an input stream from a list of buffers.
    * @param fileName name of the file
