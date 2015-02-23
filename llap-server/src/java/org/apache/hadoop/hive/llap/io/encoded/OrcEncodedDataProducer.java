@@ -54,7 +54,6 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 
 public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> {
-  private FileSystem cachedFs = null;
   private Configuration conf;
   private final OrcMetadataCache metadataCache;
   // TODO: it makes zero sense to have both at the same time and duplicate data. Add "cache mode".
@@ -349,11 +348,12 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      */
     private void ensureOrcReader() throws IOException {
       if (orcReader != null) return;
-      FileSystem fs = cachedFs;
       Path path = split.getPath();
-      if ("pfile".equals(path.toUri().getScheme())) {
+      // Disable filesystem caching for now; Tez closes it and FS cache will fix all that
+      FileSystem /*fs = cachedFs;
+      if ("pfile".equals(path.toUri().getScheme())) {*/
         fs = path.getFileSystem(conf); // Cannot use cached FS due to hive tests' proxy FS.
-      }
+      //}
       orcReader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
     }
 
@@ -612,7 +612,6 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
   public OrcEncodedDataProducer(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
       Configuration conf) throws IOException {
     // We assume all splits will come from the same FS.
-    this.cachedFs = FileSystem.get(conf);
     this.cache = cache;
     this.lowLevelCache = lowLevelCache;
     this.conf = conf;

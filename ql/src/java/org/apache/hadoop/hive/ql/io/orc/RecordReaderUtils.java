@@ -259,11 +259,20 @@ public class RecordReaderUtils {
         }
       } else if (doForceDirect) {
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
+        int pos = directBuf.position();
         try {
-          while (directBuf.remaining() > 0) {
+          while (directBuf.remaining() >= 0) {
             int count = file.read(directBuf);
             if (count < 0) throw new EOFException();
-            directBuf.position(directBuf.position() + count);
+            if (directBuf.position() != pos) {
+              RecordReaderImpl.LOG.info("Warning - position mismatch from " + file.getClass()
+                  + ": after reading " + count + ", expected " + pos + " but got " + directBuf.position());
+            }
+            pos += count;
+            if (pos > len) {
+              throw new AssertionError("Position " + pos + " length " + len + " after reading " + count);
+            }
+            directBuf.position(pos);
           }
         } catch (UnsupportedOperationException ex) {
           RecordReaderImpl.LOG.error("Stream does not support direct read; we will copy.");
