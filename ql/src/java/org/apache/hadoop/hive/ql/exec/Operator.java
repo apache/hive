@@ -343,7 +343,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    LOG.info("Initializing Self " + this);
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing Self " + this);
+    }
 
     if (inputOIs != null) {
       inputObjInspectors = inputOIs;
@@ -391,7 +393,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
           "Internal Hive error during operator initialization.");
     }
 
-    LOG.info("Initialization Done " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initialization Done " + id + " " + getName());
+    }
   }
 
   public void initializeLocalWork(Configuration hconf) throws HiveException {
@@ -416,11 +420,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (isLogInfoEnabled) {
+      LOG.info("Operator " + id + " " + getName() + " initialized");
+    }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    LOG.info("Initializing children of " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing children of " + id + " " + getName());
+    }
     for (int i = 0; i < childOperatorsArray.length; i++) {
       childOperatorsArray[i].initialize(hconf, outputObjInspector,
           childOperatorsTag[i]);
@@ -455,7 +463,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
-    LOG.info("Initializing child " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing child " + id + " " + getName());
+    }
     // Double the size of the array if needed
     if (parentId >= inputObjInspectors.length) {
       int newLength = inputObjInspectors.length * 2;
@@ -565,7 +575,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         if(parent==null){
           continue;
         }
-        LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
+	if (isLogDebugEnabled) {
+	  LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
+	}
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -585,14 +597,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // check if all parents are finished
     if (!allInitializedParentsAreClosed()) {
-      LOG.debug("Not all parent operators are closed. Not closing.");
+      if (isLogDebugEnabled) {
+	LOG.debug("Not all parent operators are closed. Not closing.");
+      }
       return;
     }
 
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
-    LOG.info(id + " finished. closing... ");
+    if (isLogInfoEnabled) {
+      LOG.info(id + " finished. closing... ");
+    }
 
     // call the operator specific close routine
     closeOp(abort);
@@ -606,11 +622,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
-        LOG.debug("Closing child = " + op);
+	if (isLogDebugEnabled) {
+	  LOG.debug("Closing child = " + op);
+	}
         op.close(abort);
       }
 
-      LOG.info(id + " Close done");
+      if (isLogInfoEnabled) {
+	LOG.info(id + " Close done");
+      }
     } catch (HiveException e) {
       e.printStackTrace();
       throw e;
@@ -856,8 +876,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void logStats() {
-    for (String e : statsMap.keySet()) {
-      LOG.info(e.toString() + ":" + statsMap.get(e).toString());
+    if (isLogInfoEnabled) {
+      for (String e : statsMap.keySet()) {
+	LOG.info(e.toString() + ":" + statsMap.get(e).toString());
+      }
     }
   }
 

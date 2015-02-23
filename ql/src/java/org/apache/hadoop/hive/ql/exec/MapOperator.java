@@ -453,7 +453,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         builder.append(context.alias);
       }
       if (isLogDebugEnabled) {
-        LOG.info("Processing alias(es) " + builder.toString() + " for file " + fpath);
+        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
       }
     }
     // Add alias, table name, and partitions to hadoop conf so that their

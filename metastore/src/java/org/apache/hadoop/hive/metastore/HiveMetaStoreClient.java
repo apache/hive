@@ -794,7 +794,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
-      boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+      boolean ifExists, boolean needResult) throws NoSuchObjectException, MetaException, TException {
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<DropPartitionsExpr>(partExprs.size());
     for (ObjectPair<Integer, byte[]> partExpr : partExprs) {
@@ -807,9 +807,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setDeleteData(deleteData);
     req.setIgnoreProtection(ignoreProtection);
-    req.setNeedResult(true);
+    req.setNeedResult(needResult);
     req.setIfExists(ifExists);
     return client.drop_partitions_req(req).getPartitions();
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    // By default, we need the results from dropPartitions();
+    return dropPartitions(dbName, tblName, partExprs, deleteData, ignoreProtection, ifExists, true);
   }
 
   /**

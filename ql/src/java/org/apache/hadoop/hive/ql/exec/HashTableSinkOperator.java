@@ -73,7 +73,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   /**
    * The filters for join
    */
-  private transient List<ExprNodeEvaluator>[] joinFilters;  
+  private transient List<ExprNodeEvaluator>[] joinFilters;
 
   private transient int[][] filterMaps;
 
@@ -103,7 +103,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected transient LogHelper console;
   private long hashTableScale;
   private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
-  
+
   public HashTableSinkOperator() {
   }
 
@@ -265,7 +265,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables == null) {
-        LOG.debug("mapJoinTables is null");
+	if (isLogDebugEnabled) {
+	  LOG.debug("mapJoinTables is null");
+	}
       } else {
         flushToFile();
       }
@@ -280,7 +282,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void flushToFile() throws IOException, HiveException {
     // get tmp file URI
     Path tmpURI = getExecContext().getLocalWork().getTmpPath();
-    LOG.info("Temp URI for side table: " + tmpURI);
+    if (isLogInfoEnabled) {
+      LOG.info("Temp URI for side table: " + tmpURI);
+    }
     for (byte tag = 0; tag < mapJoinTables.length; tag++) {
       // get the key and value
       MapJoinPersistableTableContainer tableContainer = mapJoinTables[tag];
