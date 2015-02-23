@@ -38,7 +38,6 @@ from alltypesorc cross join cross_numbers;
 select count(*) from orc_llap;
 
 SET hive.llap.io.enabled=true;
-select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp;
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp;
 SET hive.llap.io.enabled=false;
-select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp;
-
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp;

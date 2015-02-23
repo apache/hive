@@ -126,7 +126,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         metadata = getOrReadFileMetadata();
         int bufferSize = metadata.getCompressionBufferSize();
         int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
-        if (bufferSize != minAllocSize) {
+        if (bufferSize < minAllocSize) {
           throw new IOException("ORC compression buffer size (" + bufferSize + ") is smaller than" +
               " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease the" +
               " value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());

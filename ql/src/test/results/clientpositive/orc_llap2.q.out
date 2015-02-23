@@ -89,21 +89,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 122880
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
+PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
+POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-239452960650
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
+-41726695000
+PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
+POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null order by cbigint limit 1000) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-239452960650
+-41726695000

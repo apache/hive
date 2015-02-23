@@ -64,7 +64,7 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
       if (isFileCompressed) {
         index.getNext();
       }
-      present.seek(index);
+      reader.present.seek(index);
     }
 
     if (isDictionaryEncoding) {

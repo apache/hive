@@ -262,7 +262,7 @@ public class RecordReaderImpl implements RecordReader {
 
   public abstract static class TreeReader {
     protected final int columnId;
-    protected BitFieldReader present = null;
+    public BitFieldReader present = null;
     protected boolean valuePresent = false;
 
     public TreeReader(int columnId) throws IOException {
