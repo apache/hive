@@ -89,39 +89,60 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 122880
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: select sum(hash(*)) from (
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from (
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 -558222259686
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: select sum(hash(*)) from (
+select * from orc_llap where cint > 10 and cbigint is not null) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from (
+select * from orc_llap where cint > 10 and cbigint is not null) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 -197609091139
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: select sum(hash(*)) from (
+select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from (
+select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
--558222259686
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+NULL
+PREHOOK: query: select sum(hash(*)) from (
+select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cross_numbers
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from (
+select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cross_numbers
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
+-3966955638
+PREHOOK: query: select sum(hash(*)) from (
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from (
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
--197609091139
+252929559084752
