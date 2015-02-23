@@ -29,32 +29,23 @@ public class LlapIoProxy {
 
   // Llap server depends on Hive execution, so the reverse cannot be true. We create the I/O
   // singleton once (on daemon startup); the said singleton server as the IO interface.
-  private static final Object instanceLock = new Object();
   private static LlapIo io = null;
 
-
-  // TODO: temporary interface. LLAP daemon should init this once during
-  //       startup then others should use get w/o configuration.
-  public static LlapIo getOrCreateIo(Configuration conf) {
-    if (io != null) return io;
-    synchronized (instanceLock) {
-      if (io != null) return io;
-      initializeLlapIo(conf);
-      return io;
-    }
+  public static LlapIo getIo() {
+    return io;
   }
 
   public static void initializeLlapIo(Configuration conf) {
-    assert io == null;
+
+    if (io != null) {
+      return; // already initialized
+    }
+
     try {
       io = createIoImpl(conf);
     } catch (IOException e) {
       throw new RuntimeException("Cannot initialize local server", e);
     }
-  }
-
-  public static LlapIo getIo() {
-    return io;
   }
 
   private static LlapIo createIoImpl(Configuration conf) throws IOException {

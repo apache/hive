@@ -83,7 +83,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
@@ -213,8 +213,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     LOG.info("Wrapping " + inputFormat);
     @SuppressWarnings("unchecked")
-    // TODO: should be LlapIoProxy.getIo eventually
-    LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getOrCreateIo(conf);
+    LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
     return castInputFormat(llapIo.getInputFormat(inputFormat));
   }
 

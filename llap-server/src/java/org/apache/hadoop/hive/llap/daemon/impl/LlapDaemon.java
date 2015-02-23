@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 
 public class LlapDaemon extends AbstractService implements ContainerRunner {
@@ -84,6 +85,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
   public void serviceInit(Configuration conf) {
     server.init(conf);
     containerRunner.init(conf);
+    LlapIoProxy.initializeLlapIo(conf);
   }
 
   @Override
