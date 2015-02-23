@@ -913,13 +913,15 @@ public class QTestUtil {
             long endTime = System.currentTimeMillis() + 240000;
             while (sparkSession.getMemoryAndCores().getSecond() <= 1) {
               if (System.currentTimeMillis() >= endTime) {
-                LOG.error("Timed out waiting for Spark cluster to init");
-                break;
+                String msg = "Timed out waiting for Spark cluster to init";
+                throw new IllegalStateException(msg);
               }
               Thread.sleep(100);
             }
           } catch (Exception e) {
-            LOG.error(e);
+            String msg = "Error trying to obtain executor info: " + e;
+            LOG.error(msg, e);
+            throw new IllegalStateException(msg, e);
           }
         }
       }
