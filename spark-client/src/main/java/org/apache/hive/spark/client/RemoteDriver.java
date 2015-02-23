@@ -166,7 +166,7 @@ public class RemoteDriver {
         jcLock.notifyAll();
       }
     } catch (Exception e) {
-      LOG.error("Failed to start SparkContext.", e);
+      LOG.error("Failed to start SparkContext: " + e, e);
       shutdown(e);
       synchronized (jcLock) {
         jcLock.notifyAll();
@@ -203,7 +203,11 @@ public class RemoteDriver {
 
   private synchronized void shutdown(Throwable error) {
     if (running) {
-      LOG.info("Shutting down remote driver.");
+      if (error == null) {
+        LOG.info("Shutting down remote driver.");
+      } else {
+        LOG.error("Shutting down remote driver due to error: " + error, error);
+      }
       running = false;
       for (JobWrapper<?> job : activeJobs.values()) {
         cancelJob(job);
