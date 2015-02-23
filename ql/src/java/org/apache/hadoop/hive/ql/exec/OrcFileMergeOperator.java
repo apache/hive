@@ -81,7 +81,9 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-        LOG.info("ORC merge file input path: " + k.getInputPath());
+	if (isLogInfoEnabled) {
+	  LOG.info("ORC merge file input path: " + k.getInputPath());
+	}
       }
 
       // store the orc configuration from the first file. All other files should
@@ -100,7 +102,9 @@ public class OrcFileMergeOperator extends
                 .version(version)
                 .rowIndexStride(rowIndexStride)
                 .inspector(reader.getObjectInspector()));
-        LOG.info("ORC merge file output path: " + outPath);
+	if (isLogDebugEnabled) {
+	  LOG.info("ORC merge file output path: " + outPath);
+	}
       }
 
       if (!checkCompatibility(k)) {
@@ -123,9 +127,11 @@ public class OrcFileMergeOperator extends
       outWriter.appendStripe(buffer, 0, buffer.length, v.getStripeInformation(),
           v.getStripeStatistics());
 
-      LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
-          + v.getStripeInformation().getOffset() + " length: "
-          + v.getStripeInformation().getLength() + " ]");
+      if (isLogInfoEnabled) {
+	LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
+	    + v.getStripeInformation().getOffset() + " length: "
+	    + v.getStripeInformation().getLength() + " ]");
+      }
 
       // add user metadata to footer in case of any
       if (v.isLastStripeInFile()) {
@@ -151,33 +157,43 @@ public class OrcFileMergeOperator extends
   private boolean checkCompatibility(OrcFileKeyWrapper k) {
     // check compatibility with subsequent files
     if ((k.getTypes().get(0).getSubtypesCount() != columnCount)) {
-      LOG.info("Incompatible ORC file merge! Column counts does not match for "
-          + k.getInputPath());
+      if (isLogInfoEnabled) {
+	LOG.info("Incompatible ORC file merge! Column counts does not match for "
+	    + k.getInputPath());
+      }
       return false;
     }
 
     if (!k.getCompression().equals(compression)) {
-      LOG.info("Incompatible ORC file merge! Compression codec does not match" +
-          " for " + k.getInputPath());
+      if (isLogInfoEnabled) {
+	LOG.info("Incompatible ORC file merge! Compression codec does not match" +
+	    " for " + k.getInputPath());
+      }
       return false;
     }
 
     if (k.getCompressBufferSize() != compressBuffSize) {
-      LOG.info("Incompatible ORC file merge! Compression buffer size does not" +
-          " match for " + k.getInputPath());
+      if (isLogInfoEnabled) {
+	LOG.info("Incompatible ORC file merge! Compression buffer size does not" +
+	    " match for " + k.getInputPath());
+      }
       return false;
 
     }
 
     if (!k.getVersion().equals(version)) {
-      LOG.info("Incompatible ORC file merge! Version does not match for "
-          + k.getInputPath());
+      if (isLogInfoEnabled) {
+	LOG.info("Incompatible ORC file merge! Version does not match for "
+	    + k.getInputPath());
+      }
       return false;
     }
 
     if (k.getRowIndexStride() != rowIndexStride) {
-      LOG.info("Incompatible ORC file merge! Row index stride does not match" +
-          " for " + k.getInputPath());
+      if (isLogInfoEnabled) {
+	LOG.info("Incompatible ORC file merge! Row index stride does not match" +
+	    " for " + k.getInputPath());
+      }
       return false;
     }
 

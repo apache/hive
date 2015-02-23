@@ -153,7 +153,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
           values.add(o == null ? defaultPartitionName : o.toString());
         }
         partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
-        LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
+	if (isLogInfoEnabled) {
+	  LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
+	}
       }
       // find which column contains the raw data size (both partitioned and non partitioned
       int uSizeColumn = -1;
@@ -279,7 +281,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
     if (!statsPublisher.connect(jc)) {
       // just return, stats gathering should not block the main query.
-      LOG.info("StatsPublishing error: cannot connect to database.");
+      if (isLogInfoEnabled) {
+	LOG.info("StatsPublishing error: cannot connect to database.");
+      }
       if (isStatsReliable) {
         throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
       }
@@ -307,7 +311,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
           throw new HiveException(ErrorMsg.STATSPUBLISHER_PUBLISHING_ERROR.getErrorCodedMsg());
         }
       }
-      LOG.info("publishing : " + key + " : " + statsToPublish.toString());
+      if (isLogInfoEnabled) {
+	LOG.info("publishing : " + key + " : " + statsToPublish.toString());
+      }
     }
     if (!statsPublisher.closeConnection()) {
       if (isStatsReliable) {
