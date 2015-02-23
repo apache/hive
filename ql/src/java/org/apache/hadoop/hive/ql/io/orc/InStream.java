@@ -730,7 +730,7 @@ public abstract class InStream extends InputStream {
       }
       return next;
     }
-    if (current.end < cbEndOffset && current.next == null) {
+    if (current.end < cbEndOffset && !current.hasContiguousNext()) {
       return null; // This is impossible to read from this chunk.
     }
 
@@ -782,11 +782,10 @@ public abstract class InStream extends InputStream {
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Removing " + tmp + " from ranges");
       }
-      next = next.next;
+      next = next.hasContiguousNext() ? next.next : null;
       tmp.removeSelf();
     }
     return null; // This is impossible to read from this chunk.
-    // TODO: dbl check this is valid; we just did a bunch of changes to the list.
   }
 
   /**

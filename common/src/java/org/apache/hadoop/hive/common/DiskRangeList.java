@@ -96,6 +96,10 @@ public class DiskRangeList extends DiskRange {
     return replaceSelfWith((DiskRangeList)this.slice(offset, cOffset));
   }
 
+  public boolean hasContiguousNext() {
+    return next != null && end == next.offset;
+  }
+
   @VisibleForTesting
   public int listSize() {
     int result = 1;
