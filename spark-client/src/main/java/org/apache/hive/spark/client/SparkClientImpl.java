@@ -47,6 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -347,6 +348,16 @@ class SparkClientImpl implements SparkClient {
         if (numOfExecutors != null) {
           argv.add("--num-executors");
           argv.add(numOfExecutors);
+        }
+      }
+
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+        argv.add("--proxy-user");
+        try {
+          argv.add(Utils.getUGI().getShortUserName());
+        } catch (Exception e) {
+          String msg = "Cannot obtain username: " + e;
+          throw new IllegalStateException(msg, e);
         }
       }
 

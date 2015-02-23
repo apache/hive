@@ -416,6 +416,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  private void configureImpersonation(Configuration conf) {
+    String user;
+    try {
+      user = Utils.getUGI().getShortUserName();
+    } catch (Exception e) {
+      String msg = "Cannot obtain username: " + e;
+      throw new IllegalStateException(msg, e);
+    }
+    conf.set("hadoop.proxyuser." + user + ".groups", "*");
+    conf.set("hadoop.proxyuser." + user + ".hosts", "*");
+  }
+
   /**
    * Returns a shim to wrap MiniSparkOnYARNCluster
    */
@@ -435,10 +447,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException {
-
       mr = new MiniSparkOnYARNCluster("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
+      configureImpersonation(conf);
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
@@ -493,6 +505,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
+    configureImpersonation(conf);
     MiniDFSCluster miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
 
     // Need to set the client's KeyProvider to the NN's for JKS,
