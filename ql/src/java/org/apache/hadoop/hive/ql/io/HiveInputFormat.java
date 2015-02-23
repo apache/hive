@@ -214,6 +214,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     LOG.info("Wrapping " + inputFormat);
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
+    if (llapIo == null) {
+      LOG.info("Not using LLAP because IO is not initialized");
+      return inputFormat;
+    }
     return castInputFormat(llapIo.getInputFormat(inputFormat));
   }
 
