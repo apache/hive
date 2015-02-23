@@ -214,11 +214,15 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   @Override
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (isLogInfoEnabled) {
+      LOG.info("Operator " + id + " " + getName() + " initialized");
+    }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    LOG.info("Initializing children of " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing children of " + id + " " + getName());
+    }
     childOperatorsArray[0].initialize(hconf, outputObjectInspectors);
     if (reporter != null) {
       childOperatorsArray[0].setReporter(reporter);
@@ -302,8 +306,10 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    for (int i = 0; i < numParents; i++) {
-      LOG.info(id + ", tag=" + i + ", forwarded " + cntrs[i] + " rows");
+    if (isLogInfoEnabled) {
+      for (int i = 0; i < numParents; i++) {
+	LOG.info(id + ", tag=" + i + ", forwarded " + cntrs[i] + " rows");
+      }
     }
   }
 

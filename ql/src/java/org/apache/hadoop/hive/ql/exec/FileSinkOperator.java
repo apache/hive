@@ -391,7 +391,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           valToPaths.put("", fsp); // special entry for non-DP case
         }
       }
-      
+
       final StoragePolicyValue tmpStorage = StoragePolicyValue.lookup(HiveConf
                                             .getVar(hconf, HIVE_TEMPORARY_TABLE_STORAGE));
       if (isTemporary && fsp != null
@@ -702,7 +702,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.stat.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
-      if (++numRows == cntr) {
+      if ((++numRows == cntr) && isLogInfoEnabled) {
         cntr *= 10;
         LOG.info(toString() + ": records written - " + numRows);
       }
@@ -967,7 +967,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void closeOp(boolean abort) throws HiveException {
 
     row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);    
+    LOG.info(toString() + ": records written - " + numRows);
 
     if (!bDynParts && !filesCreated) {
       createBucketFiles(fsp);

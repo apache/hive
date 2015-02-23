@@ -59,7 +59,9 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
       eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];
-    LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
+    if (isLogInfoEnabled) {
+      LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
+    }
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
         inputObjInspectors[0]);
     initializeChildren(hconf);
