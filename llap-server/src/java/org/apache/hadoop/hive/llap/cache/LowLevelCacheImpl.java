@@ -118,7 +118,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       }
       cacheEnd = cacheOffset + buffer.declaredLength;
       CacheChunk currentCached = new CacheChunk(buffer, cacheOffset, cacheEnd);
-      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached);
+      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, baseOffset);
       // Now that we've added it into correct position, we can adjust it by base offset.
       currentCached.shiftBy(-baseOffset);
     }
@@ -126,34 +126,36 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   /**
    * Adds cached buffer to buffer list.
-   * @param currentNotCached Pointer to the list node where we are inserting.
-   * @param currentCached The cached buffer found for this node, to insert.
+   * @param currentNotCached Pointer to the list node where we are inserting. Expressed in stripe/stream offset.
+   * @param currentCached The cached buffer found for this node, to insert. Expressed in file offset.
+   * @param baseOffset 
    * @return The new currentNotCached pointer, following the cached buffer insertion.
    */
   private DiskRangeList addCachedBufferToIter(
-      DiskRangeList currentNotCached, CacheChunk currentCached) {
+      DiskRangeList currentNotCached, CacheChunk currentCached, long baseOffset) {
     // Both currentNotCached and currentCached already include baseOffset.
-    if (currentNotCached.offset == currentCached.offset) {
-      if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
+    long startOffset = baseOffset + currentNotCached.offset,
+        endOffset = baseOffset + currentNotCached.end;
+    if (startOffset == currentCached.offset) {
+      if (endOffset <= currentCached.end) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
         currentNotCached.replaceSelfWith(currentCached);
         return null;
       } else {
         // Insert the new cache range before the disk range.
-        currentNotCached.offset = currentCached.end;
+        currentNotCached.offset = currentCached.end - baseOffset;
         currentNotCached.insertBefore(currentCached);
         return currentNotCached;
       }
     } else {
-      assert currentNotCached.offset < currentCached.offset;
-      long originalEnd = currentNotCached.end;
-      currentNotCached.end = currentCached.offset;
+      assert startOffset < currentCached.offset;
+      currentNotCached.end = currentCached.offset - baseOffset;
       currentNotCached.insertAfter(currentCached);
-      if (originalEnd <= currentCached.end) { // we assume it's always "==" now
+      if (endOffset <= currentCached.end) { // we assume it's always "==" now
         return null;  // No more matches expected...
       } else {
         // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRangeList(currentCached.end, originalEnd);
+        currentNotCached = new DiskRangeList(currentCached.end - baseOffset, endOffset);
         currentCached.insertAfter(currentNotCached);
         return currentNotCached;
       }
