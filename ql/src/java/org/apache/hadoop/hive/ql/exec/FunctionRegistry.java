@@ -1574,9 +1574,16 @@ public final class FunctionRegistry {
    * @return True iff the fnExpr represents a hive built-in function (native, non-permanent)
    */
   public static boolean isBuiltInFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
-    Class<?> udfClass = FunctionRegistry.getGenericUDFClassFromExprDesc(fnExpr);
-    if (udfClass != null) {
-      return system.isBuiltInFunc(udfClass);
+    GenericUDF udf = fnExpr.getGenericUDF();
+    if (udf == null) return false;
+
+    Class clazz = udf.getClass();
+    if (udf instanceof GenericUDFBridge) {
+      clazz = ((GenericUDFBridge)udf).getUdfClass();
+    }
+
+    if (clazz != null) {
+      return system.isBuiltInFunc(clazz);
     }
     return false;
   }

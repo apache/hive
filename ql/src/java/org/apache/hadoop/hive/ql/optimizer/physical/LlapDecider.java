@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
@@ -131,6 +132,14 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private void convertWork(TezWork tezWork, BaseWork work)
       throws SemanticException {
+      // let's see if we can go one step further and just uber this puppy
+      if (tezWork.getChildren(work).isEmpty()
+	  && work instanceof ReduceWork
+	  && ((ReduceWork) work).getNumReduceTasks() == 1) {
+	work.setUberMode(true);
+      }
+
+      // always mark as llap
       work.setLlapMode(true);
     }
 

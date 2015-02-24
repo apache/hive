@@ -44,11 +44,6 @@
 </property>
 
 <property>
-  <name>hive.llap.execution.mode</name>
-  <value>auto</value>
-</property>
-
-<property>
   <name>mapred.tez.java.opts</name>
   <value>-Xmx128m</value>
 </property>

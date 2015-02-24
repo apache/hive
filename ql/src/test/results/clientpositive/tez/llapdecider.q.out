@@ -203,7 +203,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 44000 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -284,7 +284,7 @@ STAGE PLANS:
                   Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -462,7 +462,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1219 Data size: 433964 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -551,7 +551,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1219 Data size: 433964 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -991,7 +991,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1219 Data size: 433964 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -1055,7 +1055,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

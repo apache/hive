@@ -152,12 +152,16 @@ public class ReduceWork extends BaseWork {
   public String getExecutionMode() {
     if (vectorMode) {
       if (llapMode) {
-	return "vectorized, llap";
+	if (uberMode) {
+	  return "vectorized, uber";
+	} else {
+	  return "vectorized, llap";
+	}
       } else {
 	return "vectorized";
       }
     } else if (llapMode) {
-      return "llap";
+      return uberMode? "uber" : "llap";
     }
     return null;
   }
