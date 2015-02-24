@@ -116,7 +116,8 @@ case $startStop in
     #rotate_log $logLog
     #rotate_log $logOut
     echo starting llapdaemon, logging to $logLog and $logOut
-    nohup nice -n $LLAP_DAEMON_NICENESS "$LLAP_DAEMON_BIN_HOME"/bin/runLlapDaemon.sh run  > "$logOut" 2>&1 < /dev/null &
+    export LLAP_DAEMON_LOGFILE=${LLAP_DAEMON_LOG_BASE}.log
+    nohup nice -n $LLAP_DAEMON_NICENESS "$LLAP_DAEMON_BIN_HOME"/runLlapDaemon.sh run  > "$logOut" 2>&1 < /dev/null &
     echo $! > $pid
     ;;
           

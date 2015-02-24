@@ -19,7 +19,17 @@
   </property>
 
   <property>
-    <name>llap.daemon.am.service.hosts</name>
+    <name>llap.daemon.num.executors</name>
+    <value>3</value>
+  </property>
+
+  <property>
+    <name>llap.daemon.memory.per.instance.mb</name>
+    <value>3072</value>
+  </property>
+
+  <property>
+    <name>llap.daemon.service.hosts</name>
     <value>localhost</value>
     <description>Comma separate list of nodes running daemons</description>
   </property>

@@ -64,7 +64,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + rpcPort +
         ", workDirs=" + Arrays.toString(localDirs) +
-        ", shufflePort=" + shufflePort);
+        ", shufflePort=" + shufflePort +
+        ", memoryConfigured=" + memoryAvailableBytes +
+        ", jvmAvailableMemory=" + jvmMax);
 
     Preconditions.checkArgument(this.numExecutors > 0);
     Preconditions.checkArgument(this.rpcPort > 1024 && this.rpcPort < 65536,
@@ -102,20 +104,24 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
 
 
   public static void main(String[] args) throws Exception {
-    LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+    try {
+      LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
 
-    Configuration shuffleHandlerConf = new Configuration(daemonConf);
-    shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
-        daemonConf.get(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS));
-    ShuffleHandler.initializeAndStart(shuffleHandlerConf);
+      Configuration shuffleHandlerConf = new Configuration(daemonConf);
+      shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
+          daemonConf.get(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS));
+      ShuffleHandler.initializeAndStart(shuffleHandlerConf);
 
-    LlapDaemon llapDaemon = new LlapDaemon(daemonConf);
-    // TODO Get the PID - FWIW
-
-    llapDaemon.init(new Configuration());
-    llapDaemon.start();
-    LOG.info("Started LlapDaemon");
-    // Relying on the RPC threads to keep the service alive.
+      LlapDaemon llapDaemon = new LlapDaemon(daemonConf);
+      llapDaemon.init(new Configuration());
+      llapDaemon.start();
+      LOG.info("Started LlapDaemon");
+      // Relying on the RPC threads to keep the service alive.
+    } catch (Throwable t) {
+      // TODO Replace this with a ExceptionHandler / ShutdownHook
+      LOG.warn("Failed to start LLAP Daemon with exception", t);
+      System.exit(-1);
+    }
   }
 
 
