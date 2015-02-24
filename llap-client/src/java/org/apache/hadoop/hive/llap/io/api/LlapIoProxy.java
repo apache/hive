@@ -31,6 +31,16 @@ public class LlapIoProxy {
   // singleton once (on daemon startup); the said singleton server as the IO interface.
   private static LlapIo io = null;
 
+  private static boolean isDaemon = false;
+
+  public static void setDaemon(boolean isDaemon) {
+    LlapIoProxy.isDaemon = isDaemon;
+  }
+
+  public static boolean isDaemon() {
+    return isDaemon;
+  }
+
   public static LlapIo getIo() {
     return io;
   }

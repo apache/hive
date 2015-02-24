@@ -87,6 +87,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
   public void serviceInit(Configuration conf) {
     server.init(conf);
     containerRunner.init(conf);
+    LlapIoProxy.setDaemon(true);
     LlapIoProxy.initializeLlapIo(conf);
   }
 

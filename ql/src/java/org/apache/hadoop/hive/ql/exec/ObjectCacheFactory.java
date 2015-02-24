@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 
 /**
  * ObjectCacheFactory returns the appropriate cache depending on settings in
@@ -35,10 +36,13 @@ public class ObjectCacheFactory {
    * Returns the appropriate cache
    */
   public static ObjectCache getCache(Configuration conf) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") &&
-	HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("container")) {
-      return new org.apache.hadoop.hive.ql.exec.tez.ObjectCache();
-    } else {
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if (LlapIoProxy.isDaemon()) { // daemon
+	return new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
+      } else { // container
+	return new org.apache.hadoop.hive.ql.exec.tez.ObjectCache();
+      }
+    } else { // mr or spark
       return new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
     }
   }
