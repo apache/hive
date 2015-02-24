@@ -523,6 +523,9 @@ public final class ColumnPrunerProcFactory {
       for (ExprNodeDesc key : keys) {
         colLists = Utilities.mergeUniqElems(colLists, key.getCols());
       }
+      for (ExprNodeDesc key : conf.getPartitionCols()) {
+        colLists = Utilities.mergeUniqElems(colLists, key.getCols());
+      }
 
       assert op.getNumChild() == 1;
 
