@@ -155,7 +155,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.7.0-SNAPSHOT</tez.version>
+    <tez.version>0.7.0-TEZ-2003-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>1.2.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>

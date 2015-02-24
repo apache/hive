@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
@@ -64,6 +65,7 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
   private final TaskAttemptListener tal;
   private final Map<String, LlapDaemonProtocolBlockingPB> proxyMap;
   private final int servicePort;
+  private final ApplicationAttemptId appAttemptId;
   private final Clock clock;
 
 
@@ -80,6 +82,7 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
     ExecutorService localExecutor = Executors.newFixedThreadPool(numThreads,
         new ThreadFactoryBuilder().setNameFormat("DaemonCommunicator #%2d").build());
     executor = MoreExecutors.listeningDecorator(localExecutor);
+    this.appAttemptId = appContext.getApplicationAttemptId();
     this.context = appContext;
     this.tokenIdentifier = context.getApplicationID().toString();
     this.tal = tal;
@@ -107,7 +110,7 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
         InetSocketAddress address = tal.getTaskCommunicator(launchEvent.getTaskCommId()).getAddress();
         ListenableFuture<Void> future = executor.submit(
             new SubmitCallable(getProxy(launchEvent.getNodeId().getHost()), launchEvent,
-                tokenIdentifier, address.getHostName(), address.getPort()));
+                tokenIdentifier, appAttemptId, address.getHostName(), address.getPort()));
         Futures.addCallback(future, new SubmitCallback(launchEvent.getContainerId(),
             launchEvent.getContainer().getNodeId().getHost()));
         break;
@@ -130,13 +133,16 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
     private final String amHost;
     private final int amPort;
     private final LlapDaemonProtocolBlockingPB daemonProxy;
+    private final ApplicationAttemptId appAttemptId;
 
     private SubmitCallable(LlapDaemonProtocolBlockingPB daemonProxy,
                            NMCommunicatorLaunchRequestEvent event, String tokenIdentifier,
+                           ApplicationAttemptId appAttemptId,
                            String amHost, int amPort) {
       this.event = event;
       this.daemonProxy = daemonProxy;
       this.tokenIdentifier = tokenIdentifier;
+      this.appAttemptId = appAttemptId;
       this.amHost = amHost;
       this.amPort = amPort;
     }
@@ -147,9 +153,8 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
       RunContainerRequestProto.Builder requestBuilder = RunContainerRequestProto.newBuilder();
       // Need the taskAttemptListenerAddress
       requestBuilder.setAmHost(amHost).setAmPort(amPort);
-      requestBuilder.setAppAttemptNumber(event.getContainer().getId().getApplicationAttemptId().getAttemptId());
-      requestBuilder.setApplicationIdString(
-          event.getContainer().getId().getApplicationAttemptId().getApplicationId().toString());
+      requestBuilder.setAppAttemptNumber(appAttemptId.getAttemptId());
+      requestBuilder.setApplicationIdString(appAttemptId.getApplicationId().toString());
       requestBuilder.setTokenIdentifier(tokenIdentifier);
       requestBuilder.setContainerIdString(event.getContainer().getId().toString());
       requestBuilder.setCredentialsBinary(
