@@ -14,11 +14,12 @@
 
 package org.apache.tez.dag.app.rm;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -31,24 +32,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
-import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.NodeId;
-import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.client.api.AMRMClient;
-import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
-import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
-import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.app.AppContext;
 
-
-// TODO Registration with RM - so that the AM is considered dead and restarted in the expiry interval - 10 minutes.
 
 public class DaemonTaskSchedulerService extends TaskSchedulerService {
 
@@ -58,6 +51,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   private final TaskSchedulerAppCallback appClientDelegate;
   private final AppContext appContext;
   private final List<String> serviceHosts;
+  private final Set<String> serviceHostSet;
   private final ContainerFactory containerFactory;
   private final Random random = new Random();
 
@@ -67,8 +61,6 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   private final AtomicBoolean isStopped = new AtomicBoolean(false);
   private final ConcurrentMap<Object, ContainerId> runningTasks =
       new ConcurrentHashMap<Object, ContainerId>();
-
-  private final AMRMClientAsync<AMRMClient.ContainerRequest> amRmClient;
 
   // Per daemon
   private final int memoryPerInstance;
@@ -81,6 +73,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
 
   public DaemonTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
                                     String clientHostname, int clientPort, String trackingUrl,
+                                    long customAppIdIdentifier,
                                     Configuration conf) {
     // Accepting configuration here to allow setting up fields as final
     super(DaemonTaskSchedulerService.class.getName());
@@ -88,7 +81,8 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     this.appClientDelegate = createAppCallbackDelegate(appClient);
     this.appContext = appContext;
     this.serviceHosts = new LinkedList<String>();
-    this.containerFactory = new ContainerFactory(appContext);
+    this.serviceHostSet = new HashSet<>();
+    this.containerFactory = new ContainerFactory(appContext, customAppIdIdentifier);
     this.memoryPerInstance = conf
         .getInt(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
             LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT);
@@ -104,7 +98,6 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     int memoryPerExecutor = (int) (memoryPerInstance / (float) executorsPerInstance);
     int coresPerExecutor = (int) (coresPerInstance / (float) executorsPerInstance);
     this.resourcePerExecutor = Resource.newInstance(memoryPerExecutor, coresPerExecutor);
-    this.amRmClient = TezAMRMClientAsync.createAMRMClientAsync(5000, new FakeAmRmCallbackHandler());
 
     String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_AM_SERVICE_HOSTS);
     if (hosts == null || hosts.length == 0) {
@@ -112,6 +105,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     }
     for (String host : hosts) {
       serviceHosts.add(host);
+      serviceHostSet.add(host);
     }
 
     LOG.info("Running with configuration: " +
@@ -125,35 +119,15 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    amRmClient.init(conf);
   }
 
   @Override
   public void serviceStart() {
-    amRmClient.start();
-    RegisterApplicationMasterResponse response;
-    try {
-      amRmClient.registerApplicationMaster(clientHostname, clientPort, trackingUrl);
-    } catch (YarnException e) {
-      throw new TezUncheckedException(e);
-    } catch (IOException e) {
-      throw new TezUncheckedException(e);
-    }
   }
 
   @Override
   public void serviceStop() {
     if (!this.isStopped.getAndSet(true)) {
-
-      try {
-        TaskSchedulerAppCallback.AppFinalStatus status = appClientDelegate.getFinalAppStatus();
-        amRmClient.unregisterApplicationMaster(status.exitStatus, status.exitMessage,
-            status.postCompletionTrackingUrl);
-      } catch (YarnException e) {
-        throw new TezUncheckedException(e);
-      } catch (IOException e) {
-        throw new TezUncheckedException(e);
-      }
       appCallbackExecutor.shutdownNow();
     }
   }
@@ -257,8 +231,23 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     if (requestedHosts != null && requestedHosts.length > 0) {
       Arrays.sort(requestedHosts);
       host = requestedHosts[0];
-      LOG.info("Selected host: " + host + " from requested hosts: " + Arrays.toString(requestedHosts));
-    } else {
+      if (serviceHostSet.contains(host)) {
+        LOG.info("Selected host: " + host + " from requested hosts: " + Arrays.toString(requestedHosts));
+      } else {
+        LOG.info("Preferred host: " + host + " not present. Attempting to select another one");
+        host = null;
+        for (String h : requestedHosts) {
+          if (serviceHostSet.contains(h)) {
+            host = h;
+            break;
+          }
+        }
+        if (host == null) {
+          LOG.info("Requested hosts: " + Arrays.toString(requestedHosts) + " not present. Randomizing the host");
+        }
+      }
+    }
+    if (host == null) {
       host = serviceHosts.get(random.nextInt(serviceHosts.size()));
       LOG.info("Selected random host: " + host + " since the request contained no host information");
     }
@@ -266,17 +255,19 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   }
 
   static class ContainerFactory {
-    final AppContext appContext;
+    final ApplicationAttemptId customAppAttemptId;
     AtomicInteger nextId;
 
-    public ContainerFactory(AppContext appContext) {
-      this.appContext = appContext;
+    public ContainerFactory(AppContext appContext, long appIdLong) {
       this.nextId = new AtomicInteger(1);
+      ApplicationId appId = ApplicationId
+          .newInstance(appIdLong, appContext.getApplicationAttemptId().getApplicationId().getId());
+      this.customAppAttemptId = ApplicationAttemptId
+          .newInstance(appId, appContext.getApplicationAttemptId().getAttemptId());
     }
 
     public Container createContainer(Resource capability, Priority priority, String hostname) {
-      ApplicationAttemptId appAttemptId = appContext.getApplicationAttemptId();
-      ContainerId containerId = ContainerId.newInstance(appAttemptId, nextId.getAndIncrement());
+      ContainerId containerId = ContainerId.newInstance(customAppAttemptId, nextId.getAndIncrement());
       NodeId nodeId = NodeId.newInstance(hostname, 0);
       String nodeHttpAddress = "hostname:0";
 
@@ -288,39 +279,6 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
           null);
 
       return container;
-    }
-  }
-
-  private static class FakeAmRmCallbackHandler implements AMRMClientAsync.CallbackHandler {
-
-    @Override
-    public void onContainersCompleted(List<ContainerStatus> statuses) {
-
-    }
-
-    @Override
-    public void onContainersAllocated(List<Container> containers) {
-
-    }
-
-    @Override
-    public void onShutdownRequest() {
-
-    }
-
-    @Override
-    public void onNodesUpdated(List<NodeReport> updatedNodes) {
-
-    }
-
-    @Override
-    public float getProgress() {
-      return 0;
-    }
-
-    @Override
-    public void onError(Throwable e) {
-
     }
   }
 }

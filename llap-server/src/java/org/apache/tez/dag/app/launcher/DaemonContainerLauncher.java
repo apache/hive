@@ -14,6 +14,7 @@
 
 package org.apache.tez.dag.app.launcher;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -103,9 +104,10 @@ public class DaemonContainerLauncher extends AbstractService implements Containe
     switch (event.getType()) {
       case CONTAINER_LAUNCH_REQUEST:
         NMCommunicatorLaunchRequestEvent launchEvent = (NMCommunicatorLaunchRequestEvent) event;
+        InetSocketAddress address = tal.getTaskCommunicator(launchEvent.getTaskCommId()).getAddress();
         ListenableFuture<Void> future = executor.submit(
             new SubmitCallable(getProxy(launchEvent.getNodeId().getHost()), launchEvent,
-                tokenIdentifier, tal.getAddress().getHostName(), tal.getAddress().getPort()));
+                tokenIdentifier, address.getHostName(), address.getPort()));
         Futures.addCallback(future, new SubmitCallback(launchEvent.getContainerId(),
             launchEvent.getContainer().getNodeId().getHost()));
         break;
