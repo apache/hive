@@ -62,6 +62,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
 
   protected boolean llapMode = false;
+  protected boolean uberMode = false;
   protected boolean vectorMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
@@ -184,6 +185,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public boolean getVectorMode() {
     return vectorMode;
+  }
+
+  public void setUberMode(boolean uberMode) {
+    this.uberMode = uberMode;
+  }
+
+  public boolean getUberMode() {
+    return uberMode;
   }
 
   public void setLlapMode(boolean llapMode) {

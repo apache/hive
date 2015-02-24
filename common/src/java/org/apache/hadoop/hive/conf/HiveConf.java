@@ -2022,7 +2022,7 @@ public class HiveConf extends Configuration {
 	"Check input size, before considering vertex (-1 disables check)"),
     LLAP_AUTO_MAX_OUTPUT("hive.llap.auto.max.output.size", 1*1024*1024*1024L,
 	"Check output size, before considering vertex (-1 disables check)"),
-    LLAP_EXECUTION_MODE("hive.llap.execution.mode", "auto",
+    LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
 	new StringSet("auto", "none", "all", "map"),
         "Chooses whether query fragments will run in container or in llap"),
 

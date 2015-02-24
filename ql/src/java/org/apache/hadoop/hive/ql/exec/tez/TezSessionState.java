@@ -56,6 +56,8 @@ import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.dag.api.TezConstants;
+import org.apache.tez.dag.api.TezException;
 
 /**
  * Holds session state related to Tez
@@ -64,6 +66,13 @@ public class TezSessionState {
 
   private static final Log LOG = LogFactory.getLog(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
+  public static final String LLAP_SERVICE = "LLAP";
+  public static final String DEFAULT_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_NAME_DEFAULT;
+  public static final String LOCAL_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_LOCAL_MODE_NAME_DEFAULT;
+  private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.DaemonTaskSchedulerService";
+  private static final String LLAP_LAUNCHER = "org.apache.tez.dag.app.launcher.DaemonContainerLauncher";
+  private static final String LLAP_SERVICE_SCHEDULER = LLAP_SERVICE + ":" + LLAP_SCHEDULER;
+  private static final String LLAP_SERVICE_LAUNCHER = LLAP_SERVICE + ":" + LLAP_LAUNCHER;
 
   private HiveConf conf;
   private Path tezScratchDir;
@@ -171,8 +180,18 @@ public class TezSessionState {
     // and finally we're ready to create and start the session
     // generate basic tez config
     TezConfiguration tezConfig = new TezConfiguration(conf);
+
+    // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
 
+    // we need plugins to handle llap and uber mode
+    tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS,
+        DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_SCHEDULER);
+
+    tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS,
+	DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
+
+    // container prewarming. tell the am how many containers we need
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
       int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
       n = Math.max(tezConfig.getInt(

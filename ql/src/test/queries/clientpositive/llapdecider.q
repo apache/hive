@@ -1,4 +1,5 @@
 set hive.stats.fetch.column.stats=true;
+set hive.llap.execution.mode=auto;
 
 -- simple query with multiple reduce stages
 EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt;
@@ -50,9 +51,9 @@ set hive.llap.execution.mode=all;
 
 EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value;
 
-set hive.llap.execution.mode=auto;
-
 CREATE TEMPORARY FUNCTION test_udf_get_java_string AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
+
+set hive.llap.execution.mode=auto;
 
 EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1;
 EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1;

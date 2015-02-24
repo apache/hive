@@ -623,8 +623,13 @@ public class DagUtils {
     if (mapWork instanceof MergeFileWork) {
       procClassName = MergeFileTezProcessor.class.getName();
     }
+
+    String serviceName = findServiceName(mapWork);
+
     map = Vertex.create(mapWork.getName(), ProcessorDescriptor.create(procClassName)
-        .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
+        .setUserPayload(serializedConf), numTasks, getContainerResource(conf))
+      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_SCHEDULER_NAME, serviceName)
+      .setConf(TezConfiguration.TEZ_AM_VERTEX_CONTAINER_LAUNCHER_NAME, serviceName);
 
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
@@ -664,6 +669,13 @@ public class DagUtils {
     return conf;
   }
 
+  private String findServiceName(BaseWork work) {
+    String serviceName = TezSessionState.DEFAULT_SERVICE;
+    if (work.getLlapMode()) serviceName = TezSessionState.LLAP_SERVICE;
+    if (work.getUberMode()) serviceName = TezSessionState.LOCAL_SERVICE;
+    return serviceName;
+  }
+
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
@@ -678,12 +690,17 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
 
+    String serviceName = findServiceName(reduceWork);
+
     // create the vertex
     Vertex reducer = Vertex.create(reduceWork.getName(),
         ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
         setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
-            reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
-                .getNumReduceTasks(), getContainerResource(conf));
+            reduceWork.isAutoReduceParallelism()?
+	      reduceWork.getMaxReduceTasks():
+	      reduceWork.getNumReduceTasks(), getContainerResource(conf))
+      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_SCHEDULER_NAME, serviceName)
+      .setConf(TezConfiguration.TEZ_AM_VERTEX_CONTAINER_LAUNCHER_NAME, serviceName);
 
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
