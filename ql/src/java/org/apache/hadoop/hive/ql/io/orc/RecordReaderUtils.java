@@ -259,18 +259,23 @@ public class RecordReaderUtils {
         }
       } else if (doForceDirect) {
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
-        int pos = directBuf.position();
+        // TODO: HDFS API is a mess, so handle all kinds of crap.
+        int pos = directBuf.position(), startPos = pos, endPos = pos + len;
         try {
-          while (directBuf.remaining() >= 0) {
+          while (pos < endPos) {
             int count = file.read(directBuf);
             if (count < 0) throw new EOFException();
+            if (count == 0) {
+              throw new AssertionError("HDFS won't read any bloody data "
+                  + (endPos - pos) + "@" + (pos - startPos) + " and " + pos);
+            }
             if (directBuf.position() != pos) {
               RecordReaderImpl.LOG.info("Warning - position mismatch from " + file.getClass()
                   + ": after reading " + count + ", expected " + pos + " but got " + directBuf.position());
             }
             pos += count;
-            if (pos > len) {
-              throw new AssertionError("Position " + pos + " length " + len + " after reading " + count);
+            if (pos > endPos) {
+              throw new AssertionError("Position " + pos + " length " + len + "/" + endPos + " after reading " + count);
             }
             directBuf.position(pos);
           }
