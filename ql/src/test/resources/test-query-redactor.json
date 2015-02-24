@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "rules": [
+    {
+      "description": "Credit Card numbers - redact all but last 4",
+      "search": "\\d{4}.\\d{4}.\\d{4}.(\\d{4})",
+      "replace": "XXXX-XXXX-XXXX-$1"
+    }
+  ]
+}

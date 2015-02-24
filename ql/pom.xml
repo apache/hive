@@ -96,6 +96,11 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.cloudera.logredactor</groupId>
+      <artifactId>logredactor</artifactId>
+      <version>${cdh.logredactor.version}</version>
+    </dependency>
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>${commons-lang.version}</version>
