@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredi
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
 import org.apache.hadoop.hive.ql.parse.JoinType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -143,6 +145,8 @@ public class HiveOpConverter {
       return visit(hj);
     } else if (rn instanceof HiveSort) {
       return visit((HiveSort) rn);
+    } else if (rn instanceof HiveUnion) {
+      return visit((HiveUnion) rn);
     }
     LOG.error(rn.getClass().getCanonicalName() + "operator translation not supported"
             + " yet in return path.");
@@ -287,6 +291,37 @@ public class HiveOpConverter {
   
     // 3. Return result
     return inputOpAf.clone(resultOp);
+  }
+
+  OpAttr visit(HiveUnion unionRel) throws SemanticException {
+    // 1. Convert inputs
+    OpAttr[] inputs = new OpAttr[unionRel.getInputs().size()];
+    for (int i=0; i<inputs.length; i++) {
+      inputs[i] = dispatch(unionRel.getInput(i));
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Translating operator rel#" + unionRel.getId() + ":" + unionRel.getRelTypeName() +
+              " with row type: [" + unionRel.getRowType() + "]");
+    }
+
+    // 2. Create a new union operator
+    UnionDesc unionDesc = new UnionDesc();
+    unionDesc.setNumInputs(inputs.length);
+    ArrayList<ColumnInfo> cinfoLst = createColInfos(inputs[0].inputs.get(0));
+    Operator<?>[] children = new Operator<?>[inputs.length];
+    for (int i=0; i<children.length; i++) {
+      children[i] = inputs[i].inputs.get(0);
+    }
+    Operator<? extends OperatorDesc> unionOp = OperatorFactory.getAndMakeChild(
+            unionDesc, new RowSchema(cinfoLst), children);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Generated " + unionOp + " with row schema: [" + unionOp.getSchema() + "]");
+    }
+
+    // 3. Return result
+    return inputs[0].clone(unionOp);
   }
 
   private static ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo,
