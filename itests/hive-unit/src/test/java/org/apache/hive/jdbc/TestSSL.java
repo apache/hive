@@ -422,18 +422,33 @@ public class TestSSL {
    */
   @Test
   public void testSSLDeprecatConfig() throws Exception {
-    // Start HS2 with SSL using old config
-    miniHS2.setConfProperty("hive.server2.enable.SSL", "true");
-    miniHS2.setConfProperty(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname,
-        dataFileDir + File.separator +  KEY_STORE_NAME);
-    miniHS2.setConfProperty(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
-        KEY_STORE_PASSWORD);
-    miniHS2.start(new HashMap<String, String>());
+    setSslConfOverlay(confOverlay);
+    // Test in binary mode
+    setBinaryConfOverlay(confOverlay);
+    clearSslConfOverlay(confOverlay);
+    confOverlay.put("hive.server2.enable.SSL", "true");
+    // Start HS2 with SSL
+    miniHS2.start(confOverlay);
+
+    String tableName = "sslTab";
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
 
     // make SSL connection
-    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" +
-        dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" +
-        KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default", SSL_CONN_PARAMS),
+        System.getProperty("user.name"), "bar");
+
+    // Set up test data
+    setupTestTableWithData(tableName, dataFilePath, hs2Conn);
+
+    Statement stmt = hs2Conn.createStatement();
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    int rowCount = 0;
+    while (res.next()) {
+      ++rowCount;
+      assertEquals("val_" + res.getInt(1), res.getString(2));
+    }
+    // read result over SSL
+    assertEquals(500, rowCount);
 
     hs2Conn.close();
   }
