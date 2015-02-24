@@ -2012,6 +2012,8 @@ public class HiveConf extends Configuration {
     LLAP_ORC_CACHE_ALLOCATE_DIRECT("hive.llap.io.cache.direct", true, ""),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", false, ""),
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f, ""),
+    LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,
+	"Whether or not to allow the planner to run vertices in the AM"),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
 	"Enforce that all parents are in llap, before considering vertex"),
     LLAP_AUTO_ENFORCE_VECTORIZED("hive.llap.auto.enforce.vectorized", true,

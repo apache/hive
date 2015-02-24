@@ -132,11 +132,14 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private void convertWork(TezWork tezWork, BaseWork work)
       throws SemanticException {
-      // let's see if we can go one step further and just uber this puppy
-      if (tezWork.getChildren(work).isEmpty()
-	  && work instanceof ReduceWork
-	  && ((ReduceWork) work).getNumReduceTasks() == 1) {
-	work.setUberMode(true);
+
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_AUTO_ALLOW_UBER)) {
+	// let's see if we can go one step further and just uber this puppy
+	if (tezWork.getChildren(work).isEmpty()
+	    && work instanceof ReduceWork
+	    && ((ReduceWork) work).getNumReduceTasks() == 1) {
+	  work.setUberMode(true);
+	}
       }
 
       // always mark as llap
