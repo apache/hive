@@ -611,7 +611,9 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
   public OrcEncodedDataProducer(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
       Configuration conf) throws IOException {
-    // We assume all splits will come from the same FS.
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Initializing ORC encoded data producer");
+    }
     this.cache = cache;
     this.lowLevelCache = lowLevelCache;
     this.conf = conf;

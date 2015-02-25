@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BooleanStreamReader;
@@ -59,6 +60,10 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   public OrcColumnVectorProducer(
       ExecutorService executor, OrcEncodedDataProducer edp, Configuration conf) {
     super(executor);
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Initializing ORC column vector producer");
+    }
+
     this.edp = edp;
     this.metadataCache = OrcMetadataCache.getInstance();
     this.skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);

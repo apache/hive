@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 public final class BuddyAllocator implements Allocator {
   private final Arena[] arenas;
@@ -44,6 +45,12 @@ public final class BuddyAllocator implements Allocator {
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
     arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
     maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
+          + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
+          + ", arena size " + arenaSize + ". total size " + maxSize);
+    }
+
     if (minAllocation < 8) {
       throw new AssertionError("Min allocation must be at least 8: " + minAllocation);
     }

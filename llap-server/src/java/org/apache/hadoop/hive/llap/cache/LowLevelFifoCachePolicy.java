@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,16 +28,18 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
   private final Lock lock = new ReentrantLock();
-  private final LinkedHashSet<LlapCacheableBuffer> buffers;
+  private final LinkedList<LlapCacheableBuffer> buffers;
 
   public LowLevelFifoCachePolicy(Configuration conf) {
     super(HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
-    int expectedBufferSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
-    int expectedBuffers = (int)Math.ceil((maxSize * 1.0) / expectedBufferSize);
-    buffers = new LinkedHashSet<LlapCacheableBuffer>((int)(expectedBuffers / 0.75f));
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("FIFO cache policy");
+    }
+    buffers = new LinkedList<LlapCacheableBuffer>();
   }
 
   @Override

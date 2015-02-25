@@ -57,6 +57,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private LlapIoImpl(Configuration conf) throws IOException {
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
     // High-level cache not supported yet.
+    if (LOGL.isInfoEnabled()) {
+      LOG.info("Initializing LLAP IO" + (useLowLevelCache ? " with low level cache" : ""));
+    }
     Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
     LowLevelCacheImpl orcCache = null;
     if (useLowLevelCache) {
@@ -71,6 +74,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     this.edp = new OrcEncodedDataProducer(orcCache, cache, conf);
     this.cvp = new OrcColumnVectorProducer(threadPool, edp, conf);
+    if (LOGL.isInfoEnabled()) {
+      LOG.info("LLAP IO initialized");
+    }
   }
 
   @Override

@@ -56,6 +56,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   @VisibleForTesting
   LowLevelCacheImpl(Configuration conf,
       LowLevelCachePolicyBase cachePolicy, Allocator allocator, long cleanupInterval) {
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
+    }
     this.cachePolicy = cachePolicy;
     this.cachePolicy.setEvictionListener(this);
     this.allocator = allocator;
