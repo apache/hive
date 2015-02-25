@@ -42,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
@@ -68,6 +70,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
@@ -154,6 +157,8 @@ public class HiveOpConverter {
       HiveJoin hj = HiveJoin.getJoin(sj.getCluster(), sj.getLeft(), sj.getRight(),
               sj.getCondition(), sj.getJoinType(), true);
       return visit(hj);
+    } else if (rn instanceof HiveFilter) {
+      return visit((HiveFilter) rn);
     } else if (rn instanceof HiveSort) {
       return visit((HiveSort) rn);
     } else if (rn instanceof HiveUnion) {
@@ -393,6 +398,31 @@ public class HiveOpConverter {
   
     // 3. Return result
     return inputOpAf.clone(resultOp);
+  }
+
+  /**
+   * TODO: 1) isSamplingPred 2) sampleDesc 3) isSortedFilter
+   */
+  OpAttr visit(HiveFilter filterRel) throws SemanticException {
+    OpAttr inputOpAf = dispatch(filterRel.getInput());
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Translating operator rel#" + filterRel.getId() + ":" + filterRel.getRelTypeName() +
+              " with row type: [" + filterRel.getRowType() + "]");
+    }
+
+    ExprNodeDesc filCondExpr = filterRel.getCondition().accept(
+        new ExprNodeConverter(inputOpAf.tabAlias, filterRel.getInput().getRowType(), false));
+    FilterDesc filDesc = new FilterDesc(filCondExpr, false);
+    ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOpAf.inputs.get(0));
+    FilterOperator filOp = (FilterOperator) OperatorFactory.getAndMakeChild(filDesc, new RowSchema(
+        cinfoLst), inputOpAf.inputs.get(0));
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Generated " + filOp + " with row schema: [" + filOp.getSchema() + "]");
+    }
+
+    return inputOpAf.clone(filOp);
   }
 
   OpAttr visit(HiveUnion unionRel) throws SemanticException {
