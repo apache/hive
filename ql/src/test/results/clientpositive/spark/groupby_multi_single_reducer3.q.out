@@ -49,7 +49,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -177,8 +177,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-100	2
 200	2
+100	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -221,7 +221,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -349,8 +349,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-val_100	2
 val_200	2
+val_100	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -393,7 +393,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -521,8 +521,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-100	2
 200	2
+100	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -565,7 +565,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -693,8 +693,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-val_100	2
 val_200	2
+val_100	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2

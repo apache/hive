@@ -42,7 +42,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:

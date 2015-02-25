@@ -6826,7 +6826,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Create a reduceSink operator followed by another limit
-    curr = genReduceSinkPlan(dest, qb, curr, 1);
+    curr = genReduceSinkPlan(dest, qb, curr, 1, false);
     return genLimitPlan(dest, qb, curr, limit);
   }
 
@@ -7030,10 +7030,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
-      int numReducers) throws SemanticException {
-    
+      int numReducers, boolean hasOrderBy) throws SemanticException {
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-    
+
     // First generate the expression for the partition and sort keys
     // The cluster by clause / distribute by clause has the aliases for
     // partition function
@@ -7091,16 +7090,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sortCols.add(exprNode);
       }
     }
-    return genReduceSinkPlan(input, partCols, sortCols, order.toString(), numReducers);
+    Operator result = genReduceSinkPlan(
+        input, partCols, sortCols, order.toString(), numReducers);
+    if (result.getParentOperators().size() == 1 &&
+        result.getParentOperators().get(0) instanceof ReduceSinkOperator) {
+      ((ReduceSinkOperator) result.getParentOperators().get(0))
+          .getConf().setHasOrderBy(hasOrderBy);
+    }
+    return result;
   }
-  
+
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(Operator<?> input,
-      ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols, 
+      ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols,
       String sortOrder, int numReducers) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-    
+
     Operator dummy = Operator.createDummy();
     dummy.setParentOperators(Arrays.asList(input));
 
@@ -9011,6 +9017,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Reduce sink is needed if the query contains a cluster by, distribute by,
     // order by or a sort by clause.
     boolean genReduceSink = false;
+    boolean hasOrderBy = false;
 
     // Currently, expressions are not allowed in cluster by, distribute by,
     // order by or a sort by clause. For each of the above clause types, check
@@ -9025,6 +9032,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (qbp.getOrderByForClause(dest) != null) {
       genReduceSink = true;
+      hasOrderBy = true;
     }
 
     if (qbp.getSortByForClause(dest) != null) {
@@ -9035,11 +9043,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int numReducers = -1;
 
       // Use only 1 reducer if order by is present
-      if (qbp.getOrderByForClause(dest) != null) {
+      if (hasOrderBy) {
         numReducers = 1;
       }
 
-      curr = genReduceSinkPlan(dest, qb, curr, numReducers);
+      curr = genReduceSinkPlan(dest, qb, curr, numReducers, hasOrderBy);
     }
 
 
@@ -9047,15 +9055,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         // In case of order by, only 1 reducer is used, so no need of
         // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), qbp
-            .getOrderByForClause(dest) != null ? false : true);
+        curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), !hasOrderBy);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
       if (limit != null) {
         boolean extraMRStep = true;
 
-        if (qbp.getOrderByForClause(dest) != null ||
+        if (hasOrderBy ||
             qb.getIsQuery() && qbp.getClusterByForClause(dest) == null &&
             qbp.getSortByForClause(dest) == null) {
           extraMRStep = false;
