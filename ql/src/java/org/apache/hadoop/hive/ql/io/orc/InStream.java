@@ -468,7 +468,7 @@ public abstract class InStream extends InputStream {
   public abstract void seek(PositionProvider index) throws IOException;
 
   private static void logEmptySeek(String name) {
-    if (LOGL.isWarnEnabled()) {
+    if (LOG.isWarnEnabled()) {
       LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
     }
   }
@@ -592,6 +592,9 @@ public abstract class InStream extends InputStream {
       if (current instanceof CacheChunk) {
         // 2a. This is a cached compression buffer, add as is.
         CacheChunk cc = (CacheChunk)current;
+        if (DebugUtils.isTraceLockingEnabled()) {
+          LOG.info("Locking " + cc.buffer + " due to reuse");
+        }
         cache.notifyReused(cc.buffer);
         streamBuffer.cacheBuffers.add(cc.buffer);
         currentCOffset = cc.end;
@@ -645,14 +648,21 @@ public abstract class InStream extends InputStream {
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
-      int startPos = chunk.buffer.byteBuffer.position();
+      ByteBuffer dest = chunk.buffer.byteBuffer;
+      // After the below, position and limit will be screwed up (differently for if/else).
+      // We will reset the position and limit for now.
+      int startPos = dest.position(), startLim = dest.limit();
       if (chunk.isCompressed) {
-        codec.decompress(chunk.originalData, chunk.buffer.byteBuffer);
+        codec.decompress(chunk.originalData, dest);
       } else {
-        chunk.buffer.byteBuffer.put(chunk.originalData); // Copy uncompressed data to cache.
+        dest.put(chunk.originalData); // Copy uncompressed data to cache.
       }
-      chunk.buffer.byteBuffer.position(startPos);
+      dest.position(startPos);
+      dest.limit(startLim);
       chunk.originalData = null;
+      if (DebugUtils.isTraceLockingEnabled()) {
+        LOG.info("Locking " + chunk.buffer + " due to reuse (after decompression)");
+      }
       cache.notifyReused(chunk.buffer);
     }
 
@@ -765,9 +775,6 @@ public abstract class InStream extends InputStream {
         copy.put(slice);
         next = addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset, cbEndOffset,
             remaining, remaining, (BufferChunk)next, cache, toDecompress, cacheBuffers);
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Adjusting " + next + " to consume " + remaining);
-        }
         if (compressed.remaining() <= 0 && zcr != null) {
           zcr.releaseBuffer(compressed); // We copied the entire buffer.
         }

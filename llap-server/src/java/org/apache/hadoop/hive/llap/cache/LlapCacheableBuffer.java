@@ -79,6 +79,9 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
       newRefCount = oldRefCount + 1;
       if (refCount.compareAndSet(oldRefCount, newRefCount)) break;
     }
+    if (DebugUtils.isTraceLockingEnabled()) {
+      LlapIoImpl.LOG.info("Locked " + this + "; new ref count " + newRefCount);
+    }
     return newRefCount;
   }
 
@@ -94,6 +97,9 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
 
   int decRef() {
     int newRefCount = refCount.decrementAndGet();
+    if (DebugUtils.isTraceLockingEnabled()) {
+      LlapIoImpl.LOG.info("Unlocked " + this + "; refcount " + newRefCount);
+    }
     if (newRefCount < 0) {
       throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
     }

@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
@@ -416,6 +418,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
     @Override
     public void returnData(StreamBuffer data) {
+      if (DebugUtils.isTraceLockingEnabled()) {
+        for (LlapMemoryBuffer buf : data.cacheBuffers) {
+          LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
+        }
+      }
       lowLevelCache.releaseBuffers(data.cacheBuffers);
     }
 

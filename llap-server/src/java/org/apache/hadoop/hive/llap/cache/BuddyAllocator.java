@@ -234,6 +234,7 @@ public final class BuddyAllocator implements Allocator {
       FreeList freeList = freeLists[freeListIx];
       int remaining = -1;
       freeList.lock.lock();
+      // TODO: write some comments for this method
       try {
         ix = allocateFromFreeListUnderLock(
             arenaIx, freeList, freeListIx, dest, ix, allocationSize);

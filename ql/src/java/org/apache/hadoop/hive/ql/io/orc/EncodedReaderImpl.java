@@ -18,16 +18,13 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
@@ -35,6 +32,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
@@ -310,10 +308,16 @@ public class EncodedReaderImpl implements EncodedReader {
       }
     }
 
+    // TODO: this is not good; we hold all the blocks until we send them all.
+    //       Hard to avoid due to sharing by RGs... perhaps we can still do better.
     DiskRangeList toFree = toRead.next;
     while (toFree != null) {
       if (toFree instanceof CacheChunk) {
-        cache.releaseBuffer(((CacheChunk)toFree).buffer);
+        LlapMemoryBuffer buffer = ((CacheChunk)toFree).buffer;
+        if (DebugUtils.isTraceLockingEnabled()) {
+          LOG.info("Unlocking " + buffer + " at the end of readEncodedColumns");
+        }
+        cache.releaseBuffer(buffer);
       }
       toFree = toFree.next;
     }

@@ -109,6 +109,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       Map.Entry<Long, LlapCacheableBuffer> e = matches.next();
       LlapCacheableBuffer buffer = e.getValue();
       // Lock the buffer, validate it and add to results.
+      if (DebugUtils.isTraceLockingEnabled()) {
+        LlapIoImpl.LOG.info("Locking " + buffer + " during get");
+      }
+
       if (!lockBuffer(buffer)) {
         // If we cannot lock, remove this from cache and continue.
         matches.remove();
@@ -182,6 +186,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
+        if (DebugUtils.isTraceLockingEnabled()) {
+          LlapIoImpl.LOG.info("Locking " + buffer + " at put time");
+        }
         buffer.incRef();
         long offset = ranges[i].offset + baseOffset;
         buffer.declaredLength = ranges[i].getLength();
@@ -197,6 +204,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
                 + fileName + "@" + offset  + " (base " + baseOffset + "); old " + oldVal
                 + ", new " + buffer);
           }
+          if (DebugUtils.isTraceLockingEnabled()) {
+            LlapIoImpl.LOG.info("Locking " + oldVal + "  due to cache collision");
+          }
           if (lockBuffer(oldVal)) {
             // We don't do proper overlap checking because it would cost cycles and we
             // think it will never happen. We do perform the most basic check here.
@@ -206,6 +216,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
                   + " (base " + baseOffset + ")");
             }
             // We found an old, valid block for this key in the cache.
+            if (DebugUtils.isTraceLockingEnabled()) {
+              LlapIoImpl.LOG.info("Unlocking " + buffer + " due to cache collision with " + oldVal);
+            }
+
             releaseBufferInternal(buffer);
             buffers[i] = oldVal;
             if (result == null) {
