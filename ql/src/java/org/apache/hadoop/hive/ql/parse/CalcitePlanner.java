@@ -831,12 +831,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       basePlan = hepPlan(basePlan, true, mdProvider, SemiJoinJoinTransposeRule.INSTANCE,
           SemiJoinFilterTransposeRule.INSTANCE, SemiJoinProjectTransposeRule.INSTANCE);
 
-      // 2. PPD
+      // 2. Add not null filters
+      basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
+
+      // 3. PPD
       basePlan = hepPlan(basePlan, true, mdProvider,
           ReduceExpressionsRule.PROJECT_INSTANCE,
           ReduceExpressionsRule.FILTER_INSTANCE,
           ReduceExpressionsRule.JOIN_INSTANCE,
-          HiveJoinAddNotNullRule.INSTANCE,
           new HiveFilterProjectTransposeRule(
           Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
           HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
@@ -845,21 +847,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveFilterJoinRule.FILTER_ON_JOIN, new FilterAggregateTransposeRule(Filter.class,
               HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class));
 
-      // 3. Transitive inference & Partition Pruning
+      // 4. Transitive inference & Partition Pruning
       basePlan = hepPlan(basePlan, false, mdProvider, new JoinPushTransitivePredicatesRule(
           Join.class, HiveFilter.DEFAULT_FILTER_FACTORY),
       // TODO: Enable it after CALCITE-407 is fixed
       // RemoveTrivialProjectRule.INSTANCE,
           new HivePartitionPruneRule(conf));
 
-      // 4. Projection Pruning
+      // 5. Projection Pruning
       RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
           RelFactories.DEFAULT_SEMI_JOIN_FACTORY, HiveSort.HIVE_SORT_REL_FACTORY,
           HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY, true);
       basePlan = fieldTrimmer.trim(basePlan);
 
-      // 5. Rerun PPD through Project as column pruning would have introduced DT
+      // 6. Rerun PPD through Project as column pruning would have introduced DT
       // above scans
       basePlan = hepPlan(basePlan, true, mdProvider,
           new FilterProjectTransposeRule(Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY,
