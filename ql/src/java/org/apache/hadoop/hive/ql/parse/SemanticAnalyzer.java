@@ -1357,25 +1357,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             partition.put(partitionName, partitionVal);
           }
           // if it is a dynamic partition throw the exception
-          if (childCount == partition.size()) {
-            try {
-              Table table = db.getTable(tableName);
-              Partition parMetaData = db.getPartition(table, partition, false);
-              // Check partition exists if it exists skip the overwrite
-              if (parMetaData != null) {
-                phase1Result = false;
-                skipRecursion = true;
-                LOG.info("Partition already exists so insert into overwrite " +
-                    "skipped for partition : " + parMetaData.toString());
-                break;
-              }
-            } catch (HiveException e) {
-              LOG.info("Error while getting metadata : ", e);
-            }
-          } else {
+          if (childCount != partition.size()) {
             throw new SemanticException(ErrorMsg.INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS
                 .getMsg(partition.toString()));
           }
+          Table table = null;
+          try {
+            table = db.getTable(tableName);
+          } catch (HiveException ex) {
+            throw new SemanticException(ex);
+          }
+          try {
+            Partition parMetaData = db.getPartition(table, partition, false);
+            // Check partition exists if it exists skip the overwrite
+            if (parMetaData != null) {
+              phase1Result = false;
+              skipRecursion = true;
+              LOG.info("Partition already exists so insert into overwrite " +
+                  "skipped for partition : " + parMetaData.toString());
+              break;
+            }
+          } catch (HiveException e) {
+            LOG.info("Error while getting metadata : ", e);
+          }
+          validatePartSpec(table, partition, (ASTNode)tab, conf, false);
         }
         skipRecursion = false;
         break;
