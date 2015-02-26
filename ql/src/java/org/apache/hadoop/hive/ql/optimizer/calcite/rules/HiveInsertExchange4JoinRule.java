@@ -26,11 +26,12 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.logical.LogicalExchange;
-import org.apache.calcite.sql.JoinType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 
 /** Not an optimization rule.
  * Rule to aid in translation from Calcite tree -> Hive tree.
@@ -42,6 +43,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicate
  *                                                 Join
  */
 public class HiveInsertExchange4JoinRule extends RelOptRule {
+  
+  protected static transient final Log LOG = LogFactory
+      .getLog(HiveInsertExchange4JoinRule.class);
 
   public HiveInsertExchange4JoinRule() {
 
@@ -54,6 +58,11 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
+    
+    if (call.rel(1) instanceof LogicalExchange &&
+        call.rel(2) instanceof LogicalExchange) {
+      return;
+    }
 
     JoinPredicateInfo joinPredInfo =
         HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
@@ -74,9 +83,9 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
     Join newJoin = join.copy(join.getTraitSet(), join.getCondition(),
         left, right, join.getJoinType(), join.isSemiJoinDone());
 
-call.getPlanner().onCopy(join, newJoin);
-
-call.transformTo(newJoin);
+    call.getPlanner().onCopy(join, newJoin);
+    
+    call.transformTo(newJoin);
   }
 
 }

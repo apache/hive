@@ -29,9 +29,12 @@ import java.util.Set;
 
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -100,6 +103,7 @@ public class HiveOpConverter {
   private final Map<String, Operator<? extends OperatorDesc>> topOps;
   private final HIVEAGGOPMODE                                 aggMode;
   private final boolean                                       strictMode;
+  private int                                                 reduceSinkTagGenerator;
 
   public static HIVEAGGOPMODE getAggOPMode(HiveConf hc) {
     HIVEAGGOPMODE aggOpMode = HIVEAGGOPMODE.NO_SKEW_NO_MAP_SIDE_AGG;
@@ -122,6 +126,7 @@ public class HiveOpConverter {
     this.topOps = topOps;
     this.aggMode = aggMode;
     this.strictMode = strictMode;
+    this.reduceSinkTagGenerator = 0;
   }
 
   private class OpAttr {
@@ -163,6 +168,8 @@ public class HiveOpConverter {
       return visit((HiveSort) rn);
     } else if (rn instanceof HiveUnion) {
       return visit((HiveUnion) rn);
+    } else if (rn instanceof LogicalExchange) {
+      return visit((LogicalExchange) rn);
     }
     LOG.error(rn.getClass().getCanonicalName() + "operator translation not supported"
             + " yet in return path.");
@@ -263,8 +270,11 @@ public class HiveOpConverter {
   OpAttr visit(HiveJoin joinRel) throws SemanticException {
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
+    List<Operator<?>> children = new ArrayList<Operator<?>>(
+        joinRel.getInputs().size());
     for (int i=0; i<inputs.length; i++) {
       inputs[i] = dispatch(joinRel.getInput(i));
+      children.add(inputs[i].inputs.get(0));
     }
 
     if (LOG.isDebugEnabled()) {
@@ -278,21 +288,12 @@ public class HiveOpConverter {
     // 3. Extract join keys from condition
     ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs());
 
-    // 4. For each input, we generate the corresponding ReduceSink child
-    List<Operator<?>> children = new ArrayList<Operator<?>>();
-    for (int i = 0; i < inputs.length; i++) {
-      // Generate a ReduceSink operator for each join child
-      ReduceSinkOperator child = genReduceSink(inputs[i].inputs.get(0), joinKeys[i],
-              i, -1, Operation.NOT_ACID, strictMode);
-      children.add(child);
-    }
-
-    // 5. Generate Join operator
+    // 4. Generate Join operator
     JoinOperator joinOp = genJoin(joinRel, joinPredInfo, children, joinKeys);
 
-    // 6. TODO: Extract condition for non-equi join elements (if any) and add it
+    // 5. TODO: Extract condition for non-equi join elements (if any) and add it
 
-    // 7. Virtual columns
+    // 6. Virtual columns
     Map<Integer,VirtualColumn> vcolMap = new HashMap<Integer,VirtualColumn>();
     vcolMap.putAll(inputs[0].vcolMap);
     if (extractJoinType(joinRel) != JoinType.LEFTSEMI) {
@@ -454,6 +455,33 @@ public class HiveOpConverter {
 
     // 3. Return result
     return inputs[0].clone(unionOp);
+  }
+
+  OpAttr visit(LogicalExchange exchangeRel) throws SemanticException {
+    OpAttr inputOpAf = dispatch(exchangeRel.getInput());
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Translating operator rel#" + exchangeRel.getId() + ":" + exchangeRel.getRelTypeName() +
+              " with row type: [" + exchangeRel.getRowType() + "]");
+    }
+
+    RelDistribution distribution = exchangeRel.getDistribution();
+    if (distribution.getType() != Type.HASH_DISTRIBUTED) {
+      throw new SemanticException("Only hash distribution supported for LogicalExchange");
+    }
+    ExprNodeDesc[] expressions = new ExprNodeDesc[distribution.getKeys().size()];
+    for (int i=0; i<distribution.getKeys().size(); i++) {
+      int key = distribution.getKeys().get(i);
+      ColumnInfo colInfo = inputOpAf.inputs.get(0).getSchema().
+          getSignature().get(key);
+      ExprNodeDesc column = new ExprNodeColumnDesc(colInfo);
+      expressions[i] = column;
+    }
+
+    ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0),
+        expressions, reduceSinkTagGenerator++, -1, Operation.NOT_ACID, strictMode);
+
+    return inputOpAf.clone(rsOp);
   }
 
   private static ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo,
