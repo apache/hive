@@ -285,7 +285,8 @@ public class RecordReaderUtils {
           file.readFully(buffer, 0, buffer.length);
           directBuf.put(buffer);
         }
-        directBuf.position(0);
+        directBuf.position(startPos);
+        directBuf.limit(startPos + len);
         range = range.replaceSelfWith(new BufferChunk(directBuf, range.offset));
       } else {
         byte[] buffer = new byte[len];

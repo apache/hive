@@ -3068,8 +3068,16 @@ public class RecordReaderImpl implements RecordReader {
       ByteBuffer sliceBuf = chunk.slice();
       int newPos = (int)(offset - this.offset);
       int newLimit = newPos + (int)(end - offset);
-      sliceBuf.position(newPos);
-      sliceBuf.limit(newLimit);
+      // TODO: temporary
+      try {
+        sliceBuf.position(newPos);
+        sliceBuf.limit(newLimit);
+      } catch (Throwable t) {
+        LOG.error("Failed to slice buffer chunk with range" + " [" + this.offset + ", " + this.end
+            + "), position: " + chunk.position() + " limit: " + chunk.limit() + ", "
+            + (chunk.isDirect() ? "direct" : "array") + "; to [" + offset + ", " + end + ") " + t.getClass());
+        throw new RuntimeException(t);
+      }
       return new BufferChunk(sliceBuf, offset);
     }
 
