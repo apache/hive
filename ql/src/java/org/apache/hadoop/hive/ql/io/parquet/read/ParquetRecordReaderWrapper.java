@@ -16,10 +16,10 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +49,8 @@ import parquet.hadoop.metadata.ParquetMetadata;
 import parquet.hadoop.util.ContextUtil;
 import parquet.schema.MessageTypeParser;
 
+import com.google.common.base.Strings;
+
 public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWritable> {
   public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
 
@@ -61,6 +63,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private boolean firstRecord = false;
   private boolean eof = false;
   private int schemaSize;
+  private boolean skipTimestampConversion = false;
 
   private final ProjectionPusher projectionPusher;
 
@@ -93,7 +96,14 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     setFilter(oldJobConf);
 
     // create a TaskInputOutputContext
-    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(oldJobConf, taskAttemptID);
+    Configuration conf = oldJobConf;
+    if (skipTimestampConversion ^ HiveConf.getBoolVar(
+        conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+      conf = new JobConf(oldJobConf);
+      HiveConf.setBoolVar(conf,
+        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
+    }
+    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
 
     if (split != null) {
       try {
@@ -218,6 +228,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
    * @return a ParquetInputSplit corresponding to the oldSplit
    * @throws IOException if the config cannot be enhanced or if the footer cannot be read from the file
    */
+  @SuppressWarnings("deprecation")
   protected ParquetInputSplit getSplit(
       final InputSplit oldSplit,
       final JobConf conf
@@ -248,7 +259,9 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
         LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
         split = null;
       } else {
-        populateReadMetadata(readContext.getReadSupportMetadata(), fileMetaData, conf);
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+          skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
+        }
         split = new ParquetInputSplit(finalPath,
                 splitStart,
                 splitLength,
@@ -263,17 +276,5 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       throw new IllegalArgumentException("Unknown split type: " + oldSplit);
     }
     return split;
-  }
-
-  /**
-   * Method populates the read metadata, using filemetadata and Hive configuration.
-   * @param metadata read metadata to populate
-   * @param fileMetaData parquet file metadata
-   * @param conf hive configuration
-   */
-  private void populateReadMetadata(Map<String, String> metadata, FileMetaData fileMetaData, JobConf conf) {
-    metadata.put("createdBy", fileMetaData.getCreatedBy());
-    metadata.put(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname,
-      String.valueOf(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
   }
 }
