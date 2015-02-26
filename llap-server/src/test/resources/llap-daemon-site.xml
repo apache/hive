@@ -14,13 +14,8 @@
 
   <property>
     <name>llap.daemon.num.executors</name>
-    <value>4</value>
-    <description>Num executors for each daemon</description>
-  </property>
-
-  <property>
-    <name>llap.daemon.num.executors</name>
     <value>3</value>
+    <description>Num executors for each daemon</description>
   </property>
 
   <property>
