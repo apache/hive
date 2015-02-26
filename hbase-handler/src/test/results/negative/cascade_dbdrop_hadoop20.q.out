@@ -1,7 +1,9 @@
 PREHOOK: query: CREATE DATABASE hbaseDB
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:hbaseDB
 POSTHOOK: query: CREATE DATABASE hbaseDB
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:hbaseDB
 PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
@@ -18,6 +20,7 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:hbasedb
+PREHOOK: Output: hbaseDB@hbase_table_0
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
@@ -47,5 +50,5 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:hbasedb
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbasedb@hbase_table_0
-Command failed with exit code = -1
-Query returned non-zero code: -1, cause: null
+Command failed with exit code = 1
+Query returned non-zero code: 1, cause: null

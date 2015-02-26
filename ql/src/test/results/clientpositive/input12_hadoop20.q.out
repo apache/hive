@@ -1,9 +1,10 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+PREHOOK: Output: default@dest1
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -12,6 +13,7 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
 POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -19,6 +21,7 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
+PREHOOK: Output: default@dest3
 POSTHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -65,17 +68,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 100) (type: boolean)
-              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -83,14 +86,14 @@ STAGE PLANS:
                       name: default.dest1
             Filter Operator
               predicate: ((key >= 100) and (key < 200)) (type: boolean)
-              Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -98,14 +101,14 @@ STAGE PLANS:
                       name: default.dest2
             Filter Operator
               predicate: (key >= 200) (type: boolean)
-              Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 9 Data size: 1803 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
