@@ -114,7 +114,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
       ShuffleHandler.initializeAndStart(shuffleHandlerConf);
 
       LlapDaemon llapDaemon = new LlapDaemon(daemonConf);
-      llapDaemon.init(new Configuration());
+      llapDaemon.init(daemonConf);
       llapDaemon.start();
       LOG.info("Started LlapDaemon");
       // Relying on the RPC threads to keep the service alive.
