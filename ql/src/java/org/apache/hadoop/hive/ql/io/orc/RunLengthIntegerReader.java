@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  * A reader that reads a sequence of integers.
  * */
 public class RunLengthIntegerReader implements IntegerReader {
-  private final InStream input;
+  private InStream input;
   private final boolean signed;
   private final long[] literals =
     new long[RunLengthIntegerWriter.MAX_LITERAL_SIZE];
@@ -119,6 +119,11 @@ public class RunLengthIntegerReader implements IntegerReader {
         previous.isRepeating = false;
       }
     }
+  }
+
+  @Override
+  public void setInStream(InStream data) {
+    input = data;
   }
 
   @Override

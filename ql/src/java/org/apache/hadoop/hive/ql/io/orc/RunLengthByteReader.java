@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  * byte is -1 to -128, 1 to 128 literal byte values follow.
  */
 public class RunLengthByteReader {
-  private final InStream input;
+  private InStream input;
   private final byte[] literals =
     new byte[RunLengthByteWriter.MAX_LITERAL_SIZE];
   private int numLiterals = 0;
@@ -36,6 +36,10 @@ public class RunLengthByteReader {
   private boolean repeat = false;
 
   RunLengthByteReader(InStream input) throws IOException {
+    this.input = input;
+  }
+
+  public void setInStream(InStream input) {
     this.input = input;
   }
 

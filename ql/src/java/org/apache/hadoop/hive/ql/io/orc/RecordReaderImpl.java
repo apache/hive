@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,8 +56,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -79,8 +78,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
-import com.google.common.collect.Lists;
 
 public class RecordReaderImpl implements RecordReader {
 
@@ -276,6 +273,12 @@ public class RecordReaderImpl implements RecordReader {
         valuePresent = true;
       } else {
         present = new BitFieldReader(in, 1);
+      }
+    }
+
+    void setInStream(InStream inStream) {
+      if (present != null) {
+        present.setInStream(inStream);
       }
     }
 
@@ -628,6 +631,12 @@ public class RecordReaderImpl implements RecordReader {
       if (data != null && encoding != null) {
         checkEncoding(encoding);
         this.reader = createIntegerReader(encoding.getKind(), data, true, false);
+      }
+    }
+
+    void setInStream(InStream inStream) {
+      if (reader != null) {
+        reader.setInStream(inStream);
       }
     }
 
@@ -1293,7 +1302,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class DecimalTreeReader extends TreeReader{
-    protected InStream valueStream;
+    protected InStream value;
     protected IntegerReader scaleReader = null;
     private LongColumnVector scratchScaleVector;
 
@@ -1311,7 +1320,7 @@ public class RecordReaderImpl implements RecordReader {
       this.precision = precision;
       this.scale = scale;
       this.scratchScaleVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-      this.valueStream = valueStream;
+      this.value = valueStream;
       if (scaleStream != null && encoding != null) {
         checkEncoding(encoding);
         this.scaleReader = createIntegerReader(encoding.getKind(), scaleStream, true, false);
@@ -1332,7 +1341,7 @@ public class RecordReaderImpl implements RecordReader {
                      List<OrcProto.ColumnEncoding> encodings
     ) throws IOException {
       super.startStripe(streams, encodings);
-      valueStream = streams.get(new StreamName(columnId,
+      value = streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA));
       scaleReader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(
           new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true, false);
@@ -1346,7 +1355,7 @@ public class RecordReaderImpl implements RecordReader {
     @Override
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
-      valueStream.seek(index);
+      value.seek(index);
       scaleReader.seek(index);
     }
 
@@ -1360,7 +1369,7 @@ public class RecordReaderImpl implements RecordReader {
         } else {
           result = (HiveDecimalWritable) previous;
         }
-        result.set(HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
+        result.set(HiveDecimal.create(SerializationUtils.readBigInteger(value),
             (int) scaleReader.next()));
         return HiveDecimalUtils.enforcePrecisionScale(result, precision, scale);
       }
@@ -1385,7 +1394,7 @@ public class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       if (result.isRepeating) {
         if (!result.isNull[0]) {
-          BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
+          BigInteger bInt = SerializationUtils.readBigInteger(value);
           short scaleInData = (short) scaleReader.next();
           HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
           dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
@@ -1397,7 +1406,7 @@ public class RecordReaderImpl implements RecordReader {
         scaleReader.nextVector(scratchScaleVector, batchSize);
         for (int i = 0; i < batchSize; i++) {
           if (!result.isNull[i]) {
-            BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
+            BigInteger bInt = SerializationUtils.readBigInteger(value);
             short scaleInData = (short) scratchScaleVector.vector[i];
             HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
             dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
@@ -1414,7 +1423,7 @@ public class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(int i=0; i < items; i++) {
-        SerializationUtils.readBigInteger(valueStream);
+        SerializationUtils.readBigInteger(value);
       }
       scaleReader.skip(items);
     }
@@ -3045,7 +3054,7 @@ public class RecordReaderImpl implements RecordReader {
   public static class BufferChunk extends DiskRangeList {
     final ByteBuffer chunk;
 
-    BufferChunk(ByteBuffer chunk, long offset) {
+    public BufferChunk(ByteBuffer chunk, long offset) {
       super(offset, offset + chunk.remaining());
       this.chunk = chunk;
     }
@@ -3114,7 +3123,7 @@ public class RecordReaderImpl implements RecordReader {
   /**
    * Plan the ranges of the file that we need to read given the list of
    * columns and row groups.
-   * @param streamList the list of streams avaiable
+   * @param streamList the list of streams available
    * @param indexes the indexes that have been loaded
    * @param includedColumns which columns are needed
    * @param includedRowGroups which row groups are needed

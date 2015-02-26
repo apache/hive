@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 public class RunLengthIntegerReaderV2 implements IntegerReader {
   public static final Log LOG = LogFactory.getLog(RunLengthIntegerReaderV2.class);
 
-  private final InStream input;
+  private InStream input;
   private final boolean signed;
   private final long[] literals = new long[RunLengthIntegerWriterV2.MAX_SCOPE];
   private boolean isRepeating = false;
@@ -381,5 +381,10 @@ public class RunLengthIntegerReaderV2 implements IntegerReader {
         previous.isRepeating = false;
       }
     }
+  }
+
+  @Override
+  public void setInStream(InStream data) {
+    input = data;
   }
 }

@@ -37,6 +37,10 @@ public class BitFieldReader {
     mask = (1 << bitSize) - 1;
   }
 
+  public void setInStream(InStream inStream) {
+    this.input.setInStream(inStream);
+  }
+
   private void readByte() throws IOException {
     if (input.hasNext()) {
       current = 0xff & input.next();

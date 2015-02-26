@@ -21,15 +21,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
-import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Longs;
 
 /**
  * Stream utility.
@@ -37,36 +36,23 @@ import com.google.common.primitives.Longs;
 public class StreamUtils {
 
   /**
-   * Create InStream from stream buffer.
+   * Create LlapInStream from stream buffer.
    *
    * @param streamName - stream name
    * @param fileName - file name
-   * @param codec - compression codec
-   * @param bufferSize - compression buffer size
    * @param streamBuffer - stream buffer
-   * @return - InStream
+   * @return - LlapInStream
    * @throws IOException
    */
-  public static InStream createInStream(String streamName, String fileName, CompressionCodec codec,
-      int bufferSize, EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
+  public static SettableUncompressedStream createLlapInStream(String streamName, String fileName,
+      EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
     if (streamBuffer == null) {
       return null;
     }
 
-    int numBuffers = streamBuffer.cacheBuffers.size();
-    List<ByteBuffer> input = Lists.newArrayList();
-    List<Long> offsetsList = Lists.newArrayList();
-    long totalLength = 0;
-    for (int i = 0; i < numBuffers; i++) {
-      ByteBuffer data = streamBuffer.cacheBuffers.get(i).byteBuffer.duplicate();
-      input.add(data);
-      // offset start at where previous stream buffer left off
-      offsetsList.add(totalLength);
-      totalLength += data.remaining();
-    }
-    ByteBuffer[] buffers = input.toArray(new ByteBuffer[input.size()]);
-    long[] offsets = Longs.toArray(offsetsList);
-    return InStream.create(fileName, streamName, buffers, offsets, totalLength, codec, bufferSize);
+    List<DiskRange> diskRanges = Lists.newArrayList();
+    long totalLength = createDiskRanges(streamBuffer, diskRanges);
+    return new SettableUncompressedStream(fileName, streamName, diskRanges, totalLength);
   }
 
   /**
@@ -78,5 +64,24 @@ public class StreamUtils {
   public static PositionProvider getPositionProvider(OrcProto.RowIndexEntry rowIndex) {
     PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
     return positionProvider;
+  }
+
+  /**
+   * Converts stream buffers to disk ranges.
+   * @param streamBuffer - stream buffer
+   * @param diskRanges - initial empty list of disk ranges
+   * @return - total length of disk ranges
+   */
+  public static long createDiskRanges(EncodedColumnBatch.StreamBuffer streamBuffer,
+      List<DiskRange> diskRanges) {
+    long totalLength = 0;
+    for (LlapMemoryBuffer memoryBuffer : streamBuffer.cacheBuffers) {
+      ByteBuffer buffer = memoryBuffer.byteBuffer.duplicate();
+      RecordReaderImpl.BufferChunk bufferChunk = new RecordReaderImpl.BufferChunk(buffer,
+          totalLength);
+      diskRanges.add(bufferChunk);
+      totalLength += buffer.remaining();
+    }
+    return totalLength;
   }
 }

@@ -62,4 +62,6 @@ public interface IntegerReader {
    */
    void nextVector(LongColumnVector previous, long previousLen)
       throws IOException;
+
+  void setInStream(InStream data);
 }

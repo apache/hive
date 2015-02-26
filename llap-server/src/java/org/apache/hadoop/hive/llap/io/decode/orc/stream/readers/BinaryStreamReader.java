@@ -18,49 +18,84 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
+
 
 /**
  * Stream reader for binary column type.
  */
 public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
-  private boolean isFileCompressed;
+  private boolean _isFileCompressed;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _dataStream;
+  private SettableUncompressedStream _lengthsStream;
 
-  private BinaryStreamReader(int columnId, InStream present,
-      InStream data, InStream length, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding, OrcProto.RowIndexEntry rowIndex) throws IOException {
+  private BinaryStreamReader(int columnId, SettableUncompressedStream present,
+      SettableUncompressedStream data, SettableUncompressedStream length, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding) throws IOException {
     super(columnId, present, data, length, encoding);
-    this.isFileCompressed = isFileCompressed;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._isFileCompressed = isFileCompressed;
+    this._presentStream = present;
+    this._dataStream = data;
+    this._lengthsStream = length;
   }
 
   @Override
   public void seek(PositionProvider index) throws IOException {
     if (present != null) {
-      if (isFileCompressed) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       present.seek(index);
     }
 
-    if (isFileCompressed) {
-      index.getNext();
+    // data stream could be empty stream or already reached end of stream before present stream.
+    // This can happen if all values in stream are nulls or last row group values are all null.
+    if (_dataStream.available() > 0) {
+      if (_isFileCompressed) {
+        index.getNext();
+      }
+      stream.seek(index);
     }
-    stream.seek(index);
 
-    if (isFileCompressed) {
-      index.getNext();
+    if (lengths != null && _lengthsStream.available() > 0) {
+      if (_isFileCompressed) {
+        index.getNext();
+      }
+      lengths.seek(index);
     }
-    lengths.seek(index);
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer dataStreamBuffer,
+      EncodedColumnBatch.StreamBuffer lengthStreamBuffer) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_dataStream != null) {
+      List<DiskRange> dataDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
+      _dataStream.setBuffers(dataDiskRanges, length);
+    }
+    if (_lengthsStream != null) {
+      List<DiskRange> lengthDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(lengthStreamBuffer, lengthDiskRanges);
+      _lengthsStream.setBuffers(lengthDiskRanges, length);
+    }
   }
 
   public static class StreamReaderBuilder {
@@ -70,8 +105,6 @@ public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
     private EncodedColumnBatch.StreamBuffer dataStream;
     private EncodedColumnBatch.StreamBuffer lengthStream;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
@@ -104,34 +137,24 @@ public class BinaryStreamReader extends RecordReaderImpl.BinaryTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
       this.columnEncoding = encoding;
       return this;
     }
 
     public BinaryStreamReader build() throws IOException {
-      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-            null, bufferSize, presentStream);
+      SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+          fileName, presentStream);
 
-      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-            null, bufferSize, dataStream);
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          dataStream);
 
-      InStream length = StreamUtils.createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
-            null, bufferSize, lengthStream);
+      SettableUncompressedStream length = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(),
+          fileName, lengthStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new BinaryStreamReader(columnIndex, present, data, length, isFileCompressed,
-          columnEncoding, rowIndex);
+          columnEncoding);
     }
   }
 

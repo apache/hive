@@ -18,49 +18,68 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
+
 
 /**
  * Stream reader for integer column type.
  */
 public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
-  private boolean isFileCompressed;
-  private InStream data;
+  private boolean _isFileCompressed;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _dataStream;
 
-  private IntStreamReader(int columnId, InStream present,
-      InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
+  private IntStreamReader(int columnId, SettableUncompressedStream present,
+      SettableUncompressedStream data, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding) throws IOException {
     super(columnId, present, data, encoding);
-    this.isFileCompressed = isFileCompressed;
-    this.data = data;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._isFileCompressed = isFileCompressed;
+    this._dataStream = data;
+    this._presentStream = present;
   }
 
   @Override
   public void seek(PositionProvider index) throws IOException {
     if (present != null) {
-      if (isFileCompressed) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       present.seek(index);
     }
 
-    // data stream could be empty stream. This could happen if all values in row group are nulls.
-    if (reader != null && data.getStreamLength() > 0) {
-      if (isFileCompressed) {
+    // data stream could be empty stream or already reached end of stream before present stream.
+    // This can happen if all values in stream are nulls or last row group values are all null.
+    if (_dataStream.available() > 0) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       reader.seek(index);
+    }
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer dataStreamBuffer) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_dataStream != null) {
+      List<DiskRange> dataDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
+      _dataStream.setBuffers(dataDiskRanges, length);
     }
   }
 
@@ -70,8 +89,6 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
@@ -99,31 +116,21 @@ public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
       this.columnEncoding = encoding;
       return this;
     }
 
     public IntStreamReader build() throws IOException {
-      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-            null, bufferSize, presentStream);
+      SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+          fileName, presentStream);
 
-      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-            null, bufferSize, dataStream);
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          dataStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new IntStreamReader(columnIndex, present, data, isFileCompressed,
-          columnEncoding, rowIndex);
+          columnEncoding);
     }
   }
 

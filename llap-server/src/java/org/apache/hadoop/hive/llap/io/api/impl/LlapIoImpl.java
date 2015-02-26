@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,10 +41,8 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);

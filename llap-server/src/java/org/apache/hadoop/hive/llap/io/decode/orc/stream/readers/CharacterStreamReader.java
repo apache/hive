@@ -18,30 +18,35 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
 
 /**
  * Stream reader for char and varchar column types.
  */
 public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
-  private boolean isFileCompressed;
-  private boolean isDictionaryEncoding;
+  private boolean _isFileCompressed;
+  private boolean _isDictionaryEncoding;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _dataStream;
+  private SettableUncompressedStream _lengthStream;
+  private SettableUncompressedStream _dictionaryStream;
 
   private CharacterStreamReader(int columnId, int maxLength, OrcProto.Type charType,
-      InStream present,
-      InStream data, InStream length, InStream dictionary,
-      boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
+      SettableUncompressedStream present, SettableUncompressedStream data, SettableUncompressedStream length, SettableUncompressedStream dictionary,
+      boolean isFileCompressed, OrcProto.ColumnEncoding encoding) throws IOException {
     super(columnId);
-    this.isDictionaryEncoding = dictionary != null;
+    this._isDictionaryEncoding = dictionary != null;
     if (charType.getKind() == OrcProto.Type.Kind.CHAR) {
       reader = new RecordReaderImpl.CharTreeReader(columnId, maxLength, present, data, length,
           dictionary, encoding);
@@ -51,37 +56,90 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
     } else {
       throw new IOException("Unknown character type " + charType + ". Expected CHAR or VARCHAR.");
     }
-
-    this.isFileCompressed = isFileCompressed;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._isFileCompressed = isFileCompressed;
+    this._presentStream = present;
+    this._dataStream = data;
+    this._lengthStream = length;
+    this._dictionaryStream = dictionary;
   }
 
   @Override
   public void seek(PositionProvider index) throws IOException {
     if (present != null) {
-      if (isFileCompressed) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       reader.present.seek(index);
     }
 
-    if (isDictionaryEncoding) {
-      if (isFileCompressed) {
-        index.getNext();
-      }
-      ((RecordReaderImpl.StringDictionaryTreeReader)reader).reader.seek(index);
-    } else {
-      if (isFileCompressed) {
-        index.getNext();
-      }
-      ((RecordReaderImpl.StringDirectTreeReader)reader).stream.seek(index);
+    if (_isDictionaryEncoding) {
+      // DICTIONARY encoding
 
-      if (isFileCompressed) {
-        index.getNext();
+      // data stream could be empty stream or already reached end of stream before present stream.
+      // This can happen if all values in stream are nulls or last row group values are all null.
+      if (_dataStream.available() > 0) {
+        if (_isFileCompressed) {
+          index.getNext();
+        }
+        ((RecordReaderImpl.StringDictionaryTreeReader) reader).reader.seek(index);
       }
-      ((RecordReaderImpl.StringDirectTreeReader)reader).lengths.seek(index);
+    } else {
+      // DIRECT encoding
+
+      // data stream could be empty stream or already reached end of stream before present stream.
+      // This can happen if all values in stream are nulls or last row group values are all null.
+      if (_dataStream.available() > 0) {
+        if (_isFileCompressed) {
+          index.getNext();
+        }
+        ((RecordReaderImpl.StringDirectTreeReader) reader).stream.seek(index);
+      }
+
+      if (_lengthStream.available() > 0) {
+        if (_isFileCompressed) {
+          index.getNext();
+        }
+        ((RecordReaderImpl.StringDirectTreeReader) reader).lengths.seek(index);
+      }
+    }
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer dataStreamBuffer,
+      EncodedColumnBatch.StreamBuffer lengthStreamBuffer,
+      EncodedColumnBatch.StreamBuffer dictionaryStreamBuffer,
+      boolean sameStripe) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_dataStream != null) {
+      List<DiskRange> dataDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
+      _dataStream.setBuffers(dataDiskRanges, length);
+    }
+    if (!_isDictionaryEncoding) {
+      if (_lengthStream != null) {
+        List<DiskRange> lengthDiskRanges = Lists.newArrayList();
+        length = StreamUtils.createDiskRanges(lengthStreamBuffer, lengthDiskRanges);
+        _lengthStream.setBuffers(lengthDiskRanges, length);
+      }
+    }
+
+    // set these streams only if the stripe is different
+    if (!sameStripe && _isDictionaryEncoding) {
+      if (_lengthStream != null) {
+        List<DiskRange> lengthDiskRanges = Lists.newArrayList();
+        length = StreamUtils.createDiskRanges(lengthStreamBuffer, lengthDiskRanges);
+        _lengthStream.setBuffers(lengthDiskRanges, length);
+      }
+      if (_dictionaryStream != null) {
+        List<DiskRange> dictionaryDiskRanges = Lists.newArrayList();
+        length = StreamUtils.createDiskRanges(dictionaryStreamBuffer, dictionaryDiskRanges);
+        _dictionaryStream.setBuffers(dictionaryDiskRanges, length);
+      }
     }
   }
 
@@ -95,8 +153,6 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
     private EncodedColumnBatch.StreamBuffer dictionaryStream;
     private EncodedColumnBatch.StreamBuffer lengthStream;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
@@ -144,37 +200,27 @@ public class CharacterStreamReader extends RecordReaderImpl.StringTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
       this.columnEncoding = encoding;
       return this;
     }
 
     public CharacterStreamReader build() throws IOException {
-      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-          null, bufferSize, presentStream);
+      SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+          fileName, presentStream);
 
-      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-          null, bufferSize, dataStream);
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          dataStream);
 
-      InStream length = StreamUtils.createInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
-          null, bufferSize, lengthStream);
+      SettableUncompressedStream length = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
+          lengthStream);
 
-      InStream dictionary = StreamUtils.createInStream(OrcProto.Stream.Kind.DICTIONARY_DATA.name(),
-            fileName, null, bufferSize, dictionaryStream);
+      SettableUncompressedStream dictionary = StreamUtils.createLlapInStream(
+          OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileName, dictionaryStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new CharacterStreamReader(columnIndex, maxLength, charType, present, data, length,
-          dictionary, isFileCompressed, columnEncoding, rowIndex);
+          dictionary, isFileCompressed, columnEncoding);
     }
   }
 

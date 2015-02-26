@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BooleanStreamReader;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.ByteStreamReader;
@@ -53,46 +54,55 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
-  private final OrcEncodedDataProducer edp;
-  private final OrcMetadataCache metadataCache;
-  private boolean skipCorrupt;
+  private final OrcEncodedDataProducer _edp;
+  private final OrcMetadataCache _metadataCache;
+  private boolean _skipCorrupt;
+  private int _previousStripeIndex;
 
-  public OrcColumnVectorProducer(
-      ExecutorService executor, OrcEncodedDataProducer edp, Configuration conf) {
+  public OrcColumnVectorProducer(ExecutorService executor, OrcEncodedDataProducer edp,
+      Configuration conf) {
     super(executor);
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     }
 
-    this.edp = edp;
-    this.metadataCache = OrcMetadataCache.getInstance();
-    this.skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this._edp = edp;
+    this._metadataCache = OrcMetadataCache.getInstance();
+    this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this._previousStripeIndex = -1;
   }
 
   @Override
   protected EncodedDataProducer<OrcBatchKey> getEncodedDataProducer() {
-    return edp;
+    return _edp;
   }
 
   @Override
-  protected void decodeBatch(EncodedColumnBatch<OrcBatchKey> batch,
+  protected void decodeBatch(EncodedDataConsumer<OrcBatchKey> edc,
+      EncodedColumnBatch<OrcBatchKey> batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
+    OrcEncodedDataConsumer oedc = (OrcEncodedDataConsumer) edc;
     String fileName = batch.batchKey.file;
+    int currentStripeIndex = batch.batchKey.stripeIx;
+    if (_previousStripeIndex == -1) {
+      _previousStripeIndex = currentStripeIndex;
+    }
+    boolean sameStripe = currentStripeIndex == _previousStripeIndex;
 
     // OrcEncodedDataProducer should have just loaded cache entries from this file.
     // The default LRU algorithm shouldn't have dropped the entries. To make it
     // safe, untie the code from EDP into separate class and make use of loading cache. The current
     // assumption is that entries for the current file exists in metadata cache.
     try {
-      OrcFileMetadata fileMetadata = metadataCache.getFileMetadata(fileName);
+      OrcFileMetadata fileMetadata = _metadataCache.getFileMetadata(fileName);
       OrcBatchKey stripeKey = batch.batchKey.clone();
 
       // To get stripe metadata we only need to know the stripe number. Oddly, stripe metadata
-      // accepts BatchKey as key. We need to keep to row group index in batch key the same to
+      // accepts BatchKey as key. We need to keep the row group index in batch key the same to
       // retrieve the stripe metadata properly. To make sure we get the correct stripe
       // metadata, set row group index to 0. That's how it is cached. See OrcEncodedDataProducer
       stripeKey.rgIx = 0;
-      OrcStripeMetadata stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
+      OrcStripeMetadata stripeMetadata = _metadataCache.getStripeMetadata(stripeKey);
 
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.batchKey.rgIx;
@@ -101,8 +111,15 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       int numCols = batch.columnIxs.length;
-      RecordReaderImpl.TreeReader[] columnReaders = createTreeReaders(numCols, batch, fileMetadata,
-          stripeMetadata);
+      if (oedc.getColumnReaders() == null || !sameStripe) {
+        RecordReaderImpl.TreeReader[] columnReaders = createTreeReaders(numCols, batch,
+            fileMetadata, stripeMetadata);
+        oedc.setColumnReaders(columnReaders);
+      } else {
+        repositionInStreams(oedc.getColumnReaders(), batch, sameStripe, numCols, fileMetadata,
+            stripeMetadata);
+      }
+      _previousStripeIndex = currentStripeIndex;
 
       for (int i = 0; i < maxBatchesRG; i++) {
         ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
@@ -114,7 +131,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
         }
 
         for (int idx = 0; idx < batch.columnIxs.length; idx++) {
-          cvb.cols[idx] = (ColumnVector) columnReaders[idx].nextVector(null, batchSize);
+          cvb.cols[idx] = (ColumnVector) oedc.getColumnReaders()[idx].nextVector(null, batchSize);
         }
 
         // we are done reading a batch, send it to consumer for processing
@@ -144,7 +161,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       // then 1st position (compressed offset) in row index should be skipped to get
       // uncompressed offset, else 1st position should not be skipped.
       CompressionCodec codec = fileMetadata.getCompressionCodec();
-      int bufferSize = fileMetadata.getCompressionBufferSize();
       OrcProto.ColumnEncoding columnEncoding = stripeMetadata.getEncodings().get(columnIndex);
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
@@ -191,8 +207,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setDataStream(data)
               .setLengthStream(lengths)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -203,8 +217,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case BYTE:
@@ -214,8 +226,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case SHORT:
@@ -225,8 +235,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -237,8 +245,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -249,10 +255,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
-              .skipCorrupt(skipCorrupt)
+              .skipCorrupt(_skipCorrupt)
               .build();
           break;
         case FLOAT:
@@ -262,8 +266,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case DOUBLE:
@@ -273,8 +275,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .build();
           break;
         case CHAR:
@@ -289,8 +289,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setLengthStream(lengths)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -303,8 +301,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setLengthStream(lengths)
               .setDictionaryStream(dictionary)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -318,8 +314,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setValueStream(data)
               .setScaleStream(secondary)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
@@ -331,10 +325,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setSecondsStream(data)
               .setNanosStream(secondary)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
-              .skipCorrupt(skipCorrupt)
+              .skipCorrupt(_skipCorrupt)
               .build();
           break;
         case DATE:
@@ -344,19 +336,114 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
               .setPresentStream(present)
               .setDataStream(data)
               .setCompressionCodec(codec)
-              .setBufferSize(bufferSize)
-              .setRowIndex(rowIndexEntry)
               .setColumnEncoding(columnEncoding)
               .build();
           break;
         default:
           throw new UnsupportedOperationException("Data type not supported yet! " + columnType);
       }
+      treeReaders[i].seek(StreamUtils.getPositionProvider(rowIndexEntry));
     }
     return treeReaders;
+  }
+
+  private void repositionInStreams(RecordReaderImpl.TreeReader[] columnReaders,
+      EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe, int numCols,
+      OrcFileMetadata fileMetadata, OrcStripeMetadata stripeMetadata) throws IOException {
+    for (int i = 0; i < numCols; i++) {
+      int columnIndex = batch.columnIxs[i];
+      int rowGroupIndex = batch.batchKey.rgIx;
+      EncodedColumnBatch.StreamBuffer[] streamBuffers = batch.columnData[i];
+      OrcProto.Type columnType = fileMetadata.getTypes().get(columnIndex);
+      OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
+      OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
+
+      // stream buffers are arranged in enum order of stream kind
+      EncodedColumnBatch.StreamBuffer present = null;
+      EncodedColumnBatch.StreamBuffer data = null;
+      EncodedColumnBatch.StreamBuffer dictionary = null;
+      EncodedColumnBatch.StreamBuffer lengths = null;
+      EncodedColumnBatch.StreamBuffer secondary = null;
+      for (EncodedColumnBatch.StreamBuffer streamBuffer : streamBuffers) {
+        switch(streamBuffer.streamKind) {
+          case 0:
+            // PRESENT stream
+            present = streamBuffer;
+            break;
+          case 1:
+            // DATA stream
+            data = streamBuffer;
+            break;
+          case 2:
+            // LENGTH stream
+            lengths = streamBuffer;
+            break;
+          case 3:
+            // DICTIONARY_DATA stream
+            dictionary = streamBuffer;
+            break;
+          case 5:
+            // SECONDARY stream
+            secondary = streamBuffer;
+            break;
+          default:
+            throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
+        }
+      }
+
+      switch (columnType.getKind()) {
+        case BINARY:
+          ((BinaryStreamReader)columnReaders[i]).setBuffers(present, data, lengths);
+          break;
+        case BOOLEAN:
+          ((BooleanStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case BYTE:
+          ((ByteStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case SHORT:
+          ((ShortStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case INT:
+          ((IntStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case LONG:
+          ((LongStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case FLOAT:
+          ((FloatStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case DOUBLE:
+          ((DoubleStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        case CHAR:
+        case VARCHAR:
+          ((CharacterStreamReader)columnReaders[i]).setBuffers(present, data, lengths, dictionary,
+              sameStripe);
+          break;
+        case STRING:
+          ((StringStreamReader)columnReaders[i]).setBuffers(present, data, lengths, dictionary,
+              sameStripe);
+          break;
+        case DECIMAL:
+          ((DecimalStreamReader)columnReaders[i]).setBuffers(present, data, secondary);
+          break;
+        case TIMESTAMP:
+          ((TimestampStreamReader)columnReaders[i]).setBuffers(present, data, secondary);
+          break;
+        case DATE:
+          ((DateStreamReader)columnReaders[i]).setBuffers(present, data);
+          break;
+        default:
+          throw new UnsupportedOperationException("Data type not supported yet! " + columnType);
+      }
+
+      columnReaders[i].seek(StreamUtils.getPositionProvider(rowIndexEntry));
+    }
   }
 
   private long getRowCount(OrcProto.RowIndexEntry rowIndexEntry) {
     return rowIndexEntry.getStatistics().getNumberOfValues();
   }
+
 }

@@ -18,44 +18,67 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
 
 /**
  * Stream reader for float column type.
  */
 public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
-  private boolean isFileCompressed;
+  private boolean _isFileCompressed;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _dataStream;
 
-  private FloatStreamReader(int columnId, InStream present,
-      InStream data, boolean isFileCompressed,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
+  private FloatStreamReader(int columnId, SettableUncompressedStream present,
+      SettableUncompressedStream data, boolean isFileCompressed) throws IOException {
     super(columnId, present, data);
-    this.isFileCompressed = isFileCompressed;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._isFileCompressed = isFileCompressed;
+    this._presentStream = present;
+    this._dataStream = data;
   }
 
   @Override
   public void seek(PositionProvider index) throws IOException {
     if (present != null) {
-      if (isFileCompressed) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       present.seek(index);
     }
 
-    if (isFileCompressed) {
-      index.getNext();
+    // data stream could be empty stream or already reached end of stream before present stream.
+    // This can happen if all values in stream are nulls or last row group values are all null.
+    if (_dataStream.available() > 0) {
+      if (_isFileCompressed) {
+        index.getNext();
+      }
+      stream.seek(index);
     }
-    stream.seek(index);
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer dataStreamBuffer) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_dataStream != null) {
+      List<DiskRange> dataDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
+      _dataStream.setBuffers(dataDiskRanges, length);
+    }
   }
 
   public static class StreamReaderBuilder {
@@ -64,8 +87,6 @@ public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -92,25 +113,15 @@ public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public FloatStreamReader build() throws IOException {
-      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-            null, bufferSize, presentStream);
+      SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+          fileName, presentStream);
 
-      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-            null, bufferSize, dataStream);
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          dataStream);
 
       boolean isFileCompressed = compressionCodec != null;
-      return new FloatStreamReader(columnIndex, present, data, isFileCompressed, rowIndex);
+      return new FloatStreamReader(columnIndex, present, data, isFileCompressed);
     }
   }
 

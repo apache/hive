@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -67,9 +66,9 @@ public abstract class InStream extends InputStream {
     return length;
   }
 
-  private static class UncompressedStream extends InStream {
-    private final List<DiskRange> bytes;
-    private final long length;
+  public static class UncompressedStream extends InStream {
+    protected List<DiskRange> bytes;
+    protected long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;

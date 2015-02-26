@@ -18,49 +18,83 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
 
 /**
  * Stream reader for decimal column type.
  */
 public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
-  private boolean isFileCompressed;
+  private boolean _isFileCompressed;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _valueStream;
+  private SettableUncompressedStream _scaleStream;
 
-  private DecimalStreamReader(int columnId, int precision, int scale, InStream presentStream,
-      InStream valueStream, InStream scaleStream, boolean isFileCompressed,
-      OrcProto.RowIndexEntry rowIndex, OrcProto.ColumnEncoding encoding) throws IOException {
+  private DecimalStreamReader(int columnId, int precision, int scale, SettableUncompressedStream presentStream,
+      SettableUncompressedStream valueStream, SettableUncompressedStream scaleStream, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding) throws IOException {
     super(columnId, precision, scale, presentStream, valueStream, scaleStream, encoding);
-    this.isFileCompressed = isFileCompressed;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._isFileCompressed = isFileCompressed;
+    this._presentStream = presentStream;
+    this._valueStream = valueStream;
+    this._scaleStream = scaleStream;
   }
 
   @Override
   public void seek(PositionProvider index) throws IOException {
     if (present != null) {
-      if (isFileCompressed) {
+      if (_isFileCompressed) {
         index.getNext();
       }
       present.seek(index);
     }
 
-    if (isFileCompressed) {
-      index.getNext();
+    // data stream could be empty stream or already reached end of stream before present stream.
+    // This can happen if all values in stream are nulls or last row group values are all null.
+    if (_valueStream.available() > 0) {
+      if (_isFileCompressed) {
+        index.getNext();
+      }
+      value.seek(index);
     }
-    valueStream.seek(index);
 
-    if (isFileCompressed) {
-      index.getNext();
+    if (_scaleStream.available() > 0) {
+      if (_isFileCompressed) {
+        index.getNext();
+      }
+      scaleReader.seek(index);
     }
-    scaleReader.seek(index);
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer valueStreamBuffer,
+      EncodedColumnBatch.StreamBuffer scaleStreamBuffer) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_valueStream != null) {
+      List<DiskRange> valueDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(valueStreamBuffer, valueDiskRanges);
+      _valueStream.setBuffers(valueDiskRanges, length);
+    }
+    if (_scaleStream != null) {
+      List<DiskRange> scaleDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(scaleStreamBuffer, scaleDiskRanges);
+      _scaleStream.setBuffers(scaleDiskRanges, length);
+    }
   }
 
   public static class StreamReaderBuilder {
@@ -72,8 +106,6 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
     private int scale;
     private int precision;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
 
     public StreamReaderBuilder setFileName(String fileName) {
@@ -116,34 +148,24 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
       this.columnEncoding = encoding;
       return this;
     }
 
     public DecimalStreamReader build() throws IOException {
-      InStream presentInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(),
-          fileName, null, bufferSize, presentStream);
+      SettableUncompressedStream presentInStream = StreamUtils.createLlapInStream(
+          OrcProto.Stream.Kind.PRESENT.name(), fileName, presentStream);
 
-      InStream valueInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(),
-          fileName, null, bufferSize, valueStream);
+      SettableUncompressedStream valueInStream = StreamUtils.createLlapInStream(
+          OrcProto.Stream.Kind.DATA.name(), fileName, valueStream);
 
-      InStream scaleInStream = StreamUtils.createInStream(OrcProto.Stream.Kind.SECONDARY.name(),
-          fileName, null, bufferSize, scaleStream);
+      SettableUncompressedStream scaleInStream = StreamUtils.createLlapInStream(
+          OrcProto.Stream.Kind.SECONDARY.name(), fileName, scaleStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new DecimalStreamReader(columnIndex, precision, scale, presentInStream, valueInStream,
-          scaleInStream, isFileCompressed, rowIndex, columnEncoding);
+          scaleInStream, isFileCompressed, columnEncoding);
     }
   }
 

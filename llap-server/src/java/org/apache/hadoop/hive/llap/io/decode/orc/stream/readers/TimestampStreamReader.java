@@ -18,30 +18,36 @@
 package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.SettableUncompressedStream;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+
+import com.google.common.collect.Lists;
 
 /**
  * Stream reader for timestamp column type.
  */
 public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader {
   private boolean isFileCompressed;
+  private SettableUncompressedStream _presentStream;
+  private SettableUncompressedStream _secondsStream;
+  private SettableUncompressedStream _nanosStream;
 
-  private TimestampStreamReader(int columnId, InStream present,
-      InStream data, InStream nanos, boolean isFileCompressed,
-      OrcProto.ColumnEncoding encoding, boolean skipCorrupt,
-      OrcProto.RowIndexEntry rowIndex) throws IOException {
+  private TimestampStreamReader(int columnId, SettableUncompressedStream present,
+      SettableUncompressedStream data, SettableUncompressedStream nanos, boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding, boolean skipCorrupt) throws IOException {
     super(columnId, present, data, nanos, encoding, skipCorrupt);
     this.isFileCompressed = isFileCompressed;
-
-    // position the readers based on the specified row index
-    seek(StreamUtils.getPositionProvider(rowIndex));
+    this._presentStream = present;
+    this._secondsStream = data;
+    this._nanosStream = nanos;
   }
 
   @Override
@@ -53,15 +59,42 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
       present.seek(index);
     }
 
-    if (isFileCompressed) {
-      index.getNext();
+    // data stream could be empty stream or already reached end of stream before present stream.
+    // This can happen if all values in stream are nulls or last row group values are all null.
+    if (_secondsStream.available() > 0) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      data.seek(index);
     }
-    data.seek(index);
 
-    if (isFileCompressed) {
-      index.getNext();
+    if (_nanosStream.available() > 0) {
+      if (isFileCompressed) {
+        index.getNext();
+      }
+      nanos.seek(index);
     }
-    nanos.seek(index);
+  }
+
+  public void setBuffers(EncodedColumnBatch.StreamBuffer presentStreamBuffer,
+      EncodedColumnBatch.StreamBuffer secondsStream,
+      EncodedColumnBatch.StreamBuffer nanosStream) {
+    long length;
+    if (_presentStream != null) {
+      List<DiskRange> presentDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
+      _presentStream.setBuffers(presentDiskRanges, length);
+    }
+    if (_secondsStream != null) {
+      List<DiskRange> secondsDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(secondsStream, secondsDiskRanges);
+      _secondsStream.setBuffers(secondsDiskRanges, length);
+    }
+    if (_nanosStream != null) {
+      List<DiskRange> nanosDiskRanges = Lists.newArrayList();
+      length = StreamUtils.createDiskRanges(nanosStream, nanosDiskRanges);
+      _nanosStream.setBuffers(nanosDiskRanges, length);
+    }
   }
 
   public static class StreamReaderBuilder {
@@ -71,8 +104,6 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
     private EncodedColumnBatch.StreamBuffer dataStream;
     private EncodedColumnBatch.StreamBuffer nanosStream;
     private CompressionCodec compressionCodec;
-    private int bufferSize;
-    private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding columnEncoding;
     private boolean skipCorrupt;
 
@@ -106,16 +137,6 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
       return this;
     }
 
-    public StreamReaderBuilder setBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public StreamReaderBuilder setRowIndex(OrcProto.RowIndexEntry rowIndex) {
-      this.rowIndex = rowIndex;
-      return this;
-    }
-
     public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
       this.columnEncoding = encoding;
       return this;
@@ -127,18 +148,18 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
     }
 
     public TimestampStreamReader build() throws IOException {
-      InStream present = StreamUtils.createInStream(OrcProto.Stream.Kind.PRESENT.name(), fileName,
-          null, bufferSize, presentStream);
+      SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+          fileName, presentStream);
 
-      InStream data = StreamUtils.createInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
-          null, bufferSize, dataStream);
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+          dataStream);
 
-      InStream nanos = StreamUtils.createInStream(OrcProto.Stream.Kind.SECONDARY.name(), fileName,
-          null, bufferSize, nanosStream);
+      SettableUncompressedStream nanos = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.SECONDARY.name(),
+          fileName, nanosStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new TimestampStreamReader(columnIndex, present, data, nanos,
-          isFileCompressed, columnEncoding, skipCorrupt, rowIndex);
+          isFileCompressed, columnEncoding, skipCorrupt);
     }
   }
 
