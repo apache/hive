@@ -1273,7 +1273,7 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return HiveMetaStore.PARTITION_DATE_FORMAT.get().format(value);
+    return HiveMetaStore.PARTITION_DATE_FORMAT.format(value);
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {
