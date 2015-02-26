@@ -302,6 +302,7 @@ public class RecordReaderUtils {
   static List<DiskRange> getStreamBuffers(DiskRangeList range, long offset, long length) {
     // This assumes sorted ranges (as do many other parts of ORC code.
     ArrayList<DiskRange> buffers = new ArrayList<DiskRange>();
+    if (length == 0) return buffers;
     long streamEnd = offset + length;
     boolean inRange = false;
     while (range != null) {

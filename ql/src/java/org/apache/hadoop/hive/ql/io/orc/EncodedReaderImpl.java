@@ -273,8 +273,12 @@ public class EncodedReaderImpl implements EncodedReader {
               // it when building the last RG, so each RG processing will decref once, and the
               // last one will unlock the buffers.
               sctx.stripeLevelStream.incRef();
-              iter = InStream.uncompressStream(fileName, stripeOffset, iter, sctx.offset,
-                  sctx.offset + sctx.length, zcr, codec, bufferSize, cache, sctx.stripeLevelStream);
+              DiskRangeList lastCached = InStream.uncompressStream(fileName, stripeOffset, iter,
+                  sctx.offset,sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
+                  sctx.stripeLevelStream);
+              if (lastCached != null) {
+                iter = lastCached;
+              }
             }
             if (!isLastRg) {
               sctx.stripeLevelStream.incRef();
@@ -296,9 +300,11 @@ public class EncodedReaderImpl implements EncodedReader {
             }
             boolean isStartOfStream = sctx.bufferIter == null;
             DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
-            DiskRangeList next = InStream.uncompressStream(fileName, stripeOffset, range, cOffset,
-                endCOffset, zcr, codec, bufferSize, cache, cb);
-            sctx.bufferIter = iter = next; // Reset iter just to ensure it's valid
+            DiskRangeList lastCached = InStream.uncompressStream(fileName, stripeOffset, range,
+                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb);
+            if (lastCached != null) {
+              sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid
+            }
           }
           ecb.setStreamData(colIxMod, streamIx, cb);
         }

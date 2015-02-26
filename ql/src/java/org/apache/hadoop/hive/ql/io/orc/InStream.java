@@ -565,9 +565,10 @@ public abstract class InStream extends InputStream {
    */
   public static DiskRangeList uncompressStream(String fileName, long baseOffset,
       DiskRangeList start, long cOffset, long endCOffset, ZeroCopyReaderShim zcr,
-      CompressionCodec codec,int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer)
+      CompressionCodec codec, int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer)
           throws IOException {
     streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
+    if (cOffset == endCOffset) return null;
     List<ProcCacheChunk> toDecompress = null;
     List<ByteBuffer> toRelease = null;
 
