@@ -1452,11 +1452,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_INSERT:
         ASTNode destination = (ASTNode) ast.getChild(0);
         Tree tab = destination.getChild(0);
+
         // Proceed if AST contains partition & If Not Exists
         if (destination.getChildCount() == 2 &&
             tab.getChildCount() == 2 &&
             destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
           String tableName = tab.getChild(0).getChild(0).getText();
+
           Tree partitions = tab.getChild(1);
           int childCount = partitions.getChildCount();
           HashMap<String, String> partition = new HashMap<String, String>();
@@ -1470,30 +1472,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             partition.put(partitionName, partitionVal);
           }
           // if it is a dynamic partition throw the exception
-          if (childCount != partition.size()) {
+          if (childCount == partition.size()) {
+            try {
+              Table table = db.getTable(tableName);
+              Partition parMetaData = db.getPartition(table, partition, false);
+              // Check partition exists if it exists skip the overwrite
+              if (parMetaData != null) {
+                phase1Result = false;
+                skipRecursion = true;
+                LOG.info("Partition already exists so insert into overwrite " +
+                    "skipped for partition : " + parMetaData.toString());
+                break;
+              }
+            } catch (HiveException e) {
+              LOG.info("Error while getting metadata : ", e);
+            }
+          } else {
             throw new SemanticException(ErrorMsg.INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS
                 .getMsg(partition.toString()));
           }
-          Table table = null;
-          try {
-            table = db.getTable(tableName);
-          } catch (HiveException ex) {
-            throw new SemanticException(ex);
-          }
-          try {
-            Partition parMetaData = db.getPartition(table, partition, false);
-            // Check partition exists if it exists skip the overwrite
-            if (parMetaData != null) {
-              phase1Result = false;
-              skipRecursion = true;
-              LOG.info("Partition already exists so insert into overwrite " +
-                  "skipped for partition : " + parMetaData.toString());
-              break;
-            }
-          } catch (HiveException e) {
-            LOG.info("Error while getting metadata : ", e);
-          }
-          validatePartSpec(table, partition, (ASTNode)tab, conf, false);
         }
         skipRecursion = false;
         break;

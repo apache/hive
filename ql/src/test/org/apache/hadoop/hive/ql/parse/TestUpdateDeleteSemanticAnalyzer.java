@@ -48,7 +48,7 @@ import org.junit.Test;
 
 public class TestUpdateDeleteSemanticAnalyzer {
 
-  static final private Log LOG = LogFactory.getLog(TestSemanticAnalyzer.class.getName());
+  static final private Log LOG = LogFactory.getLog(TestUpdateDeleteSemanticAnalyzer.class.getName());
 
   private HiveConf conf;
   private Hive db;
