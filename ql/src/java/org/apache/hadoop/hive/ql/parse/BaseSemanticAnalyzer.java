@@ -72,6 +72,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * BaseSemanticAnalyzer.
  *
@@ -1242,7 +1244,36 @@ public abstract class BaseSemanticAnalyzer {
             inputOI.getTypeName(), outputOI.getTypeName());
       }
 
+      normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);
     }
+  }
+
+  @VisibleForTesting
+  static void normalizeColSpec(Map<String, String> partSpec, String colName,
+      String colType, String originalColSpec, Object colValue) throws SemanticException {
+    if (colValue == null) return; // nothing to do with nulls
+    String normalizedColSpec = originalColSpec;
+    if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
+      normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
+    }
+    if (!normalizedColSpec.equals(originalColSpec)) {
+      STATIC_LOG.warn("Normalizing partition spec - " + colName + " from "
+          + originalColSpec + " to " + normalizedColSpec);
+      partSpec.put(colName, normalizedColSpec);
+    }
+  }
+
+  private static String normalizeDateCol(
+      Object colValue, String originalColSpec) throws SemanticException {
+    Date value;
+    if (colValue instanceof DateWritable) {
+      value = ((DateWritable) colValue).get();
+    } else if (colValue instanceof Date) {
+      value = (Date) colValue;
+    } else {
+      throw new SemanticException("Unexpected date type " + colValue.getClass());
+    }
+    return HiveMetaStore.PARTITION_DATE_FORMAT.get().format(value);
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {
