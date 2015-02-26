@@ -152,6 +152,10 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     for (int pos : inputKeyPositions) {
       try {
         RelDataType keyType = input.getRowType().getFieldList().get(pos).getType();
+        // Nothing to do if key cannot be null
+        if (!keyType.isNullable()) {
+          continue;
+        }
         SqlOperator funcCall = SqlFunctionConverter.getCalciteOperator(NOT_NULL_FUNC_NAME,
                 FunctionRegistry.getFunctionInfo(NOT_NULL_FUNC_NAME).getGenericUDF(),
                 ImmutableList.of(keyType), returnType);
