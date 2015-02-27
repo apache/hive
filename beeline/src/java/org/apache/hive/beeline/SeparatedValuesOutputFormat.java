@@ -64,6 +64,11 @@ class SeparatedValuesOutputFormat implements OutputFormat {
 
     int count = 0;
     while (rows.hasNext()) {
+      if (count == 0 && !beeLine.getOpts().getShowHeader()) {
+        rows.next();
+        count++;
+        continue;
+      }
       printRow(rows, (Rows.Row) rows.next());
       count++;
     }
