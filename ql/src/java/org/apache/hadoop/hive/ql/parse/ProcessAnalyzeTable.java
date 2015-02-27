@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.lang.StringBuffer;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -41,8 +40,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
-import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -77,10 +76,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
         .getInputFormatClass();
-    QB queryBlock = parseContext.getQB();
-    QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
-    
-    if (parseInfo.isAnalyzeCommand()) {
+
+    if (parseContext.getQueryProperties().isAnalyzeCommand()) {
 
       assert tableScan.getChildOperators() == null
         || tableScan.getChildOperators().size() == 0;
@@ -102,14 +99,14 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
         // There will not be any Tez job above this task
-        StatsNoJobWork snjWork = new StatsNoJobWork(parseContext.getQB().getParseInfo().getTableSpec());
+        StatsNoJobWork snjWork = new StatsNoJobWork(tableScan.getConf().getTableMetadata().getTableSpec());
         snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
             HiveConf.ConfVars.HIVE_STATS_RELIABLE));
         // If partition is specified, get pruned partition list
-        Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(parseInfo);
+        Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
         if (confirmedParts.size() > 0) {
-          Table source = parseContext.getQB().getMetaData().getTableForAlias(alias);
-          List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+          Table source = tableScan.getConf().getTableMetadata();
+          List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
           PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
               partCols, false);
           snjWork.setPrunedPartitionList(partList);
@@ -124,8 +121,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS;
       // The plan consists of a simple TezTask followed by a StatsTask.
       // The Tez task is just a simple TableScanOperator
-      
-      StatsWork statsWork = new StatsWork(parseInfo.getTableSpec());
+
+      StatsWork statsWork = new StatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
       statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
       statsWork.setSourceTask(context.currentTask);
       statsWork.setStatsReliable(parseContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
@@ -134,7 +131,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
 
       // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
       // The plan consists of a StatsTask only.
-      if (parseInfo.isNoScanAnalyzeCommand()) {
+      if (parseContext.getQueryProperties().isNoScanAnalyzeCommand()) {
         statsTask.setParentTasks(null);
         statsWork.setNoScanAnalyzeCommand(true);
         context.rootTasks.remove(context.currentTask);
@@ -142,17 +139,17 @@ public class ProcessAnalyzeTable implements NodeProcessor {
       }
 
       // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
-      if (parseInfo.isPartialScanAnalyzeCommand()) {
-        handlePartialScanCommand(tableScan, parseContext, parseInfo, statsWork, context, statsTask);
+      if (parseContext.getQueryProperties().isPartialScanAnalyzeCommand()) {
+        handlePartialScanCommand(tableScan, parseContext, statsWork, context, statsTask);
       }
 
       // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
       // and pass it to setTaskPlan as the last parameter
-      Set<Partition> confirmedPartns = GenMapRedUtils.getConfirmedPartitionsForScan(parseInfo);
+      Set<Partition> confirmedPartns = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
       PrunedPartitionList partitions = null;
       if (confirmedPartns.size() > 0) {
-        Table source = queryBlock.getMetaData().getTableForAlias(alias);
-        List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+        Table source = tableScan.getConf().getTableMetadata();
+        List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
         partitions = new PrunedPartitionList(source, confirmedPartns, partCols, false);
       }
 
@@ -172,14 +169,14 @@ public class ProcessAnalyzeTable implements NodeProcessor {
    * It is composed of PartialScanTask followed by StatsTask.
    */
   private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext, 
-      QBParseInfo parseInfo, StatsWork statsWork, GenTezProcContext context,
-      Task<StatsWork> statsTask) throws SemanticException {
+      StatsWork statsWork, GenTezProcContext context, Task<StatsWork> statsTask)
+              throws SemanticException {
 
     String aggregationKey = tableScan.getConf().getStatsAggPrefix();
     StringBuffer aggregationKeyBuffer = new StringBuffer(aggregationKey);
-    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(parseInfo, aggregationKeyBuffer);
+    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(tableScan, aggregationKeyBuffer);
     aggregationKey = aggregationKeyBuffer.toString();
-    
+
     // scan work
     PartialScanWork scanWork = new PartialScanWork(inputPaths);
     scanWork.setMapperCannotSpanPartns(true);

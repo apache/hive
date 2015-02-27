@@ -997,7 +997,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           StatsWork statDesc;
           if (oldTblPartLoc.equals(newTblPartLoc)) {
             // If we're merging to the same location, we can avoid some metastore calls
-            tableSpec tablepart = new tableSpec(this.db, conf, root);
+            TableSpec tablepart = new TableSpec(this.db, conf, root);
             statDesc = new StatsWork(tablepart);
           } else {
             statDesc = new StatsWork(ltd);
@@ -1618,7 +1618,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         StatsWork statDesc;
         if (oldTblPartLoc.equals(newTblPartLoc)) {
           // If we're merging to the same location, we can avoid some metastore calls
-          tableSpec tablepart = new tableSpec(db, conf, tableName, partSpec);
+          TableSpec tablepart = new TableSpec(db, conf, tableName, partSpec);
           statDesc = new StatsWork(tablepart);
         } else {
           statDesc = new StatsWork(ltd);

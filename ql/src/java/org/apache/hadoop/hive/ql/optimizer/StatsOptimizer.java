@@ -97,8 +97,8 @@ public class StatsOptimizer implements Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    if (pctx.getFetchTask() != null || !pctx.getQB().getIsQuery() ||
-        pctx.getQB().isAnalyzeRewrite() || pctx.getQB().isCTAS() ||
+    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().isQuery() ||
+        pctx.getQueryProperties().isAnalyzeRewrite() || pctx.getQueryProperties().isCTAS() ||
         pctx.getLoadFileWork().size() > 1 || !pctx.getLoadTableWork().isEmpty()) {
       return pctx;
     }

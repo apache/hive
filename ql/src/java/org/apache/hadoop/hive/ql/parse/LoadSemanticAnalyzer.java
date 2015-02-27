@@ -199,7 +199,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // initialize destination table/partition
-    tableSpec ts = new tableSpec(db, conf, (ASTNode) tableTree);
+    TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree);
 
     if (ts.tableHandle.isOffline()){
       throw new SemanticException(
