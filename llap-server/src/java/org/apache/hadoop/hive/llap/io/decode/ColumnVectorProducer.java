@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
@@ -48,7 +49,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
   }
 
   private final class UncaughtErrorHandler implements FutureCallback<Void> {
-    private final EncodedDataConsumer edc;
+    private final EncodedDataConsumer<BatchKey> edc;
 
     private UncaughtErrorHandler(EncodedDataConsumer edc) {
       this.edc = edc;
@@ -62,6 +63,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     @Override
     public void onFailure(Throwable t) {
       // Reader is not supposed to throw AFTER calling setError.
+      LlapIoImpl.LOG.error("Unhandled error from reader thread " + t.getMessage());
       edc.setError(t);
     }
   }
@@ -79,12 +81,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     // Get the source of encoded data.
     EncodedDataProducer<BatchKey> edp = getEncodedDataProducer();
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-    final EncodedDataConsumer edc;
-    if (edp instanceof OrcEncodedDataProducer) {
-      edc = new OrcEncodedDataConsumer(this, consumer, columnIds.size());
-    } else {
-      edc = new EncodedDataConsumer(this, consumer, columnIds.size());
-    }
+    final EncodedDataConsumer<BatchKey> edc = createConsumer(this, consumer, columnIds.size());
     // Then, get the specific reader of encoded data out of the producer.
     EncodedDataReader<BatchKey> reader = edp.createReader(
         split, columnIds, sarg, columnNames, edc);
@@ -98,9 +95,11 @@ public abstract class ColumnVectorProducer<BatchKey> {
     return edc;
   }
 
+  protected abstract EncodedDataConsumer<BatchKey> createConsumer(
+      ColumnVectorProducer<BatchKey> cvp, Consumer<ColumnVectorBatch> consumer, int size);
+
   protected abstract EncodedDataProducer<BatchKey> getEncodedDataProducer();
 
-  protected abstract void decodeBatch(EncodedDataConsumer<BatchKey> batchKeyEncodedDataConsumer,
-      EncodedColumnBatch<BatchKey> batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer);
+  protected abstract void decodeBatch(EncodedDataConsumer<BatchKey> context,
+      EncodedColumnBatch<BatchKey> batch, Consumer<ColumnVectorBatch> downstreamConsumer);
 }

@@ -24,12 +24,13 @@ import java.util.List;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 
 /**
  *
  */
-public class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<ColumnVectorBatch>,
+public abstract class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<ColumnVectorBatch>,
     Consumer<EncodedColumnBatch<BatchKey>> {
   private volatile boolean isStopped = false;
   // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
@@ -37,7 +38,7 @@ public class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<ColumnVec
   private ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback;
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private final int colCount;
-  private ColumnVectorProducer cvp;
+  private ColumnVectorProducer<BatchKey> cvp;
 
   public EncodedDataConsumer(ColumnVectorProducer<BatchKey> cvp,
       Consumer<ColumnVectorBatch> consumer, int colCount) {
@@ -138,7 +139,8 @@ public class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<ColumnVec
       batches.addAll(pendingData.values());
       pendingData.clear();
     }
-    List<EncodedColumnBatch.StreamBuffer> dataToDiscard = new ArrayList<EncodedColumnBatch.StreamBuffer>(batches.size() * colCount * 2);
+    List<EncodedColumnBatch.StreamBuffer> dataToDiscard = new ArrayList<StreamBuffer>(
+        batches.size() * colCount * 2);
     for (EncodedColumnBatch<BatchKey> batch : batches) {
       synchronized (batch) {
         for (EncodedColumnBatch.StreamBuffer[] bb : batch.columnData) {

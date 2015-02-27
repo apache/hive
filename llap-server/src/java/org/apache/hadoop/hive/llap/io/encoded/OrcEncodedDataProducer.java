@@ -384,10 +384,6 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         if (value == null || !value.hasAllIndexes(globalInc)) {
           ensureMetadataReader();
           StripeInformation si = metadata.getStripes().get(stripeKey.stripeIx);
-          if (DebugUtils.isTraceOrcEnabled()) {
-            LlapIoImpl.LOG.info("Creating stripe reader " + stripeKey.stripeIx + ": " 
-                + si.getOffset() + ", " + si.getLength());
-          }
           if (value == null) {
             value = new OrcStripeMetadata(metadataReader, si, globalInc, sargColumns);
             metadataCache.putStripeMetadata(stripeKey, value);

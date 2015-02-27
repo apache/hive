@@ -18,22 +18,18 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
-/**
- *
- */
 public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
-  private ColumnVectorProducer cvp;
-  private Consumer consumer;
   private RecordReaderImpl.TreeReader[] columnReaders;
 
-  public OrcEncodedDataConsumer(ColumnVectorProducer cvp, Consumer consumer, int colCount) {
+  public OrcEncodedDataConsumer(
+      ColumnVectorProducer<OrcBatchKey> cvp, Consumer<ColumnVectorBatch> consumer, int colCount) {
     super(cvp, consumer, colCount);
-    this.cvp = cvp;
-    this.consumer = consumer;
-    this.columnReaders = null;
   }
 
   public void setColumnReaders(RecordReaderImpl.TreeReader[] columnReaders) {

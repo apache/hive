@@ -58,7 +58,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcMetadataCache _metadataCache;
   private boolean _skipCorrupt;
   private int _previousStripeIndex;
-
+ 
   public OrcColumnVectorProducer(ExecutorService executor, OrcEncodedDataProducer edp,
       Configuration conf) {
     super(executor);
@@ -78,10 +78,10 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   }
 
   @Override
-  protected void decodeBatch(EncodedDataConsumer<OrcBatchKey> edc,
+  protected void decodeBatch(EncodedDataConsumer<OrcBatchKey> context,
       EncodedColumnBatch<OrcBatchKey> batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
-    OrcEncodedDataConsumer oedc = (OrcEncodedDataConsumer) edc;
+    OrcEncodedDataConsumer oedc = (OrcEncodedDataConsumer)context;
     String fileName = batch.batchKey.file;
     int currentStripeIndex = batch.batchKey.stripeIx;
     if (_previousStripeIndex == -1) {
@@ -444,6 +444,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
 
   private long getRowCount(OrcProto.RowIndexEntry rowIndexEntry) {
     return rowIndexEntry.getStatistics().getNumberOfValues();
+  }
+
+  @Override
+  protected EncodedDataConsumer<OrcBatchKey> createConsumer(ColumnVectorProducer<OrcBatchKey> cvp,
+      Consumer<ColumnVectorBatch> consumer, int colCount) {
+    return new OrcEncodedDataConsumer(cvp, consumer, colCount);
   }
 
 }
