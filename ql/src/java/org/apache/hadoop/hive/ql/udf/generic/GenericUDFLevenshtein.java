@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 
 /**
- * GenericUDFLevenstein.
+ * GenericUDFLevenshtein.
  *
  * This function calculates the Levenshtein distance between two strings.
  * Levenshtein distance is a string metric for measuring the difference between
@@ -52,7 +52,7 @@ import org.apache.hadoop.io.IntWritable;
     + " Vladimir Levenshtein, who considered this distance in 1965."
     + "Example:\n "
     + " > SELECT _FUNC_('kitten', 'sitting');\n 3")
-public class GenericUDFLevenstein extends GenericUDF {
+public class GenericUDFLevenshtein extends GenericUDF {
   private transient Converter[] textConverters = new Converter[2];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
   private final IntWritable output = new IntWritable();

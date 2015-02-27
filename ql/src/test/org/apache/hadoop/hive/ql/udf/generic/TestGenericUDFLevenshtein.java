@@ -31,8 +31,8 @@ import org.apache.hadoop.io.Text;
 
 public class TestGenericUDFLevenshtein extends TestCase {
 
-  public void testLevenstein() throws HiveException {
-    GenericUDFLevenstein udf = new GenericUDFLevenstein();
+  public void testLevenshtein() throws HiveException {
+    GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
@@ -50,9 +50,9 @@ public class TestGenericUDFLevenshtein extends TestCase {
     runAndVerify(null, null, null, udf);
   }
 
-  public void testLevensteinWrongType0() throws HiveException {
+  public void testLevenshteinWrongType0() throws HiveException {
     @SuppressWarnings("resource")
-    GenericUDFLevenstein udf = new GenericUDFLevenstein();
+    GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
@@ -66,9 +66,9 @@ public class TestGenericUDFLevenshtein extends TestCase {
     }
   }
 
-  public void testLevensteinWrongType1() throws HiveException {
+  public void testLevenshteinWrongType1() throws HiveException {
     @SuppressWarnings("resource")
-    GenericUDFLevenstein udf = new GenericUDFLevenstein();
+    GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector;
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableFloatObjectInspector;
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
@@ -82,9 +82,9 @@ public class TestGenericUDFLevenshtein extends TestCase {
     }
   }
 
-  public void testLevensteinWrongLength() throws HiveException {
+  public void testLevenshteinWrongLength() throws HiveException {
     @SuppressWarnings("resource")
-    GenericUDFLevenstein udf = new GenericUDFLevenstein();
+    GenericUDFLevenshtein udf = new GenericUDFLevenshtein();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector;
     ObjectInspector[] arguments = { valueOI0 };
 
