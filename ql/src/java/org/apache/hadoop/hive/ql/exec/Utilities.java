@@ -83,6 +83,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -151,6 +152,8 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
@@ -1090,6 +1093,28 @@ public final class Utilities {
     fld.removeField(fieldName);
     kryo.register(type, fld);
   }
+
+  public static ThreadLocal<Kryo> sparkSerializationKryo = new ThreadLocal<Kryo>() {
+    @Override
+    protected synchronized Kryo initialValue() {
+      Kryo kryo = new Kryo();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(Path.class, new PathSerializer());
+      kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+      removeField(kryo, Operator.class, "colExprMap");
+      removeField(kryo, ColumnInfo.class, "objectInspector");
+      kryo.register(SparkEdgeProperty.class);
+      kryo.register(MapWork.class);
+      kryo.register(ReduceWork.class);
+      kryo.register(SparkWork.class);
+      kryo.register(TableDesc.class);
+      kryo.register(Pair.class);
+      return kryo;
+    };
+  };
+
   private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
     @Override
     protected synchronized Kryo initialValue() {

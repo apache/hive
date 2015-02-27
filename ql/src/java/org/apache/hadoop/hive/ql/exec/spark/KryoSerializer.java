@@ -39,14 +39,14 @@ public class KryoSerializer {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     Output output = new Output(stream);
 
-    Utilities.runtimeSerializationKryo.get().writeObject(output, object);
+    Utilities.sparkSerializationKryo.get().writeObject(output, object);
 
     output.close(); // close() also calls flush()
     return stream.toByteArray();
   }
 
   public static <T> T deserialize(byte[] buffer, Class<T> clazz) {
-    return Utilities.runtimeSerializationKryo.get().readObject(
+    return Utilities.sparkSerializationKryo.get().readObject(
         new Input(new ByteArrayInputStream(buffer)), clazz);
   }
 
