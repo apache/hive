@@ -414,6 +414,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
     @Override
     public void returnData(StreamBuffer data) {
+      if (data.decRef() != 0) return;
       if (DebugUtils.isTraceLockingEnabled()) {
         for (LlapMemoryBuffer buf : data.cacheBuffers) {
           LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");

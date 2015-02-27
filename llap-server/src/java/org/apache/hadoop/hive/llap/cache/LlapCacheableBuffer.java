@@ -108,7 +108,8 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
 
   @Override
   public String toString() {
-    return "0x" + Integer.toHexString(System.identityHashCode(this));
+    int refCount = this.refCount.get();
+    return "0x" + Integer.toHexString(System.identityHashCode(this)) + "(" + refCount + ")";
   }
 
   /**

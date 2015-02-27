@@ -535,16 +535,24 @@ public abstract class InStream extends InputStream {
     }
   }
 
+  /**
+   * CacheChunk that is pre-created for new cache data; initially, it contains an original disk
+   * buffer and an unallocated LlapMemoryBuffer object. Before we expose it, the LMB is allocated,
+   * the data is decompressed, and original compressed data is discarded. The chunk lives on in
+   * the DiskRange list created for the request, and everyone treats it like regular CacheChunk.
+   */
   private static class ProcCacheChunk extends CacheChunk {
     public ProcCacheChunk(long cbStartOffset, long cbEndOffset, boolean isCompressed,
-        ByteBuffer originalData, LlapMemoryBuffer targetBuffer) {
+        ByteBuffer originalData, LlapMemoryBuffer targetBuffer, int originalCbIndex) {
       super(targetBuffer, cbStartOffset, cbEndOffset);
       this.isCompressed = isCompressed;
       this.originalData = originalData;
+      this.originalCbIndex = originalCbIndex;
     }
 
     boolean isCompressed;
     ByteBuffer originalData = null;
+    int originalCbIndex;
   }
 
   /**
@@ -676,12 +684,14 @@ public abstract class InStream extends InputStream {
 
     // 6. Finally, put data to cache.
     long[] collisionMask = cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
-    processCacheCollisions(cache, collisionMask, toDecompress, targetBuffers);
+    processCacheCollisions(
+        cache, collisionMask, toDecompress, targetBuffers, streamBuffer.cacheBuffers);
     return lastCached;
   }
 
   private static void processCacheCollisions(LowLevelCache cache, long[] collisionMask,
-      List<ProcCacheChunk> toDecompress, LlapMemoryBuffer[] targetBuffers) {
+      List<ProcCacheChunk> toDecompress, LlapMemoryBuffer[] targetBuffers,
+      List<LlapMemoryBuffer> cacheBuffers) {
     if (collisionMask == null) return;
     assert collisionMask.length >= (toDecompress.size() >>> 6);
     // There are some elements that were cached in parallel, take care of them.
@@ -691,15 +701,25 @@ public abstract class InStream extends InputStream {
         maskVal = collisionMask[i >>> 6];
       }
       if ((maskVal & 1) == 1) {
-        // Cache has found an old buffer for the key and put it into array. Had the put succeeded
-        // for our new buffer, it would have refcount of 2 - 1 from put, and 1 from notifyReused
-        // call above. "Old" buffer now has refcount of 1 from put; new buffer is unchanged. We
-        // will discard the new buffer, and lock old again to make it consistent.
+        // Cache has found an old buffer for the key and put it into array instead of our new one.
         ProcCacheChunk replacedChunk = toDecompress.get(i);
         LlapMemoryBuffer replacementBuffer = targetBuffers[i];
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Discarding data due to cache collision: " + replacedChunk.buffer
+              + " replaced with " + replacementBuffer);
+        }
+        assert replacedChunk.buffer != replacementBuffer : i + " was not replaced in the results "
+            + "even though mask is [" + Long.toBinaryString(maskVal) + "]";
+        assert replacedChunk.originalCbIndex >= 0;
+        // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
+        // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
+        // is unchanged at 1 from notifyReused. Make it all consistent.
         cache.releaseBuffer(replacedChunk.buffer);
         cache.notifyReused(replacementBuffer);
+        // Replace the buffer in our big range list, as well as in current results.
         replacedChunk.buffer = replacementBuffer;
+        cacheBuffers.set(replacedChunk.originalCbIndex, replacementBuffer);
+        replacedChunk.originalCbIndex = -1; // This can only happen once at decompress time.
       }
       maskVal >>= 1;
     }
@@ -845,8 +865,8 @@ public abstract class InStream extends InputStream {
     // Add it to result in order we are processing.
     cacheBuffers.add(futureAlloc);
     // Add it to the list of work to decompress.
-    ProcCacheChunk cc = new ProcCacheChunk(
-        cbStartOffset, cbEndOffset, !isUncompressed, fullCompressionBlock, futureAlloc);
+    ProcCacheChunk cc = new ProcCacheChunk(cbStartOffset, cbEndOffset, !isUncompressed,
+        fullCompressionBlock, futureAlloc, cacheBuffers.size() - 1);
     toDecompress.add(cc);
     // Adjust the compression block position.
     if (DebugUtils.isTraceOrcEnabled()) {

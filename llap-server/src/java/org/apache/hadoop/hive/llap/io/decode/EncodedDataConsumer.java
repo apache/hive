@@ -101,7 +101,6 @@ public abstract class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<
   protected void returnProcessed(EncodedColumnBatch.StreamBuffer[][] data) {
     for (EncodedColumnBatch.StreamBuffer[] sbs : data) {
       for (EncodedColumnBatch.StreamBuffer sb : sbs) {
-        if (sb.decRef() != 0) continue;
         upstreamFeedback.returnData(sb);
       }
     }
@@ -152,9 +151,7 @@ public abstract class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<
       }
     }
     for (EncodedColumnBatch.StreamBuffer data : dataToDiscard) {
-      if (data.decRef() == 0) {
-        upstreamFeedback.returnData(data);
-      }
+      upstreamFeedback.returnData(data);
     }
   }
 

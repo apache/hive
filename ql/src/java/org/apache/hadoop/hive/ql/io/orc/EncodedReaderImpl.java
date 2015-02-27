@@ -314,6 +314,10 @@ public class EncodedReaderImpl implements EncodedReader {
         consumer.consumeData(ecb);
       }
     }
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Disk ranges after processing all the data "
+          + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+    }
 
     // TODO: this is not good; we hold all the blocks until we send them all.
     //       Hard to avoid due to sharing by RGs... perhaps we can still do better.
