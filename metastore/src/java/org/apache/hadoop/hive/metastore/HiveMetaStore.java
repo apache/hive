@@ -220,6 +220,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -236,6 +237,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
   // embedded metastore or a remote one
   private static boolean isMetaStoreRemote = false;
+
+  // Used for testing to simulate method timeout.
+  @VisibleForTesting
+  static boolean TEST_TIMEOUT_ENABLED = false;
+  @VisibleForTesting
+  static long TEST_TIMEOUT_VALUE = -1;
 
   /** A fixed date format to be used for hive partition column values. */
   public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
@@ -470,6 +477,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS));
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS));
+      listeners.add(new SessionPropertiesListener(hiveConf));
       endFunctionListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreEndFunctionListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS));
@@ -881,6 +889,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         } catch (NoSuchObjectException e) {
           // expected
+        }
+
+        if (TEST_TIMEOUT_ENABLED) {
+          try {
+            Thread.sleep(TEST_TIMEOUT_VALUE);
+          } catch (InterruptedException e) {
+            // do nothing
+          }
+          Deadline.checkTimeout();
         }
 
         create_database_core(getMS(), db);
