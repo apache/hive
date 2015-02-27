@@ -274,7 +274,6 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     return ((number + 63) & ~63);
   }
 
-
   @Override
   public void releaseBuffer(LlapMemoryBuffer buffer) {
     releaseBufferInternal((LlapCacheableBuffer)buffer);

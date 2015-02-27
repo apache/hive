@@ -219,13 +219,14 @@ public class EncodedReaderImpl implements EncodedReader {
     // 2. Now, read all of the ranges from cache or disk.
     DiskRangeListMutateHelper toRead = new DiskRangeListMutateHelper(listToRead.get());
     if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Resulting disk ranges to read: " + RecordReaderUtils.stringifyDiskRanges(toRead));
+      LOG.info("Resulting disk ranges to read: "
+          + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     if (cache != null) {
       cache.getFileData(fileName, toRead.next, stripeOffset);
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Disk ranges after cache (base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead));
+            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
     }
 

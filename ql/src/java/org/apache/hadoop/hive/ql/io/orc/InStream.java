@@ -251,9 +251,9 @@ public abstract class InStream extends InputStream {
           codec.decompress(slice, uncompressed);
           if (cache != null) {
             // TODO: this is the inefficient path
-            // TODO#: this is invalid; base stripe offset should be passed.
-            cache.putFileData(fileName, new DiskRange[] { new DiskRange(originalOffset,
-                chunkLength + OutStream.HEADER_SIZE) }, new LlapMemoryBuffer[] { cacheBuffer }, 0);
+            // TODO#: this is invalid; base stripe offset should be passed, return value handled.
+            //cache.putFileData(fileName, new DiskRange[] { new DiskRange(originalOffset,
+            //  chunkLength + OutStream.HEADER_SIZE) }, new LlapMemoryBuffer[] { cacheBuffer }, 0);
           }
         }
       } else {
@@ -675,8 +675,34 @@ public abstract class InStream extends InputStream {
     }
 
     // 6. Finally, put data to cache.
-    cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
+    long[] collisionMask = cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
+    processCacheCollisions(cache, collisionMask, toDecompress, targetBuffers);
     return lastCached;
+  }
+
+  private static void processCacheCollisions(LowLevelCache cache, long[] collisionMask,
+      List<ProcCacheChunk> toDecompress, LlapMemoryBuffer[] targetBuffers) {
+    if (collisionMask == null) return;
+    assert collisionMask.length >= (toDecompress.size() >>> 6);
+    // There are some elements that were cached in parallel, take care of them.
+    long maskVal = -1;
+    for (int i = 0; i < toDecompress.size(); ++i) {
+      if ((i & 63) == 0) {
+        maskVal = collisionMask[i >>> 6];
+      }
+      if ((maskVal & 1) == 1) {
+        // Cache has found an old buffer for the key and put it into array. Had the put succeeded
+        // for our new buffer, it would have refcount of 2 - 1 from put, and 1 from notifyReused
+        // call above. "Old" buffer now has refcount of 1 from put; new buffer is unchanged. We
+        // will discard the new buffer, and lock old again to make it consistent.
+        ProcCacheChunk replacedChunk = toDecompress.get(i);
+        LlapMemoryBuffer replacementBuffer = targetBuffers[i];
+        cache.releaseBuffer(replacedChunk.buffer);
+        cache.notifyReused(replacementBuffer);
+        replacedChunk.buffer = replacementBuffer;
+      }
+      maskVal >>= 1;
+    }
   }
 
 
