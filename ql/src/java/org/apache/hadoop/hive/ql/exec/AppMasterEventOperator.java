@@ -81,7 +81,9 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
       Writable writableRow = serializer.serialize(row, rowInspector);
       writableRow.write(buffer);
       if (buffer.getLength() > MAX_SIZE) {
-        LOG.info("Disabling AM events. Buffer size too large: " + buffer.getLength());
+	if (isLogInfoEnabled) {
+	  LOG.info("Disabling AM events. Buffer size too large: " + buffer.getLength());
+	}
         hasReachedMaxSize = true;
         buffer = null;
       }
@@ -89,7 +91,7 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
       throw new HiveException(e);
     }
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("AppMasterEvent: " + row);
     }
     forward(row, rowInspector);
@@ -116,8 +118,10 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
           InputInitializerEvent.create(vertexName, inputName,
               ByteBuffer.wrap(payload, 0, payload.length));
 
-      LOG.info("Sending Tez event to vertex = " + vertexName + ", input = " + inputName
-          + ". Payload size = " + payload.length);
+      if (isLogInfoEnabled) {
+	LOG.info("Sending Tez event to vertex = " + vertexName + ", input = " + inputName
+	    + ". Payload size = " + payload.length);
+      }
 
       context.getTezProcessorContext().sendEvents(Collections.singletonList(event));
     }

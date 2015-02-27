@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
@@ -99,28 +98,18 @@ public class GlobalLimitOptimizer implements Transform {
       // query qualify for the optimization
       if (tempGlobalLimit != null && tempGlobalLimit != 0) {
         Table tab = ts.getConf().getTableMetadata();
+        Set<FilterOperator> filterOps = OperatorUtils.findOperators(ts, FilterOperator.class);
 
         if (!tab.isPartitioned()) {
-          Set<FilterOperator> filterOps =
-                  OperatorUtils.findOperators(ts, FilterOperator.class);
           if (filterOps.size() == 0) {
             globalLimitCtx.enableOpt(tempGlobalLimit);
           }
         } else {
           // check if the pruner only contains partition columns
-          if (PartitionPruner.onlyContainsPartnCols(tab,
-              opToPartPruner.get(ts))) {
+          if (onlyContainsPartnCols(tab, filterOps)) {
 
-            PrunedPartitionList partsList;
-            try {
-              String alias = (String) topOps.keySet().toArray()[0];
-              partsList = PartitionPruner.prune(ts, pctx, alias);
-            } catch (HiveException e) {
-              // Has to use full name to make sure it does not conflict with
-              // org.apache.commons.lang.StringUtils
-              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-              throw new SemanticException(e.getMessage(), e);
-            }
+            String alias = (String) topOps.keySet().toArray()[0];
+            PrunedPartitionList partsList = pctx.getPrunedPartitions(alias, ts);
 
             // If there is any unknown partition, create a map-reduce job for
             // the filter to prune correctly
@@ -136,6 +125,15 @@ public class GlobalLimitOptimizer implements Transform {
       }
     }
     return pctx;
+  }
+
+  private boolean onlyContainsPartnCols(Table table, Set<FilterOperator> filters) {
+    for (FilterOperator filter : filters) {
+      if (!PartitionPruner.onlyContainsPartnCols(table, filter.getConf().getPredicate())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

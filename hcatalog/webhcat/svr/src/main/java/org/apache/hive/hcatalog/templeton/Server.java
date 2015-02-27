@@ -635,6 +635,7 @@ public class Server {
   @Path("mapreduce/streaming")
   @Produces({MediaType.APPLICATION_JSON})
   public EnqueueBean mapReduceStreaming(@FormParam("input") List<String> inputs,
+		      @FormParam("inputreader") String inputreader,
                       @FormParam("output") String output,
                       @FormParam("mapper") String mapper,
                       @FormParam("reducer") String reducer,
@@ -657,6 +658,7 @@ public class Server {
     Map<String, Object> userArgs = new HashMap<String, Object>();
     userArgs.put("user.name", getDoAsUser());
     userArgs.put("input", inputs);
+    userArgs.put("inputreader", inputreader);
     userArgs.put("output", output);
     userArgs.put("mapper", mapper);
     userArgs.put("reducer", reducer);
@@ -672,7 +674,7 @@ public class Server {
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     StreamingDelegator d = new StreamingDelegator(appConf);
-    return d.run(getDoAsUser(), userArgs, inputs, output, mapper, reducer, combiner,
+    return d.run(getDoAsUser(), userArgs, inputs, inputreader, output, mapper, reducer, combiner,
       fileList, files, defines, cmdenvs, args,
       statusdir, callback, getCompletedUrl(), enablelog, JobType.STREAMING);
   }

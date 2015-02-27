@@ -74,7 +74,6 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
-import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -265,16 +264,19 @@ public final class ColumnPrunerProcFactory {
       //Since we cannot know what columns will be needed by a PTF chain,
       //we do not prune columns on PTFOperator for PTF chains.
       PartitionedTableFunctionDef funcDef = conf.getFuncDef();
-      if (!conf.forWindowing() && !Noop.class.isInstance(funcDef.getTFunction())) {
+      List<String> referencedColumns = funcDef.getReferencedColumns();
+      if (!conf.forWindowing() && !conf.forNoop() && referencedColumns == null) {
         return super.process(nd, stack, cppCtx, nodeOutputs);
       }
-      
-      //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
-      List<String> prunedCols = 
-          new ArrayList<String>(cppCtx.getPrunedColList(op.getChildOperators().get(0)));
-      if (funcDef instanceof WindowTableFunctionDef) {
+
+      List<String> prunedCols = cppCtx.getPrunedColList(op.getChildOperators().get(0));
+      if (conf.forWindowing()) {
         WindowTableFunctionDef def = (WindowTableFunctionDef) funcDef;
         prunedCols = Utilities.mergeUniqElems(getWindowFunctionColumns(def), prunedCols);
+      } else if (conf.forNoop()) {
+        prunedCols = new ArrayList(cppCtx.getPrunedColList(op.getChildOperators().get(0)));
+      } else {
+        prunedCols = referencedColumns;
       }
       
       List<ColumnInfo> newRS = prunedColumnsList(prunedCols, op.getSchema(), funcDef);      
@@ -519,6 +521,9 @@ public final class ColumnPrunerProcFactory {
       ArrayList<ExprNodeDesc> keys = conf.getKeyCols();
       LOG.debug("Reduce Sink Operator " + op.getIdentifier() + " key:" + keys);
       for (ExprNodeDesc key : keys) {
+        colLists = Utilities.mergeUniqElems(colLists, key.getCols());
+      }
+      for (ExprNodeDesc key : conf.getPartitionCols()) {
         colLists = Utilities.mergeUniqElems(colLists, key.getCols());
       }
 

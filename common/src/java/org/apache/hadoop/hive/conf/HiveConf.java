@@ -149,6 +149,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
+      HiveConf.ConfVars.METASTORE_FILTER_HOOK,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
       HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
@@ -471,6 +472,9 @@ public class HiveConf extends Configuration {
         "      schema migration attempt. Users are required to manually migrate schema after Hive upgrade which ensures\n" +
         "      proper metastore schema migration. (Default)\n" +
         "False: Warn if the version information stored in metastore doesn't match with one from in Hive jars."),
+    METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION("hive.metastore.schema.verification.record.version", true,
+      "When true the current MS version is recorded in the VERSION table. If this is disabled and verification is\n" +
+      " enabled the MS will be unusable."),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked",
         "throw exception if metadata tables are incorrect"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed",
@@ -592,7 +596,8 @@ public class HiveConf extends Configuration {
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
         "* implies all the keys will get inherited."),
     METASTORE_FILTER_HOOK("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
-        "Metastore hook class for filtering the metadata read results"),
+        "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
+        + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
         " to fire events for DML operations"),
 

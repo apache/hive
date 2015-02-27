@@ -917,6 +917,9 @@ sub compare
 
           my %r_userargs = %{$res_hash->{'userargs'}};
           foreach my $key( keys %exp_userargs){
+            if($key eq 'inputreader'){
+              next;
+            }
             if( !defined $r_userargs{$key}){
               print $log "$0::$subName INFO $key not found in userargs \n";
               $result = 0;

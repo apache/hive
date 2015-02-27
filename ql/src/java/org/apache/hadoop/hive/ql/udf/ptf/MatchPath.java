@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
@@ -195,6 +196,20 @@ public class MatchPath extends TableFunctionEvaluator
 
       setOutputOI(OI);
     }
+
+    @Override
+    public List<String> getReferencedColumns() throws SemanticException {
+      MatchPath matchPath = (MatchPath) evaluator;
+      List<String> columns = new ArrayList<>();
+      for (ExprNodeDesc exprNode : matchPath.resultExprInfo.resultExprNodes) {
+        Utilities.mergeUniqElems(columns, exprNode.getCols());
+      }
+      for (ExprNodeDesc exprNode : matchPath.symInfo.symbolExprsDecs) {
+        Utilities.mergeUniqElems(columns, exprNode.getCols());
+      }
+      return columns;
+    }
+    
     /*
      * validate and setup patternStr
      */
@@ -356,6 +371,7 @@ public class MatchPath extends TableFunctionEvaluator
 
   static class SymbolsInfo {
     int sz;
+    ArrayList<ExprNodeDesc> symbolExprsDecs;
     ArrayList<ExprNodeEvaluator> symbolExprsEvaluators;
     ArrayList<ObjectInspector> symbolExprsOIs;
     ArrayList<String> symbolExprsNames;
@@ -366,6 +382,7 @@ public class MatchPath extends TableFunctionEvaluator
       symbolExprsEvaluators = new ArrayList<ExprNodeEvaluator>(sz);
       symbolExprsOIs = new ArrayList<ObjectInspector>(sz);
       symbolExprsNames = new ArrayList<String>(sz);
+      symbolExprsDecs = new ArrayList<>(sz);
     }
 
     void add(String name, PTFExpressionDef arg)
@@ -373,6 +390,7 @@ public class MatchPath extends TableFunctionEvaluator
       symbolExprsNames.add(name);
       symbolExprsEvaluators.add(arg.getExprEvaluator());
       symbolExprsOIs.add(arg.getOI());
+      symbolExprsDecs.add(arg.getExprNode());
     }
   }
 
@@ -749,8 +767,7 @@ public class MatchPath extends TableFunctionEvaluator
       /*
        * create SelectListOI
        */
-      selectListInputOI = (StructObjectInspector)
-          PTFTranslator.getStandardStructOI(selectListInputRowResolver);
+      selectListInputOI = PTFTranslator.getStandardStructOI(selectListInputRowResolver);
     }
 
     private void fixResultExprString()

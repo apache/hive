@@ -664,6 +664,10 @@ public interface IMetaStoreClient {
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException;
 
+  List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
+
   boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;

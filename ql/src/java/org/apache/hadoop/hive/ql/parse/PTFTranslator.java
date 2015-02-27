@@ -342,6 +342,7 @@ public class PTFTranslator {
         outColNames,
         outRR);
     def.setOutputShape(outputShape);
+    def.setReferencedColumns(tFn.getReferencedColumns());
 
     return def;
   }

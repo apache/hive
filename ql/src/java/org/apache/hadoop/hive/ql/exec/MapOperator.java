@@ -392,8 +392,12 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     boolean schemaless = fpath.toUri().getScheme() == null;
     for (String onefile : conf.getPathToAliases().keySet()) {
       Path onepath = normalizePath(onefile, schemaless);
+      Path curfpath = fpath;
+      if(!schemaless && onepath.toUri().getScheme() == null) {
+        curfpath = new Path(fpath.toUri().getPath());
+      }
       // check for the operators who will process rows coming to this Map Operator
-      if (onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
+      if (onepath.toUri().relativize(curfpath.toUri()).equals(curfpath.toUri())) {
         // not from this
         continue;
       }
@@ -450,7 +454,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         builder.append(context.alias);
       }
       if (isLogDebugEnabled) {
-        LOG.info("Processing alias(es) " + builder.toString() + " for file " + fpath);
+        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
       }
     }
     // Add alias, table name, and partitions to hadoop conf so that their

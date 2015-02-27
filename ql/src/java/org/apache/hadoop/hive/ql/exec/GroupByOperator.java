@@ -961,12 +961,16 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       }
       hashAggregations.clear();
       hashAggregations = null;
-      LOG.info("Hash Table completed flushed");
+      if (isLogInfoEnabled) {
+	LOG.info("Hash Table completed flushed");
+      }
       return;
     }
 
     int oldSize = hashAggregations.size();
-    LOG.info("Hash Tbl flush: #hash table = " + oldSize);
+    if (isLogInfoEnabled) {
+      LOG.info("Hash Tbl flush: #hash table = " + oldSize);
+    }
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
         .entrySet().iterator();
     int numDel = 0;
@@ -976,7 +980,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-        LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
+	if (isLogInfoEnabled) {
+	  LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
+	}
         return;
       }
     }
@@ -1015,8 +1021,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   public void flush() throws HiveException{
     try {
       if (hashAggregations != null) {
-        LOG.info("Begin Hash Table flush: size = "
-            + hashAggregations.size());
+	if (isLogInfoEnabled) {
+	  LOG.info("Begin Hash Table flush: size = "
+	      + hashAggregations.size());
+	}
         Iterator iter = hashAggregations.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter

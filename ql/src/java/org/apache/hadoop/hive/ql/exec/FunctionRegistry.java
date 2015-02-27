@@ -180,6 +180,7 @@ public final class FunctionRegistry {
     system.registerUDF("ascii", UDFAscii.class, false);
     system.registerGenericUDF("lpad", GenericUDFLpad.class);
     system.registerGenericUDF("rpad", GenericUDFRpad.class);
+    system.registerGenericUDF("levenshtein", GenericUDFLevenstein.class);
 
     system.registerGenericUDF("size", GenericUDFSize.class);
 
@@ -891,7 +892,6 @@ public final class FunctionRegistry {
     return udafEvaluator;
   }
 
-  @SuppressWarnings("deprecation")
   public static GenericUDAFEvaluator getGenericWindowingEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isDistinct,
       boolean isAllColumns) throws SemanticException {
