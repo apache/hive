@@ -352,9 +352,14 @@ class SparkClientImpl implements SparkClient {
       }
 
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
-        argv.add("--proxy-user");
         try {
-          argv.add(Utils.getUGI().getShortUserName());
+          String currentUser = Utils.getUGI().getShortUserName();
+          // do not do impersonation in CLI mode
+          if (!currentUser.equals(System.getProperty("user.name"))) {
+            LOG.info("Attempting impersonation of " + currentUser);
+            argv.add("--proxy-user");
+            argv.add(currentUser);
+          }
         } catch (Exception e) {
           String msg = "Cannot obtain username: " + e;
           throw new IllegalStateException(msg, e);
@@ -385,7 +390,7 @@ class SparkClientImpl implements SparkClient {
         argv.add(String.format("%s=%s", hiveSparkConfKey, value));
       }
 
-      LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
+      LOG.info("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
       if (isTesting != null) {
