@@ -21,20 +21,26 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 public class HiveSparkClientFactory {
   protected static final transient Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
@@ -43,6 +49,7 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_MASTER = "local";
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
+  private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
 
   public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf)
     throws IOException, SparkException {
@@ -66,6 +73,7 @@ public class HiveSparkClientFactory {
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
     sparkConf.put("spark.app.name", SPARK_DEFAULT_APP_NAME);
     sparkConf.put("spark.serializer", SPARK_DEFAULT_SERIALIZER);
+    sparkConf.put("spark.kryo.referenceTracking", SPARK_DEFAULT_REFERENCE_TRACKING);
 
     // load properties from spark-defaults.conf.
     InputStream inputStream = null;
@@ -132,6 +140,15 @@ public class HiveSparkClientFactory {
           propertyName, value));
       }
     }
+
+    Set<String> classes = Sets.newHashSet(
+      Splitter.on(",").trimResults().omitEmptyStrings().split(
+        Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
+    classes.add(VectorizedRowBatch.class.getName());
+    classes.add(BytesWritable.class.getName());
+    classes.add(HiveKey.class.getName());
+    sparkConf.put(
+      "spark.kryo.classesToRegister", Joiner.on(",").join(classes));
 
     return sparkConf;
   }
