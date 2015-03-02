@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.TableSample;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -91,8 +92,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
-  
+
   private boolean isMetadataOnly = false;
+
+  private transient TableSample tableSample;
 
   private transient final Table tableMetadata;
 
@@ -267,5 +270,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public Table getTableMetadata() {
     return tableMetadata;
+  }
+
+  public TableSample getTableSample() {
+    return tableSample;
+  }
+
+  public void setTableSample(TableSample tableSample) {
+    this.tableSample = tableSample;
   }
 }

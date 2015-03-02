@@ -43,6 +43,9 @@ public class $className extends TestCase {
 
     try {
       String hadoopVer = "$hadoopVersion";
+      if (!hiveConfDir.isEmpty()) {
+        hiveConfDir = HIVE_ROOT + hiveConfDir;
+      }
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
       hiveConfDir, hadoopVer, initScript, cleanupScript, tezDirectory);
 

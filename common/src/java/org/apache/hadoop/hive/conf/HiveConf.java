@@ -174,7 +174,8 @@ public class HiveConf extends Configuration {
    */
   public static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
+      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT
   };
 
   static {
@@ -472,6 +473,9 @@ public class HiveConf extends Configuration {
         "      schema migration attempt. Users are required to manually migrate schema after Hive upgrade which ensures\n" +
         "      proper metastore schema migration. (Default)\n" +
         "False: Warn if the version information stored in metastore doesn't match with one from in Hive jars."),
+    METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION("hive.metastore.schema.verification.record.version", true,
+      "When true the current MS version is recorded in the VERSION table. If this is disabled and verification is\n" +
+      " enabled the MS will be unusable."),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked",
         "throw exception if metadata tables are incorrect"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed",

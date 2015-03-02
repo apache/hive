@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+
 /**
  *
  * QueryProperties.
@@ -25,16 +26,26 @@ package org.apache.hadoop.hive.ql;
  * A structure to contain features of a query that are determined
  * during parsing and may be useful for categorizing a query type
  *
- * These inlucde whether the query contains:
+ * These include whether the query contains:
  * a join clause, a group by clause, an order by clause, a sort by
  * clause, a group by clause following a join clause, and whether
  * the query uses a script for mapping/reducing
  */
 public class QueryProperties {
 
+  boolean query;
+  boolean analyzeCommand;
+  boolean partialScanAnalyzeCommand;
+  boolean noScanAnalyzeCommand;
+  boolean analyzeRewrite;
+  boolean ctas;
+  boolean insertToTable;
+  int outerQueryLimit;
+
   boolean hasJoin = false;
   boolean hasGroupBy = false;
   boolean hasOrderBy = false;
+  boolean hasOuterOrderBy = false;
   boolean hasSortBy = false;
   boolean hasJoinFollowedByGroupBy = false;
   boolean hasPTF = false;
@@ -51,10 +62,75 @@ public class QueryProperties {
   private int noOfJoins = 0;
   private int noOfOuterJoins = 0;
   private boolean hasLateralViews;
-  
+
   private boolean multiDestQuery;
   private boolean filterWithSubQuery;
-  
+
+
+  public boolean isQuery() {
+    return query;
+  }
+
+  public void setQuery(boolean query) {
+    this.query = query;
+  }
+
+  public boolean isAnalyzeCommand() {
+    return analyzeCommand;
+  }
+
+  public void setAnalyzeCommand(boolean analyzeCommand) {
+    this.analyzeCommand = analyzeCommand;
+  }
+
+  public boolean isPartialScanAnalyzeCommand() {
+    return partialScanAnalyzeCommand;
+  }
+
+  public void setPartialScanAnalyzeCommand(boolean partialScanAnalyzeCommand) {
+    this.partialScanAnalyzeCommand = partialScanAnalyzeCommand;
+  }
+
+  public boolean isNoScanAnalyzeCommand() {
+    return noScanAnalyzeCommand;
+  }
+
+  public void setNoScanAnalyzeCommand(boolean noScanAnalyzeCommand) {
+    this.noScanAnalyzeCommand = noScanAnalyzeCommand;
+  }
+
+  public boolean isAnalyzeRewrite() {
+    return analyzeRewrite;
+  }
+
+  public void setAnalyzeRewrite(boolean analyzeRewrite) {
+    this.analyzeRewrite = analyzeRewrite;
+  }
+
+  public boolean isCTAS() {
+    return ctas;
+  }
+
+  public void setCTAS(boolean ctas) {
+    this.ctas = ctas;
+  }
+
+  public boolean isInsertToTable() {
+    return insertToTable;
+  }
+
+  public void setInsertToTable(boolean insertToTable) {
+    this.insertToTable = insertToTable;
+  }
+
+  public int getOuterQueryLimit() {
+    return outerQueryLimit;
+  }
+
+  public void setOuterQueryLimit(int outerQueryLimit) {
+    this.outerQueryLimit = outerQueryLimit;
+  }
+
   public boolean hasJoin() {
     return (noOfJoins > 0);
   }
@@ -95,6 +171,14 @@ public class QueryProperties {
 
   public void setHasOrderBy(boolean hasOrderBy) {
     this.hasOrderBy = hasOrderBy;
+  }
+
+  public boolean hasOuterOrderBy() {
+    return hasOuterOrderBy;
+  }
+
+  public void setHasOuterOrderBy(boolean hasOuterOrderBy) {
+    this.hasOuterOrderBy = hasOuterOrderBy;
   }
 
   public boolean hasSortBy() {
@@ -186,9 +270,19 @@ public class QueryProperties {
   }
 
   public void clear() {
+    query = false;
+    analyzeCommand = false;
+    partialScanAnalyzeCommand = false;
+    noScanAnalyzeCommand = false;
+    analyzeRewrite = false;
+    ctas = false;
+    insertToTable = false;
+    outerQueryLimit = -1;
+
     hasJoin = false;
     hasGroupBy = false;
     hasOrderBy = false;
+    hasOuterOrderBy = false;
     hasSortBy = false;
     hasJoinFollowedByGroupBy = false;
     hasPTF = false;
@@ -204,8 +298,9 @@ public class QueryProperties {
 
     noOfJoins = 0;
     noOfOuterJoins = 0;
-    
+
     multiDestQuery = false;
     filterWithSubQuery = false;
   }
+
 }

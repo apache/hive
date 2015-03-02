@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -86,13 +87,13 @@ public abstract class TaskCompiler {
 
     Context ctx = pCtx.getContext();
     GlobalLimitCtx globalLimitCtx = pCtx.getGlobalLimitCtx();
-    QB qb = pCtx.getQB();
     List<Task<MoveWork>> mvTask = new ArrayList<Task<MoveWork>>();
 
     List<LoadTableDesc> loadTableWork = pCtx.getLoadTableWork();
     List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
 
-    boolean isCStats = qb.isAnalyzeRewrite();
+    boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
+    int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
     if (pCtx.getFetchTask() != null) {
       return;
@@ -105,7 +106,7 @@ public abstract class TaskCompiler {
      * If the select is from analyze table column rewrite, don't create a fetch task. Instead create
      * a column stats task later.
      */
-    if (pCtx.getQB().getIsQuery() && !isCStats) {
+    if (pCtx.getQueryProperties().isQuery() && !isCStats) {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1)) {
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
       }
@@ -115,14 +116,13 @@ public abstract class TaskCompiler {
       String cols = loadFileDesc.getColumns();
       String colTypes = loadFileDesc.getColumnTypes();
 
-      TableDesc resultTab = pCtx.getFetchTabledesc();
+      TableDesc resultTab = pCtx.getFetchTableDesc();
       if (resultTab == null) {
         String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
         resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
       }
 
-      FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(),
-                                      resultTab, qb.getParseInfo().getOuterQueryLimit());
+      FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit);
       fetch.setSource(pCtx.getFetchSource());
       fetch.setSink(pCtx.getFetchSink());
 
@@ -138,7 +138,7 @@ public abstract class TaskCompiler {
         globalLimitCtx.disableOpt();
 
       }
-      if (qb.getParseInfo().getOuterQueryLimit() == 0) {
+      if (outerQueryLimit == 0) {
         // Believe it or not, some tools do generate queries with limit 0 and than expect
         // query to run quickly. Lets meet their requirement.
         LOG.info("Limit 0. No query execution needed.");
@@ -166,17 +166,18 @@ public abstract class TaskCompiler {
 
       boolean oneLoadFile = true;
       for (LoadFileDesc lfd : loadFileWork) {
-        if (qb.isCTAS()) {
+        if (pCtx.getQueryProperties().isCTAS()) {
           assert (oneLoadFile); // should not have more than 1 load file for
           // CTAS
           // make the movetask's destination directory the table's destination.
           Path location;
-          String loc = qb.getTableDesc().getLocation();
+          String loc = pCtx.getCreateTable().getLocation();
           if (loc == null) {
             // get the table's default location
             Path targetPath;
             try {
-              String[] names = Utilities.getDbTableName(qb.getTableDesc().getTableName());
+              String[] names = Utilities.getDbTableName(
+                      pCtx.getCreateTable().getTableName());
               if (!db.databaseExists(names[0])) {
                 throw new SemanticException("ERROR: The database " + names[0]
                     + " does not exist.");
@@ -208,7 +209,8 @@ public abstract class TaskCompiler {
      * a column stats task instead of a fetch task to persist stats to the metastore.
      */
     if (isCStats) {
-      genColumnStatsTask(qb, loadTableWork, loadFileWork, rootTasks);
+      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadTableWork, loadFileWork,
+            rootTasks, outerQueryLimit);
     }
 
     // For each task, set the key descriptor for the reducer
@@ -226,9 +228,9 @@ public abstract class TaskCompiler {
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
 
-    if (qb.isCTAS()) {
+    if (pCtx.getQueryProperties().isCTAS()) {
       // generate a DDL task and make it a dependent task of the leaf
-      CreateTableDesc crtTblDesc = qb.getTableDesc();
+      CreateTableDesc crtTblDesc = pCtx.getCreateTable();
 
       crtTblDesc.validate(conf);
 
@@ -305,16 +307,15 @@ public abstract class TaskCompiler {
    * @param qb
    */
   @SuppressWarnings("unchecked")
-  protected void genColumnStatsTask(QB qb, List<LoadTableDesc> loadTableWork,
-      List<LoadFileDesc> loadFileWork, List<Task<? extends Serializable>> rootTasks) {
-    QBParseInfo qbParseInfo = qb.getParseInfo();
+  protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite, List<LoadTableDesc> loadTableWork,
+      List<LoadFileDesc> loadFileWork, List<Task<? extends Serializable>> rootTasks, int outerQueryLimit) {
     ColumnStatsTask cStatsTask = null;
     ColumnStatsWork cStatsWork = null;
     FetchWork fetch = null;
-    String tableName = qbParseInfo.getTableName();
-    List<String> colName = qbParseInfo.getColName();
-    List<String> colType = qbParseInfo.getColType();
-    boolean isTblLevel = qbParseInfo.isTblLvl();
+    String tableName = analyzeRewrite.getTableName();
+    List<String> colName = analyzeRewrite.getColName();
+    List<String> colType = analyzeRewrite.getColType();
+    boolean isTblLevel = analyzeRewrite.isTblLvl();
 
     String cols = loadFileWork.get(0).getColumns();
     String colTypes = loadFileWork.get(0).getColumnTypes();
@@ -322,8 +323,7 @@ public abstract class TaskCompiler {
     String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
     TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
 
-    fetch = new FetchWork(loadFileWork.get(0).getSourcePath(),
-        resultTab, qb.getParseInfo().getOuterQueryLimit());
+    fetch = new FetchWork(loadFileWork.get(0).getSourcePath(), resultTab, outerQueryLimit);
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
         colName, colType, isTblLevel);
@@ -390,7 +390,6 @@ public abstract class TaskCompiler {
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
     ParseContext clone = new ParseContext(conf,
-        pCtx.getQB(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
@@ -400,7 +399,7 @@ public abstract class TaskCompiler {
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
-        pCtx.getQueryProperties());
+        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getQueryProperties());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());

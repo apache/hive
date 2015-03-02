@@ -316,6 +316,32 @@ public class SubQueryUtils {
     }
     return null;
   }
+
+  static ASTNode setQualifiedColumnReferences(ASTNode ast, String tableAlias) {
+    int type = ast.getType();
+    if (type == HiveParser.DOT) {
+      return ast;
+    }
+    if (type == HiveParser.TOK_TABLE_OR_COL) {
+      if (tableAlias == null) {
+        return null;
+      }
+      String colName = SemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText());
+      return SubQueryUtils.createColRefAST(tableAlias, colName);
+    }
+
+    for (int i = 0; i < ast.getChildCount(); i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      ASTNode c = setQualifiedColumnReferences(child, tableAlias);
+      if (c == null) {
+        return null;
+      }
+      if (c != child) {
+        ast.setChild(i, c);
+      }
+    }
+    return ast;
+  }
   
   static ASTNode subQueryWhere(ASTNode insertClause) {
     if (insertClause.getChildCount() > 2 &&
@@ -335,7 +361,7 @@ public class SubQueryUtils {
       RowResolver sqRR) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
     node.addChild(outerQueryExpr);
-    node.addChild(buildSQJoinExpr(sqAlias, sqRR, false));
+    node.addChild(buildSQJoinExpr(sqAlias, sqRR));
     return node;
   }
 
@@ -345,18 +371,16 @@ public class SubQueryUtils {
    * this will build (. (TOK_TABLE_OR_COL Identifier[SQ_1]) Identifier[B])
    * where 'SQ_1' is the alias generated for the SubQuery.
    */
-  static ASTNode buildSQJoinExpr(String sqAlias, RowResolver sqRR,
-      boolean useInternalName) {
+  static ASTNode buildSQJoinExpr(String sqAlias, RowResolver sqRR) {
 
     List<ColumnInfo> signature = sqRR.getRowSchema().getSignature();
     ColumnInfo joinColumn = signature.get(0);
     String[] joinColName = sqRR.reverseLookup(joinColumn.getInternalName());
-    return createColRefAST(sqAlias, useInternalName ?
-        joinColumn.getInternalName() : joinColName[1]);
+    return createColRefAST(sqAlias, joinColName[1]);
   }
 
   static ASTNode buildOuterJoinPostCond(String sqAlias, RowResolver sqRR) {
-    return isNull(buildSQJoinExpr(sqAlias, sqRR, false));
+    return isNull(buildSQJoinExpr(sqAlias, sqRR));
   }
 
   @SuppressWarnings("rawtypes")

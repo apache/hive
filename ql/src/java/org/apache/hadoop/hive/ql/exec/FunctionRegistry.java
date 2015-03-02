@@ -180,7 +180,8 @@ public final class FunctionRegistry {
     system.registerUDF("ascii", UDFAscii.class, false);
     system.registerGenericUDF("lpad", GenericUDFLpad.class);
     system.registerGenericUDF("rpad", GenericUDFRpad.class);
-    system.registerGenericUDF("levenshtein", GenericUDFLevenstein.class);
+    system.registerGenericUDF("levenshtein", GenericUDFLevenshtein.class);
+    system.registerGenericUDF("soundex", GenericUDFSoundex.class);
 
     system.registerGenericUDF("size", GenericUDFSize.class);
 

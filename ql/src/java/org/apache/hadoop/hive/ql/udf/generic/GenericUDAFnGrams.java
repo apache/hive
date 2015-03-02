@@ -231,6 +231,13 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
       NGramAggBuf myagg = (NGramAggBuf) agg;
       List<Text> partialNGrams = (List<Text>) loi.getList(partial);
       int n = Integer.parseInt(partialNGrams.get(partialNGrams.size()-1).toString());
+
+      // A value of 0 for n indicates that the mapper processed data that does not meet
+      // filter criteria, so merge() should be NO-OP.
+      if (n == 0) {
+        return;
+      }
+
       if(myagg.n > 0 && myagg.n != n) {
         throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'"
             + ", which usually is caused by a non-constant expression. Found '"+n+"' and '"
