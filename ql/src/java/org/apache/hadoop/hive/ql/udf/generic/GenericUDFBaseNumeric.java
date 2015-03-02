@@ -59,9 +59,7 @@ import org.apache.hive.common.HiveCompat.CompatLevel;
  * GenericUDF Base Class for operations.
  */
 @Description(name = "op", value = "a op b - Returns the result of operation")
-public abstract class GenericUDFBaseNumeric extends GenericUDF {
-  protected String opName;
-  protected String opDisplayName;
+public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
 
   protected transient PrimitiveObjectInspector leftOI;
   protected transient PrimitiveObjectInspector rightOI;
@@ -82,7 +80,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
   protected boolean ansiSqlArithmetic = false;
 
   public GenericUDFBaseNumeric() {
-    opName = getClass().getSimpleName();
   }
 
   @Override
@@ -291,12 +288,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
   protected abstract DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2);
 
-  @Override
-  public String getDisplayString(String[] children) {
-    assert (children.length == 2) : opDisplayName + " with " + children.length + " children";
-    return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
-  }
-
   public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
     super.copyToNewInstance(newInstance);
     GenericUDFBaseNumeric other = (GenericUDFBaseNumeric) newInstance;
@@ -318,18 +309,5 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
   public void setAnsiSqlArithmetic(boolean ansiSqlArithmetic) {
     this.ansiSqlArithmetic = ansiSqlArithmetic;
-  }
-
-  public PrimitiveTypeInfo deriveMinArgumentCast(
-      ExprNodeDesc childExpr, TypeInfo targetType) {
-    assert targetType instanceof PrimitiveTypeInfo : "Not a primitive type" + targetType;
-    PrimitiveTypeInfo pti = (PrimitiveTypeInfo)targetType;
-    // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
-    // We also don't do anything for non-primitive children (maybe we should assert).
-    if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
-    PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
-    // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
-    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
   }
 }
