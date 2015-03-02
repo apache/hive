@@ -57,8 +57,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer _edp;
   private final OrcMetadataCache _metadataCache;
   private boolean _skipCorrupt;
-  private int _previousStripeIndex;
- 
+
   public OrcColumnVectorProducer(ExecutorService executor, OrcEncodedDataProducer edp,
       Configuration conf) {
     super(executor);
@@ -69,7 +68,6 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     this._edp = edp;
     this._metadataCache = OrcMetadataCache.getInstance();
     this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
-    this._previousStripeIndex = -1;
   }
 
   @Override
@@ -84,10 +82,10 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     OrcEncodedDataConsumer oedc = (OrcEncodedDataConsumer)context;
     String fileName = batch.batchKey.file;
     int currentStripeIndex = batch.batchKey.stripeIx;
-    if (_previousStripeIndex == -1) {
-      _previousStripeIndex = currentStripeIndex;
+    if (oedc.getPreviousStripeIndex() == -1) {
+      oedc.setPreviousStripeIndex(currentStripeIndex);
     }
-    boolean sameStripe = currentStripeIndex == _previousStripeIndex;
+    boolean sameStripe = currentStripeIndex == oedc.getPreviousStripeIndex();
 
     // OrcEncodedDataProducer should have just loaded cache entries from this file.
     // The default LRU algorithm shouldn't have dropped the entries. To make it
@@ -119,7 +117,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
         repositionInStreams(oedc.getColumnReaders(), batch, sameStripe, numCols, fileMetadata,
             stripeMetadata);
       }
-      _previousStripeIndex = currentStripeIndex;
+      oedc.setPreviousStripeIndex(currentStripeIndex);
 
       for (int i = 0; i < maxBatchesRG; i++) {
         ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
