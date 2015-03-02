@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -1920,8 +1921,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, boolean deleteData) throws HiveException {
+    return dropPartition(db_name, tbl_name, part_vals,
+                         PartitionDropOptions.instance().deleteData(deleteData));
+  }
+
+  public boolean dropPartition(String dbName, String tableName, List<String> partVals, PartitionDropOptions options)
+      throws HiveException {
     try {
-      return getMSC().dropPartition(db_name, tbl_name, part_vals, deleteData);
+      return getMSC().dropPartition(dbName, tableName, partVals, options);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
@@ -1939,7 +1946,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tblName,
       List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws HiveException {
-    //TODO: add support for ifPurge
+    return dropPartitions(dbName, tblName, partSpecs,
+                          PartitionDropOptions.instance()
+                                              .deleteData(deleteData)
+                                              .ignoreProtection(ignoreProtection)
+                                              .ifExists(ifExists));
+  }
+
+  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+                                        PartitionDropOptions dropOptions) throws HiveException {
+    String[] names = Utilities.getDbTableName(tblName);
+    return dropPartitions(names[0], names[1], partSpecs, dropOptions);
+  }
+
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
       List<ObjectPair<Integer, byte[]>> partExprs =
@@ -1949,7 +1970,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             Utilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
-          dbName, tblName, partExprs, deleteData, ignoreProtection, ifExists);
+          dbName, tblName, partExprs, dropOptions);
       return convertFromMetastore(tbl, tParts, null);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
