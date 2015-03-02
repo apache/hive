@@ -250,6 +250,55 @@ public class TestHBaseStore {
     Assert.assertEquals(tableName, p.getTableName());
     Assert.assertEquals(1, p.getValuesSize());
     Assert.assertEquals("fred", p.getValues().get(0));
+
+    Assert.assertTrue(store.doesPartitionExist(dbName, tableName, vals));
+    Assert.assertFalse(store.doesPartitionExist(dbName, tableName, Arrays.asList("bob")));
+  }
+
+  @Test
+  public void alterPartition() throws Exception {
+    String dbName = "default";
+    String tableName = "alterparttable";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("pc", "string", ""));
+    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    List<String> vals = Arrays.asList("fred");
+    StorageDescriptor psd = new StorageDescriptor(sd);
+    psd.setLocation("file:/tmp/pc=fred");
+    Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
+        emptyParameters);
+    store.addPartition(part);
+
+    part.setLastAccessTime(startTime + 10);
+    store.alterPartition(dbName, tableName, vals, part);
+
+    Partition p = store.getPartition(dbName, tableName, vals);
+    Assert.assertEquals(1, p.getSd().getColsSize());
+    Assert.assertEquals("col1", p.getSd().getCols().get(0).getName());
+    Assert.assertEquals("int", p.getSd().getCols().get(0).getType());
+    Assert.assertEquals("nocomment", p.getSd().getCols().get(0).getComment());
+    Assert.assertEquals("serde", p.getSd().getSerdeInfo().getName());
+    Assert.assertEquals("seriallib", p.getSd().getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("file:/tmp/pc=fred", p.getSd().getLocation());
+    Assert.assertEquals("input", p.getSd().getInputFormat());
+    Assert.assertEquals("output", p.getSd().getOutputFormat());
+    Assert.assertEquals(dbName, p.getDbName());
+    Assert.assertEquals(tableName, p.getTableName());
+    Assert.assertEquals(1, p.getValuesSize());
+    Assert.assertEquals("fred", p.getValues().get(0));
+    Assert.assertEquals(startTime + 10, p.getLastAccessTime());
+
+    Assert.assertTrue(store.doesPartitionExist(dbName, tableName, vals));
+    Assert.assertFalse(store.doesPartitionExist(dbName, tableName, Arrays.asList("bob")));
   }
 
   @Test

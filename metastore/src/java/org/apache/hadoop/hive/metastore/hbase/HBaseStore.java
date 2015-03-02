@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -212,7 +213,7 @@ public class HBaseStore implements RawStore {
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
-      throw new MetaException("Unable to drop table " + tableName(dbName, tableName));
+      throw new MetaException("Unable to drop table " + tableNameForErrorMsg(dbName, tableName));
     }
   }
 
@@ -221,7 +222,7 @@ public class HBaseStore implements RawStore {
     try {
       Table table = getHBase().getTable(dbName, tableName);
       if (table == null) {
-        LOG.debug("Unable to find table " + tableName(dbName, tableName));
+        LOG.debug("Unable to find table " + tableNameForErrorMsg(dbName, tableName));
       }
       return table;
     } catch (IOException e) {
@@ -236,22 +237,18 @@ public class HBaseStore implements RawStore {
       getHBase().putPartition(part);
       return true;
     } catch (IOException e) {
-      // TODO NOt sure what i should throw here
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
   }
 
   @Override
-  public boolean addPartitions(String dbName, String tblName, List<Partition> parts) throws
-      InvalidObjectException, MetaException {
+  public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
     try {
-      for (Partition part : parts) {
-        getHBase().putPartition(part);
-      }
+      getHBase().putPartitions(parts);
       return true;
     } catch (IOException e) {
-      // TODO NOt sure what i should throw here
       LOG.error("Unable to add partitions", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
@@ -270,7 +267,7 @@ public class HBaseStore implements RawStore {
       Partition part = getHBase().getPartition(dbName, tableName, part_vals);
       if (part == null) {
         throw new NoSuchObjectException("Unable to find partition " +
-            partName(dbName, tableName, part_vals));
+            partNameForErrorMsg(dbName, tableName, part_vals));
       }
       return part;
     } catch (IOException e) {
@@ -282,7 +279,12 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean doesPartitionExist(String dbName, String tableName, List<String> part_vals) throws
       MetaException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
+    try {
+      return getHBase().getPartition(dbName, tableName, part_vals) != null;
+    } catch (IOException e) {
+      LOG.error("Unable to get partition", e);
+      throw new MetaException("Error reading partition " + e.getMessage());
+    }
   }
 
   @Override
@@ -293,7 +295,8 @@ public class HBaseStore implements RawStore {
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
-      throw new MetaException("Unable to drop partition " + partName(dbName, tableName, part_vals));
+      throw new MetaException("Unable to drop partition " + partNameForErrorMsg(dbName, tableName,
+          part_vals));
     }
   }
 
@@ -315,8 +318,8 @@ public class HBaseStore implements RawStore {
     try {
       getHBase().putTable(newTable);
     } catch (IOException e) {
-      LOG.error("Unable to alter table " + tableName(dbname, name), e);
-      throw new MetaException("Unable to alter table " + tableName(dbname, name));
+      LOG.error("Unable to alter table " + tableNameForErrorMsg(dbname, name), e);
+      throw new MetaException("Unable to alter table " + tableNameForErrorMsg(dbname, name));
     }
   }
 
@@ -352,6 +355,7 @@ public class HBaseStore implements RawStore {
   @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short max_tables) throws
       MetaException, UnknownDBException {
+    // TODO needs to wait until we support pushing filters into HBase.
     throw new UnsupportedOperationException();
   }
 
@@ -364,7 +368,7 @@ public class HBaseStore implements RawStore {
       List<String> names = new ArrayList<String>(parts.size());
       Table table = getHBase().getTable(db_name, tbl_name);
       for (Partition p : parts) {
-        names.add(partName(table, p));
+        names.add(buildExternalPartName(table, p));
       }
       return names;
     } catch (IOException e) {
@@ -376,20 +380,31 @@ public class HBaseStore implements RawStore {
   @Override
   public List<String> listPartitionNamesByFilter(String db_name, String tbl_name, String filter,
                                                  short max_parts) throws MetaException {
+    // TODO needs to wait until we support pushing filters into HBase.
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void alterPartition(String db_name, String tbl_name, List<String> part_vals,
                              Partition new_part) throws InvalidObjectException, MetaException {
-
+    try {
+      getHBase().putPartition(new_part);
+    } catch (IOException e) {
+      LOG.error("Unable to add partition", e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public void alterPartitions(String db_name, String tbl_name, List<List<String>> part_vals_list,
                               List<Partition> new_parts) throws InvalidObjectException,
       MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      getHBase().putPartitions(new_parts);
+    } catch (IOException e) {
+      LOG.error("Unable to add partition", e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
@@ -432,6 +447,7 @@ public class HBaseStore implements RawStore {
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
                                                short maxParts) throws MetaException,
       NoSuchObjectException {
+    // TODO - Needs to wait for ability to push filters into HBase
     throw new UnsupportedOperationException();
   }
 
@@ -644,36 +660,46 @@ public class HBaseStore implements RawStore {
 
   @Override
   public Partition getPartitionWithAuth(String dbName, String tblName, List<String> partVals,
-                                        String user_name, List<String> group_names) throws
-      MetaException, NoSuchObjectException, InvalidObjectException {
-    Partition p = getPartition(dbName, tblName, partVals);
-    // TODO check that user is authorized to see these partitions
-    return p;
+                                        String user_name, List<String> group_names)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    // We don't do authorization checks for partitions.
+    return getPartition(dbName, tblName, partVals);
   }
 
   @Override
   public List<Partition> getPartitionsWithAuth(String dbName, String tblName, short maxParts,
-                                               String userName, List<String> groupNames) throws
-      MetaException, NoSuchObjectException, InvalidObjectException {
-    List<Partition> parts = getPartitions(dbName, tblName, maxParts);
-    // TODO check that user is authorized;
-    return parts;
+                                               String userName, List<String> groupNames)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    // We don't do authorization checks for partitions.
+    return getPartitions(dbName, tblName, maxParts);
   }
 
   @Override
   public List<String> listPartitionNamesPs(String db_name, String tbl_name, List<String> part_vals,
-                                           short max_parts) throws MetaException,
-      NoSuchObjectException {
-    throw new UnsupportedOperationException();
+                                           short max_parts)
+      throws MetaException, NoSuchObjectException {
+    List<Partition> parts =
+        listPartitionsPsWithAuth(db_name, tbl_name, part_vals, max_parts, null, null);
+    List<String> partNames = new ArrayList<String>(parts.size());
+    for (Partition part : parts) {
+      partNames.add(buildExternalPartName(db_name, tbl_name, part.getValues()));
+    }
+    return partNames;
   }
 
 
   @Override
   public List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
                                                   List<String> part_vals, short max_parts,
-                                                  String userName, List<String> groupNames) throws
-      MetaException, InvalidObjectException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
+                                                  String userName, List<String> groupNames)
+      throws MetaException, NoSuchObjectException {
+    // We don't handle auth info with partitions
+    try {
+      return getHBase().scanPartitions(db_name, tbl_name, part_vals, max_parts);
+    } catch (IOException e) {
+      LOG.error("Unable to list partition names", e);
+      throw new MetaException("Failed to list part names, " + e.getMessage());
+    }
   }
 
   @Override
@@ -964,31 +990,37 @@ public class HBaseStore implements RawStore {
     return hbase;
   }
 
-  private String tableName(String dbName, String tableName) {
+  // This is for building error messages only.  It does not look up anything in the metastore.
+  private String tableNameForErrorMsg(String dbName, String tableName) {
     return dbName + "." + tableName;
   }
 
-  private String partName(String dbName, String tableName, List<String> partVals) {
-    return tableName(dbName, tableName) + StringUtils.join(partVals, ':');
+  // This is for building error messages only.  It does not look up anything in the metastore as
+  // they may just throw another error.
+  private String partNameForErrorMsg(String dbName, String tableName, List<String> partVals) {
+    return tableNameForErrorMsg(dbName, tableName) + "." + StringUtils.join(partVals, ':');
   }
 
-  private String partName(Table table, Partition part) {
-    return partName(table, part.getValues());
+  private String buildExternalPartName(Table table, Partition part) {
+    return buildExternalPartName(table, part.getValues());
   }
 
-  static String partName(Table table, List<String> partVals) {
-    List<FieldSchema> partCols = table.getPartitionKeys();
-    StringBuilder builder = new StringBuilder();
-    if (partCols.size() != partVals.size()) {
-      throw new RuntimeException("Woh bad, different number of partition cols and vals!");
-    }
-    for (int i = 0; i < partCols.size(); i++) {
-      if (i != 0) builder.append('/');
-      builder.append(partCols.get(i).getName());
-      builder.append('=');
-      builder.append(partVals.get(i));
-    }
-    return builder.toString();
+  private String buildExternalPartName(String dbName, String tableName, List<String> partVals)
+      throws MetaException {
+    return buildExternalPartName(getTable(dbName, tableName), partVals);
+  }
+
+  /**
+   * Build a partition name for external use.  Necessary since HBase itself doesn't store
+   * partition names.
+   * @param table  table object
+   * @param partVals partition values.
+   * @return
+   */
+  static String buildExternalPartName(Table table, List<String> partVals) {
+    List<String> partCols = new ArrayList<String>();
+    for (FieldSchema pc : table.getPartitionKeys()) partCols.add(pc.getName());
+    return FileUtils.makePartName(partCols, partVals);
   }
 
   private List<String> partNameToVals(String name) {

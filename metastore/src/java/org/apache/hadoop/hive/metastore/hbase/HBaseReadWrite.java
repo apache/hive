@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -80,7 +82,7 @@ class HBaseReadWrite {
   @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
   private final static byte[] CATALOG_COL = "cat".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
-  private final static int tablesToCache = 10;
+  private final static int TABLES_TO_CACHE = 10;
 
   // TODO Add privileges as a second column in the CATALOG_CF
 
@@ -190,7 +192,7 @@ class HBaseReadWrite {
       partCache = new BogusPartitionCache();
       statsCache = StatsCache.getBogusStatsCache();
     } else {
-      tableCache = new ObjectCache<ObjectPair<String, String>, Table>(tablesToCache, tableHits,
+      tableCache = new ObjectCache<ObjectPair<String, String>, Table>(TABLES_TO_CACHE, tableHits,
           tableMisses, tableOverflows);
       sdCache = new ObjectCache<ByteArrayWrapper, StorageDescriptor>(sdsCacheSize, sdHits,
           sdMisses, sdOverflows);
@@ -334,6 +336,26 @@ class HBaseReadWrite {
   }
 
   /**
+   * Add a group of partitions
+   * @param partitions list of partitions to add
+   * @throws IOException
+   */
+  void putPartitions(List<Partition> partitions) throws IOException {
+    List<Put> puts = new ArrayList<Put>(partitions.size());
+    for (Partition partition : partitions) {
+      PartitionWritable part = new PartitionWritable(partition);
+      byte[] key = buildPartitionKey(part);
+      byte[] serialized = HBaseUtils.serialize(part);
+      Put p = new Put(key);
+      p.add(CATALOG_CF, CATALOG_COL, serialized);
+      puts.add(p);
+      partCache.put(partition.getDbName(), partition.getTableName(), partition);
+    }
+    getHTable(PART_TABLE).put(puts);
+    flush();
+  }
+
+  /**
    * Find all the partitions in a table.
    * @param dbName name of the database the table is in
    * @param tableName table name
@@ -360,45 +382,82 @@ class HBaseReadWrite {
    * Scan partitions based on partial key information.
    * @param dbName name of database, required
    * @param tableName name of table, required
-   * @param partVals partial specification of values.  Any values that are unknown can be left
-   *                 null in the list.  For example, if a table had two partition columns date
+   * @param partVals partial specification of values.  Any values that are unknown can instead be
+   *                 a '*'.  For example, if a table had two partition columns date
    *                 and region (in that order), and partitions ('today', 'na'), ('today', 'eu'),
-   *                 ('tomorrow', 'na'), ('tomorrow', 'eu') then passing ['today'] would return
-   *                 ('today', 'na') and ('today', 'eu') while passing [null, 'eu'] would return
-   *                 ('today', 'eu') and ('tomorrow', 'eu')
+   *                 ('tomorrow', 'na'), ('tomorrow', 'eu') then passing ['today', '*'] would return
+   *                 ('today', 'na') and ('today', 'eu') while passing ['*', 'eu'] would return
+   *                 ('today', 'eu') and ('tomorrow', 'eu').  Also the list can terminate early,
+   *                 which will be the equivalent of adding '*' for all non-included values.
+   *                 I.e. ['today'] is the same as ['today', '*'].
    * @param maxPartitions Maximum number of entries to return.
    * @return list of partitions that match the specified information
    * @throws IOException
+   * @throws org.apache.hadoop.hive.metastore.api.NoSuchObjectException if the table containing
+   * the partitions can't be found.
    */
   List<Partition> scanPartitions(String dbName, String tableName, List<String> partVals,
-                                 int maxPartitions) throws IOException {
-    byte[] keyPrefix;
-    if (partVals == null || partVals.size() == 0) {
-      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-      return scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
-    }
-    int firstNull = 0;
-    for (; firstNull < partVals.size(); firstNull++) {
-      if (partVals.get(firstNull) == null) break;
-    }
-    if (firstNull == partVals.size()) {
-      keyPrefix = buildPartitionKey(dbName, tableName, partVals);
-      return scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
-    }
-    keyPrefix = buildPartitionKey(dbName, tableName, partVals.subList(0, firstNull));
-    StringBuilder regex = new StringBuilder();
-    regex.append(dbName);
-    regex.append(':');
-    regex.append(tableName);
-    for (String val : partVals) {
-      regex.append(HBaseUtils.KEY_SEPARATOR);
-      if (val == null) regex.append("[^" + HBaseUtils.KEY_SEPARATOR + "]+"); // Will this do
-      // what I want?
-      else regex.append(val);
+                                 int maxPartitions) throws IOException, NoSuchObjectException {
+    // First, build as much of the key as we can so that we make the scan as tight as possible.
+    List<String> keyElements = new ArrayList<String>();
+    keyElements.add(dbName);
+    keyElements.add(tableName);
+
+    int firstStar = -1;
+    for (int i = 0; i < partVals.size(); i++) {
+      if ("*".equals(partVals.get(i))) {
+        firstStar = i;
+        break;
+      } else {
+        keyElements.add(partVals.get(i));
+      }
     }
 
-    Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL,
-        new RegexStringComparator(regex.toString()));
+    byte[] keyPrefix;
+    // We need to fetch the table to determine if the user fully specified the partitions or
+    // not, as it affects how we build the key.
+    Table table = getTable(dbName, tableName);
+    if (table == null) {
+      throw new NoSuchObjectException("Unable to find table " + dbName + "." + tableName);
+    }
+    if (partVals.size() == table.getPartitionKeys().size()) {
+      keyPrefix = HBaseUtils.buildKey(keyElements.toArray(new String[keyElements.size()]));
+    } else {
+      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(keyElements.toArray(
+          new String[keyElements.size()]));
+    }
+
+    // Now, build a filter out of the remaining keys
+    String regex = null;
+    if (!(partVals.size() == table.getPartitionKeys().size() && firstStar == -1)) {
+      StringBuilder buf = new StringBuilder(".*");
+      for (int i = Math.max(0, firstStar);
+           i < table.getPartitionKeys().size() && i < partVals.size(); i++) {
+        buf.append(HBaseUtils.KEY_SEPARATOR);
+        if ("*".equals(partVals.get(i))) {
+          buf.append("[^");
+          buf.append(HBaseUtils.KEY_SEPARATOR);
+          buf.append("]+");
+        } else {
+          buf.append(partVals.get(i));
+        }
+      }
+      if (partVals.size() < table.getPartitionKeys().size()) {
+        buf.append(HBaseUtils.KEY_SEPARATOR);
+        buf.append(".*");
+      }
+      regex = buf.toString();
+    }
+
+    Filter filter = null;
+    if (regex != null) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Scanning partitions with prefix <" + new String(keyPrefix) + "> and filter <" +
+          regex + ">");
+    }
 
     List<Partition> parts =
         scanPartitionsWithFilter(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions, filter);

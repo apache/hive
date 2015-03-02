@@ -354,6 +354,84 @@ public class TestHBaseStoreIntegration {
     Assert.assertEquals("fred", p.getValues().get(0));
   }
 
+  @Test
+  public void addPartitions() throws Exception {
+    String dbName = "default";
+    String tableName = "addParts";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("pc", "string", ""));
+    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    List<String> partVals = Arrays.asList("alan", "bob", "carl", "doug", "ethan");
+    List<Partition> partitions = new ArrayList<Partition>();
+    for (String val : partVals) {
+      List<String> vals = new ArrayList<String>();
+      vals.add(val);
+      StorageDescriptor psd = new StorageDescriptor(sd);
+      psd.setLocation("file:/tmp/pc=" + val);
+      Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
+          emptyParameters);
+      partitions.add(part);
+    }
+    store.addPartitions(dbName, tableName, partitions);
+
+    List<String> partNames = store.listPartitionNames(dbName, tableName, (short) -1);
+    Assert.assertEquals(5, partNames.size());
+    String[] names = partNames.toArray(new String[partNames.size()]);
+    Arrays.sort(names);
+    String[] canonicalNames = partVals.toArray(new String[partVals.size()]);
+    for (int i = 0; i < canonicalNames.length; i++) canonicalNames[i] = "pc=" + canonicalNames[i];
+    Assert.assertArrayEquals(canonicalNames, names);
+  }
+
+  @Test
+  public void alterPartitions() throws Exception {
+    String dbName = "default";
+    String tableName = "alterParts";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("pc", "string", ""));
+    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    List<String> partVals = Arrays.asList("alan", "bob", "carl", "doug", "ethan");
+    List<Partition> partitions = new ArrayList<Partition>();
+    List<List<String>> allVals = new ArrayList<List<String>>();
+    for (String val : partVals) {
+      List<String> vals = new ArrayList<String>();
+      allVals.add(vals);
+      vals.add(val);
+      StorageDescriptor psd = new StorageDescriptor(sd);
+      psd.setLocation("file:/tmp/pc=" + val);
+      Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
+          emptyParameters);
+      partitions.add(part);
+    }
+    store.addPartitions(dbName, tableName, partitions);
+
+    for (Partition p : partitions) p.setLastAccessTime(startTime + 10);
+    store.alterPartitions(dbName, tableName, allVals, partitions);
+
+    partitions = store.getPartitions(dbName, tableName, -1);
+    for (Partition part : partitions) {
+      Assert.assertEquals(startTime + 10, part.getLastAccessTime());
+    }
+  }
+
   // TODO - Fix this and the next test.  They depend on test execution order and are bogus.
   @Test
   public void createManyPartitions() throws Exception {
@@ -486,6 +564,70 @@ public class TestHBaseStoreIntegration {
     store.dropPartitions(dbName, tableName, names);
     List<Partition> afterDropParts = store.getPartitions(dbName, tableName, -1);
     Assert.assertEquals(0, afterDropParts.size());
+  }
+
+  @Test
+  public void listPartitionsWithPs() throws Exception {
+    String dbName = "default";
+    String tableName = "listPartsPs";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("ds", "string", ""));
+    partCols.add(new FieldSchema("region", "string", ""));
+    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    String[][] partVals = new String[][]{{"today", "north america"}, {"today", "europe"},
+        {"tomorrow", "north america"}, {"tomorrow", "europe"}};
+    for (String[] pv : partVals) {
+      List<String> vals = new ArrayList<String>();
+      for (String v : pv) vals.add(v);
+      StorageDescriptor psd = new StorageDescriptor(sd);
+      psd.setLocation("file:/tmp/ds=" + pv[0] + "/region=" + pv[1]);
+      Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
+          emptyParameters);
+      store.addPartition(part);
+    }
+
+    // We only test listPartitionNamesPs since it calls listPartitionsPsWithAuth anyway.
+    // Test the case where we completely specify the partition
+    List<String> partitionNames =
+        store.listPartitionNamesPs(dbName, tableName, Arrays.asList(partVals[0]), (short) -1);
+    Assert.assertEquals(1, partitionNames.size());
+    Assert.assertEquals("ds=today/region=north america", partitionNames.get(0));
+
+    // Leave off the last value of the partition
+    partitionNames =
+        store.listPartitionNamesPs(dbName, tableName, Arrays.asList(partVals[0][0]), (short)-1);
+    Assert.assertEquals(2, partitionNames.size());
+    String[] names = partitionNames.toArray(new String[partitionNames.size()]);
+    Arrays.sort(names);
+    Assert.assertArrayEquals(new String[] {"ds=today/region=europe",
+        "ds=today/region=north america"}, names);
+
+    // Put a star in the last value of the partition
+    partitionNames =
+        store.listPartitionNamesPs(dbName, tableName, Arrays.asList("today", "*"), (short)-1);
+    Assert.assertEquals(2, partitionNames.size());
+    names = partitionNames.toArray(new String[partitionNames.size()]);
+    Arrays.sort(names);
+    Assert.assertArrayEquals(new String[] {"ds=today/region=europe",
+        "ds=today/region=north america"}, names);
+
+    // Put a star in the first value of the partition
+    partitionNames =
+        store.listPartitionNamesPs(dbName, tableName, Arrays.asList("*", "europe"), (short)-1);
+    Assert.assertEquals(2, partitionNames.size());
+    names = partitionNames.toArray(new String[partitionNames.size()]);
+    Arrays.sort(names);
+    Assert.assertArrayEquals(new String[] {"ds=today/region=europe",
+        "ds=tomorrow/region=europe"}, names);
   }
 
   @Test

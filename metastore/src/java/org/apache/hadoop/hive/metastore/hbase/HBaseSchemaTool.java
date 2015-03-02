@@ -161,7 +161,7 @@ public class HBaseSchemaTool {
         System.err.println("No such table: " + dbName + "." + tableName);
         return;
       }
-      String partName = HBaseStore.partName(table, partVals);
+      String partName = HBaseStore.buildExternalPartName(table, partVals);
       List<ColumnStatistics> stats = hrw.getPartitionStatistics(dbName, tableName,
           Arrays.asList(partName), Arrays.asList(partVals), colNames);
       if (stats == null) {
