@@ -447,7 +447,7 @@ public class TestHive extends TestCase {
     }
     catch (Exception exception) {
       fail("Unable to drop and create table " + dbName + "." + tableName
-           + " because " + StringUtils.stringifyException(exception));
+          + " because " + StringUtils.stringifyException(exception));
       throw exception;
     }
   }
@@ -519,6 +519,62 @@ public class TestHive extends TestCase {
     }
     catch (Exception e) {
       fail("Unexpected exception: " + StringUtils.stringifyException(e));
+    }
+    finally {
+      cleanUpTableQuietly(dbName, tableName);
+    }
+  }
+
+  /**
+   * Test that tables set up with auto-purge skip trash-directory when tables/partitions are dropped.
+   * @throws Throwable
+   */
+  public void testAutoPurgeTablesAndPartitions() throws Throwable {
+
+    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    String tableName = "table_for_testAutoPurgeTablesAndPartitions";
+    try {
+
+      Table table = createPartitionedTable(dbName, tableName);
+      table.getParameters().put("auto.purge", "true");
+      hm.alterTable(tableName, table);
+
+      Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
+          .put("ds", "20141216")
+          .put("hr", "12")
+          .build();
+
+      int trashSizeBeforeDrop = getTrashContents().length;
+
+      hm.createPartition(table, partitionSpec);
+
+      Partition partition = hm.getPartition(table, partitionSpec, false);
+      assertNotNull("Newly created partition shouldn't be null!", partition);
+
+      hm.dropPartition(dbName, tableName,
+          partition.getValues(),
+          PartitionDropOptions.instance()
+                              .deleteData(true)
+                              .purgeData(false)
+      );
+
+      int trashSizeAfterDrop = getTrashContents().length;
+
+      assertEquals("After dropPartition(noPurge), data should still have skipped trash.",
+                 trashSizeBeforeDrop, trashSizeAfterDrop);
+
+      // Repeat the same check for dropTable.
+
+      trashSizeBeforeDrop = trashSizeAfterDrop;
+      hm.dropTable(dbName, tableName);
+      trashSizeAfterDrop = getTrashContents().length;
+
+      assertEquals("After dropTable(noPurge), data should still have skipped trash.",
+                 trashSizeBeforeDrop, trashSizeAfterDrop);
+
+    }
+    catch(Exception e) {
+      fail("Unexpected failure: " + StringUtils.stringifyException(e));
     }
     finally {
       cleanUpTableQuietly(dbName, tableName);
