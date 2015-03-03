@@ -63,9 +63,8 @@ public class TestLowLevelCacheImpl {
     }
   }
 
-  private static class DummyCachePolicy extends LowLevelCachePolicyBase {
-    public DummyCachePolicy(long maxSize) {
-      super(maxSize);
+  private static class DummyCachePolicy implements LowLevelCachePolicy {
+    public DummyCachePolicy() {
     }
 
     public void cache(LlapCacheableBuffer buffer) {
@@ -77,8 +76,11 @@ public class TestLowLevelCacheImpl {
     public void notifyUnlock(LlapCacheableBuffer buffer) {
     }
 
-    protected long evictSomeBlocks(long memoryToReserve, EvictionListener listener) {
+    public long evictSomeBlocks(long memoryToReserve) {
       return memoryToReserve;
+    }
+
+    public void setEvictionListener(EvictionListener listener) {
     }
   }
 
@@ -86,7 +88,7 @@ public class TestLowLevelCacheImpl {
   public void testGetPut() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(10), new DummyAllocator(), -1); // no cleanup thread
+        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
     String fn1 = "file1".intern(), fn2 = "file2".intern();
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
@@ -144,7 +146,7 @@ public class TestLowLevelCacheImpl {
   public void testMultiMatch() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(10), new DummyAllocator(), -1); // no cleanup thread
+        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
     String fn = "file1".intern();
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0));
@@ -162,7 +164,7 @@ public class TestLowLevelCacheImpl {
   public void testStaleValueGet() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(10), new DummyAllocator(), -1); // no cleanup thread
+        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
     String fn1 = "file1".intern(), fn2 = "file2".intern();
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb() };
     assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
@@ -181,7 +183,7 @@ public class TestLowLevelCacheImpl {
   public void testStaleValueReplace() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(10), new DummyAllocator(), -1); // no cleanup thread
+        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
     String fn1 = "file1".intern(), fn2 = "file2".intern();
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
@@ -200,7 +202,7 @@ public class TestLowLevelCacheImpl {
   public void testMTTWithCleanup() {
     Configuration conf = createConf();
     final LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(10), new DummyAllocator(), 1);
+        conf, new DummyCachePolicy(), new DummyAllocator(), 1);
     final String fn1 = "file1".intern(), fn2 = "file2".intern();
     final int offsetsToUse = 8;
     final CountDownLatch cdlIn = new CountDownLatch(4), cdlOut = new CountDownLatch(1);

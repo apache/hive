@@ -30,12 +30,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
-public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
+public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   private final Lock lock = new ReentrantLock();
   private final LinkedList<LlapCacheableBuffer> buffers;
+  private EvictionListener evictionListener;
 
   public LowLevelFifoCachePolicy(Configuration conf) {
-    super(HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("FIFO cache policy");
     }
@@ -63,7 +63,12 @@ public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
   }
 
   @Override
-  protected long evictSomeBlocks(long memoryToReserve, EvictionListener listener) {
+  public void setEvictionListener(EvictionListener listener) {
+    this.evictionListener = listener;
+  }
+
+  @Override
+  public long evictSomeBlocks(long memoryToReserve) {
     long evicted = 0;
     lock.lock();
     try {
@@ -73,7 +78,7 @@ public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
         if (candidate.invalidate()) {
           iter.remove();
           evicted += candidate.byteBuffer.remaining();
-          listener.notifyEvicted(candidate);
+          evictionListener.notifyEvicted(candidate);
         }
       }
     } finally {

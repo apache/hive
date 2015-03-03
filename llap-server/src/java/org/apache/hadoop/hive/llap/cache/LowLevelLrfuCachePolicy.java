@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
  * that Subsumes the Least Recently Used (LRU) and Least Frequently Used (LFU) Policies".
  * Additionally, buffer locking has to be handled (locked buffer cannot be evicted).
  */
-public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
+public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private final double lambda;
   private final double f(long x) {
     return Math.pow(0.5, lambda * x);
@@ -62,9 +62,10 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
   private LlapCacheableBuffer listHead, listTail;
   /** Number of elements. */
   private int heapSize = 0;
+  private EvictionListener evictionListener;
 
   public LowLevelLrfuCachePolicy(Configuration conf) {
-    super(HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
+    long maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
     int minBufferSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
@@ -154,7 +155,12 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
   }
 
   @Override
-  protected long evictSomeBlocks(long memoryToReserve, EvictionListener listener) {
+  public void setEvictionListener(EvictionListener listener) {
+    this.evictionListener = listener;
+  }
+
+  @Override
+  public long evictSomeBlocks(long memoryToReserve) {
     long evicted = 0;
     // In normal case, we evict the items from the list.
     LlapCacheableBuffer nextCandidate, firstCandidate;
@@ -189,7 +195,7 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
       listLock.unlock();
     }
     while (firstCandidate != nextCandidate) {
-      listener.notifyEvicted(firstCandidate);
+      evictionListener.notifyEvicted(firstCandidate);
       firstCandidate = firstCandidate.prev;
     }
     if (evicted >= memoryToReserve) return evicted;
@@ -203,7 +209,7 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
       }
       if (buffer == null) return evicted;
       evicted += buffer.byteBuffer.remaining();
-      listener.notifyEvicted(buffer);
+      evictionListener.notifyEvicted(buffer);
     }
     return evicted;
   }

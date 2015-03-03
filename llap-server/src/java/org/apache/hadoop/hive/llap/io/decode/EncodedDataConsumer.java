@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.io.decode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -30,25 +31,30 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 /**
  *
  */
-public abstract class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<ColumnVectorBatch>,
-    Consumer<EncodedColumnBatch<BatchKey>> {
+public abstract class EncodedDataConsumer<BatchKey> implements
+  Consumer<EncodedColumnBatch<BatchKey>>, ReadPipeline {
   private volatile boolean isStopped = false;
   // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
   private final HashMap<BatchKey, EncodedColumnBatch<BatchKey>> pendingData = new HashMap<>();
   private ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback;
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
+  private Callable<Void> readCallable;
   private final int colCount;
-  private ColumnVectorProducer<BatchKey> cvp;
 
-  public EncodedDataConsumer(ColumnVectorProducer<BatchKey> cvp,
-      Consumer<ColumnVectorBatch> consumer, int colCount) {
+  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, int colCount) {
     this.downstreamConsumer = consumer;
     this.colCount = colCount;
-    this.cvp = cvp;
   }
 
-  public void init(ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback) {
+  public void init(ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback,
+      Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
+    this.readCallable = readCallable;
+  }
+
+  @Override
+  public Callable<Void> getReadCallable() {
+    return readCallable;
   }
 
   @Override
@@ -92,11 +98,14 @@ public abstract class EncodedDataConsumer<BatchKey> implements ConsumerFeedback<
       return;
     }
     if (0 == targetBatch.colsRemaining) {
-      cvp.decodeBatch(this, targetBatch, downstreamConsumer);
+      decodeBatch(targetBatch, downstreamConsumer);
       // Batch has been decoded; unlock the buffers in cache
       returnProcessed(targetBatch.columnData);
     }
   }
+
+  protected abstract void decodeBatch(EncodedColumnBatch<BatchKey> batch,
+      Consumer<ColumnVectorBatch> downstreamConsumer);
 
   protected void returnProcessed(EncodedColumnBatch.StreamBuffer[][] data) {
     for (EncodedColumnBatch.StreamBuffer[] sbs : data) {

@@ -22,4 +22,6 @@ public interface LowLevelCachePolicy {
   void cache(LlapCacheableBuffer buffer);
   void notifyLock(LlapCacheableBuffer buffer);
   void notifyUnlock(LlapCacheableBuffer buffer);
+  long evictSomeBlocks(long memoryToReserve);
+  void setEvictionListener(EvictionListener listener);
 }

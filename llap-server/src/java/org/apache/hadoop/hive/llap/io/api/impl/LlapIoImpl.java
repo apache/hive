@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +30,8 @@ import org.apache.hadoop.hive.llap.cache.Allocator;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
-import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicyBase;
+import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
+import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelFifoCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
@@ -39,17 +39,20 @@ import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
-import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
+import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
+
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
   public static final LogLevels LOGL = new LogLevels(LOG);
 
-  private final OrcColumnVectorProducer cvp;
-  private final OrcEncodedDataProducer edp;
+  private final ColumnVectorProducer cvp;
+  private final ListeningExecutorService executor;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
@@ -58,31 +61,39 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       LOG.info("Initializing LLAP IO" + (useLowLevelCache ? " with low level cache" : ""));
     }
     Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
-    LowLevelCacheImpl orcCache = null;
-    if (useLowLevelCache) {
-      boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
-      LowLevelCachePolicyBase cachePolicy =
-          useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
-      Allocator allocator = new BuddyAllocator(conf, cachePolicy);
-      orcCache = new LowLevelCacheImpl(conf, cachePolicy, allocator);
-    }
-    // TODO: arbitrary thread pool
-    ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    LowLevelCacheImpl orcCache = createLowLevelCache(conf, useLowLevelCache);
+    OrcMetadataCache metadataCache = OrcMetadataCache.getInstance();
+    // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
+    executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+
     // TODO: this should depends on input format and be in a map, or something.
-    this.edp = new OrcEncodedDataProducer(orcCache, cache, conf);
-    this.cvp = new OrcColumnVectorProducer(threadPool, edp, conf);
+    this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf);
     if (LOGL.isInfoEnabled()) {
       LOG.info("LLAP IO initialized");
     }
   }
 
+  private LowLevelCacheImpl createLowLevelCache(Configuration conf, boolean useLowLevelCache) {
+    if (!useLowLevelCache) return null;
+    boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
+    LowLevelCachePolicy cachePolicy =
+        useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
+    // Memory manager uses cache policy to trigger evictions.
+    LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(conf, cachePolicy);
+    // Allocator uses memory manager to request memory.
+    Allocator allocator = new BuddyAllocator(conf, memManager);
+    // Cache uses allocator to allocate and deallocate.
+    LowLevelCacheImpl orcCache = new LowLevelCacheImpl(conf, cachePolicy, allocator);
+    // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
+    cachePolicy.setEvictionListener(orcCache);
+    orcCache.init();
+    return orcCache;
+  }
+
+  @SuppressWarnings("rawtypes")
   @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat sourceInputFormat) {
-    return new LlapInputFormat(this, sourceInputFormat);
-  }
-
-  public ColumnVectorProducer<?> getCvp() {
-    return cvp;
+    return new LlapInputFormat(sourceInputFormat, cvp, executor);
   }
 }

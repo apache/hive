@@ -29,12 +29,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
 public class OrcStripeMetadata {
-  List<ColumnEncoding> encodings;
-  List<Stream> streams;
-  RecordReaderImpl.Index rowIndex;
+  private final int stripeIx;
+  private final List<ColumnEncoding> encodings;
+  private final List<Stream> streams;
+  private RecordReaderImpl.Index rowIndex;
 
-  public OrcStripeMetadata(MetadataReader mr, StripeInformation stripe,
+  public OrcStripeMetadata(int stripeIx, MetadataReader mr, StripeInformation stripe,
       boolean[] includes, boolean[] sargColumns) throws IOException {
+    this.stripeIx = stripeIx;
     StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
@@ -55,6 +57,10 @@ public class OrcStripeMetadata {
         sargColumns, rowIndex.getBloomFilterIndex());
   }
 
+  public int getStripeIx() {
+    return stripeIx;
+  }
+
   public RowIndex[] getRowIndexes() {
     return rowIndex.getRowGroupIndex();
   }
@@ -67,16 +73,8 @@ public class OrcStripeMetadata {
     return encodings;
   }
 
-  public void setEncodings(List<ColumnEncoding> encodings) {
-    this.encodings = encodings;
-  }
-
   public List<Stream> getStreams() {
     return streams;
-  }
-
-  public void setStreams(List<Stream> streams) {
-    this.streams = streams;
   }
 
 }

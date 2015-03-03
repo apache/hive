@@ -26,7 +26,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
- * ORC-specific metadata cache.
+ * TODO#: doc ORC-specific metadata cache.
  * TODO: should be merged with main cache somehow if we find this takes too much memory
  */
 public class OrcMetadataCache {

@@ -72,10 +72,11 @@ public class TestLowLevelLrfuCachePolicy {
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.0f);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lfu);
     lfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(lfu, et, buffer));
+      assertTrue(cache(mm, lfu, et, buffer));
       inserted.add(buffer);
     }
     Collections.shuffle(inserted, rdm);
@@ -87,7 +88,7 @@ public class TestLowLevelLrfuCachePolicy {
         lfu.notifyUnlock(inserted.get(i));
       }
     }
-    verifyOrder(lfu, et, inserted);
+    verifyOrder(mm, lfu, et, inserted);
   }
 
   private Configuration createConf(int min, int heapSize) {
@@ -107,10 +108,11 @@ public class TestLowLevelLrfuCachePolicy {
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lru);
     lru.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(lru, et, buffer));
+      assertTrue(cache(mm, lru, et, buffer));
       inserted.add(buffer);
     }
     Collections.shuffle(inserted, rdm);
@@ -121,7 +123,7 @@ public class TestLowLevelLrfuCachePolicy {
         lru.notifyUnlock(inserted.get(i));
       }
     }
-    verifyOrder(lru, et, inserted);
+    verifyOrder(mm, lru, et, inserted);
   }
 
   @Test
@@ -130,17 +132,19 @@ public class TestLowLevelLrfuCachePolicy {
     LOG.info("Testing deadlock resolution");
     ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
     EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(createConf(1, heapSize));
+    Configuration conf = createConf(1, heapSize);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lrfu);
     lrfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(lrfu, et, buffer));
+      assertTrue(cache(mm, lrfu, et, buffer));
       inserted.add(buffer);
     }
     // Lock the lowest priority buffer; try to evict - we'll evict some other buffer.
     LlapCacheableBuffer locked = inserted.get(0);
     lock(lrfu, locked);
-    lrfu.reserveMemory(1, false);
+    mm.reserveMemory(1, false);
     LlapCacheableBuffer evicted = et.evicted.get(0);
     assertNotNull(evicted);
     assertTrue(evicted.isInvalid());
@@ -149,9 +153,9 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
-  public boolean cache(
+  public boolean cache(LowLevelCacheMemoryManager mm,
       LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapCacheableBuffer buffer) {
-    if (!lrfu.reserveMemory(1, false)) {
+    if (!mm.reserveMemory(1, false)) {
       return false;
     }
     buffer.incRef();
@@ -185,6 +189,7 @@ public class TestLowLevelLrfuCachePolicy {
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f); // very small heap, 14 elements
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lrfu);
     lrfu.setEvictionListener(et);
     // Insert the number of elements plus 2, to trigger 2 evictions.
     int toEvict = 2;
@@ -193,7 +198,7 @@ public class TestLowLevelLrfuCachePolicy {
     Assume.assumeTrue(toEvict <= heapSize);
     for (int i = 0; i < heapSize + toEvict; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(lrfu, et, buffer));
+      assertTrue(cache(mm, lrfu, et, buffer));
       LlapCacheableBuffer evictedBuf = getOneEvictedBuffer(et);
       if (i < toEvict) {
         evicted[i] = buffer;
@@ -215,7 +220,7 @@ public class TestLowLevelLrfuCachePolicy {
     for (LlapCacheableBuffer buf : inserted) {
       lock(lrfu, buf);
     }
-    assertFalse(lrfu.reserveMemory(1, false));
+    assertFalse(mm.reserveMemory(1, false));
     if (!et.evicted.isEmpty()) {
       assertTrue("Got " + et.evicted.get(0), et.evicted.isEmpty());
     }
@@ -231,19 +236,19 @@ public class TestLowLevelLrfuCachePolicy {
         lrfu.notifyUnlock(buf);
       }
     }
-    verifyOrder(lrfu, et, inserted);
+    verifyOrder(mm, lrfu, et, inserted);
   }
 
-  private void verifyOrder(LowLevelLrfuCachePolicy lrfu,
+  private void verifyOrder(LowLevelCacheMemoryManager mm, LowLevelLrfuCachePolicy lrfu,
       EvictionTracker et, ArrayList<LlapCacheableBuffer> inserted) {
     LlapCacheableBuffer block;
     // Evict all blocks.
     et.evicted.clear();
     for (int i = 0; i < inserted.size(); ++i) {
-      assertTrue(lrfu.reserveMemory(1, false));
+      assertTrue(mm.reserveMemory(1, false));
     }
     // The map should now be empty.
-    assertFalse(lrfu.reserveMemory(1, false));
+    assertFalse(mm.reserveMemory(1, false));
     for (int i = 0; i < inserted.size(); ++i) {
       block = et.evicted.get(i);
       assertTrue(block.isInvalid());

@@ -43,31 +43,32 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   private final Allocator allocator;
 
   private AtomicInteger newEvictions = new AtomicInteger(0);
-  private final Thread cleanupThread;
+  private Thread cleanupThread = null;
   private final ConcurrentHashMap<String, FileCache> cache =
       new ConcurrentHashMap<String, FileCache>();
-  private final LowLevelCachePolicyBase cachePolicy;
+  private final LowLevelCachePolicy cachePolicy;
+  private final long cleanupInterval;
 
   public LowLevelCacheImpl(
-      Configuration conf, LowLevelCachePolicyBase cachePolicy, Allocator allocator) {
+      Configuration conf, LowLevelCachePolicy cachePolicy, Allocator allocator) {
     this(conf, cachePolicy, allocator, 600);
   }
 
   @VisibleForTesting
   LowLevelCacheImpl(Configuration conf,
-      LowLevelCachePolicyBase cachePolicy, Allocator allocator, long cleanupInterval) {
+      LowLevelCachePolicy cachePolicy, Allocator allocator, long cleanupInterval) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
     }
     this.cachePolicy = cachePolicy;
-    this.cachePolicy.setEvictionListener(this);
     this.allocator = allocator;
-    if (cleanupInterval >= 0) {
-      cleanupThread = new CleanupThread(cleanupInterval);
-      cleanupThread.start();
-    } else {
-      cleanupThread = null;
-    }
+    this.cleanupInterval = cleanupInterval;
+  }
+
+  public void init() {
+    if (cleanupInterval < 0) return;
+    cleanupThread = new CleanupThread(cleanupInterval);
+    cleanupThread.start();
   }
 
   @Override

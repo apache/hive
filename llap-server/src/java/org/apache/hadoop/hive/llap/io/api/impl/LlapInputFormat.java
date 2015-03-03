@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -44,16 +45,26 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+
 public class LlapInputFormat
   implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface {
-  private final LlapIoImpl llapIo;
-  private InputFormat sourceInputFormat;
+  @SuppressWarnings("rawtypes")
+  private final InputFormat sourceInputFormat;
+  private final ColumnVectorProducer cvp;
+  private final ListeningExecutorService executor;
 
-  LlapInputFormat(LlapIoImpl llapIo, InputFormat sourceInputFormat) {
+  @SuppressWarnings("rawtypes")
+  LlapInputFormat(InputFormat sourceInputFormat, ColumnVectorProducer cvp,
+      ListeningExecutorService executor) {
     // TODO: right now, we do nothing with source input format, ORC-only in the first cut.
     //       We'd need to plumb it thru and use it to get data to cache/etc.
     assert sourceInputFormat instanceof OrcInputFormat;
-    this.llapIo = llapIo;
+    this.executor = executor;
+    this.cvp = cvp;
     this.sourceInputFormat = sourceInputFormat;
   }
 
@@ -73,7 +84,7 @@ public class LlapInputFormat
       if (includedCols.isEmpty()) {
         includedCols = null; // Also means read all columns? WTF?
       }
-      return new LlapRecordReader(job, fileSplit, includedCols, llapIo.getCvp());
+      return new LlapRecordReader(job, fileSplit, includedCols);
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -84,13 +95,12 @@ public class LlapInputFormat
     return sourceInputFormat.getSplits(job, numSplits);
   }
 
-  private static class LlapRecordReader
+  private class LlapRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
     private final InputSplit split;
     private final List<Integer> columnIds;
     private final SearchArgument sarg;
     private final String[] columnNames;
-    private final ColumnVectorProducer<?> cvp;
     private final VectorizedRowBatchCtx rbCtx;
 
     private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
@@ -101,11 +111,9 @@ public class LlapInputFormat
     private boolean isDone = false, isClosed = false;
     private ConsumerFeedback<ColumnVectorBatch> feedback;
 
-    public LlapRecordReader(
-        JobConf job, FileSplit split, List<Integer> includedCols, ColumnVectorProducer<?> cvp) {
+    public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols) {
       this.split = split;
       this.columnIds = includedCols;
-      this.cvp = cvp;
       this.sarg = SearchArgumentFactory.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
       try {
@@ -126,7 +134,7 @@ public class LlapInputFormat
         // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
         if (isFirst) {
           rbCtx.addPartitionColsToBatch(value);
-          feedback = cvp.read(split, columnIds, sarg, columnNames, this);
+          startRead();
           isFirst = false;
         }
         ColumnVectorBatch cvb = nextCvb();
@@ -148,6 +156,30 @@ public class LlapInputFormat
         throw new IOException(e);
       }
       return true;
+    }
+
+
+    private final class UncaughtErrorHandler implements FutureCallback<Void> {
+      @Override
+      public void onSuccess(Void result) {
+        // Successful execution of reader is supposed to call setDone.
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        // Reader is not supposed to throw AFTER calling setError.
+        LlapIoImpl.LOG.error("Unhandled error from reader thread " + t.getMessage());
+        setError(t);
+      }
+    }
+
+    private void startRead() {
+      // Create the consumer of encoded data; it will coordinate decoding to CVBs.
+      ReadPipeline rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames);
+      feedback = rp;
+      ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
+      // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
+      Futures.addCallback(future, new UncaughtErrorHandler());
     }
 
     ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
