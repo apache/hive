@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.mr;
 
+import java.util.concurrent.Callable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * ObjectCache. No-op implementation on MR we don't have a means to reuse
@@ -32,14 +34,16 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
 
   @Override
-  public void cache(String key, Object value) {
-    LOG.info("Ignoring cache key: "+key);
+  public void release(String key) {
+    // nothing to do
   }
 
   @Override
-  public Object retrieve(String key) {
-    LOG.info("Ignoring retrieval request: "+key);
-    return null;
+  public Object retrieve(String key, Callable<?> fn) throws HiveException {
+    try {
+      return fn.call();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
-
 }

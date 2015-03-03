@@ -22,8 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -68,19 +66,13 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
     super.init(job, output, reporter);
 
     isLogInfoEnabled = LOG.isInfoEnabled();
-    ObjectCache cache = ObjectCacheFactory.getCache(job);
 
     try {
       jc = job;
       execContext = new ExecMapperContext(jc);
       // create map and fetch operators
-      MapWork mrwork = (MapWork) cache.retrieve(PLAN_KEY);
-      if (mrwork == null) {
-        mrwork = Utilities.getMapWork(job);
-        cache.cache(PLAN_KEY, mrwork);
-      } else {
-        Utilities.setMapWork(job, mrwork);
-      }
+      MapWork mrwork = Utilities.getMapWork(job);
+
       if (mrwork.getVectorMode()) {
         mo = new VectorMapOperator();
       } else {

@@ -48,9 +48,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient int numMapRowsRead;
 
-  transient boolean firstRow;
-
-
   public AbstractMapJoinOperator() {
   }
 
@@ -72,7 +69,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     super.initializeOp(hconf);
 
     numMapRowsRead = 0;
-    firstRow = true;
 
     // all other tables are small, and are cached in the hash table
     posBigTable = (byte) conf.getPosBigTable();
