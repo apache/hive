@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -102,7 +103,7 @@ public class GenericUDFReflect extends AbstractGenericUDFReflect {
       className = ObjectInspectorUtils.copyToStandardObject(newClassName, inputClassNameOI);
       String classNameString = classNameOI.getPrimitiveJavaObject(className);
       try {
-        c = Class.forName(classNameString);
+        c = JavaUtils.loadClass(classNameString);
       } catch (ClassNotFoundException ex) {
         throw new HiveException("UDFReflect evaluate ", ex);
       }

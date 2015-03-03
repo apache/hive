@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -647,7 +648,7 @@ public class CompactorMR {
   private static <T> T instantiate(Class<T> classType, String classname) throws IOException {
     T t = null;
     try {
-      Class c = Class.forName(classname);
+      Class c = JavaUtils.loadClass(classname);
       Object o = c.newInstance();
       if (classType.isAssignableFrom(o.getClass())) {
         t = (T)o;
