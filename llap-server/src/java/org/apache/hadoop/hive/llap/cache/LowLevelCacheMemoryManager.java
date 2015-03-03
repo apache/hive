@@ -20,14 +20,23 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, MemoryManager {
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+
+public class LowLevelCacheMemoryManager implements MemoryManager {
   private final AtomicLong usedMemory;
   protected final long maxSize;
-  private EvictionListener evictionListener;
+  private final LowLevelCachePolicy evictor;
 
-  public LowLevelCachePolicyBase(long maxSize) {
-    this.maxSize = maxSize;
+  public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor) {
+    this.maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+    this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Cache memory manager initialized with max size " + maxSize);
+    }
   }
 
   @Override
@@ -40,7 +49,7 @@ public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, Me
         continue;
       }
       // TODO: for one-block case, we could move notification for the last block out of the loop.
-      long evicted = evictSomeBlocks(memoryToReserve, evictionListener);
+      long evicted = evictor.evictSomeBlocks(memoryToReserve);
       if (!waitForEviction && evicted == 0) return false;
       // Adjust the memory - we have to account for what we have just evicted.
       while (true) {
@@ -53,11 +62,5 @@ public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, Me
       }
     }
     return true;
-  }
-
-  protected abstract long evictSomeBlocks(long memoryToReserve, EvictionListener listener);
-
-  public void setEvictionListener(EvictionListener evictionListener) {
-    this.evictionListener = evictionListener;
   }
 }

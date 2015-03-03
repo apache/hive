@@ -15,19 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.llap.io.encoded;
+package org.apache.hadoop.hive.llap.io.decode;
 
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 
-/**
- * Interface for encoded data readers to implement.
- * For now, has to implement callable for threadpool execution.
- * The final threading design will probably change.
- */
-public interface EncodedDataReader<BatchKey>
-  extends ConsumerFeedback<StreamBuffer>, Callable<Void> {
+public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
+  public Callable<Void> getReadCallable();
 }
