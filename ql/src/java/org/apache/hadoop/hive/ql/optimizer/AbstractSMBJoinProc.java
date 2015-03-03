@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -440,10 +441,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
     try {
+      String selector = HiveConf.getVar(pGraphContext.getConf(),
+          HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR);
       bigTableMatcherClass =
-        (Class<? extends BigTableSelectorForAutoSMJ>)
-          (Class.forName(HiveConf.getVar(pGraphContext.getConf(),
-            HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR)));
+        (Class<? extends BigTableSelectorForAutoSMJ>) JavaUtils.loadClass(selector);
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e.getMessage());
     }

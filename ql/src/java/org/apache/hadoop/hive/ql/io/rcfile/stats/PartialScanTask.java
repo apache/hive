@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -144,8 +145,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     LOG.info("Using " + inpFormat);
 
     try {
-      job.setInputFormat((Class<? extends InputFormat>) (Class
-          .forName(inpFormat)));
+      job.setInputFormat((Class<? extends InputFormat>) JavaUtils.loadClass(inpFormat));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

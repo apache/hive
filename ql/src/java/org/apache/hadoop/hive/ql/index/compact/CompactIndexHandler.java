@@ -28,7 +28,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -220,7 +220,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
           // We can only perform a binary search with HiveInputFormat and CombineHiveInputFormat
           // and BucketizedHiveInputFormat
           try {
-            if (!HiveInputFormat.class.isAssignableFrom(Class.forName(inputFormat))) {
+            if (!HiveInputFormat.class.isAssignableFrom(JavaUtils.loadClass(inputFormat))) {
               work = null;
               break;
             }

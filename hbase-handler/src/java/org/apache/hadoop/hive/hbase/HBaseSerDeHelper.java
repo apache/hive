@@ -36,6 +36,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -466,7 +467,7 @@ public class HBaseSerDeHelper {
       throws SerDeException {
     Class<?> serClass;
     try {
-      serClass = Class.forName(serClassName);
+      serClass = JavaUtils.loadClass(serClassName);
     } catch (ClassNotFoundException e) {
       throw new SerDeException("Error obtaining descriptor for " + serClassName, e);
     }
@@ -562,7 +563,7 @@ public class HBaseSerDeHelper {
 
     Class<?> keyClass;
     try {
-      keyClass = Class.forName(compKeyClassName);
+      keyClass = JavaUtils.loadClass(compKeyClassName);
       keyFactory = new CompositeHBaseKeyFactory(keyClass);
     } catch (Exception e) {
       throw new SerDeException(e);

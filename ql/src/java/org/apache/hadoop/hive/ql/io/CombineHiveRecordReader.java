@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.CombineHiveInputSplit;
 import org.apache.hadoop.io.Writable;
@@ -50,7 +51,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     String inputFormatClassName = hsplit.inputFormatClassName();
     Class inputFormatClass = null;
     try {
-      inputFormatClass = Class.forName(inputFormatClassName);
+      inputFormatClass = JavaUtils.loadClass(inputFormatClassName);
     } catch (ClassNotFoundException e) {
       throw new IOException("CombineHiveRecordReader: class not found "
           + inputFormatClassName);

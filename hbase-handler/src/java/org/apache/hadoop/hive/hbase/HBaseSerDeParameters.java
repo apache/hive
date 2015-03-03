@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.AvroHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.DefaultHBaseValueFactory;
@@ -200,7 +201,7 @@ public class HBaseSerDeParameters {
     if (configuration != null) {
       return configuration.getClassByName(className);
     }
-    return Class.forName(className);
+    return JavaUtils.loadClass(className);
   }
 
   private List<HBaseValueFactory> initValueFactories(Configuration conf, Properties tbl)

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -288,7 +288,7 @@ public class PTFDeserializer {
     try {
       @SuppressWarnings("unchecked")
       Class<? extends TableFunctionResolver> rCls = (Class<? extends TableFunctionResolver>)
-          Class.forName(className);
+          JavaUtils.loadClass(className);
       return ReflectionUtils.newInstance(rCls, null);
     } catch (Exception e) {
       throw new HiveException(e);

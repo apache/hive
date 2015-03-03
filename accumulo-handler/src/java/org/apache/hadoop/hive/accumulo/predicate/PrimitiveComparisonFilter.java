@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.accumulo.columns.ColumnMappingFactory;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloColumnMapping;
 import org.apache.hadoop.hive.accumulo.predicate.compare.CompareOp;
 import org.apache.hadoop.hive.accumulo.predicate.compare.PrimitiveComparison;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
@@ -117,8 +118,8 @@ public class PrimitiveComparisonFilter extends WholeRowIterator {
     cqHolder = new Text();
 
     try {
-      Class<?> pClass = Class.forName(options.get(P_COMPARE_CLASS));
-      Class<?> cClazz = Class.forName(options.get(COMPARE_OPT_CLASS));
+      Class<?> pClass = JavaUtils.loadClass(options.get(P_COMPARE_CLASS));
+      Class<?> cClazz = JavaUtils.loadClass(options.get(COMPARE_OPT_CLASS));
       PrimitiveComparison pCompare = pClass.asSubclass(PrimitiveComparison.class).newInstance();
       compOpt = cClazz.asSubclass(CompareOp.class).newInstance();
       byte[] constant = getConstant(options);

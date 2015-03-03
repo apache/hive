@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -194,7 +195,7 @@ public class MapJoinTableContainerSerDe {
     try {
       @SuppressWarnings("unchecked")
       Class<? extends MapJoinPersistableTableContainer> clazz =
-          (Class<? extends MapJoinPersistableTableContainer>)Class.forName(name);
+          (Class<? extends MapJoinPersistableTableContainer>) JavaUtils.loadClass(name);
       Constructor<? extends MapJoinPersistableTableContainer> constructor =
           clazz.getDeclaredConstructor(Map.class);
       return constructor.newInstance(metaData);

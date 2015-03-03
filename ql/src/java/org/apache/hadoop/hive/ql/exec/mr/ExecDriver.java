@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CompressionUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -239,8 +240,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     job.setMapOutputValueClass(BytesWritable.class);
 
     try {
-      job.setPartitionerClass((Class<? extends Partitioner>) (Class.forName(HiveConf.getVar(job,
-          HiveConf.ConfVars.HIVEPARTITIONER))));
+      String partitioner = HiveConf.getVar(job, ConfVars.HIVEPARTITIONER);
+      job.setPartitionerClass((Class<? extends Partitioner>) JavaUtils.loadClass(partitioner));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -286,7 +287,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     LOG.info("Using " + inpFormat);
 
     try {
-      job.setInputFormat((Class<? extends InputFormat>) (Class.forName(inpFormat)));
+      job.setInputFormat((Class<? extends InputFormat>) JavaUtils.loadClass(inpFormat));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

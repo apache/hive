@@ -42,6 +42,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -207,7 +208,7 @@ public class Utils {
     Class<?> jarFinder = null;
     try {
       log.debug("Looking for " + hadoopJarFinder + ".");
-      jarFinder = Class.forName(hadoopJarFinder);
+      jarFinder = JavaUtils.loadClass(hadoopJarFinder);
       log.debug(hadoopJarFinder + " found.");
       Method getJar = jarFinder.getMethod("getJar", Class.class);
       ret = (String) getJar.invoke(null, my_class);

@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -114,7 +115,7 @@ public class HiveSplitGenerator extends InputInitializer {
     if (groupingEnabled) {
       // Need to instantiate the realInputFormat
       InputFormat<?, ?> inputFormat =
-          (InputFormat<?, ?>) ReflectionUtils.newInstance(Class.forName(realInputFormatName),
+          (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
               jobConf);
 
       int totalResource = rootInputContext.getTotalAvailableResource().getMemory();

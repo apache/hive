@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -116,7 +117,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     String factoryClassName = tbl.getProperty(COMPOSITE_ROWID_FACTORY);
     if (factoryClassName != null) {
       log.info("Loading CompositeRowIdFactory class " + factoryClassName);
-      Class<?> factoryClazz = Class.forName(factoryClassName);
+      Class<?> factoryClazz = JavaUtils.loadClass(factoryClassName);
       return (AccumuloRowIdFactory) ReflectionUtils.newInstance(factoryClazz, job);
     }
 
@@ -124,7 +125,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     String keyClassName = tbl.getProperty(COMPOSITE_ROWID_CLASS);
     if (keyClassName != null) {
       log.info("Loading CompositeRowId class " + keyClassName);
-      Class<?> keyClass = Class.forName(keyClassName);
+      Class<?> keyClass = JavaUtils.loadClass(keyClassName);
       Class<? extends AccumuloCompositeRowId> compositeRowIdClass = keyClass
           .asSubclass(AccumuloCompositeRowId.class);
       return new CompositeAccumuloRowIdFactory(compositeRowIdClass);

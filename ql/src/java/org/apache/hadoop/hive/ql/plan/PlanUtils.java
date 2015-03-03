@@ -31,6 +31,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -145,7 +146,7 @@ public final class PlanUtils {
             serdeConstants.SERIALIZATION_LIB, directoryDesc.getSerName());
       }
       if (directoryDesc.getOutputFormat() != null){
-        ret.setOutputFileFormatClass(Class.forName(directoryDesc.getOutputFormat()));
+        ret.setOutputFileFormatClass(JavaUtils.loadClass(directoryDesc.getOutputFormat()));
       }
       if (directoryDesc.getNullFormat() != null) {
         properties.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
@@ -308,7 +309,7 @@ public final class PlanUtils {
 
     try {
       if (crtTblDesc.getSerName() != null) {
-        Class c = Class.forName(crtTblDesc.getSerName());
+        Class c = JavaUtils.loadClass(crtTblDesc.getSerName());
         serdeClass = c;
       }
 
@@ -360,8 +361,8 @@ public final class PlanUtils {
 
       // replace the default input & output file format with those found in
       // crtTblDesc
-      Class c1 = Class.forName(crtTblDesc.getInputFormat());
-      Class c2 = Class.forName(crtTblDesc.getOutputFormat());
+      Class c1 = JavaUtils.loadClass(crtTblDesc.getInputFormat());
+      Class c2 = JavaUtils.loadClass(crtTblDesc.getOutputFormat());
       Class<? extends InputFormat> in_class = c1;
       Class<? extends HiveOutputFormat> out_class = c2;
 
