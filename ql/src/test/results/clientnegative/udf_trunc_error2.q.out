@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:13 Argument type mismatch '1.0': TRUNC() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got DOUBLE
