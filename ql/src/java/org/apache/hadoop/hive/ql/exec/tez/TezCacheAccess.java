@@ -22,59 +22,61 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Access to the Object cache from Tez, along with utility methods for accessing specific Keys.
  */
 public class TezCacheAccess {
 
-  private TezCacheAccess(ObjectCache cache) {
+  private TezCacheAccess(ObjectCache cache, String qId) {
+    this.qId = qId;
     this.cache = cache;
   }
 
   private ObjectCache cache;
+  private String qId;
 
   public static TezCacheAccess createInstance(Configuration conf) {
     ObjectCache cache = ObjectCacheFactory.getCache(conf);
-    return new TezCacheAccess(cache);
+    String qId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    return new TezCacheAccess(cache, qId);
   }
 
   private static final String CACHED_INPUT_KEY = "CACHED_INPUTS";
-  
+
   private final ReentrantLock cachedInputLock = new ReentrantLock();
 
-  public boolean isInputCached(String inputName) {
+  private Set<String> get() throws HiveException {
+    return (Set<String>) cache.retrieve(CACHED_INPUT_KEY,
+	new Callable<Object>() {
+	  public Object call() {
+	    return Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+	  }
+	});
+  }
+
+  public boolean isInputCached(String inputName) throws HiveException {
     this.cachedInputLock.lock();
     try {
-      @SuppressWarnings("unchecked")
-      Set<String> cachedInputs = (Set<String>) cache.retrieve(CACHED_INPUT_KEY);
-      if (cachedInputs == null) {
-        return false;
-      } else {
-        return cachedInputs.contains(inputName);
-      }
+      return get().contains(qId+inputName);
     } finally {
       this.cachedInputLock.unlock();
     }
   }
 
-  public void registerCachedInput(String inputName) {
+  public void registerCachedInput(String inputName) throws HiveException {
     this.cachedInputLock.lock();
     try {
-      @SuppressWarnings("unchecked")
-      Set<String> cachedInputs = (Set<String>) cache.retrieve(CACHED_INPUT_KEY);
-      if (cachedInputs == null) {
-        cachedInputs = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-        cache.cache(CACHED_INPUT_KEY, cachedInputs);
-      }
-      cachedInputs.add(inputName);
+      get().add(qId+inputName);
     } finally {
       this.cachedInputLock.unlock();
     }
   }
-
 }

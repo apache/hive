@@ -101,8 +101,6 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     super.initializeOp(hconf);
 
-    firstRow = true;
-
     closeCalled = false;
 
     this.firstFetchHappened = false;
