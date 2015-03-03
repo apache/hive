@@ -38,6 +38,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -324,7 +325,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         try {
           Class<? extends CompressionCodec> lzo =
               (Class<? extends CompressionCodec>)
-                  Class.forName("org.apache.hadoop.hive.ql.io.orc.LzoCodec");
+                  JavaUtils.loadClass("org.apache.hadoop.hive.ql.io.orc.LzoCodec");
           return lzo.newInstance();
         } catch (ClassNotFoundException e) {
           throw new IllegalArgumentException("LZO is not available.", e);

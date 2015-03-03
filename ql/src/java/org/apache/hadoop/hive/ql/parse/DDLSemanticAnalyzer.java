@@ -45,6 +45,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -1036,7 +1037,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = indexType.getHandlerClsName();
     } else {
       try {
-        Class.forName(typeName);
+        JavaUtils.loadClass(typeName);
       } catch (Exception e) {
         throw new SemanticException("class name provided for index handler not found.", e);
       }
