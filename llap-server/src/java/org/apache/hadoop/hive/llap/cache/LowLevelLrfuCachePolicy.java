@@ -165,6 +165,9 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
         if (!nextCandidate.invalidate()) {
           // Locked buffer was in the list - just drop it; will be re-added on unlock.
           LlapCacheableBuffer lockedBuffer = nextCandidate;
+          if (firstCandidate == nextCandidate) {
+            firstCandidate = nextCandidate.prev;
+          }
           nextCandidate = nextCandidate.prev;
           removeFromListUnderLock(lockedBuffer);
           continue;
@@ -172,6 +175,7 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
         // Update the state to removed-from-list, so that parallel notifyUnlock doesn't modify us.
         nextCandidate.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         evicted += nextCandidate.byteBuffer.remaining();
+        nextCandidate = nextCandidate.prev;
       }
       if (firstCandidate != nextCandidate) {
         if (nextCandidate == null) {

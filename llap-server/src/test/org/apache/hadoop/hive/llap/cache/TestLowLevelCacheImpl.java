@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -31,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
@@ -95,15 +95,15 @@ public class TestLowLevelCacheImpl {
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 3, fakes[2], fakes[3]);
     verifyCacheGet(cache, fn1, 2, 4, fakes[1], dr(3, 4));
-    verifyRefcount(fakes, 2, 3, 2, 2, 1, 1);
+    verifyRefcount(fakes, 3, 4, 3, 3, 1, 1);
     LlapMemoryBuffer[] bufsDiff = fbs(fakes, 4, 5);
     long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0);
     assertEquals(1, mask.length);
     assertEquals(2, mask[0]); // 2nd bit set - element 2 was already in cache.
     assertSame(fakes[0], bufsDiff[1]); // Should have been replaced
-    verifyRefcount(fakes, 3, 3, 2, 2, 1, 0);
+    verifyRefcount(fakes, 4, 4, 3, 3, 2, 1);
     verifyCacheGet(cache, fn1, 1, 4, fakes[0], fakes[1], fakes[4]);
-    verifyRefcount(fakes, 4, 4, 2, 2, 2, 0);
+    verifyRefcount(fakes, 5, 5, 3, 3, 3, 1);
   }
 
   private void verifyCacheGet(LowLevelCacheImpl cache, String fileName, Object... stuff) {
@@ -169,12 +169,12 @@ public class TestLowLevelCacheImpl {
     assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0));
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, fakes[2]);
-    verifyRefcount(fakes, 2, 2, 2);
+    verifyRefcount(fakes, 3, 3, 3);
     evict(cache, fakes[0]);
     evict(cache, fakes[2]);
     verifyCacheGet(cache, fn1, 1, 3, dr(1, 2), fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, dr(1, 2));
-    verifyRefcount(fakes, -1, 3, -1);
+    verifyRefcount(fakes, -1, 4, -1);
   }
 
   @Test
@@ -217,13 +217,13 @@ public class TestLowLevelCacheImpl {
             int fileIndex = isFn1 ? 1 : 2;
             int count = rdm.nextInt(offsetsToUse);
             if (isGet) {
-              DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
               int[] offsets = new int[count];
-              for (int j = 0; j < count; ++j) {
-                int next = rdm.nextInt(offsetsToUse);
-                list.addOrMerge(next, next + 1, true, false);
-                offsets[j] = next;
+              count = generateOffsets(offsetsToUse, rdm, offsets);
+              DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+              for (int j = 0; i < count; ++i) {
+                list.addOrMerge(offsets[i], offsets[i] + 1, true, false);
               }
+
               DiskRangeList iter = cache.getFileData(fileName, list.get(), 0);
               int j = -1;
               while (iter != null) {
@@ -249,7 +249,6 @@ public class TestLowLevelCacheImpl {
               LlapMemoryBuffer[] buffers = new LlapMemoryBuffer[count];
               for (int j = 0; j < offsets.length; ++j) {
                 LlapCacheableBuffer buf = LowLevelCacheImpl.allocateFake();
-                buf.incRef();
                 buf.arenaIndex = makeFakeArenaIndex(fileIndex, offsets[j]);
                 buffers[j] = buf;
               }
@@ -359,7 +358,7 @@ public class TestLowLevelCacheImpl {
 
   private void verifyRefcount(LlapMemoryBuffer[] fakes, int... refCounts) {
     for (int i = 0; i < refCounts.length; ++i) {
-      assertEquals(refCounts[i], ((LlapCacheableBuffer)fakes[i]).getRefCount());
+      assertEquals("At " + i, refCounts[i], ((LlapCacheableBuffer)fakes[i]).getRefCount());
     }
   }
 
@@ -396,5 +395,22 @@ public class TestLowLevelCacheImpl {
     conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_SIZE.varname, 8);
     conf.setLong(ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, 8);
     return conf;
+  }
+
+  private int generateOffsets(int offsetsToUse, Random rdm, int[] offsets) {
+    for (int j = 0; j < offsets.length; ++j) {
+      offsets[j] = rdm.nextInt(offsetsToUse);
+    }
+    Arrays.sort(offsets);
+    // Values should unique (given how we do the checking and "addOrMerge")
+    int check = 0, insert = 0, count = offsets.length;
+    while (check < (offsets.length - 1)) {
+      if (offsets[check] == offsets[check + 1]) {
+        --insert;
+        --count;
+      }
+      offsets[++insert] = offsets[++check];
+    }
+    return count;
   }
 }

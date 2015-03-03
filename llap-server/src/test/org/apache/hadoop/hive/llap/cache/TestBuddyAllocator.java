@@ -58,7 +58,7 @@ public class TestBuddyAllocator {
     int min = 3, max = 8, maxAlloc = 1 << max;
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, maxAlloc);
     BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
-    for (int i = min; i <= max; ++i) {
+    for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
   }
@@ -179,10 +179,11 @@ public class TestBuddyAllocator {
     for (int j = 0; j < allocCount; ++j) {
       LlapMemoryBuffer mem = allocs[index][j];
       long testValue = testValues[index][j] = rdm.nextLong();
-      mem.byteBuffer.putLong(0, testValue);
+      int pos = mem.byteBuffer.position();
+      mem.byteBuffer.putLong(pos, testValue);
       int halfLength = mem.byteBuffer.remaining() >> 1;
       if (halfLength + 8 <= mem.byteBuffer.remaining()) {
-        mem.byteBuffer.putLong(halfLength, testValue);
+        mem.byteBuffer.putLong(pos + halfLength, testValue);
       }
     }
   }
@@ -204,10 +205,13 @@ public class TestBuddyAllocator {
       BuddyAllocator a, LlapMemoryBuffer[] allocs, long[] testValues) {
     for (int j = 0; j < allocs.length; ++j) {
       LlapCacheableBuffer mem = (LlapCacheableBuffer)allocs[j];
-      assertEquals(testValues[j], mem.byteBuffer.getLong(0));
+      int pos = mem.byteBuffer.position();
+      assertEquals("Failed to match (" + pos + ") on " + j + "/" + allocs.length,
+          testValues[j], mem.byteBuffer.getLong(pos));
       int halfLength = mem.byteBuffer.remaining() >> 1;
       if (halfLength + 8 <= mem.byteBuffer.remaining()) {
-        assertEquals(testValues[j], mem.byteBuffer.getLong(halfLength));
+        assertEquals("Failed to match half (" + (pos + halfLength) + ") on " + j + "/"
+            + allocs.length, testValues[j], mem.byteBuffer.getLong(pos + halfLength));
       }
       a.deallocate(mem);
     }
