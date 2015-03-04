@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.streaming;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -70,7 +71,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
                 + endPoint);
       }
       String outFormatName = this.tbl.getSd().getOutputFormat();
-      outf = (AcidOutputFormat<?,?>) ReflectionUtils.newInstance(Class.forName(outFormatName), conf);
+      outf = (AcidOutputFormat<?,?>) ReflectionUtils.newInstance(JavaUtils.loadClass(outFormatName), conf);
     } catch (MetaException e) {
       throw new ConnectionError(endPoint, e);
     } catch (NoSuchObjectException e) {

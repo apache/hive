@@ -54,10 +54,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -68,7 +70,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -152,8 +157,13 @@ public class RexNodeConverter {
     // TODO: 1) Expand to other functions as needed 2) What about types other than primitive.
     TypeInfo tgtDT = null;
     GenericUDF tgtUdf = func.getGenericUDF();
-    boolean isNumeric = tgtUdf instanceof GenericUDFBaseNumeric,
-        isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
+
+    boolean isNumeric = (tgtUdf instanceof GenericUDFBaseBinary
+        && func.getTypeInfo().getCategory() == Category.PRIMITIVE
+        && (PrimitiveGrouping.NUMERIC_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+            ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
+    boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
+
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
 
@@ -175,8 +185,7 @@ public class RexNodeConverter {
         } else if (isNumeric) {
           // For numeric, we'll do minimum necessary cast - if we cast to the type
           // of expression, bad things will happen.
-          GenericUDFBaseNumeric numericUdf = (GenericUDFBaseNumeric)tgtUdf;
-          PrimitiveTypeInfo minArgType = numericUdf.deriveMinArgumentCast(childExpr, tgtDT);
+          PrimitiveTypeInfo minArgType = ExprNodeDescUtils.deriveMinArgumentCast(childExpr, tgtDT);
           tmpExprNode = ParseUtils.createConversionCast(childExpr, minArgType);
         } else {
           throw new AssertionError("Unexpected " + tgtDT + " - not a numeric op or compare");

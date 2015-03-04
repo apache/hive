@@ -37,6 +37,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
@@ -65,6 +67,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hbase.security.token.TokenUtil;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -468,35 +471,17 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   private void addHBaseDelegationToken(Configuration conf) throws IOException {
     if (User.isHBaseSecurityEnabled(conf)) {
+      HConnection conn = HConnectionManager.createConnection(conf);
       try {
         User curUser = User.getCurrent();
-        Token<AuthenticationTokenIdentifier> authToken = getAuthToken(conf, curUser);
         Job job = new Job(conf);
-        if (authToken == null) {
-          curUser.obtainAuthTokenForJob(conf,job);
-        } else {
-          job.getCredentials().addToken(authToken.getService(), authToken);
-        }
+        TokenUtil.addTokenForJob(conn, curUser, job);
       } catch (InterruptedException e) {
         throw new IOException("Error while obtaining hbase delegation token", e);
       }
-    }
-  }
-
-  /**
-   * Get the authentication token of the user for the cluster specified in the configuration
-   * @return null if the user does not have the token, otherwise the auth token for the cluster.
-   */
-  private static Token<AuthenticationTokenIdentifier> getAuthToken(Configuration conf, User user)
-      throws IOException, InterruptedException {
-    ZooKeeperWatcher zkw = new ZooKeeperWatcher(conf, "mr-init-credentials", null);
-    try {
-      String clusterId = ZKClusterId.readClusterIdZNode(zkw);
-      return new AuthenticationTokenSelector().selectToken(new Text(clusterId), user.getUGI().getTokens());
-    } catch (KeeperException e) {
-      throw new IOException(e);
-    } finally {
-      zkw.close();
+      finally {
+        conn.close();
+      }
     }
   }
 

@@ -18,19 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
+
 
 @Description(name = "-", value = "a _FUNC_ b - Returns the difference a-b")
 @VectorizedExpressions({LongColSubtractLongColumn.class, LongColSubtractDoubleColumn.class,
@@ -41,7 +32,7 @@ import org.apache.hadoop.io.LongWritable;
   DoubleScalarSubtractLongColumn.class, DoubleScalarSubtractDoubleColumn.class,
   DecimalColSubtractDecimalColumn.class, DecimalColSubtractDecimalScalar.class,
   DecimalScalarSubtractDecimalColumn.class})
-public class GenericUDFOPMinus extends GenericUDFBaseNumeric {
+public class GenericUDFOPMinus extends GenericUDFBaseArithmetic {
 
   public GenericUDFOPMinus() {
     super();
@@ -49,57 +40,13 @@ public class GenericUDFOPMinus extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected ByteWritable evaluate(ByteWritable left, ByteWritable right) {
-    byteWritable.set((byte)(left.get() - right.get()));
-    return byteWritable;
+  protected GenericUDFBaseNumeric instantiateNumericUDF() {
+    return new GenericUDFOPNumericMinus();
   }
 
   @Override
-  protected ShortWritable evaluate(ShortWritable left, ShortWritable right) {
-    shortWritable.set((short)(left.get() - right.get()));
-    return shortWritable;
+  protected GenericUDF instantiateDTIUDF() {
+    // TODO: implement date-time/interval version of UDF
+    return new GenericUDFOPNumericMinus();
   }
-
-  @Override
-  protected IntWritable evaluate(IntWritable left, IntWritable right) {
-    intWritable.set(left.get() - right.get());
-    return intWritable;
-  }
-
-  @Override
-  protected LongWritable evaluate(LongWritable left, LongWritable right) {
-    longWritable.set(left.get() - right.get());
-    return longWritable;
-  }
-
-  @Override
-  protected FloatWritable evaluate(FloatWritable left, FloatWritable right) {
-    floatWritable.set(left.get() - right.get());
-    return floatWritable;
-  }
-
-  @Override
-  protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
-    doubleWritable.set(left.get() - right.get());
-    return doubleWritable;
-  }
-
-  @Override
-  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
-    HiveDecimal dec = left.subtract(right);
-    if (dec == null) {
-      return null;
-    }
-    decimalWritable.set(dec);
-    return decimalWritable;
-  }
-
-  @Override
-  protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    int intPart = Math.max(prec1 - scale1, prec2 - scale2);
-    int scale = Math.max(scale1, scale2);
-    int prec =  Math.min(intPart + scale + 1, HiveDecimal.MAX_PRECISION);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-  }
-
 }

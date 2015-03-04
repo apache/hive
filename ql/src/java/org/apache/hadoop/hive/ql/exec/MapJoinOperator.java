@@ -21,10 +21,14 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
@@ -55,8 +59,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private static final String CLASS_NAME = MapJoinOperator.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
-  private transient String tableKey;
-  private transient String serdeKey;
+  private transient String cacheKey;
   private transient ObjectCache cache;
 
   protected HashTableLoader loader;
@@ -99,28 +102,53 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // On Tez only: The hash map might already be cached in the container we run
     // the task in. On MR: The cache is a no-op.
-    tableKey = "__HASH_MAP_"+this.getOperatorId()+"_container";
-    serdeKey = "__HASH_MAP_"+this.getOperatorId()+"_serde";
+    cacheKey = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID)
+      + "__HASH_MAP_"+this.getOperatorId()+"_container";
 
     cache = ObjectCacheFactory.getCache(hconf);
     loader = HashTableLoaderFactory.getLoader(hconf);
 
     hashMapRowGetters = null;
 
-    mapJoinTables = (MapJoinTableContainer[]) cache.retrieve(tableKey);
-    mapJoinTableSerdes = (MapJoinTableContainerSerDe[]) cache.retrieve(serdeKey);
-    hashTblInitedOnce = true;
-    if (isLogInfoEnabled) {
-      LOG.info("Try to retrieve from cache");
+    mapJoinTables = new MapJoinTableContainer[tagLen];
+    mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
+    hashTblInitedOnce = false;
+
+    generateMapMetaData();
+
+    if (!conf.isBucketMapJoin()) {
+      /*
+       * The issue with caching in case of bucket map join is that different tasks
+       * process different buckets and if the container is reused to join a different bucket,
+       * join results can be incorrect. The cache is keyed on operator id and for bucket map join
+       * the operator does not change but data needed is different. For a proper fix, this
+       * requires changes in the Tez API with regard to finding bucket id and
+       * also ability to schedule tasks to re-use containers that have cached the specific bucket.
+       */
+      if (isLogInfoEnabled) {
+	LOG.info("This is not bucket map join, so cache");
+      }
+
+      Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
+	(Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>)
+	cache.retrieve(cacheKey, new Callable<Object>() {
+	  public Object call() throws HiveException {
+	    return loadHashTable();
+	  }
+	});
+
+      mapJoinTables = pair.getLeft();
+      mapJoinTableSerdes = pair.getRight();
+      hashTblInitedOnce = true;
+    } else {
+      loadHashTable();
     }
 
-    if (mapJoinTables == null || mapJoinTableSerdes == null) {
-      if (isLogInfoEnabled) {
-	LOG.info("Did not find tables in cache");
-      }
-      mapJoinTables = new MapJoinTableContainer[tagLen];
-      mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
-      hashTblInitedOnce = false;
+    if (this.getExecContext() != null) {
+      // reset exec context so that initialization of the map operator happens
+      // poperly
+      this.getExecContext().setLastInputPath(null);
+      this.getExecContext().setCurrentInputPath(null);
     }
   }
 
@@ -147,85 +175,71 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     return valueOI;
   }
 
-  public void generateMapMetaData() throws HiveException, SerDeException {
+  public void generateMapMetaData() throws HiveException {
     // generate the meta data for key
     // index for key is -1
 
-    TableDesc keyTableDesc = conf.getKeyTblDesc();
-    SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
-        null);
-    SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
-    MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
-    for (int pos = 0; pos < order.length; pos++) {
-      if (pos == posBigTable) {
-        continue;
+    try {
+      TableDesc keyTableDesc = conf.getKeyTblDesc();
+      SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
+	  null);
+      SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
+      for (int pos = 0; pos < order.length; pos++) {
+	if (pos == posBigTable) {
+	  continue;
+	}
+	TableDesc valueTableDesc;
+	if (conf.getNoOuterJoin()) {
+	  valueTableDesc = conf.getValueTblDescs().get(pos);
+	} else {
+	  valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
+	}
+	SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
+	    null);
+	SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+	MapJoinObjectSerDeContext valueContext = new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
+	mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
       }
-      TableDesc valueTableDesc;
-      if (conf.getNoOuterJoin()) {
-        valueTableDesc = conf.getValueTblDescs().get(pos);
-      } else {
-        valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
-      }
-      SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
-          null);
-      SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
-      MapJoinObjectSerDeContext valueContext = new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
-      mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
+    } catch (SerDeException e) {
+      throw new HiveException(e);
     }
   }
 
-  private void loadHashTable() throws HiveException {
+  private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>
+    loadHashTable() throws HiveException {
 
-    if ((this.getExecContext() == null)
-        || (this.getExecContext().getLocalWork() == null)
-        || (this.getExecContext().getLocalWork().getInputFileChangeSensitive() == false)
-    ) {
-      /*
-       * This early-exit criteria is not applicable if the local work is sensitive to input file changes.
-       * But the check does no apply if there is no local work, or if this is a reducer vertex (execContext is null).
-       */
-      if (hashTblInitedOnce) {
-        return;
-      } else {
-        hashTblInitedOnce = true;
-      }
+    if (this.hashTblInitedOnce
+	&& ((this.getExecContext() == null)
+	    || (this.getExecContext().getLocalWork() == null)
+	    || (this.getExecContext().getLocalWork().getInputFileChangeSensitive()
+		== false))) {
+      // no need to reload
+      return new ImmutablePair<MapJoinTableContainer[],
+	MapJoinTableContainerSerDe[]> (mapJoinTables, mapJoinTableSerdes);
     }
+
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(getExecContext(), hconf, this);
     long memUsage = (long)(MapJoinMemoryExhaustionHandler.getMaxHeapSize()
         * conf.getHashTableMemoryUsage());
     loader.load(mapJoinTables, mapJoinTableSerdes, memUsage);
-    if (!conf.isBucketMapJoin()) {
-      /*
-       * The issue with caching in case of bucket map join is that different tasks
-       * process different buckets and if the container is reused to join a different bucket,
-       * join results can be incorrect. The cache is keyed on operator id and for bucket map join
-       * the operator does not change but data needed is different. For a proper fix, this
-       * requires changes in the Tez API with regard to finding bucket id and
-       * also ability to schedule tasks to re-use containers that have cached the specific bucket.
-       */
-      if (isLogInfoEnabled) {
-	LOG.info("This is not bucket map join, so cache");
-      }
-      cache.cache(tableKey, mapJoinTables);
-      cache.cache(serdeKey, mapJoinTableSerdes);
-    }
+
+    hashTblInitedOnce = true;
+
+    Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair
+      = new ImmutablePair<MapJoinTableContainer[],
+      MapJoinTableContainerSerDe[]> (mapJoinTables, mapJoinTableSerdes);
+
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+
+    return pair;
   }
 
   // Load the hash table
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
-    try {
-      if (firstRow) {
-        // generate the map metadata
-        generateMapMetaData();
-        firstRow = false;
-      }
-      loadHashTable();
-    } catch (SerDeException e) {
-      throw new HiveException(e);
-    }
+    loadHashTable();
   }
 
   protected void setMapJoinKey(
@@ -248,12 +262,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
-      if (firstRow) {
-        generateMapMetaData();
-        loadHashTable();
-        firstRow = false;
-      }
-
       alias = (byte) tag;
       if (hashMapRowGetters == null) {
         hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
@@ -337,6 +345,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     }
+    cache.release(cacheKey);
     super.closeOp(abort);
   }
 

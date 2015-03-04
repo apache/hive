@@ -24,8 +24,6 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -58,18 +56,10 @@ public class SparkMergeFileRecordHandler extends SparkRecordHandler {
   public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     super.init(job, output, reporter);
 
-    ObjectCache cache = ObjectCacheFactory.getCache(job);
-
     try {
       jc = job;
-      MapWork mapWork = (MapWork) cache.retrieve(PLAN_KEY);
 
-      if (mapWork == null) {
-        mapWork = Utilities.getMapWork(job);
-        cache.cache(PLAN_KEY, mapWork);
-      } else {
-        Utilities.setMapWork(job, mapWork);
-      }
+      MapWork mapWork = Utilities.getMapWork(job);
 
       if (mapWork instanceof MergeFileWork) {
         MergeFileWork mergeFileWork = (MergeFileWork) mapWork;

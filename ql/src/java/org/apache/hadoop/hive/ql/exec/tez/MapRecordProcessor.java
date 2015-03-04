@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -71,7 +73,6 @@ public class MapRecordProcessor extends RecordProcessor {
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
   private int position = 0;
-  private boolean foundCachedMergeWork = false;
   MRInputLegacy legacyMRInput = null;
   MultiMRInput mainWorkMultiMRInput = null;
   private ExecMapperContext execContext = null;
@@ -80,44 +81,46 @@ public class MapRecordProcessor extends RecordProcessor {
   private MapWork mapWork;
   List<MapWork> mergeWorkList = null;
 
-  public MapRecordProcessor(JobConf jconf) throws Exception {
+  List<String> cacheKeys;
+  ObjectCache cache;
+
+  public MapRecordProcessor(final JobConf jconf) throws Exception {
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
+    cacheKeys = new ArrayList<String>();
+
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    String key = queryId + MAP_PLAN_KEY;
+    cacheKeys.add(key);
+
     // create map and fetch operators
-    mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
-    if (mapWork == null) {
-      mapWork = Utilities.getMapWork(jconf);
-      cache.cache(MAP_PLAN_KEY, mapWork);
-      l4j.debug("Plan: " + mapWork);
-      for (String s: mapWork.getAliases()) {
-        l4j.debug("Alias: " + s);
-      }
-    } else {
-      Utilities.setMapWork(jconf, mapWork);
-    }
+    mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
+        public Object call() {
+          return Utilities.getMapWork(jconf);
+        }
+      });
+    Utilities.setMapWork(jconf, mapWork);
 
     String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
     if (prefixes != null) {
       mergeWorkList = new ArrayList<MapWork>();
-      for (String prefix : prefixes.split(",")) {
-        MapWork mergeMapWork = (MapWork) cache.retrieve(prefix);
-        if (mergeMapWork != null) {
-          l4j.info("Found merge work in cache");
-          foundCachedMergeWork = true;
-          mergeWorkList.add(mergeMapWork);
+
+      for (final String prefix : prefixes.split(",")) {
+        if (prefix == null || prefix.isEmpty()) {
           continue;
         }
-        if (foundCachedMergeWork) {
-          throw new Exception(
-              "Should find all work in cache else operator pipeline will be in non-deterministic state");
-        }
 
-        if ((prefix != null) && (prefix.isEmpty() == false)) {
-          mergeMapWork = (MapWork) Utilities.getMergeWork(jconf, prefix);
-          mergeWorkList.add(mergeMapWork);
-          cache.cache(prefix, mergeMapWork);
-        }
+        key = queryId + prefix;
+        cacheKeys.add(key);
+
+	mergeWorkList.add(
+          (MapWork) cache.retrieve(key,
+              new Callable<Object>() {
+                public Object call() {
+                  return Utilities.getMergeWork(jconf, prefix);
+                }
+              }));
       }
     }
   }
@@ -172,10 +175,10 @@ public class MapRecordProcessor extends RecordProcessor {
             l4j.info("Input name is " + mergeMapWork.getName());
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
             mergeMapOp.setChildren(jconf);
-            if (foundCachedMergeWork == false) {
-              DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-              mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
-            }
+
+            DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
+	    mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
+
             mergeMapOp.setExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
           }
@@ -262,16 +265,16 @@ public class MapRecordProcessor extends RecordProcessor {
   @SuppressWarnings("deprecation")
   private KeyValueReader getKeyValueReader(Collection<KeyValueReader> keyValueReaders,
       MapOperator mapOp)
-      throws Exception {
+    throws Exception {
     List<KeyValueReader> kvReaderList = new ArrayList<KeyValueReader>(keyValueReaders);
     // this sets up the map operator contexts correctly
     mapOp.initializeContexts();
     Deserializer deserializer = mapOp.getCurrentDeserializer();
     KeyValueReader reader =
-        new KeyValueInputMerger(kvReaderList, deserializer,
-            new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
-                .getConf()
-                .getSortCols());
+      new KeyValueInputMerger(kvReaderList, deserializer,
+          new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
+          .getConf()
+          .getSortCols());
     return reader;
   }
 
@@ -288,7 +291,6 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
-
     while (sources[position].pushRecord()) {}
   }
 
@@ -297,6 +299,12 @@ public class MapRecordProcessor extends RecordProcessor {
     // check if there are IOExceptions
     if (!abort) {
       abort = execContext.getIoCxt().getIOExceptions();
+    }
+
+    if (cache != null && cacheKeys != null) {
+      for (String k: cacheKeys) {
+        cache.release(k);
+      }
     }
 
     // detecting failed executions by exceptions thrown by the operator tree

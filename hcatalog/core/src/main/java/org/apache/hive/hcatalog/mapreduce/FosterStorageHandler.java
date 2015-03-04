@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.mapreduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -56,9 +57,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
   private Class<? extends SerDe> serDeClass;
 
   public FosterStorageHandler(String ifName, String ofName, String serdeName) throws ClassNotFoundException {
-    this((Class<? extends InputFormat>) Class.forName(ifName),
-      (Class<? extends OutputFormat>) Class.forName(ofName),
-      (Class<? extends SerDe>) Class.forName(serdeName));
+    this((Class<? extends InputFormat>) JavaUtils.loadClass(ifName),
+      (Class<? extends OutputFormat>) JavaUtils.loadClass(ofName),
+      (Class<? extends SerDe>) JavaUtils.loadClass(serdeName));
   }
 
   public FosterStorageHandler(Class<? extends InputFormat> ifClass,

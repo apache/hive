@@ -1535,8 +1535,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
-          boolean ifPurge = envContext != null &&
-              Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                            ||
+                             (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge);
           // Delete the data in the table
@@ -2578,15 +2586,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
           if (tbl != null && !isExternal(tbl)) {
+            // Data needs deletion. Check if trash may be skipped.
+            // Trash may be skipped iff:
+            //  1. deleteData == true, obviously.
+            //  2. tbl is external.
+            //  3. Either
+            //    3.1. User has specified PURGE from the commandline, and if not,
+            //    3.2. User has set the table to auto-purge.
+            boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                                ||
+                                 (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+            if (mustPurge) {
+              LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
+            }
+            else {
+              LOG.info("dropPartition() will move " + partPath + " to trash-directory.");
+            }
             // Archived partitions have har:/to_har_file as their location.
             // The original directory was saved in params
             if (isArchived) {
               assert (archiveParentDir != null);
-              wh.deleteDir(archiveParentDir, true);
+              wh.deleteDir(archiveParentDir, true, mustPurge);
             } else {
               assert (partPath != null);
-              wh.deleteDir(partPath, true);
-              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1);
+              wh.deleteDir(partPath, true, mustPurge);
+              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge);
             }
             // ok even if the data is not deleted
           }
@@ -2601,10 +2625,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return true;
     }
 
-    private void deleteParentRecursive(Path parent, int depth) throws IOException, MetaException {
+    private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
-        wh.deleteDir(parent, true);
-        deleteParentRecursive(parent.getParent(), depth - 1);
+        wh.deleteDir(parent, true, mustPurge);
+        deleteParentRecursive(parent.getParent(), depth - 1, mustPurge);
       }
     }
 
@@ -2731,15 +2755,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal(tbl)) {
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                              ||
+                              (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+          LOG.info( mustPurge?
+                      "dropPartition() will purge partition-directories directly, skipping trash."
+                    :  "dropPartition() will move partition-directories to trash-directory.");
           // Archived partitions have har:/to_har_file as their location.
           // The original directory was saved in params
           for (Path path : archToDelete) {
-            wh.deleteDir(path, true);
+            wh.deleteDir(path, true, mustPurge);
           }
           for (PathAndPartValSize p : dirsToDelete) {
-            wh.deleteDir(p.path, true);
+            wh.deleteDir(p.path, true, mustPurge);
             try {
-              deleteParentRecursive(p.path.getParent(), p.partValSize - 1);
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge);
             } catch (IOException ex) {
               LOG.warn("Error from deleteParentRecursive", ex);
               throw new MetaException("Failed to delete parent: " + ex.getMessage());

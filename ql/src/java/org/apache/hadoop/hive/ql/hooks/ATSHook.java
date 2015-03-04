@@ -52,7 +52,7 @@ public class ATSHook implements ExecuteWithHookContext {
   private enum EntityTypes { HIVE_QUERY_ID };
   private enum EventTypes { QUERY_SUBMITTED, QUERY_COMPLETED };
   private enum OtherInfoTypes { QUERY, STATUS, TEZ, MAPRED };
-  private enum PrimaryFilterTypes { user, operationid };
+  private enum PrimaryFilterTypes { user, requestuser, operationid };
   private static final int WAIT_TIME = 3;
 
   public ATSHook() {
@@ -101,9 +101,12 @@ public class ATSHook implements ExecuteWithHookContext {
             String opId = hookContext.getOperationId();
             long queryStartTime = plan.getQueryStartTime();
             String user = hookContext.getUgi().getUserName();
+            String requestuser = hookContext.getUserName();
+            if (hookContext.getUserName() == null ){
+            	requestuser = hookContext.getUgi().getUserName() ; 
+            }
             int numMrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
             int numTezJobs = Utilities.getTezTasks(plan.getRootTasks()).size();
-
             if (numMrJobs + numTezJobs <= 0) {
               return; // ignore client only queries
             }
@@ -117,13 +120,13 @@ public class ATSHook implements ExecuteWithHookContext {
               JSONObject explainPlan = explain.getJSONPlan(null, null, rootTasks,
                    plan.getFetchTask(), true, false, false);
               fireAndForget(conf, createPreHookEvent(queryId, query,
-                   explainPlan, queryStartTime, user, numMrJobs, numTezJobs, opId));
+                   explainPlan, queryStartTime, user, requestuser, numMrJobs, numTezJobs, opId));
               break;
             case POST_EXEC_HOOK:
-              fireAndForget(conf, createPostHookEvent(queryId, currentTime, user, true, opId));
+              fireAndForget(conf, createPostHookEvent(queryId, currentTime, user, requestuser, true, opId));
               break;
             case ON_FAILURE_HOOK:
-              fireAndForget(conf, createPostHookEvent(queryId, currentTime, user, false, opId));
+              fireAndForget(conf, createPostHookEvent(queryId, currentTime, user, requestuser , false, opId));
               break;
             default:
               //ignore
@@ -137,7 +140,7 @@ public class ATSHook implements ExecuteWithHookContext {
   }
 
   TimelineEntity createPreHookEvent(String queryId, String query, JSONObject explainPlan,
-      long startTime, String user, int numMrJobs, int numTezJobs, String opId) throws Exception {
+      long startTime, String user, String requestuser, int numMrJobs, int numTezJobs, String opId) throws Exception {
 
     JSONObject queryObj = new JSONObject();
     queryObj.put("queryText", query);
@@ -153,6 +156,8 @@ public class ATSHook implements ExecuteWithHookContext {
     atsEntity.setEntityId(queryId);
     atsEntity.setEntityType(EntityTypes.HIVE_QUERY_ID.name());
     atsEntity.addPrimaryFilter(PrimaryFilterTypes.user.name(), user);
+    atsEntity.addPrimaryFilter(PrimaryFilterTypes.requestuser.name(), requestuser);
+    
     if (opId != null) {
       atsEntity.addPrimaryFilter(PrimaryFilterTypes.operationid.name(), opId);
     }
@@ -168,7 +173,7 @@ public class ATSHook implements ExecuteWithHookContext {
     return atsEntity;
   }
 
-  TimelineEntity createPostHookEvent(String queryId, long stopTime, String user, boolean success,
+  TimelineEntity createPostHookEvent(String queryId, long stopTime, String user, String requestuser, boolean success,
       String opId) {
     LOG.info("Received post-hook notification for :" + queryId);
 
@@ -176,6 +181,7 @@ public class ATSHook implements ExecuteWithHookContext {
     atsEntity.setEntityId(queryId);
     atsEntity.setEntityType(EntityTypes.HIVE_QUERY_ID.name());
     atsEntity.addPrimaryFilter(PrimaryFilterTypes.user.name(), user);
+    atsEntity.addPrimaryFilter(PrimaryFilterTypes.requestuser.name(), requestuser);
     if (opId != null) {
       atsEntity.addPrimaryFilter(PrimaryFilterTypes.operationid.name(), opId);
     }
