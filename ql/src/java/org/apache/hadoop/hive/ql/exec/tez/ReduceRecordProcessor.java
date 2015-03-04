@@ -83,7 +83,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
 
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    cacheKey = queryId + REDUCE_PLAN_KEY;
+    cacheKey = queryId + processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
     redWork = (ReduceWork) cache.retrieve(cacheKey, new Callable<Object>() {
         public Object call() {
           return Utilities.getReduceWork(jconf);

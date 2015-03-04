@@ -2031,6 +2031,8 @@ public class HiveConf extends Configuration {
     LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
 	new StringSet("auto", "none", "all", "map"),
         "Chooses whether query fragments will run in container or in llap"),
+    LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
+	"Cache objects (plans, hashtables, etc) in llap"),
 
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",

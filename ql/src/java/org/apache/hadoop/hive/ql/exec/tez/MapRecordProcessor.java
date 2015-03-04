@@ -72,26 +72,32 @@ public class MapRecordProcessor extends RecordProcessor {
   public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
-  private int position = 0;
-  MRInputLegacy legacyMRInput = null;
-  MultiMRInput mainWorkMultiMRInput = null;
-  private ExecMapperContext execContext = null;
-  private boolean abort = false;
+  private int position;
+  MRInputLegacy legacyMRInput;
+  MultiMRInput mainWorkMultiMRInput;
+  private ExecMapperContext execContext;
+  private boolean abort;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
-  List<MapWork> mergeWorkList = null;
-
+  List<MapWork> mergeWorkList;
   List<String> cacheKeys;
   ObjectCache cache;
 
   public MapRecordProcessor(final JobConf jconf) throws Exception {
-    ObjectCache cache = ObjectCacheFactory.getCache(jconf);
+    cache = ObjectCacheFactory.getCache(jconf);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
+  }
+
+  @Override
+  void init(final JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    String key = queryId + MAP_PLAN_KEY;
+    String key = queryId + processorContext.getTaskVertexName() + MAP_PLAN_KEY;
     cacheKeys.add(key);
 
     // create map and fetch operators
@@ -111,7 +117,7 @@ public class MapRecordProcessor extends RecordProcessor {
           continue;
         }
 
-        key = queryId + prefix;
+        key = queryId + processorContext.getTaskVertexName() + prefix;
         cacheKeys.add(key);
 
 	mergeWorkList.add(
@@ -123,13 +129,6 @@ public class MapRecordProcessor extends RecordProcessor {
               }));
       }
     }
-  }
-
-  @Override
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
-      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     // Update JobConf using MRInput, info like filename comes via this
     legacyMRInput = getMRInput(inputs);

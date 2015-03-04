@@ -447,6 +447,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
             Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -536,6 +537,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -976,6 +978,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
             Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
