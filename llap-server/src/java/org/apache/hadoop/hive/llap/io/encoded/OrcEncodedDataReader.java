@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -39,8 +39,8 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 
-public class OrcEncodedDataReader implements ConsumerFeedback<StreamBuffer>, Callable<Void>,
-  Consumer<EncodedColumnBatch<OrcBatchKey>> {
+public class OrcEncodedDataReader extends CallableWithNdc<Void>
+    implements ConsumerFeedback<StreamBuffer>, Consumer<EncodedColumnBatch<OrcBatchKey>> {
 
   private final OrcMetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
@@ -103,7 +103,7 @@ public class OrcEncodedDataReader implements ConsumerFeedback<StreamBuffer>, Cal
   }
 
   @Override
-  public Void call() throws IOException {
+  protected Void callInternal() throws IOException {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Processing split for " + internedFilePath);
     }

@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,8 +43,10 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
+import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
 import org.apache.tez.dag.api.TezConstants;
@@ -128,51 +129,56 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   @Override
   public void queueContainer(RunContainerRequestProto request) throws IOException {
     LOG.info("Queing container for execution: " + request);
+    // This is the start of container-annotated logging.
+    NDC.push(request.getContainerIdString());
+    try {
+      Map<String, String> env = new HashMap<String, String>();
+      // TODO What else is required in this environment map.
+      env.putAll(localEnv);
+      env.put(ApplicationConstants.Environment.USER.name(), request.getUser());
 
-    Map<String, String> env = new HashMap<String, String>();
-    // TODO What else is required in this environment map.
-    env.putAll(localEnv);
-    env.put(ApplicationConstants.Environment.USER.name(), request.getUser());
+      String[] localDirs = new String[localDirsBase.length];
 
-    String[] localDirs = new String[localDirsBase.length];
+      // Setup up local dirs to be application specific, and create them.
+      for (int i = 0; i < localDirsBase.length; i++) {
+        localDirs[i] = createAppSpecificLocalDir(localDirsBase[i], request.getApplicationIdString(),
+            request.getUser());
+        localFs.mkdirs(new Path(localDirs[i]));
+      }
+      LOG.info("DEBUG: Dirs are: " + Arrays.toString(localDirs));
 
-    // Setup up local dirs to be application specific, and create them.
-    for (int i = 0; i < localDirsBase.length; i++) {
-      localDirs[i] = createAppSpecificLocalDir(localDirsBase[i], request.getApplicationIdString(),
-          request.getUser());
-      localFs.mkdirs(new Path(localDirs[i]));
+
+      // Setup workingDir. This is otherwise setup as Environment.PWD
+      // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
+      // TODO Set this up to read user configuration if required. Ideally, Inputs / Outputs should be self configured.
+      // Setting this up correctly is more from framework components to setup security, ping intervals, etc.
+      String workingDir = localDirs[0];
+
+      Credentials credentials = new Credentials();
+      DataInputBuffer dib = new DataInputBuffer();
+      byte[] tokenBytes = request.getCredentialsBinary().toByteArray();
+      dib.reset(tokenBytes, tokenBytes.length);
+      credentials.readTokenStorageStream(dib);
+
+      Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
+
+      // TODO Unregistering does not happen at the moment, since there's no signals on when an app completes.
+      LOG.info("DEBUG: Registering request with the ShuffleHandler");
+      ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser());
+
+
+      ContainerRunnerCallable callable = new ContainerRunnerCallable(request, new Configuration(getConfig()),
+          new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
+          workingDir, credentials, memoryPerExecutor);
+      ListenableFuture<ContainerExecutionResult> future = executorService
+          .submit(callable);
+      Futures.addCallback(future, new ContainerRunnerCallback(request, callable));
+    } finally {
+      NDC.pop();
     }
-    LOG.info("DEBUG: Dirs are: " + Arrays.toString(localDirs));
-
-
-    // Setup workingDir. This is otherwise setup as Environment.PWD
-    // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
-    // TODO Set this up to read user configuration if required. Ideally, Inputs / Outputs should be self configured.
-    // Setting this up correctly is more from framework components to setup security, ping intervals, etc.
-    String workingDir = localDirs[0];
-
-    Credentials credentials = new Credentials();
-    DataInputBuffer dib = new DataInputBuffer();
-    byte[] tokenBytes = request.getCredentialsBinary().toByteArray();
-    dib.reset(tokenBytes, tokenBytes.length);
-    credentials.readTokenStorageStream(dib);
-
-    Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
-
-    // TODO Unregistering does not happen at the moment, since there's no signals on when an app completes.
-    LOG.info("DEBUG: Registering request with the ShuffleHandler");
-    ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser());
-
-
-    ContainerRunnerCallable callable = new ContainerRunnerCallable(request, new Configuration(getConfig()),
-        new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-        workingDir, credentials, memoryPerExecutor);
-    ListenableFuture<ContainerExecutionResult> future = executorService
-        .submit(callable);
-    Futures.addCallback(future, new ContainerRunnerCallback(request, callable));
   }
 
-  static class ContainerRunnerCallable implements Callable<ContainerExecutionResult> {
+  static class ContainerRunnerCallable extends CallableWithNdc<ContainerExecutionResult> {
 
     private final RunContainerRequestProto request;
     private final Configuration conf;
@@ -205,8 +211,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     }
 
     @Override
-    public ContainerExecutionResult call() throws Exception {
-      Stopwatch sw = new Stopwatch().start();
+    protected ContainerExecutionResult callInternal() throws Exception {
+      Stopwatch sw = new Stopwatch().start();s
       tezChild =
           new TezChild(conf, request.getAmHost(), request.getAmPort(),
               request.getContainerIdString(),

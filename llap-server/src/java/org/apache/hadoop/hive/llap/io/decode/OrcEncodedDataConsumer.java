@@ -67,7 +67,6 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
 
   public void setStripeMetadata(OrcStripeMetadata m) {
     assert stripes != null;
-    LlapIoImpl.LOG.error("TODO# got metadata " + m.getStripeIx());
     stripes[m.getStripeIx()] = m;
   }
 
@@ -75,7 +74,6 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
   protected void decodeBatch(EncodedColumnBatch<OrcBatchKey> batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
     int currentStripeIndex = batch.batchKey.stripeIx;
-    LlapIoImpl.LOG.error("TODO# got data " + currentStripeIndex);
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
 
