@@ -122,3 +122,839 @@ POSTHOOK: Input: default@orc_src
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1028
+PREHOOK: query: explain
+select count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 6 <- Map 4 (BROADCAST_EDGE), Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0} {_col1}
+                          1 
+                        keys:
+                          0 _col1 (type: string)
+                          1 value (type: string)
+                        outputColumnNames: _col0, _col1
+                        input vertices:
+                          1 Map 4
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Group By Operator
+                            aggregations: count()
+                            keys: _col0 (type: string), _col1 (type: string)
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string), _col1 (type: string)
+                              sort order: ++
+                              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                              value expressions: _col2 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1155 Data size: 12270 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1155 Data size: 12270 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1155 Data size: 12270 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Reducer 6 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {KEY.reducesinkkey0}
+                  1 {VALUE._col0}
+                outputColumnNames: _col0, _col8
+                Select Operator
+                  expressions: _col0 (type: string), _col8 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col0} {_col1}
+                      1 
+                    keys:
+                      0 _col1 (type: string)
+                      1 value (type: string)
+                    outputColumnNames: _col0, _col1
+                    input vertices:
+                      1 Map 4
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: string), _col1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          value expressions: _col2 (type: bigint)
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+0	468
+10	20
+103	144
+105	20
+116	20
+120	144
+125	144
+129	144
+131	20
+134	144
+136	20
+143	20
+145	20
+149	144
+150	20
+155	20
+157	20
+158	20
+160	20
+163	20
+164	144
+166	20
+17	20
+170	20
+172	144
+180	20
+183	20
+189	20
+19	20
+190	20
+191	144
+193	468
+195	144
+196	20
+20	20
+205	144
+207	144
+209	144
+213	144
+216	144
+217	144
+223	144
+224	144
+228	20
+229	144
+233	144
+235	20
+238	144
+239	144
+24	144
+241	20
+244	20
+247	20
+248	20
+255	144
+258	20
+26	144
+260	20
+263	20
+265	144
+266	20
+272	144
+273	468
+274	20
+28	20
+281	144
+286	20
+291	20
+296	20
+298	468
+30	20
+302	20
+305	20
+306	20
+307	144
+308	20
+309	144
+315	20
+316	468
+317	144
+318	468
+321	144
+325	144
+33	20
+331	144
+332	20
+335	20
+339	20
+342	144
+345	20
+353	144
+356	20
+360	20
+366	20
+367	144
+368	20
+369	468
+37	144
+373	20
+375	20
+377	20
+378	20
+379	20
+382	144
+384	468
+386	20
+389	20
+394	20
+395	144
+396	468
+399	144
+400	20
+401	2100
+402	20
+406	1088
+407	20
+41	20
+413	144
+414	144
+42	144
+430	468
+431	468
+436	20
+44	20
+446	20
+448	20
+449	20
+452	20
+459	144
+462	144
+466	468
+467	20
+468	1088
+47	20
+472	20
+480	468
+482	20
+484	20
+485	20
+487	20
+490	20
+493	20
+494	20
+495	20
+496	20
+497	20
+498	468
+5	468
+51	144
+54	20
+57	20
+58	144
+65	20
+66	20
+69	20
+70	468
+74	20
+77	20
+78	20
+8	20
+80	20
+84	144
+85	20
+87	20
+9	20
+92	20
+95	144
+96	20
+100	144
+104	144
+11	20
+111	20
+113	144
+114	20
+118	144
+119	468
+12	144
+126	20
+128	468
+133	20
+137	144
+138	1088
+146	144
+15	144
+152	144
+153	20
+156	20
+162	20
+165	144
+167	468
+168	20
+169	1088
+174	144
+175	144
+176	144
+177	20
+178	20
+179	144
+18	144
+181	20
+186	20
+187	468
+192	20
+194	20
+197	144
+199	468
+2	20
+200	144
+201	20
+202	20
+203	144
+208	468
+214	20
+218	20
+219	144
+221	144
+222	20
+226	20
+230	2100
+237	144
+242	144
+249	20
+252	20
+256	144
+257	20
+262	20
+27	20
+275	20
+277	1088
+278	144
+280	144
+282	144
+283	20
+284	20
+285	20
+287	20
+288	144
+289	20
+292	20
+310	20
+311	468
+322	144
+323	20
+327	468
+333	144
+336	20
+338	20
+34	20
+341	20
+344	144
+348	2100
+35	468
+351	20
+362	20
+364	20
+365	20
+374	20
+392	20
+393	20
+397	144
+4	20
+403	468
+404	144
+409	468
+411	20
+417	468
+418	20
+419	20
+421	20
+424	144
+427	20
+429	144
+43	20
+432	20
+435	20
+437	20
+438	468
+439	144
+443	20
+444	20
+453	20
+454	468
+455	20
+457	20
+458	144
+460	20
+463	144
+469	2100
+470	20
+475	20
+477	20
+478	144
+479	20
+481	20
+483	20
+489	1088
+491	20
+492	144
+53	20
+64	20
+67	144
+72	144
+76	144
+82	20
+83	144
+86	20
+90	468
+97	144
+98	144
+PREHOOK: query: select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+0	468
+10	20
+100	144
+103	144
+104	144
+105	20
+11	20
+111	20
+113	144
+114	20
+116	20
+118	144
+119	468
+12	144
+120	144
+125	144
+126	20
+128	468
+129	144
+131	20
+133	20
+134	144
+136	20
+137	144
+138	1088
+143	20
+145	20
+146	144
+149	144
+15	144
+150	20
+152	144
+153	20
+155	20
+156	20
+157	20
+158	20
+160	20
+162	20
+163	20
+164	144
+165	144
+166	20
+167	468
+168	20
+169	1088
+17	20
+170	20
+172	144
+174	144
+175	144
+176	144
+177	20
+178	20
+179	144
+18	144
+180	20
+181	20
+183	20
+186	20
+187	468
+189	20
+19	20
+190	20
+191	144
+192	20
+193	468
+194	20
+195	144
+196	20
+197	144
+199	468
+2	20
+20	20
+200	144
+201	20
+202	20
+203	144
+205	144
+207	144
+208	468
+209	144
+213	144
+214	20
+216	144
+217	144
+218	20
+219	144
+221	144
+222	20
+223	144
+224	144
+226	20
+228	20
+229	144
+230	2100
+233	144
+235	20
+237	144
+238	144
+239	144
+24	144
+241	20
+242	144
+244	20
+247	20
+248	20
+249	20
+252	20
+255	144
+256	144
+257	20
+258	20
+26	144
+260	20
+262	20
+263	20
+265	144
+266	20
+27	20
+272	144
+273	468
+274	20
+275	20
+277	1088
+278	144
+28	20
+280	144
+281	144
+282	144
+283	20
+284	20
+285	20
+286	20
+287	20
+288	144
+289	20
+291	20
+292	20
+296	20
+298	468
+30	20
+302	20
+305	20
+306	20
+307	144
+308	20
+309	144
+310	20
+311	468
+315	20
+316	468
+317	144
+318	468
+321	144
+322	144
+323	20
+325	144
+327	468
+33	20
+331	144
+332	20
+333	144
+335	20
+336	20
+338	20
+339	20
+34	20
+341	20
+342	144
+344	144
+345	20
+348	2100
+35	468
+351	20
+353	144
+356	20
+360	20
+362	20
+364	20
+365	20
+366	20
+367	144
+368	20
+369	468
+37	144
+373	20
+374	20
+375	20
+377	20
+378	20
+379	20
+382	144
+384	468
+386	20
+389	20
+392	20
+393	20
+394	20
+395	144
+396	468
+397	144
+399	144
+4	20
+400	20
+401	2100
+402	20
+403	468
+404	144
+406	1088
+407	20
+409	468
+41	20
+411	20
+413	144
+414	144
+417	468
+418	20
+419	20
+42	144
+421	20
+424	144
+427	20
+429	144
+43	20
+430	468
+431	468
+432	20
+435	20
+436	20
+437	20
+438	468
+439	144
+44	20
+443	20
+444	20
+446	20
+448	20
+449	20
+452	20
+453	20
+454	468
+455	20
+457	20
+458	144
+459	144
+460	20
+462	144
+463	144
+466	468
+467	20
+468	1088
+469	2100
+47	20
+470	20
+472	20
+475	20
+477	20
+478	144
+479	20
+480	468
+481	20
+482	20
+483	20
+484	20
+485	20
+487	20
+489	1088
+490	20
+491	20
+492	144
+493	20
+494	20
+495	20
+496	20
+497	20
+498	468
+5	468
+51	144
+53	20
+54	20
+57	20
+58	144
+64	20
+65	20
+66	20
+67	144
+69	20
+70	468
+72	144
+74	20
+76	144
+77	20
+78	20
+8	20
+80	20
+82	20
+83	144
+84	144
+85	20
+86	20
+87	20
+9	20
+90	468
+92	20
+95	144
+96	20
+97	144
+98	144
