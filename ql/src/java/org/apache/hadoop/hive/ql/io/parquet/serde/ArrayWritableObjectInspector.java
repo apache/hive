@@ -105,7 +105,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)){
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
     }else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
-      throw new UnsupportedOperationException("Parquet does not support date. See HIVE-6384");
+      return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((CharTypeInfo) typeInfo);
     } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
