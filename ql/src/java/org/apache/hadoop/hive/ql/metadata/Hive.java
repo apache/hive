@@ -1887,6 +1887,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("Firing dml insert event");
+      if (tbl.isTemporary()) {
+        LOG.debug("Not firing dml insert event as " + tbl.getTableName() + " is temporary");
+        return;
+      }
       FireEventRequestData data = new FireEventRequestData();
       InsertEventRequestData insertData = new InsertEventRequestData();
       data.setInsertData(insertData);
