@@ -482,6 +482,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         int colCount = 0;
         // parent op is guaranteed to have a single list because it is a reduce sink
         for (String colName : parentColNames.get(0)) {
+          if (listBucketCols.size() <= colCount) {
+            // can happen with virtual columns. RS would add the column to its output columns
+            // but it would not exist in the grandparent output columns or exprMap.
+            return false;
+          }
           // all columns need to be at least a subset of the parentOfParent's bucket cols
           ExprNodeDesc exprNodeDesc = colExprMap.get(colName);
           if (exprNodeDesc instanceof ExprNodeColumnDesc) {
