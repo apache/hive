@@ -72,7 +72,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   }
 
   public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
-      boolean expectView, boolean ignoreProtection) {
+      boolean expectView, boolean ignoreProtection, boolean ifPurge) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -83,6 +83,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     }
     this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;
+    this.ifPurge = ifPurge;
   }
 
   /**
