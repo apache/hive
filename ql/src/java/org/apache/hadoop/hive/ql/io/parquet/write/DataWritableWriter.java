@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.*;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
@@ -28,6 +29,7 @@ import parquet.schema.GroupType;
 import parquet.schema.OriginalType;
 import parquet.schema.Type;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -298,6 +300,10 @@ public class DataWritableWriter {
         HiveDecimal vDecimal = ((HiveDecimal)inspector.getPrimitiveJavaObject(value));
         DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)inspector.getTypeInfo();
         recordConsumer.addBinary(decimalToBinary(vDecimal, decTypeInfo));
+        break;
+      case DATE:
+        Date vDate = ((DateObjectInspector) inspector).getPrimitiveJavaObject(value);
+        recordConsumer.addInteger(DateWritable.dateToDays(vDate));
         break;
       default:
         throw new IllegalArgumentException("Unsupported primitive data type: " + inspector.getPrimitiveCategory());
