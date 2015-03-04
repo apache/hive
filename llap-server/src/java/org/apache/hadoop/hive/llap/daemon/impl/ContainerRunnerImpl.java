@@ -212,7 +212,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
     @Override
     protected ContainerExecutionResult callInternal() throws Exception {
-      Stopwatch sw = new Stopwatch().start();s
+      Stopwatch sw = new Stopwatch().start();
       tezChild =
           new TezChild(conf, request.getAmHost(), request.getAmPort(),
               request.getContainerIdString(),
