@@ -17,20 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -53,24 +49,22 @@ import org.apache.hadoop.io.IntWritable;
     + "Example:\n "
     + " > SELECT _FUNC_('kitten', 'sitting');\n 3")
 public class GenericUDFLevenshtein extends GenericUDF {
-  private transient Converter[] textConverters = new Converter[2];
+  private transient Converter[] converters = new Converter[2];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
   private final IntWritable output = new IntWritable();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 2) {
-      throw new UDFArgumentLengthException(getFuncName() + " requires 2 arguments, got "
-          + arguments.length);
-    }
-    checkIfPrimitive(arguments, 0, "1st");
-    checkIfPrimitive(arguments, 1, "2nd");
+    checkArgsSize(arguments, 2, 2);
 
-    checkIfStringGroup(arguments, 0, "1st");
-    checkIfStringGroup(arguments, 1, "2nd");
+    checkArgPrimitive(arguments, 0);
+    checkArgPrimitive(arguments, 1);
 
-    getStringConverter(arguments, 0, "1st");
-    getStringConverter(arguments, 1, "2nd");
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP);
+    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
+
+    obtainStringConverter(arguments, 0, inputTypes, converters);
+    obtainStringConverter(arguments, 1, inputTypes, converters);
 
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
     return outputOI;
@@ -78,14 +72,12 @@ public class GenericUDFLevenshtein extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Object obj0;
-    Object obj1;
-    if ((obj0 = arguments[0].get()) == null || (obj1 = arguments[1].get()) == null) {
+    String str0 = getStringValue(arguments, 0, converters);
+    String str1 = getStringValue(arguments, 1, converters);
+
+    if (str0 == null || str1 == null) {
       return null;
     }
-
-    String str0 = textConverters[0].convert(obj0).toString();
-    String str1 = textConverters[1].convert(obj1).toString();
 
     int dist = StringUtils.getLevenshteinDistance(str0, str1);
     output.set(dist);
@@ -97,31 +89,7 @@ public class GenericUDFLevenshtein extends GenericUDF {
     return getStandardDisplayString(getFuncName(), children);
   }
 
-  protected void checkIfPrimitive(ObjectInspector[] arguments, int i, String argOrder)
-      throws UDFArgumentTypeException {
-    ObjectInspector.Category oiCat = arguments[i].getCategory();
-    if (oiCat != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(i, getFuncName() + " only takes primitive types as "
-          + argOrder + " argument, got " + oiCat);
-    }
-  }
-
-  protected void checkIfStringGroup(ObjectInspector[] arguments, int i, String argOrder)
-      throws UDFArgumentTypeException {
-    inputTypes[i] = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
-    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputTypes[i]) != PrimitiveGrouping.STRING_GROUP) {
-      throw new UDFArgumentTypeException(i, getFuncName() + " only takes STRING_GROUP types as "
-          + argOrder + " argument, got " + inputTypes[i]);
-    }
-  }
-
-  protected void getStringConverter(ObjectInspector[] arguments, int i, String argOrder)
-      throws UDFArgumentTypeException {
-    textConverters[i] = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
-        PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-  }
-
+  @Override
   protected String getFuncName() {
     return "levenshtein";
   }

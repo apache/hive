@@ -35,6 +35,8 @@ public class TestGenericUDFLastDay extends TestCase {
     ObjectInspector[] arguments = { valueOI0 };
 
     udf.initialize(arguments);
+
+    // date str
     runAndVerify("2014-01-01", "2014-01-31", udf);
     runAndVerify("2014-01-14", "2014-01-31", udf);
     runAndVerify("2014-01-31", "2014-01-31", udf);
@@ -43,17 +45,26 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerify("2016-02-03", "2016-02-29", udf);
     runAndVerify("2016-02-28", "2016-02-29", udf);
     runAndVerify("2016-02-29", "2016-02-29", udf);
+    //wrong date str
+    runAndVerify("2016-02-30", "2016-03-31", udf);
+    runAndVerify("2014-01-32", "2014-02-28", udf);
     runAndVerify("01/14/2014", null, udf);
     runAndVerify(null, null, udf);
 
+    // ts str
     runAndVerify("2014-01-01 10:30:45", "2014-01-31", udf);
     runAndVerify("2014-01-14 10:30:45", "2014-01-31", udf);
-    runAndVerify("2014-01-31 10:30:45", "2014-01-31", udf);
-    runAndVerify("2014-02-02 10:30:45", "2014-02-28", udf);
-    runAndVerify("2014-02-28 10:30:45", "2014-02-28", udf);
-    runAndVerify("2016-02-03 10:30:45", "2016-02-29", udf);
+    runAndVerify("2014-01-31 10:30:45.1", "2014-01-31", udf);
+    runAndVerify("2014-02-02 10:30:45.100", "2014-02-28", udf);
+    runAndVerify("2014-02-28 10:30:45.001", "2014-02-28", udf);
+    runAndVerify("2016-02-03 10:30:45.000000001", "2016-02-29", udf);
     runAndVerify("2016-02-28 10:30:45", "2016-02-29", udf);
     runAndVerify("2016-02-29 10:30:45", "2016-02-29", udf);
+    // wrong ts str
+    runAndVerify("2016-02-30 10:30:45", "2016-03-31", udf);
+    runAndVerify("2014-01-32 10:30:45", "2014-02-28", udf);
+    runAndVerify("01/14/2014 10:30:45", null, udf);
+    runAndVerify("2016-02-28T10:30:45", "2016-02-29", udf);
   }
 
   private void runAndVerify(String str, String expResult, GenericUDF udf)
