@@ -92,7 +92,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
       udf.initialize(arguments);
       assertTrue("levenshtein test. UDFArgumentLengthException is expected", false);
     } catch (UDFArgumentLengthException e) {
-      assertEquals("levenshtein test", "levenshtein requires 2 arguments, got 1", e.getMessage());
+      assertEquals("levenshtein test", "levenshtein requires 2 argument(s), got 1", e.getMessage());
     }
   }
 

@@ -57,10 +57,10 @@ public class TestGenericUDFNextDay extends TestCase {
 
     // start_date is Wed, full timestamp, full day name
     runAndVerify("2015-01-14 14:04:34", "sunday", "2015-01-18", udf);
-    runAndVerify("2015-01-14 14:04:34", "Monday", "2015-01-19", udf);
-    runAndVerify("2015-01-14 14:04:34", "Tuesday", "2015-01-20", udf);
-    runAndVerify("2015-01-14 14:04:34", "wednesday", "2015-01-21", udf);
-    runAndVerify("2015-01-14 14:04:34", "thursDAY", "2015-01-15", udf);
+    runAndVerify("2015-01-14 14:04:34.1", "Monday", "2015-01-19", udf);
+    runAndVerify("2015-01-14 14:04:34.100", "Tuesday", "2015-01-20", udf);
+    runAndVerify("2015-01-14 14:04:34.001", "wednesday", "2015-01-21", udf);
+    runAndVerify("2015-01-14 14:04:34.000000001", "thursDAY", "2015-01-15", udf);
     runAndVerify("2015-01-14 14:04:34", "FRIDAY", "2015-01-16", udf);
     runAndVerify("2015-01-14 14:04:34", "SATurday", "2015-01-17", udf);
 
@@ -72,6 +72,12 @@ public class TestGenericUDFNextDay extends TestCase {
     // not valid values
     runAndVerify("01/14/2015", "TU", null, udf);
     runAndVerify("2015-01-14", "VT", null, udf);
+    runAndVerify("2015-02-30", "WE", "2015-03-04", udf);
+    runAndVerify("2015-02-32", "WE", "2015-03-11", udf);
+    runAndVerify("2015-02-30 10:30:00", "WE", "2015-03-04", udf);
+    runAndVerify("2015-02-32 10:30:00", "WE", "2015-03-11", udf);
+    runAndVerify("2015/01/14 14:04:34", "SAT", null, udf);
+    runAndVerify("2015-01-14T14:04:34", "SAT", "2015-01-17", udf);
   }
 
   public void testNextDayErrorArg1() throws HiveException {
@@ -86,7 +92,7 @@ public class TestGenericUDFNextDay extends TestCase {
       assertTrue("UDFArgumentException expected", false);
     } catch (UDFArgumentException e) {
       assertEquals(
-          "next_day() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got LONG",
+          "next_day only takes STRING_GROUP, DATE_GROUP types as 1st argument, got LONG",
           e.getMessage());
     }
   }
@@ -102,7 +108,7 @@ public class TestGenericUDFNextDay extends TestCase {
       udf.initialize(arguments);
       assertTrue("UDFArgumentException expected", false);
     } catch (UDFArgumentException e) {
-      assertEquals("next_day() only takes STRING_GROUP types as second argument, got INT",
+      assertEquals("next_day only takes STRING_GROUP types as 2nd argument, got INT",
           e.getMessage());
     }
   }

@@ -24,30 +24,22 @@ import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.THU;
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.TUE;
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.WED;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFNextDay.
@@ -62,120 +54,68 @@ import org.apache.hadoop.io.Text;
         + " 'yyyy-MM-dd'. day_of_week is day of the week (e.g. Mo, tue, FRIDAY)."
         + "Example:\n " + " > SELECT _FUNC_('2015-01-14', 'TU') FROM src LIMIT 1;\n" + " '2015-01-20'")
 public class GenericUDFNextDay extends GenericUDF {
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient TimestampConverter timestampConverter;
-  private transient Converter textConverter0;
-  private transient Converter textConverter1;
-  private transient Converter dateWritableConverter;
-  private transient PrimitiveCategory inputType1;
-  private transient PrimitiveCategory inputType2;
+  private transient Converter[] converters = new Converter[2];
+  private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
   private final Calendar calendar = Calendar.getInstance();
   private final Text output = new Text();
+  private transient int dayOfWeekIntConst;
+  private transient boolean isDayOfWeekConst;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 2) {
-      throw new UDFArgumentLengthException("next_day() requires 2 argument, got "
-          + arguments.length);
+    checkArgsSize(arguments, 2, 2);
+
+    checkArgPrimitive(arguments, 0);
+    checkArgPrimitive(arguments, 1);
+
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP);
+    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
+
+    obtainDateConverter(arguments, 0, inputTypes, converters);
+    obtainStringConverter(arguments, 1, inputTypes, converters);
+
+    if (arguments[1] instanceof ConstantObjectInspector) {
+      String dayOfWeek = getConstantStringValue(arguments, 1);
+      isDayOfWeekConst = true;
+      dayOfWeekIntConst = getIntDayOfWeek(dayOfWeek);
     }
-    if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + arguments[0].getTypeName() + " is passed as first arguments");
-    }
-    if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(1, "Only primitive type arguments are accepted but "
-          + arguments[1].getTypeName() + " is passed as second arguments");
-    }
-    inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
+
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    switch (inputType1) {
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      inputType1 = PrimitiveCategory.STRING;
-      textConverter0 = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      break;
-    case TIMESTAMP:
-      timestampConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
-      break;
-    case DATE:
-      dateWritableConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableDateObjectInspector);
-      break;
-    default:
-      throw new UDFArgumentTypeException(0,
-          "next_day() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
-              + inputType1);
-    }
-    inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
-    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputType2) != PrimitiveGrouping.STRING_GROUP) {
-      throw new UDFArgumentTypeException(1,
-          "next_day() only takes STRING_GROUP types as second argument, got " + inputType2);
-    }
-    textConverter1 = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[1],
-        PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if (arguments[0].get() == null || arguments[1].get() == null) {
-      return null;
+    int dayOfWeekInt;
+    if (isDayOfWeekConst) {
+      dayOfWeekInt = dayOfWeekIntConst;
+    } else {
+      String dayOfWeek = getStringValue(arguments, 1, converters);
+      dayOfWeekInt = getIntDayOfWeek(dayOfWeek);
     }
-    String dayOfWeek = textConverter1.convert(arguments[1].get()).toString();
-    int dayOfWeekInt = getIntDayOfWeek(dayOfWeek);
     if (dayOfWeekInt == -1) {
       return null;
     }
 
-    Date date;
-    switch (inputType1) {
-    case STRING:
-      String dateString = textConverter0.convert(arguments[0].get()).toString();
-      try {
-        date = formatter.parse(dateString);
-      } catch (ParseException e) {
-        return null;
-      }
-      break;
-    case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
-          .getTimestamp();
-      date = ts;
-      break;
-    case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      date = dw.get();
-      break;
-    default:
-      throw new UDFArgumentTypeException(0,
-          "next_day() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
+    Date date = getDateValue(arguments, 0, inputTypes, converters);
+    if (date == null) {
+      return null;
     }
 
     nextDay(date, dayOfWeekInt);
     Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    output.set(DateUtils.getDateFormat().format(newDate));
     return output;
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("next_day(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString(getFuncName(), children);
+  }
+
+  @Override
+  protected String getFuncName() {
+    return "next_day";
   }
 
   protected Calendar nextDay(Date date, int dayOfWeek) {
@@ -196,6 +136,9 @@ public class GenericUDFNextDay extends GenericUDF {
   }
 
   protected int getIntDayOfWeek(String dayOfWeek) throws UDFArgumentException {
+    if (dayOfWeek == null) {
+      return -1;
+    }
     if (MON.matches(dayOfWeek)) {
       return Calendar.MONDAY;
     }
@@ -221,13 +164,9 @@ public class GenericUDFNextDay extends GenericUDF {
   }
 
   public static enum DayOfWeek {
-    MON ("MO", "MON", "MONDAY"),
-    TUE ("TU", "TUE", "TUESDAY"),
-    WED ("WE", "WED", "WEDNESDAY"),
-    THU ("TH", "THU", "THURSDAY"),
-    FRI ("FR", "FRI", "FRIDAY"),
-    SAT ("SA", "SAT", "SATURDAY"),
-    SUN ("SU", "SUN", "SUNDAY");
+    MON("MO", "MON", "MONDAY"), TUE("TU", "TUE", "TUESDAY"), WED("WE", "WED", "WEDNESDAY"), THU(
+        "TH", "THU", "THURSDAY"), FRI("FR", "FRI", "FRIDAY"), SAT("SA", "SAT", "SATURDAY"), SUN(
+        "SU", "SUN", "SUNDAY");
 
     private String name2;
     private String name3;

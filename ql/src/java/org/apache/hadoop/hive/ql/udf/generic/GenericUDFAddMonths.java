@@ -17,29 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.NUMERIC_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFAddMonths.
@@ -55,108 +49,68 @@ import org.apache.hadoop.io.Text;
         + "ignored.\n"
         + "Example:\n " + " > SELECT _FUNC_('2009-08-31', 1) FROM src LIMIT 1;\n" + " '2009-09-30'")
 public class GenericUDFAddMonths extends GenericUDF {
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient TimestampConverter timestampConverter;
-  private transient Converter textConverter;
-  private transient Converter dateWritableConverter;
-  private transient Converter intWritableConverter;
-  private transient PrimitiveCategory inputType1;
-  private transient PrimitiveCategory inputType2;
+  private transient Converter[] converters = new Converter[2];
+  private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
   private final Calendar calendar = Calendar.getInstance();
   private final Text output = new Text();
+  private transient Integer numMonthsConst;
+  private transient boolean isNumMonthsConst;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 2) {
-      throw new UDFArgumentLengthException("add_months() requires 2 argument, got "
-          + arguments.length);
+    checkArgsSize(arguments, 2, 2);
+
+    checkArgPrimitive(arguments, 0);
+    checkArgPrimitive(arguments, 1);
+
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP);
+    checkArgGroups(arguments, 1, inputTypes, NUMERIC_GROUP);
+
+    obtainDateConverter(arguments, 0, inputTypes, converters);
+    obtainIntConverter(arguments, 1, inputTypes, converters);
+
+    if (arguments[1] instanceof ConstantObjectInspector) {
+      numMonthsConst = getConstantIntValue(arguments, 1);
+      isNumMonthsConst = true;
     }
-    if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + arguments[0].getTypeName() + " is passed as first arguments");
-    }
-    if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(1, "Only primitive type arguments are accepted but "
-          + arguments[1].getTypeName() + " is passed as second arguments");
-    }
-    inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
+
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    switch (inputType1) {
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      inputType1 = PrimitiveCategory.STRING;
-      textConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      break;
-    case TIMESTAMP:
-      timestampConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
-      break;
-    case DATE:
-      dateWritableConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableDateObjectInspector);
-      break;
-    default:
-      throw new UDFArgumentTypeException(0,
-          "ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
-              + inputType1);
-    }
-    inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
-    if (inputType2 != PrimitiveCategory.INT) {
-      throw new UDFArgumentTypeException(1,
-          "ADD_MONTHS() only takes INT types as second argument, got " + inputType2);
-    }
-    intWritableConverter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[1],
-        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if (arguments[0].get() == null) {
+    Integer numMonthV;
+    if (isNumMonthsConst) {
+      numMonthV = numMonthsConst;
+    } else {
+      numMonthV = getIntValue(arguments, 1, converters);
+    }
+
+    if (numMonthV == null) {
       return null;
     }
-    IntWritable toBeAdded = (IntWritable) intWritableConverter.convert(arguments[1].get());
-    if (toBeAdded == null) {
+
+    int numMonthInt = numMonthV.intValue();
+    Date date = getDateValue(arguments, 0, inputTypes, converters);
+    if (date == null) {
       return null;
     }
-    Date date;
-    switch (inputType1) {
-    case STRING:
-      String dateString = textConverter.convert(arguments[0].get()).toString();
-      try {
-        date = formatter.parse(dateString.toString());
-      } catch (ParseException e) {
-        return null;
-      }
-      break;
-    case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
-          .getTimestamp();
-      date = ts;
-      break;
-    case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      date = dw.get();
-      break;
-    default:
-      throw new UDFArgumentTypeException(0,
-          "ADD_MONTHS() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
-    }
-    int numMonth = toBeAdded.get();
-    addMonth(date, numMonth);
+
+    addMonth(date, numMonthInt);
     Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    output.set(DateUtils.getDateFormat().format(newDate));
     return output;
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    return getStandardDisplayString("add_months", children);
+    return getStandardDisplayString(getFuncName(), children);
+  }
+
+  @Override
+  protected String getFuncName() {
+    return "add_months";
   }
 
   protected Calendar addMonth(Date d, int numMonths) {
