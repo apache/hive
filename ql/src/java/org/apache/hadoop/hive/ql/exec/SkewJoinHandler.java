@@ -317,14 +317,11 @@ public class SkewJoinHandler {
     Path outPath = getOperatorOutputPath(specPath);
     Path finalPath = getOperatorFinalPath(specPath);
     FileSystem fs = outPath.getFileSystem(hconf);
-    try {
-      if (!fs.rename(outPath, finalPath)) {
-        throw new IOException("Unable to rename output to: " + finalPath);
-      }
-    } catch (FileNotFoundException e) {
-      if (!ignoreNonExisting) {
-        throw e;
-      }
+    if (ignoreNonExisting && !fs.exists(outPath)) {
+      return;
+    }
+    if (!fs.rename(outPath, finalPath)) {
+      throw new IOException("Unable to rename output to: " + finalPath);
     }
   }
 
