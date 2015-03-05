@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -181,10 +182,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
     try {
+      String selector = HiveConf.getVar(context.parseContext.getConf(),
+          HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR);
       bigTableMatcherClass =
-          (Class<? extends BigTableSelectorForAutoSMJ>) (Class.forName(HiveConf.getVar(
-              context.parseContext.getConf(),
-              HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR)));
+          (Class<? extends BigTableSelectorForAutoSMJ>) JavaUtils.loadClass(selector);
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e.getMessage());
     }

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyString;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
@@ -33,8 +33,6 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyIntObjec
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +58,7 @@ public class TestDefaultAccumuloRowIdFactory {
     AccumuloRowIdFactory factory = accumuloSerDe.getParams().getRowIdFactory();
     List<TypeInfo> columnTypes = accumuloSerDe.getParams().getHiveColumnTypes();
     ColumnMapper mapper = accumuloSerDe.getParams().getColumnMapper();
-    SerDeParameters serDeParams = accumuloSerDe.getParams().getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDe.getParams().getSerDeParameters();
 
     List<ObjectInspector> OIs = accumuloSerDe.getColumnObjectInspectors(columnTypes, serDeParams, mapper.getColumnMappings(), factory);
 
@@ -85,7 +83,7 @@ public class TestDefaultAccumuloRowIdFactory {
     AccumuloRowIdFactory factory = accumuloSerDe.getParams().getRowIdFactory();
     List<TypeInfo> columnTypes = accumuloSerDe.getParams().getHiveColumnTypes();
     ColumnMapper mapper = accumuloSerDe.getParams().getColumnMapper();
-    SerDeParameters serDeParams = accumuloSerDe.getParams().getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDe.getParams().getSerDeParameters();
 
     List<ObjectInspector> OIs = accumuloSerDe.getColumnObjectInspectors(columnTypes, serDeParams, mapper.getColumnMappings(), factory);
 

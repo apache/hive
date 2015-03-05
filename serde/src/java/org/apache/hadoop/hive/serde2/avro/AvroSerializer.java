@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -152,10 +153,12 @@ class AvroSerializer {
   final InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>> enums
       = new InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>>() {
           @Override
-          protected InstanceCache<Object, GenericEnumSymbol> makeInstance(final Schema schema) {
+          protected InstanceCache<Object, GenericEnumSymbol> makeInstance(final Schema schema,
+                     Set<Schema> seenSchemas) {
             return new InstanceCache<Object, GenericEnumSymbol>() {
               @Override
-              protected GenericEnumSymbol makeInstance(Object seed) {
+              protected GenericEnumSymbol makeInstance(Object seed,
+                             Set<Object> seenSchemas) {
                 return new GenericData.EnumSymbol(schema, seed.toString());
               }
             };

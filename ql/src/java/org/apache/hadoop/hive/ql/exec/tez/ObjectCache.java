@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.concurrent.Callable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tez.runtime.api.ObjectRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import com.google.common.base.Preconditions;
 
@@ -29,17 +32,17 @@ import com.google.common.base.Preconditions;
  *
  */
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
-  
+
   private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
-  
+
   // ObjectRegistry is available via the Input/Output/ProcessorContext.
   // This is setup as part of the Tez Processor construction, so that it is available whenever an
   // instance of the ObjectCache is created. The assumption is that Tez will initialize the Processor
   // before anything else.
   private volatile static ObjectRegistry staticRegistry;
- 
+
   private final ObjectRegistry registry;
-  
+
   public ObjectCache() {
     Preconditions.checkNotNull(staticRegistry,
         "Object registry not setup yet. This should have been setup by the TezProcessor");
@@ -49,18 +52,27 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;
   }
-  
+
   @Override
-  public void cache(String key, Object value) {
-    LOG.info("Adding " + key + " to cache with value " + value);
-    registry.cacheForVertex(key, value);
+  public void release(String key) {
+    // nothing to do
+    LOG.info("Releasing key: " + key);
   }
 
   @Override
-  public Object retrieve(String key) {
-    Object o = registry.get(key);
-    if (o != null) {
-      LOG.info("Found " + key + " in cache with value: " + o);
+  public Object retrieve(String key, Callable<?> fn) throws HiveException {
+    Object o;
+    try {
+      o = registry.get(key);
+      if (o == null) {
+	o = fn.call();
+	LOG.info("Caching key: " + key);
+	registry.cacheForVertex(key, o);
+      } else {
+	LOG.info("Found " + key + " in cache with value: " + o);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
     return o;
   }

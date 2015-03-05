@@ -83,7 +83,9 @@ class RecordReaderImpl implements RecordReader {
 
   private static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
+  private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
+  private final Path path;
   private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -265,6 +267,7 @@ class RecordReaderImpl implements RecordReader {
                    long strideRate,
                    Configuration conf
                   ) throws IOException {
+    this.path = path;
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
@@ -2989,7 +2992,7 @@ class RecordReaderImpl implements RecordReader {
     // figure out which columns have a present stream
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
-      if (stream.getKind() == OrcProto.Stream.Kind.PRESENT) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.PRESENT)) {
         hasNull[stream.getColumn()] = true;
       }
     }
@@ -2997,7 +3000,9 @@ class RecordReaderImpl implements RecordReader {
       long length = stream.getLength();
       int column = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
-      if (StreamName.getArea(streamKind) == StreamName.Area.DATA &&
+      // since stream kind is optional, first check if it exists
+      if (stream.hasKind() &&
+          (StreamName.getArea(streamKind) == StreamName.Area.DATA) &&
           includedColumns[column]) {
         // if we aren't filtering or it is a dictionary, load it.
         if (includedRowGroups == null ||
@@ -3134,8 +3139,10 @@ class RecordReaderImpl implements RecordReader {
     long offset = 0;
     for(OrcProto.Stream streamDesc: streamDescriptions) {
       int column = streamDesc.getColumn();
+      // do not create stream if stream kind does not exist
       if ((includeColumn == null || includeColumn[column]) &&
-          StreamName.getArea(streamDesc.getKind()) == StreamName.Area.DATA) {
+          streamDesc.hasKind() &&
+          (StreamName.getArea(streamDesc.getKind()) == StreamName.Area.DATA)) {
         long length = streamDesc.getLength();
         int first = -1;
         int last = -2;
@@ -3259,70 +3266,81 @@ class RecordReaderImpl implements RecordReader {
 
   @Override
   public Object next(Object previous) throws IOException {
-    Object result = reader.next(previous);
-    // find the next row
-    rowInStripe += 1;
-    advanceToNextRow(rowInStripe + rowBaseInStripe);
-    if (isLogTraceEnabled) {
-      LOG.trace("row from " + reader.path);
-      LOG.trace("orc row = " + result);
+    try {
+      final Object result = reader.next(previous);
+      // find the next row
+      rowInStripe += 1;
+      advanceToNextRow(rowInStripe + rowBaseInStripe);
+      if (isLogTraceEnabled) {
+        LOG.trace("row from " + reader.path);
+        LOG.trace("orc row = " + result);
+      }
+      return result;
+    } catch (IOException e) {
+      // Rethrow exception with file name in log message
+      throw new IOException("Error reading file: " + path, e);
     }
-    return result;
   }
 
   @Override
   public VectorizedRowBatch nextBatch(VectorizedRowBatch previous) throws IOException {
-    VectorizedRowBatch result = null;
-    if (rowInStripe >= rowCountInStripe) {
-      currentStripe += 1;
-      readStripe();
-    }
+    try {
+      final VectorizedRowBatch result;
+      if (rowInStripe >= rowCountInStripe) {
+        currentStripe += 1;
+        readStripe();
+      }
 
-    long batchSize = 0;
+      long batchSize = 0;
 
-    // In case of PPD, batch size should be aware of row group boundaries. If only a subset of row
-    // groups are selected then marker position is set to the end of range (subset of row groups
-    // within strip). Batch size computed out of marker position makes sure that batch size is
-    // aware of row group boundary and will not cause overflow when reading rows
-    // illustration of this case is here https://issues.apache.org/jira/browse/HIVE-6287
-    if (rowIndexStride != 0 && includedRowGroups != null && rowInStripe < rowCountInStripe) {
-      int startRowGroup = (int) (rowInStripe / rowIndexStride);
-      if (!includedRowGroups[startRowGroup]) {
-        while (startRowGroup < includedRowGroups.length && !includedRowGroups[startRowGroup]) {
-          startRowGroup += 1;
+      // In case of PPD, batch size should be aware of row group boundaries. If only a subset of row
+      // groups are selected then marker position is set to the end of range (subset of row groups
+      // within strip). Batch size computed out of marker position makes sure that batch size is
+      // aware of row group boundary and will not cause overflow when reading rows
+      // illustration of this case is here https://issues.apache.org/jira/browse/HIVE-6287
+      if (rowIndexStride != 0 && includedRowGroups != null && rowInStripe < rowCountInStripe) {
+        int startRowGroup = (int) (rowInStripe / rowIndexStride);
+        if (!includedRowGroups[startRowGroup]) {
+          while (startRowGroup < includedRowGroups.length && !includedRowGroups[startRowGroup]) {
+            startRowGroup += 1;
+          }
         }
+
+        int endRowGroup = startRowGroup;
+        while (endRowGroup < includedRowGroups.length && includedRowGroups[endRowGroup]) {
+          endRowGroup += 1;
+        }
+
+        final long markerPosition =
+            (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
+                : rowCountInStripe;
+        batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (markerPosition - rowInStripe));
+
+        if (isLogDebugEnabled && batchSize < VectorizedRowBatch.DEFAULT_SIZE) {
+          LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
+        }
+      } else {
+        batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
       }
 
-      int endRowGroup = startRowGroup;
-      while (endRowGroup < includedRowGroups.length && includedRowGroups[endRowGroup]) {
-        endRowGroup += 1;
+      rowInStripe += batchSize;
+      if (previous == null) {
+        ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
+        result = new VectorizedRowBatch(cols.length);
+        result.cols = cols;
+      } else {
+        result = previous;
+        result.selectedInUse = false;
+        reader.nextVector(result.cols, (int) batchSize);
       }
 
-      final long markerPosition = (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
-          : rowCountInStripe;
-      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (markerPosition - rowInStripe));
-
-      if (LOG.isDebugEnabled() && batchSize < VectorizedRowBatch.DEFAULT_SIZE) {
-        LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
-      }
-    } else {
-      batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
+      result.size = (int) batchSize;
+      advanceToNextRow(rowInStripe + rowBaseInStripe);
+      return result;
+    } catch (IOException e) {
+      // Rethrow exception with file name in log message
+      throw new IOException("Error reading file: " + path, e);
     }
-
-    rowInStripe += batchSize;
-    if (previous == null) {
-      ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
-      result = new VectorizedRowBatch(cols.length);
-      result.cols = cols;
-    } else {
-      result = (VectorizedRowBatch) previous;
-      result.selectedInUse = false;
-      reader.nextVector(result.cols, (int) batchSize);
-    }
-
-    result.size = (int) batchSize;
-    advanceToNextRow(rowInStripe + rowBaseInStripe);
-    return result;
   }
 
   @Override
@@ -3381,7 +3399,7 @@ class RecordReaderImpl implements RecordReader {
       int len = (int) stream.getLength();
       // row index stream and bloom filter are interlaced, check if the sarg column contains bloom
       // filter and combine the io to read row index and bloom filters for that column together
-      if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX)) {
         boolean readBloomFilter = false;
         if (sargColumns != null && sargColumns[col] &&
             nextStream.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER) {

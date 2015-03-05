@@ -22,23 +22,20 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hive.common.util.AnnotationUtils;
 
 @SuppressWarnings("deprecation")
-public class WindowFunctionInfo implements CommonFunctionInfo {
-  boolean supportsWindow = true;
-  boolean pivotResult = false;
-  boolean impliesOrder = false;
-  FunctionInfo fInfo;
+public class WindowFunctionInfo extends FunctionInfo {
 
-  WindowFunctionInfo(FunctionInfo fInfo) {
-    assert fInfo.isGenericUDAF();
-    this.fInfo = fInfo;
-    Class<? extends GenericUDAFResolver> wfnCls = fInfo.getGenericUDAFResolver().getClass();
+  private final boolean supportsWindow;
+  private final boolean pivotResult;
+  private final boolean impliesOrder;
+
+  public WindowFunctionInfo(boolean isNative, String functionName,
+      GenericUDAFResolver resolver, FunctionResource[] resources) {
+    super(isNative, functionName, resolver, resources);
     WindowFunctionDescription def =
-          AnnotationUtils.getAnnotation(wfnCls, WindowFunctionDescription.class);
-    if ( def != null) {
-      supportsWindow = def.supportsWindow();
-      pivotResult = def.pivotResult();
-      impliesOrder = def.impliesOrder();
-    }
+        AnnotationUtils.getAnnotation(resolver.getClass(), WindowFunctionDescription.class);
+    supportsWindow = def == null ? true : def.supportsWindow();
+    pivotResult = def == null ? false : def.pivotResult();
+    impliesOrder = def == null ? false : def.impliesOrder();
   }
 
   public boolean isSupportsWindow() {
@@ -51,13 +48,5 @@ public class WindowFunctionInfo implements CommonFunctionInfo {
 
   public boolean isImpliesOrder() {
     return impliesOrder;
-  }
-  public FunctionInfo getfInfo() {
-    return fInfo;
-  }
-
-  @Override
-  public Class<?> getFunctionClass() {
-    return getfInfo().getFunctionClass();
   }
 }

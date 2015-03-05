@@ -29,7 +29,6 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,8 +48,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -64,6 +61,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -73,7 +71,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
@@ -102,6 +99,8 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -155,6 +154,31 @@ public class Hive {
       super.remove();
     }
   };
+
+  // register all permanent functions. need improvement
+  static {
+    try {
+      reloadFunctions();
+    } catch (Exception e) {
+      LOG.warn("Failed to access metastore. This class should not accessed in runtime.",e);
+    }
+  }
+
+  public static void reloadFunctions() throws HiveException {
+    Hive db = Hive.get();
+    for (String dbName : db.getAllDatabases()) {
+      for (String functionName : db.getFunctions(dbName, "*")) {
+        Function function = db.getFunction(dbName, functionName);
+        try {
+          FunctionRegistry.registerPermanentFunction(functionName, function.getClassName(), false,
+              FunctionTask.toFunctionResource(function.getResourceUris()));
+        } catch (Exception e) {
+          LOG.warn("Failed to register persistent function " +
+              functionName + ":" + function.getClassName() + ". Ignore and continue.");
+        }
+      }
+    }
+  }
 
   public static Hive get(Configuration c, Class<?> clazz) throws HiveException {
     return get(c instanceof HiveConf ? (HiveConf)c : new HiveConf(c, clazz));
@@ -1590,10 +1614,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
     Table tbl = getTable(tableName);
+    HiveConf sessionConf = SessionState.getSessionConf();
     if (replace) {
-      tbl.replaceFiles(loadPath, isSrcLocal);
+      Path tableDest = tbl.getPath();
+      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
     } else {
-      tbl.copyFiles(loadPath, isSrcLocal, isAcid, newFiles);
+      FileSystem fs;
+      try {
+        fs = tbl.getDataLocation().getFileSystem(sessionConf);
+        copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid, newFiles);
+      } catch (IOException e) {
+        throw new HiveException("addFiles: filesystem error in check phase", e);
+      }
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
@@ -1855,6 +1887,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("Firing dml insert event");
+      if (tbl.isTemporary()) {
+        LOG.debug("Not firing dml insert event as " + tbl.getTableName() + " is temporary");
+        return;
+      }
       FireEventRequestData data = new FireEventRequestData();
       InsertEventRequestData insertData = new InsertEventRequestData();
       data.setInsertData(insertData);
@@ -1889,8 +1925,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, boolean deleteData) throws HiveException {
+    return dropPartition(db_name, tbl_name, part_vals,
+                         PartitionDropOptions.instance().deleteData(deleteData));
+  }
+
+  public boolean dropPartition(String dbName, String tableName, List<String> partVals, PartitionDropOptions options)
+      throws HiveException {
     try {
-      return getMSC().dropPartition(db_name, tbl_name, part_vals, deleteData);
+      return getMSC().dropPartition(dbName, tableName, partVals, options);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
@@ -1908,7 +1950,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tblName,
       List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws HiveException {
-    //TODO: add support for ifPurge
+    return dropPartitions(dbName, tblName, partSpecs,
+                          PartitionDropOptions.instance()
+                                              .deleteData(deleteData)
+                                              .ignoreProtection(ignoreProtection)
+                                              .ifExists(ifExists));
+  }
+
+  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+                                        PartitionDropOptions dropOptions) throws HiveException {
+    String[] names = Utilities.getDbTableName(tblName);
+    return dropPartitions(names[0], names[1], partSpecs, dropOptions);
+  }
+
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
       List<ObjectPair<Integer, byte[]>> partExprs =
@@ -1918,7 +1974,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             Utilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
-          dbName, tblName, partExprs, deleteData, ignoreProtection, ifExists);
+          dbName, tblName, partExprs, dropOptions);
       return convertFromMetastore(tbl, tParts, null);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);

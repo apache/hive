@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -3679,8 +3680,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private void dropPartitions(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
     // ifExists is currently verified in DDLSemanticAnalyzer
-    List<Partition> droppedParts = db.dropPartitions(dropTbl.getTableName(),
-        dropTbl.getPartSpecs(), true, dropTbl.getIgnoreProtection(), true);
+    List<Partition> droppedParts
+        = db.dropPartitions(dropTbl.getTableName(),
+                            dropTbl.getPartSpecs(),
+                            PartitionDropOptions.instance()
+                                                .deleteData(true)
+                                                .ignoreProtection(dropTbl.getIgnoreProtection())
+                                                .ifExists(true)
+                                                .purgeData(dropTbl.getIfPurge()));
     for (Partition partition : droppedParts) {
       console.printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.

@@ -30,8 +30,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
@@ -111,14 +109,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     }
     jc = job;
 
-    ObjectCache cache = ObjectCacheFactory.getCache(jc);
-    ReduceWork gWork = (ReduceWork) cache.retrieve(PLAN_KEY);
-    if (gWork == null) {
-      gWork = Utilities.getReduceWork(job);
-      cache.cache(PLAN_KEY, gWork);
-    } else {
-      Utilities.setReduceWork(job, gWork);
-    }
+    ReduceWork gWork = Utilities.getReduceWork(job);
 
     reducer = gWork.getReducer();
     reducer.setParentOperators(null); // clear out any parents as reducer is the

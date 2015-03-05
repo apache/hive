@@ -15,11 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
+
+package org.apache.hadoop.hive.ql.udf.generic;
 
 /**
- * Interface for common functionality between FunctionInfo/WindowFunctionInfo
+ * Base class for binary operators, overrides getDisplayString()
+ *
  */
-public interface CommonFunctionInfo {
-  Class<?> getFunctionClass();
+public abstract class GenericUDFBaseBinary extends GenericUDF {
+  protected String opName = getClass().getSimpleName();
+  protected String opDisplayName;  // should be set by child class
+
+  @Override
+  public String getDisplayString(String[] children) {
+    assert (children.length == 2);
+    return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
+  }
 }

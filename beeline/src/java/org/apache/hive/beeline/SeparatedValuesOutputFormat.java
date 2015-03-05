@@ -33,27 +33,31 @@ import org.supercsv.prefs.CsvPreference;
  * OutputFormat for values separated by a delimiter.
  */
 class SeparatedValuesOutputFormat implements OutputFormat {
-  /**
-   *
-   */
+  public final static String DISABLE_QUOTING_FOR_SV = "disable.quoting.for.sv";
   private final BeeLine beeLine;
-  private CsvPreference csvPreference;
+  private CsvPreference quotedCsvPreference;
+  private CsvPreference unquotedCsvPreference;
 
   SeparatedValuesOutputFormat(BeeLine beeLine, char separator) {
     this.beeLine = beeLine;
-    csvPreference = new CsvPreference.Builder('"', separator, "").build();
+    unquotedCsvPreference = new CsvPreference.Builder('\0', separator, "").build();
+    quotedCsvPreference = new CsvPreference.Builder('"', separator, "").build();
   }
 
   private void updateCsvPreference() {
     if (beeLine.getOpts().getOutputFormat().equals("dsv")) {
       // check whether delimiter changed by user
-      char curDel = (char) csvPreference.getDelimiterChar();
+      char curDel = (char) getCsvPreference().getDelimiterChar();
       char newDel = beeLine.getOpts().getDelimiterForDSV();
       // if delimiter changed, rebuild the csv preference
       if (newDel != curDel) {
         // "" is passed as the end of line symbol in following function, as
         // beeline itself adds newline
-        csvPreference = new CsvPreference.Builder('"', newDel, "").build();
+        if (isQuotingDisabled()) {
+          unquotedCsvPreference = new CsvPreference.Builder('\0', newDel, "").build();
+        } else {
+          quotedCsvPreference = new CsvPreference.Builder('"', newDel, "").build();
+        }
       }
     }
   }
@@ -64,7 +68,12 @@ class SeparatedValuesOutputFormat implements OutputFormat {
 
     int count = 0;
     while (rows.hasNext()) {
-      printRow(rows, (Rows.Row) rows.next());
+      if (count == 0 && !beeLine.getOpts().getShowHeader()) {
+        rows.next();
+        count++;
+        continue;
+      }
+      printRow((Rows.Row) rows.next());
       count++;
     }
     return count - 1; // sans header row
@@ -72,7 +81,7 @@ class SeparatedValuesOutputFormat implements OutputFormat {
 
   private String getFormattedStr(String[] vals) {
     StringWriter strWriter = new StringWriter();
-    CsvListWriter writer = new CsvListWriter(strWriter, csvPreference);
+    CsvListWriter writer = new CsvListWriter(strWriter, getCsvPreference());
     if (vals.length > 0) {
       try {
         writer.write(vals);
@@ -85,9 +94,33 @@ class SeparatedValuesOutputFormat implements OutputFormat {
     return strWriter.toString();
   }
 
-  public void printRow(Rows rows, Rows.Row row) {
+  private void printRow(Rows.Row row) {
     String[] vals = row.values;
     String formattedStr = getFormattedStr(vals);
     beeLine.output(formattedStr);
+  }
+
+  private boolean isQuotingDisabled() {
+    String quotingDisabledStr = System.getProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV);
+    if (quotingDisabledStr == null || quotingDisabledStr.isEmpty()) {
+      // default is disabling the double quoting for separated value
+      return true;
+    }
+    String parsedOptionStr = quotingDisabledStr.toLowerCase();
+    if (parsedOptionStr.equals("false") || parsedOptionStr.equals("true")) {
+      return Boolean.valueOf(parsedOptionStr);
+    } else {
+      beeLine.error("System Property disable.quoting.for.sv is now " + parsedOptionStr
+          + " which only accepts boolean value");
+      return true;
+    }
+  }
+
+  private CsvPreference getCsvPreference() {
+    if (isQuotingDisabled()) {
+      return unquotedCsvPreference;
+    } else {
+      return quotedCsvPreference;
+    }
   }
 }

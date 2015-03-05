@@ -2100,8 +2100,8 @@ public final class Utilities {
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
     if (sessionCL != null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Use session specified class loader");
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Use session specified class loader");  //it's normal case
       }
       return sessionCL;
     }
@@ -2109,6 +2109,17 @@ public final class Utilities {
       LOG.debug("Session specified class loader not found, use thread based class loader");
     }
     return JavaUtils.getClassLoader();
+  }
+
+  public static void restoreSessionSpecifiedClassLoader(ClassLoader prev) {
+    SessionState state = SessionState.get();
+    if (state != null && state.getConf() != null) {
+      ClassLoader current = state.getConf().getClassLoader();
+      if (current != prev && JavaUtils.closeClassLoadersTo(current, prev)) {
+        Thread.currentThread().setContextClassLoader(prev);
+        state.getConf().setClassLoader(prev);
+      }
+    }
   }
 
   /**
@@ -2885,7 +2896,7 @@ public final class Utilities {
 
   public static String now() {
     Calendar cal = Calendar.getInstance();
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     return sdf.format(cal.getTime());
   }
 

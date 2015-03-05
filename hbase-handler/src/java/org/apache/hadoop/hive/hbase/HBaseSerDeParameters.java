@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.AvroHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.DefaultHBaseValueFactory;
@@ -33,8 +34,7 @@ import org.apache.hadoop.hive.hbase.struct.StructHBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -50,7 +50,7 @@ public class HBaseSerDeParameters {
   public static final String AVRO_SERIALIZATION_TYPE = "avro";
   public static final String STRUCT_SERIALIZATION_TYPE = "struct";
 
-  private final SerDeParameters serdeParams;
+  private final LazySerDeParameters serdeParams;
 
   private final Configuration job;
 
@@ -92,7 +92,7 @@ public class HBaseSerDeParameters {
           columnMappings.toTypesString(tbl, job, autogenerate));
     }
 
-    this.serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
+    this.serdeParams = new LazySerDeParameters(job, tbl, serdeName);
     this.putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP, "-1"));
 
     columnMappings.setHiveColumnDescription(serdeName, serdeParams.getColumnNames(),
@@ -114,7 +114,7 @@ public class HBaseSerDeParameters {
     return serdeParams.getColumnTypes();
   }
 
-  public SerDeParameters getSerdeParams() {
+  public LazySerDeParameters getSerdeParams() {
     return serdeParams;
   }
 
@@ -201,7 +201,7 @@ public class HBaseSerDeParameters {
     if (configuration != null) {
       return configuration.getClassByName(className);
     }
-    return Class.forName(className);
+    return JavaUtils.loadClass(className);
   }
 
   private List<HBaseValueFactory> initValueFactories(Configuration conf, Properties tbl)

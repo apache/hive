@@ -500,8 +500,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
     Map<Integer, DummyStoreOperator> dummyOps = parent.getTagToOperatorTree();
     for (Entry<Integer, DummyStoreOperator> connectOp : dummyOps.entrySet()) {
-      parentOperators.add(connectOp.getKey(), connectOp.getValue());
-      connectOp.getValue().getChildOperators().add(this);
+      if (connectOp.getValue().getChildOperators() == null
+	  || connectOp.getValue().getChildOperators().isEmpty()) {
+	parentOperators.add(connectOp.getKey(), connectOp.getValue());
+	connectOp.getValue().getChildOperators().add(this);
+      }
     }
     super.initializeLocalWork(hconf);
     return;

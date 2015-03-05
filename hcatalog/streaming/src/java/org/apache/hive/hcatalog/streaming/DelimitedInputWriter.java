@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.io.BytesWritable;
 
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
           throws ClassNotFoundException, ConnectionError, SerializationError,
                  InvalidColumn, StreamingException {
      this(colNamesForFields, delimiter, endPoint, conf,
-             (char) LazySimpleSerDe.DefaultSeparators[0]);
+             (char) LazySerDeParameters.DefaultSeparators[0]);
    }
 
   /**

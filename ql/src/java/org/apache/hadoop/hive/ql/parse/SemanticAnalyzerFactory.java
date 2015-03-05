@@ -260,6 +260,7 @@ public final class SemanticAnalyzerFactory {
 
       case HiveParser.TOK_CREATEFUNCTION:
       case HiveParser.TOK_DROPFUNCTION:
+      case HiveParser.TOK_RELOADFUNCTION:
         return new FunctionSemanticAnalyzer(conf);
 
       case HiveParser.TOK_ANALYZE:

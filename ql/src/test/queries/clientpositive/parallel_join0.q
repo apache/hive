@@ -1,6 +1,6 @@
 set mapreduce.job.reduces=4;
 
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 

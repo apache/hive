@@ -70,9 +70,17 @@ public final class JavaUtils {
     return classLoader;
   }
 
-  public static void closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
+  public static Class loadClass(String className) throws ClassNotFoundException {
+    return loadClass(className, true);
+  }
+
+  public static Class loadClass(String className, boolean init) throws ClassNotFoundException {
+    return Class.forName(className, init, getClassLoader());
+  }
+
+  public static boolean closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
     if (!isValidHierarchy(current, stop)) {
-      return;
+      return false;
     }
     for (; current != null && current != stop; current = current.getParent()) {
       try {
@@ -82,6 +90,7 @@ public final class JavaUtils {
             Arrays.toString(((URLClassLoader) current).getURLs()), e);
       }
     }
+    return true;
   }
 
   // check before closing loaders, not to close app-classloader, etc. by mistake

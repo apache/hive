@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -729,7 +730,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.drop_database(name, deleteData, cascade);
   }
 
-
   /**
    * @param tbl_name
    * @param db_name
@@ -758,6 +758,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return dropPartition(dbName, tableName, partName, deleteData, null);
   }
 
+  private static EnvironmentContext getEnvironmentContextWithIfPurgeSet() {
+    Map<String, String> warehouseOptions = new HashMap<String, String>();
+    warehouseOptions.put("ifPurge", "TRUE");
+    return new EnvironmentContext(warehouseOptions);
+  }
+
+  /*
+  public boolean dropPartition(String dbName, String tableName, String partName, boolean deleteData, boolean ifPurge)
+      throws NoSuchObjectException, MetaException, TException {
+
+    return dropPartition(dbName, tableName, partName, deleteData,
+                         ifPurge? getEnvironmentContextWithIfPurgeSet() : null);
+  }
+  */
+
   public boolean dropPartition(String dbName, String tableName, String partName, boolean deleteData,
       EnvironmentContext envContext) throws NoSuchObjectException, MetaException, TException {
     return client.drop_partition_by_name_with_environment_context(dbName, tableName, partName,
@@ -784,6 +799,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return dropPartition(db_name, tbl_name, part_vals, deleteData, null);
   }
 
+  @Override
+  public boolean dropPartition(String db_name, String tbl_name,
+      List<String> part_vals, PartitionDropOptions options) throws TException {
+    return dropPartition(db_name, tbl_name, part_vals, options.deleteData,
+                         options.purgeData? getEnvironmentContextWithIfPurgeSet() : null);
+  }
+
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       boolean deleteData, EnvironmentContext envContext) throws NoSuchObjectException,
       MetaException, TException {
@@ -793,8 +815,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
-      boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+                                        List<ObjectPair<Integer, byte[]>> partExprs, PartitionDropOptions options)
+      throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<DropPartitionsExpr>(partExprs.size());
     for (ObjectPair<Integer, byte[]> partExpr : partExprs) {
@@ -805,11 +827,41 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
-    req.setDeleteData(deleteData);
-    req.setIgnoreProtection(ignoreProtection);
-    req.setNeedResult(true);
-    req.setIfExists(ifExists);
+    req.setDeleteData(options.deleteData);
+    req.setIgnoreProtection(options.ignoreProtection);
+    req.setNeedResult(options.returnResults);
+    req.setIfExists(options.ifExists);
+    if (options.purgeData) {
+      LOG.info("Dropped partitions will be purged!");
+      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
+    }
     return client.drop_partitions_req(req).getPartitions();
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists, boolean needResult) throws NoSuchObjectException, MetaException, TException {
+
+    return dropPartitions(dbName, tblName, partExprs,
+                          PartitionDropOptions.instance()
+                                              .deleteData(deleteData)
+                                              .ignoreProtection(ignoreProtection)
+                                              .ifExists(ifExists)
+                                              .returnResults(needResult));
+
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    // By default, we need the results from dropPartitions();
+    return dropPartitions(dbName, tblName, partExprs,
+                          PartitionDropOptions.instance()
+                                              .deleteData(deleteData)
+                                              .ignoreProtection(ignoreProtection)
+                                              .ifExists(ifExists));
   }
 
   /**

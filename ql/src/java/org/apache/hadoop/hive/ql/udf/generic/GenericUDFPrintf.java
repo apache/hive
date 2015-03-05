@@ -141,12 +141,6 @@ public class GenericUDFPrintf extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length >= 2);
-    StringBuilder sb = new StringBuilder();
-    sb.append("printf(");
-    for (int i = 0; i < children.length - 1; i++) {
-      sb.append(children[i]).append(", ");
-    }
-    sb.append(children[children.length - 1]).append(")");
-    return sb.toString();
+    return getStandardDisplayString("printf", children);
   }
 }

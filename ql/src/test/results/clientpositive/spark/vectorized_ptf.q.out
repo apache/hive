@@ -304,6 +304,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -321,6 +333,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -340,7 +384,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -681,6 +725,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: j
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: SUBQUERY
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -698,6 +754,25 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col5, 1, _col5
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), (_col5 - _wcol0) (type: int)
@@ -717,7 +792,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3
                             columns.types string:string:int:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -903,10 +978,22 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col3 (type: int)
-                outputColumnNames: _col2, _col1, _col5
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
@@ -926,7 +1013,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2
                             columns.types string:string:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1167,6 +1254,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: abc
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -1184,6 +1283,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -1203,7 +1334,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1456,6 +1587,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -1473,6 +1616,39 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5, 1, _col5
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), (_col5 - _wcol2) (type: int)
@@ -1492,7 +1668,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
                             columns.types string:string:int:int:int:int:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1755,6 +1931,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
@@ -1797,6 +1985,39 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col2, 1, _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _wcol0 (type: int), _wcol1 (type: int), _col2 (type: int), (_col2 - _wcol2) (type: int)
@@ -1816,7 +2037,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
                             columns.types string:string:int:int:int:int:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2091,6 +2312,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
+                        type: TABLE
+                      Partition table definition
+                        input alias: abc
+                        name: noop
+                        order by: _col1
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     isSamplingPred: false
@@ -2129,7 +2362,7 @@ STAGE PLANS:
                         columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8
                         columns.types int:string:string:string:string:int:string:double:string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2420,7 +2653,7 @@ STAGE PLANS:
                           columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8
                           columns.types int:string:string:string:string:int:string:double:string
                           escape.delim \
-                          hive.serialization.extend.nesting.levels true
+                          hive.serialization.extend.additional.nesting.levels true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2435,6 +2668,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
+                        type: TABLE
+                      Partition table definition
+                        input alias: abc
+                        name: noop
+                        order by: _col1
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     isSamplingPred: false
@@ -2588,7 +2833,21 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: part_orc
+                          output shape: p_name: string, p_mfgr: string, p_size: int
+                          type: TABLE
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: p_name, p_size(DESC)
+                          output shape: p_name: string, p_mfgr: string, p_size: int
+                          partition by: p_mfgr
+                          raw input shape:
+                          transforms raw input: true
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
                       sort order: ++-
@@ -2653,6 +2912,19 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col1, _col5(DESC)
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
+                        transforms raw input: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
@@ -2669,6 +2941,25 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1, _col5(DESC)
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1, _col5
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int)
@@ -2688,7 +2979,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3
                             columns.types string:string:int:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -2863,7 +3154,21 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: part_orc
+                          output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
+                          type: TABLE
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: p_name
+                          output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
+                          partition by: p_mfgr
+                          raw input shape:
+                          transforms raw input: true
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string)
                       sort order: ++
@@ -2929,6 +3234,19 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
+                        transforms raw input: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -2946,6 +3264,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -2965,7 +3315,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3209,6 +3559,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -3226,6 +3588,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -3245,7 +3639,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3434,8 +3828,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: +++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -3495,16 +3889,49 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                          type: PTFCOMPONENT
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                          partition by: _col2
+                          raw input shape:
+                          transforms raw input: true
+                        Partition table definition
+                          input alias: ptf_2
+                          name: noop
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                          partition by: _col2
+                          raw input shape:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -3514,10 +3941,30 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
+                        transforms raw input: true
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -3535,6 +3982,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -3554,7 +4033,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -3828,6 +4307,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -3845,6 +4336,30 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col5
+                              name: count
+                              window function: GenericUDAFCountEvaluator
+                              window frame: PRECEDING(MAX)~
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: bigint), _wcol1 (type: double)
@@ -3864,7 +4379,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3
                             columns.types string:string:bigint:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4282,6 +4797,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: abc
+                        name: noop
+                        order by: _col1
+                        output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     isSamplingPred: false
@@ -4322,6 +4849,51 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col1
+                              name: count
+                              window function: GenericUDAFCountEvaluator
+                              window frame: PRECEDING(MAX)~
+                            window function definition
+                              alias: _wcol3
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
+                            window function definition
+                              alias: _wcol4
+                              arguments: _col5, 1, _col5
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: bigint), _col7 (type: double), _wcol3 (type: double), _col5 (type: int), (_col5 - _wcol4) (type: int)
@@ -4341,7 +4913,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8
                             columns.types string:string:int:int:bigint:double:double:int:int
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4542,6 +5114,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
@@ -4581,7 +5165,7 @@ STAGE PLANS:
                         columns _col0,_col1,_col2
                         columns.types string:string:int
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4736,9 +5320,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4760,7 +5343,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         value expressions: _col2 (type: double)
@@ -4824,23 +5407,19 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col0 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col1 (type: string), _col2 (type: double)
-                  auto parallelism: false
-            Execution mode: vectorized
-        Reducer 3 
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: mfgr_price_view
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        partition by: _col0
+                        raw input shape:
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
@@ -4850,7 +5429,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col2 (type: double)
                     auto parallelism: false
-        Reducer 4 
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -4858,6 +5437,24 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(2)~
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), _wcol0 (type: double)
@@ -4877,7 +5474,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3
                             columns.types string:string:double:double
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -5288,6 +5885,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int, _col7: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col7
+                              name: sum
+                              window function: GenericUDAFSumDouble
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
@@ -5327,14 +5956,32 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(5)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _wcol0 (type: bigint)
                     outputColumnNames: _col1, _col2, _col5, _wcol0
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -5344,10 +5991,49 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col0, _col2, _col3, _col6
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: bigint, _col2: string, _col3: string, _col6: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col3, _col2
+                        partition by: _col3
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col3, _col2
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col3, _col2
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol3
+                              arguments: _col3, _col2
+                              name: cume_dist
+                              window function: GenericUDAFCumeDistEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol4
+                              arguments: _col6, true
+                              name: first_value
+                              window function: GenericUDAFFirstValueEvaluator
+                              window frame: PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), _wcol1 (type: int), _wcol2 (type: int), _wcol3 (type: double), _wcol4 (type: int)
@@ -5387,6 +6073,16 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -5404,6 +6100,16 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
@@ -5734,9 +6440,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -5746,8 +6452,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -5811,12 +6517,52 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col1: string, _col2: string, _col5: int
+                          type: PTFCOMPONENT
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2, _col1
+                          raw input shape:
+                          transforms raw input: true
+                        Partition table definition
+                          input alias: ptf_2
+                          name: noop
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2, _col1
+                          raw input shape:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -5830,10 +6576,30 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                        transforms raw input: true
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -5847,6 +6613,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2, _col1
+                        partition by: _col2, _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col2, _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col2, _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
@@ -5866,7 +6664,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -6093,9 +6891,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
         Reducer 5 <- Reducer 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -6106,8 +6904,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6171,10 +6969,29 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6188,10 +7005,22 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6205,6 +7034,18 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -6222,6 +7063,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
@@ -6241,7 +7114,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -6452,8 +7325,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -6464,8 +7337,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6529,10 +7402,29 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6546,6 +7438,25 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -6563,6 +7474,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
@@ -6582,7 +7525,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -6804,10 +7747,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
+        Reducer 5 <- Reducer 4 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -6817,8 +7760,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6882,10 +7825,29 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6899,12 +7861,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col1: string, _col2: string, _col5: int
+                          type: PTFCOMPONENT
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2, _col1
+                          raw input shape:
+                          transforms raw input: true
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -6918,10 +7906,23 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                        transforms raw input: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6935,6 +7936,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2, _col1
+                        partition by: _col2, _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col2, _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col2, _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
@@ -6954,7 +7987,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5
                             columns.types string:string:int:int:int:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -7208,9 +8241,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -7220,8 +8253,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7285,12 +8318,45 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col1: string, _col2: string, _col5: int
+                          type: PTFCOMPONENT
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: _col2
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2
+                          raw input shape:
+                          transforms raw input: true
+                        Partition table definition
+                          input alias: ptf_2
+                          name: noop
+                          order by: _col2
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2
+                          raw input shape:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string)
-                      sort order: ++
+                      key expressions: _col2 (type: string)
+                      sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -7304,10 +8370,30 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
+                        transforms raw input: true
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7321,6 +8407,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2, _col1
+                        partition by: _col2, _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col2, _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col2, _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint), _wcol2 (type: bigint)
@@ -7340,7 +8458,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
                             columns.types string:string:int:int:int:bigint:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -7560,8 +8678,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -7572,8 +8690,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7637,12 +8755,45 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: part_orc
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: TABLE
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                      Partition table definition
+                        input alias: ptf_2
+                        name: noop
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col1: string, _col2: string, _col5: int
+                          type: PTFCOMPONENT
+                        Partition table definition
+                          input alias: ptf_1
+                          name: noopwithmap
+                          order by: _col2, _col1
+                          output shape: _col1: string, _col2: string, _col5: int
+                          partition by: _col2, _col1
+                          raw input shape:
+                          transforms raw input: true
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Map-side function: true
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -7656,6 +8807,19 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: PTFCOMPONENT
+                      Partition table definition
+                        input alias: ptf_1
+                        name: noopwithmap
+                        order by: _col2, _col1
+                        output shape: _col1: string, _col2: string, _col5: int
+                        partition by: _col2, _col1
+                        raw input shape:
+                        transforms raw input: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
@@ -7673,6 +8837,38 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string, _col2: string, _col5: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: _wcol0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol1
+                              arguments: _col1
+                              name: dense_rank
+                              window function: GenericUDAFDenseRankEvaluator
+                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: _wcol2
+                              arguments: _col5
+                              name: sum
+                              window function: GenericUDAFSumLong
+                              window frame: PRECEDING(MAX)~
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint), _wcol2 (type: bigint)
@@ -7692,7 +8888,7 @@ STAGE PLANS:
                             columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
                             columns.types string:string:int:int:int:bigint:bigint
                             escape.delim \
-                            hive.serialization.extend.nesting.levels true
+                            hive.serialization.extend.additional.nesting.levels true
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

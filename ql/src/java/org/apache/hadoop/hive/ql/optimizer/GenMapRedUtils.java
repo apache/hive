@@ -76,10 +76,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
@@ -90,7 +89,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -586,7 +585,7 @@ public final class GenMapRedUtils {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path[] paths = null;
-      sampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
+      SampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
 
       // Lookup list bucketing pruner
       Map<String, ExprNodeDesc> partToPruner = parseCtx.getOpToPartToSkewedPruner().get(topOp);
@@ -1466,7 +1465,7 @@ public final class GenMapRedUtils {
    */
   public static boolean isInsertInto(ParseContext parseCtx, FileSinkOperator fsOp) {
     return fsOp.getConf().getTableInfo().getTableName() != null &&
-        parseCtx.getQB().getParseInfo().isInsertToTable();
+        parseCtx.getQueryProperties().isInsertToTable();
   }
 
   /**
@@ -1788,52 +1787,53 @@ public final class GenMapRedUtils {
     return dest;
   }
 
-  public static Set<Partition> getConfirmedPartitionsForScan(QBParseInfo parseInfo) {
+  public static Set<Partition> getConfirmedPartitionsForScan(TableScanOperator tableScanOp) {
     Set<Partition> confirmedPartns = new HashSet<Partition>();
-    tableSpec tblSpec = parseInfo.getTableSpec();
-    if (tblSpec.specType == tableSpec.SpecType.STATIC_PARTITION) {
+    TableSpec tblSpec = tableScanOp.getConf().getTableMetadata().getTableSpec();
+    if (tblSpec.specType == TableSpec.SpecType.STATIC_PARTITION) {
       // static partition
       if (tblSpec.partHandle != null) {
         confirmedPartns.add(tblSpec.partHandle);
       } else {
         // partial partition spec has null partHandle
-        assert parseInfo.isNoScanAnalyzeCommand();
         confirmedPartns.addAll(tblSpec.partitions);
       }
-    } else if (tblSpec.specType == tableSpec.SpecType.DYNAMIC_PARTITION) {
+    } else if (tblSpec.specType == TableSpec.SpecType.DYNAMIC_PARTITION) {
       // dynamic partition
       confirmedPartns.addAll(tblSpec.partitions);
     }
     return confirmedPartns;
   }
 
-  public static List<String> getPartitionColumns(QBParseInfo parseInfo) {
-    tableSpec tblSpec = parseInfo.getTableSpec();
+  public static List<String> getPartitionColumns(TableScanOperator tableScanOp) {
+    TableSpec tblSpec = tableScanOp.getConf().getTableMetadata().getTableSpec();
     if (tblSpec.tableHandle.isPartitioned()) {
       return new ArrayList<String>(tblSpec.getPartSpec().keySet());
     }
     return Collections.emptyList();
   }
 
-  public static List<Path> getInputPathsForPartialScan(QBParseInfo parseInfo, StringBuffer aggregationKey)
-    throws SemanticException {
+  public static List<Path> getInputPathsForPartialScan(TableScanOperator tableScanOp,
+          StringBuffer aggregationKey) throws SemanticException {
     List<Path> inputPaths = new ArrayList<Path>();
-    switch (parseInfo.getTableSpec().specType) {
-    case TABLE_ONLY:
-      inputPaths.add(parseInfo.getTableSpec().tableHandle.getPath());
-      break;
-    case STATIC_PARTITION:
-      Partition part = parseInfo.getTableSpec().partHandle;
-      try {
-        aggregationKey.append(Warehouse.makePartPath(part.getSpec()));
-      } catch (MetaException e) {
-        throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
-            part.getDataLocation().toString() + e.getMessage()));
-      }
-      inputPaths.add(part.getDataLocation());
-      break;
-    default:
-      assert false;
+    switch (tableScanOp.getConf().getTableMetadata().getTableSpec().specType) {
+      case TABLE_ONLY:
+        inputPaths.add(tableScanOp.getConf().getTableMetadata()
+                .getTableSpec().tableHandle.getPath());
+        break;
+      case STATIC_PARTITION:
+        Partition part = tableScanOp.getConf().getTableMetadata()
+                .getTableSpec().partHandle;
+        try {
+          aggregationKey.append(Warehouse.makePartPath(part.getSpec()));
+        } catch (MetaException e) {
+          throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
+              part.getDataLocation().toString() + e.getMessage()));
+        }
+        inputPaths.add(part.getDataLocation());
+        break;
+      default:
+        assert false;
     }
     return inputPaths;
   }

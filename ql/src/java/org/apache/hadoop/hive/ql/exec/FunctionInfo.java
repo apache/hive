@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -27,17 +28,27 @@ import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 import org.apache.hive.common.util.AnnotationUtils;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * FunctionInfo.
  *
  */
-public class FunctionInfo implements CommonFunctionInfo {
+public class FunctionInfo {
 
-  private final boolean isNative;
+  public static enum FunctionType {
+    BUILTIN, PERSISTENT, TEMPORARY;
+  }
+
+  private final FunctionType functionType;
 
   private final boolean isInternalTableFunction;
 
   private final String displayName;
+
+  private final FunctionResource[] resources;
+
+  private String className;
 
   private GenericUDF genericUDF;
 
@@ -49,38 +60,55 @@ public class FunctionInfo implements CommonFunctionInfo {
 
   private boolean blockedFunction;
 
+  // for persistent function
+  // if the function is dropped, all functions registered to sessions are needed to be reloaded
+  private AtomicBoolean discarded;
+
+  public FunctionInfo(String displayName, String className, FunctionResource... resources) {
+    this.functionType = FunctionType.PERSISTENT;
+    this.displayName = displayName;
+    this.className = className;
+    this.isInternalTableFunction = false;
+    this.resources = resources;
+    this.discarded = new AtomicBoolean(false);  // shared to all session functions
+  }
+
   public FunctionInfo(boolean isNative, String displayName,
-      GenericUDF genericUDF) {
-    this.isNative = isNative;
+      GenericUDF genericUDF, FunctionResource... resources) {
+    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     this.displayName = displayName;
     this.genericUDF = genericUDF;
     this.isInternalTableFunction = false;
+    this.resources = resources;
   }
 
   public FunctionInfo(boolean isNative, String displayName,
-      GenericUDAFResolver genericUDAFResolver) {
-    this.isNative = isNative;
+      GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
+    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     this.displayName = displayName;
     this.genericUDAFResolver = genericUDAFResolver;
     this.isInternalTableFunction = false;
+    this.resources = resources;
   }
 
   public FunctionInfo(boolean isNative, String displayName,
-      GenericUDTF genericUDTF) {
-    this.isNative = isNative;
+      GenericUDTF genericUDTF, FunctionResource... resources) {
+    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     this.displayName = displayName;
     this.genericUDTF = genericUDTF;
     this.isInternalTableFunction = false;
+    this.resources = resources;
   }
 
-  public FunctionInfo(String displayName, Class<? extends TableFunctionResolver> tFnCls)
-  {
+  public FunctionInfo(boolean isNative, String displayName, Class<? extends TableFunctionResolver> tFnCls,
+      FunctionResource... resources) {
+    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
     this.displayName = displayName;
     this.tableFunctionResolver = tFnCls;
     PartitionTableFunctionDescription def = AnnotationUtils.getAnnotation(
         tableFunctionResolver, PartitionTableFunctionDescription.class);
-    this.isNative = (def == null) ? false : def.isInternal();
-    this.isInternalTableFunction = isNative;
+    this.isInternalTableFunction = def != null && def.isInternal();
+    this.resources = resources;
   }
 
   /**
@@ -154,7 +182,7 @@ public class FunctionInfo implements CommonFunctionInfo {
    * Native functions cannot be unregistered.
    */
   public boolean isNative() {
-    return isNative;
+    return functionType == FunctionType.BUILTIN || functionType == FunctionType.PERSISTENT;
   }
 
   /**
@@ -201,4 +229,56 @@ public class FunctionInfo implements CommonFunctionInfo {
     this.blockedFunction = blockedFunction;
   }
 
+  public boolean isBuiltIn() {
+    return functionType == FunctionType.BUILTIN;
+  }
+
+  public boolean isPersistent() {
+    return functionType == FunctionType.PERSISTENT;
+  }
+
+  public String getClassName() {
+    return className;
+  }
+
+  public FunctionResource[] getResources() {
+    return resources;
+  }
+
+  public void discarded() {
+    if (discarded != null) {
+      discarded.set(true);
+    }
+  }
+
+  // for persistent function
+  public boolean isDiscarded() {
+    return discarded != null && discarded.get();
+  }
+
+  // for persistent function
+  public void shareStateWith(FunctionInfo function) {
+    if (function != null) {
+      function.discarded = discarded;
+    }
+  }
+
+  public static class FunctionResource {
+    private final SessionState.ResourceType resourceType;
+    private final String resourceURI;
+    public FunctionResource(SessionState.ResourceType resourceType, String resourceURI) {
+      this.resourceType = resourceType;
+      this.resourceURI = resourceURI;
+    }
+    public SessionState.ResourceType getResourceType() {
+      return resourceType;
+    }
+    public String getResourceURI() {
+      return resourceURI;
+    }
+    @Override
+    public String toString() {
+      return resourceType + ":" + resourceURI;
+    }
+  }
 }

@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hive.hcatalog.templeton.JsonBuilder;
 
 /**
@@ -70,7 +71,7 @@ public class JobState {
     TempletonStorage storage = null;
     try {
       storage = (TempletonStorage)
-        Class.forName(conf.get(TempletonStorage.STORAGE_CLASS))
+          JavaUtils.loadClass(conf.get(TempletonStorage.STORAGE_CLASS))
           .newInstance();
     } catch (Exception e) {
       LOG.warn("No storage method found: " + e.getMessage());

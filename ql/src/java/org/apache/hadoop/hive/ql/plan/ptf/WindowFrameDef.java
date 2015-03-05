@@ -38,4 +38,9 @@ public class WindowFrameDef {
   public void setEnd(BoundaryDef end) {
     this.end = end;
   }
+
+  @Override
+  public String toString() {
+    return start + "~" + end;
+  }
 }

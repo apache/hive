@@ -303,10 +303,11 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   void displayBrokenPipeInfo() {
-    LOG
-        .info("The script did not consume all input data. This is considered as an error.");
-    LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString()
-        + "=true; to ignore it.");
+    if (isLogInfoEnabled) {
+      LOG.info("The script did not consume all input data. This is considered as an error.");
+      LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString()
+	  + "=true; to ignore it.");
+    }
     return;
   }
 
@@ -347,10 +348,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         }
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
-        LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-        LOG.info("tablename=" + tableName);
-        LOG.info("partname=" + partitionName);
-        LOG.info("alias=" + alias);
+	if (isLogInfoEnabled) {
+	  LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
+	  LOG.info("tablename=" + tableName);
+	  LOG.info("partname=" + partitionName);
+	  LOG.info("alias=" + alias);
+	}
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
         Map<String, String> env = pb.environment();
@@ -442,8 +445,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
               + StringUtils.stringifyException(e2));
         }
         setDone(true);
-        LOG
-            .warn("Got broken pipe during write: ignoring exception and setting operator to done");
+        LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
       } else {
         LOG.error("Error in writing to script: " + e.getMessage());
         if (isBrokenPipeException(e)) {
@@ -666,7 +668,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
-        LOG.info("ErrorStreamProcessor calling reporter.progress()");
+	if (isLogInfoEnabled) {
+	  LOG.info("ErrorStreamProcessor calling reporter.progress()");
+	}
         lastReportTime = now;
         reporter.progress();
       }
@@ -721,7 +725,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           }
           proc.processLine(row);
         }
-        LOG.info("StreamThread " + name + " done");
+	if (isLogInfoEnabled) {
+	  LOG.info("StreamThread " + name + " done");
+	}
 
       } catch (Throwable th) {
         scriptError = th;

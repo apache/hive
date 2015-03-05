@@ -108,6 +108,16 @@ public class TestHiveSchemaConverter {
   }
 
   @Test
+  public void testDateType() throws Exception {
+    testConversion(
+        "a",
+        "date",
+        "message hive_schema {\n"
+            + "  optional int32 a (DATE);\n"
+            + "}\n");
+  }
+
+  @Test
   public void testArray() throws Exception {
     testConversion("arrayCol",
             "array<int>",

@@ -101,8 +101,6 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     super.initializeOp(hconf);
 
-    firstRow = true;
-
     closeCalled = false;
 
     this.firstFetchHappened = false;
@@ -226,7 +224,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   public void cleanUpInputFileChangedOp() throws HiveException {
     inputFileChanged = true;
   }
-  
+
   protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
     return JoinUtil.computeKeys(row, joinKeys[alias],
           joinKeysObjectInspectors[alias]);
@@ -265,8 +263,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     byte alias = (byte) tag;
 
     // compute keys and values as StandardObjects
-    List<Object> key = smbJoinComputeKeys(row, alias); 
-        
+    List<Object> key = smbJoinComputeKeys(row, alias);
+
     List<Object> value = getFilteredValue(alias, row);
 
 
@@ -527,7 +525,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     BucketMatcher bucketMatcher = ReflectionUtils.newInstance(bucketMatcherCls, null);
 
     getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
-    LOG.info("set task id: " + getExecContext().getFileId());
+    if (isLogInfoEnabled) {
+      LOG.info("set task id: " + getExecContext().getFileId());
+    }
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
@@ -751,7 +751,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       Integer current = top();
       if (current == null) {
-        LOG.info("MergeQueue forwarded " + counter + " rows");
+	if (isLogInfoEnabled) {
+	  LOG.info("MergeQueue forwarded " + counter + " rows");
+	}
         return null;
       }
       counter++;

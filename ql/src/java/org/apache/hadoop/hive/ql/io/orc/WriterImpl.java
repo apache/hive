@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -202,7 +204,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       allColumns = getColumnNamesFromInspector(inspector);
     }
     this.bufferSize = getEstimatedBufferSize(allColumns, bufferSize);
-    this.bloomFilterColumns = OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    if (version == OrcFile.Version.V_0_11) {
+      /* do not write bloom filters for ORC v11 */
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(null, allColumns, inspector);
+    } else {
+      this.bloomFilterColumns =
+          OrcUtils.includeColumns(bloomFilterColumnNames, allColumns, inspector);
+    }
     this.bloomFilterFpp = bloomFilterFpp;
     treeWriter = createTreeWriter(inspector, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
@@ -316,7 +325,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         try {
           Class<? extends CompressionCodec> lzo =
               (Class<? extends CompressionCodec>)
-                  Class.forName("org.apache.hadoop.hive.ql.io.orc.LzoCodec");
+                  JavaUtils.loadClass("org.apache.hadoop.hive.ql.io.orc.LzoCodec");
           return lzo.newInstance();
         } catch (ClassNotFoundException e) {
           throw new IllegalArgumentException("LZO is not available.", e);

@@ -19,15 +19,12 @@
 package org.apache.hadoop.hive.ql.plan.ptf;
 
 
-public class WindowExpressionDef extends PTFExpressionDef {
+import org.apache.hadoop.hive.ql.plan.Explain;
+
+public abstract class WindowExpressionDef extends PTFExpressionDef {
   private String alias;
 
-  public WindowExpressionDef() {}
-
-  public WindowExpressionDef(PTFExpressionDef eDef) {
-    super(eDef);
-  }
-
+  @Explain(displayName = "alias")
   public String getAlias() {
     return alias;
   }

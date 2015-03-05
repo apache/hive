@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyString;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioInteger;
@@ -58,7 +58,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo);
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySimpleSerDe.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();
@@ -119,7 +119,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo);
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySimpleSerDe.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();
@@ -202,7 +202,7 @@ public class TestLazyAccumuloRow {
         TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME));
 
     LazySimpleStructObjectInspector objectInspector = (LazySimpleStructObjectInspector) LazyFactory
-        .createLazyStructInspector(columns, types, LazySimpleSerDe.DefaultSeparators, new Text(
+        .createLazyStructInspector(columns, types, LazySerDeParameters.DefaultSeparators, new Text(
             "\\N"), false, false, (byte) '\\');
 
     DefaultAccumuloRowIdFactory rowIdFactory = new DefaultAccumuloRowIdFactory();

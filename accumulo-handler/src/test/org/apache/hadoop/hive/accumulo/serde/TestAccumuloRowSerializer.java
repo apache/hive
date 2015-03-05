@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
@@ -109,7 +109,7 @@ public class TestAccumuloRowSerializer {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(typeNames));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     LazySimpleStructObjectInspector oi = (LazySimpleStructObjectInspector) LazyFactory
         .createLazyStructInspector(columns, types, serDeParams.getSeparators(),
@@ -178,7 +178,7 @@ public class TestAccumuloRowSerializer {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(typeNames));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     LazySimpleStructObjectInspector oi = (LazySimpleStructObjectInspector) LazyFactory
         .createLazyStructInspector(columns, types, serDeParams.getSeparators(),
@@ -251,7 +251,7 @@ public class TestAccumuloRowSerializer {
     tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(',').join(typeNames));
     AccumuloSerDeParameters accumuloSerDeParams = new AccumuloSerDeParameters(new Configuration(),
         tableProperties, AccumuloSerDe.class.getSimpleName());
-    SerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
+    LazySerDeParameters serDeParams = accumuloSerDeParams.getSerDeParameters();
 
     TypeInfo stringTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
     LazyStringObjectInspector stringOI = (LazyStringObjectInspector) LazyFactory

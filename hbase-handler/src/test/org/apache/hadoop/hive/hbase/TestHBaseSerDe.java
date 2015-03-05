@@ -61,8 +61,8 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
@@ -1413,7 +1413,7 @@ public class TestHBaseSerDe extends TestCase {
         "org.apache.hadoop.hive.hbase.avro.Employee");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, "cola:prefixB_.*");
     tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
-    tbl.setProperty(LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
+    tbl.setProperty(LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
 
     return tbl;
   }
