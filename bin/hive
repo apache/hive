@@ -108,6 +108,13 @@ for f in ${HIVE_LIB}/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
 
+# add Spark assembly jar to the classpath
+if [[ -n "$SPARK_HOME" ]]
+then
+  sparkAssemblyPath=`ls ${SPARK_HOME}/lib/spark-assembly-*.jar`
+  CLASSPATH="${CLASSPATH}:${sparkAssemblyPath}"
+fi
+
 # add the auxillary jars such as serdes
 if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
   hive_aux_jars_abspath=`cd ${HIVE_AUX_JARS_PATH} && pwd`
