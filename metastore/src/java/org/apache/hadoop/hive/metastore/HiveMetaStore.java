@@ -2817,8 +2817,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * Fire a pre-event for read table operation, if there are any
      * pre-event listeners registered
      *
-     * @param db_name
-     * @param tbl_name
+     * @param dbName
+     * @param tblName
      * @throws MetaException
      * @throws NoSuchObjectException
      */
@@ -4555,9 +4555,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return true;
       }
       //do this check recursively on all the parent roles of curRole
-      List<MRoleMap> parentRoleMaps = getMS().listRoles(curRole, PrincipalType.ROLE);
-      for(MRoleMap parentRole : parentRoleMaps){
-        if(isNewRoleAParent(newRole, parentRole.getRole().getRoleName())){
+      List<Role> parentRoleMaps = getMS().listRoles(curRole, PrincipalType.ROLE);
+      for(Role parentRole : parentRoleMaps){
+        if(isNewRoleAParent(newRole, parentRole.getRoleName())){
           return true;
         }
       }
@@ -4569,25 +4569,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final PrincipalType principalType) throws MetaException, TException {
       incrementCounter("list_roles");
       firePreEvent(new PreAuthorizationCallEvent(this));
-      List<Role> result = new ArrayList<Role>();
-      try {
-        List<MRoleMap> roleMaps = getMS().listRoles(principalName, principalType);
-        if (roleMaps != null) {
-          for (MRoleMap roleMap : roleMaps) {
-            MRole mrole = roleMap.getRole();
-            Role role = new Role(mrole.getRoleName(), mrole.getCreateTime(), mrole.getOwnerName());
-            result.add(role);
-          }
-        }
-        return result;
-      } catch (MetaException e) {
-        throw e;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      return getMS().listRoles(principalName, principalType);
     }
-
-
 
     @Override
     public boolean create_role(final Role role)
@@ -4836,25 +4819,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (principalName == null) {
           return getMS().listTableColumnGrantsAll(dbName, tableName, columnName);
         }
-        List<MTableColumnPrivilege> mTableCols = getMS()
+        List<HiveObjectPrivilege> result = getMS()
             .listPrincipalTableColumnGrants(principalName, principalType,
                 dbName, tableName, columnName);
-        if (mTableCols.isEmpty()) {
-          return Collections.emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mTableCols.size(); i++) {
-          MTableColumnPrivilege sCol = mTableCols.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.COLUMN, dbName, tableName, null, sCol.getColumnName());
-          HiveObjectPrivilege secObj = new HiveObjectPrivilege(
-              objectRef, sCol.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
-                  .getCreateTime(), sCol.getGrantor(), PrincipalType
-                  .valueOf(sCol.getGrantorType()), sCol
-                  .getGrantOption()));
-          result.add(secObj);
-        }
         return result;
       } catch (MetaException e) {
         throw e;
@@ -4878,24 +4845,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (principalName == null) {
           return getMS().listPartitionColumnGrantsAll(dbName, tableName, partName, columnName);
         }
-        List<MPartitionColumnPrivilege> mPartitionCols = getMS().listPrincipalPartitionColumnGrants(
-            principalName,
-            principalType, dbName, tableName, partName, columnName);
-        if (mPartitionCols.isEmpty()) {
-          return Collections.emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mPartitionCols.size(); i++) {
-          MPartitionColumnPrivilege sCol = mPartitionCols.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.COLUMN, dbName, tableName, partValues, sCol.getColumnName());
-          HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
-              sCol.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
-                  .getCreateTime(), sCol.getGrantor(), PrincipalType
-                  .valueOf(sCol.getGrantorType()), sCol.getGrantOption()));
-          result.add(secObj);
-        }
+
+        List<HiveObjectPrivilege> result =
+            getMS().listPrincipalPartitionColumnGrants(principalName, principalType, dbName,
+                tableName, partValues, partName, columnName);
+
         return result;
       } catch (MetaException e) {
         throw e;
@@ -4915,25 +4869,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (principalName == null) {
           return getMS().listDBGrantsAll(dbName);
+        } else {
+          return getMS().listPrincipalDBGrants(principalName, principalType, dbName);
         }
-        List<MDBPrivilege> mDbs = getMS().listPrincipalDBGrants(
-            principalName, principalType, dbName);
-        if (mDbs.isEmpty()) {
-          return Collections.<HiveObjectPrivilege>emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mDbs.size(); i++) {
-          MDBPrivilege sDB = mDbs.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.DATABASE, dbName, null, null, null);
-          HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
-              sDB.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sDB.getPrivilege(), sDB
-                  .getCreateTime(), sDB.getGrantor(), PrincipalType
-                  .valueOf(sDB.getGrantorType()), sDB.getGrantOption()));
-          result.add(secObj);
-        }
-        return result;
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
@@ -4956,25 +4894,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (principalName == null) {
           return getMS().listPartitionGrantsAll(dbName, tableName, partName);
         }
-        List<MPartitionPrivilege> mParts = getMS().listPrincipalPartitionGrants(
-            principalName, principalType, dbName, tableName, partName);
-        if (mParts.isEmpty()) {
-          return Collections.<HiveObjectPrivilege> emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mParts.size(); i++) {
-          MPartitionPrivilege sPart = mParts.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.PARTITION, dbName, tableName, partValues, null);
-          HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
-              sPart.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sPart.getPrivilege(), sPart
-                  .getCreateTime(), sPart.getGrantor(), PrincipalType
-                  .valueOf(sPart.getGrantorType()), sPart
-                  .getGrantOption()));
+        List<HiveObjectPrivilege> result = getMS().listPrincipalPartitionGrants(
+            principalName, principalType, dbName, tableName, partValues, partName);
 
-          result.add(secObj);
-        }
         return result;
       } catch (MetaException e) {
         throw e;
@@ -4996,23 +4918,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (principalName == null) {
           return getMS().listTableGrantsAll(dbName, tableName);
         }
-        List<MTablePrivilege> mTbls = getMS()
+        List<HiveObjectPrivilege> result = getMS()
             .listAllTableGrants(principalName, principalType, dbName, tableName);
-        if (mTbls.isEmpty()) {
-          return Collections.<HiveObjectPrivilege> emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mTbls.size(); i++) {
-          MTablePrivilege sTbl = mTbls.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.TABLE, dbName, tableName, null, null);
-          HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
-              sTbl.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sTbl.getPrivilege(), sTbl.getCreateTime(), sTbl
-                  .getGrantor(), PrincipalType.valueOf(sTbl
-                  .getGrantorType()), sTbl.getGrantOption()));
-          result.add(secObj);
-        }
+
         return result;
       } catch (MetaException e) {
         throw e;
@@ -5030,23 +4938,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (principalName == null) {
           return getMS().listGlobalGrantsAll();
         }
-        List<MGlobalPrivilege> mUsers = getMS().listPrincipalGlobalGrants(
+        List<HiveObjectPrivilege> result = getMS().listPrincipalGlobalGrants(
             principalName, principalType);
-        if (mUsers.isEmpty()) {
-          return Collections.<HiveObjectPrivilege> emptyList();
-        }
-        List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
-        for (int i = 0; i < mUsers.size(); i++) {
-          MGlobalPrivilege sUsr = mUsers.get(i);
-          HiveObjectRef objectRef = new HiveObjectRef(
-              HiveObjectType.GLOBAL, null, null, null, null);
-          HiveObjectPrivilege secUser = new HiveObjectPrivilege(
-              objectRef, sUsr.getPrincipalName(), principalType,
-              new PrivilegeGrantInfo(sUsr.getPrivilege(), sUsr
-                  .getCreateTime(), sUsr.getGrantor(), PrincipalType
-                  .valueOf(sUsr.getGrantorType()), sUsr.getGrantOption()));
-          result.add(secUser);
-        }
+
         return result;
       } catch (MetaException e) {
         throw e;
@@ -5472,9 +5366,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("get_principals_in_role");
       firePreEvent(new PreAuthorizationCallEvent(this));
       Exception ex = null;
-      List<MRoleMap> roleMaps = null;
+      GetPrincipalsInRoleResponse response = null;
       try {
-        roleMaps = getMS().listRoleMembers(request.getRoleName());
+        response = new GetPrincipalsInRoleResponse(getMS().listRoleMembers(request.getRoleName()));
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
@@ -5483,7 +5377,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("get_principals_in_role", ex == null, ex);
       }
-      return new GetPrincipalsInRoleResponse(getRolePrincipalGrants(roleMaps));
+      return response;
     }
 
     @Override
@@ -5493,9 +5387,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("get_role_grants_for_principal");
       firePreEvent(new PreAuthorizationCallEvent(this));
       Exception ex = null;
-      List<MRoleMap> roleMaps = null;
+      List<RolePrincipalGrant> roleMaps = null;
       try {
-        roleMaps = getMS().listRoles(request.getPrincipal_name(), request.getPrincipal_type());
+        roleMaps = getMS().listRolesWithGrants(request.getPrincipal_name(), request.getPrincipal_type());
       } catch (MetaException e) {
         throw e;
       } catch (Exception e) {
@@ -5505,31 +5399,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_role_grants_for_principal", ex == null, ex);
       }
 
-      List<RolePrincipalGrant> roleGrantsList = getRolePrincipalGrants(roleMaps);
-      return new GetRoleGrantsForPrincipalResponse(roleGrantsList);
+      //List<RolePrincipalGrant> roleGrantsList = getRolePrincipalGrants(roleMaps);
+      return new GetRoleGrantsForPrincipalResponse(roleMaps);
     }
 
     /**
      * Convert each MRoleMap object into a thrift RolePrincipalGrant object
-     * @param roleMaps
+     * @param roles
      * @return
      */
-    private List<RolePrincipalGrant> getRolePrincipalGrants(List<MRoleMap> roleMaps) {
+    private List<RolePrincipalGrant> getRolePrincipalGrants(List<Role> roles) throws MetaException {
       List<RolePrincipalGrant> rolePrinGrantList = new ArrayList<RolePrincipalGrant>();
-      if (roleMaps != null) {
-        for (MRoleMap roleMap : roleMaps) {
-          RolePrincipalGrant rolePrinGrant = new RolePrincipalGrant(
-              roleMap.getRole().getRoleName(),
-              roleMap.getPrincipalName(),
-              PrincipalType.valueOf(roleMap.getPrincipalType()),
-              roleMap.getGrantOption(),
-              roleMap.getAddTime(),
-              roleMap.getGrantor(),
-              // no grantor type for public role, hence the null check
-              roleMap.getGrantorType() == null ? null
-                  : PrincipalType.valueOf(roleMap.getGrantorType())
-              );
-          rolePrinGrantList.add(rolePrinGrant);
+      if (roles != null) {
+        for (Role role : roles) {
+          rolePrinGrantList.addAll(getMS().listRoleMembers(role.getRoleName()));
         }
       }
       return rolePrinGrantList;

@@ -612,19 +612,39 @@ class HBaseReadWrite {
    * @param type user or role
    * @return map of role name to grant info for all roles directly participated in.
    */
-  Map<String, GrantInfoWritable> getPrincipalDirectRoles(String name, PrincipalType type)
+  List<Role> getPrincipalDirectRoles(String name, PrincipalType type)
       throws IOException {
     buildRoleCache();
 
-    Map<String, GrantInfoWritable> directRoles = new HashMap<String, GrantInfoWritable>();
+    Set<String> rolesFound = new HashSet<String>();
     for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
       for (GrantInfoWritable giw : e.getValue().grantInfos) {
         if (giw.principalType == type && giw.principalName.equals(name)) {
-          directRoles.put(e.getKey(), giw);
+          rolesFound.add(e.getKey());
           break;
         }
       }
     }
+    List<Role> directRoles = new ArrayList<Role>(rolesFound.size());
+    List<Get> gets = new ArrayList<Get>();
+    HTableInterface htab = getHTable(ROLE_TABLE);
+    for (String roleFound : rolesFound) {
+      byte[] key = HBaseUtils.buildKey(roleFound);
+      Get g = new Get(key);
+      g.addColumn(CATALOG_CF, CATALOG_COL);
+      gets.add(g);
+    }
+
+    Result[] results = htab.get(gets);
+    for (int i = 0; i < results.length; i++) {
+      byte[] serialized = results[i].getValue(CATALOG_CF, CATALOG_COL);
+      if (serialized != null) {
+        RoleWritable role = new RoleWritable();
+        HBaseUtils.deserialize(role, serialized);
+        directRoles.add(role.role);
+      }
+    }
+
     return directRoles;
   }
 
@@ -1031,11 +1051,14 @@ class HBaseReadWrite {
     // There's no way to know whether all the tables we are looking for are
     // in the cache, so we would need to scan one way or another.  Thus there's no value in hitting
     // the cache for this function.
+    byte[] keyPrefix = null;
+    if (dbName != null) {
+      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName);
+    }
     Filter filter = null;
     if (regex != null) {
       filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
     }
-    byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName);
     Iterator<Result> iter =
         scanWithFilter(TABLE_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
     List<Table> tables = new ArrayList<Table>();

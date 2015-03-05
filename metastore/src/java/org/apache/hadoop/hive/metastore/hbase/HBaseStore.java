@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -708,33 +711,35 @@ public class HBaseStore implements RawStore {
     return null;
   }
 
-  // TODO - we need to rework these listAll methods so they don't leak the M classes.  Those are
-  // an artifact of the ObjectStore and don't belong in the RawStore interface.
   @Override
-  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
-                                                          PrincipalType principalType) {
+  public List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
+                                                             PrincipalType principalType) {
     List<PrivilegeGrantInfo> grants;
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
     try {
+      PrincipalPrivilegeSet pps = getHBase().getGlobalPrivs();
+      if (pps == null) return privileges;
+      Map<String, List<PrivilegeGrantInfo>> map;
       switch (principalType) {
         case USER:
-          grants = getHBase().getGlobalPrivs().getUserPrivileges().get(principalName);
+          map = pps.getUserPrivileges();
           break;
 
         case ROLE:
-          grants = getHBase().getGlobalPrivs().getRolePrivileges().get(principalName);
+          map = pps.getRolePrivileges();
           break;
 
         default:
           throw new RuntimeException("Unknown or unsupported principal type " +
               principalType.toString());
       }
+      if (map == null) return privileges;
+      grants = map.get(principalName);
 
-      if (grants == null || grants.size() == 0) return null;
-      List<MGlobalPrivilege> privileges = new ArrayList<MGlobalPrivilege>(grants.size());
+      if (grants == null || grants.size() == 0) return privileges;
       for (PrivilegeGrantInfo pgi : grants) {
-        privileges.add(new MGlobalPrivilege(principalName, principalType.toString(),
-            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
-            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+        privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.GLOBAL, null,
+            null, null, null), principalName, principalType, pgi));
       }
       return privileges;
     } catch (IOException e) {
@@ -743,33 +748,37 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public List<MDBPrivilege> listPrincipalDBGrants(String principalName, PrincipalType principalType,
-                                                  String dbName) {
+  public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
+                                                         PrincipalType principalType,
+                                                         String dbName) {
     List<PrivilegeGrantInfo> grants;
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
     try {
       Database db = getHBase().getDb(dbName);
+      if (db == null) return privileges;
+      PrincipalPrivilegeSet pps = db.getPrivileges();
+      if (pps == null) return privileges;
+      Map<String, List<PrivilegeGrantInfo>> map;
       switch (principalType) {
         case USER:
-          grants = db.getPrivileges().getUserPrivileges().get(principalName);
+          map = pps.getUserPrivileges();
           break;
 
         case ROLE:
-          grants = db.getPrivileges().getRolePrivileges().get(principalName);
+          map = pps.getRolePrivileges();
           break;
 
         default:
           throw new RuntimeException("Unknown or unsupported principal type " +
               principalType.toString());
       }
+      if (map == null) return privileges;
+      grants = map.get(principalName);
 
-      if (grants == null || grants.size() == 0) return null;
-      MDatabase mdb = new MDatabase(db.getName(), db.getLocationUri(), db.getDescription(),
-          db.getParameters());
-      List<MDBPrivilege> privileges = new ArrayList<MDBPrivilege>(grants.size());
+      if (grants == null || grants.size() == 0) return privileges;
       for (PrivilegeGrantInfo pgi : grants) {
-        privileges.add(new MDBPrivilege(principalName, principalType.toString(), mdb,
-            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
-            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+        privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName,
+         null, null, null), principalName, principalType, pgi));
       }
       return privileges;
     } catch (IOException e) {
@@ -778,32 +787,38 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public List<MTablePrivilege> listAllTableGrants(String principalName, PrincipalType principalType,
-                                                  String dbName, String tableName) {
+  public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
+                                                      PrincipalType principalType,
+                                                      String dbName,
+                                                      String tableName) {
     List<PrivilegeGrantInfo> grants;
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
     try {
       Table table = getHBase().getTable(dbName, tableName);
+      if (table == null) return privileges;
+      PrincipalPrivilegeSet pps = table.getPrivileges();
+      if (pps == null) return privileges;
+      Map<String, List<PrivilegeGrantInfo>> map;
       switch (principalType) {
         case USER:
-          grants = table.getPrivileges().getUserPrivileges().get(principalName);
+          map = pps.getUserPrivileges();
           break;
 
         case ROLE:
-          grants = table.getPrivileges().getRolePrivileges().get(principalName);
+          map = pps.getRolePrivileges();
           break;
 
         default:
           throw new RuntimeException("Unknown or unsupported principal type " +
               principalType.toString());
       }
+      if (map == null) return privileges;
+      grants = map.get(principalName);
 
-      if (grants == null || grants.size() == 0) return null;
-      MTable mtable = null;
-      List<MTablePrivilege> privileges = new ArrayList<MTablePrivilege>(grants.size());
+      if (grants == null || grants.size() == 0) return privileges;
       for (PrivilegeGrantInfo pgi : grants) {
-        privileges.add(new MTablePrivilege(principalName, principalType.toString(), mtable,
-            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
-            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+        privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName,
+            tableName, null, null), principalName, principalType, pgi));
       }
       return privileges;
     } catch (IOException e) {
@@ -812,32 +827,35 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public List<MPartitionPrivilege> listPrincipalPartitionGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrants(String principalName,
                                                                 PrincipalType principalType,
-                                                                String dbName, String tableName,
+                                                                String dbName,
+                                                                String tableName,
+                                                                List<String> partValues,
                                                                 String partName) {
     // We don't support partition grants
-    return null;
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
-  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(String principalName,
-                                                                    PrincipalType principalType,
-                                                                    String dbName, String tableName,
-                                                                    String columnName) {
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrants(String principalName,
+                                                                  PrincipalType principalType,
+                                                                  String dbName, String tableName,
+                                                                  String columnName) {
     // We don't support column grants
-    return null;
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
-  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(String principalName,
-                                                                            PrincipalType principalType,
-                                                                            String dbName,
-                                                                            String tableName,
-                                                                            String partName,
-                                                                            String columnName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(String principalName,
+                                                                      PrincipalType principalType,
+                                                                      String dbName,
+                                                                      String tableName,
+                                                                      List<String> partVals,
+                                                                      String partName,
+                                                                      String columnName) {
     // We don't support column grants
-    return null;
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
@@ -1024,39 +1042,50 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
-    List<MRoleMap> maps = new ArrayList<MRoleMap>();
+  public List<Role> listRoles(String principalName, PrincipalType principalType) {
+    List<Role> roles = new ArrayList<Role>();
     try {
-      Map<String, GrantInfoWritable> roles =
-          getHBase().getPrincipalDirectRoles(principalName, principalType);
-      for (Map.Entry<String, GrantInfoWritable> e : roles.entrySet()) {
-        // TODO - change GrantInfoWritable to contain create time and owner of granted role
-        maps.add(new MRoleMap(principalName, principalType.toString(),
-            new MRole(e.getKey(), 0, null), e.getValue().addTime, e.getValue().grantor,
-            e.getValue().grantorType.toString(), e.getValue().grantOption));
-      }
+      roles.addAll(getHBase().getPrincipalDirectRoles(principalName, principalType));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     // Add the public role if this is a user
     if (principalType == PrincipalType.USER) {
-      maps.add(new MRoleMap(principalName, principalType.toString(),
-          new MRole(HiveMetaStore.PUBLIC, 0, null), 0, null, null, false));
+      roles.add(new Role(HiveMetaStore.PUBLIC, 0, null));
     }
-    return maps;
-
+    return roles;
   }
 
   @Override
-  public List<MRoleMap> listRoleMembers(String roleName) {
+  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
+    try {
+      List<Role> roles = listRoles(principalName, principalType);
+      List<RolePrincipalGrant> rpgs = new ArrayList<RolePrincipalGrant>(roles.size());
+      for (Role role : roles) {
+        GrantInfoList grants = getHBase().getRolePrincipals(role.getRoleName());
+        for (GrantInfoWritable grant : grants.grantInfos) {
+          if (grant.principalType.equals(principalType) &&
+              grant.principalName.equals(principalName)) {
+            rpgs.add(new RolePrincipalGrant(role.getRoleName(), principalName, principalType,
+                grant.grantOption, grant.addTime, grant.grantor, grant.grantorType));
+          }
+        }
+      }
+      return rpgs;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<RolePrincipalGrant> listRoleMembers(String roleName) {
     try {
       GrantInfoList gil = getHBase().getRolePrincipals(roleName);
-      List<MRoleMap> roleMaps = new ArrayList<MRoleMap>(gil.grantInfos.size());
+      List<RolePrincipalGrant> roleMaps = new ArrayList<RolePrincipalGrant>(gil.grantInfos.size());
       for (GrantInfoWritable giw : gil.grantInfos) {
-        // TODO - change GrantInfoWritable to contain create time and owner of granted role
-        roleMaps.add(new MRoleMap(giw.principalName, giw.principalType.toString(),
-            new MRole(roleName, 0, null), giw.addTime, giw.grantor, giw.grantorType.toString(),
-            giw.grantOption));
+        roleMaps.add(new RolePrincipalGrant(roleName, giw.principalName, giw.principalType,
+            giw.grantOption, giw.addTime, giw.grantor, giw.grantorType));
       }
       return roleMaps;
     } catch (Exception e) {
@@ -1260,65 +1289,196 @@ public class HBaseStore implements RawStore {
   @Override
   public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(String principalName,
                                                             PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    try {
+      List<Database> dbs = getHBase().scanDatabases(null);
+      for (Database db : dbs) {
+        List<PrivilegeGrantInfo> grants;
+
+        PrincipalPrivilegeSet pps = db.getPrivileges();
+        if (pps == null) continue;
+        Map<String, List<PrivilegeGrantInfo>> map;
+        switch (principalType) {
+          case USER:
+            map = pps.getUserPrivileges();
+            break;
+
+          case ROLE:
+            map = pps.getRolePrivileges();
+            break;
+
+          default:
+            throw new RuntimeException("Unknown or unsupported principal type " +
+                principalType.toString());
+        }
+
+        if (map == null) continue;
+        grants = map.get(principalName);
+        if (grants == null || grants.size() == 0) continue;
+        for (PrivilegeGrantInfo pgi : grants) {
+          privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE,
+              db.getName(), null, null, null), principalName, principalType, pgi));
+        }
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(String principalName,
                                                                PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    try {
+      List<Table> tables = getHBase().scanTables(null, null);
+      for (Table table : tables) {
+        List<PrivilegeGrantInfo> grants;
+
+        PrincipalPrivilegeSet pps = table.getPrivileges();
+        if (pps == null) continue;
+        Map<String, List<PrivilegeGrantInfo>> map;
+        switch (principalType) {
+          case USER:
+            map = pps.getUserPrivileges();
+            break;
+
+          case ROLE:
+            map = pps.getRolePrivileges();
+            break;
+
+          default:
+            throw new RuntimeException("Unknown or unsupported principal type " +
+                principalType.toString());
+        }
+
+        if (map == null) continue;
+        grants = map.get(principalName);
+        if (grants == null || grants.size() == 0) continue;
+        for (PrivilegeGrantInfo pgi : grants) {
+          privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE,
+              table.getDbName(), table.getTableName(), null, null), principalName, principalType,
+              pgi));
+        }
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(String principalName,
                                                                    PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(String principalName,
                                                                      PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
   public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(String principalName,
                                                                          PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
   public List<HiveObjectPrivilege> listGlobalGrantsAll() {
-    throw new UnsupportedOperationException();
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    try {
+      PrincipalPrivilegeSet pps = getHBase().getGlobalPrivs();
+      if (pps != null) {
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getUserPrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.GLOBAL, null,
+                null, null, null), e.getKey(), PrincipalType.USER, pgi));
+          }
+        }
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getRolePrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.GLOBAL, null,
+                null, null, null), e.getKey(), PrincipalType.ROLE, pgi));
+          }
+        }
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String dbName) {
-    throw new UnsupportedOperationException();
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    try {
+      Database db = getHBase().getDb(dbName);
+      PrincipalPrivilegeSet pps = db.getPrivileges();
+      if (pps != null) {
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getUserPrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName,
+                null, null, null), e.getKey(), PrincipalType.USER, pgi));
+          }
+        }
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getRolePrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName,
+                null, null, null), e.getKey(), PrincipalType.ROLE, pgi));
+          }
+        }
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(String dbName, String tableName,
                                                                 String partitionName,
                                                                 String columnName) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
   public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
-    throw new UnsupportedOperationException();
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    try {
+      Table table = getHBase().getTable(dbName, tableName);
+      PrincipalPrivilegeSet pps = table.getPrivileges();
+      if (pps != null) {
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getUserPrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName,
+                tableName, null, null), e.getKey(), PrincipalType.USER, pgi));
+          }
+        }
+        for (Map.Entry<String, List<PrivilegeGrantInfo>> e : pps.getRolePrivileges().entrySet()) {
+          for (PrivilegeGrantInfo pgi : e.getValue()) {
+            privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName,
+                tableName, null, null), e.getKey(), PrincipalType.ROLE, pgi));
+          }
+        }
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<HiveObjectPrivilege> listPartitionGrantsAll(String dbName, String tableName,
                                                           String partitionName) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override
   public List<HiveObjectPrivilege> listTableColumnGrantsAll(String dbName, String tableName,
                                                             String columnName) {
-    throw new UnsupportedOperationException();
+    return new ArrayList<HiveObjectPrivilege>();
   }
 
   @Override

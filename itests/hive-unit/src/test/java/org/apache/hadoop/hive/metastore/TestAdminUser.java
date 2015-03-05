@@ -38,8 +38,8 @@ public class TestAdminUser extends TestCase{
    Role adminRole = rawStore.getRole(HiveMetaStore.ADMIN);
    assertTrue(adminRole.getOwnerName().equals(HiveMetaStore.ADMIN));
    assertEquals(rawStore.listPrincipalGlobalGrants(HiveMetaStore.ADMIN, PrincipalType.ROLE)
-    .get(0).getPrivilege(),"All");
-   assertEquals(rawStore.listRoles("adminuser", PrincipalType.USER).get(0).getRole().
+    .get(0).getGrantInfo().getPrivilege(),"All");
+   assertEquals(rawStore.listRoles("adminuser", PrincipalType.USER).get(0).
      getRoleName(),HiveMetaStore.ADMIN);
  }
 }

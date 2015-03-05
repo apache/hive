@@ -28,7 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -44,24 +43,16 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MRoleMap;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -422,44 +413,45 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType) {
 
     return null;
   }
 
   @Override
-  public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
 
     return null;
   }
 
   @Override
-  public List<MTablePrivilege> listAllTableGrants(String principalName,
+  public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName) {
 
     return null;
   }
 
   @Override
-  public List<MPartitionPrivilege> listPrincipalPartitionGrants(String principalName,
-      PrincipalType principalType, String dbName, String tableName, String partName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrants(String principalName,
+      PrincipalType principalType, String dbName, String tableName, List<String> partValues,
+      String partName) {
 
     return null;
   }
 
   @Override
-  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName, String columnName) {
 
     return null;
   }
 
   @Override
-  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(String principalName,
-      PrincipalType principalType, String dbName, String tableName, String partName,
-      String columnName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(String principalName,
+      PrincipalType principalType, String dbName, String tableName, List<String> partVals,
+      String partName, String columnName) {
 
     return null;
   }
@@ -491,13 +483,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
+  public List<Role> listRoles(String principalName, PrincipalType principalType) {
 
     return null;
   }
 
   @Override
-  public List<MRoleMap> listRoleMembers(String roleName) {
+  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
+    return null;
+  }
+
+  @Override
+  public List<RolePrincipalGrant> listRoleMembers(String roleName) {
     return null;
   }
 

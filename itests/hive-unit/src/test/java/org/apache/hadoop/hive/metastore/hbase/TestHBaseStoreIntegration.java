@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -669,67 +670,45 @@ public class TestHBaseStoreIntegration {
     store.grantRole(role2, roleName1, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
     store.grantRole(role2, "fred", PrincipalType.USER, "admin", PrincipalType.ROLE, false);
 
-    List<MRoleMap> maps = store.listRoles("fred", PrincipalType.USER);
-    Assert.assertEquals(3, maps.size());
+    List<Role> roles = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(3, roles.size());
     boolean sawRole1 = false, sawRole2 = false, sawPublic = false;
-    for (MRoleMap map : maps) {
-      if (map.getRole().getRoleName().equals(roleName1)) {
+    for (Role role : roles) {
+      if (role.getRoleName().equals(roleName1)) {
         sawRole1 = true;
-        Assert.assertEquals("fred", map.getPrincipalName());
-        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
-        Assert.assertTrue(map.getAddTime() >= now);
-        Assert.assertEquals("bob", map.getGrantor());
-        Assert.assertEquals(PrincipalType.USER.toString(), map.getGrantorType());
-        Assert.assertFalse(map.getGrantOption());
-      } else if (map.getRole().getRoleName().equals(roleName2)) {
+      } else if (role.getRoleName().equals(roleName2)) {
         sawRole2 = true;
-        Assert.assertEquals("fred", map.getPrincipalName());
-        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
-        LOG.debug("now " + now + " add time " + map.getAddTime());
-        Assert.assertTrue(map.getAddTime() >= now);
-        Assert.assertEquals("admin", map.getGrantor());
-        Assert.assertEquals(PrincipalType.ROLE.toString(), map.getGrantorType());
-        Assert.assertFalse(map.getGrantOption());
-      } else if (map.getRole().getRoleName().equals(HiveMetaStore.PUBLIC)) {
+      } else if (role.getRoleName().equals(HiveMetaStore.PUBLIC)) {
         sawPublic = true;
-        Assert.assertEquals("fred", map.getPrincipalName());
-        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
-        Assert.assertFalse(map.getGrantOption());
       } else {
-        Assert.fail("Unknown role name " + map.getRole().getRoleName());
+        Assert.fail("Unknown role name " + role.getRoleName());
       }
     }
     Assert.assertTrue(sawRole1 && sawRole2 && sawPublic);
 
-    maps = store.listRoles("fred", PrincipalType.ROLE);
-    Assert.assertEquals(0, maps.size());
+    roles = store.listRoles("fred", PrincipalType.ROLE);
+    Assert.assertEquals(0, roles.size());
 
-    maps = store.listRoles(roleName1, PrincipalType.ROLE);
-    Assert.assertEquals(1, maps.size());
-    MRoleMap map = maps.get(0);
-    Assert.assertEquals(roleName1, map.getPrincipalName());
-    Assert.assertEquals(PrincipalType.ROLE.toString(), map.getPrincipalType());
-    Assert.assertEquals(roleName2, map.getRole().getRoleName());
-    Assert.assertTrue(map.getAddTime() <= now);
-    Assert.assertEquals("admin", map.getGrantor());
-    Assert.assertEquals(PrincipalType.ROLE.toString(), map.getGrantorType());
-    Assert.assertTrue(map.getGrantOption());
+    roles = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(1, roles.size());
+    Role role = roles.get(0);
+    Assert.assertEquals(roleName2, role.getRoleName());
 
     // Test listing all members in a role
-    maps = store.listRoleMembers(roleName1);
-    Assert.assertEquals(1, maps.size());
-    Assert.assertEquals("fred", maps.get(0).getPrincipalName());
-    Assert.assertEquals(PrincipalType.USER.toString(), maps.get(0).getPrincipalType());
-    Assert.assertTrue(maps.get(0).getAddTime() >= now);
-    Assert.assertEquals("bob", maps.get(0).getGrantor());
-    Assert.assertEquals(PrincipalType.USER.toString(), maps.get(0).getGrantorType());
-    Assert.assertFalse(maps.get(0).getGrantOption());
+    List<RolePrincipalGrant> grants = store.listRoleMembers(roleName1);
+    Assert.assertEquals(1, grants.size());
+    Assert.assertEquals("fred", grants.get(0).getPrincipalName());
+    Assert.assertEquals(PrincipalType.USER, grants.get(0).getPrincipalType());
+    Assert.assertTrue(grants.get(0).getGrantTime() >= now);
+    Assert.assertEquals("bob", grants.get(0).getGrantorName());
+    Assert.assertEquals(PrincipalType.USER, grants.get(0).getGrantorPrincipalType());
+    Assert.assertFalse(grants.get(0).isGrantOption());
 
-    maps = store.listRoleMembers(roleName2);
-    Assert.assertEquals(2, maps.size());
+    grants = store.listRoleMembers(roleName2);
+    Assert.assertEquals(2, grants.size());
     boolean sawFred = false;
     sawRole1 = false;
-    for (MRoleMap m : maps) {
+    for (RolePrincipalGrant m : grants) {
       if ("fred".equals(m.getPrincipalName())) sawFred = true;
       else if (roleName1.equals(m.getPrincipalName())) sawRole1 = true;
       else Assert.fail("Unexpected principal " + m.getPrincipalName());
@@ -738,30 +717,32 @@ public class TestHBaseStoreIntegration {
 
     // Revoke a role with grant option, make sure it just goes to no grant option
     store.revokeRole(role2, roleName1, PrincipalType.ROLE, true);
-    maps = store.listRoles(roleName1, PrincipalType.ROLE);
-    Assert.assertEquals(1, maps.size());
-    Assert.assertEquals(roleName2, maps.get(0).getRole().getRoleName());
-    Assert.assertFalse(maps.get(0).getGrantOption());
+    roles = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(1, roles.size());
+    Assert.assertEquals(roleName2, roles.get(0).getRoleName());
+
+    grants = store.listRoleMembers(roleName1);
+    Assert.assertFalse(grants.get(0).isGrantOption());
 
     // Drop a role, make sure it is properly removed from the map
     store.removeRole(roleName1);
-    maps = store.listRoles("fred", PrincipalType.USER);
-    Assert.assertEquals(2, maps.size());
+    roles = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(2, roles.size());
     sawRole2 = sawPublic = false;
-    for (MRoleMap m : maps) {
-      if (m.getRole().getRoleName().equals(roleName2)) sawRole2 = true;
-      else if (m.getRole().getRoleName().equals(HiveMetaStore.PUBLIC)) sawPublic = true;
-      else Assert.fail("Unknown role " + m.getRole().getRoleName());
+    for (Role m : roles) {
+      if (m.getRoleName().equals(roleName2)) sawRole2 = true;
+      else if (m.getRoleName().equals(HiveMetaStore.PUBLIC)) sawPublic = true;
+      else Assert.fail("Unknown role " + m.getRoleName());
     }
     Assert.assertTrue(sawRole2 && sawPublic);
-    maps = store.listRoles(roleName1, PrincipalType.ROLE);
-    Assert.assertEquals(0, maps.size());
+    roles = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(0, roles.size());
 
     // Revoke a role without grant option, make sure it goes away
     store.revokeRole(role2, "fred", PrincipalType.USER, false);
-    maps = store.listRoles("fred", PrincipalType.USER);
-    Assert.assertEquals(1, maps.size());
-    Assert.assertEquals(HiveMetaStore.PUBLIC, maps.get(0).getRole().getRoleName());
+    roles = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(1, roles.size());
+    Assert.assertEquals(HiveMetaStore.PUBLIC, roles.get(0).getRoleName());
   }
 
   @Test
@@ -1080,9 +1061,290 @@ public class TestHBaseStoreIntegration {
 
     Assert.assertNull("Expected null for role " + roleName + " for type " + objectType.toString()
       + " with db " + dbName + " and table " + tableName, pgi);
+  }
+
+  @Test
+  public void listDbGrants() throws Exception {
+    String dbNames[] = new String[] {"ldbg_db1", "ldbg_db2"};
+    try {
+      Database db = new Database(dbNames[0], "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+      db = new Database(dbNames[1], "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+      String[] roleNames = new String[]{"ldbg_role1", "ldbg_role2"};
+      String[] userNames = new String[]{"frodo", "sam"};
+
+      store.addRole(roleNames[0], "me");
+      store.addRole(roleNames[1], "me");
+      int now = (int)(System.currentTimeMillis() / 1000);
+
+      Role role1 = store.getRole(roleNames[0]);
+      Role role2 = store.getRole(roleNames[1]);
+      store.grantRole(role1, userNames[0], PrincipalType.USER, "bob", PrincipalType.USER, false);
+      store.grantRole(role1, roleNames[1], PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+      store.grantRole(role2, userNames[1], PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+      List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+      HiveObjectRef hiveObjRef =
+          new HiveObjectRef(HiveObjectType.DATABASE, dbNames[0], null, null, null);
+      PrivilegeGrantInfo grantInfo =
+          new PrivilegeGrantInfo("read", now, "me", PrincipalType.USER, false);
+      HiveObjectPrivilege hop = new HiveObjectPrivilege(hiveObjRef, userNames[0], PrincipalType.USER,
+          grantInfo);
+      privileges.add(hop);
+
+      grantInfo = new PrivilegeGrantInfo("write", now, "me", PrincipalType.USER, true);
+      hop = new HiveObjectPrivilege(hiveObjRef, roleNames[0], PrincipalType.ROLE, grantInfo);
+      privileges.add(hop);
+
+      PrivilegeBag pBag = new PrivilegeBag(privileges);
+      store.grantPrivileges(pBag);
+
+      List<HiveObjectPrivilege> hops =
+          store.listPrincipalDBGrants(roleNames[0], PrincipalType.ROLE, dbNames[0]);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.ROLE, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.DATABASE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("write", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalDBGrants(userNames[0], PrincipalType.USER, dbNames[0]);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.USER, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.DATABASE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("read", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalDBGrants(roleNames[1], PrincipalType.ROLE, dbNames[0]);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listPrincipalDBGrants(userNames[1], PrincipalType.USER, dbNames[0]);
+      Assert.assertEquals(0, hops.size());
+
+      hops = store.listPrincipalDBGrants(roleNames[0], PrincipalType.ROLE, dbNames[1]);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listPrincipalDBGrants(userNames[0], PrincipalType.USER, dbNames[1]);
+      Assert.assertEquals(0, hops.size());
+
+      hops = store.listDBGrantsAll(dbNames[0]);
+      Assert.assertEquals(2, hops.size());
+      boolean sawUser = false, sawRole = false;
+      for (HiveObjectPrivilege h : hops) {
+        if (h.getPrincipalName().equals(userNames[0])) {
+          Assert.assertEquals(PrincipalType.USER, h.getPrincipalType());
+          Assert.assertEquals(HiveObjectType.DATABASE, h.getHiveObject().getObjectType());
+          Assert.assertEquals("read", h.getGrantInfo().getPrivilege());
+          sawUser = true;
+        } else if (h.getPrincipalName().equals(roleNames[0])) {
+          Assert.assertEquals(PrincipalType.ROLE, h.getPrincipalType());
+          Assert.assertEquals(HiveObjectType.DATABASE, h.getHiveObject().getObjectType());
+          Assert.assertEquals("write", h.getGrantInfo().getPrivilege());
+          sawRole = true;
+        }
+      }
+      Assert.assertTrue(sawUser && sawRole);
+
+      hops = store.listPrincipalDBGrantsAll(roleNames[0], PrincipalType.ROLE);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.ROLE, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.DATABASE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("write", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalDBGrantsAll(userNames[0], PrincipalType.USER);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.USER, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.DATABASE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("read", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalDBGrantsAll(roleNames[1], PrincipalType.ROLE);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listPrincipalDBGrantsAll(userNames[1], PrincipalType.USER);
+      Assert.assertEquals(0, hops.size());
 
 
+    } finally {
+      store.dropDatabase(dbNames[0]);
+      store.dropDatabase(dbNames[1]);
+    }
+  }
 
+  @Test
+  public void listGlobalGrants() throws Exception {
+    String[] roleNames = new String[]{"lgg_role1", "lgg_role2"};
+    String[] userNames = new String[]{"merry", "pippen"};
+
+    store.addRole(roleNames[0], "me");
+    store.addRole(roleNames[1], "me");
+    int now = (int)(System.currentTimeMillis() / 1000);
+
+    Role role1 = store.getRole(roleNames[0]);
+    Role role2 = store.getRole(roleNames[1]);
+    store.grantRole(role1, userNames[0], PrincipalType.USER, "bob", PrincipalType.USER, false);
+    store.grantRole(role1, roleNames[1], PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+    store.grantRole(role2, userNames[1], PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    HiveObjectRef hiveObjRef =
+        new HiveObjectRef(HiveObjectType.GLOBAL, null, null, null, null);
+    PrivilegeGrantInfo grantInfo =
+        new PrivilegeGrantInfo("read", now, "me", PrincipalType.USER, false);
+    HiveObjectPrivilege hop = new HiveObjectPrivilege(hiveObjRef, userNames[0], PrincipalType.USER,
+        grantInfo);
+    privileges.add(hop);
+
+    grantInfo = new PrivilegeGrantInfo("write", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, roleNames[0], PrincipalType.ROLE, grantInfo);
+    privileges.add(hop);
+
+    PrivilegeBag pBag = new PrivilegeBag(privileges);
+    store.grantPrivileges(pBag);
+
+    List<HiveObjectPrivilege> hops =
+        store.listPrincipalGlobalGrants(roleNames[0], PrincipalType.ROLE);
+    Assert.assertEquals(1, hops.size());
+    Assert.assertEquals(PrincipalType.ROLE, hops.get(0).getPrincipalType());
+    Assert.assertEquals(HiveObjectType.GLOBAL, hops.get(0).getHiveObject().getObjectType());
+    Assert.assertEquals("write", hops.get(0).getGrantInfo().getPrivilege());
+
+    hops = store.listPrincipalGlobalGrants(userNames[0], PrincipalType.USER);
+    Assert.assertEquals(1, hops.size());
+    Assert.assertEquals(PrincipalType.USER, hops.get(0).getPrincipalType());
+    Assert.assertEquals(HiveObjectType.GLOBAL, hops.get(0).getHiveObject().getObjectType());
+    Assert.assertEquals("read", hops.get(0).getGrantInfo().getPrivilege());
+
+    hops = store.listPrincipalGlobalGrants(roleNames[1], PrincipalType.ROLE);
+    Assert.assertEquals(0, hops.size());
+    hops = store.listPrincipalGlobalGrants(userNames[1], PrincipalType.USER);
+    Assert.assertEquals(0, hops.size());
+
+    hops = store.listGlobalGrantsAll();
+    Assert.assertEquals(2, hops.size());
+    boolean sawUser = false, sawRole = false;
+    for (HiveObjectPrivilege h : hops) {
+      if (h.getPrincipalName().equals(userNames[0])) {
+        Assert.assertEquals(PrincipalType.USER, h.getPrincipalType());
+        Assert.assertEquals(HiveObjectType.GLOBAL, h.getHiveObject().getObjectType());
+        Assert.assertEquals("read", h.getGrantInfo().getPrivilege());
+        sawUser = true;
+      } else if (h.getPrincipalName().equals(roleNames[0])) {
+        Assert.assertEquals(PrincipalType.ROLE, h.getPrincipalType());
+        Assert.assertEquals(HiveObjectType.GLOBAL, h.getHiveObject().getObjectType());
+        Assert.assertEquals("write", h.getGrantInfo().getPrivilege());
+        sawRole = true;
+      }
+    }
+    Assert.assertTrue(sawUser && sawRole);
+  }
+
+  @Test
+  public void listTableGrants() throws Exception {
+    String dbName = "ltg_db";
+    String[] tableNames = new String[] {"ltg_t1", "ltg_t2"};
+    try {
+      Database db = new Database(dbName, "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+      int startTime = (int)(System.currentTimeMillis() / 1000);
+      List<FieldSchema> cols = new ArrayList<FieldSchema>();
+      cols.add(new FieldSchema("col1", "int", "nocomment"));
+      SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+      StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+          serde, null, null, emptyParameters);
+      Table table = new Table(tableNames[0], dbName, "me", startTime, startTime, 0, sd, null,
+          emptyParameters, null, null, null);
+      store.createTable(table);
+      table = new Table(tableNames[1], dbName, "me", startTime, startTime, 0, sd, null,
+          emptyParameters, null, null, null);
+      store.createTable(table);
+      String[] roleNames = new String[]{"ltg_role1", "ltg_role2"};
+      String[] userNames = new String[]{"gandalf", "radagast"};
+
+      store.addRole(roleNames[0], "me");
+      store.addRole(roleNames[1], "me");
+      int now = (int)(System.currentTimeMillis() / 1000);
+
+      Role role1 = store.getRole(roleNames[0]);
+      Role role2 = store.getRole(roleNames[1]);
+      store.grantRole(role1, userNames[0], PrincipalType.USER, "bob", PrincipalType.USER, false);
+      store.grantRole(role1, roleNames[1], PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+      store.grantRole(role2, userNames[1], PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+      List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+      HiveObjectRef hiveObjRef =
+          new HiveObjectRef(HiveObjectType.TABLE, dbName, tableNames[0], null, null);
+      PrivilegeGrantInfo grantInfo =
+          new PrivilegeGrantInfo("read", now, "me", PrincipalType.USER, false);
+      HiveObjectPrivilege hop = new HiveObjectPrivilege(hiveObjRef, userNames[0], PrincipalType.USER,
+          grantInfo);
+      privileges.add(hop);
+
+      grantInfo = new PrivilegeGrantInfo("write", now, "me", PrincipalType.USER, true);
+      hop = new HiveObjectPrivilege(hiveObjRef, roleNames[0], PrincipalType.ROLE, grantInfo);
+      privileges.add(hop);
+
+      PrivilegeBag pBag = new PrivilegeBag(privileges);
+      store.grantPrivileges(pBag);
+
+      List<HiveObjectPrivilege> hops =
+          store.listAllTableGrants(roleNames[0], PrincipalType.ROLE, dbName, tableNames[0]);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.ROLE, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.TABLE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("write", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listAllTableGrants(userNames[0], PrincipalType.USER, dbName, tableNames[0]);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.USER, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.TABLE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("read", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listAllTableGrants(roleNames[1], PrincipalType.ROLE, dbName, tableNames[0]);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listAllTableGrants(userNames[1], PrincipalType.USER, dbName, tableNames[0]);
+      Assert.assertEquals(0, hops.size());
+
+      hops = store.listAllTableGrants(roleNames[0], PrincipalType.ROLE, dbName, tableNames[1]);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listAllTableGrants(userNames[0], PrincipalType.USER, dbName, tableNames[1]);
+      Assert.assertEquals(0, hops.size());
+
+      hops = store.listTableGrantsAll(dbName, tableNames[0]);
+      Assert.assertEquals(2, hops.size());
+      boolean sawUser = false, sawRole = false;
+      for (HiveObjectPrivilege h : hops) {
+        if (h.getPrincipalName().equals(userNames[0])) {
+          Assert.assertEquals(PrincipalType.USER, h.getPrincipalType());
+          Assert.assertEquals(HiveObjectType.TABLE, h.getHiveObject().getObjectType());
+          Assert.assertEquals("read", h.getGrantInfo().getPrivilege());
+          sawUser = true;
+        } else if (h.getPrincipalName().equals(roleNames[0])) {
+          Assert.assertEquals(PrincipalType.ROLE, h.getPrincipalType());
+          Assert.assertEquals(HiveObjectType.TABLE, h.getHiveObject().getObjectType());
+          Assert.assertEquals("write", h.getGrantInfo().getPrivilege());
+          sawRole = true;
+        }
+      }
+      Assert.assertTrue(sawUser && sawRole);
+
+      hops = store.listPrincipalTableGrantsAll(roleNames[0], PrincipalType.ROLE);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.ROLE, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.TABLE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("write", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalTableGrantsAll(userNames[0], PrincipalType.USER);
+      Assert.assertEquals(1, hops.size());
+      Assert.assertEquals(PrincipalType.USER, hops.get(0).getPrincipalType());
+      Assert.assertEquals(HiveObjectType.TABLE, hops.get(0).getHiveObject().getObjectType());
+      Assert.assertEquals("read", hops.get(0).getGrantInfo().getPrivilege());
+
+      hops = store.listPrincipalDBGrantsAll(roleNames[1], PrincipalType.ROLE);
+      Assert.assertEquals(0, hops.size());
+      hops = store.listPrincipalDBGrantsAll(userNames[1], PrincipalType.USER);
+      Assert.assertEquals(0, hops.size());
+
+
+    } finally {
+      store.dropTable(dbName, tableNames[0]);
+      store.dropTable(dbName, tableNames[1]);
+      store.dropDatabase(dbName);
+    }
   }
 
   @Test

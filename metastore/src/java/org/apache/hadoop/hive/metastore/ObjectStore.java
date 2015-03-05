@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -3329,7 +3330,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (mRol != null) {
         // first remove all the membership, the membership that this role has
         // been granted
-        List<MRoleMap> roleMap = listRoleMembers(mRol.getRoleName());
+        List<MRoleMap> roleMap = listMRoleMembers(mRol.getRoleName());
         if (roleMap.size() > 0) {
           pm.deletePersistentAll(roleMap);
         }
@@ -3339,7 +3340,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(roleMember);
         }
         // then remove all the grants
-        List<MGlobalPrivilege> userGrants = listPrincipalGlobalGrants(
+        List<MGlobalPrivilege> userGrants = listPrincipalMGlobalGrants(
             mRol.getRoleName(), PrincipalType.ROLE);
         if (userGrants.size() > 0) {
           pm.deletePersistentAll(userGrants);
@@ -3391,11 +3392,11 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> groupNames) {
     List<MRoleMap> ret = new ArrayList<MRoleMap>();
     if(userName != null) {
-      ret.addAll(listRoles(userName, PrincipalType.USER));
+      ret.addAll(listMRoles(userName, PrincipalType.USER));
     }
     if (groupNames != null) {
       for (String groupName: groupNames) {
-        ret.addAll(listRoles(groupName, PrincipalType.GROUP));
+        ret.addAll(listMRoles(groupName, PrincipalType.GROUP));
       }
     }
     // get names of these roles and its ancestors
@@ -3416,7 +3417,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (!processedRoleNames.contains(parentRoleName)) {
         // unprocessed role: get its parents, add it to processed, and call this
         // function recursively
-        List<MRoleMap> nextParentRoles = listRoles(parentRoleName, PrincipalType.ROLE);
+        List<MRoleMap> nextParentRoles = listMRoles(parentRoleName, PrincipalType.ROLE);
         processedRoleNames.add(parentRoleName);
         getAllRoleAncestors(processedRoleNames, nextParentRoles);
       }
@@ -3424,8 +3425,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  public List<MRoleMap> listRoles(String principalName,
+  public List<MRoleMap> listMRoles(String principalName,
       PrincipalType principalType) {
     boolean success = false;
     List<MRoleMap> mRoleMember = null;
@@ -3464,6 +3464,44 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mRoleMember;
 
+  }
+
+  @Override
+  public List<Role> listRoles(String principalName, PrincipalType principalType) {
+    List<Role> result = new ArrayList<Role>();
+    List<MRoleMap> roleMaps = listMRoles(principalName, principalType);
+    if (roleMaps != null) {
+      for (MRoleMap roleMap : roleMaps) {
+        MRole mrole = roleMap.getRole();
+        Role role = new Role(mrole.getRoleName(), mrole.getCreateTime(), mrole.getOwnerName());
+        result.add(role);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
+    List<RolePrincipalGrant> result = new ArrayList<RolePrincipalGrant>();
+    List<MRoleMap> roleMaps = listMRoles(principalName, principalType);
+    if (roleMaps != null) {
+      for (MRoleMap roleMap : roleMaps) {
+        RolePrincipalGrant rolePrinGrant = new RolePrincipalGrant(
+            roleMap.getRole().getRoleName(),
+            roleMap.getPrincipalName(),
+            PrincipalType.valueOf(roleMap.getPrincipalType()),
+            roleMap.getGrantOption(),
+            roleMap.getAddTime(),
+            roleMap.getGrantor(),
+            // no grantor type for public role, hence the null check
+            roleMap.getGrantorType() == null ? null
+                : PrincipalType.valueOf(roleMap.getGrantorType())
+        );
+        result.add(rolePrinGrant);
+      }
+    }
+    return result;
   }
 
   @SuppressWarnings("unchecked")
@@ -3553,7 +3591,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       if (userName != null) {
-        List<MGlobalPrivilege> user = this.listPrincipalGlobalGrants(userName, PrincipalType.USER);
+        List<MGlobalPrivilege> user = this.listPrincipalMGlobalGrants(userName, PrincipalType.USER);
         if(user.size()>0) {
           Map<String, List<PrivilegeGrantInfo>> userPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
           List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(user.size());
@@ -3570,7 +3608,8 @@ public class ObjectStore implements RawStore, Configurable {
       if (groupNames != null && groupNames.size() > 0) {
         Map<String, List<PrivilegeGrantInfo>> groupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
         for(String groupName: groupNames) {
-          List<MGlobalPrivilege> group = this.listPrincipalGlobalGrants(groupName, PrincipalType.GROUP);
+          List<MGlobalPrivilege> group =
+              this.listPrincipalMGlobalGrants(groupName, PrincipalType.GROUP);
           if(group.size()>0) {
             List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(group.size());
             for (int i = 0; i < group.size(); i++) {
@@ -3599,7 +3638,7 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = HiveStringUtils.normalizeIdentifier(dbName);
 
     if (principalName != null) {
-      List<MDBPrivilege> userNameDbPriv = this.listPrincipalDBGrants(
+      List<MDBPrivilege> userNameDbPriv = this.listPrincipalMDBGrants(
           principalName, principalType, dbName);
       if (userNameDbPriv != null && userNameDbPriv.size() > 0) {
         List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
@@ -3799,7 +3838,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (principalName != null) {
       List<MPartitionPrivilege> userNameTabPartPriv = this
-          .listPrincipalPartitionGrants(principalName, principalType,
+          .listPrincipalMPartitionGrants(principalName, principalType,
               dbName, tableName, partName);
       if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
         List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
@@ -3828,7 +3867,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (principalName != null) {
       List<MTablePrivilege> userNameTabPartPriv = this
-          .listAllTableGrants(principalName, principalType,
+          .listAllMTableGrants(principalName, principalType,
               dbName, tableName);
       if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
         List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
@@ -3855,7 +3894,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (partitionName == null) {
       List<MTableColumnPrivilege> userNameColumnPriv = this
-          .listPrincipalTableColumnGrants(principalName, principalType,
+          .listPrincipalMTableColumnGrants(principalName, principalType,
               dbName, tableName, columnName);
       if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
         List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
@@ -3870,7 +3909,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     } else {
       List<MPartitionColumnPrivilege> userNameColumnPriv = this
-          .listPrincipalPartitionColumnGrants(principalName,
+          .listPrincipalMPartitionColumnGrants(principalName,
               principalType, dbName, tableName, partitionName, columnName);
       if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
         List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
@@ -3919,7 +3958,7 @@ public class ObjectStore implements RawStore, Configurable {
 
           if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
             List<MGlobalPrivilege> globalPrivs = this
-                .listPrincipalGlobalGrants(userName, principalType);
+                .listPrincipalMGlobalGrants(userName, principalType);
             if (globalPrivs != null) {
               for (MGlobalPrivilege priv : globalPrivs) {
                 if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -3939,7 +3978,7 @@ public class ObjectStore implements RawStore, Configurable {
           } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
             MDatabase dbObj = getMDatabase(hiveObject.getDbName());
             if (dbObj != null) {
-              List<MDBPrivilege> dbPrivs = this.listPrincipalDBGrants(
+              List<MDBPrivilege> dbPrivs = this.listPrincipalMDBGrants(
                   userName, principalType, hiveObject.getDbName());
               if (dbPrivs != null) {
                 for (MDBPrivilege priv : dbPrivs) {
@@ -3964,7 +4003,7 @@ public class ObjectStore implements RawStore, Configurable {
                 .getObjectName());
             if (tblObj != null) {
               List<MTablePrivilege> tablePrivs = this
-                  .listAllTableGrants(userName, principalType,
+                  .listAllMTableGrants(userName, principalType,
                       hiveObject.getDbName(), hiveObject.getObjectName());
               if (tablePrivs != null) {
                 for (MTablePrivilege priv : tablePrivs) {
@@ -3994,7 +4033,7 @@ public class ObjectStore implements RawStore, Configurable {
             if (partObj != null) {
               partName = partObj.getPartitionName();
               List<MPartitionPrivilege> partPrivs = this
-                  .listPrincipalPartitionGrants(userName,
+                  .listPrincipalMPartitionGrants(userName,
                       principalType, hiveObject.getDbName(), hiveObject
                           .getObjectName(), partObj.getPartitionName());
               if (partPrivs != null) {
@@ -4030,7 +4069,7 @@ public class ObjectStore implements RawStore, Configurable {
                 if (partObj == null) {
                   continue;
                 }
-                colPrivs = this.listPrincipalPartitionColumnGrants(
+                colPrivs = this.listPrincipalMPartitionColumnGrants(
                     userName, principalType, hiveObject.getDbName(), hiveObject
                         .getObjectName(), partObj.getPartitionName(),
                     hiveObject.getColumnName());
@@ -4060,7 +4099,7 @@ public class ObjectStore implements RawStore, Configurable {
 
               } else {
                 List<MTableColumnPrivilege> colPrivs = null;
-                colPrivs = this.listPrincipalTableColumnGrants(
+                colPrivs = this.listPrincipalMTableColumnGrants(
                     userName, principalType, hiveObject.getDbName(), hiveObject
                         .getObjectName(), hiveObject.getColumnName());
 
@@ -4128,7 +4167,7 @@ public class ObjectStore implements RawStore, Configurable {
           PrincipalType principalType = privDef.getPrincipalType();
 
           if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
-            List<MGlobalPrivilege> mSecUser = this.listPrincipalGlobalGrants(
+            List<MGlobalPrivilege> mSecUser = this.listPrincipalMGlobalGrants(
                 userName, principalType);
             boolean found = false;
             if (mSecUser != null) {
@@ -4161,7 +4200,7 @@ public class ObjectStore implements RawStore, Configurable {
             if (dbObj != null) {
               String db = hiveObject.getDbName();
               boolean found = false;
-              List<MDBPrivilege> dbGrants = this.listPrincipalDBGrants(
+              List<MDBPrivilege> dbGrants = this.listPrincipalMDBGrants(
                   userName, principalType, db);
               for (String privilege : privs) {
                 for (MDBPrivilege dbGrant : dbGrants) {
@@ -4190,7 +4229,7 @@ public class ObjectStore implements RawStore, Configurable {
           } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
             boolean found = false;
             List<MTablePrivilege> tableGrants = this
-                .listAllTableGrants(userName, principalType,
+                .listAllMTableGrants(userName, principalType,
                     hiveObject.getDbName(), hiveObject.getObjectName());
             for (String privilege : privs) {
               for (MTablePrivilege tabGrant : tableGrants) {
@@ -4224,7 +4263,7 @@ public class ObjectStore implements RawStore, Configurable {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues());
             }
             List<MPartitionPrivilege> partitionGrants = this
-                .listPrincipalPartitionGrants(userName, principalType,
+                .listPrincipalMPartitionGrants(userName, principalType,
                     hiveObject.getDbName(), hiveObject.getObjectName(), partName);
             for (String privilege : privs) {
               for (MPartitionPrivilege partGrant : partitionGrants) {
@@ -4260,7 +4299,7 @@ public class ObjectStore implements RawStore, Configurable {
             }
 
             if (partName != null) {
-              List<MPartitionColumnPrivilege> mSecCol = listPrincipalPartitionColumnGrants(
+              List<MPartitionColumnPrivilege> mSecCol = listPrincipalMPartitionColumnGrants(
                   userName, principalType, hiveObject.getDbName(), hiveObject
                       .getObjectName(), partName, hiveObject.getColumnName());
               boolean found = false;
@@ -4292,7 +4331,7 @@ public class ObjectStore implements RawStore, Configurable {
                 }
               }
             } else {
-              List<MTableColumnPrivilege> mSecCol = listPrincipalTableColumnGrants(
+              List<MTableColumnPrivilege> mSecCol = listPrincipalMTableColumnGrants(
                   userName, principalType, hiveObject.getDbName(), hiveObject
                       .getObjectName(), hiveObject.getColumnName());
               boolean found = false;
@@ -4347,8 +4386,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  public List<MRoleMap> listRoleMembers(String roleName) {
+  public List<MRoleMap> listMRoleMembers(String roleName) {
     boolean success = false;
     List<MRoleMap> mRoleMemeberList = null;
     try {
@@ -4372,9 +4410,34 @@ public class ObjectStore implements RawStore, Configurable {
     return mRoleMemeberList;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName, PrincipalType principalType) {
+  public List<RolePrincipalGrant> listRoleMembers(String roleName) {
+    List<MRoleMap> roleMaps = listMRoleMembers(roleName);
+    List<RolePrincipalGrant> rolePrinGrantList = new ArrayList<RolePrincipalGrant>();
+
+    if (roleMaps != null) {
+      for (MRoleMap roleMap : roleMaps) {
+        RolePrincipalGrant rolePrinGrant = new RolePrincipalGrant(
+            roleMap.getRole().getRoleName(),
+            roleMap.getPrincipalName(),
+            PrincipalType.valueOf(roleMap.getPrincipalType()),
+            roleMap.getGrantOption(),
+            roleMap.getAddTime(),
+            roleMap.getGrantor(),
+            // no grantor type for public role, hence the null check
+            roleMap.getGrantorType() == null ? null
+                : PrincipalType.valueOf(roleMap.getGrantorType())
+        );
+        rolePrinGrantList.add(rolePrinGrant);
+
+      }
+    }
+    return rolePrinGrantList;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<MGlobalPrivilege> listPrincipalMGlobalGrants(String principalName,
+                                                           PrincipalType principalType) {
     boolean commited = false;
     List<MGlobalPrivilege> userNameDbPriv = null;
     try {
@@ -4395,6 +4458,29 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return userNameDbPriv;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
+                                                             PrincipalType principalType) {
+    List<MGlobalPrivilege> mUsers =
+        listPrincipalMGlobalGrants(principalName, principalType);
+    if (mUsers.isEmpty()) {
+      return Collections.<HiveObjectPrivilege> emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mUsers.size(); i++) {
+      MGlobalPrivilege sUsr = mUsers.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.GLOBAL, null, null, null, null);
+      HiveObjectPrivilege secUser = new HiveObjectPrivilege(
+          objectRef, sUsr.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sUsr.getPrivilege(), sUsr
+              .getCreateTime(), sUsr.getGrantor(), PrincipalType
+              .valueOf(sUsr.getGrantorType()), sUsr.getGrantOption()));
+      result.add(secUser);
+    }
+    return result;
   }
 
   @Override
@@ -4430,8 +4516,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
+  public List<MDBPrivilege> listPrincipalMDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
     boolean success = false;
     List<MDBPrivilege> mSecurityDBList = null;
@@ -4455,6 +4540,29 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityDBList;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
+                                                         PrincipalType principalType,
+                                                         String dbName) {
+    List<MDBPrivilege> mDbs = listPrincipalMDBGrants(principalName, principalType, dbName);
+    if (mDbs.isEmpty()) {
+      return Collections.<HiveObjectPrivilege>emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mDbs.size(); i++) {
+      MDBPrivilege sDB = mDbs.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.DATABASE, dbName, null, null, null);
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+          sDB.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sDB.getPrivilege(), sDB
+              .getCreateTime(), sDB.getGrantor(), PrincipalType
+              .valueOf(sDB.getGrantorType()), sDB.getGrantOption()));
+      result.add(secObj);
+    }
+    return result;
   }
 
   @Override
@@ -4754,9 +4862,8 @@ public class ObjectStore implements RawStore, Configurable {
     return new ObjectPair<Query, Object[]>(query, params);
   }
 
-  @Override
   @SuppressWarnings("unchecked")
-  public List<MTablePrivilege> listAllTableGrants(
+  public List<MTablePrivilege> listAllMTableGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName) {
     tableName = HiveStringUtils.normalizeIdentifier(tableName);
@@ -4787,9 +4894,33 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityTabPartList;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public List<MPartitionPrivilege> listPrincipalPartitionGrants(
+  public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
+                                                      PrincipalType principalType,
+                                                      String dbName,
+                                                      String tableName) {
+    List<MTablePrivilege> mTbls =
+        listAllMTableGrants(principalName, principalType, dbName, tableName);
+    if (mTbls.isEmpty()) {
+      return Collections.<HiveObjectPrivilege> emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mTbls.size(); i++) {
+      MTablePrivilege sTbl = mTbls.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.TABLE, dbName, tableName, null, null);
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+          sTbl.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sTbl.getPrivilege(), sTbl.getCreateTime(), sTbl
+              .getGrantor(), PrincipalType.valueOf(sTbl
+              .getGrantorType()), sTbl.getGrantOption()));
+      result.add(secObj);
+    }
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<MPartitionPrivilege> listPrincipalMPartitionGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String partName) {
     boolean success = false;
@@ -4822,9 +4953,37 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityTabPartList;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrants(String principalName,
+                                                                PrincipalType principalType,
+                                                                String dbName,
+                                                                String tableName,
+                                                                List<String> partValues,
+                                                                String partName) {
+    List<MPartitionPrivilege> mParts = listPrincipalMPartitionGrants(principalName,
+        principalType, dbName, tableName, partName);
+    if (mParts.isEmpty()) {
+      return Collections.<HiveObjectPrivilege> emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mParts.size(); i++) {
+      MPartitionPrivilege sPart = mParts.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.PARTITION, dbName, tableName, partValues, null);
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+          sPart.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sPart.getPrivilege(), sPart
+              .getCreateTime(), sPart.getGrantor(), PrincipalType
+              .valueOf(sPart.getGrantorType()), sPart
+              .getGrantOption()));
+
+      result.add(secObj);
+    }
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<MTableColumnPrivilege> listPrincipalMTableColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String columnName) {
     boolean success = false;
@@ -4857,8 +5016,34 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrants(String principalName,
+                                                                  PrincipalType principalType,
+                                                                  String dbName,
+                                                                  String tableName,
+                                                                  String columnName) {
+    List<MTableColumnPrivilege> mTableCols =
+        listPrincipalMTableColumnGrants(principalName, principalType, dbName, tableName, columnName);
+    if (mTableCols.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mTableCols.size(); i++) {
+      MTableColumnPrivilege sCol = mTableCols.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.COLUMN, dbName, tableName, null, sCol.getColumnName());
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(
+          objectRef, sCol.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
+              .getCreateTime(), sCol.getGrantor(), PrincipalType
+              .valueOf(sCol.getGrantorType()), sCol
+              .getGrantOption()));
+      result.add(secObj);
+    }
+    return result;
+  }
+
   @SuppressWarnings("unchecked")
-  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
+  public List<MPartitionColumnPrivilege> listPrincipalMPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String partitionName, String columnName) {
     boolean success = false;
@@ -4894,6 +5079,35 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mSecurityColList;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(String principalName,
+                                                                      PrincipalType principalType,
+                                                                      String dbName,
+                                                                      String tableName,
+                                                                      List<String> partValues,
+                                                                      String partitionName,
+                                                                      String columnName) {
+    List<MPartitionColumnPrivilege> mPartitionCols =
+        listPrincipalMPartitionColumnGrants(principalName, principalType, dbName, tableName,
+            partitionName, columnName);
+    if (mPartitionCols.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    for (int i = 0; i < mPartitionCols.size(); i++) {
+      MPartitionColumnPrivilege sCol = mPartitionCols.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+          HiveObjectType.COLUMN, dbName, tableName, partValues, sCol.getColumnName());
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+          sCol.getPrincipalName(), principalType,
+          new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
+              .getCreateTime(), sCol.getGrantor(), PrincipalType
+              .valueOf(sCol.getGrantorType()), sCol.getGrantOption()));
+      result.add(secObj);
+    }
+    return result;
   }
 
   @Override
