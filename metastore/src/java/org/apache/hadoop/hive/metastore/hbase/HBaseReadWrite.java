@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -49,10 +48,15 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.io.Writable;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -62,9 +66,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -73,21 +79,23 @@ import java.util.Map;
 class HBaseReadWrite {
 
   @VisibleForTesting final static String DB_TABLE = "DBS";
+  @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "GLOBAL_PRIVS";
   @VisibleForTesting final static String PART_TABLE = "PARTITIONS";
   @VisibleForTesting final static String ROLE_TABLE = "ROLES";
   @VisibleForTesting final static String SD_TABLE = "SDS";
   @VisibleForTesting final static String TABLE_TABLE = "TBLS";
+  @VisibleForTesting final static String USER_TO_ROLE_TABLE = "USER_TO_ROLE";
   @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
   private final static byte[] CATALOG_COL = "cat".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] ROLES_COL = "roles".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] GLOBAL_PRIVS_KEY = "globalprivs".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
 
-  // TODO Add privileges as a second column in the CATALOG_CF
-
-  private final static String[] tableNames = { DB_TABLE, PART_TABLE, ROLE_TABLE, SD_TABLE,
-      TABLE_TABLE  };
+  private final static String[] tableNames = { DB_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
+      USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
   static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
 
   private static ThreadLocal<HBaseReadWrite> self = new ThreadLocal<HBaseReadWrite>() {
@@ -121,6 +129,11 @@ class HBaseReadWrite {
   private Counter sdMisses;
   private Counter sdOverflows;
   private List<Counter> counters;
+  // roleCache doesn't use ObjectCache because I don't want to limit the size.  I am assuming
+  // that the number of roles will always be small (< 100) so caching the whole thing should not
+  // be painful.
+  private Map<String, GrantInfoList> roleCache;
+  boolean entireRoleTableInCache;
 
   /**
    * Get the instance of HBaseReadWrite for the current thread.  This is intended to be used by
@@ -199,6 +212,9 @@ class HBaseReadWrite {
       partCache = new PartitionCache(totalObjectsToCache / 2, partHits, partMisses, partOverflows);
       statsCache = StatsCache.getInstance(conf);
     }
+
+    roleCache = new HashMap<String, GrantInfoList>();
+    entireRoleTableInCache = false;
   }
 
   // Synchronize this so not everyone's doing it at once.
@@ -222,6 +238,10 @@ class HBaseReadWrite {
     }
   }
 
+  /**********************************************************************************************
+   * Transaction related methods
+   *********************************************************************************************/
+
   /**
    * Begin a transaction
    */
@@ -244,6 +264,10 @@ class HBaseReadWrite {
     for (HTableInterface htab : tables.values()) htab.close();
     conn.close();
   }
+
+  /**********************************************************************************************
+   * Database related methods
+   *********************************************************************************************/
 
   /**
    * Fetch a database object
@@ -306,6 +330,37 @@ class HBaseReadWrite {
     delete(DB_TABLE, key, null, null);
     flush();
   }
+
+  /**********************************************************************************************
+   * Global privilege related methods
+   *********************************************************************************************/
+
+  /**
+   * Fetch the global privileges object
+   * @return
+   * @throws IOException
+   */
+  PrincipalPrivilegeSet getGlobalPrivs() throws IOException {
+    byte[] key = GLOBAL_PRIVS_KEY;
+    byte[] serialized = read(GLOBAL_PRIVS_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.readPrivileges(serialized);
+  }
+
+  /**
+   * Store the global privileges object
+   * @throws IOException
+   */
+  void putGlobalPrivs(PrincipalPrivilegeSet privs) throws IOException {
+    byte[] key = GLOBAL_PRIVS_KEY;
+    byte[] serialized = HBaseUtils.writePrivileges(privs);
+    store(GLOBAL_PRIVS_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
+    flush();
+  }
+
+  /**********************************************************************************************
+   * Partition related methods
+   *********************************************************************************************/
 
   /**
    * Fetch one partition
@@ -483,6 +538,335 @@ class HBaseReadWrite {
     flush();
   }
 
+  private Partition getPartition(String dbName, String tableName, List<String> partVals,
+                                 boolean populateCache) throws IOException {
+    Partition cached = partCache.get(dbName, tableName, partVals);
+    if (cached != null) return cached;
+    byte[] key = buildPartitionKey(dbName, tableName, partVals);
+    byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    PartitionWritable part = new PartitionWritable();
+    HBaseUtils.deserialize(part, serialized);
+    if (populateCache) partCache.put(dbName, tableName, part.part);
+    return part.part;
+  }
+
+
+  private List<Partition> scanPartitions(byte[] keyPrefix, byte[] colFam, byte[] colName,
+                                         int maxResults) throws IOException {
+    return scanPartitionsWithFilter(keyPrefix, colFam, colName, maxResults, null);
+  }
+
+  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, byte[] colFam, byte[] colName,
+                                                   int maxResults, Filter filter)
+      throws IOException {
+    Iterator<Result> iter =
+        scanWithFilter(PART_TABLE, keyPrefix, colFam, colName, filter);
+    List<Partition> parts = new ArrayList<Partition>();
+    int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
+    for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
+      PartitionWritable p = new PartitionWritable();
+      HBaseUtils.deserialize(p, iter.next().getValue(colFam, colName));
+      parts.add(p.part);
+    }
+    return parts;
+  }
+
+  private byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
+    Deque<String> keyParts = new ArrayDeque<String>(partVals);
+    keyParts.addFirst(tableName);
+    keyParts.addFirst(dbName);
+    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
+  }
+
+  private byte[] buildPartitionKey(PartitionWritable part) throws IOException {
+    Deque<String> keyParts = new ArrayDeque<String>(part.part.getValues());
+    keyParts.addFirst(part.part.getTableName());
+    keyParts.addFirst(part.part.getDbName());
+    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
+  }
+
+  /**********************************************************************************************
+   * Role related methods
+   *********************************************************************************************/
+
+  /**
+   * Fetch the list of all roles for a user
+   * @param userName name of the user
+   * @return the list of all roles this user participates in
+   * @throws IOException
+   */
+  List<String> getUserRoles(String userName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(userName);
+    byte[] serialized = read(USER_TO_ROLE_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    RoleList roles = new RoleList();
+    HBaseUtils.deserialize(roles, serialized);
+    return roles.roles;
+  }
+
+  /**
+   * Find all roles directly participated in by a given principal.  This builds the role cache
+   * because it assumes that subsequent calls may be made to find roles participated in indirectly.
+   * @param name username or role name
+   * @param type user or role
+   * @return map of role name to grant info for all roles directly participated in.
+   */
+  Map<String, GrantInfoWritable> getPrincipalDirectRoles(String name, PrincipalType type)
+      throws IOException {
+    buildRoleCache();
+
+    Map<String, GrantInfoWritable> directRoles = new HashMap<String, GrantInfoWritable>();
+    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
+      for (GrantInfoWritable giw : e.getValue().grantInfos) {
+        if (giw.principalType == type && giw.principalName.equals(name)) {
+          directRoles.put(e.getKey(), giw);
+          break;
+        }
+      }
+    }
+    return directRoles;
+  }
+
+  /**
+   * Fetch all roles and users included directly in a given role.
+   * @param roleName name of the principal
+   * @return a list of all roles included in this role
+   * @throws IOException
+   */
+  GrantInfoList getRolePrincipals(String roleName) throws IOException, NoSuchObjectException {
+    GrantInfoList rolePrincipals = roleCache.get(roleName);
+    if (rolePrincipals != null) return rolePrincipals;
+    byte[] key = HBaseUtils.buildKey(roleName);
+    byte[] serialized = read(ROLE_TABLE, key, CATALOG_CF, ROLES_COL);
+    if (serialized == null) return null;
+    rolePrincipals = new GrantInfoList();
+    HBaseUtils.deserialize(rolePrincipals, serialized);
+    roleCache.put(roleName, rolePrincipals);
+    return rolePrincipals;
+  }
+
+  /**
+   * Given a role, find all users who are either directly or indirectly participate in this role.
+   * This is expensive, it should be used sparingly.  It scan the entire userToRole table and
+   * does a linear search on each entry.
+   * @param roleName name of the role
+   * @return set of all users in the role
+   * @throws IOException
+   * @throws NoSuchObjectException
+   */
+  Set<String> findAllUsersInRole(String roleName) throws IOException {
+    // Walk the userToRole table and collect every user that matches this role.
+    Set<String> users = new HashSet<String>();
+    Iterator<Result> iter = scanWithFilter(USER_TO_ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
+    while (iter.hasNext()) {
+      RoleList roleList = new RoleList();
+      Result result = iter.next();
+      HBaseUtils.deserialize(roleList, result.getValue(CATALOG_CF, CATALOG_COL));
+      for (String rn : roleList.roles) {
+        if (rn.equals(roleName)) {
+          users.add(new String(result.getRow(), HBaseUtils.ENCODING));
+          break;
+        }
+      }
+    }
+    return users;
+  }
+
+  /**
+   * Add a principal to a role.
+   * @param roleName name of the role to add principal to
+   * @param grantInfo grant information for this principal.
+   * @throws java.io.IOException
+   * @throws NoSuchObjectException
+   *
+   */
+  void addPrincipalToRole(String roleName, GrantInfoWritable grantInfo)
+      throws IOException, NoSuchObjectException {
+    GrantInfoList rolePrincipals = getRolePrincipals(roleName);
+    if (rolePrincipals == null) {
+      // Happens the first time a principal is added to a role
+      rolePrincipals = new GrantInfoList();
+    }
+    rolePrincipals.grantInfos.add(grantInfo);
+    byte[] key = HBaseUtils.buildKey(roleName);
+    byte[] serialized = HBaseUtils.serialize(rolePrincipals);
+    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, serialized);
+    flush();
+    roleCache.put(roleName, rolePrincipals);
+  }
+
+  /**
+   * Drop a principal from a role.
+   * @param roleName Name of the role to drop the principal from
+   * @param principalName name of the principal to drop from the role
+   * @param type user or role
+   * @param grantOnly if this is true, just remove the grant option, don't actually remove the
+   *                  user from the role.
+   * @throws NoSuchObjectException
+   * @throws IOException
+   */
+  void dropPrincipalFromRole(String roleName, String principalName, PrincipalType type,
+                             boolean grantOnly)
+      throws NoSuchObjectException, IOException {
+    GrantInfoList rolePrincipals = getRolePrincipals(roleName);
+    if (rolePrincipals == null) {
+      // Means there aren't any principals in this role, so probably not a problem.
+      return;
+    }
+    for (int i = 0; i < rolePrincipals.grantInfos.size(); i++) {
+      if (rolePrincipals.grantInfos.get(i).principalType == type &&
+          rolePrincipals.grantInfos.get(i).principalName.equals(principalName)) {
+        if (grantOnly) rolePrincipals.grantInfos.get(i).grantOption = false;
+        else rolePrincipals.grantInfos.remove(i);
+        break;
+      }
+    }
+    byte[] key = HBaseUtils.buildKey(roleName);
+    byte[] serialized = HBaseUtils.serialize(rolePrincipals);
+    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, serialized);
+    flush();
+    roleCache.put(roleName, rolePrincipals);
+  }
+
+  /**
+   * Rebuild the row for a given user in the USER_TO_ROLE table.  This is expensive.  It
+   * should be called as infrequently as possible.
+   * @param userName name of the user
+   * @throws IOException
+   */
+  void buildRoleMapForUser(String userName) throws IOException, NoSuchObjectException {
+    // This is mega ugly.  Hopefully we don't have to do this too often.
+    // First, scan the role table and put it all in memory
+    buildRoleCache();
+    LOG.debug("Building role map for " + userName);
+
+    // Second, find every role the user participates in directly.
+    Set<String> rolesToAdd = new HashSet<String>();
+    Set<String> userSet = new HashSet<String>();
+    Set<String> rolesToCheckNext = new HashSet<String>();
+    userSet.add(userName);
+    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
+      for (GrantInfoWritable grantInfo : e.getValue().grantInfos) {
+        if (grantInfo.principalType == PrincipalType.USER && userName.equals(grantInfo.principalName)) {
+          rolesToAdd.add(e.getKey());
+          rolesToCheckNext.add(e.getKey());
+          LOG.debug("Adding " + e.getKey() + " to list of roles user is in directly");
+          break;
+        }
+      }
+    }
+
+    // Third, find every role the user participates in indirectly (that is, they have been
+    // granted into role X and role Y has been granted into role X).
+    while (rolesToCheckNext.size() > 0) {
+      Set<String> tmpRolesToCheckNext = new HashSet<String>();
+      for (String roleName : rolesToCheckNext) {
+        GrantInfoList grantInfos = roleCache.get(roleName);
+        if (grantInfos == null) continue;  // happens when a role contains no grants
+        for (GrantInfoWritable grantInfo : grantInfos.grantInfos) {
+          if (grantInfo.principalType == PrincipalType.ROLE &&
+              rolesToAdd.add(grantInfo.principalName)) {
+            tmpRolesToCheckNext.add(grantInfo.principalName);
+            LOG.debug("Adding " + grantInfo.principalName +
+                " to list of roles user is in indirectly");
+          }
+        }
+      }
+      rolesToCheckNext = tmpRolesToCheckNext;
+    }
+
+    byte[] key = HBaseUtils.buildKey(userName);
+    byte[] serialized = HBaseUtils.serialize(new RoleList(new ArrayList<String>(rolesToAdd)));
+    store(USER_TO_ROLE_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
+    flush();
+  }
+
+  /**
+   * Remove all of the grants for a role.  This is not cheap.
+   * @param roleName
+   * @throws IOException
+   */
+  void removeRoleGrants(String roleName) throws IOException {
+    buildRoleCache();
+
+    List<Put> puts = new ArrayList<Put>();
+    // First, walk the role table and remove any references to this role
+    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
+      boolean madeAChange = false;
+      for (int i = 0; i < e.getValue().grantInfos.size(); i++) {
+        if (e.getValue().grantInfos.get(i).principalType == PrincipalType.ROLE &&
+            e.getValue().grantInfos.get(i).principalName.equals(roleName)) {
+          e.getValue().grantInfos.remove(i);
+          madeAChange = true;
+          break;
+        }
+      }
+      if (madeAChange) {
+        Put put = new Put(HBaseUtils.buildKey(e.getKey()));
+        put.add(CATALOG_CF, ROLES_COL, HBaseUtils.serialize(e.getValue()));
+        puts.add(put);
+        roleCache.put(e.getKey(), e.getValue());
+      }
+    }
+
+    if (puts.size() > 0) {
+      HTableInterface htab = getHTable(ROLE_TABLE);
+      htab.put(puts);
+    }
+
+    // Remove any global privileges held by this role
+    PrincipalPrivilegeSet global = getGlobalPrivs();
+    if (global != null &&
+        global.getRolePrivileges() != null &&
+        global.getRolePrivileges().remove(roleName) != null) {
+      putGlobalPrivs(global);
+    }
+
+    // Now, walk the db table
+    puts.clear();
+    List<Database> dbs = scanDatabases(null);
+    if (dbs == null) dbs = new ArrayList<Database>(); // rare, but can happen
+    for (Database db : dbs) {
+      if (db.getPrivileges() != null &&
+          db.getPrivileges().getRolePrivileges() != null &&
+          db.getPrivileges().getRolePrivileges().remove(roleName) != null) {
+        Put put = new Put(HBaseUtils.buildKey(db.getName()));
+        put.add(CATALOG_CF, CATALOG_COL, HBaseUtils.serialize(new DatabaseWritable(db)));
+        puts.add(put);
+      }
+    }
+
+    if (puts.size() > 0) {
+      HTableInterface htab = getHTable(DB_TABLE);
+      htab.put(puts);
+    }
+
+    // Finally, walk the table table
+    puts.clear();
+    for (Database db : dbs) {
+      List<Table> tables = scanTables(db.getName(), null);
+      if (tables != null) {
+        for (Table table : tables) {
+          if (table.getPrivileges() != null &&
+              table.getPrivileges().getRolePrivileges() != null &&
+              table.getPrivileges().getRolePrivileges().remove(roleName) != null) {
+            Put put = new Put(HBaseUtils.buildKey(table.getDbName(), table.getTableName()));
+            put.add(CATALOG_CF, CATALOG_COL, HBaseUtils.serialize(new TableWritable(table)));
+            puts.add(put);
+          }
+        }
+      }
+    }
+
+    if (puts.size() > 0) {
+      HTableInterface htab = getHTable(TABLE_TABLE);
+      htab.put(puts);
+    }
+
+    flush();
+  }
+
   /**
    * Fetch a role
    * @param roleName name of the role
@@ -535,7 +919,47 @@ class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(roleName);
     delete(ROLE_TABLE, key, null, null);
     flush();
+    roleCache.remove(roleName);
   }
+
+  private static class RoleList implements Writable {
+    List<String> roles;
+
+    RoleList() {
+    }
+
+    RoleList(List<String> r) {
+      roles = r;
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      HBaseUtils.writeStrList(out, roles);
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+      roles = HBaseUtils.readStrList(in);
+    }
+  }
+
+  private void buildRoleCache() throws IOException {
+    if (!entireRoleTableInCache) {
+      Iterator<Result> roles = scanWithFilter(ROLE_TABLE, null, CATALOG_CF, ROLES_COL, null);
+      while (roles.hasNext()) {
+        Result res = roles.next();
+        String roleName = new String(res.getRow(), HBaseUtils.ENCODING);
+        GrantInfoList grantInfos = new GrantInfoList();
+        HBaseUtils.deserialize(grantInfos, res.getValue(CATALOG_CF, ROLES_COL));
+        roleCache.put(roleName, grantInfos);
+      }
+      entireRoleTableInCache = true;
+    }
+  }
+
+  /**********************************************************************************************
+   * Table related methods
+   *********************************************************************************************/
 
   /**
    * Fetch a table object
@@ -652,6 +1076,24 @@ class HBaseReadWrite {
     flush();
   }
 
+  private Table getTable(String dbName, String tableName, boolean populateCache)
+      throws IOException {
+    ObjectPair<String, String> hashKey = new ObjectPair<String, String>(dbName, tableName);
+    Table cached = tableCache.get(hashKey);
+    if (cached != null) return cached;
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    TableWritable table = new TableWritable();
+    HBaseUtils.deserialize(table, serialized);
+    if (populateCache) tableCache.put(hashKey, table.table);
+    return table.table;
+  }
+
+  /**********************************************************************************************
+   * StorageDescriptor related methods
+   *********************************************************************************************/
+
   /**
    * If this serde has already been read, then return it from the cache.  If not, read it, then
    * return it.
@@ -740,6 +1182,32 @@ class HBaseReadWrite {
     }
     throw new IOException("Too many unsuccessful attepts to increment storage counter");
   }
+
+  private static class ByteArrayWrapper {
+    byte[] wrapped;
+
+    ByteArrayWrapper(byte[] b) {
+      wrapped = b;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (other instanceof ByteArrayWrapper) {
+        return Arrays.equals(((ByteArrayWrapper)other).wrapped, wrapped);
+      } else {
+        return false;
+      }
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(wrapped);
+    }
+  }
+
+  /**********************************************************************************************
+   * Statistics related methods
+   *********************************************************************************************/
 
   /**
    * Update statistics for one or more columns for a table or a partition.
@@ -915,6 +1383,34 @@ class HBaseReadWrite {
     return statsList;
   }
 
+  private static class PartStatsInfo {
+    ColumnStatistics stats;
+    String partName;
+    List<String> colNames;
+    List<String> partVals;
+    byte[][] colKeys;
+
+    PartStatsInfo(ColumnStatistics s, List<String> pv, String pn) {
+      stats = s; partVals = pv; partName = pn;
+      colNames = new ArrayList<String>();
+      colKeys = null;
+    }
+  }
+
+  private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) {
+    return partVals == null ?
+        HBaseUtils.buildKey(dbName, tableName) :
+        buildPartitionKey(dbName, tableName, partVals);
+  }
+
+  private String getStatisticsTable(List<String> partVals) {
+    return partVals == null ? TABLE_TABLE : PART_TABLE;
+  }
+
+  /**********************************************************************************************
+   * Cache methods
+   *********************************************************************************************/
+
   /**
    * This should be called whenever a new query is started.
    */
@@ -926,42 +1422,17 @@ class HBaseReadWrite {
     tableCache.flush();
     sdCache.flush();
     partCache.flush();
+    flushRoleCache();
   }
 
-  @VisibleForTesting
-  int countStorageDescriptor() throws IOException {
-    ResultScanner scanner = getHTable(SD_TABLE).getScanner(new Scan());
-    int cnt = 0;
-    while (scanner.next() != null) cnt++;
-    return cnt;
+  private void flushRoleCache() {
+    roleCache.clear();
+    entireRoleTableInCache = false;
   }
 
-  private Table getTable(String dbName, String tableName, boolean populateCache)
-      throws IOException {
-    ObjectPair<String, String> hashKey = new ObjectPair<String, String>(dbName, tableName);
-    Table cached = tableCache.get(hashKey);
-    if (cached != null) return cached;
-    byte[] key = HBaseUtils.buildKey(dbName, tableName);
-    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, CATALOG_COL);
-    if (serialized == null) return null;
-    TableWritable table = new TableWritable();
-    HBaseUtils.deserialize(table, serialized);
-    if (populateCache) tableCache.put(hashKey, table.table);
-    return table.table;
-  }
-
-  private Partition getPartition(String dbName, String tableName, List<String> partVals,
-                                 boolean populateCache) throws IOException {
-    Partition cached = partCache.get(dbName, tableName, partVals);
-    if (cached != null) return cached;
-    byte[] key = buildPartitionKey(dbName, tableName, partVals);
-    byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
-    if (serialized == null) return null;
-    PartitionWritable part = new PartitionWritable();
-    HBaseUtils.deserialize(part, serialized);
-    if (populateCache) partCache.put(dbName, tableName, part.part);
-    return part.part;
-  }
+  /**********************************************************************************************
+   * General access methods
+   *********************************************************************************************/
 
   private void store(String table, byte[] key, byte[] colFam, byte[] colName, byte[] obj)
       throws IOException {
@@ -1008,26 +1479,6 @@ class HBaseReadWrite {
     htab.delete(d);
   }
 
-  private List<Partition> scanPartitions(byte[] keyPrefix, byte[] colFam, byte[] colName,
-                                         int maxResults) throws IOException {
-    return scanPartitionsWithFilter(keyPrefix, colFam, colName, maxResults, null);
-  }
-
-  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, byte[] colFam, byte[] colName,
-                                                   int maxResults, Filter filter)
-      throws IOException {
-    Iterator<Result> iter =
-        scanWithFilter(PART_TABLE, keyPrefix, colFam, colName, filter);
-    List<Partition> parts = new ArrayList<Partition>();
-    int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
-    for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
-      PartitionWritable p = new PartitionWritable();
-      HBaseUtils.deserialize(p, iter.next().getValue(colFam, colName));
-      parts.add(p.part);
-    }
-    return parts;
-  }
-
   private Iterator<Result> scanWithFilter(String table, byte[] keyPrefix, byte[] colFam,
                                           byte[] colName, Filter filter) throws IOException {
     HTableInterface htab = getHTable(table);
@@ -1069,33 +1520,21 @@ class HBaseReadWrite {
     for (HTableInterface htab : tables.values()) htab.flushCommits();
   }
 
-  private byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
-    Deque<String> keyParts = new ArrayDeque<String>(partVals);
-    keyParts.addFirst(tableName);
-    keyParts.addFirst(dbName);
-    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
-  }
-
-  private byte[] buildPartitionKey(PartitionWritable part) throws IOException {
-    Deque<String> keyParts = new ArrayDeque<String>(part.part.getValues());
-    keyParts.addFirst(part.part.getTableName());
-    keyParts.addFirst(part.part.getDbName());
-    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
-  }
-
   private byte[] hash(byte[] serialized) throws IOException {
     md.update(serialized);
     return md.digest();
   }
 
-  private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) {
-    return partVals == null ?
-        HBaseUtils.buildKey(dbName, tableName) :
-        buildPartitionKey(dbName, tableName, partVals);
-  }
+  /**********************************************************************************************
+   * Testing methods and classes
+   *********************************************************************************************/
 
-  private String getStatisticsTable(List<String> partVals) {
-    return partVals == null ? TABLE_TABLE : PART_TABLE;
+  @VisibleForTesting
+  int countStorageDescriptor() throws IOException {
+    ResultScanner scanner = getHTable(SD_TABLE).getScanner(new Scan());
+    int cnt = 0;
+    while (scanner.next() != null) cnt++;
+    return cnt;
   }
 
   /**
@@ -1105,42 +1544,6 @@ class HBaseReadWrite {
   @VisibleForTesting
   void setConnection(HConnection connection) {
     conn = connection;
-  }
-
-  private static class ByteArrayWrapper {
-    byte[] wrapped;
-
-    ByteArrayWrapper(byte[] b) {
-      wrapped = b;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (other instanceof ByteArrayWrapper) {
-        return Arrays.equals(((ByteArrayWrapper)other).wrapped, wrapped);
-      } else {
-        return false;
-      }
-    }
-
-    @Override
-    public int hashCode() {
-      return Arrays.hashCode(wrapped);
-    }
-  }
-
-  private static class PartStatsInfo {
-    ColumnStatistics stats;
-    String partName;
-    List<String> colNames;
-    List<String> partVals;
-    byte[][] colKeys;
-
-    PartStatsInfo(ColumnStatistics s, List<String> pv, String pn) {
-      stats = s; partVals = pv; partName = pn;
-      colNames = new ArrayList<String>();
-      colKeys = null;
-    }
   }
 
   // For testing without the cache

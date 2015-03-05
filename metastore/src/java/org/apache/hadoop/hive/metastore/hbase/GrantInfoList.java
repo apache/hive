@@ -18,46 +18,53 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.io.Writable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Wrapper for {@link org.apache.hadoop.hive.metastore.api.Database} that makes it writable
+ * A class to serialize a list of grant infos.  There is not a corresponding thrift object.
  */
-class DatabaseWritable implements Writable {
-  final Database db;
+public class GrantInfoList implements Writable{
+  List<GrantInfoWritable> grantInfos;
 
-  DatabaseWritable() {
-    this.db = new Database();
+  GrantInfoList() {
+    grantInfos = new ArrayList<GrantInfoWritable>();
   }
 
-  DatabaseWritable(Database db) {
-    this.db = db;
+  GrantInfoList(List<GrantInfoWritable> infos) {
+    grantInfos = infos;
   }
+
 
   @Override
   public void write(DataOutput out) throws IOException {
-    HBaseUtils.writeStr(out, db.getName());
-    HBaseUtils.writeStr(out, db.getDescription());
-    HBaseUtils.writeStr(out, db.getLocationUri());
-    HBaseUtils.writeStrStrMap(out, db.getParameters());
-    HBaseUtils.writePrivileges(out, db.getPrivileges());
-    HBaseUtils.writeStr(out, db.getOwnerName());
-    HBaseUtils.writeEnum(out, db.getOwnerType());
+    if (grantInfos == null) {
+      out.writeInt(0);
+    } else {
+      out.writeInt(grantInfos.size());
+      for (GrantInfoWritable info : grantInfos) {
+        info.write(out);
+      }
+    }
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    db.setName(HBaseUtils.readStr(in));
-    db.setDescription(HBaseUtils.readStr(in));
-    db.setLocationUri(HBaseUtils.readStr(in));
-    db.setParameters(HBaseUtils.readStrStrMap(in));
-    db.setPrivileges(HBaseUtils.readPrivileges(in));
-    db.setOwnerName(HBaseUtils.readStr(in));
-    db.setOwnerType(HBaseUtils.readPrincipalType(in));
+    int size = in.readInt();
+    if (size == 0) {
+      grantInfos = new ArrayList<GrantInfoWritable>();
+    } else {
+      grantInfos = new ArrayList<GrantInfoWritable>(size);
+      for (int i = 0; i < size; i++) {
+        GrantInfoWritable info = new GrantInfoWritable();
+        info.readFields(in);
+        grantInfos.add(info);
+      }
+    }
   }
 }

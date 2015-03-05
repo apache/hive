@@ -18,11 +18,13 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -52,10 +55,13 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -63,8 +69,11 @@ import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of RawStore that stores data in HBase
@@ -114,7 +123,6 @@ public class HBaseStore implements RawStore {
       // HiveMetaStore already checks for existence of the database, don't recheck
       getHBase().putDb(db);
     } catch (IOException e) {
-      // TODO NOt sure what i should throw here
       LOG.error("Unable to create database ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
@@ -199,7 +207,6 @@ public class HBaseStore implements RawStore {
     try {
       getHBase().putTable(tbl);
     } catch (IOException e) {
-      // TODO NOt sure what i should throw here
       LOG.error("Unable to create table ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
@@ -486,6 +493,40 @@ public class HBaseStore implements RawStore {
     throw new UnsupportedOperationException();
   }
 
+  /*
+   * The design for roles.  Roles are a pain because of their hierarchical nature.  When a user
+   * comes in and we need to be able to determine all roles he is a part of, we do not want to
+   * have to walk the hierarchy in the database.  This means we need to flatten the role map for
+   * each user.  But we also have to track how the roles are connected for each user, in case one
+   * role is revoked from another (e.g. if role1 is included in role2 but then revoked
+   * from it and user1 was granted both role2 and role1 we cannot remove user1 from role1
+   * because he was granted that separately).
+   *
+   * We want to optimize for the read case and put the cost on grant and revoke of roles, since
+   * we assume that is the less common case.  So we lay out the roles data as follows:
+   *
+   * There is a ROLES table that records each role, plus what other principals have been granted
+   * into it, along with the info on grantor, etc.
+   *
+   * There is a USER_TO_ROLES table that contains the mapping of each user to every role he is a
+   * part of.
+   *
+   * This makes determining what roles a user participates in very quick, as USER_TO_ROLE is a
+   * simple list for each user.  It makes granting users into roles expensive, and granting roles
+   * into roles very expensive.  Each time a user is granted into a role, we need to walk the
+   * hierarchy in the role table (which means moving through that table multiple times) to
+   * determine every role the user participates in.  Each a role is granted into another role
+   * this hierarchical walk must be done for every principal in the role being granted into.  To
+   * mitigate this pain somewhat whenever doing these mappings we cache the entire ROLES table in
+   * memory since we assume it is not large.
+   *
+   * On a related note, whenever a role is dropped we must walk not only all these role tables
+   * above (equivalent to a role being revoked from another role, since we have to rebuilding
+   * mappings for any users in roles that contained that role and any users directly in that
+   * role), but we also have to remove all the privileges associated with that role directly.
+   * That means a walk of the DBS table and of the TBLS table.
+   */
+
   @Override
   public boolean addRole(String roleName, String ownerName) throws InvalidObjectException,
       MetaException, NoSuchObjectException {
@@ -498,7 +539,6 @@ public class HBaseStore implements RawStore {
       getHBase().putRole(role);
       return true;
     } catch (IOException e) {
-      // TODO NOt sure what i should throw here
       LOG.error("Unable to create role ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
@@ -507,7 +547,12 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean removeRole(String roleName) throws MetaException, NoSuchObjectException {
     try {
+      Set<String> usersInRole = getHBase().findAllUsersInRole(roleName);
       getHBase().deleteRole(roleName);
+      getHBase().removeRoleGrants(roleName);
+      for (String user : usersInRole) {
+        getHBase().buildRoleMapForUser(user);
+      }
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete role" + e);
@@ -517,35 +562,131 @@ public class HBaseStore implements RawStore {
 
   @Override
   public boolean grantRole(Role role, String userName, PrincipalType principalType, String grantor,
-                           PrincipalType grantorType, boolean grantOption) throws MetaException,
-      NoSuchObjectException, InvalidObjectException {
-    throw new UnsupportedOperationException();
+                           PrincipalType grantorType, boolean grantOption)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    try {
+      Set<String> usersToRemap = findUsersToRemapRolesFor(role, userName, principalType);
+      getHBase().addPrincipalToRole(role.getRoleName(),
+          new GrantInfoWritable(userName, principalType, (int)(System.currentTimeMillis() / 1000),
+              grantor, grantorType, grantOption));
+      for (String user : usersToRemap) {
+        getHBase().buildRoleMapForUser(user);
+      }
+      return true;
+    } catch (IOException e) {
+      LOG.error("Unable to grant role", e);
+      throw new MetaException("Unable to grant role " + e.getMessage());
+    }
   }
 
   @Override
   public boolean revokeRole(Role role, String userName, PrincipalType principalType,
                             boolean grantOption) throws MetaException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
+    // This can have a couple of different meanings.  If grantOption is true, then this is only
+    // revoking the grant option, the role itself doesn't need to be removed.  If it is false
+    // then we need to remove the userName from the role altogether.
+    try {
+      if (grantOption) {
+        // If this is a grant only change, we don't need to rebuild the user mappings.
+        getHBase().dropPrincipalFromRole(role.getRoleName(), userName, principalType, grantOption);
+      } else {
+        Set<String> usersToRemap = findUsersToRemapRolesFor(role, userName, principalType);
+        getHBase().dropPrincipalFromRole(role.getRoleName(), userName, principalType, grantOption);
+        for (String user : usersToRemap) {
+          getHBase().buildRoleMapForUser(user);
+        }
+      }
+      return true;
+    } catch (IOException e) {
+      LOG.error("Unable to revoke role " + role.getRoleName() + " from " + userName, e);
+      throw new MetaException("Unable to revoke role " + e.getMessage());
+    }
   }
 
   @Override
-  public PrincipalPrivilegeSet getUserPrivilegeSet(String userName, List<String> groupNames) throws
-      InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+  public PrincipalPrivilegeSet getUserPrivilegeSet(String userName, List<String> groupNames)
+      throws InvalidObjectException, MetaException {
+    try {
+      PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
+      PrincipalPrivilegeSet global = getHBase().getGlobalPrivs();
+      if (global == null) return null;
+      List<PrivilegeGrantInfo> pgi = global.getUserPrivileges().get(userName);
+      if (pgi != null) {
+        pps.putToUserPrivileges(userName, pgi);
+      }
+
+      List<String> roles = getHBase().getUserRoles(userName);
+      if (roles != null) {
+        for (String role : roles) {
+          pgi = global.getRolePrivileges().get(role);
+          if (pgi != null) {
+            pps.putToRolePrivileges(role, pgi);
+          }
+        }
+      }
+      return pps;
+    } catch (IOException e) {
+      LOG.error("Unable to get db privileges for user", e);
+      throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    }
   }
 
   @Override
   public PrincipalPrivilegeSet getDBPrivilegeSet(String dbName, String userName,
-                                                 List<String> groupNames) throws
-      InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+                                                 List<String> groupNames)
+      throws InvalidObjectException, MetaException {
+    try {
+      PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
+      Database db = getHBase().getDb(dbName);
+      // Find the user privileges for this db
+      List<PrivilegeGrantInfo> pgi = db.getPrivileges().getUserPrivileges().get(userName);
+      if (pgi != null) {
+        pps.putToUserPrivileges(userName, pgi);
+      }
+
+      List<String> roles = getHBase().getUserRoles(userName);
+      if (roles != null) {
+        for (String role : roles) {
+          pgi = db.getPrivileges().getRolePrivileges().get(role);
+          if (pgi != null) {
+            pps.putToRolePrivileges(role, pgi);
+          }
+        }
+      }
+      return pps;
+    } catch (IOException e) {
+      LOG.error("Unable to get db privileges for user", e);
+      throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    }
   }
 
   @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String dbName, String tableName,
-                                                    String userName, List<String> groupNames) throws
-      InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+                                                    String userName, List<String> groupNames)
+      throws InvalidObjectException, MetaException {
+    try {
+      PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
+      Table table = getHBase().getTable(dbName, tableName);
+      // Find the user privileges for this db
+      List<PrivilegeGrantInfo> pgi = table.getPrivileges().getUserPrivileges().get(userName);
+      if (pgi != null) {
+        pps.putToUserPrivileges(userName, pgi);
+      }
+
+      List<String> roles = getHBase().getUserRoles(userName);
+      if (roles != null) {
+        for (String role : roles) {
+          pgi = table.getPrivileges().getRolePrivileges().get(role);
+          if (pgi != null) {
+            pps.putToRolePrivileges(role, pgi);
+          }
+        }
+      }
+      return pps;
+    } catch (IOException e) {
+      LOG.error("Unable to get db privileges for user", e);
+      throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    }
   }
 
   @Override
@@ -553,7 +694,8 @@ public class HBaseStore implements RawStore {
                                                         String partition, String userName,
                                                         List<String> groupNames) throws
       InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+    // We don't support partition privileges
+    return null;
   }
 
   @Override
@@ -562,25 +704,111 @@ public class HBaseStore implements RawStore {
                                                      String userName,
                                                      List<String> groupNames) throws
       InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+    // We don't support column level privileges
+    return null;
   }
 
+  // TODO - we need to rework these listAll methods so they don't leak the M classes.  Those are
+  // an artifact of the ObjectStore and don't belong in the RawStore interface.
   @Override
   public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
                                                           PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    List<PrivilegeGrantInfo> grants;
+    try {
+      switch (principalType) {
+        case USER:
+          grants = getHBase().getGlobalPrivs().getUserPrivileges().get(principalName);
+          break;
+
+        case ROLE:
+          grants = getHBase().getGlobalPrivs().getRolePrivileges().get(principalName);
+          break;
+
+        default:
+          throw new RuntimeException("Unknown or unsupported principal type " +
+              principalType.toString());
+      }
+
+      if (grants == null || grants.size() == 0) return null;
+      List<MGlobalPrivilege> privileges = new ArrayList<MGlobalPrivilege>(grants.size());
+      for (PrivilegeGrantInfo pgi : grants) {
+        privileges.add(new MGlobalPrivilege(principalName, principalType.toString(),
+            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
+            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<MDBPrivilege> listPrincipalDBGrants(String principalName, PrincipalType principalType,
                                                   String dbName) {
-    throw new UnsupportedOperationException();
+    List<PrivilegeGrantInfo> grants;
+    try {
+      Database db = getHBase().getDb(dbName);
+      switch (principalType) {
+        case USER:
+          grants = db.getPrivileges().getUserPrivileges().get(principalName);
+          break;
+
+        case ROLE:
+          grants = db.getPrivileges().getRolePrivileges().get(principalName);
+          break;
+
+        default:
+          throw new RuntimeException("Unknown or unsupported principal type " +
+              principalType.toString());
+      }
+
+      if (grants == null || grants.size() == 0) return null;
+      MDatabase mdb = new MDatabase(db.getName(), db.getLocationUri(), db.getDescription(),
+          db.getParameters());
+      List<MDBPrivilege> privileges = new ArrayList<MDBPrivilege>(grants.size());
+      for (PrivilegeGrantInfo pgi : grants) {
+        privileges.add(new MDBPrivilege(principalName, principalType.toString(), mdb,
+            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
+            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public List<MTablePrivilege> listAllTableGrants(String principalName, PrincipalType principalType,
                                                   String dbName, String tableName) {
-    throw new UnsupportedOperationException();
+    List<PrivilegeGrantInfo> grants;
+    try {
+      Table table = getHBase().getTable(dbName, tableName);
+      switch (principalType) {
+        case USER:
+          grants = table.getPrivileges().getUserPrivileges().get(principalName);
+          break;
+
+        case ROLE:
+          grants = table.getPrivileges().getRolePrivileges().get(principalName);
+          break;
+
+        default:
+          throw new RuntimeException("Unknown or unsupported principal type " +
+              principalType.toString());
+      }
+
+      if (grants == null || grants.size() == 0) return null;
+      MTable mtable = null;
+      List<MTablePrivilege> privileges = new ArrayList<MTablePrivilege>(grants.size());
+      for (PrivilegeGrantInfo pgi : grants) {
+        privileges.add(new MTablePrivilege(principalName, principalType.toString(), mtable,
+            pgi.getPrivilege(), pgi.getCreateTime(), pgi.getGrantor(),
+            pgi.getGrantorType().toString(), pgi.isGrantOption()));
+      }
+      return privileges;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -588,7 +816,8 @@ public class HBaseStore implements RawStore {
                                                                 PrincipalType principalType,
                                                                 String dbName, String tableName,
                                                                 String partName) {
-    throw new UnsupportedOperationException();
+    // We don't support partition grants
+    return null;
   }
 
   @Override
@@ -596,7 +825,8 @@ public class HBaseStore implements RawStore {
                                                                     PrincipalType principalType,
                                                                     String dbName, String tableName,
                                                                     String columnName) {
-    throw new UnsupportedOperationException();
+    // We don't support column grants
+    return null;
   }
 
   @Override
@@ -606,20 +836,165 @@ public class HBaseStore implements RawStore {
                                                                             String tableName,
                                                                             String partName,
                                                                             String columnName) {
-    throw new UnsupportedOperationException();
+    // We don't support column grants
+    return null;
   }
 
   @Override
-  public boolean grantPrivileges(PrivilegeBag privileges) throws InvalidObjectException,
-      MetaException, NoSuchObjectException {
-    // TODO
+  public boolean grantPrivileges(PrivilegeBag privileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
+      // Locate the right object to deal with
+     PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
+
+      // Now, let's see if we've already got this privilege
+      for (PrivilegeGrantInfo info : privilegeInfo.grants) {
+        if (info.getPrivilege().equals(priv.getGrantInfo().getPrivilege())) {
+          throw new InvalidObjectException(priv.getPrincipalName() + " already has " +
+              priv.getGrantInfo().getPrivilege() + " on " + privilegeInfo.typeErrMsg);
+        }
+      }
+      privilegeInfo.grants.add(priv.getGrantInfo());
+
+      writeBackGrantOrRevoke(priv, privilegeInfo);
+    }
     return true;
   }
 
   @Override
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption) throws
       InvalidObjectException, MetaException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
+    for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
+      PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
+
+      for (int i = 0; i < privilegeInfo.grants.size(); i++) {
+        if (privilegeInfo.grants.get(i).getPrivilege().equals(priv.getGrantInfo().getPrivilege())) {
+          if (grantOption) privilegeInfo.grants.get(i).setGrantOption(false);
+          else privilegeInfo.grants.remove(i);
+          break;
+        }
+      }
+      writeBackGrantOrRevoke(priv, privilegeInfo);
+    }
+    return true;
+  }
+
+  private static class PrivilegeInfo {
+    Database db;
+    Table table;
+    List<PrivilegeGrantInfo> grants;
+    String typeErrMsg;
+    PrincipalPrivilegeSet privSet;
+  }
+
+  private PrivilegeInfo findPrivilegeToGrantOrRevoke(HiveObjectPrivilege privilege)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    PrivilegeInfo result = new PrivilegeInfo();
+    switch (privilege.getHiveObject().getObjectType()) {
+      case GLOBAL:
+        try {
+          result.privSet = createOnNull(getHBase().getGlobalPrivs());
+        } catch (IOException e) {
+          LOG.error("Unable to fetch global privileges", e);
+          throw new MetaException("Unable to fetch global privileges, " + e.getMessage());
+        }
+        result.typeErrMsg = "global";
+        break;
+
+      case DATABASE:
+        result.db = getDatabase(privilege.getHiveObject().getDbName());
+        result.typeErrMsg = "database " + result.db.getName();
+        result.privSet = createOnNull(result.db.getPrivileges());
+        break;
+
+      case TABLE:
+        result.table = getTable(privilege.getHiveObject().getDbName(),
+            privilege.getHiveObject().getObjectName());
+        result.typeErrMsg = "table " + result.table.getTableName();
+        result.privSet = createOnNull(result.table.getPrivileges());
+        break;
+
+      case PARTITION:
+      case COLUMN:
+        throw new RuntimeException("HBase metastore does not support partition or column " +
+            "permissions");
+
+      default:
+        throw new RuntimeException("Woah bad, unknown object type " +
+            privilege.getHiveObject().getObjectType());
+    }
+
+    // Locate the right PrivilegeGrantInfo
+    Map<String, List<PrivilegeGrantInfo>> grantInfos;
+    switch (privilege.getPrincipalType()) {
+      case USER:
+        grantInfos = result.privSet.getUserPrivileges();
+        result.typeErrMsg = "user";
+        break;
+
+      case GROUP:
+        throw new RuntimeException("HBase metastore does not support group permissions");
+
+      case ROLE:
+        grantInfos = result.privSet.getRolePrivileges();
+        result.typeErrMsg = "role";
+        break;
+
+      default:
+        throw new RuntimeException("Woah bad, unknown principal type " +
+            privilege.getPrincipalType());
+    }
+
+    // Find the requested name in the grantInfo
+    result.grants = grantInfos.get(privilege.getPrincipalName());
+    if (result.grants == null) {
+      // Means we don't have any grants for this user yet.
+      result.grants = new ArrayList<PrivilegeGrantInfo>();
+      grantInfos.put(privilege.getPrincipalName(), result.grants);
+    }
+    return result;
+  }
+
+  private PrincipalPrivilegeSet createOnNull(PrincipalPrivilegeSet pps) {
+    // If this is the first time a user has been granted a privilege set will be null.
+    if (pps == null) {
+      pps = new PrincipalPrivilegeSet();
+    }
+    if (pps.getUserPrivileges() == null) {
+      pps.setUserPrivileges(new HashMap<String, List<PrivilegeGrantInfo>>());
+    }
+    if (pps.getRolePrivileges() == null) {
+      pps.setRolePrivileges(new HashMap<String, List<PrivilegeGrantInfo>>());
+    }
+    return pps;
+  }
+
+  private void writeBackGrantOrRevoke(HiveObjectPrivilege priv, PrivilegeInfo pi)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    // Now write it back
+    switch (priv.getHiveObject().getObjectType()) {
+      case GLOBAL:
+        try {
+          getHBase().putGlobalPrivs(pi.privSet);
+        } catch (IOException e) {
+          LOG.error("Unable to write global privileges", e);
+          throw new MetaException("Unable to write global privileges, " + e.getMessage());
+        }
+        break;
+
+      case DATABASE:
+        pi.db.setPrivileges(pi.privSet);
+        alterDatabase(pi.db.getName(), pi.db);
+        break;
+
+      case TABLE:
+        pi.table.setPrivileges(pi.privSet);
+        alterTable(pi.table.getDbName(), pi.table.getTableName(), pi.table);
+        break;
+
+      default:
+        throw new RuntimeException("Dude, you missed the second switch!");
+    }
   }
 
   @Override
@@ -650,12 +1025,43 @@ public class HBaseStore implements RawStore {
 
   @Override
   public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
-    throw new UnsupportedOperationException();
+    List<MRoleMap> maps = new ArrayList<MRoleMap>();
+    try {
+      Map<String, GrantInfoWritable> roles =
+          getHBase().getPrincipalDirectRoles(principalName, principalType);
+      for (Map.Entry<String, GrantInfoWritable> e : roles.entrySet()) {
+        // TODO - change GrantInfoWritable to contain create time and owner of granted role
+        maps.add(new MRoleMap(principalName, principalType.toString(),
+            new MRole(e.getKey(), 0, null), e.getValue().addTime, e.getValue().grantor,
+            e.getValue().grantorType.toString(), e.getValue().grantOption));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    // Add the public role if this is a user
+    if (principalType == PrincipalType.USER) {
+      maps.add(new MRoleMap(principalName, principalType.toString(),
+          new MRole(HiveMetaStore.PUBLIC, 0, null), 0, null, null, false));
+    }
+    return maps;
+
   }
 
   @Override
   public List<MRoleMap> listRoleMembers(String roleName) {
-    throw new UnsupportedOperationException();
+    try {
+      GrantInfoList gil = getHBase().getRolePrincipals(roleName);
+      List<MRoleMap> roleMaps = new ArrayList<MRoleMap>(gil.grantInfos.size());
+      for (GrantInfoWritable giw : gil.grantInfos) {
+        // TODO - change GrantInfoWritable to contain create time and owner of granted role
+        roleMaps.add(new MRoleMap(giw.principalName, giw.principalType.toString(),
+            new MRole(roleName, 0, null), giw.addTime, giw.grantor, giw.grantorType.toString(),
+            giw.grantOption));
+      }
+      return roleMaps;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -1008,6 +1414,29 @@ public class HBaseStore implements RawStore {
   private String buildExternalPartName(String dbName, String tableName, List<String> partVals)
       throws MetaException {
     return buildExternalPartName(getTable(dbName, tableName), partVals);
+  }
+
+  private Set<String> findUsersToRemapRolesFor(Role role, String principalName, PrincipalType type)
+      throws IOException, NoSuchObjectException {
+    Set<String> usersToRemap;
+    switch (type) {
+      case USER:
+        // In this case it's just the user being added to the role that we need to remap for.
+        usersToRemap = new HashSet<String>();
+        usersToRemap.add(principalName);
+        break;
+
+      case ROLE:
+        // In this case we need to remap for all users in the containing role (not the role being
+        // granted into the containing role).
+        usersToRemap = getHBase().findAllUsersInRole(role.getRoleName());
+        break;
+
+      default:
+        throw new RuntimeException("Unknown principal type " + type);
+
+    }
+    return usersToRemap;
   }
 
   /**

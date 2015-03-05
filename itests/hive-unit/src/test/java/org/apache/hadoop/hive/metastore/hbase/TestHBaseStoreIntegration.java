@@ -24,6 +24,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -35,18 +36,29 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,6 +86,8 @@ public class TestHBaseStoreIntegration {
   private static HTableInterface partTable;
   private static HTableInterface dbTable;
   private static HTableInterface roleTable;
+  private static HTableInterface globalPrivsTable;
+  private static HTableInterface principalRoleMapTable;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
 
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -96,6 +110,12 @@ public class TestHBaseStoreIntegration {
         HBaseReadWrite.CATALOG_CF);
     roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
+    globalPrivsTable =
+        utility.createTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE.getBytes(HBaseUtils.ENCODING),
+        HBaseReadWrite.CATALOG_CF);
+    principalRoleMapTable =
+        utility.createTable(HBaseReadWrite.USER_TO_ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
+        HBaseReadWrite.CATALOG_CF);
   }
 
   @AfterClass
@@ -111,6 +131,8 @@ public class TestHBaseStoreIntegration {
     Mockito.when(hconn.getTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
     Mockito.when(hconn.getTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
     Mockito.when(hconn.getTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
+    Mockito.when(hconn.getTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
+    Mockito.when(hconn.getTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
     conf = new HiveConf();
     // Turn off caching, as we want to test actual interaction with HBase
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
@@ -432,58 +454,6 @@ public class TestHBaseStoreIntegration {
     }
   }
 
-  // TODO - Fix this and the next test.  They depend on test execution order and are bogus.
-  @Test
-  public void createManyPartitions() throws Exception {
-    String dbName = "default";
-    String tableName = "manyParts";
-    int startTime = (int)(System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", "nocomment"));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
-    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
-    partCols.add(new FieldSchema("pc", "string", ""));
-    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
-        emptyParameters, null, null, null);
-    store.createTable(table);
-
-    List<String> partVals = Arrays.asList("alan", "bob", "carl", "doug", "ethan");
-    for (String val : partVals) {
-      List<String> vals = new ArrayList<String>();
-      vals.add(val);
-      StorageDescriptor psd = new StorageDescriptor(sd);
-      psd.setLocation("file:/tmp/pc=" + val);
-      Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
-          emptyParameters);
-      store.addPartition(part);
-
-      Partition p = store.getPartition(dbName, tableName, vals);
-      Assert.assertEquals("file:/tmp/pc=" + val, p.getSd().getLocation());
-    }
-
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
-
-  }
-
-  @Test
-  public void createDifferentPartition() throws Exception {
-    int startTime = (int)(System.currentTimeMillis() / 1000);
-    Map<String, String> emptyParameters = new HashMap<String, String>();
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", "nocomment"));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input2", "output", false, 0,
-        serde, null, null, emptyParameters);
-    Table table = new Table("differenttable", "default", "me", startTime, startTime, 0, sd, null,
-        emptyParameters, null, null, null);
-    store.createTable(table);
-
-    Assert.assertEquals(3, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
-
-  }
-
   @Test
   public void getPartitions() throws Exception {
     String dbName = "default";
@@ -682,6 +652,437 @@ public class TestHBaseStoreIntegration {
     store.removeRole(roleName);
     thrown.expect(NoSuchObjectException.class);
     store.getRole(roleName);
+  }
+
+  @Test
+  public void grantRevokeRoles() throws Exception {
+    int now = (int)(System.currentTimeMillis()/1000);
+    String roleName1 = "role1";
+    store.addRole(roleName1, "me");
+    String roleName2 = "role2";
+    store.addRole(roleName2, "me");
+
+    Role role1 = store.getRole(roleName1);
+    Role role2 = store.getRole(roleName2);
+
+    store.grantRole(role1, "fred", PrincipalType.USER, "bob", PrincipalType.USER, false);
+    store.grantRole(role2, roleName1, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+    store.grantRole(role2, "fred", PrincipalType.USER, "admin", PrincipalType.ROLE, false);
+
+    List<MRoleMap> maps = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(3, maps.size());
+    boolean sawRole1 = false, sawRole2 = false, sawPublic = false;
+    for (MRoleMap map : maps) {
+      if (map.getRole().getRoleName().equals(roleName1)) {
+        sawRole1 = true;
+        Assert.assertEquals("fred", map.getPrincipalName());
+        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
+        Assert.assertTrue(map.getAddTime() >= now);
+        Assert.assertEquals("bob", map.getGrantor());
+        Assert.assertEquals(PrincipalType.USER.toString(), map.getGrantorType());
+        Assert.assertFalse(map.getGrantOption());
+      } else if (map.getRole().getRoleName().equals(roleName2)) {
+        sawRole2 = true;
+        Assert.assertEquals("fred", map.getPrincipalName());
+        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
+        LOG.debug("now " + now + " add time " + map.getAddTime());
+        Assert.assertTrue(map.getAddTime() >= now);
+        Assert.assertEquals("admin", map.getGrantor());
+        Assert.assertEquals(PrincipalType.ROLE.toString(), map.getGrantorType());
+        Assert.assertFalse(map.getGrantOption());
+      } else if (map.getRole().getRoleName().equals(HiveMetaStore.PUBLIC)) {
+        sawPublic = true;
+        Assert.assertEquals("fred", map.getPrincipalName());
+        Assert.assertEquals(PrincipalType.USER.toString(), map.getPrincipalType());
+        Assert.assertFalse(map.getGrantOption());
+      } else {
+        Assert.fail("Unknown role name " + map.getRole().getRoleName());
+      }
+    }
+    Assert.assertTrue(sawRole1 && sawRole2 && sawPublic);
+
+    maps = store.listRoles("fred", PrincipalType.ROLE);
+    Assert.assertEquals(0, maps.size());
+
+    maps = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(1, maps.size());
+    MRoleMap map = maps.get(0);
+    Assert.assertEquals(roleName1, map.getPrincipalName());
+    Assert.assertEquals(PrincipalType.ROLE.toString(), map.getPrincipalType());
+    Assert.assertEquals(roleName2, map.getRole().getRoleName());
+    Assert.assertTrue(map.getAddTime() <= now);
+    Assert.assertEquals("admin", map.getGrantor());
+    Assert.assertEquals(PrincipalType.ROLE.toString(), map.getGrantorType());
+    Assert.assertTrue(map.getGrantOption());
+
+    // Test listing all members in a role
+    maps = store.listRoleMembers(roleName1);
+    Assert.assertEquals(1, maps.size());
+    Assert.assertEquals("fred", maps.get(0).getPrincipalName());
+    Assert.assertEquals(PrincipalType.USER.toString(), maps.get(0).getPrincipalType());
+    Assert.assertTrue(maps.get(0).getAddTime() >= now);
+    Assert.assertEquals("bob", maps.get(0).getGrantor());
+    Assert.assertEquals(PrincipalType.USER.toString(), maps.get(0).getGrantorType());
+    Assert.assertFalse(maps.get(0).getGrantOption());
+
+    maps = store.listRoleMembers(roleName2);
+    Assert.assertEquals(2, maps.size());
+    boolean sawFred = false;
+    sawRole1 = false;
+    for (MRoleMap m : maps) {
+      if ("fred".equals(m.getPrincipalName())) sawFred = true;
+      else if (roleName1.equals(m.getPrincipalName())) sawRole1 = true;
+      else Assert.fail("Unexpected principal " + m.getPrincipalName());
+    }
+    Assert.assertTrue(sawFred && sawRole1);
+
+    // Revoke a role with grant option, make sure it just goes to no grant option
+    store.revokeRole(role2, roleName1, PrincipalType.ROLE, true);
+    maps = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(1, maps.size());
+    Assert.assertEquals(roleName2, maps.get(0).getRole().getRoleName());
+    Assert.assertFalse(maps.get(0).getGrantOption());
+
+    // Drop a role, make sure it is properly removed from the map
+    store.removeRole(roleName1);
+    maps = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(2, maps.size());
+    sawRole2 = sawPublic = false;
+    for (MRoleMap m : maps) {
+      if (m.getRole().getRoleName().equals(roleName2)) sawRole2 = true;
+      else if (m.getRole().getRoleName().equals(HiveMetaStore.PUBLIC)) sawPublic = true;
+      else Assert.fail("Unknown role " + m.getRole().getRoleName());
+    }
+    Assert.assertTrue(sawRole2 && sawPublic);
+    maps = store.listRoles(roleName1, PrincipalType.ROLE);
+    Assert.assertEquals(0, maps.size());
+
+    // Revoke a role without grant option, make sure it goes away
+    store.revokeRole(role2, "fred", PrincipalType.USER, false);
+    maps = store.listRoles("fred", PrincipalType.USER);
+    Assert.assertEquals(1, maps.size());
+    Assert.assertEquals(HiveMetaStore.PUBLIC, maps.get(0).getRole().getRoleName());
+  }
+
+  @Test
+  public void userToRoleMap() throws Exception {
+    String roleName1 = "utrm1";
+    store.addRole(roleName1, "me");
+    String roleName2 = "utrm2";
+    store.addRole(roleName2, "me");
+    String user1 = "wilma";
+    String user2 = "betty";
+
+    Role role1 = store.getRole(roleName1);
+    Role role2 = store.getRole(roleName2);
+
+    store.grantRole(role1, user1, PrincipalType.USER, "bob", PrincipalType.USER, false);
+    store.grantRole(role1, roleName2, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+
+    List<String> roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    Assert.assertEquals(2, roles.size());
+    String[] roleNames = roles.toArray(new String[roles.size()]);
+    Arrays.sort(roleNames);
+    Assert.assertArrayEquals(new String[]{roleName1, roleName2}, roleNames);
+
+    store.grantRole(role2, user1, PrincipalType.USER, "admin", PrincipalType.ROLE, false);
+    store.grantRole(role1, user2, PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    Assert.assertEquals(2, roles.size());
+    roleNames = roles.toArray(new String[roles.size()]);
+    Arrays.sort(roleNames);
+    Assert.assertArrayEquals(new String[]{roleName1, roleName2}, roleNames);
+
+    store.revokeRole(role1, roleName2, PrincipalType.ROLE, false);
+
+    // user1 should still have both roles since she was granted into role1 specifically.  user2
+    // should only have role2 now since role2 was revoked from role1.
+    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    Assert.assertEquals(2, roles.size());
+    roleNames = roles.toArray(new String[roles.size()]);
+    Arrays.sort(roleNames);
+    Assert.assertArrayEquals(new String[]{roleName1, roleName2}, roleNames);
+
+    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    Assert.assertEquals(1, roles.size());
+    Assert.assertEquals(roleName1, roles.get(0));
+  }
+
+  @Test
+  public void userToRoleMapOnDrop() throws Exception {
+    String roleName1 = "utrmod1";
+    store.addRole(roleName1, "me");
+    String roleName2 = "utrmod2";
+    store.addRole(roleName2, "me");
+    String user1 = "pebbles";
+    String user2 = "bam-bam";
+
+    Role role1 = store.getRole(roleName1);
+    Role role2 = store.getRole(roleName2);
+
+    store.grantRole(role1, user1, PrincipalType.USER, "bob", PrincipalType.USER, false);
+    store.grantRole(role1, roleName2, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+    store.grantRole(role1, user2, PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+    List<String> roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    Assert.assertEquals(2, roles.size());
+    String[] roleNames = roles.toArray(new String[roles.size()]);
+    Arrays.sort(roleNames);
+    Assert.assertArrayEquals(new String[]{roleName1, roleName2}, roleNames);
+
+    store.removeRole(roleName2);
+
+    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    Assert.assertEquals(1, roles.size());
+    Assert.assertEquals(roleName1, roles.get(0));
+
+    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    Assert.assertEquals(1, roles.size());
+    Assert.assertEquals(roleName1, roles.get(0));
+  }
+
+  @Test
+  public void grantRevokeGlobalPrivileges() throws Exception {
+    doGrantRevoke(HiveObjectType.GLOBAL, null, null, new String[] {"grpg1", "grpg2"},
+        new String[] {"bugs", "elmer", "daphy", "wiley"});
+  }
+
+  @Test
+  public void grantRevokeDbPrivileges() throws Exception {
+    String dbName = "grdbp_db";
+    try {
+      Database db = new Database(dbName, "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+      doGrantRevoke(HiveObjectType.DATABASE, dbName, null,
+          new String[] {"grdbp_role1", "grdbp_role2"},
+          new String[] {"fred", "barney", "wilma", "betty"});
+    } finally {
+      store.dropDatabase(dbName);
+    }
+  }
+
+  @Test
+  public void grantRevokeTablePrivileges() throws Exception {
+    String dbName = "grtp_db";
+    String tableName = "grtp_table";
+    try {
+      Database db = new Database(dbName, "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+      int startTime = (int)(System.currentTimeMillis() / 1000);
+      List<FieldSchema> cols = new ArrayList<FieldSchema>();
+      cols.add(new FieldSchema("col1", "int", "nocomment"));
+      SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+      StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+          serde, null, null, emptyParameters);
+      Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null,
+          emptyParameters, null, null, null);
+      store.createTable(table);
+      doGrantRevoke(HiveObjectType.TABLE, dbName, tableName,
+          new String[] {"grtp_role1", "grtp_role2"},
+          new String[] {"batman", "robin", "superman", "wonderwoman"});
+
+    } finally {
+      if (store.getTable(dbName, tableName) != null) store.dropTable(dbName, tableName);
+      store.dropDatabase(dbName);
+    }
+  }
+
+  private void doGrantRevoke(HiveObjectType objectType, String dbName, String tableName,
+                             String[] roleNames, String[] userNames)
+      throws Exception {
+    store.addRole(roleNames[0], "me");
+    store.addRole(roleNames[1], "me");
+    int now = (int)(System.currentTimeMillis() / 1000);
+
+    Role role1 = store.getRole(roleNames[0]);
+    Role role2 = store.getRole(roleNames[1]);
+    store.grantRole(role1, userNames[0], PrincipalType.USER, "bob", PrincipalType.USER, false);
+    store.grantRole(role1, roleNames[1], PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
+    store.grantRole(role2, userNames[1], PrincipalType.USER, "bob", PrincipalType.USER, false);
+
+    List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    HiveObjectRef hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    PrivilegeGrantInfo grantInfo =
+        new PrivilegeGrantInfo("read", now, "me", PrincipalType.USER, false);
+    HiveObjectPrivilege hop = new HiveObjectPrivilege(hiveObjRef, userNames[0], PrincipalType.USER,
+        grantInfo);
+    privileges.add(hop);
+
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("write", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, roleNames[0], PrincipalType.ROLE, grantInfo);
+    privileges.add(hop);
+
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("exec", now, "me", PrincipalType.USER, false);
+    hop = new HiveObjectPrivilege(hiveObjRef, roleNames[1], PrincipalType.ROLE, grantInfo);
+    privileges.add(hop);
+
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("create", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, userNames[2], PrincipalType.USER, grantInfo);
+    privileges.add(hop);
+
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("create2", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, userNames[2], PrincipalType.USER, grantInfo);
+    privileges.add(hop);
+
+    PrivilegeBag pBag = new PrivilegeBag(privileges);
+    store.grantPrivileges(pBag);
+
+    PrincipalPrivilegeSet pps = getPPS(objectType, dbName, tableName, userNames[0]);
+
+    Assert.assertEquals(1, pps.getUserPrivilegesSize());
+    Assert.assertEquals(1, pps.getUserPrivileges().get(userNames[0]).size());
+    grantInfo = pps.getUserPrivileges().get(userNames[0]).get(0);
+    Assert.assertEquals("read", grantInfo.getPrivilege());
+    Assert.assertTrue(now <= grantInfo.getCreateTime());
+    Assert.assertEquals("me", grantInfo.getGrantor());
+    Assert.assertEquals(PrincipalType.USER, grantInfo.getGrantorType());
+    Assert.assertFalse(grantInfo.isGrantOption());
+
+    Assert.assertEquals(2, pps.getRolePrivilegesSize());
+    Assert.assertEquals(1, pps.getRolePrivileges().get(roleNames[0]).size());
+    grantInfo = pps.getRolePrivileges().get(roleNames[0]).get(0);
+    Assert.assertEquals("write", grantInfo.getPrivilege());
+    Assert.assertTrue(now <= grantInfo.getCreateTime());
+    Assert.assertEquals("me", grantInfo.getGrantor());
+    Assert.assertEquals(PrincipalType.USER, grantInfo.getGrantorType());
+    Assert.assertTrue(grantInfo.isGrantOption());
+
+    Assert.assertEquals(1, pps.getRolePrivileges().get(roleNames[1]).size());
+    grantInfo = pps.getRolePrivileges().get(roleNames[1]).get(0);
+    Assert.assertEquals("exec", grantInfo.getPrivilege());
+    Assert.assertTrue(now <= grantInfo.getCreateTime());
+    Assert.assertEquals("me", grantInfo.getGrantor());
+    Assert.assertEquals(PrincipalType.USER, grantInfo.getGrantorType());
+    Assert.assertFalse(grantInfo.isGrantOption());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[1]);
+
+    Assert.assertEquals(0, pps.getUserPrivilegesSize());
+
+    Assert.assertEquals(1, pps.getRolePrivilegesSize());
+    Assert.assertEquals(1, pps.getRolePrivileges().get(roleNames[1]).size());
+    grantInfo = pps.getRolePrivileges().get(roleNames[1]).get(0);
+    Assert.assertEquals("exec", grantInfo.getPrivilege());
+    Assert.assertTrue(now <= grantInfo.getCreateTime());
+    Assert.assertEquals("me", grantInfo.getGrantor());
+    Assert.assertEquals(PrincipalType.USER, grantInfo.getGrantorType());
+    Assert.assertFalse(grantInfo.isGrantOption());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[2]);
+
+    Assert.assertEquals(1, pps.getUserPrivilegesSize());
+    Assert.assertEquals(2, pps.getUserPrivileges().get(userNames[2]).size());
+    Assert.assertEquals(0, pps.getRolePrivilegesSize());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[3]);
+    Assert.assertEquals(0, pps.getUserPrivilegesSize());
+    Assert.assertEquals(0, pps.getRolePrivilegesSize());
+
+    // Test that removing role removes the role grants
+    store.removeRole(roleNames[1]);
+    checkRoleRemovedFromAllPrivileges(objectType, dbName, tableName, roleNames[1]);
+    pps = getPPS(objectType, dbName, tableName, userNames[0]);
+
+    Assert.assertEquals(1, pps.getRolePrivilegesSize());
+    Assert.assertEquals(1, pps.getRolePrivileges().get(roleNames[0]).size());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[1]);
+
+    Assert.assertEquals(0, pps.getRolePrivilegesSize());
+
+    // Test that revoking with grant option = true just removes grant option
+    privileges.clear();
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("write", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, roleNames[0], PrincipalType.ROLE, grantInfo);
+    privileges.add(hop);
+
+    hiveObjRef = new HiveObjectRef(objectType, dbName, tableName, null, null);
+    grantInfo = new PrivilegeGrantInfo("create2", now, "me", PrincipalType.USER, true);
+    hop = new HiveObjectPrivilege(hiveObjRef, userNames[2], PrincipalType.USER, grantInfo);
+    privileges.add(hop);
+
+    pBag = new PrivilegeBag(privileges);
+    store.revokePrivileges(pBag, true);
+    pps = getPPS(objectType, dbName, tableName, userNames[0]);
+
+    Assert.assertEquals(1, pps.getRolePrivilegesSize());
+    Assert.assertEquals(1, pps.getRolePrivileges().get(roleNames[0]).size());
+    grantInfo = pps.getRolePrivileges().get(roleNames[0]).get(0);
+    Assert.assertEquals("write", grantInfo.getPrivilege());
+    Assert.assertTrue(now <= grantInfo.getCreateTime());
+    Assert.assertEquals("me", grantInfo.getGrantor());
+    Assert.assertEquals(PrincipalType.USER, grantInfo.getGrantorType());
+    Assert.assertFalse(grantInfo.isGrantOption());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[2]);
+
+    Assert.assertEquals(1, pps.getUserPrivilegesSize());
+    Assert.assertEquals(2, pps.getUserPrivileges().get(userNames[2]).size());
+    for (PrivilegeGrantInfo pgi : pps.getUserPrivileges().get(userNames[2])) {
+      if (pgi.getPrivilege().equals("create")) Assert.assertTrue(pgi.isGrantOption());
+      else if (pgi.getPrivilege().equals("create2")) Assert.assertFalse(pgi.isGrantOption());
+      else Assert.fail("huh?");
+    }
+
+    // Test revoking revokes
+    store.revokePrivileges(pBag, false);
+
+    pps = getPPS(objectType, dbName, tableName, userNames[0]);
+
+    Assert.assertEquals(1, pps.getUserPrivilegesSize());
+    Assert.assertEquals(1, pps.getRolePrivilegesSize());
+    Assert.assertEquals(0, pps.getRolePrivileges().get(roleNames[0]).size());
+
+    pps = getPPS(objectType, dbName, tableName, userNames[2]);
+    Assert.assertEquals(1, pps.getUserPrivilegesSize());
+    Assert.assertEquals(1, pps.getUserPrivileges().get(userNames[2]).size());
+    Assert.assertEquals("create", pps.getUserPrivileges().get(userNames[2]).get(0).getPrivilege());
+    Assert.assertEquals(0, pps.getRolePrivilegesSize());
+  }
+
+  private PrincipalPrivilegeSet getPPS(HiveObjectType objectType, String dbName, String tableName,
+                                       String userName)
+      throws InvalidObjectException, MetaException {
+    switch (objectType) {
+      case GLOBAL: return store.getUserPrivilegeSet(userName, null);
+      case DATABASE: return store.getDBPrivilegeSet(dbName, userName, null);
+      case TABLE: return store.getTablePrivilegeSet(dbName, tableName, userName, null);
+      default: throw new RuntimeException("huh?");
+    }
+  }
+
+  private void checkRoleRemovedFromAllPrivileges(HiveObjectType objectType, String dbName,
+                                                 String tableName, String roleName)
+      throws IOException, NoSuchObjectException, MetaException {
+    List<PrivilegeGrantInfo> pgi = null;
+    switch (objectType) {
+      case GLOBAL:
+        pgi = HBaseReadWrite.getInstance(conf).getGlobalPrivs().getRolePrivileges().get(roleName);
+        break;
+
+      case DATABASE:
+        pgi = store.getDatabase(dbName).getPrivileges().getRolePrivileges().get(roleName);
+        break;
+
+      case TABLE:
+        pgi = store.getTable(dbName, tableName).getPrivileges().getRolePrivileges().get(roleName);
+        break;
+
+      default:
+        Assert.fail();
+    }
+
+    Assert.assertNull("Expected null for role " + roleName + " for type " + objectType.toString()
+      + " with db " + dbName + " and table " + tableName, pgi);
+
+
+
   }
 
   @Test

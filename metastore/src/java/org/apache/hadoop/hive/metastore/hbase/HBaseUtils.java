@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.io.Writable;
+import org.apache.thrift.TEnum;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -62,6 +63,7 @@ class HBaseUtils {
 
   final static Charset ENCODING = StandardCharsets.UTF_8;
   final static char KEY_SEPARATOR = ':';
+  final static String KEY_SEPARATOR_STR = new String(new char[] {KEY_SEPARATOR});
 
   static final private Log LOG = LogFactory.getLog(HBaseUtils.class.getName());
 
@@ -330,12 +332,17 @@ class HBaseUtils {
     }
   }
 
+  static PrincipalPrivilegeSet readPrivileges(byte[] bytes) throws IOException {
+    DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
+    return readPrivileges(in);
+  }
+
   static PrincipalPrivilegeSet readPrivileges(DataInput in) throws IOException {
     if (in.readBoolean()) {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       pps.setUserPrivileges(readPrivilege(in));
-      pps.setGroupPrivileges(readPrivilege(in));
       pps.setRolePrivileges(readPrivilege(in));
+      // we ignore group privileges because we don't support old auth
       return pps;
     } else {
       return new PrincipalPrivilegeSet();
@@ -354,21 +361,27 @@ class HBaseUtils {
       for (int i = 0; i < sz; i++) {
         String key = readStr(in);
         int numGrants = in.readInt();
-        if (numGrants == 0) {
-          priv.put(key, new ArrayList<PrivilegeGrantInfo>());
-        } else {
-          for (int j = 0; j < numGrants; j++) {
-            PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
-            pgi.setPrivilege(readStr(in));
-            pgi.setCreateTime(in.readInt());
-            pgi.setGrantor(readStr(in));
-            pgi.setGrantorType(PrincipalType.findByValue(in.readInt()));
-            pgi.setGrantOption(in.readBoolean());
-          }
+        List<PrivilegeGrantInfo> grants = new ArrayList<PrivilegeGrantInfo>(numGrants);
+        priv.put(key, grants);
+        for (int j = 0; j < numGrants; j++) {
+          PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
+          pgi.setPrivilege(readStr(in));
+          pgi.setCreateTime(in.readInt());
+          pgi.setGrantor(readStr(in));
+          pgi.setGrantorType(PrincipalType.findByValue(in.readInt()));
+          pgi.setGrantOption(in.readBoolean());
+          grants.add(pgi);
         }
       }
       return priv;
     }
+  }
+
+  static byte[] writePrivileges(PrincipalPrivilegeSet privSet) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    writePrivileges(dos, privSet);
+    return baos.toByteArray();
   }
 
   static void writePrivileges(DataOutput out, PrincipalPrivilegeSet privs) throws IOException {
@@ -377,8 +390,8 @@ class HBaseUtils {
     } else {
       out.writeBoolean(true);
       writePrivilege(out, privs.getUserPrivileges());
-      writePrivilege(out, privs.getGroupPrivileges());
       writePrivilege(out, privs.getRolePrivileges());
+      // we ignore group privileges because we don't support old auth
     }
   }
 
@@ -407,7 +420,7 @@ class HBaseUtils {
     }
   }
 
-  static void writePrincipalType(DataOutput out, PrincipalType pt) throws IOException {
+  static void writeEnum(DataOutput out, TEnum pt) throws IOException {
     if (pt == null) {
       out.writeBoolean(false);
     } else {
