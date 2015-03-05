@@ -19,15 +19,12 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
@@ -35,27 +32,29 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
+  private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
-
   private AtomicInteger newEvictions = new AtomicInteger(0);
   private Thread cleanupThread = null;
   private final ConcurrentHashMap<Long, FileCache> cache =
       new ConcurrentHashMap<Long, FileCache>();
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
+  private LlapDaemonCacheMetrics metrics;
 
-  public LowLevelCacheImpl(
-      Configuration conf, LowLevelCachePolicy cachePolicy, Allocator allocator) {
-    this(conf, cachePolicy, allocator, 600);
+  public LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
+      Allocator allocator) {
+    this(metrics, cachePolicy, allocator, DEFAULT_CLEANUP_INTERVAL);
   }
 
   @VisibleForTesting
-  LowLevelCacheImpl(Configuration conf,
+  LowLevelCacheImpl(LlapDaemonCacheMetrics metrics,
       LowLevelCachePolicy cachePolicy, Allocator allocator, long cleanupInterval) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
@@ -63,6 +62,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = cleanupInterval;
+    this.metrics = metrics;
   }
 
   public void init() {
@@ -79,6 +79,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   @Override
   public DiskRangeList getFileData(long fileId, DiskRangeList ranges, long baseOffset) {
     if (ranges == null) return null;
+    metrics.incrCacheRequestedBytes(ranges.getLength());
     FileCache subCache = cache.get(fileId);
     if (subCache == null || !subCache.incRef()) return ranges;
     try {
@@ -129,6 +130,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, baseOffset);
       // Now that we've added it into correct position, we can adjust it by base offset.
       currentCached.shiftBy(-baseOffset);
+      metrics.incrCacheHitBytes(currentCached.getLength());
     }
   }
 
@@ -296,7 +298,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   private static final ByteBuffer fakeBuf = ByteBuffer.wrap(new byte[1]);
   public static LlapCacheableBuffer allocateFake() {
     LlapCacheableBuffer fake = new LlapCacheableBuffer();
-    fake.initialize(-1, fakeBuf, 0, 1);
+    fake.initialize(-1, fakeBuf, 0, 1, null);
     return fake;
   }
 

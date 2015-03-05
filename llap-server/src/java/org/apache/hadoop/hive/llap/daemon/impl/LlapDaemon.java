@@ -19,17 +19,26 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.base.Preconditions;
+import javax.management.ObjectName;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.service.AbstractService;
-import org.apache.log4j.Logger;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
+import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.util.JvmPauseMonitor;
+import org.apache.log4j.Logger;
 
-public class LlapDaemon extends AbstractService implements ContainerRunner {
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+
+public class LlapDaemon extends AbstractService implements ContainerRunner, LlapDaemonMXBean {
 
   private static final Logger LOG = Logger.getLogger(LlapDaemon.class);
 
@@ -40,6 +49,12 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
   private final ContainerRunnerImpl containerRunner;
   private final String[] localDirs;
   private final int shufflePort;
+  private final long memoryPerInstance;
+  private final long maxJvmMemory;
+  private JvmPauseMonitor pauseMonitor;
+  private final ObjectName llapDaemonInfoBean;
+  private final LlapDaemonExecutorMetrics metrics;
+
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> address = new AtomicReference<InetSocketAddress>();
 
@@ -55,18 +70,18 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
     this.localDirs = daemonConf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS);
     this.shufflePort = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT, -1);
 
-    long memoryAvailableBytes = this.daemonConf
+    memoryPerInstance = this.daemonConf
         .getInt(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
             LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT) * 1024l * 1024l;
-    long jvmMax = Runtime.getRuntime().maxMemory();
+    maxJvmMemory = Runtime.getRuntime().maxMemory();
 
     LOG.info("LlapDaemon started with the following configuration: " +
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + rpcPort +
         ", workDirs=" + Arrays.toString(localDirs) +
         ", shufflePort=" + shufflePort +
-        ", memoryConfigured=" + memoryAvailableBytes +
-        ", jvmAvailableMemory=" + jvmMax);
+        ", memoryConfigured=" + memoryPerInstance +
+        ", jvmAvailableMemory=" + maxJvmMemory);
 
     Preconditions.checkArgument(this.numExecutors > 0);
     Preconditions.checkArgument(this.rpcPort > 1024 && this.rpcPort < 65536,
@@ -74,13 +89,26 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
     Preconditions.checkArgument(this.localDirs != null && this.localDirs.length > 0,
         "Work dirs must be specified");
     Preconditions.checkArgument(this.shufflePort > 0, "ShufflePort must be specified");
-    Preconditions.checkState(jvmMax >= memoryAvailableBytes,
-        "Invalid configuration. Xmx value too small. maxAvailable=" + jvmMax + ", configured=" +
-            memoryAvailableBytes);
+    Preconditions.checkState(maxJvmMemory >= memoryPerInstance,
+        "Invalid configuration. Xmx value too small. maxAvailable=" + maxJvmMemory + ", configured=" +
+            memoryPerInstance);
+
+    // Initialize the metric system
+    LlapMetricsSystem.initialize("LlapDaemon");
+    this.pauseMonitor = new JvmPauseMonitor(daemonConf);
+    pauseMonitor.start();
+    String displayName = "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName();
+    String sessionId = MetricsUtils.getUUID();
+    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors);
+    metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
+    this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
+    LOG.info("Started LlapMetricsSystem with displayName: " + displayName
+        + " sessionId: " + sessionId);
 
     this.server = new LlapDaemonProtocolServerImpl(daemonConf, this, address);
     this.containerRunner = new ContainerRunnerImpl(numExecutors, localDirs, shufflePort, address,
-        memoryAvailableBytes);
+        memoryPerInstance, metrics);
+
   }
 
   @Override
@@ -95,16 +123,33 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
   public void serviceStart() {
     server.start();
     containerRunner.start();
-
   }
 
   public void serviceStop() {
+    shutdown();
     containerRunner.stop();
     server.stop();
   }
 
+  public void shutdown() {
+    LOG.info("LlapDaemon shutdown invoked");
+    if (llapDaemonInfoBean != null) {
+      MBeans.unregister(llapDaemonInfoBean);
+    }
+
+    if (pauseMonitor != null) {
+      pauseMonitor.stop();
+    }
+
+    if (metrics != null) {
+      LlapMetricsSystem.shutdown();
+    }
+
+    LlapIoProxy.close();
+  }
 
   public static void main(String[] args) throws Exception {
+    LlapDaemon llapDaemon = null;
     try {
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
 
@@ -113,7 +158,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
           daemonConf.get(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS));
       ShuffleHandler.initializeAndStart(shuffleHandlerConf);
 
-      LlapDaemon llapDaemon = new LlapDaemon(daemonConf);
+      llapDaemon = new LlapDaemon(daemonConf);
       llapDaemon.init(daemonConf);
       llapDaemon.start();
       LOG.info("Started LlapDaemon");
@@ -121,13 +166,46 @@ public class LlapDaemon extends AbstractService implements ContainerRunner {
     } catch (Throwable t) {
       // TODO Replace this with a ExceptionHandler / ShutdownHook
       LOG.warn("Failed to start LLAP Daemon with exception", t);
+      if (llapDaemon != null) {
+        llapDaemon.shutdown();
+      }
       System.exit(-1);
     }
   }
 
-
   @Override
   public void queueContainer(RunContainerRequestProto request) throws IOException {
     containerRunner.queueContainer(request);
+  }
+
+  // LlapDaemonMXBean methods. Will be exposed via JMX
+  @Override
+  public int getRpcPort() {
+    return rpcPort;
+  }
+
+  @Override
+  public int getNumExecutors() {
+    return numExecutors;
+  }
+
+  @Override
+  public int getShufflePort() {
+    return shufflePort;
+  }
+
+  @Override
+  public String getLocalDirs() {
+    return Joiner.on(",").skipNulls().join(localDirs);
+  }
+
+  @Override
+  public long getMemoryPerInstance() {
+    return memoryPerInstance;
+  }
+
+  @Override
+  public long getMaxJvmMemory() {
+    return maxJvmMemory;
   }
 }

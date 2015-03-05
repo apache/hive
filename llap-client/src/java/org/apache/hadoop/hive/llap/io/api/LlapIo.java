@@ -23,4 +23,5 @@ import org.apache.hadoop.mapred.InputFormat;
 
 public interface LlapIo<T> {
   InputFormat<NullWritable, T> getInputFormat(InputFormat sourceInputFormat);
+  void close();
 }

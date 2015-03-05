@@ -15,24 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap.metrics;
 
-package org.apache.hadoop.hive.llap.io.api.cache;
-
-import java.nio.ByteBuffer;
-
-import org.apache.hadoop.metrics2.MetricsSource;
-
-public abstract class LlapMemoryBuffer {
-  protected LlapMemoryBuffer() {
-  }
-  protected void initialize(ByteBuffer byteBuffer, int offset, int length, MetricsSource metrics) {
-    this.byteBuffer = byteBuffer.slice();
-    this.byteBuffer.position(offset);
-    this.byteBuffer.limit(offset + length);
-    this.metrics = metrics;
-  }
-  /** Note - position/limit of this should NOT be modified after it's in cache.
-      We could add a wrapper to enforce that, but for now it's shared and should be duplicated. */
-  public ByteBuffer byteBuffer;
-  public MetricsSource metrics;
+/**
+ *
+ */
+public class LlapDaemonContainerRunnerInfo {
 }

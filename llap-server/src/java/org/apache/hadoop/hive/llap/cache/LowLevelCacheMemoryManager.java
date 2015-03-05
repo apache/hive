@@ -24,16 +24,21 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 public class LowLevelCacheMemoryManager implements MemoryManager {
   private final AtomicLong usedMemory;
   protected final long maxSize;
   private final LowLevelCachePolicy evictor;
+  private LlapDaemonCacheMetrics metrics;
 
-  public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor) {
+  public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor,
+      LlapDaemonCacheMetrics metrics) {
     this.maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
+    this.metrics = metrics;
+    metrics.incrCacheCapacityTotal(maxSize);
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Cache memory manager initialized with max size " + maxSize);
     }
@@ -61,6 +66,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         usedMem = usedMemory.get();
       }
     }
+    metrics.incrCacheCapacityUsed(memoryToReserve);
     return true;
   }
 }

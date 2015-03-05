@@ -25,17 +25,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.CallableWithNdc;
+import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
@@ -46,16 +43,21 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
-import org.apache.hadoop.hive.common.CallableWithNdc;
-import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
 import org.apache.tez.dag.api.TezConstants;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.apache.tez.runtime.task.TezChild;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
-import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ContainerRunnerImpl extends AbstractService implements ContainerRunner {
 
@@ -69,11 +71,12 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private final Map<String, String> localEnv = new HashMap<String, String>();
   private volatile FileSystem localFs;
   private final long memoryPerExecutor;
+  private final LlapDaemonExecutorMetrics metrics;
   // TODO Support for removing queued containers, interrupting / killing specific containers
 
   public ContainerRunnerImpl(int numExecutors, String[] localDirsBase, int localShufflePort,
-                             AtomicReference<InetSocketAddress> localAddress,
-                             long totalMemoryAvailableBytes) {
+      AtomicReference<InetSocketAddress> localAddress,
+      long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics) {
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
@@ -92,7 +95,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     // 80% of memory considered for accounted buffers. Rest for objects.
     // TODO Tune this based on the available size.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes * 0.8 / (float) numExecutors);
-
+    this.metrics = metrics;
     LOG.info("ContainerRunnerImpl config: " +
         "memoryPerExecutorDerviced=" + memoryPerExecutor
     );
@@ -173,6 +176,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       ListenableFuture<ContainerExecutionResult> future = executorService
           .submit(callable);
       Futures.addCallback(future, new ContainerRunnerCallback(request, callable));
+      metrics.incrExecutorTotalRequestsHandled();
+      metrics.incrExecutorNumQueuedRequests();
     } finally {
       NDC.pop();
     }
@@ -248,22 +253,27 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
         case SUCCESS:
           LOG.info("Successfully finished: " + request.getApplicationIdString() + ", containerId=" +
               request.getContainerIdString());
+          metrics.incrExecutorTotalSuccess();
           break;
         case EXECUTION_FAILURE:
           LOG.info("Failed to run: " + request.getApplicationIdString() + ", containerId=" +
               request.getContainerIdString(), result.getThrowable());
+          metrics.incrExecutorTotalExecutionFailed();
           break;
         case INTERRUPTED:
           LOG.info(
               "Interrupted while running: " + request.getApplicationIdString() + ", containerId=" +
                   request.getContainerIdString(), result.getThrowable());
+          metrics.incrExecutorTotalInterrupted();
           break;
         case ASKED_TO_DIE:
           LOG.info(
               "Asked to die while running: " + request.getApplicationIdString() + ", containerId=" +
                   request.getContainerIdString());
+          metrics.incrExecutorTotalAskedToDie();
           break;
       }
+      metrics.decrExecutorNumQueuedRequests();
     }
 
     @Override
@@ -275,6 +285,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       if (tezChild != null) {
         tezChild.shutdown();
       }
+      metrics.decrExecutorNumQueuedRequests();
     }
   }
 }

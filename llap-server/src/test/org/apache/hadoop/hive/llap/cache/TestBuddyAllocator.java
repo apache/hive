@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -28,8 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class TestBuddyAllocator {
   private static final Log LOG = LogFactory.getLog(TestBuddyAllocator.class);
@@ -57,7 +60,8 @@ public class TestBuddyAllocator {
   public void testSameSizes() {
     int min = 3, max = 8, maxAlloc = 1 << max;
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, maxAlloc);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
+    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"));
     for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
@@ -67,7 +71,8 @@ public class TestBuddyAllocator {
   public void testMultipleArenas() {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
     Configuration conf = createConf(1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
+    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"));
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
@@ -75,7 +80,8 @@ public class TestBuddyAllocator {
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc * 8, maxAlloc * 24);
-    final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
+    final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Object> upTask = new FutureTask<Object>(new Runnable() {
@@ -124,7 +130,8 @@ public class TestBuddyAllocator {
   private void testVariableSizeInternal(int allocCount, int arenaSizeMult, int arenaCount) {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
     Configuration conf = createConf(1 << min, maxAlloc, arenaSize, arenaSize * arenaCount);
-    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
+    BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"));
     allocateUp(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, false);

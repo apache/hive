@@ -26,8 +26,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
-public final class BuddyAllocator implements Allocator {
+public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
   private final Arena[] arenas;
   private AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -38,8 +39,10 @@ public final class BuddyAllocator implements Allocator {
   private final int minAllocation, maxAllocation, arenaSize;
   private final long maxSize;
   private final boolean isDirect;
+  private final LlapDaemonCacheMetrics metrics;
 
-  public BuddyAllocator(Configuration conf, MemoryManager memoryManager) {
+  public BuddyAllocator(Configuration conf, MemoryManager memoryManager,
+      LlapDaemonCacheMetrics metrics) {
     isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT);
     minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
@@ -79,6 +82,9 @@ public final class BuddyAllocator implements Allocator {
     arenas[0].init();
     allocatedArenas.set(1);
     this.memoryManager = memoryManager;
+
+    this.metrics = metrics;
+    metrics.incrAllocatedArena();
   }
 
   // TODO: would it make sense to return buffers asynchronously?
@@ -136,6 +142,7 @@ public final class BuddyAllocator implements Allocator {
   @Override
   public void deallocate(LlapMemoryBuffer buffer) {
     LlapCacheableBuffer buf = (LlapCacheableBuffer)buffer;
+    metrics.decrCacheCapacityUsed(buf.byteBuffer.capacity());
     arenas[buf.arenaIndex].deallocate(buf);
   }
 
@@ -152,6 +159,32 @@ public final class BuddyAllocator implements Allocator {
     }
     result.append("\n");
     return result.toString();
+  }
+
+  // BuddyAllocatorMXBean
+  @Override
+  public boolean getIsDirect() {
+    return isDirect;
+  }
+
+  @Override
+  public int getMinAllocation() {
+    return minAllocation;
+  }
+
+  @Override
+  public int getMaxAllocation() {
+    return maxAllocation;
+  }
+
+  @Override
+  public int getArenaSize() {
+    return arenaSize;
+  }
+
+  @Override
+  public long getMaxCacheSize() {
+    return maxSize;
   }
 
   private class Arena {
@@ -260,7 +293,7 @@ public final class BuddyAllocator implements Allocator {
             lastSplitBlocksRemaining = splitWays - toTake;
             for (; toTake > 0; ++ix, --toTake, headerIx += headerStep, offset += allocationSize) {
               headers[headerIx] = headerData;
-              ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, allocationSize);
+              ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, allocationSize, metrics);
             }
             lastSplitNextHeader = headerIx;
             headerIx = data.getInt(origOffset + 4);
@@ -312,6 +345,7 @@ public final class BuddyAllocator implements Allocator {
           if (data == null) {
             init();
             allocatedArenas.incrementAndGet();
+            metrics.incrAllocatedArena();
           }
         }
       }
@@ -330,7 +364,7 @@ public final class BuddyAllocator implements Allocator {
         // Noone else has this either allocated or in a different free list; no sync needed.
         headers[current] = makeHeader(freeListIx, true);
         current = data.getInt(offset + 4);
-        ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, size);
+        ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, size, metrics);
         ++ix;
       }
       replaceListHeadUnderLock(freeList, current);

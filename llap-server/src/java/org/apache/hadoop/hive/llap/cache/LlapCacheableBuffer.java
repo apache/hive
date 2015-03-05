@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -31,8 +32,9 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
   private static final int EVICTED_REFCOUNT = -1;
   static final int IN_LIST = -2, NOT_IN_CACHE = -1;
 
-  public void initialize(int arenaIndex, ByteBuffer byteBuffer, int offset, int length) {
-    super.initialize(byteBuffer, offset, length);
+  public void initialize(int arenaIndex, ByteBuffer byteBuffer, int offset, int length,
+      LlapDaemonCacheMetrics metrics) {
+    super.initialize(byteBuffer, offset, length, metrics);
     this.arenaIndex = arenaIndex;
   }
 
@@ -82,6 +84,7 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
     if (DebugUtils.isTraceLockingEnabled()) {
       LlapIoImpl.LOG.info("Locked " + this + "; new ref count " + newRefCount);
     }
+    ((LlapDaemonCacheMetrics)metrics).incrCacheNumLockedBuffers();
     return newRefCount;
   }
 
@@ -103,6 +106,7 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
     if (newRefCount < 0) {
       throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
     }
+    ((LlapDaemonCacheMetrics)metrics).decrCacheNumLockedBuffers();
     return newRefCount;
   }
 

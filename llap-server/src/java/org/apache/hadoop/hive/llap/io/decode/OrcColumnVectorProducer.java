@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
@@ -41,9 +42,11 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final LowLevelCache lowLevelCache;
   private final Configuration conf;
   private boolean _skipCorrupt; // TODO: get rid of this
+  private LlapDaemonCacheMetrics metrics;
  
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
-      LowLevelCacheImpl lowLevelCache, Cache<OrcCacheKey> cache, Configuration conf) {
+      LowLevelCacheImpl lowLevelCache, Cache<OrcCacheKey> cache, Configuration conf,
+      LlapDaemonCacheMetrics metrics) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     }
@@ -53,12 +56,14 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.cache = cache;
     this.conf = conf;
     this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this.metrics = metrics;
   }
 
   @Override
   public ReadPipeline createReadPipeline(
       Consumer<ColumnVectorBatch> consumer, InputSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames) {
+    metrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
         consumer, columnIds.size(), _skipCorrupt);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(

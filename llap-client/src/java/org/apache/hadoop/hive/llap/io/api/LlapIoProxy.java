@@ -69,4 +69,10 @@ public class LlapIoProxy {
       throw new RuntimeException("Failed to create impl class", e);
     }
   }
+
+  public static void close() {
+    if (io != null) {
+      io.close();
+    }
+  }
 }

@@ -17,6 +17,11 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -34,10 +39,9 @@ import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TestLowLevelCacheImpl {
   private static final Log LOG = LogFactory.getLog(TestLowLevelCacheImpl.class);
@@ -47,7 +51,7 @@ public class TestLowLevelCacheImpl {
     public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
         LlapCacheableBuffer buf = new LlapCacheableBuffer();
-        buf.initialize(0, null, -1, size);
+        buf.initialize(0, null, -1, size, null);
         dest[i] = buf;
       }
       return true;
@@ -88,7 +92,8 @@ public class TestLowLevelCacheImpl {
   public void testGetPut() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
@@ -146,7 +151,8 @@ public class TestLowLevelCacheImpl {
   public void testMultiMatch() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), -1); // no cleanup thread
     long fn = 1;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0));
@@ -164,7 +170,8 @@ public class TestLowLevelCacheImpl {
   public void testStaleValueGet() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb() };
     assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
@@ -183,7 +190,8 @@ public class TestLowLevelCacheImpl {
   public void testStaleValueReplace() {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
@@ -202,7 +210,7 @@ public class TestLowLevelCacheImpl {
   public void testMTTWithCleanup() {
     Configuration conf = createConf();
     final LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        conf, new DummyCachePolicy(), new DummyAllocator(), 1);
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(), new DummyAllocator(), 1);
     final long fn1 = 1, fn2 = 2;
     final int offsetsToUse = 8;
     final CountDownLatch cdlIn = new CountDownLatch(4), cdlOut = new CountDownLatch(1);
