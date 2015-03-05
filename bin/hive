@@ -76,10 +76,12 @@ if [[ -z "$SPARK_HOME" ]]
 then
   bin=`dirname "$0"`
   # many hadoop installs are in dir/{spark,hive,hadoop,..}
-  sparkHome=$(readlink -f $bin/../../spark)
-  if [[ -d $sparkHome ]]
-  then
-    export SPARK_HOME=$sparkHome
+  if test -e $bin/../../spark; then 
+    sparkHome=$(readlink -f $bin/../../spark)
+    if [[ -d $sparkHome ]]
+    then
+      export SPARK_HOME=$sparkHome
+    fi
   fi
 fi
 
