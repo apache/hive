@@ -18,12 +18,12 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -57,16 +57,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
-import org.apache.hadoop.hive.metastore.model.MDatabase;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MRole;
-import org.apache.hadoop.hive.metastore.model.MRoleMap;
-import org.apache.hadoop.hive.metastore.model.MTable;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -324,9 +314,9 @@ public class HBaseStore implements RawStore {
   @Override
   public void alterTable(String dbname, String name, Table newTable) throws InvalidObjectException,
       MetaException {
-    // HiveMetaStore above us has already confirmed the table exists, I'm not rechecking
     try {
-      getHBase().putTable(newTable);
+      Table oldTable = getHBase().getTable(dbname, name);
+      getHBase().replaceTable(oldTable, newTable);
     } catch (IOException e) {
       LOG.error("Unable to alter table " + tableNameForErrorMsg(dbname, name), e);
       throw new MetaException("Unable to alter table " + tableNameForErrorMsg(dbname, name));
@@ -398,7 +388,8 @@ public class HBaseStore implements RawStore {
   public void alterPartition(String db_name, String tbl_name, List<String> part_vals,
                              Partition new_part) throws InvalidObjectException, MetaException {
     try {
-      getHBase().putPartition(new_part);
+      Partition oldPart = getHBase().getPartition(db_name, tbl_name, part_vals);
+      getHBase().replacePartition(oldPart, new_part);
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
@@ -410,7 +401,8 @@ public class HBaseStore implements RawStore {
                               List<Partition> new_parts) throws InvalidObjectException,
       MetaException {
     try {
-      getHBase().putPartitions(new_parts);
+      List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name, part_vals_list);
+      getHBase().replacePartitions(oldParts, new_parts);
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
@@ -569,9 +561,20 @@ public class HBaseStore implements RawStore {
       throws MetaException, NoSuchObjectException, InvalidObjectException {
     try {
       Set<String> usersToRemap = findUsersToRemapRolesFor(role, userName, principalType);
-      getHBase().addPrincipalToRole(role.getRoleName(),
-          new GrantInfoWritable(userName, principalType, (int)(System.currentTimeMillis() / 1000),
-              grantor, grantorType, grantOption));
+      HbaseMetastoreProto.RoleGrantInfo.Builder builder =
+          HbaseMetastoreProto.RoleGrantInfo.newBuilder();
+      if (userName != null) builder.setPrincipalName(userName);
+      if (principalType != null) {
+        builder.setPrincipalType(HBaseUtils.convertPrincipalTypes(principalType));
+      }
+      builder.setAddTime((int)(System.currentTimeMillis() / 1000));
+      if (grantor != null) builder.setGrantor(grantor);
+      if (grantorType != null) {
+        builder.setGrantorType(HBaseUtils.convertPrincipalTypes(grantorType));
+      }
+      builder.setGrantOption(grantOption);
+
+      getHBase().addPrincipalToRole(role.getRoleName(), builder.build());
       for (String user : usersToRemap) {
         getHBase().buildRoleMapForUser(user);
       }
@@ -1063,12 +1066,13 @@ public class HBaseStore implements RawStore {
       List<Role> roles = listRoles(principalName, principalType);
       List<RolePrincipalGrant> rpgs = new ArrayList<RolePrincipalGrant>(roles.size());
       for (Role role : roles) {
-        GrantInfoList grants = getHBase().getRolePrincipals(role.getRoleName());
-        for (GrantInfoWritable grant : grants.grantInfos) {
-          if (grant.principalType.equals(principalType) &&
-              grant.principalName.equals(principalName)) {
+        HbaseMetastoreProto.RoleGrantInfoList grants = getHBase().getRolePrincipals(role.getRoleName());
+        for (HbaseMetastoreProto.RoleGrantInfo grant : grants.getGrantInfoList()) {
+          if (grant.getPrincipalType().equals(principalType) &&
+              grant.getPrincipalName().equals(principalName)) {
             rpgs.add(new RolePrincipalGrant(role.getRoleName(), principalName, principalType,
-                grant.grantOption, grant.addTime, grant.grantor, grant.grantorType));
+                grant.getGrantOption(), (int)grant.getAddTime(), grant.getGrantor(),
+                HBaseUtils.convertPrincipalTypes(grant.getGrantorType())));
           }
         }
       }
@@ -1081,11 +1085,13 @@ public class HBaseStore implements RawStore {
   @Override
   public List<RolePrincipalGrant> listRoleMembers(String roleName) {
     try {
-      GrantInfoList gil = getHBase().getRolePrincipals(roleName);
-      List<RolePrincipalGrant> roleMaps = new ArrayList<RolePrincipalGrant>(gil.grantInfos.size());
-      for (GrantInfoWritable giw : gil.grantInfos) {
-        roleMaps.add(new RolePrincipalGrant(roleName, giw.principalName, giw.principalType,
-            giw.grantOption, giw.addTime, giw.grantor, giw.grantorType));
+      HbaseMetastoreProto.RoleGrantInfoList gil = getHBase().getRolePrincipals(roleName);
+      List<RolePrincipalGrant> roleMaps = new ArrayList<RolePrincipalGrant>(gil.getGrantInfoList().size());
+      for (HbaseMetastoreProto.RoleGrantInfo giw : gil.getGrantInfoList()) {
+        roleMaps.add(new RolePrincipalGrant(roleName, giw.getPrincipalName(),
+            HBaseUtils.convertPrincipalTypes(giw.getPrincipalType()),
+            giw.getGrantOption(), (int)giw.getAddTime(), giw.getGrantor(),
+            HBaseUtils.convertPrincipalTypes(giw.getGrantorType())));
       }
       return roleMaps;
     } catch (Exception e) {
@@ -1256,7 +1262,9 @@ public class HBaseStore implements RawStore {
   @Override
   public void verifySchema() throws MetaException {
     try {
-      getHBase().createTablesIfNotExist();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+        getHBase().createTablesIfNotExist();
+      }
     } catch (IOException e) {
       LOG.fatal("Unable to verify schema ", e);
       throw new MetaException("Unable to verify schema");

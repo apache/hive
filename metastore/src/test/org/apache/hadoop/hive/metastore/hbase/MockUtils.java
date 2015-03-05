@@ -28,6 +28,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -142,8 +143,9 @@ public class MockUtils {
         });
 
     // Mock connection
-    HConnection hconn = Mockito.mock(HConnection.class);
-    Mockito.when(hconn.getTable(Mockito.anyString())).thenReturn(htable);
+    HBaseConnection hconn = Mockito.mock(HBaseConnection.class);
+    Mockito.when(hconn.getHBaseTable(Mockito.anyString())).thenReturn(htable);
+    HiveConf.setVar(conf, HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
     HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
     hbase.setConnection(hconn);
     HBaseStore store = new HBaseStore();

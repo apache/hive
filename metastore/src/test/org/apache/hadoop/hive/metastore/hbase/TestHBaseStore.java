@@ -44,9 +44,11 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -63,6 +65,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -137,10 +140,12 @@ public class TestHBaseStore {
     String tableName = "mytable";
     int startTime = (int)(System.currentTimeMillis() / 1000);
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    cols.add(new FieldSchema("col1", "int", ""));
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
     Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
         emptyParameters, null, null, null);
     store.createTable(table);
@@ -149,15 +154,101 @@ public class TestHBaseStore {
     Assert.assertEquals(1, t.getSd().getColsSize());
     Assert.assertEquals("col1", t.getSd().getCols().get(0).getName());
     Assert.assertEquals("int", t.getSd().getCols().get(0).getType());
-    Assert.assertEquals("nocomment", t.getSd().getCols().get(0).getComment());
+    Assert.assertEquals("", t.getSd().getCols().get(0).getComment());
     Assert.assertEquals("serde", t.getSd().getSerdeInfo().getName());
     Assert.assertEquals("seriallib", t.getSd().getSerdeInfo().getSerializationLib());
     Assert.assertEquals("file:/tmp", t.getSd().getLocation());
     Assert.assertEquals("input", t.getSd().getInputFormat());
     Assert.assertEquals("output", t.getSd().getOutputFormat());
+    Assert.assertFalse(t.getSd().isCompressed());
+    Assert.assertEquals(17, t.getSd().getNumBuckets());
+    Assert.assertEquals(1, t.getSd().getBucketColsSize());
+    Assert.assertEquals("bucketcol", t.getSd().getBucketCols().get(0));
+    Assert.assertEquals(1, t.getSd().getSortColsSize());
+    Assert.assertEquals("sortcol", t.getSd().getSortCols().get(0).getCol());
+    Assert.assertEquals(1, t.getSd().getSortCols().get(0).getOrder());
+    Assert.assertEquals(1, t.getSd().getParametersSize());
+    Assert.assertEquals("value", t.getSd().getParameters().get("key"));
     Assert.assertEquals("me", t.getOwner());
     Assert.assertEquals("default", t.getDbName());
     Assert.assertEquals(tableName, t.getTableName());
+    Assert.assertEquals(0, t.getParametersSize());
+  }
+
+  @Test
+  public void skewInfo() throws Exception {
+    String tableName = "mytable";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", true, 0,
+        serde, null, null, emptyParameters);
+
+    Map<List<String>, String> map = new HashMap<List<String>, String>();
+    map.put(Arrays.asList("col3"), "col4");
+    SkewedInfo skew = new SkewedInfo(Arrays.asList("col1"), Arrays.asList(Arrays.asList("col2")),
+        map);
+    sd.setSkewedInfo(skew);
+    Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    Table t = store.getTable("default", tableName);
+    Assert.assertEquals(1, t.getSd().getColsSize());
+    Assert.assertEquals("col1", t.getSd().getCols().get(0).getName());
+    Assert.assertEquals("int", t.getSd().getCols().get(0).getType());
+    Assert.assertEquals("", t.getSd().getCols().get(0).getComment());
+    Assert.assertEquals("serde", t.getSd().getSerdeInfo().getName());
+    Assert.assertEquals("seriallib", t.getSd().getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("file:/tmp", t.getSd().getLocation());
+    Assert.assertEquals("input", t.getSd().getInputFormat());
+    Assert.assertEquals("output", t.getSd().getOutputFormat());
+    Assert.assertTrue(t.getSd().isCompressed());
+    Assert.assertEquals(0, t.getSd().getNumBuckets());
+    Assert.assertEquals(0, t.getSd().getSortColsSize());
+    Assert.assertEquals("me", t.getOwner());
+    Assert.assertEquals("default", t.getDbName());
+    Assert.assertEquals(tableName, t.getTableName());
+    Assert.assertEquals(0, t.getParametersSize());
+
+    skew = t.getSd().getSkewedInfo();
+    Assert.assertNotNull(skew);
+    Assert.assertEquals(1, skew.getSkewedColNamesSize());
+    Assert.assertEquals("col1", skew.getSkewedColNames().get(0));
+    Assert.assertEquals(1, skew.getSkewedColValuesSize());
+    Assert.assertEquals("col2", skew.getSkewedColValues().get(0).get(0));
+    Assert.assertEquals(1, skew.getSkewedColValueLocationMapsSize());
+    Assert.assertEquals("col4", skew.getSkewedColValueLocationMaps().get(Arrays.asList("col3")));
+
+  }
+
+  @Test
+  public void hashSd() throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", true, 0,
+        serde, null, null, emptyParameters);
+
+    Map<List<String>, String> map = new HashMap<List<String>, String>();
+    map.put(Arrays.asList("col3"), "col4");
+    SkewedInfo skew = new SkewedInfo(Arrays.asList("col1"), Arrays.asList(Arrays.asList("col2")),
+        map);
+    sd.setSkewedInfo(skew);
+
+    MessageDigest md = MessageDigest.getInstance("MD5");
+    byte[] baseHash = HBaseUtils.hashStorageDescriptor(sd, md);
+
+    StorageDescriptor changeSchema = new StorageDescriptor(sd);
+    changeSchema.getCols().add(new FieldSchema("col2", "varchar(32)", "a comment"));
+    byte[] schemaHash = HBaseUtils.hashStorageDescriptor(changeSchema, md);
+    Assert.assertFalse(Arrays.equals(baseHash, schemaHash));
+
+    StorageDescriptor changeLocation = new StorageDescriptor(sd);
+    changeLocation.setLocation("file:/somewhere/else");
+    byte[] locationHash = HBaseUtils.hashStorageDescriptor(changeLocation, md);
+    Assert.assertArrayEquals(baseHash, locationHash);
   }
 
   @Test

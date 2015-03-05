@@ -19,18 +19,13 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -53,18 +48,13 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.io.Writable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,13 +68,13 @@ import java.util.Set;
  */
 class HBaseReadWrite {
 
-  @VisibleForTesting final static String DB_TABLE = "DBS";
-  @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "GLOBAL_PRIVS";
-  @VisibleForTesting final static String PART_TABLE = "PARTITIONS";
-  @VisibleForTesting final static String ROLE_TABLE = "ROLES";
-  @VisibleForTesting final static String SD_TABLE = "SDS";
-  @VisibleForTesting final static String TABLE_TABLE = "TBLS";
-  @VisibleForTesting final static String USER_TO_ROLE_TABLE = "USER_TO_ROLE";
+  @VisibleForTesting final static String DB_TABLE = "HBMS_DBS";
+  @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "HBMS_GLOBAL_PRIVS";
+  @VisibleForTesting final static String PART_TABLE = "HBMS_PARTITIONS";
+  @VisibleForTesting final static String ROLE_TABLE = "HBMS_ROLES";
+  @VisibleForTesting final static String SD_TABLE = "HBMS_SDS";
+  @VisibleForTesting final static String TABLE_TABLE = "HBMS_TBLS";
+  @VisibleForTesting final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
   @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
@@ -93,6 +83,8 @@ class HBaseReadWrite {
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "globalprivs".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
+
+  @VisibleForTesting final static String TEST_CONN = "test_connection";
 
   private final static String[] tableNames = { DB_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
       USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
@@ -112,8 +104,7 @@ class HBaseReadWrite {
   private static Configuration staticConf = null;
 
   private Configuration conf;
-  private HConnection conn;
-  private Map<String, HTableInterface> tables;
+  private HBaseConnection conn;
   private MessageDigest md;
   private ObjectCache<ObjectPair<String, String>, Table> tableCache;
   private ObjectCache<ByteArrayWrapper, StorageDescriptor> sdCache;
@@ -132,7 +123,7 @@ class HBaseReadWrite {
   // roleCache doesn't use ObjectCache because I don't want to limit the size.  I am assuming
   // that the number of roles will always be small (< 100) so caching the whole thing should not
   // be painful.
-  private Map<String, GrantInfoList> roleCache;
+  private Map<String, HbaseMetastoreProto.RoleGrantInfoList> roleCache;
   boolean entireRoleTableInCache;
 
   /**
@@ -161,11 +152,21 @@ class HBaseReadWrite {
     HBaseConfiguration.addHbaseResources(conf);
 
     try {
-      conn = HConnectionManager.createConnection(conf);
-    } catch (IOException e) {
+      String connClass = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS);
+      if (!TEST_CONN.equals(connClass)) {
+        Class c = Class.forName(connClass);
+        Object o = c.newInstance();
+        if (HBaseConnection.class.isAssignableFrom(o.getClass())) {
+          conn = (HBaseConnection) o;
+        } else {
+          throw new IOException(connClass + " is not an instance of HBaseConnection.");
+        }
+        conn.setConf(conf);
+        conn.connect();
+      }
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    tables = new HashMap<String, HTableInterface>();
 
     try {
       md = MessageDigest.getInstance("MD5");
@@ -213,27 +214,23 @@ class HBaseReadWrite {
       statsCache = StatsCache.getInstance(conf);
     }
 
-    roleCache = new HashMap<String, GrantInfoList>();
+    roleCache = new HashMap<String, HbaseMetastoreProto.RoleGrantInfoList>();
     entireRoleTableInCache = false;
   }
 
   // Synchronize this so not everyone's doing it at once.
   static synchronized void createTablesIfNotExist() throws IOException {
     if (!tablesCreated) {
-      HBaseAdmin admin = new HBaseAdmin(self.get().conn);
       for (String name : tableNames) {
-        if (self.get().getHTable(name) == null) {
-          LOG.info("Creating HBase table " + name);
-          HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(name));
-          tableDesc.addFamily(new HColumnDescriptor(CATALOG_CF));
-          // Only table and partitions need stats
+        if (self.get().conn.getHBaseTable(name, true) == null) {
+          List<byte[]> columnFamilies = new ArrayList<byte[]>();
+          columnFamilies.add(CATALOG_CF);
           if (TABLE_TABLE.equals(name) || PART_TABLE.equals(name)) {
-            tableDesc.addFamily(new HColumnDescriptor(STATS_CF));
+            columnFamilies.add(STATS_CF);
           }
-          admin.createTable(tableDesc);
+          self.get().conn.createHBaseTable(name, columnFamilies);
         }
       }
-      admin.close();
       tablesCreated = true;
     }
   }
@@ -246,22 +243,33 @@ class HBaseReadWrite {
    * Begin a transaction
    */
   void begin() {
-    // NOP for now
+    try {
+      conn.beginTransaction();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
    * Commit a transaction
    */
   void commit() {
-    // NOP for now
+    try {
+      conn.commitTransaction();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   void rollback() {
-    // NOP for now
+    try {
+      conn.rollbackTransaction();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   void close() throws IOException {
-    for (HTableInterface htab : tables.values()) htab.close();
     conn.close();
   }
 
@@ -279,9 +287,7 @@ class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(name);
     byte[] serialized = read(DB_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    DatabaseWritable db = new DatabaseWritable();
-    HBaseUtils.deserialize(db, serialized);
-    return db.db;
+    return HBaseUtils.deserializeDatabase(name, serialized);
   }
 
   /**
@@ -300,9 +306,9 @@ class HBaseReadWrite {
         scanWithFilter(DB_TABLE, null, CATALOG_CF, CATALOG_COL, filter);
     List<Database> databases = new ArrayList<Database>();
     while (iter.hasNext()) {
-      DatabaseWritable db = new DatabaseWritable();
-      HBaseUtils.deserialize(db, iter.next().getValue(CATALOG_CF, CATALOG_COL));
-      databases.add(db.db);
+      Result result = iter.next();
+      databases.add(HBaseUtils.deserializeDatabase(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL)));
     }
     return databases;
   }
@@ -313,11 +319,8 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void putDb(Database database) throws IOException {
-    DatabaseWritable db = new DatabaseWritable(database);
-    byte[] key = HBaseUtils.buildKey(db.db.getName());
-    byte[] serialized = HBaseUtils.serialize(db);
-    store(DB_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
+    byte[][] serialized = HBaseUtils.serializeDatabase(database);
+    store(DB_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
   }
 
   /**
@@ -328,7 +331,6 @@ class HBaseReadWrite {
   void deleteDb(String name) throws IOException {
     byte[] key = HBaseUtils.buildKey(name);
     delete(DB_TABLE, key, null, null);
-    flush();
   }
 
   /**********************************************************************************************
@@ -344,7 +346,7 @@ class HBaseReadWrite {
     byte[] key = GLOBAL_PRIVS_KEY;
     byte[] serialized = read(GLOBAL_PRIVS_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    return HBaseUtils.readPrivileges(serialized);
+    return HBaseUtils.deserializePrincipalPrivilegeSet(serialized);
   }
 
   /**
@@ -353,9 +355,8 @@ class HBaseReadWrite {
    */
   void putGlobalPrivs(PrincipalPrivilegeSet privs) throws IOException {
     byte[] key = GLOBAL_PRIVS_KEY;
-    byte[] serialized = HBaseUtils.writePrivileges(privs);
+    byte[] serialized = HBaseUtils.serializePrincipalPrivilegeSet(privs);
     store(GLOBAL_PRIVS_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
   }
 
   /**********************************************************************************************
@@ -377,37 +378,118 @@ class HBaseReadWrite {
   }
 
   /**
-   * Add a partition
+   * Get a set of specific partitions.  This cannot be used to do a scan, each partition must be
+   * completely specified.  This does not use the partition cache.
+   * @param dbName database table is in
+   * @param tableName table partitions are in
+   * @param partValLists list of list of values, each list should uniquely identify one partition
+   * @return a list of partition objects.
+   * @throws IOException
+   */
+   List<Partition> getPartitions(String dbName, String tableName, List<List<String>> partValLists)
+       throws IOException {
+     List<Partition> parts = new ArrayList<Partition>(partValLists.size());
+     List<Get> gets = new ArrayList<Get>(partValLists.size());
+     for (List<String> partVals : partValLists) {
+       byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
+       Get get = new Get(key);
+       get.addColumn(CATALOG_CF, CATALOG_COL);
+       gets.add(get);
+     }
+     HTableInterface htab = conn.getHBaseTable(PART_TABLE);
+     Result[] results = htab.get(gets);
+     for (int i = 0; i < results.length; i++) {
+       HBaseUtils.StorageDescriptorParts sdParts =
+           HBaseUtils.deserializePartition(dbName, tableName, partValLists.get(i),
+               results[i].getValue(CATALOG_CF, CATALOG_COL));
+       StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+       HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+       parts.add(sdParts.containingPartition);
+     }
+
+     return parts;
+  }
+
+  /**
+   * Add a partition.  This should only be called for new partitions.  For altering existing
+   * partitions this should not be called as it will blindly increment the ref counter for the
+   * storage descriptor.
    * @param partition partition object to add
    * @throws IOException
    */
   void putPartition(Partition partition) throws IOException {
-    PartitionWritable part = new PartitionWritable(partition);
-    byte[] key = buildPartitionKey(part);
-    byte[] serialized = HBaseUtils.serialize(part);
-    store(PART_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
+    byte[] hash = putStorageDescriptor(partition.getSd());
+    byte[][] serialized = HBaseUtils.serializePartition(partition, hash);
+    store(PART_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
     partCache.put(partition.getDbName(), partition.getTableName(), partition);
   }
 
   /**
-   * Add a group of partitions
+   * Replace an existing partition.
+   * @param oldPart partition to be replaced
+   * @param newPart partitiion to replace it with
+   * @throws IOException
+   */
+  void replacePartition(Partition oldPart, Partition newPart) throws IOException {
+    byte[] hash;
+    byte[] oldHash = HBaseUtils.hashStorageDescriptor(oldPart.getSd(), md);
+    byte[] newHash = HBaseUtils.hashStorageDescriptor(newPart.getSd(), md);
+    if (Arrays.equals(oldHash, newHash)) {
+      hash = oldHash;
+    } else {
+      decrementStorageDescriptorRefCount(oldPart.getSd());
+      hash = putStorageDescriptor(newPart.getSd());
+    }
+    byte[][] serialized = HBaseUtils.serializePartition(newPart, hash);
+    store(PART_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
+    partCache.put(newPart.getDbName(), newPart.getTableName(), newPart);
+  }
+
+  /**
+   * Add a group of partitions.  This should only be used when all partitions are new.  It
+   * blindly increments the ref count on the storage descriptor.
    * @param partitions list of partitions to add
    * @throws IOException
    */
   void putPartitions(List<Partition> partitions) throws IOException {
     List<Put> puts = new ArrayList<Put>(partitions.size());
     for (Partition partition : partitions) {
-      PartitionWritable part = new PartitionWritable(partition);
-      byte[] key = buildPartitionKey(part);
-      byte[] serialized = HBaseUtils.serialize(part);
-      Put p = new Put(key);
-      p.add(CATALOG_CF, CATALOG_COL, serialized);
+      byte[] hash = putStorageDescriptor(partition.getSd());
+      byte[][] serialized = HBaseUtils.serializePartition(partition, hash);
+      Put p = new Put(serialized[0]);
+      p.add(CATALOG_CF, CATALOG_COL, serialized[1]);
       puts.add(p);
       partCache.put(partition.getDbName(), partition.getTableName(), partition);
     }
-    getHTable(PART_TABLE).put(puts);
-    flush();
+    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
+    htab.put(puts);
+    htab.flushCommits();
+  }
+
+  void replacePartitions(List<Partition> oldParts, List<Partition> newParts) throws IOException {
+    if (oldParts.size() != newParts.size()) {
+      throw new RuntimeException("Number of old and new partitions must match.");
+    }
+    List<Put> puts = new ArrayList<Put>(newParts.size());
+    for (int i = 0; i < newParts.size(); i++) {
+      byte[] hash;
+      byte[] oldHash = HBaseUtils.hashStorageDescriptor(oldParts.get(i).getSd(), md);
+      byte[] newHash = HBaseUtils.hashStorageDescriptor(newParts.get(i).getSd(), md);
+      if (Arrays.equals(oldHash, newHash)) {
+        hash = oldHash;
+      } else {
+        decrementStorageDescriptorRefCount(oldParts.get(i).getSd());
+        hash = putStorageDescriptor(newParts.get(i).getSd());
+      }
+      byte[][] serialized = HBaseUtils.serializePartition(newParts.get(i), hash);
+      Put p = new Put(serialized[0]);
+      p.add(CATALOG_CF, CATALOG_COL, serialized[1]);
+      puts.add(p);
+      partCache.put(newParts.get(i).getDbName(), newParts.get(i).getTableName(), newParts.get(i));
+    }
+    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
+    htab.put(puts);
+    htab.flushCommits();
   }
 
   /**
@@ -428,7 +510,7 @@ class HBaseReadWrite {
           : new ArrayList<Partition>(cached);
     }
     byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-    List<Partition> parts = scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, -1);
+    List<Partition> parts = scanPartitions(keyPrefix, -1);
     partCache.put(dbName, tableName, parts, true);
     return maxPartitions < parts.size() ? parts.subList(0, maxPartitions) : parts;
   }
@@ -514,8 +596,7 @@ class HBaseReadWrite {
           regex + ">");
     }
 
-    List<Partition> parts =
-        scanPartitionsWithFilter(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions, filter);
+    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, maxPartitions, filter);
     partCache.put(dbName, tableName, parts, false);
     return parts;
   }
@@ -533,58 +614,47 @@ class HBaseReadWrite {
     partCache.remove(dbName, tableName, partVals);
     Partition p = getPartition(dbName, tableName, partVals, false);
     decrementStorageDescriptorRefCount(p.getSd());
-    byte[] key = buildPartitionKey(dbName, tableName, partVals);
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
     delete(PART_TABLE, key, null, null);
-    flush();
   }
 
   private Partition getPartition(String dbName, String tableName, List<String> partVals,
                                  boolean populateCache) throws IOException {
     Partition cached = partCache.get(dbName, tableName, partVals);
     if (cached != null) return cached;
-    byte[] key = buildPartitionKey(dbName, tableName, partVals);
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
     byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    PartitionWritable part = new PartitionWritable();
-    HBaseUtils.deserialize(part, serialized);
-    if (populateCache) partCache.put(dbName, tableName, part.part);
-    return part.part;
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializePartition(dbName, tableName, partVals, serialized);
+    StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+    HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+    if (populateCache) partCache.put(dbName, tableName, sdParts.containingPartition);
+    return sdParts.containingPartition;
   }
 
 
-  private List<Partition> scanPartitions(byte[] keyPrefix, byte[] colFam, byte[] colName,
-                                         int maxResults) throws IOException {
-    return scanPartitionsWithFilter(keyPrefix, colFam, colName, maxResults, null);
+  private List<Partition> scanPartitions(byte[] keyPrefix, int maxResults) throws IOException {
+    return scanPartitionsWithFilter(keyPrefix, maxResults, null);
   }
 
-  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, byte[] colFam, byte[] colName,
-                                                   int maxResults, Filter filter)
+  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, int maxResults, Filter filter)
       throws IOException {
     Iterator<Result> iter =
-        scanWithFilter(PART_TABLE, keyPrefix, colFam, colName, filter);
+        scanWithFilter(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
     List<Partition> parts = new ArrayList<Partition>();
     int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
-      PartitionWritable p = new PartitionWritable();
-      HBaseUtils.deserialize(p, iter.next().getValue(colFam, colName));
-      parts.add(p.part);
+      Result result = iter.next();
+      HBaseUtils.StorageDescriptorParts sdParts =
+          HBaseUtils.deserializePartition(result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL));
+      StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+      HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+      parts.add(sdParts.containingPartition);
     }
     return parts;
   }
 
-  private byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
-    Deque<String> keyParts = new ArrayDeque<String>(partVals);
-    keyParts.addFirst(tableName);
-    keyParts.addFirst(dbName);
-    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
-  }
-
-  private byte[] buildPartitionKey(PartitionWritable part) throws IOException {
-    Deque<String> keyParts = new ArrayDeque<String>(part.part.getValues());
-    keyParts.addFirst(part.part.getTableName());
-    keyParts.addFirst(part.part.getDbName());
-    return HBaseUtils.buildKey(keyParts.toArray(new String[keyParts.size()]));
-  }
 
   /**********************************************************************************************
    * Role related methods
@@ -600,9 +670,7 @@ class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(userName);
     byte[] serialized = read(USER_TO_ROLE_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    RoleList roles = new RoleList();
-    HBaseUtils.deserialize(roles, serialized);
-    return roles.roles;
+    return HBaseUtils.deserializeRoleList(serialized);
   }
 
   /**
@@ -617,9 +685,10 @@ class HBaseReadWrite {
     buildRoleCache();
 
     Set<String> rolesFound = new HashSet<String>();
-    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
-      for (GrantInfoWritable giw : e.getValue().grantInfos) {
-        if (giw.principalType == type && giw.principalName.equals(name)) {
+    for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
+      for (HbaseMetastoreProto.RoleGrantInfo giw : e.getValue().getGrantInfoList()) {
+        if (HBaseUtils.convertPrincipalTypes(giw.getPrincipalType()) == type &&
+            giw.getPrincipalName().equals(name)) {
           rolesFound.add(e.getKey());
           break;
         }
@@ -627,7 +696,7 @@ class HBaseReadWrite {
     }
     List<Role> directRoles = new ArrayList<Role>(rolesFound.size());
     List<Get> gets = new ArrayList<Get>();
-    HTableInterface htab = getHTable(ROLE_TABLE);
+    HTableInterface htab = conn.getHBaseTable(ROLE_TABLE);
     for (String roleFound : rolesFound) {
       byte[] key = HBaseUtils.buildKey(roleFound);
       Get g = new Get(key);
@@ -639,9 +708,7 @@ class HBaseReadWrite {
     for (int i = 0; i < results.length; i++) {
       byte[] serialized = results[i].getValue(CATALOG_CF, CATALOG_COL);
       if (serialized != null) {
-        RoleWritable role = new RoleWritable();
-        HBaseUtils.deserialize(role, serialized);
-        directRoles.add(role.role);
+        directRoles.add(HBaseUtils.deserializeRole(results[i].getRow(), serialized));
       }
     }
 
@@ -654,14 +721,14 @@ class HBaseReadWrite {
    * @return a list of all roles included in this role
    * @throws IOException
    */
-  GrantInfoList getRolePrincipals(String roleName) throws IOException, NoSuchObjectException {
-    GrantInfoList rolePrincipals = roleCache.get(roleName);
+  HbaseMetastoreProto.RoleGrantInfoList getRolePrincipals(String roleName)
+      throws IOException, NoSuchObjectException {
+    HbaseMetastoreProto.RoleGrantInfoList rolePrincipals = roleCache.get(roleName);
     if (rolePrincipals != null) return rolePrincipals;
     byte[] key = HBaseUtils.buildKey(roleName);
     byte[] serialized = read(ROLE_TABLE, key, CATALOG_CF, ROLES_COL);
     if (serialized == null) return null;
-    rolePrincipals = new GrantInfoList();
-    HBaseUtils.deserialize(rolePrincipals, serialized);
+    rolePrincipals = HbaseMetastoreProto.RoleGrantInfoList.parseFrom(serialized);
     roleCache.put(roleName, rolePrincipals);
     return rolePrincipals;
   }
@@ -673,17 +740,16 @@ class HBaseReadWrite {
    * @param roleName name of the role
    * @return set of all users in the role
    * @throws IOException
-   * @throws NoSuchObjectException
    */
   Set<String> findAllUsersInRole(String roleName) throws IOException {
     // Walk the userToRole table and collect every user that matches this role.
     Set<String> users = new HashSet<String>();
     Iterator<Result> iter = scanWithFilter(USER_TO_ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
     while (iter.hasNext()) {
-      RoleList roleList = new RoleList();
       Result result = iter.next();
-      HBaseUtils.deserialize(roleList, result.getValue(CATALOG_CF, CATALOG_COL));
-      for (String rn : roleList.roles) {
+      List<String> roleList =
+          HBaseUtils.deserializeRoleList(result.getValue(CATALOG_CF, CATALOG_COL));
+      for (String rn : roleList) {
         if (rn.equals(roleName)) {
           users.add(new String(result.getRow(), HBaseUtils.ENCODING));
           break;
@@ -701,19 +767,22 @@ class HBaseReadWrite {
    * @throws NoSuchObjectException
    *
    */
-  void addPrincipalToRole(String roleName, GrantInfoWritable grantInfo)
+  void addPrincipalToRole(String roleName, HbaseMetastoreProto.RoleGrantInfo grantInfo)
       throws IOException, NoSuchObjectException {
-    GrantInfoList rolePrincipals = getRolePrincipals(roleName);
-    if (rolePrincipals == null) {
-      // Happens the first time a principal is added to a role
-      rolePrincipals = new GrantInfoList();
+    HbaseMetastoreProto.RoleGrantInfoList proto = getRolePrincipals(roleName);
+    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals =
+        new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+    if (proto != null) {
+      rolePrincipals.addAll(proto.getGrantInfoList());
     }
-    rolePrincipals.grantInfos.add(grantInfo);
+
+    rolePrincipals.add(grantInfo);
+    proto = HbaseMetastoreProto.RoleGrantInfoList.newBuilder()
+        .addAllGrantInfo(rolePrincipals)
+        .build();
     byte[] key = HBaseUtils.buildKey(roleName);
-    byte[] serialized = HBaseUtils.serialize(rolePrincipals);
-    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, serialized);
-    flush();
-    roleCache.put(roleName, rolePrincipals);
+    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, proto.toByteArray());
+    roleCache.put(roleName, proto);
   }
 
   /**
@@ -729,24 +798,32 @@ class HBaseReadWrite {
   void dropPrincipalFromRole(String roleName, String principalName, PrincipalType type,
                              boolean grantOnly)
       throws NoSuchObjectException, IOException {
-    GrantInfoList rolePrincipals = getRolePrincipals(roleName);
-    if (rolePrincipals == null) {
-      // Means there aren't any principals in this role, so probably not a problem.
-      return;
-    }
-    for (int i = 0; i < rolePrincipals.grantInfos.size(); i++) {
-      if (rolePrincipals.grantInfos.get(i).principalType == type &&
-          rolePrincipals.grantInfos.get(i).principalName.equals(principalName)) {
-        if (grantOnly) rolePrincipals.grantInfos.get(i).grantOption = false;
-        else rolePrincipals.grantInfos.remove(i);
+    HbaseMetastoreProto.RoleGrantInfoList proto = getRolePrincipals(roleName);
+    if (proto == null) return;
+    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals =
+        new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+    rolePrincipals.addAll(proto.getGrantInfoList());
+
+    for (int i = 0; i < rolePrincipals.size(); i++) {
+      if (HBaseUtils.convertPrincipalTypes(rolePrincipals.get(i).getPrincipalType()) == type &&
+          rolePrincipals.get(i).getPrincipalName().equals(principalName)) {
+        if (grantOnly) {
+          rolePrincipals.set(i,
+              HbaseMetastoreProto.RoleGrantInfo.newBuilder(rolePrincipals.get(i))
+                  .setGrantOption(false)
+                  .build());
+        } else {
+          rolePrincipals.remove(i);
+        }
         break;
       }
     }
     byte[] key = HBaseUtils.buildKey(roleName);
-    byte[] serialized = HBaseUtils.serialize(rolePrincipals);
-    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, serialized);
-    flush();
-    roleCache.put(roleName, rolePrincipals);
+    proto = HbaseMetastoreProto.RoleGrantInfoList.newBuilder()
+        .addAllGrantInfo(rolePrincipals)
+        .build();
+    store(ROLE_TABLE, key, CATALOG_CF, ROLES_COL, proto.toByteArray());
+    roleCache.put(roleName, proto);
   }
 
   /**
@@ -763,12 +840,11 @@ class HBaseReadWrite {
 
     // Second, find every role the user participates in directly.
     Set<String> rolesToAdd = new HashSet<String>();
-    Set<String> userSet = new HashSet<String>();
     Set<String> rolesToCheckNext = new HashSet<String>();
-    userSet.add(userName);
-    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
-      for (GrantInfoWritable grantInfo : e.getValue().grantInfos) {
-        if (grantInfo.principalType == PrincipalType.USER && userName.equals(grantInfo.principalName)) {
+    for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
+      for (HbaseMetastoreProto.RoleGrantInfo grantInfo : e.getValue().getGrantInfoList()) {
+        if (HBaseUtils.convertPrincipalTypes(grantInfo.getPrincipalType()) == PrincipalType.USER &&
+            userName .equals(grantInfo.getPrincipalName())) {
           rolesToAdd.add(e.getKey());
           rolesToCheckNext.add(e.getKey());
           LOG.debug("Adding " + e.getKey() + " to list of roles user is in directly");
@@ -782,13 +858,13 @@ class HBaseReadWrite {
     while (rolesToCheckNext.size() > 0) {
       Set<String> tmpRolesToCheckNext = new HashSet<String>();
       for (String roleName : rolesToCheckNext) {
-        GrantInfoList grantInfos = roleCache.get(roleName);
+        HbaseMetastoreProto.RoleGrantInfoList grantInfos = roleCache.get(roleName);
         if (grantInfos == null) continue;  // happens when a role contains no grants
-        for (GrantInfoWritable grantInfo : grantInfos.grantInfos) {
-          if (grantInfo.principalType == PrincipalType.ROLE &&
-              rolesToAdd.add(grantInfo.principalName)) {
-            tmpRolesToCheckNext.add(grantInfo.principalName);
-            LOG.debug("Adding " + grantInfo.principalName +
+        for (HbaseMetastoreProto.RoleGrantInfo grantInfo : grantInfos.getGrantInfoList()) {
+          if (HBaseUtils.convertPrincipalTypes(grantInfo.getPrincipalType()) == PrincipalType.ROLE &&
+              rolesToAdd.add(grantInfo.getPrincipalName())) {
+            tmpRolesToCheckNext.add(grantInfo.getPrincipalName());
+            LOG.debug("Adding " + grantInfo.getPrincipalName() +
                 " to list of roles user is in indirectly");
           }
         }
@@ -797,14 +873,13 @@ class HBaseReadWrite {
     }
 
     byte[] key = HBaseUtils.buildKey(userName);
-    byte[] serialized = HBaseUtils.serialize(new RoleList(new ArrayList<String>(rolesToAdd)));
+    byte[] serialized = HBaseUtils.serializeRoleList(new ArrayList<String>(rolesToAdd));
     store(USER_TO_ROLE_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
   }
 
   /**
    * Remove all of the grants for a role.  This is not cheap.
-   * @param roleName
+   * @param roleName Role to remove from all other roles and grants
    * @throws IOException
    */
   void removeRoleGrants(String roleName) throws IOException {
@@ -812,27 +887,35 @@ class HBaseReadWrite {
 
     List<Put> puts = new ArrayList<Put>();
     // First, walk the role table and remove any references to this role
-    for (Map.Entry<String, GrantInfoList> e : roleCache.entrySet()) {
+    for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
       boolean madeAChange = false;
-      for (int i = 0; i < e.getValue().grantInfos.size(); i++) {
-        if (e.getValue().grantInfos.get(i).principalType == PrincipalType.ROLE &&
-            e.getValue().grantInfos.get(i).principalName.equals(roleName)) {
-          e.getValue().grantInfos.remove(i);
+      List<HbaseMetastoreProto.RoleGrantInfo> rgil =
+          new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+      rgil.addAll(e.getValue().getGrantInfoList());
+      for (int i = 0; i < rgil.size(); i++) {
+        if (HBaseUtils.convertPrincipalTypes(rgil.get(i).getPrincipalType()) == PrincipalType.ROLE &&
+            rgil.get(i).getPrincipalName().equals(roleName)) {
+          rgil.remove(i);
           madeAChange = true;
           break;
         }
       }
       if (madeAChange) {
         Put put = new Put(HBaseUtils.buildKey(e.getKey()));
-        put.add(CATALOG_CF, ROLES_COL, HBaseUtils.serialize(e.getValue()));
+        HbaseMetastoreProto.RoleGrantInfoList proto =
+            HbaseMetastoreProto.RoleGrantInfoList.newBuilder()
+            .addAllGrantInfo(rgil)
+            .build();
+        put.add(CATALOG_CF, ROLES_COL, proto.toByteArray());
         puts.add(put);
-        roleCache.put(e.getKey(), e.getValue());
+        roleCache.put(e.getKey(), proto);
       }
     }
 
     if (puts.size() > 0) {
-      HTableInterface htab = getHTable(ROLE_TABLE);
+      HTableInterface htab = conn.getHBaseTable(ROLE_TABLE);
       htab.put(puts);
+      htab.flushCommits();
     }
 
     // Remove any global privileges held by this role
@@ -851,15 +934,17 @@ class HBaseReadWrite {
       if (db.getPrivileges() != null &&
           db.getPrivileges().getRolePrivileges() != null &&
           db.getPrivileges().getRolePrivileges().remove(roleName) != null) {
-        Put put = new Put(HBaseUtils.buildKey(db.getName()));
-        put.add(CATALOG_CF, CATALOG_COL, HBaseUtils.serialize(new DatabaseWritable(db)));
+        byte[][] serialized = HBaseUtils.serializeDatabase(db);
+        Put put = new Put(serialized[0]);
+        put.add(CATALOG_CF, CATALOG_COL, serialized[1]);
         puts.add(put);
       }
     }
 
     if (puts.size() > 0) {
-      HTableInterface htab = getHTable(DB_TABLE);
+      HTableInterface htab = conn.getHBaseTable(DB_TABLE);
       htab.put(puts);
+      htab.flushCommits();
     }
 
     // Finally, walk the table table
@@ -871,8 +956,10 @@ class HBaseReadWrite {
           if (table.getPrivileges() != null &&
               table.getPrivileges().getRolePrivileges() != null &&
               table.getPrivileges().getRolePrivileges().remove(roleName) != null) {
-            Put put = new Put(HBaseUtils.buildKey(table.getDbName(), table.getTableName()));
-            put.add(CATALOG_CF, CATALOG_COL, HBaseUtils.serialize(new TableWritable(table)));
+            byte[][] serialized = HBaseUtils.serializeTable(table,
+                HBaseUtils.hashStorageDescriptor(table.getSd(), md));
+            Put put = new Put(serialized[0]);
+            put.add(CATALOG_CF, CATALOG_COL, serialized[1]);
             puts.add(put);
           }
         }
@@ -880,11 +967,10 @@ class HBaseReadWrite {
     }
 
     if (puts.size() > 0) {
-      HTableInterface htab = getHTable(TABLE_TABLE);
+      HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
       htab.put(puts);
+      htab.flushCommits();
     }
-
-    flush();
   }
 
   /**
@@ -897,9 +983,7 @@ class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(roleName);
     byte[] serialized = read(ROLE_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    RoleWritable role = new RoleWritable();
-    HBaseUtils.deserialize(role, serialized);
-    return role.role;
+    return HBaseUtils.deserializeRole(roleName, serialized);
   }
 
   /**
@@ -911,9 +995,9 @@ class HBaseReadWrite {
     Iterator<Result> iter = scanWithFilter(ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
     List<Role> roles = new ArrayList<Role>();
     while (iter.hasNext()) {
-      RoleWritable role = new RoleWritable();
-      HBaseUtils.deserialize(role, iter.next().getValue(CATALOG_CF, CATALOG_COL));
-      roles.add(role.role);
+      Result result = iter.next();
+      roles.add(HBaseUtils.deserializeRole(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL)));
     }
     return roles;
   }
@@ -924,10 +1008,8 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void putRole(Role role) throws IOException {
-    byte[] key = HBaseUtils.buildKey(role.getRoleName());
-    byte[] serialized = HBaseUtils.serialize(new RoleWritable(role));
-    store(ROLE_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
+    byte[][] serialized = HBaseUtils.serializeRole(role);
+    store(ROLE_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
   }
 
   /**
@@ -938,29 +1020,7 @@ class HBaseReadWrite {
   void deleteRole(String roleName) throws IOException {
     byte[] key = HBaseUtils.buildKey(roleName);
     delete(ROLE_TABLE, key, null, null);
-    flush();
     roleCache.remove(roleName);
-  }
-
-  private static class RoleList implements Writable {
-    List<String> roles;
-
-    RoleList() {
-    }
-
-    RoleList(List<String> r) {
-      roles = r;
-    }
-
-    @Override
-    public void write(DataOutput out) throws IOException {
-      HBaseUtils.writeStrList(out, roles);
-    }
-
-    @Override
-    public void readFields(DataInput in) throws IOException {
-      roles = HBaseUtils.readStrList(in);
-    }
   }
 
   private void buildRoleCache() throws IOException {
@@ -969,8 +1029,8 @@ class HBaseReadWrite {
       while (roles.hasNext()) {
         Result res = roles.next();
         String roleName = new String(res.getRow(), HBaseUtils.ENCODING);
-        GrantInfoList grantInfos = new GrantInfoList();
-        HBaseUtils.deserialize(grantInfos, res.getValue(CATALOG_CF, ROLES_COL));
+        HbaseMetastoreProto.RoleGrantInfoList grantInfos =
+            HbaseMetastoreProto.RoleGrantInfoList.parseFrom(res.getValue(CATALOG_CF, ROLES_COL));
         roleCache.put(roleName, grantInfos);
       }
       entireRoleTableInCache = true;
@@ -1016,7 +1076,7 @@ class HBaseReadWrite {
 
     // Now build a single get that will fetch the remaining tables
     List<Get> gets = new ArrayList<Get>();
-    HTableInterface htab = getHTable(TABLE_TABLE);
+    HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
     for (int i = 0; i < tableNames.size(); i++) {
       if (results.get(i) != null) continue;
       byte[] key = HBaseUtils.buildKey(dbName, tableNames.get(i));
@@ -1029,10 +1089,12 @@ class HBaseReadWrite {
       if (results.get(i) != null) continue;
       byte[] serialized = res[nextGet++].getValue(CATALOG_CF, CATALOG_COL);
       if (serialized != null) {
-        TableWritable table = new TableWritable();
-        HBaseUtils.deserialize(table, serialized);
-        tableCache.put(hashKeys[i], table.table);
-        results.set(i, table.table);
+        HBaseUtils.StorageDescriptorParts sdParts =
+            HBaseUtils.deserializeTable(dbName, tableNames.get(i), serialized);
+        StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+        HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+        tableCache.put(hashKeys[i], sdParts.containingTable);
+        results.set(i, sdParts.containingTable);
       }
     }
     return results;
@@ -1063,24 +1125,50 @@ class HBaseReadWrite {
         scanWithFilter(TABLE_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
     List<Table> tables = new ArrayList<Table>();
     while (iter.hasNext()) {
-      TableWritable table = new TableWritable();
-      HBaseUtils.deserialize(table, iter.next().getValue(CATALOG_CF, CATALOG_COL));
-      tables.add(table.table);
+      Result result = iter.next();
+      HBaseUtils.StorageDescriptorParts sdParts =
+          HBaseUtils.deserializeTable(result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL));
+      StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+      HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+      tables.add(sdParts.containingTable);
     }
     return tables;
   }
 
   /**
-   * Put a table object
+   * Put a table object.  This should only be called when the table is new (create table) as it
+   * will blindly add/increment the storage descriptor.  If you are altering an existing table
+   * call {@link #replaceTable} instead.
    * @param table table object
    * @throws IOException
    */
   void putTable(Table table) throws IOException {
-    byte[] key = HBaseUtils.buildKey(table.getDbName(), table.getTableName());
-    byte[] serialized = HBaseUtils.serialize(new TableWritable(table));
-    store(TABLE_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
-    flush();
+    byte[] hash = putStorageDescriptor(table.getSd());
+    byte[][] serialized = HBaseUtils.serializeTable(table, hash);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
     tableCache.put(new ObjectPair<String, String>(table.getDbName(), table.getTableName()), table);
+  }
+
+  /**
+   * Replace an existing table.  This will also compare the storage descriptors and see if the
+   * reference count needs to be adjusted
+   * @param oldTable old version of the table
+   * @param newTable new version of the table
+   */
+  void replaceTable(Table oldTable, Table newTable) throws IOException {
+    byte[] hash;
+    byte[] oldHash = HBaseUtils.hashStorageDescriptor(oldTable.getSd(), md);
+    byte[] newHash = HBaseUtils.hashStorageDescriptor(newTable.getSd(), md);
+    if (Arrays.equals(oldHash, newHash)) {
+      hash = oldHash;
+    } else {
+      decrementStorageDescriptorRefCount(oldTable.getSd());
+      hash = putStorageDescriptor(newTable.getSd());
+    }
+    byte[][] serialized = HBaseUtils.serializeTable(newTable, hash);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
+    tableCache.put(new ObjectPair<String, String>(newTable.getDbName(), newTable.getTableName()),
+        newTable);
   }
 
   /**
@@ -1096,7 +1184,6 @@ class HBaseReadWrite {
     decrementStorageDescriptorRefCount(t.getSd());
     byte[] key = HBaseUtils.buildKey(dbName, tableName);
     delete(TABLE_TABLE, key, null, null);
-    flush();
   }
 
   private Table getTable(String dbName, String tableName, boolean populateCache)
@@ -1107,10 +1194,12 @@ class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(dbName, tableName);
     byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
-    TableWritable table = new TableWritable();
-    HBaseUtils.deserialize(table, serialized);
-    if (populateCache) tableCache.put(hashKey, table.table);
-    return table.table;
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializeTable(dbName, tableName, serialized);
+    StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+    HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+    if (populateCache) tableCache.put(hashKey, sdParts.containingTable);
+    return sdParts.containingTable;
   }
 
   /**********************************************************************************************
@@ -1120,21 +1209,21 @@ class HBaseReadWrite {
   /**
    * If this serde has already been read, then return it from the cache.  If not, read it, then
    * return it.
-   * @param hash
-   * @return
+   * @param hash hash of the storage descriptor to read
+   * @return the storage descriptor
    * @throws IOException
    */
   StorageDescriptor getStorageDescriptor(byte[] hash) throws IOException {
     ByteArrayWrapper hashKey = new ByteArrayWrapper(hash);
     StorageDescriptor cached = sdCache.get(hashKey);
     if (cached != null) return cached;
+    LOG.debug("Not found in cache, looking in hbase");
     byte[] serialized = read(SD_TABLE, hash, CATALOG_CF, CATALOG_COL);
     if (serialized == null) {
       throw new RuntimeException("Woh, bad!  Trying to fetch a non-existent storage descriptor " +
-          "from hash " + hash);
+          "from hash " + Base64.encodeBase64String(hash));
     }
-    StorageDescriptor sd = new StorageDescriptor();
-    HBaseUtils.deserializeStorageDescriptor(sd, serialized);
+    StorageDescriptor sd = HBaseUtils.deserializeStorageDescriptor(serialized);
     sdCache.put(hashKey, sd);
     return sd;
   }
@@ -1146,64 +1235,59 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void decrementStorageDescriptorRefCount(StorageDescriptor sd) throws IOException {
-    byte[] serialized = HBaseUtils.serializeStorageDescriptor(sd);
-    byte[] key = hash(serialized);
-    for (int i = 0; i < 10; i++) {
-      byte[] serializedRefCnt = read(SD_TABLE, key, CATALOG_CF, REF_COUNT_COL);
-      if (serializedRefCnt == null) {
-        // Someone deleted it before we got to it, no worries
-        return;
-      }
-      int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING));
-      HTableInterface htab = getHTable(SD_TABLE);
-      if (refCnt-- < 1) {
-        Delete d = new Delete(key);
-        if (htab.checkAndDelete(key, CATALOG_CF, REF_COUNT_COL, serializedRefCnt, d)) {
-          sdCache.remove(new ByteArrayWrapper(key));
-          return;
-        }
-      } else {
-        Put p = new Put(key);
-        p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
-        if (htab.checkAndPut(key, CATALOG_CF, REF_COUNT_COL, serializedRefCnt, p)) {
-          return;
-        }
-      }
+    byte[] key = HBaseUtils.hashStorageDescriptor(sd, md);
+    byte[] serializedRefCnt = read(SD_TABLE, key, CATALOG_CF, REF_COUNT_COL);
+    if (serializedRefCnt == null) {
+      // Someone deleted it before we got to it, no worries
+      return;
     }
-    throw new IOException("Too many unsuccessful attepts to decrement storage counter");
+    int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING));
+    HTableInterface htab = conn.getHBaseTable(SD_TABLE);
+    if (--refCnt < 1) {
+      Delete d = new Delete(key);
+      // We don't use checkAndDelete here because it isn't compatible with the transaction
+      // managers.  If the transaction managers are doing their jobs then we should not need it
+      // anyway.
+      htab.delete(d);
+      sdCache.remove(new ByteArrayWrapper(key));
+    } else {
+      Put p = new Put(key);
+      p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
+      htab.put(p);
+      htab.flushCommits();
+    }
   }
 
   /**
-   * Place the common parts of a storage descriptor into the cache.
+   * Place the common parts of a storage descriptor into the cache and write the storage
+   * descriptor out to HBase.  This should only be called if you are sure that the storage
+   * descriptor needs to be added.  If you have changed a table or partition but not it's storage
+   * descriptor do not call this method, as it will increment the reference count of the storage
+   * descriptor.
    * @param storageDescriptor storage descriptor to store.
    * @return id of the entry in the cache, to be written in for the storage descriptor
    */
   byte[] putStorageDescriptor(StorageDescriptor storageDescriptor) throws IOException {
     byte[] sd = HBaseUtils.serializeStorageDescriptor(storageDescriptor);
-    byte[] key = hash(sd);
-    for (int i = 0; i < 10; i++) {
-      byte[] serializedRefCnt = read(SD_TABLE, key, CATALOG_CF, REF_COUNT_COL);
-      HTableInterface htab = getHTable(SD_TABLE);
-      if (serializedRefCnt == null) {
-        // We are the first to put it in the DB
-        Put p = new Put(key);
-        p.add(CATALOG_CF, CATALOG_COL, sd);
-        p.add(CATALOG_CF, REF_COUNT_COL, "0".getBytes(HBaseUtils.ENCODING));
-        if (htab.checkAndPut(key, CATALOG_CF, REF_COUNT_COL, null, p)) {
-          sdCache.put(new ByteArrayWrapper(key), storageDescriptor);
-          return key;
-        }
-      } else {
-        // Just increment the reference count
-        int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING)) + 1;
-        Put p = new Put(key);
-        p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
-        if (htab.checkAndPut(key, CATALOG_CF, REF_COUNT_COL, serializedRefCnt, p)) {
-          return key;
-        }
-      }
+    byte[] key = HBaseUtils.hashStorageDescriptor(storageDescriptor, md);
+    byte[] serializedRefCnt = read(SD_TABLE, key, CATALOG_CF, REF_COUNT_COL);
+    HTableInterface htab = conn.getHBaseTable(SD_TABLE);
+    if (serializedRefCnt == null) {
+      // We are the first to put it in the DB
+      Put p = new Put(key);
+      p.add(CATALOG_CF, CATALOG_COL, sd);
+      p.add(CATALOG_CF, REF_COUNT_COL, "1".getBytes(HBaseUtils.ENCODING));
+      htab.put(p);
+      sdCache.put(new ByteArrayWrapper(key), storageDescriptor);
+    } else {
+      // Just increment the reference count
+      int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING)) + 1;
+      Put p = new Put(key);
+      p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
+      htab.put(p);
     }
-    throw new IOException("Too many unsuccessful attepts to increment storage counter");
+    htab.flushCommits();
+    return key;
   }
 
   private static class ByteArrayWrapper {
@@ -1258,7 +1342,6 @@ class HBaseReadWrite {
           stats.getStatsDesc().getLastAnalyzed());
     }
     store(hbaseTable, key, STATS_CF, colnames, serializeds);
-    flush();
   }
 
   /**
@@ -1380,12 +1463,12 @@ class HBaseReadWrite {
       }
       pi.colKeys = colKeys;
 
-      byte[] key = buildPartitionKey(dbName, tableName, pi.partVals);
+      byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, pi.partVals);
       Get g = new Get(key);
       for (byte[] colName : colKeys) g.addColumn(STATS_CF, colName);
       gets.add(g);
     }
-    HTableInterface htab = getHTable(PART_TABLE);
+    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
     Result[] results = htab.get(gets);
 
     for (int pOff = 0; pOff < results.length; pOff++) {
@@ -1423,7 +1506,7 @@ class HBaseReadWrite {
   private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) {
     return partVals == null ?
         HBaseUtils.buildKey(dbName, tableName) :
-        buildPartitionKey(dbName, tableName, partVals);
+        HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
   }
 
   private String getStatisticsTable(List<String> partVals) {
@@ -1459,24 +1542,26 @@ class HBaseReadWrite {
 
   private void store(String table, byte[] key, byte[] colFam, byte[] colName, byte[] obj)
       throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Put p = new Put(key);
     p.add(colFam, colName, obj);
     htab.put(p);
+    htab.flushCommits();
   }
 
   private void store(String table, byte[] key, byte[] colFam, byte[][] colName, byte[][] obj)
       throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Put p = new Put(key);
     for (int i = 0; i < colName.length; i++) {
       p.add(colFam, colName[i], obj[i]);
     }
     htab.put(p);
+    htab.flushCommits();
   }
 
   private byte[] read(String table, byte[] key, byte[] colFam, byte[] colName) throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Get g = new Get(key);
     g.addColumn(colFam, colName);
     Result res = htab.get(g);
@@ -1485,7 +1570,7 @@ class HBaseReadWrite {
 
   private Result read(String table, byte[] key, byte[] colFam, byte[][] colNames)
       throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Get g = new Get(key);
     for (byte[] colName : colNames) g.addColumn(colFam, colName);
     return htab.get(g);
@@ -1495,7 +1580,7 @@ class HBaseReadWrite {
   // deleted.  If colName is null and colFam is not, only the named family will be deleted.  If
   // both are null the entire row will be deleted.
   private void delete(String table, byte[] key, byte[] colFam, byte[] colName) throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Delete d = new Delete(key);
     if (colName != null) d.deleteColumn(colFam, colName);
     else if (colFam != null) d.deleteFamily(colFam);
@@ -1504,7 +1589,7 @@ class HBaseReadWrite {
 
   private Iterator<Result> scanWithFilter(String table, byte[] keyPrefix, byte[] colFam,
                                           byte[] colName, Filter filter) throws IOException {
-    HTableInterface htab = getHTable(table);
+    HTableInterface htab = conn.getHBaseTable(table);
     Scan s;
     if (keyPrefix == null) {
       s = new Scan();
@@ -1519,44 +1604,23 @@ class HBaseReadWrite {
     return scanner.iterator();
   }
 
-  private HTableInterface getHTable(String table) throws IOException {
-    HTableInterface htab = tables.get(table);
-    if (htab == null) {
-      LOG.debug("Trying to connect to table " + table);
-      try {
-        htab = conn.getTable(table);
-        // Calling gettable doesn't actually connect to the region server, it's very light
-        // weight, so call something else so we actually reach out and touch the region server
-        // and see if the table is there.
-        Result r = htab.get(new Get("nosuchkey".getBytes(HBaseUtils.ENCODING)));
-      } catch (IOException e) {
-        LOG.info("Caught exception when table was missing");
-        return null;
-      }
-      htab.setAutoFlushTo(false);
-      tables.put(table, htab);
-    }
-    return htab;
-  }
-
-  private void flush() throws IOException {
-    for (HTableInterface htab : tables.values()) htab.flushCommits();
-  }
-
-  private byte[] hash(byte[] serialized) throws IOException {
-    md.update(serialized);
-    return md.digest();
-  }
-
   /**********************************************************************************************
    * Testing methods and classes
    *********************************************************************************************/
 
   @VisibleForTesting
   int countStorageDescriptor() throws IOException {
-    ResultScanner scanner = getHTable(SD_TABLE).getScanner(new Scan());
+    ResultScanner scanner = conn.getHBaseTable(SD_TABLE).getScanner(new Scan());
     int cnt = 0;
-    while (scanner.next() != null) cnt++;
+    Result r;
+    do {
+      r = scanner.next();
+      if (r != null) {
+        LOG.debug("Saw record with hash " + Base64.encodeBase64String(r.getRow()));
+        cnt++;
+      }
+    } while (r != null);
+
     return cnt;
   }
 
@@ -1565,9 +1629,10 @@ class HBaseReadWrite {
    * @param connection Mock connection objecct
    */
   @VisibleForTesting
-  void setConnection(HConnection connection) {
+  void setConnection(HBaseConnection connection) {
     conn = connection;
   }
+
 
   // For testing without the cache
   private static class BogusObjectCache<K, V> extends ObjectCache<K, V> {

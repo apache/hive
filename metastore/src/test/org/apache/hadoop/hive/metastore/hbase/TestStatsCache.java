@@ -96,10 +96,11 @@ public class TestStatsCache {
       }
     });
 
-    HConnection hconn = Mockito.mock(HConnection.class);
-    Mockito.when(hconn.getTable(Mockito.anyString())).thenReturn(htable);
+    HBaseConnection hconn = Mockito.mock(HBaseConnection.class);
+    Mockito.when(hconn.getHBaseTable(Mockito.anyString())).thenReturn(htable);
     HiveConf conf = new HiveConf();
     conf.setIntVar(HiveConf.ConfVars.METASTORE_HBASE_CACHE_SIZE, 30);
+    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
     hrw = HBaseReadWrite.getInstance(conf);
     hrw.setConnection(hconn);
     StatsCache.getInstance(conf).clear();

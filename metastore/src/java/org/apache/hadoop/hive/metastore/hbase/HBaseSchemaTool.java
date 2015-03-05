@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class HBaseSchemaTool {
 
-  private static String[] commands = {"db", "part", "parts", "role", "table"};
+  private static String[] commands = {"db", "part", "parts", "role", "table", "install"};
 
   public static void main(String[] args) throws Exception {
     Options options = new Options();
@@ -152,6 +152,10 @@ public class HBaseSchemaTool {
     Database db = hrw.getDb(dbName);
     if (db == null) System.err.println("No such database: " + db);
     else dump(db);
+  }
+
+  public void install() throws IOException {
+    HBaseReadWrite.createTablesIfNotExist();
   }
 
   public void part() throws IOException, TException {

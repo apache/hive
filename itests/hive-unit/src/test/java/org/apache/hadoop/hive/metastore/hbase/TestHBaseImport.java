@@ -67,7 +67,7 @@ public class TestHBaseImport {
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-  @Mock private HConnection hconn;
+  @Mock private HBaseConnection hconn;
   private HBaseStore store;
   private HiveConf conf;
 
@@ -96,14 +96,15 @@ public class TestHBaseImport {
   @Before
   public void setupConnection() throws IOException {
     MockitoAnnotations.initMocks(this);
-    Mockito.when(hconn.getTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
     conf = new HiveConf();
     // Turn off caching, as we want to test actual interaction with HBase
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
+    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
     HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
     hbase.setConnection(hconn);
     store = new HBaseStore();

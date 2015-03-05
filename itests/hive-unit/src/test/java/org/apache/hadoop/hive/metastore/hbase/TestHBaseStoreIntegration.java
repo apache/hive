@@ -92,7 +92,7 @@ public class TestHBaseStoreIntegration {
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-  @Mock private HConnection hconn;
+  @Mock private HBaseConnection hconn;
   private HBaseStore store;
   private HiveConf conf;
 
@@ -127,16 +127,17 @@ public class TestHBaseStoreIntegration {
   @Before
   public void setupConnection() throws IOException {
     MockitoAnnotations.initMocks(this);
-    Mockito.when(hconn.getTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
-    Mockito.when(hconn.getTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
     conf = new HiveConf();
     // Turn off caching, as we want to test actual interaction with HBase
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
+    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
     HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
     hbase.setConnection(hconn);
     store = new HBaseStore();
@@ -249,9 +250,11 @@ public class TestHBaseStoreIntegration {
 
     startTime += 10;
     table.setLastAccessTime(startTime);
+    LOG.debug("XXX alter table test");
     store.alterTable("default", tableName, table);
 
     Table t = store.getTable("default", tableName);
+    LOG.debug("Alter table time " + t.getLastAccessTime());
     Assert.assertEquals(1, t.getSd().getColsSize());
     Assert.assertEquals("col1", t.getSd().getCols().get(0).getName());
     Assert.assertEquals("int", t.getSd().getCols().get(0).getType());
@@ -699,7 +702,8 @@ public class TestHBaseStoreIntegration {
     Assert.assertEquals(1, grants.size());
     Assert.assertEquals("fred", grants.get(0).getPrincipalName());
     Assert.assertEquals(PrincipalType.USER, grants.get(0).getPrincipalType());
-    Assert.assertTrue(grants.get(0).getGrantTime() >= now);
+    Assert.assertTrue("Expected grant time of " + now + " got " + grants.get(0).getGrantTime(),
+        grants.get(0).getGrantTime() >= now);
     Assert.assertEquals("bob", grants.get(0).getGrantorName());
     Assert.assertEquals(PrincipalType.USER, grants.get(0).getGrantorPrincipalType());
     Assert.assertFalse(grants.get(0).isGrantOption());

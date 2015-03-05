@@ -18,6 +18,9 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,35 +29,39 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.io.Writable;
-import org.apache.thrift.TEnum;
+import org.apache.hadoop.hive.metastore.api.Table;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Utility functions
@@ -86,539 +93,835 @@ class HBaseUtils {
     return protoKey.getBytes(ENCODING);
   }
 
-  static byte[] serialize(Writable writable) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    writable.write(dos);
-    return baos.toByteArray();
-  }
-
-  static <T extends Writable> void deserialize(T instance, byte[] bytes) throws IOException {
-    DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
-    instance.readFields(in);
-  }
-
-  static void writeStr(DataOutput out, String str) throws IOException {
-    if (str == null || str.length() == 0) {
-      out.writeInt(0);
-      return;
-    } else {
-      out.writeInt(str.length());
-      out.write(str.getBytes(), 0, str.length());
+  private static HbaseMetastoreProto.Parameters buildParameters(Map<String, String> params) {
+    List<HbaseMetastoreProto.ParameterEntry> entries =
+        new ArrayList<HbaseMetastoreProto.ParameterEntry>();
+    for (Map.Entry<String, String> e : params.entrySet()) {
+      entries.add(
+          HbaseMetastoreProto.ParameterEntry.newBuilder()
+              .setKey(e.getKey())
+              .setValue(e.getValue())
+              .build());
     }
+    return HbaseMetastoreProto.Parameters.newBuilder()
+        .addAllParameter(entries)
+        .build();
   }
 
-  static String readStr(DataInput in) throws IOException {
-    int len = in.readInt();
-    if (len == 0) {
-      return new String();
-    } else {
-      byte[] b = new byte[len];
-      in.readFully(b, 0, len);
-      return new String(b);
+  private static Map<String, String> buildParameters(HbaseMetastoreProto.Parameters protoParams) {
+    Map<String, String> params = new HashMap<String, String>();
+    for (HbaseMetastoreProto.ParameterEntry pe : protoParams.getParameterList()) {
+      params.put(pe.getKey(), pe.getValue());
     }
+    return params;
   }
 
-  static void writeByteArray(DataOutput out, byte[] b) throws IOException {
-    if (b == null || b.length == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(b.length);
-      out.write(b, 0, b.length);
+
+  private static List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry>
+  buildPrincipalPrivilegeSetEntry(Map<String, List<PrivilegeGrantInfo>> entries) {
+    List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry> results =
+        new ArrayList<HbaseMetastoreProto.PrincipalPrivilegeSetEntry>();
+    for (Map.Entry<String, List<PrivilegeGrantInfo>> entry : entries.entrySet()) {
+      results.add(HbaseMetastoreProto.PrincipalPrivilegeSetEntry.newBuilder()
+          .setPrincipalName(entry.getKey())
+          .addAllPrivileges(buildPrivilegeGrantInfo(entry.getValue()))
+          .build());
     }
+    return results;
   }
 
-  static byte[] readByteArray(DataInput in) throws IOException {
-    int len = in.readInt();
-    if (len == 0) {
-      return new byte[0];
-    } else {
-      byte[] b = new byte[len];
-      in.readFully(b, 0, len);
-      return b;
-    }
-  }
-
-  static void writeDecimal(DataOutput out, Decimal val) throws IOException {
-    HBaseUtils.writeByteArray(out, val.getUnscaled());
-    out.writeShort(val.getScale());
-  }
-
-  static Decimal readDecimal(DataInput in) throws IOException {
-    Decimal d = new Decimal();
-    d.setUnscaled(HBaseUtils.readByteArray(in));
-    d.setScale(in.readShort());
-    return d;
-  }
-
-  static Map<String, String> readStrStrMap(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new HashMap<String, String>();
-    } else {
-      Map<String, String> m = new HashMap<String, String>(sz);
-      for (int i = 0; i < sz; i++) {
-        m.put(readStr(in), readStr(in));
+  private static List<HbaseMetastoreProto.PrivilegeGrantInfo> buildPrivilegeGrantInfo(
+      List<PrivilegeGrantInfo> privileges) {
+    List<HbaseMetastoreProto.PrivilegeGrantInfo> results =
+        new ArrayList<HbaseMetastoreProto.PrivilegeGrantInfo>();
+    for (PrivilegeGrantInfo privilege : privileges) {
+      HbaseMetastoreProto.PrivilegeGrantInfo.Builder builder =
+          HbaseMetastoreProto.PrivilegeGrantInfo.newBuilder();
+      if (privilege.getPrivilege() != null) builder.setPrivilege(privilege.getPrivilege());
+      builder.setCreateTime(privilege.getCreateTime());
+      if (privilege.getGrantor() != null) builder.setGrantor(privilege.getGrantor());
+      if (privilege.getGrantorType() != null) {
+        builder.setGrantorType(convertPrincipalTypes(privilege.getGrantorType()));
       }
-      return m;
+      builder.setGrantOption(privilege.isGrantOption());
+      results.add(builder.build());
+    }
+    return results;
+  }
+
+  /**
+   * Convert Thrift.PrincipalType to HbaseMetastoreProto.principalType
+   * @param type
+   * @return
+   */
+  static HbaseMetastoreProto.PrincipalType convertPrincipalTypes(PrincipalType type) {
+    switch (type) {
+      case USER: return HbaseMetastoreProto.PrincipalType.USER;
+      case ROLE: return HbaseMetastoreProto.PrincipalType.ROLE;
+      default: throw new RuntimeException("Unknown principal type " + type.toString());
     }
   }
 
+  /**
+   * Convert principalType from HbaseMetastoreProto to Thrift.PrincipalType
+   * @param type
+   * @return
+   */
+  static PrincipalType convertPrincipalTypes(HbaseMetastoreProto.PrincipalType type) {
+    switch (type) {
+      case USER: return PrincipalType.USER;
+      case ROLE: return PrincipalType.ROLE;
+      default: throw new RuntimeException("Unknown principal type " + type.toString());
+    }
+  }
 
-  static void writeStrStrMap(DataOutput out, Map<String, String> map) throws IOException {
-    if (map == null || map.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(map.size());
-      for (Map.Entry<String, String> e : map.entrySet()) {
-        writeStr(out, e.getKey());
-        writeStr(out, e.getValue());
+  private static Map<String, List<PrivilegeGrantInfo>> convertPrincipalPrivilegeSetEntries(
+      List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry> entries) {
+    Map<String, List<PrivilegeGrantInfo>> map =
+        new HashMap<String, List<PrivilegeGrantInfo>>();
+    for (HbaseMetastoreProto.PrincipalPrivilegeSetEntry entry : entries) {
+      map.put(entry.getPrincipalName(), convertPrivilegeGrantInfos(entry.getPrivilegesList()));
+    }
+    return map;
+  }
+
+  private static List<PrivilegeGrantInfo> convertPrivilegeGrantInfos(
+      List<HbaseMetastoreProto.PrivilegeGrantInfo> privileges) {
+    List<PrivilegeGrantInfo> results = new ArrayList<PrivilegeGrantInfo>();
+    for (HbaseMetastoreProto.PrivilegeGrantInfo proto : privileges) {
+      PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
+      pgi.setPrivilege(proto.getPrivilege());
+      pgi.setCreateTime((int)proto.getCreateTime());
+      pgi.setGrantor(proto.getGrantor());
+      pgi.setGrantorType(convertPrincipalTypes(proto.getGrantorType()));
+      pgi.setGrantOption(proto.getGrantOption());
+      results.add(pgi);
+    }
+    return results;
+  }
+
+  private static HbaseMetastoreProto.PrincipalPrivilegeSet
+  buildPrincipalPrivilegeSet(PrincipalPrivilegeSet pps) {
+    HbaseMetastoreProto.PrincipalPrivilegeSet.Builder builder =
+        HbaseMetastoreProto.PrincipalPrivilegeSet.newBuilder();
+    if (pps.getUserPrivileges() != null) {
+      builder.addAllUsers(buildPrincipalPrivilegeSetEntry(pps.getUserPrivileges()));
+    }
+    if (pps.getRolePrivileges() != null) {
+      builder.addAllRoles(buildPrincipalPrivilegeSetEntry(pps.getRolePrivileges()));
+    }
+    return builder.build();
+  }
+
+  private static PrincipalPrivilegeSet buildPrincipalPrivilegeSet(
+      HbaseMetastoreProto.PrincipalPrivilegeSet proto) throws InvalidProtocolBufferException {
+    PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
+    pps.setUserPrivileges(convertPrincipalPrivilegeSetEntries(proto.getUsersList()));
+    pps.setRolePrivileges(convertPrincipalPrivilegeSetEntries(proto.getRolesList()));
+    return pps;
+  }
+  /**
+   * Serialize a PrincipalPrivilegeSet
+   * @param pps
+   * @return
+   */
+  static byte[] serializePrincipalPrivilegeSet(PrincipalPrivilegeSet pps) {
+    return buildPrincipalPrivilegeSet(pps).toByteArray();
+  }
+
+  /**
+   * Deserialize a PrincipalPrivilegeSet
+   * @param serialized
+   * @return
+   * @throws InvalidProtocolBufferException
+   */
+  static PrincipalPrivilegeSet deserializePrincipalPrivilegeSet(byte[] serialized)
+      throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.PrincipalPrivilegeSet proto =
+        HbaseMetastoreProto.PrincipalPrivilegeSet.parseFrom(serialized);
+    return buildPrincipalPrivilegeSet(proto);
+  }
+
+  /**
+   * Serialize a role
+   * @param role
+   * @return two byte arrays, first contains the key, the second the serialized value.
+   */
+  static byte[][] serializeRole(Role role) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(role.getRoleName());
+    HbaseMetastoreProto.Role.Builder builder = HbaseMetastoreProto.Role.newBuilder();
+    builder.setCreateTime(role.getCreateTime());
+    if (role.getOwnerName() != null) builder.setOwnerName(role.getOwnerName());
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a role.  This method should be used when the rolename is already known as it
+   * doesn't have to re-deserialize it.
+   * @param roleName name of the role
+   * @param value value fetched from hbase
+   * @return A role
+   * @throws InvalidProtocolBufferException
+   */
+  static Role deserializeRole(String roleName, byte[] value)
+      throws InvalidProtocolBufferException {
+    Role role = new Role();
+    role.setRoleName(roleName);
+    HbaseMetastoreProto.Role protoRole =
+        HbaseMetastoreProto.Role.parseFrom(value);
+    role.setCreateTime((int)protoRole.getCreateTime());
+    role.setOwnerName(protoRole.getOwnerName());
+    return role;
+  }
+
+  /**
+   * Deserialize a role.  This method should be used when the rolename is not already known (eg
+   * when doing a scan).
+   * @param key key from hbase
+   * @param value value from hbase
+   * @return a role
+   * @throws InvalidProtocolBufferException
+   */
+  static Role deserializeRole(byte[] key, byte[] value)
+      throws InvalidProtocolBufferException {
+    String roleName = new String(key, ENCODING);
+    return deserializeRole(roleName, value);
+  }
+
+  /**
+   * Serialize a list of role names
+   * @param roles
+   * @return
+   */
+  static byte[] serializeRoleList(List<String> roles) {
+    return HbaseMetastoreProto.RoleList.newBuilder()
+        .addAllRole(roles)
+        .build()
+        .toByteArray();
+  }
+
+  static List<String> deserializeRoleList(byte[] value) throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.RoleList proto = HbaseMetastoreProto.RoleList.parseFrom(value);
+    return new ArrayList<String>(proto.getRoleList());
+  }
+
+  /**
+   * Serialize a database
+   * @param db
+   * @return two byte arrays, first contains the key, the second the serialized value.
+   */
+  static byte[][] serializeDatabase(Database db) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(db.getName());
+    HbaseMetastoreProto.Database.Builder builder = HbaseMetastoreProto.Database.newBuilder();
+
+    if (db.getDescription() != null) builder.setDescription(db.getDescription());
+    if (db.getLocationUri() != null) builder.setUri(db.getLocationUri());
+    if (db.getParameters() != null) builder.setParameters(buildParameters(db.getParameters()));
+    if (db.getPrivileges() != null) {
+      builder.setPrivileges(buildPrincipalPrivilegeSet(db.getPrivileges()));
+    }
+    if (db.getOwnerName() != null) builder.setOwnerName(db.getOwnerName());
+    if (db.getOwnerType() != null) builder.setOwnerType(convertPrincipalTypes(db.getOwnerType()));
+
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a database.  This method should be used when the db anme is already known as it
+   * doesn't have to re-deserialize it.
+   * @param dbName name of the role
+   * @param value value fetched from hbase
+   * @return A database
+   * @throws InvalidProtocolBufferException
+   */
+  static Database deserializeDatabase(String dbName, byte[] value)
+      throws InvalidProtocolBufferException {
+    Database db = new Database();
+    db.setName(dbName);
+    HbaseMetastoreProto.Database protoDb = HbaseMetastoreProto.Database.parseFrom(value);
+    db.setName(dbName);
+    db.setDescription(protoDb.getDescription());
+    db.setLocationUri(protoDb.getUri());
+    db.setParameters(buildParameters(protoDb.getParameters()));
+    db.setPrivileges(buildPrincipalPrivilegeSet(protoDb.getPrivileges()));
+    db.setOwnerName(protoDb.getOwnerName());
+    db.setOwnerType(convertPrincipalTypes(protoDb.getOwnerType()));
+
+    return db;
+  }
+
+  /**
+   * Deserialize a database.  This method should be used when the db name is not already known (eg
+   * when doing a scan).
+   * @param key key from hbase
+   * @param value value from hbase
+   * @return a role
+   * @throws InvalidProtocolBufferException
+   */
+  static Database deserializeDatabase(byte[] key, byte[] value)
+      throws InvalidProtocolBufferException {
+    String dbName = new String(key, ENCODING);
+    return deserializeDatabase(dbName, value);
+  }
+
+  private static List<FieldSchema>
+  convertFieldSchemaListFromProto(List<HbaseMetastoreProto.FieldSchema> protoList) {
+    List<FieldSchema> schemas = new ArrayList<FieldSchema>(protoList.size());
+    for (HbaseMetastoreProto.FieldSchema proto : protoList) {
+      schemas.add(new FieldSchema(proto.getName(), proto.getType(), proto.getComment()));
+    }
+    return schemas;
+  }
+
+  private static List<HbaseMetastoreProto.FieldSchema>
+  convertFieldSchemaListToProto(List<FieldSchema> schemas) {
+    List<HbaseMetastoreProto.FieldSchema> protoList =
+        new ArrayList<HbaseMetastoreProto.FieldSchema>(schemas.size());
+    for (FieldSchema fs : schemas) {
+      HbaseMetastoreProto.FieldSchema.Builder builder =
+          HbaseMetastoreProto.FieldSchema.newBuilder();
+      builder
+          .setName(fs.getName())
+          .setType(fs.getType());
+      if (fs.getComment() != null) builder.setComment(fs.getComment());
+      protoList.add(builder.build());
+    }
+    return protoList;
+  }
+
+  /**
+   * Serialize a storage descriptor.
+   * @param sd storage descriptor to serialize
+   * @return serialized storage descriptor.
+   */
+  static byte[] serializeStorageDescriptor(StorageDescriptor sd)  {
+    HbaseMetastoreProto.StorageDescriptor.Builder builder =
+        HbaseMetastoreProto.StorageDescriptor.newBuilder();
+    builder.addAllCols(convertFieldSchemaListToProto(sd.getCols()));
+    if (sd.getInputFormat() != null) {
+      builder.setInputFormat(sd.getInputFormat());
+    }
+    if (sd.getOutputFormat() != null) {
+      builder.setOutputFormat(sd.getOutputFormat());
+    }
+    builder.setIsCompressed(sd.isCompressed());
+    builder.setNumBuckets(sd.getNumBuckets());
+    if (sd.getSerdeInfo() != null) {
+      HbaseMetastoreProto.StorageDescriptor.SerDeInfo.Builder serdeBuilder =
+          HbaseMetastoreProto.StorageDescriptor.SerDeInfo.newBuilder();
+      SerDeInfo serde = sd.getSerdeInfo();
+      if (serde.getName() != null) {
+        serdeBuilder.setName(serde.getName());
       }
-    }
-  }
-
-  static Map<List<String>, String> readStrListStrMap(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new HashMap<List<String>, String>();
-    } else {
-      Map<List<String>, String> m = new HashMap<List<String>, String>(sz);
-      for (int i = 0; i < sz; i++) {
-        m.put(readStrList(in), readStr(in));
+      if (serde.getSerializationLib() != null) {
+        serdeBuilder.setSerializationLib(serde.getSerializationLib());
       }
-      return m;
-    }
-  }
-
-
-  static void writeStrListStrMap(DataOutput out, Map<List<String>, String> map) throws IOException {
-    if (map == null || map.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(map.size());
-      for (Map.Entry<List<String>, String> e : map.entrySet()) {
-        writeStrList(out, e.getKey());
-        writeStr(out, e.getValue());
+      if (serde.getParameters() != null) {
+        serdeBuilder.setParameters(buildParameters(serde.getParameters()));
       }
+      builder.setSerdeInfo(serdeBuilder);
     }
-  }
-
-  static void writeStrList(DataOutput out, List<String> list) throws IOException {
-    if (list == null || list.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(list.size());
-      for (String val : list) {
-        writeStr(out, val);
+    if (sd.getBucketCols() != null) {
+      builder.addAllBucketCols(sd.getBucketCols());
+    }
+    if (sd.getSortCols() != null) {
+      List<Order> orders = sd.getSortCols();
+      List<HbaseMetastoreProto.StorageDescriptor.Order> protoList =
+          new ArrayList<HbaseMetastoreProto.StorageDescriptor.Order>(orders.size());
+      for (Order order : orders) {
+        protoList.add(HbaseMetastoreProto.StorageDescriptor.Order.newBuilder()
+            .setColumnName(order.getCol())
+            .setOrder(order.getOrder())
+            .build());
       }
+      builder.addAllSortCols(protoList);
     }
-  }
-
-  static List<String> readStrList(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new ArrayList<String>();
-    } else {
-      List<String> list = new ArrayList<String>(sz);
-      for (int i = 0; i < sz; i++) {
-        list.add(readStr(in));
+    if (sd.getSkewedInfo() != null) {
+      HbaseMetastoreProto.StorageDescriptor.SkewedInfo.Builder skewBuilder =
+          HbaseMetastoreProto.StorageDescriptor.SkewedInfo.newBuilder();
+      SkewedInfo skewed = sd.getSkewedInfo();
+      if (skewed.getSkewedColNames() != null) {
+        skewBuilder.addAllSkewedColNames(skewed.getSkewedColNames());
       }
-      return list;
-    }
-  }
-
-  static void writeWritableList(DataOutput out, List<? extends Writable> list) throws IOException {
-    if (list == null || list.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(list.size());
-      for (Writable val : list) {
-        val.write(out);
-      }
-    }
-  }
-
-  static <T extends Writable> List<T> readWritableList(DataInput in, Class<T> clazz)
-      throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new ArrayList<T>();
-    } else {
-      List<T> list = new ArrayList<T>(sz);
-      for (int i = 0; i < sz; i++) {
-        try {
-          T instance = clazz.newInstance();
-          instance.readFields(in);
-          list.add(instance);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
+      if (skewed.getSkewedColValues() != null) {
+        for (List<String> innerList : skewed.getSkewedColValues()) {
+          HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList.Builder listBuilder =
+              HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList.newBuilder();
+          listBuilder.addAllSkewedColValue(innerList);
+          skewBuilder.addSkewedColValues(listBuilder);
         }
       }
-      return list;
-    }
-  }
-
-  static void writeStrListList(DataOutput out, List<List<String>> list) throws IOException {
-    if (list == null || list.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(list.size());
-      for (List<String> vals : list) {
-        writeStrList(out, vals);
-      }
-    }
-  }
-
-  static List<List<String>> readStrListList(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new ArrayList<List<String>>();
-    } else {
-      List<List<String>> list = new ArrayList<List<String>>(sz);
-      for (int i = 0; i < sz; i++) {
-        list.add(readStrList(in));
-      }
-      return list;
-    }
-  }
-  static List<FieldSchema> readFieldSchemaList(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new ArrayList<FieldSchema>();
-    } else {
-      List<FieldSchema> schemas = new ArrayList<FieldSchema>(sz);
-      for (int i = 0; i < sz; i++) {
-        schemas.add(new FieldSchema(readStr(in), readStr(in), readStr(in)));
-      }
-      return schemas;
-    }
-  }
-
-  static void writeFieldSchemaList(DataOutput out, List<FieldSchema> fields) throws IOException {
-    if (fields == null || fields.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(fields.size());
-      for (FieldSchema field : fields) {
-        writeStr(out, field.getName());
-        writeStr(out, field.getType());
-        writeStr(out, field.getComment());
-      }
-    }
-  }
-
-  static List<Order> readOrderList(DataInput in) throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new ArrayList<Order>();
-    } else {
-      List<Order> orderList = new ArrayList<Order>(sz);
-      for (int i = 0; i < sz; i++) {
-        orderList.add(new Order(readStr(in), in.readInt()));
-      }
-      return orderList;
-    }
-  }
-
-  static void writeOrderList(DataOutput out, List<Order> orderList) throws IOException {
-    if (orderList == null || orderList.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(orderList.size());
-      for (Order order : orderList) {
-        writeStr(out, order.getCol());
-        out.writeInt(order.getOrder());
-      }
-    }
-  }
-
-  static PrincipalPrivilegeSet readPrivileges(byte[] bytes) throws IOException {
-    DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
-    return readPrivileges(in);
-  }
-
-  static PrincipalPrivilegeSet readPrivileges(DataInput in) throws IOException {
-    if (in.readBoolean()) {
-      PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
-      pps.setUserPrivileges(readPrivilege(in));
-      pps.setRolePrivileges(readPrivilege(in));
-      // we ignore group privileges because we don't support old auth
-      return pps;
-    } else {
-      return new PrincipalPrivilegeSet();
-    }
-
-  }
-
-  private static Map<String, List<PrivilegeGrantInfo>> readPrivilege(DataInput in)
-      throws IOException {
-    int sz = in.readInt();
-    if (sz == 0) {
-      return new HashMap<String, List<PrivilegeGrantInfo>>();
-    } else {
-      Map<String, List<PrivilegeGrantInfo>> priv =
-          new HashMap<String, List<PrivilegeGrantInfo>>(sz);
-      for (int i = 0; i < sz; i++) {
-        String key = readStr(in);
-        int numGrants = in.readInt();
-        List<PrivilegeGrantInfo> grants = new ArrayList<PrivilegeGrantInfo>(numGrants);
-        priv.put(key, grants);
-        for (int j = 0; j < numGrants; j++) {
-          PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
-          pgi.setPrivilege(readStr(in));
-          pgi.setCreateTime(in.readInt());
-          pgi.setGrantor(readStr(in));
-          pgi.setGrantorType(PrincipalType.findByValue(in.readInt()));
-          pgi.setGrantOption(in.readBoolean());
-          grants.add(pgi);
+      if (skewed.getSkewedColValueLocationMaps() != null) {
+        for (Map.Entry<List<String>, String> e : skewed.getSkewedColValueLocationMaps().entrySet()) {
+          HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap.Builder mapBuilder =
+              HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap.newBuilder();
+          mapBuilder.addAllKey(e.getKey());
+          mapBuilder.setValue(e.getValue());
+          skewBuilder.addSkewedColValueLocationMaps(mapBuilder);
         }
       }
-      return priv;
+      builder.setSkewedInfo(skewBuilder);
     }
+    builder.setStoredAsSubDirectories(sd.isStoredAsSubDirectories());
+
+    return builder.build().toByteArray();
   }
 
-  static byte[] writePrivileges(PrincipalPrivilegeSet privSet) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    writePrivileges(dos, privSet);
-    return baos.toByteArray();
-  }
-
-  static void writePrivileges(DataOutput out, PrincipalPrivilegeSet privs) throws IOException {
-    if (privs == null) {
-      out.writeBoolean(false);
-    } else {
-      out.writeBoolean(true);
-      writePrivilege(out, privs.getUserPrivileges());
-      writePrivilege(out, privs.getRolePrivileges());
-      // we ignore group privileges because we don't support old auth
+  /**
+   * Produce a hash for the storage descriptor
+   * @param sd storage descriptor to hash
+   * @param md message descriptor to use to generate the hash
+   * @return the hash as a byte array
+   */
+  static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+    // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
+    // results for hashes based on the OS or JVM being used.
+    md.reset();
+    for (FieldSchema fs : sd.getCols()) {
+      md.update(fs.getName().getBytes(ENCODING));
+      md.update(fs.getType().getBytes(ENCODING));
+      if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
     }
-  }
-
-  private static void writePrivilege(DataOutput out, Map<String,List<PrivilegeGrantInfo>> priv)
-      throws IOException {
-    if (priv == null || priv.size() == 0) {
-      out.writeInt(0);
-    } else {
-      out.writeInt(priv.size());
-      for (Map.Entry<String, List<PrivilegeGrantInfo>> e : priv.entrySet()) {
-        writeStr(out, e.getKey());
-        List<PrivilegeGrantInfo> grants = e.getValue();
-        if (grants == null || grants.size() == 0) {
-          out.writeInt(0);
-        } else {
-          out.writeInt(grants.size());
-          for (PrivilegeGrantInfo grant : grants) {
-            writeStr(out, grant.getPrivilege());
-            out.writeInt(grant.getCreateTime());
-            writeStr(out, grant.getGrantor());
-            out.writeInt(grant.getGrantorType().getValue());
-            out.writeBoolean(grant.isGrantOption());
-          }
+    if (sd.getInputFormat() != null) {
+      md.update(sd.getInputFormat().getBytes(ENCODING));
+    }
+    if (sd.getOutputFormat() != null) {
+      md.update(sd.getOutputFormat().getBytes(ENCODING));
+    }
+    md.update(sd.isCompressed() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
+    md.update(Integer.toString(sd.getNumBuckets()).getBytes(ENCODING));
+    if (sd.getSerdeInfo() != null) {
+      SerDeInfo serde = sd.getSerdeInfo();
+      if (serde.getName() != null) {
+        md.update(serde.getName().getBytes(ENCODING));
+      }
+      if (serde.getSerializationLib() != null) {
+        md.update(serde.getSerializationLib().getBytes(ENCODING));
+      }
+      if (serde.getParameters() != null) {
+        SortedMap<String, String> params = new TreeMap<String, String>(serde.getParameters());
+        for (Map.Entry<String, String> param : params.entrySet()) {
+          md.update(param.getKey().getBytes(ENCODING));
+          md.update(param.getValue().getBytes(ENCODING));
         }
       }
     }
-  }
-
-  static void writeEnum(DataOutput out, TEnum pt) throws IOException {
-    if (pt == null) {
-      out.writeBoolean(false);
-    } else {
-      out.writeBoolean(true);
-      out.writeInt(pt.getValue());
+    if (sd.getBucketCols() != null) {
+      SortedSet<String> bucketCols = new TreeSet<String>(sd.getBucketCols());
+      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
     }
-  }
-
-  static PrincipalType readPrincipalType(DataInput in) throws IOException {
-    return (in.readBoolean()) ? PrincipalType.findByValue(in.readInt()) : null;
-  }
-
-  static void writeSkewedInfo(DataOutput out, SkewedInfo skew) throws IOException {
-    if (skew == null) {
-      out.writeBoolean(false);
-    } else {
-      out.writeBoolean(true);
-      writeStrList(out, skew.getSkewedColNames());
-      writeStrListList(out, skew.getSkewedColValues());
-      writeStrListStrMap(out, skew.getSkewedColValueLocationMaps());
+    if (sd.getSortCols() != null) {
+      SortedSet<Order> orders = new TreeSet<Order>(sd.getSortCols());
+      for (Order order : orders) {
+        md.update(order.getCol().getBytes(ENCODING));
+        md.update(Integer.toString(order.getOrder()).getBytes(ENCODING));
+      }
     }
-  }
-
-  static SkewedInfo readSkewedInfo(DataInput in) throws IOException {
-    if (in.readBoolean()) {
-      SkewedInfo skew = new SkewedInfo();
-      skew.setSkewedColNames(readStrList(in));
-      skew.setSkewedColValues(readStrListList(in));
-      skew.setSkewedColValueLocationMaps(readStrListStrMap(in));
-      return skew;
-    } else {
-      return new SkewedInfo(new ArrayList<String>(), new ArrayList<List<String>>(),
-          new HashMap<List<String>, String>());
+    if (sd.getSkewedInfo() != null) {
+      SkewedInfo skewed = sd.getSkewedInfo();
+      if (skewed.getSkewedColNames() != null) {
+        SortedSet<String> colnames = new TreeSet<String>(skewed.getSkewedColNames());
+        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValues() != null) {
+        SortedSet<String> sortedOuterList = new TreeSet<String>();
+        for (List<String> innerList : skewed.getSkewedColValues()) {
+          SortedSet<String> sortedInnerList = new TreeSet<String>(innerList);
+          sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
+        }
+        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValueLocationMaps() != null) {
+        SortedMap<String, String> sortedMap = new TreeMap<String, String>();
+        for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
+          SortedSet<String> sortedKey = new TreeSet<String>(smap.getKey());
+          sortedMap.put(StringUtils.join(sortedKey, "."), smap.getValue());
+        }
+        for (Map.Entry<String, String> e : sortedMap.entrySet()) {
+          md.update(e.getKey().getBytes(ENCODING));
+          md.update(e.getValue().getBytes(ENCODING));
+        }
+      }
     }
+
+    return md.digest();
   }
 
-  static byte[] serializeStorageDescriptor(StorageDescriptor sd) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    writeFieldSchemaList(dos, sd.getCols());
-    writeStr(dos, sd.getInputFormat());
-    writeStr(dos, sd.getOutputFormat());
-    dos.writeBoolean(sd.isCompressed());
-    dos.writeInt(sd.getNumBuckets());
-    writeStr(dos, sd.getSerdeInfo().getName());
-    writeStr(dos, sd.getSerdeInfo().getSerializationLib());
-    writeStrStrMap(dos, sd.getSerdeInfo().getParameters());
-    writeStrList(dos, sd.getBucketCols());
-    writeOrderList(dos, sd.getSortCols());
-    writeSkewedInfo(dos, sd.getSkewedInfo());
-    dos.writeBoolean(sd.isStoredAsSubDirectories());
-    return baos.toByteArray();
-  }
-
-  static void deserializeStorageDescriptor(StorageDescriptor sd, byte[] bytes)
-      throws IOException {
-    DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
-    sd.setCols(readFieldSchemaList(in));
-    sd.setInputFormat(readStr(in));
-    sd.setOutputFormat(readStr(in));
-    sd.setCompressed(in.readBoolean());
-    sd.setNumBuckets(in.readInt());
-    SerDeInfo serde = new SerDeInfo(readStr(in), readStr(in), readStrStrMap(in));
+  static StorageDescriptor deserializeStorageDescriptor(byte[] serialized)
+      throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.StorageDescriptor proto =
+        HbaseMetastoreProto.StorageDescriptor.parseFrom(serialized);
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setCols(convertFieldSchemaListFromProto(proto.getColsList()));
+    sd.setInputFormat(proto.getInputFormat());
+    sd.setOutputFormat(proto.getOutputFormat());
+    sd.setCompressed(proto.getIsCompressed());
+    sd.setNumBuckets(proto.getNumBuckets());
+    SerDeInfo serde = new SerDeInfo();
+    serde.setName(proto.getSerdeInfo().getName());
+    serde.setSerializationLib(proto.getSerdeInfo().getSerializationLib());
+    serde.setParameters(buildParameters(proto.getSerdeInfo().getParameters()));
     sd.setSerdeInfo(serde);
-    sd.setBucketCols(readStrList(in));
-    sd.setSortCols(readOrderList(in));
-    sd.setSkewedInfo(readSkewedInfo(in));
-    sd.setStoredAsSubDirectories(in.readBoolean());
+    sd.setBucketCols(new ArrayList<String>(proto.getBucketColsList()));
+    List<Order> sortCols = new ArrayList<Order>();
+    for (HbaseMetastoreProto.StorageDescriptor.Order protoOrder : proto.getSortColsList()) {
+      sortCols.add(new Order(protoOrder.getColumnName(), protoOrder.getOrder()));
+    }
+    sd.setSortCols(sortCols);
+    SkewedInfo skewed = new SkewedInfo();
+    skewed.setSkewedColNames(new ArrayList<String>(proto.getSkewedInfo().getSkewedColNamesList()));
+    for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList innerList :
+        proto.getSkewedInfo().getSkewedColValuesList()) {
+      skewed.addToSkewedColValues(new ArrayList<String>(innerList.getSkewedColValueList()));
+    }
+    Map<List<String>, String> colMaps = new HashMap<List<String>, String>();
+    for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap map :
+        proto.getSkewedInfo().getSkewedColValueLocationMapsList()) {
+      colMaps.put(new ArrayList<String>(map.getKeyList()), map.getValue());
+    }
+    skewed.setSkewedColValueLocationMaps(colMaps);
+    sd.setSkewedInfo(skewed);
+    sd.setStoredAsSubDirectories(proto.getStoredAsSubDirectories());
+    return sd;
+  }
+
+  /**
+   * Serialize a partition
+   * @param part partition object
+   * @param sdHash hash that is being used as a key for the enclosed storage descriptor
+   * @return First element is the key, second is the serialized partition
+   */
+  static byte[][] serializePartition(Partition part, byte[] sdHash) {
+    byte[][] result = new byte[2][];
+    result[0] = buildPartitionKey(part.getDbName(), part.getTableName(), part.getValues());
+    HbaseMetastoreProto.Partition.Builder builder = HbaseMetastoreProto.Partition.newBuilder();
+    builder
+        .setCreateTime(part.getCreateTime())
+        .setLastAccessTime(part.getLastAccessTime());
+    if (part.getSd().getLocation() != null) builder.setLocation(part.getSd().getLocation());
+    if (part.getSd().getParameters() != null) {
+      builder.setSdParameters(buildParameters(part.getSd().getParameters()));
+    }
+    builder.setSdHash(ByteString.copyFrom(sdHash));
+    if (part.getParameters() != null) builder.setParameters(buildParameters(part.getParameters()));
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  static byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
+    Deque<String> keyParts = new ArrayDeque<String>(partVals);
+    keyParts.addFirst(tableName);
+    keyParts.addFirst(dbName);
+    return buildKey(keyParts.toArray(new String[keyParts.size()]));
+  }
+
+  static class StorageDescriptorParts {
+    byte[] sdHash;
+    String location;
+    Map<String, String> parameters;
+    Partition containingPartition;
+    Table containingTable;
+  }
+
+  static void assembleStorageDescriptor(StorageDescriptor sd, StorageDescriptorParts parts) {
+    sd.setLocation(parts.location);
+    sd.setParameters(parts.parameters);
+    if (parts.containingPartition != null) {
+      parts.containingPartition.setSd(sd);
+    } else if (parts.containingTable != null) {
+      parts.containingTable.setSd(sd);
+    } else {
+      throw new RuntimeException("Need either a partition or a table");
+    }
+  }
+
+  /**
+   * Deserialize a partition.  This version should be used when the partition key is not already
+   * known (eg a scan).
+   * @param key the key fetched from HBase
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the partition plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializePartition(byte[] key, byte[] serialized)
+      throws InvalidProtocolBufferException {
+    String[] keys = deserializeKey(key);
+    return deserializePartition(keys[0], keys[1],
+        Arrays.asList(Arrays.copyOfRange(keys, 2, keys.length)), serialized);
+  }
+
+  /**
+   * Deserialize a partition.  This version should be used when the partition key is
+   * known (eg a get).
+   * @param dbName database name
+   * @param tableName table name
+   * @param partVals partition values
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the partition plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializePartition(String dbName, String tableName,
+                                                     List<String> partVals, byte[] serialized)
+      throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.Partition proto = HbaseMetastoreProto.Partition.parseFrom(serialized);
+    Partition part = new Partition();
+    StorageDescriptorParts sdParts = new StorageDescriptorParts();
+    sdParts.containingPartition = part;
+    part.setDbName(dbName);
+    part.setTableName(tableName);
+    part.setValues(partVals);
+    part.setCreateTime((int)proto.getCreateTime());
+    part.setLastAccessTime((int)proto.getLastAccessTime());
+    sdParts.location = proto.getLocation();
+    sdParts.parameters = buildParameters(proto.getSdParameters());
+    sdParts.sdHash = proto.getSdHash().toByteArray();
+    part.setParameters(buildParameters(proto.getParameters()));
+    return sdParts;
+  }
+
+  private static String[] deserializeKey(byte[] key) {
+    String k = new String(key, ENCODING);
+    return k.split(":");
+  }
+
+  /**
+   * Serialize a table
+   * @param table table object
+   * @param sdHash hash that is being used as a key for the enclosed storage descriptor
+   * @return First element is the key, second is the serialized table
+   */
+  static byte[][] serializeTable(Table table, byte[] sdHash) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(table.getDbName(), table.getTableName());
+    HbaseMetastoreProto.Table.Builder builder = HbaseMetastoreProto.Table.newBuilder();
+    if (table.getOwner() != null) builder.setOwner(table.getOwner());
+    builder
+        .setCreateTime(table.getCreateTime())
+        .setLastAccessTime(table.getLastAccessTime())
+        .setRetention(table.getRetention());
+    if (table.getSd().getLocation() != null) builder.setLocation(table.getSd().getLocation());
+    if (table.getSd().getParameters() != null) {
+      builder.setSdParameters(buildParameters(table.getSd().getParameters()));
+    }
+    builder.setSdHash(ByteString.copyFrom(sdHash));
+    if (table.getPartitionKeys() != null) {
+      builder.addAllPartitionKeys(convertFieldSchemaListToProto(table.getPartitionKeys()));
+    }
+    if (table.getParameters() != null) {
+      builder.setParameters(buildParameters(table.getParameters()));
+    }
+    if (table.getViewOriginalText() != null) {
+      builder.setViewOriginalText(table.getViewOriginalText());
+    }
+    if (table.getViewExpandedText() != null) {
+      builder.setViewExpandedText(table.getViewExpandedText());
+    }
+    if (table.getTableType() != null) builder.setTableType(table.getTableType());
+    if (table.getPrivileges() != null) {
+      builder.setPrivileges(buildPrincipalPrivilegeSet(table.getPrivileges()));
+    }
+    builder.setIsTemporary(table.isTemporary());
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a table.  This version should be used when the table key is not already
+   * known (eg a scan).
+   * @param key the key fetched from HBase
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the table plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializeTable(byte[] key, byte[] serialized)
+      throws InvalidProtocolBufferException {
+    String[] keys = deserializeKey(key);
+    return deserializeTable(keys[0], keys[1], serialized);
+  }
+
+  /**
+   * Deserialize a table.  This version should be used when the table key is
+   * known (eg a get).
+   * @param dbName database name
+   * @param tableName table name
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the partition plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializeTable(String dbName, String tableName,
+                                                 byte[] serialized)
+      throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.Table proto = HbaseMetastoreProto.Table.parseFrom(serialized);
+    Table table = new Table();
+    StorageDescriptorParts sdParts = new StorageDescriptorParts();
+    sdParts.containingTable = table;
+    table.setDbName(dbName);
+    table.setTableName(tableName);
+    table.setOwner(proto.getOwner());
+    table.setCreateTime((int)proto.getCreateTime());
+    table.setLastAccessTime((int)proto.getLastAccessTime());
+    table.setRetention((int)proto.getRetention());
+    sdParts.location = proto.getLocation();
+    sdParts.parameters = buildParameters(proto.getSdParameters());
+    sdParts.sdHash = proto.getSdHash().toByteArray();
+    table.setPartitionKeys(convertFieldSchemaListFromProto(proto.getPartitionKeysList()));
+    table.setParameters(buildParameters(proto.getParameters()));
+    table.setViewOriginalText(proto.getViewOriginalText());
+    table.setViewExpandedText(proto.getViewExpandedText());
+    table.setTableType(proto.getTableType());
+    table.setPrivileges(buildPrincipalPrivilegeSet(proto.getPrivileges()));
+    table.setTemporary(proto.getIsTemporary());
+    return sdParts;
   }
 
   static byte[] serializeStatsForOneColumn(ColumnStatistics stats, ColumnStatisticsObj obj)
       throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    dos.writeLong(stats.getStatsDesc().getLastAnalyzed());
-    HBaseUtils.writeStr(dos, obj.getColType());
+    HbaseMetastoreProto.ColumnStats.Builder builder = HbaseMetastoreProto.ColumnStats.newBuilder();
+    builder.setLastAnalyzed(stats.getStatsDesc().getLastAnalyzed());
+    if (obj.getColType() == null) {
+      throw new RuntimeException("Column type must be set");
+    }
+    builder.setColumnType(obj.getColType());
     ColumnStatisticsData colData = obj.getStatsData();
-    HBaseUtils.writeStr(dos, colData.getSetField().toString());
     switch (colData.getSetField()) {
       case BOOLEAN_STATS:
         BooleanColumnStatsData boolData = colData.getBooleanStats();
-        dos.writeLong(boolData.getNumTrues());
-        dos.writeLong(boolData.getNumFalses());
-        dos.writeLong(boolData.getNumNulls());
+        builder.setNumNulls(boolData.getNumNulls());
+        builder.setBoolStats(
+            HbaseMetastoreProto.ColumnStats.BooleanStats.newBuilder()
+                .setNumTrues(boolData.getNumTrues())
+                .setNumFalses(boolData.getNumFalses())
+                .build());
         break;
 
       case LONG_STATS:
         LongColumnStatsData longData = colData.getLongStats();
-        dos.writeLong(longData.getLowValue());
-        dos.writeLong(longData.getHighValue());
-        dos.writeLong(longData.getNumNulls());
-        dos.writeLong(longData.getNumDVs());
+        builder.setNumNulls(longData.getNumNulls());
+        builder.setNumDistinctValues(longData.getNumDVs());
+        builder.setLongStats(
+            HbaseMetastoreProto.ColumnStats.LongStats.newBuilder()
+                .setLowValue(longData.getLowValue())
+                .setHighValue(longData.getHighValue())
+                .build());
         break;
 
       case DOUBLE_STATS:
         DoubleColumnStatsData doubleData = colData.getDoubleStats();
-        dos.writeDouble(doubleData.getLowValue());
-        dos.writeDouble(doubleData.getHighValue());
-        dos.writeLong(doubleData.getNumNulls());
-        dos.writeLong(doubleData.getNumDVs());
+        builder.setNumNulls(doubleData.getNumNulls());
+        builder.setNumDistinctValues(doubleData.getNumDVs());
+        builder.setDoubleStats(
+            HbaseMetastoreProto.ColumnStats.DoubleStats.newBuilder()
+                .setLowValue(doubleData.getLowValue())
+                .setHighValue(doubleData.getHighValue())
+                .build());
         break;
 
       case STRING_STATS:
         StringColumnStatsData stringData = colData.getStringStats();
-        dos.writeLong(stringData.getMaxColLen());
-        dos.writeDouble(stringData.getAvgColLen());
-        dos.writeLong(stringData.getNumNulls());
-        dos.writeLong(stringData.getNumDVs());
+        builder.setNumNulls(stringData.getNumNulls());
+        builder.setNumDistinctValues(stringData.getNumDVs());
+        builder.setStringStats(
+            HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
+                .setMaxColLength(stringData.getMaxColLen())
+                .setAvgColLength(stringData.getAvgColLen())
+                .build());
         break;
 
       case BINARY_STATS:
         BinaryColumnStatsData binaryData = colData.getBinaryStats();
-        dos.writeLong(binaryData.getMaxColLen());
-        dos.writeDouble(binaryData.getAvgColLen());
-        dos.writeLong(binaryData.getNumNulls());
+        builder.setNumNulls(binaryData.getNumNulls());
+        builder.setBinaryStats(
+            HbaseMetastoreProto.ColumnStats.StringStats.newBuilder()
+                .setMaxColLength(binaryData.getMaxColLen())
+                .setAvgColLength(binaryData.getAvgColLen())
+                .build());
         break;
 
       case DECIMAL_STATS:
         DecimalColumnStatsData decimalData = colData.getDecimalStats();
-        writeDecimal(dos, decimalData.getHighValue());
-        writeDecimal(dos, decimalData.getLowValue());
-        dos.writeLong(decimalData.getNumNulls());
-        dos.writeLong(decimalData.getNumDVs());
+        builder.setNumNulls(decimalData.getNumNulls());
+        builder.setNumDistinctValues(decimalData.getNumDVs());
+        builder.setDecimalStats(
+            HbaseMetastoreProto.ColumnStats.DecimalStats.newBuilder()
+                .setLowValue(
+                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+                      .setUnscaled(ByteString.copyFrom(decimalData.getLowValue().getUnscaled()))
+                      .setScale(decimalData.getLowValue().getScale())
+                      .build())
+                .setHighValue(
+                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+                    .setUnscaled(ByteString.copyFrom(decimalData.getHighValue().getUnscaled()))
+                    .setScale(decimalData.getHighValue().getScale())
+                    .build()))
+                .build();
         break;
 
       default:
         throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
-    return baos.toByteArray();
+    return builder.build().toByteArray();
   }
 
   static ColumnStatisticsObj deserializeStatsForOneColumn(ColumnStatistics stats,
                                                           byte[] bytes) throws IOException {
-    DataInput in = new DataInputStream(new ByteArrayInputStream(bytes));
-    ColumnStatisticsObj obj = new ColumnStatisticsObj();
-    long lastAnalyzed = in.readLong();
+    HbaseMetastoreProto.ColumnStats proto = HbaseMetastoreProto.ColumnStats.parseFrom(bytes);
+        ColumnStatisticsObj obj = new ColumnStatisticsObj();
+    long lastAnalyzed = proto.getLastAnalyzed();
     stats.getStatsDesc().setLastAnalyzed(
         Math.max(lastAnalyzed, stats.getStatsDesc().getLastAnalyzed()));
-    obj.setColType(HBaseUtils.readStr(in));
+    obj.setColType(proto.getColumnType());
 
-    ColumnStatisticsData._Fields type = ColumnStatisticsData._Fields.valueOf(HBaseUtils.readStr (in));
     ColumnStatisticsData colData = new ColumnStatisticsData();
-    switch (type) {
-      case BOOLEAN_STATS:
-        BooleanColumnStatsData boolData = new BooleanColumnStatsData();
-        boolData.setNumTrues(in.readLong());
-        boolData.setNumFalses(in.readLong());
-        boolData.setNumNulls(in.readLong());
-        colData.setBooleanStats(boolData);
-        break;
-
-      case LONG_STATS:
-        LongColumnStatsData longData = new LongColumnStatsData();
-        longData.setLowValue(in.readLong());
-        longData.setHighValue(in.readLong());
-        longData.setNumNulls(in.readLong());
-        longData.setNumDVs(in.readLong());
-        colData.setLongStats(longData);
-        break;
-
-      case DOUBLE_STATS:
-        DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
-        doubleData.setLowValue(in.readDouble());
-        doubleData.setHighValue(in.readDouble());
-        doubleData.setNumNulls(in.readLong());
-        doubleData.setNumDVs(in.readLong());
-        colData.setDoubleStats(doubleData);
-        break;
-
-      case STRING_STATS:
-        StringColumnStatsData stringData = new StringColumnStatsData();
-        stringData.setMaxColLen(in.readLong());
-        stringData.setAvgColLen(in.readDouble());
-        stringData.setNumNulls(in.readLong());
-        stringData.setNumDVs(in.readLong());
-        colData.setStringStats(stringData);
-        break;
-
-      case BINARY_STATS:
-        BinaryColumnStatsData binaryData = new BinaryColumnStatsData();
-        binaryData.setMaxColLen(in.readLong());
-        binaryData.setAvgColLen(in.readDouble());
-        binaryData.setNumNulls(in.readLong());
-        colData.setBinaryStats(binaryData);
-        break;
-
-      case DECIMAL_STATS:
-        DecimalColumnStatsData decimalData = new DecimalColumnStatsData();
-        decimalData.setHighValue(readDecimal(in));
-        decimalData.setLowValue(readDecimal(in));
-        decimalData.setNumNulls(in.readLong());
-        decimalData.setNumDVs(in.readLong());
-        colData.setDecimalStats(decimalData);
-        break;
-
-      default:
-        throw new RuntimeException("Woh, bad.  Unknown stats type!");
+    if (proto.hasBoolStats()) {
+      BooleanColumnStatsData boolData = new BooleanColumnStatsData();
+      boolData.setNumTrues(proto.getBoolStats().getNumTrues());
+      boolData.setNumFalses(proto.getBoolStats().getNumFalses());
+      boolData.setNumNulls(proto.getNumNulls());
+      colData.setBooleanStats(boolData);
+    } else if (proto.hasLongStats()) {
+      LongColumnStatsData longData = new LongColumnStatsData();
+      longData.setLowValue(proto.getLongStats().getLowValue());
+      longData.setHighValue(proto.getLongStats().getHighValue());
+      longData.setNumNulls(proto.getNumNulls());
+      longData.setNumDVs(proto.getNumDistinctValues());
+      colData.setLongStats(longData);
+    } else if (proto.hasDoubleStats()) {
+      DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
+      doubleData.setLowValue(proto.getDoubleStats().getLowValue());
+      doubleData.setHighValue(proto.getDoubleStats().getHighValue());
+      doubleData.setNumNulls(proto.getNumNulls());
+      doubleData.setNumDVs(proto.getNumDistinctValues());
+      colData.setDoubleStats(doubleData);
+    } else if (proto.hasStringStats()) {
+      StringColumnStatsData stringData = new StringColumnStatsData();
+      stringData.setMaxColLen(proto.getStringStats().getMaxColLength());
+      stringData.setAvgColLen(proto.getStringStats().getAvgColLength());
+      stringData.setNumNulls(proto.getNumNulls());
+      stringData.setNumDVs(proto.getNumDistinctValues());
+      colData.setStringStats(stringData);
+    } else if (proto.hasBinaryStats()) {
+      BinaryColumnStatsData binaryData = new BinaryColumnStatsData();
+      binaryData.setMaxColLen(proto.getBinaryStats().getMaxColLength());
+      binaryData.setAvgColLen(proto.getBinaryStats().getAvgColLength());
+      binaryData.setNumNulls(proto.getNumNulls());
+      colData.setBinaryStats(binaryData);
+    } else if (proto.hasDecimalStats()) {
+      DecimalColumnStatsData decimalData = new DecimalColumnStatsData();
+      Decimal hiVal = new Decimal();
+      hiVal.setUnscaled(proto.getDecimalStats().getHighValue().getUnscaled().toByteArray());
+      hiVal.setScale((short) proto.getDecimalStats().getHighValue().getScale());
+      decimalData.setHighValue(hiVal);
+      Decimal loVal = new Decimal();
+      loVal.setUnscaled(proto.getDecimalStats().getLowValue().getUnscaled().toByteArray());
+      loVal.setScale((short) proto.getDecimalStats().getLowValue().getScale());
+      decimalData.setLowValue(loVal);
+      decimalData.setNumNulls(proto.getNumNulls());
+      decimalData.setNumDVs(proto.getNumDistinctValues());
+      colData.setDecimalStats(decimalData);
+    } else {
+      throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
+
     obj.setStatsData(colData);
     return obj;
   }
