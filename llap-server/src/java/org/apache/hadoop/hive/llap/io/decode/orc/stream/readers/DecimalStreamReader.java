@@ -98,7 +98,7 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
   }
 
   public static class StreamReaderBuilder {
-    private String fileName;
+    private Long fileId;
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer valueStream;
@@ -108,8 +108,8 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
     private CompressionCodec compressionCodec;
     private OrcProto.ColumnEncoding columnEncoding;
 
-    public StreamReaderBuilder setFileName(String fileName) {
-      this.fileName = fileName;
+    public StreamReaderBuilder setFileId(Long fileId) {
+      this.fileId = fileId;
       return this;
     }
 
@@ -155,13 +155,13 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
 
     public DecimalStreamReader build() throws IOException {
       SettableUncompressedStream presentInStream = StreamUtils.createLlapInStream(
-          OrcProto.Stream.Kind.PRESENT.name(), fileName, presentStream);
+          OrcProto.Stream.Kind.PRESENT.name(), fileId, presentStream);
 
       SettableUncompressedStream valueInStream = StreamUtils.createLlapInStream(
-          OrcProto.Stream.Kind.DATA.name(), fileName, valueStream);
+          OrcProto.Stream.Kind.DATA.name(), fileId, valueStream);
 
       SettableUncompressedStream scaleInStream = StreamUtils.createLlapInStream(
-          OrcProto.Stream.Kind.SECONDARY.name(), fileName, scaleStream);
+          OrcProto.Stream.Kind.SECONDARY.name(), fileId, scaleStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new DecimalStreamReader(columnIndex, precision, scale, presentInStream, valueInStream,

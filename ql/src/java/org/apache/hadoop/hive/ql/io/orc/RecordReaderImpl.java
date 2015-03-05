@@ -39,8 +39,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Hdfs;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
@@ -84,7 +89,7 @@ public class RecordReaderImpl implements RecordReader {
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
 
-  private final String fileName;
+  private final long fileId;
   private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -187,8 +192,8 @@ public class RecordReaderImpl implements RecordReader {
       long strideRate,
       Configuration conf
   ) throws IOException {
-    this.fileName = path.toString().intern(); // should we normalize this, like DFS would?
     this.file = fileSystem.open(path);
+    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
@@ -3038,7 +3043,7 @@ public class RecordReaderImpl implements RecordReader {
     // explicitly trigger 1 big read
     DiskRangeList toRead = new DiskRangeList(start, end);
     if (this.cache != null) {
-      toRead = cache.getFileData(fileName, toRead, stripe.getOffset());
+      toRead = cache.getFileData(fileId, toRead, stripe.getOffset());
     }
     bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
@@ -3207,7 +3212,7 @@ public class RecordReaderImpl implements RecordReader {
       List<DiskRange> buffers = RecordReaderUtils.getStreamBuffers(
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
-      streams.put(name, InStream.create(fileName, name.toString(), buffers,
+      streams.put(name, InStream.create(fileId, name.toString(), buffers,
           streamDesc.getLength(), codec, bufferSize, cache));
       streamOffset += streamDesc.getLength();
     }
@@ -3228,7 +3233,7 @@ public class RecordReaderImpl implements RecordReader {
     }
     mergeDiskRanges(toRead);
     if (this.cache != null) {
-      toRead = cache.getFileData(fileName, toRead, stripe.getOffset());
+      toRead = cache.getFileData(fileId, toRead, stripe.getOffset());
     }
     bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     if (LOG.isDebugEnabled()) {

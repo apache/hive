@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.ql.io.orc.InStream;
  */
 public class SettableUncompressedStream extends InStream.UncompressedStream {
 
-  public SettableUncompressedStream(String fileName, String name,
+  public SettableUncompressedStream(Long fileId, String name,
       List<DiskRange> input, long length) {
-    super(fileName, name, input, length);
+    super(fileId, name, input, length);
   }
 
   public void setBuffers(List<DiskRange> input, long length) {

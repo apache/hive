@@ -21,8 +21,7 @@ package org.apache.hadoop.hive.llap.io.api.orc;
 public class OrcCacheKey extends OrcBatchKey {
   public int colIx;
 
-  /** @param file This MUST be interned by caller. */
-  public OrcCacheKey(String file, int stripeIx, int rgIx, int colIx) {
+  public OrcCacheKey(long file, int stripeIx, int rgIx, int colIx) {
     super(file, stripeIx, rgIx);
     this.colIx = colIx;
   }
@@ -44,8 +43,7 @@ public class OrcCacheKey extends OrcBatchKey {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = prime + ((file == null) ? 0 : System.identityHashCode(file));
-    return ((prime * result + rgIx) * prime + stripeIx) * prime + colIx;
+    return super.hashCode() * prime + colIx;
   }
 
   @Override

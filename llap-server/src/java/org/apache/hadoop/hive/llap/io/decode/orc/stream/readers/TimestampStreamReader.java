@@ -98,7 +98,7 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
   }
 
   public static class StreamReaderBuilder {
-    private String fileName;
+    private Long fileId;
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
@@ -107,8 +107,8 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
     private OrcProto.ColumnEncoding columnEncoding;
     private boolean skipCorrupt;
 
-    public StreamReaderBuilder setFileName(String fileName) {
-      this.fileName = fileName;
+    public StreamReaderBuilder setFileId(Long fileId) {
+      this.fileId = fileId;
       return this;
     }
 
@@ -149,13 +149,13 @@ public class TimestampStreamReader extends RecordReaderImpl.TimestampTreeReader 
 
     public TimestampStreamReader build() throws IOException {
       SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
-          fileName, presentStream);
+          fileId, presentStream);
 
-      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId, 
           dataStream);
 
       SettableUncompressedStream nanos = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.SECONDARY.name(),
-          fileName, nanosStream);
+          fileId, nanosStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new TimestampStreamReader(columnIndex, present, data, nanos,

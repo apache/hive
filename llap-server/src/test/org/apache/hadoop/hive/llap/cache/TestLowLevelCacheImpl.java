@@ -89,7 +89,7 @@ public class TestLowLevelCacheImpl {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
-    String fn1 = "file1".intern(), fn2 = "file2".intern();
+    long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
     assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
@@ -108,7 +108,7 @@ public class TestLowLevelCacheImpl {
     verifyRefcount(fakes, 5, 5, 3, 3, 3, 1);
   }
 
-  private void verifyCacheGet(LowLevelCacheImpl cache, String fileName, Object... stuff) {
+  private void verifyCacheGet(LowLevelCacheImpl cache, long fileId, Object... stuff) {
     DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
     DiskRangeList iter = null;
     int intCount = 0, lastInt = -1;
@@ -128,7 +128,7 @@ public class TestLowLevelCacheImpl {
       } else if (intCount >= 0) {
         assertTrue(intCount == 0);
         intCount = -1;
-        iter = cache.getFileData(fileName, list.get(), 0);
+        iter = cache.getFileData(fileId, list.get(), 0);
         assertEquals(resultCount, iter.listSize());
       }
       assertTrue(iter != null);
@@ -147,7 +147,7 @@ public class TestLowLevelCacheImpl {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
-    String fn = "file1".intern();
+    long fn = 1;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0));
     verifyCacheGet(cache, fn, 1, 9, dr(1, 2), fakes[0], dr(4, 6), fakes[1], dr(8, 9));
@@ -165,7 +165,7 @@ public class TestLowLevelCacheImpl {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
-    String fn1 = "file1".intern(), fn2 = "file2".intern();
+    long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb() };
     assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
     assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0));
@@ -184,7 +184,7 @@ public class TestLowLevelCacheImpl {
     Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         conf, new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
-    String fn1 = "file1".intern(), fn2 = "file2".intern();
+    long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
     assertNull(cache.putFileData(fn1, drs(1, 2, 3), fbs(fakes, 0, 1, 2), 0));
@@ -203,7 +203,7 @@ public class TestLowLevelCacheImpl {
     Configuration conf = createConf();
     final LowLevelCacheImpl cache = new LowLevelCacheImpl(
         conf, new DummyCachePolicy(), new DummyAllocator(), 1);
-    final String fn1 = "file1".intern(), fn2 = "file2".intern();
+    final long fn1 = 1, fn2 = 2;
     final int offsetsToUse = 8;
     final CountDownLatch cdlIn = new CountDownLatch(4), cdlOut = new CountDownLatch(1);
     final AtomicInteger rdmsDone = new AtomicInteger(0);
@@ -215,7 +215,7 @@ public class TestLowLevelCacheImpl {
           syncThreadStart(cdlIn, cdlOut);
           for (int i = 0; i < 20000; ++i) {
             boolean isGet = rdm.nextBoolean(), isFn1 = rdm.nextBoolean();
-            String fileName = isFn1 ? fn1 : fn2;
+            long fileName = isFn1 ? fn1 : fn2;
             int fileIndex = isFn1 ? 1 : 2;
             int count = rdm.nextInt(offsetsToUse);
             if (isGet) {
@@ -291,8 +291,8 @@ public class TestLowLevelCacheImpl {
         while (rdmsDone.get() < 3) {
           DiskRangeList head = new DiskRangeList(0, offsetsToUse + 1);
           isFirstFile = !isFirstFile;
-          String fileName = isFirstFile ? fn1 : fn2;
-          head = cache.getFileData(fileName, head, 0);
+          long fileId = isFirstFile ? fn1 : fn2;
+          head = cache.getFileData(fileId, head, 0);
           DiskRange[] results = head.listToArray();
           int startIndex = rdm.nextInt(results.length), index = startIndex;
           LlapCacheableBuffer victim = null;

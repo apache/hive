@@ -19,11 +19,10 @@
 package org.apache.hadoop.hive.llap.io.api.orc;
 
 public class OrcBatchKey {
-  public String file;
+  public long file;
   public int stripeIx, rgIx;
 
-  /** @param file This MUST be interned by caller. */
-  public OrcBatchKey(String file, int stripeIx, int rgIx) {
+  public OrcBatchKey(long file, int stripeIx, int rgIx) {
     this.file = file;
     this.stripeIx = stripeIx;
     this.rgIx = rgIx;
@@ -37,7 +36,7 @@ public class OrcBatchKey {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = prime + ((file == null) ? 0 : System.identityHashCode(file));
+    int result = prime + (int)(file ^ (file >>> 32));
     return (prime * result + rgIx) * prime + stripeIx;
   }
 

@@ -27,19 +27,17 @@ import org.apache.hadoop.hive.common.DiskRangeList;
 public interface LowLevelCache {
   /**
    * Gets file data for particular offsets. Null entries mean no data.
-   * @param file File name; MUST be interned.
    * @param base base offset for the ranges (stripe offset in case of ORC).
    * @return 
    */
-  DiskRangeList getFileData(String fileName, DiskRangeList range, long baseOffset);
+  DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset);
 
   /**
    * Puts file data into cache.
-   * @param file File name; MUST be interned.
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(String file, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base);
+  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base);
 
   /**
    * Releases the buffer returned by getFileData or allocateMultiple.

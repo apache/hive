@@ -120,7 +120,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       EncodedColumnBatch<OrcBatchKey> batch,
       OrcFileMetadata fileMetadata,
       OrcStripeMetadata stripeMetadata) throws IOException {
-    String file = batch.batchKey.file;
+    long file = batch.batchKey.file;
     RecordReaderImpl.TreeReader[] treeReaders = new RecordReaderImpl.TreeReader[numCols];
 
     for (int i = 0; i < numCols; i++) {
@@ -175,7 +175,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       switch (columnType.getKind()) {
         case BINARY:
           treeReaders[i] = BinaryStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -186,7 +186,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case BOOLEAN:
           treeReaders[i] = BooleanStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -195,7 +195,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case BYTE:
           treeReaders[i] = ByteStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -204,7 +204,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case SHORT:
           treeReaders[i] = ShortStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -214,7 +214,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case INT:
           treeReaders[i] = IntStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -224,7 +224,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case LONG:
           treeReaders[i] = LongStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -235,7 +235,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case FLOAT:
           treeReaders[i] = FloatStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -244,7 +244,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case DOUBLE:
           treeReaders[i] = DoubleStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -254,7 +254,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
         case CHAR:
         case VARCHAR:
           treeReaders[i] = CharacterStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setMaxLength(columnType.getMaximumLength())
               .setCharacterType(columnType)
@@ -268,7 +268,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case STRING:
           treeReaders[i] = StringStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)
@@ -280,7 +280,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case DECIMAL:
           treeReaders[i] = DecimalStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPrecision(columnType.getPrecision())
               .setScale(columnType.getScale())
@@ -293,7 +293,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case TIMESTAMP:
           treeReaders[i] = TimestampStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setSecondsStream(data)
@@ -305,7 +305,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           break;
         case DATE:
           treeReaders[i] = DateStreamReader.builder()
-              .setFileName(file)
+              .setFileId(file)
               .setColumnIndex(columnIndex)
               .setPresentStream(present)
               .setDataStream(data)

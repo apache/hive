@@ -82,14 +82,14 @@ public class ByteStreamReader extends RecordReaderImpl.ByteTreeReader {
   }
 
   public static class StreamReaderBuilder {
-    private String fileName;
+    private Long fileId;
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
     private CompressionCodec compressionCodec;
 
-    public StreamReaderBuilder setFileName(String fileName) {
-      this.fileName = fileName;
+    public StreamReaderBuilder setFileId(Long fileId) {
+      this.fileId = fileId;
       return this;
     }
 
@@ -115,9 +115,9 @@ public class ByteStreamReader extends RecordReaderImpl.ByteTreeReader {
 
     public ByteStreamReader build() throws IOException {
       SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
-          fileName, presentStream);
+          fileId, presentStream);
 
-      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId, 
           dataStream);
 
       boolean isFileCompressed = compressionCodec != null;

@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 public class EncodedReaderImpl implements EncodedReader {
   private static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
 
-  private final String fileName;
+  private final long fileId;
   private final FSDataInputStream file;
   private final CompressionCodec codec;
   private final int bufferSize;
@@ -63,7 +63,7 @@ public class EncodedReaderImpl implements EncodedReader {
       List<OrcProto.Type> types, CompressionCodec codec, int bufferSize, long strideRate,
       LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer)
           throws IOException {
-    this.fileName = path.toString().intern(); // should we normalize this, like DFS would?
+    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
@@ -223,7 +223,7 @@ public class EncodedReaderImpl implements EncodedReader {
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     if (cache != null) {
-      cache.getFileData(fileName, toRead.next, stripeOffset);
+      cache.getFileData(fileId, toRead.next, stripeOffset);
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Disk ranges after cache (base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
@@ -246,7 +246,7 @@ public class EncodedReaderImpl implements EncodedReader {
       boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
       EncodedColumnBatch<OrcBatchKey> ecb = new EncodedColumnBatch<OrcBatchKey>(
-          new OrcBatchKey(fileName, stripeIx, rgIx), colRgs.length, 0);
+          new OrcBatchKey(fileId, stripeIx, rgIx), colRgs.length, 0);
       boolean isRGSelected = true;
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
@@ -274,7 +274,7 @@ public class EncodedReaderImpl implements EncodedReader {
               // it when building the last RG, so each RG processing will decref once, and the
               // last one will unlock the buffers.
               sctx.stripeLevelStream.incRef();
-              DiskRangeList lastCached = InStream.uncompressStream(fileName, stripeOffset, iter,
+              DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, iter,
                   sctx.offset,sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
                   sctx.stripeLevelStream);
               if (lastCached != null) {
@@ -301,7 +301,7 @@ public class EncodedReaderImpl implements EncodedReader {
             }
             boolean isStartOfStream = sctx.bufferIter == null;
             DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
-            DiskRangeList lastCached = InStream.uncompressStream(fileName, stripeOffset, range,
+            DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, range,
                 cOffset, endCOffset, zcr, codec, bufferSize, cache, cb);
             if (lastCached != null) {
               sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid

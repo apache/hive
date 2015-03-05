@@ -27,6 +27,10 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
@@ -429,5 +433,21 @@ public class RecordReaderUtils {
         // If our key is not unique on the first try, we try again
       }
     }
+  }
+
+  public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
+    if (fileSystem instanceof DistributedFileSystem) {
+      DFSClient client = ((DistributedFileSystem)fileSystem).getClient();
+      return client.getFileInfo(path.toString()).getFileId();
+    }
+    // If we are not on DFS, we just hash the file name + size and hope for the best.
+    // TODO: we assume it only happens in tests. Fix?
+    int nameHash = path.toString().hashCode();
+    long fileSize = fileSystem.getFileStatus(path).getLen();
+    long id = ((fileSize ^ (fileSize >>> 32)) << 32) | ((long)nameHash & 0xffffffffL);
+    RecordReaderImpl.LOG.warn("Cannot get unique file ID from "
+        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + path
+        + "," + nameHash + "," + fileSize + ")");
+    return id;
   }
 }

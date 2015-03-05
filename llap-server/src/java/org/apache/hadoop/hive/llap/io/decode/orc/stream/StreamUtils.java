@@ -44,7 +44,7 @@ public class StreamUtils {
    * @return - LlapInStream
    * @throws IOException
    */
-  public static SettableUncompressedStream createLlapInStream(String streamName, String fileName,
+  public static SettableUncompressedStream createLlapInStream(String streamName, Long fileId,
       EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
     if (streamBuffer == null) {
       return null;
@@ -52,7 +52,7 @@ public class StreamUtils {
 
     List<DiskRange> diskRanges = Lists.newArrayList();
     long totalLength = createDiskRanges(streamBuffer, diskRanges);
-    return new SettableUncompressedStream(fileName, streamName, diskRanges, totalLength);
+    return new SettableUncompressedStream(fileId, streamName, diskRanges, totalLength);
   }
 
   /**

@@ -313,7 +313,7 @@ POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
--201218541193
+-201218418313
 PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap

@@ -33,7 +33,7 @@ public class OrcMetadataCache {
   private static final int DEFAULT_CACHE_ACCESS_CONCURRENCY = 10;
   private static final int DEFAULT_MAX_FILE_ENTRIES = 1000;
   private static final int DEFAULT_MAX_STRIPE_ENTRIES = 10000;
-  private static Cache<String, OrcFileMetadata> METADATA;
+  private static Cache<Long, OrcFileMetadata> METADATA;
   private static Cache<OrcBatchKey, OrcStripeMetadata> STRIPE_METADATA;
   private static OrcMetadataCache instance = new OrcMetadataCache();
   private OrcMetadataCache() {}
@@ -53,8 +53,8 @@ public class OrcMetadataCache {
     return instance;
   }
 
-  public void putFileMetadata(String filePath, OrcFileMetadata metaData) {
-    METADATA.put(filePath, metaData);
+  public void putFileMetadata(long fileId, OrcFileMetadata metaData) {
+    METADATA.put(fileId, metaData);
   }
 
   public void putStripeMetadata(OrcBatchKey stripeKey, OrcStripeMetadata metaData) {
@@ -65,7 +65,7 @@ public class OrcMetadataCache {
     return STRIPE_METADATA.getIfPresent(stripeKey);
   }
 
-  public OrcFileMetadata getFileMetadata(String pathString) throws IOException {
-    return METADATA.getIfPresent(pathString);
+  public OrcFileMetadata getFileMetadata(long fileId) throws IOException {
+    return METADATA.getIfPresent(fileId);
   }
 }

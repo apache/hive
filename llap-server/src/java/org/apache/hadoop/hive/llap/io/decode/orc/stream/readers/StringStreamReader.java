@@ -135,7 +135,7 @@ public class StringStreamReader extends RecordReaderImpl.StringTreeReader {
   }
 
   public static class StreamReaderBuilder {
-    private String fileName;
+    private Long fileId;
     private int columnIndex;
     private EncodedColumnBatch.StreamBuffer presentStream;
     private EncodedColumnBatch.StreamBuffer dataStream;
@@ -144,8 +144,8 @@ public class StringStreamReader extends RecordReaderImpl.StringTreeReader {
     private CompressionCodec compressionCodec;
     private OrcProto.ColumnEncoding columnEncoding;
 
-    public StreamReaderBuilder setFileName(String fileName) {
-      this.fileName = fileName;
+    public StreamReaderBuilder setFileId(Long fileId) {
+      this.fileId = fileId;
       return this;
     }
 
@@ -186,16 +186,16 @@ public class StringStreamReader extends RecordReaderImpl.StringTreeReader {
 
     public StringStreamReader build() throws IOException {
       SettableUncompressedStream present = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
-          fileName, presentStream);
+          fileId, presentStream);
 
-      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileName,
+      SettableUncompressedStream data = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId, 
           dataStream);
 
-      SettableUncompressedStream length = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileName,
+      SettableUncompressedStream length = StreamUtils.createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileId, 
           lengthStream);
 
       SettableUncompressedStream dictionary = StreamUtils.createLlapInStream(
-          OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileName, dictionaryStream);
+          OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
 
       boolean isFileCompressed = compressionCodec != null;
       return new StringStreamReader(columnIndex, present, data, length, dictionary,

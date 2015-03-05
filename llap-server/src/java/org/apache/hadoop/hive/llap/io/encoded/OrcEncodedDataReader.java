@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
@@ -57,7 +58,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private int stripeIxFrom;
   private Reader orcReader;
   private MetadataReader metadataReader;
-  private final String internedFilePath;
+  private Long fileId;
+  private FileSystem fs;
   /**
    * readState[stripeIx'][colIx'] => boolean array (could be a bitmask) of rg-s that need to be
    * read. Contains only stripes that are read, and only columns included. null => read all RGs.
@@ -74,7 +76,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.cache = cache;
     this.conf = conf;
     this.split = (FileSplit)split;
-    this.internedFilePath = this.split.getPath().toString().intern();
     this.columnIds = columnIds;
     if (this.columnIds != null) {
       Collections.sort(this.columnIds);
@@ -105,12 +106,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   protected Void callInternal() throws IOException {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Processing split for " + internedFilePath);
+      LlapIoImpl.LOG.info("Processing split for " + split.getPath());
     }
     if (isStopped) return null;
     orcReader = null;
     // 1. Get file metadata from cache, or create the reader and read it.
     OrcFileMetadata metadata = null;
+    ensureFs();
+    this.fileId = RecordReaderUtils.getFileId(fs, split.getPath());
     try {
       metadata = getOrReadFileMetadata();
       consumer.setFileMetadata(metadata);
@@ -207,7 +210,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     // 6. Read data.
     // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
-    OrcBatchKey stripeKey = new OrcBatchKey(internedFilePath, -1, 0);
+    OrcBatchKey stripeKey = new OrcBatchKey(fileId, -1, 0);
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
       try {
         List<Integer> cols = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
@@ -256,7 +259,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                   + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
             }
             metadataCache.putStripeMetadata(stripeKey, stripeMetadata);
-            stripeKey = new OrcBatchKey(internedFilePath, -1, 0);
+            stripeKey = new OrcBatchKey(fileId, -1, 0);
           }
           consumer.setStripeMetadata(stripeMetadata);
         }
@@ -342,24 +345,25 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
-    Path path = split.getPath();
+    ensureFs();
+    orcReader = OrcFile.createReader(split.getPath(), OrcFile.readerOptions(conf).filesystem(fs));
+  }
+
+  private void ensureFs() throws IOException {
+    if (fs != null) return;
     // Disable filesystem caching for now; Tez closes it and FS cache will fix all that
-    FileSystem /*fs = cachedFs;
-    if ("pfile".equals(path.toUri().getScheme())) {*/
-      fs = path.getFileSystem(conf); // Cannot use cached FS due to hive tests' proxy FS.
-    //}
-    orcReader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
+    fs = split.getPath().getFileSystem(conf);
   }
 
   /**
    *  Gets file metadata for the split from cache, or reads it from the file.
    */
   private OrcFileMetadata getOrReadFileMetadata() throws IOException {
-    OrcFileMetadata metadata = metadataCache.getFileMetadata(internedFilePath);
+    OrcFileMetadata metadata = metadataCache.getFileMetadata(fileId);
     if (metadata != null) return metadata;
     ensureOrcReader();
     metadata = new OrcFileMetadata(orcReader);
-    metadataCache.putFileMetadata(internedFilePath, metadata);
+    metadataCache.putFileMetadata(fileId, metadata);
     return metadata;
   }
 
@@ -369,7 +373,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private ArrayList<OrcStripeMetadata> readStripesMetadata(
       OrcFileMetadata metadata, boolean[] globalInc, boolean[] sargColumns) throws IOException {
     ArrayList<OrcStripeMetadata> result = new ArrayList<OrcStripeMetadata>(readState.length);
-    OrcBatchKey stripeKey = new OrcBatchKey(internedFilePath, 0, 0);
+    OrcBatchKey stripeKey = new OrcBatchKey(fileId, 0, 0);
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
       stripeKey.stripeIx = stripeIxMod + stripeIxFrom;
       OrcStripeMetadata value = metadataCache.getStripeMetadata(stripeKey);
@@ -385,7 +389,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                 + " metadata with includes: " + DebugUtils.toString(globalInc));
           }
           // Create new key object to reuse for gets; we've used the old one to put in cache.
-          stripeKey = new OrcBatchKey(internedFilePath, 0, 0);
+          stripeKey = new OrcBatchKey(fileId, 0, 0);
         } else {
           if (DebugUtils.isTraceOrcEnabled()) {
             LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
@@ -516,7 +520,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private List<Integer>[] produceDataFromCache(
       List<StripeInformation> stripes, int rowIndexStride) throws IOException {
-    OrcCacheKey key = new OrcCacheKey(internedFilePath, -1, -1, -1);
+    OrcCacheKey key = new OrcCacheKey(fileId, -1, -1, -1);
     // For each stripe, keep a list of columns that are not fully in cache (null => all of them).
     @SuppressWarnings("unchecked")
     List<Integer>[] stripeColsNotInCache = new List[readState.length];
@@ -527,7 +531,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       int totalRgCount = getRgCount(stripes.get(key.stripeIx), rowIndexStride);
       for (int rgIx = 0; rgIx < totalRgCount; ++rgIx) {
         EncodedColumnBatch<OrcBatchKey> col = new EncodedColumnBatch<OrcBatchKey>(
-            new OrcBatchKey(internedFilePath, key.stripeIx, rgIx), cols.length, cols.length);
+            new OrcBatchKey(fileId, key.stripeIx, rgIx), cols.length, cols.length);
         boolean hasAnyCached = false;
         try {
           key.rgIx = rgIx;

@@ -44,8 +44,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   private AtomicInteger newEvictions = new AtomicInteger(0);
   private Thread cleanupThread = null;
-  private final ConcurrentHashMap<String, FileCache> cache =
-      new ConcurrentHashMap<String, FileCache>();
+  private final ConcurrentHashMap<Long, FileCache> cache =
+      new ConcurrentHashMap<Long, FileCache>();
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
 
@@ -77,9 +77,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public DiskRangeList getFileData(String fileName, DiskRangeList ranges, long baseOffset) {
+  public DiskRangeList getFileData(long fileId, DiskRangeList ranges, long baseOffset) {
     if (ranges == null) return null;
-    FileCache subCache = cache.get(fileName);
+    FileCache subCache = cache.get(fileId);
     if (subCache == null || !subCache.incRef()) return ranges;
     try {
       DiskRangeList prev = ranges.prev;
@@ -180,10 +180,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   @Override
   public long[] putFileData(
-      String fileName, DiskRange[] ranges, LlapMemoryBuffer[] buffers, long baseOffset) {
+      long fileId, DiskRange[] ranges, LlapMemoryBuffer[] buffers, long baseOffset) {
     long[] result = null;
     assert buffers.length == ranges.length;
-    FileCache subCache = getOrAddFileSubCache(fileName);
+    FileCache subCache = getOrAddFileSubCache(fileId);
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
@@ -202,7 +202,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           }
           if (DebugUtils.isTraceCachingEnabled()) {
             LlapIoImpl.LOG.info("Trying to cache when the chunk is already cached for "
-                + fileName + "@" + offset  + " (base " + baseOffset + "); old " + oldVal
+                + fileId + "@" + offset  + " (base " + baseOffset + "); old " + oldVal
                 + ", new " + buffer);
           }
           if (DebugUtils.isTraceLockingEnabled()) {
@@ -243,10 +243,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
    * All this mess is necessary because we want to be able to remove sub-caches for fully
    * evicted files. It may actually be better to have non-nested map with object keys?
    */
-  public FileCache getOrAddFileSubCache(String fileName) {
+  private FileCache getOrAddFileSubCache(long fileId) {
     FileCache newSubCache = null;
     while (true) { // Overwhelmingly executes once.
-      FileCache subCache = cache.get(fileName);
+      FileCache subCache = cache.get(fileId);
       if (subCache != null) {
         if (subCache.incRef()) return subCache; // Main path - found it, incRef-ed it.
         if (newSubCache == null) {
@@ -254,7 +254,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           newSubCache.incRef();
         }
         // Found a stale value we cannot incRef; try to replace it with new value.
-        if (cache.replace(fileName, subCache, newSubCache)) return newSubCache;
+        if (cache.replace(fileId, subCache, newSubCache)) return newSubCache;
         continue; // Someone else replaced/removed a stale value, try again.
       }
       // No value found.
@@ -262,11 +262,11 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         newSubCache = new FileCache();
         newSubCache.incRef();
       }
-      FileCache oldSubCache = cache.putIfAbsent(fileName, newSubCache);
+      FileCache oldSubCache = cache.putIfAbsent(fileId, newSubCache);
       if (oldSubCache == null) return newSubCache; // Main path 2 - created a new file cache.
       if (oldSubCache.incRef()) return oldSubCache; // Someone created one in parallel.
       // Someone created one in parallel and then it went stale.
-      if (cache.replace(fileName, oldSubCache, newSubCache)) return newSubCache;
+      if (cache.replace(fileId, oldSubCache, newSubCache)) return newSubCache;
       // Someone else replaced/removed a parallel-added stale value, try again. Max confusion.
     }
   }
@@ -395,7 +395,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       // Iterate thru all the filecaches. This is best-effort.
       // If these super-long-lived iterator affects the map in some bad way,
       // we'd need to sleep once per round instead.
-      Iterator<Map.Entry<String, FileCache>> iter = cache.entrySet().iterator();
+      Iterator<Map.Entry<Long, FileCache>> iter = cache.entrySet().iterator();
       while (iter.hasNext()) {
         FileCache fc = iter.next().getValue();
         if (!fc.incRef()) {

@@ -44,18 +44,14 @@ public abstract class InStream extends InputStream {
   private static final Log LOG = LogFactory.getLog(InStream.class);
   private static final LogLevels LOGL = new LogLevels(LOG);
 
-  protected final String fileName;
+  protected final Long fileId;
   protected final String name;
   protected final long length;
 
-  public InStream(String fileName, String name, long length) {
-    this.fileName = fileName;
+  public InStream(Long fileId, String name, long length) {
+    this.fileId = fileId;
     this.name = name;
     this.length = length;
-  }
-
-  public String getFileName() {
-    return fileName;
   }
 
   public String getStreamName() {
@@ -73,8 +69,8 @@ public abstract class InStream extends InputStream {
     private ByteBuffer range;
     private int currentRange;
 
-    public UncompressedStream(String fileName, String name, List<DiskRange> input, long length) {
-      super(fileName, name, length);
+    public UncompressedStream(Long fileId, String name, List<DiskRange> input, long length) {
+      super(fileId, name, length);
       this.bytes = input;
       this.length = length;
       currentRange = 0;
@@ -185,9 +181,9 @@ public abstract class InStream extends InputStream {
     private final LowLevelCache cache;
     private final boolean doManageBuffers = true;
 
-    public CompressedStream(String fileName, String name, List<DiskRange> input, long length,
+    public CompressedStream(Long fileId, String name, List<DiskRange> input, long length,
                             CompressionCodec codec, int bufferSize, LowLevelCache cache) {
-      super(fileName, name, length);
+      super(fileId, name, length);
       this.bytes = input;
       this.codec = codec;
       this.bufferSize = bufferSize;
@@ -252,7 +248,7 @@ public abstract class InStream extends InputStream {
           if (cache != null) {
             // TODO: this is the inefficient path
             // TODO#: this is invalid; base stripe offset should be passed, return value handled.
-            //cache.putFileData(fileName, new DiskRange[] { new DiskRange(originalOffset,
+            //cache.putFileData(fileId, new DiskRange[] { new DiskRange(originalOffset,
             //  chunkLength + OutStream.HEADER_SIZE) }, new LlapMemoryBuffer[] { cacheBuffer }, 0);
           }
         }
@@ -496,7 +492,7 @@ public abstract class InStream extends InputStream {
    */
   @VisibleForTesting
   @Deprecated
-  public static InStream create(String fileName,
+  public static InStream create(Long fileId,
                                 String streamName,
                                 ByteBuffer[] buffers,
                                 long[] offsets,
@@ -507,7 +503,7 @@ public abstract class InStream extends InputStream {
     for (int i = 0; i < buffers.length; ++i) {
       input.add(new BufferChunk(buffers[i], offsets[i]));
     }
-    return create(fileName, streamName, input, length, codec, bufferSize, null);
+    return create(fileId, streamName, input, length, codec, bufferSize, null);
   }
 
   /**
@@ -521,7 +517,7 @@ public abstract class InStream extends InputStream {
    * @return an input stream
    * @throws IOException
    */
-  public static InStream create(String fileName,
+  public static InStream create(Long fileId,
                                 String name,
                                 List<DiskRange> input,
                                 long length,
@@ -529,9 +525,9 @@ public abstract class InStream extends InputStream {
                                 int bufferSize,
                                 LowLevelCache cache) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(fileName, name, input, length);
+      return new UncompressedStream(fileId, name, input, length);
     } else {
-      return new CompressedStream(fileName, name, input, length, codec, bufferSize, cache);
+      return new CompressedStream(fileId, name, input, length, codec, bufferSize, cache);
     }
   }
 
@@ -571,7 +567,7 @@ public abstract class InStream extends InputStream {
    * @return Last buffer cached during decomrpession. Cache buffers are never removed from
    *         the master list, so they are safe to keep as iterators for various streams.
    */
-  public static DiskRangeList uncompressStream(String fileName, long baseOffset,
+  public static DiskRangeList uncompressStream(long fileId, long baseOffset,
       DiskRangeList start, long cOffset, long endCOffset, ZeroCopyReaderShim zcr,
       CompressionCodec codec, int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer)
           throws IOException {
@@ -683,7 +679,7 @@ public abstract class InStream extends InputStream {
     }
 
     // 6. Finally, put data to cache.
-    long[] collisionMask = cache.putFileData(fileName, cacheKeys, targetBuffers, baseOffset);
+    long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
     processCacheCollisions(
         cache, collisionMask, toDecompress, targetBuffers, streamBuffer.cacheBuffers);
     return lastCached;
