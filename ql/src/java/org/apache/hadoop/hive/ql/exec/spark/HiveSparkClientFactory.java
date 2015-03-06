@@ -46,7 +46,7 @@ public class HiveSparkClientFactory {
   protected static final transient Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
 
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
-  private static final String SPARK_DEFAULT_MASTER = "local";
+  private static final String SPARK_DEFAULT_MASTER = "yarn-cluster";
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
