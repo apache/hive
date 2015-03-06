@@ -93,6 +93,10 @@ if [ "$LLAP_DAEMON_HEAPSIZE" = "" ]; then
   LLAP_DAEMON_HEAPSIZE=4096
 fi
 
+if [ ! -n "$LLAP_DAEMON_LD_PATH" ]; then
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LLAP_DAEMON_LD_PATH
+fi
+
 # Figure out classes based on the command
 
 if [ "$COMMAND" = "classpath" ] ; then

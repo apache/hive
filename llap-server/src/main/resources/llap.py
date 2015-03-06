@@ -37,7 +37,6 @@ class Llap(Script):
     import params
     env.set_params(params)
     os.environ['JAVA_HOME'] = format('{java64_home}')
-    os.environ['LD_LIBRARY_PATH'] = format('{library_path}')
     # this is the same as TEZ_PREFIX
     os.environ['LLAP_DAEMON_HOME'] = format('{app_root}')
     # this is the location where we have the llap server components (shell scripts)
@@ -47,6 +46,7 @@ class Llap(Script):
     os.environ['LLAP_DAEMON_LOG_DIR'] = format("{app_log_dir}/")
     os.environ['LLAP_DAEMON_HEAPSIZE'] = format("{memory_val}")
     os.environ['LLAP_DAEMON_PID_DIR'] = dirname(format("{pid_file}"))
+    os.environ['LLAP_DAEMON_LD_PATH'] = format('{library_path}')
     print "Debug from LLAP python script"
     print os.environ['LLAP_DAEMON_CONF_DIR']
     self.configure(env)
