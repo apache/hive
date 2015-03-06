@@ -97,6 +97,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   private ExecMapperContext execContext = null;
 
   private Process executor;
+  private SecureCmdDoAs secureDoAs;
 
   public MapredLocalTask() {
     super();
@@ -271,7 +272,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         //If kerberos security is enabled, and HS2 doAs is enabled,
         // then additional params need to be set so that the command is run as
         // intended user
-        SecureCmdDoAs secureDoAs = new SecureCmdDoAs(conf);
+        secureDoAs = new SecureCmdDoAs(conf);
         secureDoAs.addEnv(variables);
       }
 
@@ -314,9 +315,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       return exitVal;
     } catch (Exception e) {
-      e.printStackTrace();
-      LOG.error("Exception: " + e.getMessage());
+      LOG.error("Exception: " + e, e);
       return (1);
+    } finally {
+      if (secureDoAs != null) {
+        secureDoAs.close();
+      }
     }
   }
 
