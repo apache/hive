@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.CallableStatement;
@@ -136,6 +137,46 @@ public class Commands {
     return true;
   }
 
+  public boolean addlocaldrivername(String line) {
+    String driverName = arg1(line, "driver class name");
+    try {
+      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+    } catch (IOException e) {
+      beeLine.error("Fail to scan drivers due to the exception:" + e);
+      beeLine.error(e);
+    }
+    for (Driver d : beeLine.getDrivers()) {
+      if (driverName.equals(d.getClass().getName())) {
+        beeLine.addLocalDriverClazz(driverName);
+        return true;
+      }
+    }
+    beeLine.error("Fail to find a driver which contains the driver class");
+    return false;
+  }
+
+  public boolean addlocaldriverjar(String line) {
+    // If jar file is in the hdfs, it should be downloaded first.
+    String jarPath = arg1(line, "jar path");
+    File p = new File(jarPath);
+    if (!p.exists()) {
+      beeLine.error("The jar file in the path " + jarPath + " can't be found!");
+      return false;
+    }
+
+    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    try {
+      beeLine.debug(jarPath + " is added to the local beeline.");
+      URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);
+
+      Thread.currentThread().setContextClassLoader(newClassLoader);
+      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+    } catch (Exception e) {
+      beeLine.error("Fail to add local jar due to the exception:" + e);
+      beeLine.error(e);
+    }
+    return true;
+  }
 
   public boolean history(String line) {
     Iterator hist = beeLine.getConsoleReader().getHistory().entries();
