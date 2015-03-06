@@ -250,6 +250,7 @@ class SparkClientImpl implements SparkClient {
       if (!properties.setReadable(false) || !properties.setReadable(true, true)) {
         throw new IOException("Cannot change permissions of job properties file.");
       }
+      properties.deleteOnExit();
 
       Properties allProps = new Properties();
       // first load the defaults from spark-defaults.conf if available

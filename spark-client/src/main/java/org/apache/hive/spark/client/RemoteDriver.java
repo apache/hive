@@ -18,9 +18,12 @@
 package org.apache.hive.spark.client;
 
 import com.google.common.base.Throwables;
+import com.google.common.io.Files;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.nio.NioEventLoopGroup;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.rpc.Rpc;
@@ -85,6 +89,8 @@ public class RemoteDriver {
   private final NioEventLoopGroup egroup;
   private final Rpc clientRpc;
   private final DriverProtocol protocol;
+  // a local temp dir specific to this driver
+  private final File localTmpDir;
 
   // Used to queue up requests while the SparkContext is being created.
   private final List<JobWrapper<?>> jobQueue = Lists.newLinkedList();
@@ -98,6 +104,7 @@ public class RemoteDriver {
     this.activeJobs = Maps.newConcurrentMap();
     this.jcLock = new Object();
     this.shutdownLock = new Object();
+    localTmpDir = Files.createTempDir();
 
     SparkConf conf = new SparkConf();
     String serverAddress = null;
@@ -162,7 +169,7 @@ public class RemoteDriver {
       JavaSparkContext sc = new JavaSparkContext(conf);
       sc.sc().addSparkListener(new ClientListener());
       synchronized (jcLock) {
-        jc = new JobContextImpl(sc);
+        jc = new JobContextImpl(sc, localTmpDir);
         jcLock.notifyAll();
       }
     } catch (Exception e) {
@@ -188,6 +195,11 @@ public class RemoteDriver {
       }
     }
     executor.shutdownNow();
+    try {
+      FileUtils.deleteDirectory(localTmpDir);
+    } catch (IOException e) {
+      LOG.warn("Failed to delete local tmp dir: " + localTmpDir, e);
+    }
   }
 
   private void submit(JobWrapper<?> job) {
