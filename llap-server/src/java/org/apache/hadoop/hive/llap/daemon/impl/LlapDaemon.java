@@ -60,6 +60,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
 
   public LlapDaemon(LlapDaemonConfiguration daemonConf) {
     super("LlapDaemon");
+
+    printAsciiArt();
+
     // TODO This needs to read TezConfiguration to pick up things like the heartbeat interval from config.
     // Ideally, this would be part of llap-daemon-configuration
     this.numExecutors = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
@@ -108,7 +111,20 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     this.server = new LlapDaemonProtocolServerImpl(daemonConf, this, address);
     this.containerRunner = new ContainerRunnerImpl(numExecutors, localDirs, shufflePort, address,
         memoryPerInstance, metrics);
+  }
 
+  private void printAsciiArt() {
+    final String asciiArt = "" +
+        "$$\\       $$\\        $$$$$$\\  $$$$$$$\\\n" +
+        "$$ |      $$ |      $$  __$$\\ $$  __$$\\\n" +
+        "$$ |      $$ |      $$ /  $$ |$$ |  $$ |\n" +
+        "$$ |      $$ |      $$$$$$$$ |$$$$$$$  |\n" +
+        "$$ |      $$ |      $$  __$$ |$$  ____/\n" +
+        "$$ |      $$ |      $$ |  $$ |$$ |\n" +
+        "$$$$$$$$\\ $$$$$$$$\\ $$ |  $$ |$$ |\n" +
+        "\\________|\\________|\\__|  \\__|\\__|\n" +
+        "\n";
+    LOG.info("\n\n" + asciiArt);
   }
 
   @Override
