@@ -80,7 +80,7 @@ if [ ! -w "$LLAP_DAEMON_LOG_DIR" ] ; then
 fi
 
 if [ "$LLAP_DAEMON_PID_DIR" = "" ]; then
-  LLAP_DAEMON_PID_DIR=/tmp
+  LLAP_DAEMON_PID_DIR=/tmp/$USER
 fi
 
 # some variables
@@ -92,7 +92,7 @@ if [ ! -n "${LLAP_DAEMON_LOGGER}" ]; then
 fi
 logLog=$LLAP_DAEMON_LOG_DIR/$LLAP_DAEMON_LOG_BASE.log
 logOut=$LLAP_DAEMON_LOG_DIR/$LLAP_DAEMON_LOG_BASE.out
-pid=$LLAP_DAEMON_PID_DIR/llap-daemon-$USER.pid 
+pid=$LLAP_DAEMON_PID_DIR/llap-daemon.pid 
 LLAP_DAEMON_STOP_TIMEOUT=${LLAP_DAEMON_STOP_TIMEOUT:-2}
 
 # Set default scheduling priority

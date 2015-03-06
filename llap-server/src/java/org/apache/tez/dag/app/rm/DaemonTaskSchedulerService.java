@@ -14,6 +14,7 @@
 
 package org.apache.tez.dag.app.rm;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -37,8 +39,12 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
+import org.apache.hadoop.yarn.api.records.NodeReport;
+import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.client.api.YarnClient;
+import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.tez.dag.app.AppContext;
 
@@ -70,6 +76,8 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   // Per Executor Thread
   private final Resource resourcePerExecutor;
 
+  // TODO: replace with service registry
+  private final YarnClient yc = YarnClient.createYarnClient();
 
   public DaemonTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
                                     String clientHostname, int clientPort, String trackingUrl,
@@ -102,27 +110,69 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_AM_SERVICE_HOSTS);
     if (hosts == null || hosts.length == 0) {
       hosts = new String[]{"localhost"};
-    }
-    for (String host : hosts) {
-      serviceHosts.add(host);
-      serviceHostSet.add(host);
+      serviceHosts.add("localhost");
+      serviceHostSet.add("localhost");
+    } else if (!hosts[0].equals("*")) {
+      for (String host : hosts) {
+        serviceHosts.add(host);
+        serviceHostSet.add(host);
+      }
     }
 
-    LOG.info("Running with configuration: " +
-        "memoryPerInstance=" + memoryPerInstance +
-        ", vcoresPerInstance=" + coresPerInstance +
-        ", executorsPerInstance=" + executorsPerInstance +
-        ", resourcePerInstanceInferred=" + resourcePerExecutor +
-        ", hosts=" + serviceHosts.toString());
+    if (serviceHosts.size() > 0) {
+      LOG.info("Running with configuration: " +
+          "memoryPerInstance=" + memoryPerInstance +
+          ", vcoresPerInstance=" + coresPerInstance +
+          ", executorsPerInstance=" + executorsPerInstance +
+          ", resourcePerInstanceInferred=" + resourcePerExecutor +
+          ", hosts=" + serviceHosts.toString());
+    } else {
+      LOG.info("Running with configuration: " +
+          "memoryPerInstance=" + memoryPerInstance +
+          ", vcoresPerInstance=" + coresPerInstance +
+          ", executorsPerInstance=" + executorsPerInstance +
+          ", resourcePerInstanceInferred=" + resourcePerExecutor +
+          ", hosts=<pending>");
+    }
 
   }
 
   @Override
   public void serviceInit(Configuration conf) {
+    yc.init(conf);
   }
+
 
   @Override
   public void serviceStart() {
+    yc.start();
+    if (serviceHosts.size() > 0) {
+      return;
+    }
+    LOG.info("Evaluating host usage criteria for service nodes");
+    try {
+      List<NodeReport> nodes = yc.getNodeReports(NodeState.RUNNING);
+      for (NodeReport nd : nodes) {
+        Resource used = nd.getUsed();
+        LOG.info("Examining node: " + nd);
+        if (nd.getNodeState() == NodeState.RUNNING
+            && used.getMemory() >= memoryPerInstance) {
+          // TODO: fix this with YARN registry
+          serviceHosts.add(nd.getNodeId().getHost());
+          serviceHostSet.add(nd.getNodeId().getHost());
+        }
+      }
+      LOG.info("Re-inited with configuration: " +
+          "memoryPerInstance=" + memoryPerInstance +
+          ", vcoresPerInstance=" + coresPerInstance +
+          ", executorsPerInstance=" + executorsPerInstance +
+          ", resourcePerInstanceInferred=" + resourcePerExecutor +
+          ", hosts="+ serviceHosts.toString());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (YarnException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

@@ -673,7 +673,6 @@
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>org.apache.hive:hive-llap-client</include>
-                  <include>org.apache.hive:hive-llap-server</include>
                   <include>com.esotericsoftware.kryo:kryo</include>
                   <include>com.twitter:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>

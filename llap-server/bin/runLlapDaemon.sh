@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
+
+set -x
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -72,7 +74,7 @@ if [ ! -n "${LLAP_DAEMON_LOGGER}" ]; then
   LLAP_DAEMON_LOGGER=${LOG_LEVEL_DEFAULT}
 fi
 
-CLASSPATH=${LLAP_DAEMON_CONF_DIR}:${LLAP_DAEMON_HOME}/hive-llap-server-1.2.0-SNAPSHOT.jar:${LLAP_DAEMON_HOME}/hive-exec-1.2.0-SNAPSHOT.jar:`${HADOOP_PREFIX}/bin/hadoop classpath`:.
+CLASSPATH=${LLAP_DAEMON_CONF_DIR}:${LLAP_DAEMON_HOME}/lib/*:`${HADOOP_PREFIX}/bin/hadoop classpath`:.
 
 if [ -n "LLAP_DAEMON_USER_CLASSPATH" ]; then
   CLASSPATH=${CLASSPATH}:${LLAP_DAEMON_USER_CLASSPATH}

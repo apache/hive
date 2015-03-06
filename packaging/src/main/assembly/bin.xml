@@ -124,6 +124,7 @@
       <directory>${project.parent.basedir}/bin</directory>
       <includes>
         <include>hive</include>
+        <include>llap/**/*</include>
         <include>metatool</include>
         <include>schematool</include>
         <include>beeline</include>
@@ -132,6 +133,24 @@
         <include>ext/**/*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.parent.basedir}/llap-server/bin</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/llap/bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/llap-server/src/main/resources/</directory>
+      <includes>
+        <include>**/*.py</include>
+        <include>**/*.xml</include>
+      </includes>
+      <outputDirectory>scripts/llap/slider</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -333,6 +352,11 @@
       <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j.properties</source>
       <outputDirectory>conf</outputDirectory>
       <destName>beeline-log4j.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>llap-daemon-log4j.properties.template</destName>
     </file>
     <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>

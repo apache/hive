@@ -40,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -55,6 +56,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -188,6 +190,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
+import com.google.common.base.Preconditions;
 
 /**
  * Utilities.
@@ -239,6 +242,7 @@ public final class Utilities {
 
   private static ThreadLocal<Map<Path, BaseWork>> gWorkMap =
       new ThreadLocal<Map<Path, BaseWork>>() {
+    @Override
     protected Map<Path, BaseWork> initialValue() {
       return new HashMap<Path, BaseWork>();
     }
@@ -3792,4 +3796,39 @@ public final class Utilities {
   public static boolean isDefaultNameNode(HiveConf conf) {
     return !conf.getChangedProperties().containsKey(HiveConf.ConfVars.HADOOPFS.varname);
   }
+
+  /**
+   * Returns the full path to the Jar containing the class. It always return a JAR.
+   * 
+   * @param klass
+   *          class.
+   * 
+   * @return path to the Jar containing the class.
+   */
+  @SuppressWarnings("rawtypes")
+  public static String jarFinderGetJar(Class klass) {
+    Preconditions.checkNotNull(klass, "klass");
+    ClassLoader loader = klass.getClassLoader();
+    if (loader != null) {
+      String class_file = klass.getName().replaceAll("\\.", "/") + ".class";
+      try {
+        for (Enumeration itr = loader.getResources(class_file); itr.hasMoreElements();) {
+          URL url = (URL) itr.nextElement();
+          String path = url.getPath();
+          if (path.startsWith("file:")) {
+            path = path.substring("file:".length());
+          }
+          path = URLDecoder.decode(path, "UTF-8");
+          if ("jar".equals(url.getProtocol())) {
+            path = URLDecoder.decode(path, "UTF-8");
+            return path.replaceAll("!.*$", "");
+          }
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return null;
+  }
+
 }

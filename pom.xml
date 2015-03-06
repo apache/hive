@@ -42,12 +42,12 @@
     <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
-    <module>llap-client</module>
-    <module>llap-server</module>
     <module>odbc</module>
     <module>ql</module>
     <module>serde</module>
     <module>service</module>
+    <module>llap-client</module>
+    <module>llap-server</module>
     <module>shims</module>
     <module>spark-client</module>
     <module>testutils</module>
@@ -108,7 +108,7 @@
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
-    <commons-compress.version>1.4.1</commons-compress.version>
+    <commons-compress.version>1.9</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
