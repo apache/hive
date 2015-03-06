@@ -88,7 +88,8 @@ public class RecordReaderImpl implements RecordReader {
 
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
-
+  private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
+  private final Path path;
   private final long fileId;
   private final FSDataInputStream file;
   private final long firstRow;
@@ -183,15 +184,16 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   protected RecordReaderImpl(List<StripeInformation> stripes,
-      FileSystem fileSystem,
-      Path path,
-      Reader.Options options,
-      List<OrcProto.Type> types,
-      CompressionCodec codec,
-      int bufferSize,
-      long strideRate,
-      Configuration conf
-  ) throws IOException {
+                   FileSystem fileSystem,
+                   Path path,
+                   Reader.Options options,
+                   List<OrcProto.Type> types,
+                   CompressionCodec codec,
+                   int bufferSize,
+                   long strideRate,
+                   Configuration conf
+                  ) throws IOException {
+    this.path = path;
     this.file = fileSystem.open(path);
     this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
     this.codec = codec;
@@ -3309,37 +3311,47 @@ public class RecordReaderImpl implements RecordReader {
 
   @Override
   public Object next(Object previous) throws IOException {
-    Object result = reader.next(previous);
-    // find the next row
-    rowInStripe += 1;
-    advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
-    return result;
+    try {
+      final Object result = reader.next(previous);
+      // find the next row
+      rowInStripe += 1;
+      advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
+      return result;
+    } catch (IOException e) {
+      // Rethrow exception with file name in log message
+      throw new IOException("Error reading file: " + path, e);
+    }
   }
 
   @Override
   public VectorizedRowBatch nextBatch(VectorizedRowBatch previous) throws IOException {
-    VectorizedRowBatch result = null;
-    if (rowInStripe >= rowCountInStripe) {
-      currentStripe += 1;
-      readStripe();
+    try {
+      final VectorizedRowBatch result;
+      if (rowInStripe >= rowCountInStripe) {
+        currentStripe += 1;
+        readStripe();
+      }
+
+      long batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
+
+      rowInStripe += batchSize;
+      if (previous == null) {
+        ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
+        result = new VectorizedRowBatch(cols.length);
+        result.cols = cols;
+      } else {
+        result = previous;
+        result.selectedInUse = false;
+        reader.nextVector(result.cols, (int) batchSize);
+      }
+
+      result.size = (int) batchSize;
+      advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
+      return result;
+    } catch (IOException e) {
+      // Rethrow exception with file name in log message
+      throw new IOException("Error reading file: " + path, e);
     }
-
-    long batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
-
-    rowInStripe += batchSize;
-    if (previous == null) {
-      ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
-      result = new VectorizedRowBatch(cols.length);
-      result.cols = cols;
-    } else {
-      result = (VectorizedRowBatch) previous;
-      result.selectedInUse = false;
-      reader.nextVector(result.cols, (int) batchSize);
-    }
-
-    result.size = (int) batchSize;
-    advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
-    return result;
   }
 
   private long computeBatchSize(long targetBatchSize) {

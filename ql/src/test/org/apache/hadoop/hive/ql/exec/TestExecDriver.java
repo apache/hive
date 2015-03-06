@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
 
@@ -93,7 +94,8 @@ public class TestExecDriver extends TestCase {
       tmppath = new Path(tmpdir);
 
       fs = FileSystem.get(conf);
-      if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDirectory()) {
+      if (fs.exists(tmppath) &&
+          !ShimLoader.getHadoopShims().isDirectory(fs.getFileStatus(tmppath))) {
         throw new RuntimeException(tmpdir + " exists but is not a directory");
       }
 
@@ -166,7 +168,7 @@ public class TestExecDriver extends TestCase {
     if (!fs.exists(di_test)) {
       throw new RuntimeException(tmpdir + File.separator + testdir + " does not exist");
     }
-    if (!fs.getFileStatus(di_test).isDirectory()) {
+    if (!ShimLoader.getHadoopShims().isDirectory(fs.getFileStatus(di_test))) {
       throw new RuntimeException(tmpdir + File.separator + testdir + " is not a directory");
     }
     FSDataInputStream fi_test = fs.open((fs.listStatus(di_test))[0].getPath());
