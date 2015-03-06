@@ -123,7 +123,7 @@ public class CliDriver {
         ret = 1;
       } else {
         try {
-          this.processFile(cmd_1);
+          ret = this.processFile(cmd_1);
         } catch (IOException e) {
           console.printError("Failed processing file "+ cmd_1 +" "+ e.getLocalizedMessage(),
             stringifyException(e));
