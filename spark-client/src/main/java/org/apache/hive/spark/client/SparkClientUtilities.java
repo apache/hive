@@ -28,6 +28,9 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 public class SparkClientUtilities {
   protected static final transient Log LOG = LogFactory.getLog(SparkClientUtilities.class);
@@ -37,20 +40,22 @@ public class SparkClientUtilities {
    *
    * @param newPaths Array of classpath elements
    */
-  public static void addToClassPath(String[] newPaths) throws Exception {
+  public static void addToClassPath(String[] newPaths, Configuration conf, File localTmpDir)
+      throws Exception {
     ClassLoader cloader = Thread.currentThread().getContextClassLoader();
     URLClassLoader loader = (URLClassLoader) cloader;
     List<URL> curPath = Lists.newArrayList(loader.getURLs());
 
     for (String newPath : newPaths) {
-      URL newUrl = urlFromPathString(newPath);
+      URL newUrl = urlFromPathString(newPath, conf, localTmpDir);
       if (newUrl != null && !curPath.contains(newUrl)) {
         curPath.add(newUrl);
         LOG.info("Added jar[" + newUrl + "] to classpath.");
       }
     }
 
-    URLClassLoader newLoader = new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
+    URLClassLoader newLoader =
+        new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
     Thread.currentThread().setContextClassLoader(newLoader);
   }
 
@@ -60,16 +65,24 @@ public class SparkClientUtilities {
    * @param path  path string
    * @return
    */
-  private static URL urlFromPathString(String path) {
+  private static URL urlFromPathString(String path, Configuration conf, File localTmpDir) {
     URL url = null;
     try {
       if (StringUtils.indexOf(path, "file:/") == 0) {
         url = new URL(path);
+      } else if (StringUtils.indexOf(path, "hdfs:/") == 0) {
+        Path remoteFile = new Path(path);
+        Path localFile =
+            new Path(localTmpDir.getAbsolutePath() + File.separator + remoteFile.getName());
+        LOG.info("Copying " + remoteFile + " to " + localFile);
+        FileSystem fs = remoteFile.getFileSystem(conf);
+        fs.copyToLocalFile(remoteFile, localFile);
+        return urlFromPathString(localFile.toString(), conf, localTmpDir);
       } else {
         url = new File(path).toURL();
       }
     } catch (Exception err) {
-      LOG.error("Bad URL " + path + ", ignoring path");
+      LOG.error("Bad URL " + path + ", ignoring path", err);
     }
     return url;
   }
