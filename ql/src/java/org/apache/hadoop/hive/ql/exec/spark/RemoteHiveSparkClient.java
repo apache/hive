@@ -224,7 +224,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       // may need to load classes from this jar in other threads.
       List<String> addedJars = jc.getAddedJars();
       if (addedJars != null && !addedJars.isEmpty()) {
-        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]));
+        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]),
+            localJobConf, jc.getLocalTmpDir());
         localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
       }
 
