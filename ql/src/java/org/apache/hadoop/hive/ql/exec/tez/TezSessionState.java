@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -171,6 +175,22 @@ public class TezSessionState {
     commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
     for (LocalResource lr : localizedResources) {
       commonLocalResources.put(utils.getBaseName(lr), lr);
+    }
+
+    if("llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      // add configs for llap-daemon-site.xml + localize llap jars
+      // they cannot be referred to directly as it would be a circular depedency
+      conf.addResource("llap-daemon-site.xml");
+      try {
+        final File daemonJar =
+            new File(Utilities.jarFinderGetJar(Class
+                .forName("org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat")));
+        final LocalResource daemonLr =
+            createJarLocalResource(daemonJar.toURI().toURL().toExternalForm());
+        commonLocalResources.put(utils.getBaseName(daemonLr), daemonLr);
+      } catch (ClassNotFoundException ce) {
+        throw new IOException("Cannot find LlapInputFormat in the classpath", ce);
+      }
     }
 
     // Create environment for AM.
