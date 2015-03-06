@@ -28,7 +28,6 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   LLAP_DAEMON_EXECUTOR_METRICS("Llap daemon cache related metrics"),
   EXECUTOR_THREAD_CPU_TIME("Cpu time in nanoseconds"),
   EXECUTOR_THREAD_USER_TIME("User time in nanoseconds"),
-  EXECUTOR_THREAD_SYSTEM_TIME("System time in nanoseconds"),
   EXECUTOR_TOTAL_REQUESTS_HANDLED("Total number of requests handled by the container"),
   EXECUTOR_NUM_QUEUED_REQUESTS("Number of requests queued by the container for processing"),
   EXECUTOR_TOTAL_SUCCESS("Total number of requests handled by the container that succeeded"),

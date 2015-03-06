@@ -61,13 +61,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ContainerRunnerImpl extends AbstractService implements ContainerRunner {
 
+  public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
+  public static final String THREAD_NAME_FORMAT = THREAD_NAME_FORMAT_PREFIX + "%d";
   private static final Logger LOG = Logger.getLogger(ContainerRunnerImpl.class);
 
-  private final int numExecutors;
   private final ListeningExecutorService executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
   private final String[] localDirsBase;
-  private final int localShufflePort;
   private final Map<String, String> localEnv = new HashMap<String, String>();
   private volatile FileSystem localFs;
   private final long memoryPerExecutor;
@@ -80,13 +80,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
-    this.numExecutors = numExecutors;
     this.localDirsBase = localDirsBase;
-    this.localShufflePort = localShufflePort;
     this.localAddress = localAddress;
 
     ExecutorService raw = Executors.newFixedThreadPool(numExecutors,
-        new ThreadFactoryBuilder().setNameFormat("ContainerExecutor %d").build());
+        new ThreadFactoryBuilder().setNameFormat(THREAD_NAME_FORMAT).build());
     this.executorService = MoreExecutors.listeningDecorator(raw);
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,

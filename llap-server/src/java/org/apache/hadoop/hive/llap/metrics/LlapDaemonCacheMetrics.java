@@ -68,6 +68,7 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
     this.name = name;
     this.sessionId = sessionId;
     this.registry = new MetricsRegistry("LlapDaemonCacheRegistry");
+    this.registry.tag(ProcessName, "LlapDaemon").tag(SessionId, sessionId);
   }
 
   public static LlapDaemonCacheMetrics create(String displayName, String sessionId) {
