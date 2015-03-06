@@ -436,17 +436,18 @@ public class RecordReaderUtils {
   }
 
   public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
+    String pathStr = path.toUri().getPath();
     if (fileSystem instanceof DistributedFileSystem) {
       DFSClient client = ((DistributedFileSystem)fileSystem).getClient();
-      return client.getFileInfo(path.toString()).getFileId();
+      return client.getFileInfo(pathStr).getFileId();
     }
     // If we are not on DFS, we just hash the file name + size and hope for the best.
     // TODO: we assume it only happens in tests. Fix?
-    int nameHash = path.toString().hashCode();
+    int nameHash = pathStr.hashCode();
     long fileSize = fileSystem.getFileStatus(path).getLen();
     long id = ((fileSize ^ (fileSize >>> 32)) << 32) | ((long)nameHash & 0xffffffffL);
     RecordReaderImpl.LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + path
+        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + pathStr
         + "," + nameHash + "," + fileSize + ")");
     return id;
   }
