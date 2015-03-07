@@ -555,7 +555,7 @@ public class TypeCheckProcFactory {
 
   private static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
     ObjectInspector inspector = colInfo.getObjectInspector();
-    if (inspector instanceof ConstantObjectInspector && 
+    if (inspector instanceof ConstantObjectInspector &&
         inspector instanceof PrimitiveObjectInspector) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
       Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
@@ -994,8 +994,15 @@ public class TypeCheckProcFactory {
           .getText());
       // NOTE: tableAlias must be a valid non-ambiguous table alias,
       // because we've checked that in TOK_TABLE_OR_COL's process method.
-      ColumnInfo colInfo = input.get(tableAlias, ((ExprNodeConstantDesc) nodeOutputs[1]).getValue()
-          .toString());
+      String colName;
+      if (nodeOutputs[1] instanceof ExprNodeConstantDesc) {
+        colName = ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString();
+      }  else if (nodeOutputs[1] instanceof ExprNodeColumnDesc) {
+        colName = ((ExprNodeColumnDesc)nodeOutputs[1]).getColumn();
+      } else {
+        throw new SemanticException("Unexpected ExprNode : " + nodeOutputs[1]);
+      }
+      ColumnInfo colInfo = input.get(tableAlias, colName);
 
       if (colInfo == null) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);

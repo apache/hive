@@ -138,7 +138,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -180,7 +180,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -279,7 +279,7 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -321,7 +321,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -462,7 +462,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        /test1/ds=1 [$hdt$_0:$hdt$_0:test1]
+        /test1/ds=1 [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -598,8 +598,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
-        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
+        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
+        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
       Path -> Partition:
         -mr-10005default.test1{ds=1} 
           Partition
@@ -680,8 +680,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
-        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
+        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
+        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1049,9 +1049,9 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Path -> Partition:
         -mr-10003default.test2{ds=1, hr=1} 
           Partition
@@ -1174,9 +1174,9 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1414,9 +1414,9 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        /test2/ds=1/hr=1 [$hdt$_0:$hdt$_0:test2]
-        /test2/ds=1/hr=2 [$hdt$_0:$hdt$_0:test2]
-        /test2/ds=1/hr=3 [$hdt$_0:$hdt$_0:test2]
+        /test2/ds=1/hr=1 [$hdt$_0:test2]
+        /test2/ds=1/hr=2 [$hdt$_0:test2]
+        /test2/ds=1/hr=3 [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1518,8 +1518,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
-        -mr-10004default.test1{ds=2} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
+        -mr-10004default.test1{ds=2} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -1600,8 +1600,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
-        -mr-10004default.test1{ds=2} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
+        -mr-10004default.test1{ds=2} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1760,11 +1760,11 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Path -> Partition:
         -mr-10003default.test2{ds=01_10_10, hr=01} 
           Partition
@@ -1967,11 +1967,11 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
