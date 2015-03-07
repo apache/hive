@@ -680,10 +680,10 @@ STAGE PLANS:
             name: default.srcpart
       Truncated Path -> Alias:
         /src [$hdt$_0:a]
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:$hdt$_1:srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:$hdt$_1:srcpart]
-        /srcpart/ds=2008-04-09/hr=11 [$hdt$_1:$hdt$_1:srcpart]
-        /srcpart/ds=2008-04-09/hr=12 [$hdt$_1:$hdt$_1:srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:srcpart]
+        /srcpart/ds=2008-04-09/hr=11 [$hdt$_1:srcpart]
+        /srcpart/ds=2008-04-09/hr=12 [$hdt$_1:srcpart]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
