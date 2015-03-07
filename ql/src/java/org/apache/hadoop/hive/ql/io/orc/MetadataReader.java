@@ -35,14 +35,9 @@ public class MetadataReader {
   private final int bufferSize;
   private final int typeCount;
 
-  public MetadataReader(FileSystem fileSystem, Path path,
-      CompressionCodec codec, int bufferSize, int typeCount) throws IOException {
-    this(fileSystem.open(path), codec, bufferSize, typeCount);
-  }
-
-  public MetadataReader(FSDataInputStream file,
-      CompressionCodec codec, int bufferSize, int typeCount) {
-    this.file = file;
+  public MetadataReader(FileSystem fileSystem, Path path, CompressionCodec codec,
+      int bufferSize, int typeCount) throws IOException {
+    this.file = fileSystem.open(path);
     this.codec = codec;
     this.bufferSize = bufferSize;
     this.typeCount = typeCount;
@@ -82,16 +77,17 @@ public class MetadataReader {
         }
         if ((included == null || included[col]) && indexes[col] == null) {
           byte[] buffer = new byte[len];
+          ByteBuffer bb = ByteBuffer.wrap(buffer);
           file.seek(offset);
           file.readFully(buffer);
-          ByteBuffer[] bb = new ByteBuffer[] {ByteBuffer.wrap(buffer)};
-          indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create("index",
-              bb, new long[]{0}, stream.getLength(), codec, bufferSize));
+          indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
+              Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), stream.getLength(),
+              codec, bufferSize, null));
           if (readBloomFilter) {
-            bb[0].position((int) stream.getLength());
-            bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(
-                InStream.create("bloom_filter", bb, new long[]{0}, nextStream.getLength(),
-                    codec, bufferSize));
+            bb.position((int) stream.getLength());
+            bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(InStream.create(
+                null, "bloom_filter", Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
+                nextStream.getLength(), codec, bufferSize, null));
           }
         }
       }
@@ -105,7 +101,6 @@ public class MetadataReader {
   public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
     long offset = stripe.getOffset() + stripe.getIndexLength() + stripe.getDataLength();
     int tailLength = (int) stripe.getFooterLength();
-
     // read the footer
     ByteBuffer tailBuf = ByteBuffer.allocate(tailLength);
     file.seek(offset);

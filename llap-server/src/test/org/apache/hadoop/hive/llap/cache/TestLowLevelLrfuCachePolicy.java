@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Assume;
 import org.junit.Test;
@@ -61,11 +62,11 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   private class EvictionTracker implements EvictionListener {
-    public List<LlapCacheableBuffer> evicted = new ArrayList<LlapCacheableBuffer>();
+    public List<LlapDataBuffer> evicted = new ArrayList<LlapDataBuffer>();
 
     @Override
     public void notifyEvicted(LlapCacheableBuffer buffer) {
-      evicted.add(buffer);
+      evicted.add((LlapDataBuffer)buffer);
     }
   }
 
@@ -75,7 +76,7 @@ public class TestLowLevelLrfuCachePolicy {
     LOG.info("Testing lambda 0 (LFU)");
     Random rdm = new Random(1234);
     Configuration conf = createConf(1, heapSize);
-    ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.0f);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(conf);
@@ -83,7 +84,7 @@ public class TestLowLevelLrfuCachePolicy {
         LlapDaemonCacheMetrics.create("test", "1"));
     lfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(mm, lfu, et, buffer));
       inserted.add(buffer);
     }
@@ -112,7 +113,7 @@ public class TestLowLevelLrfuCachePolicy {
     LOG.info("Testing lambda 1 (LRU)");
     Random rdm = new Random(1234);
     Configuration conf = createConf(1, heapSize);
-    ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(conf);
@@ -120,7 +121,7 @@ public class TestLowLevelLrfuCachePolicy {
         LlapDaemonCacheMetrics.create("test", "1"));
     lru.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(mm, lru, et, buffer));
       inserted.add(buffer);
     }
@@ -139,7 +140,7 @@ public class TestLowLevelLrfuCachePolicy {
   public void testDeadlockResolution() {
     int heapSize = 4;
     LOG.info("Testing deadlock resolution");
-    ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     EvictionTracker et = new EvictionTracker();
     Configuration conf = createConf(1, heapSize);
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
@@ -147,15 +148,15 @@ public class TestLowLevelLrfuCachePolicy {
         LlapDaemonCacheMetrics.create("test", "1"));
     lrfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(mm, lrfu, et, buffer));
       inserted.add(buffer);
     }
     // Lock the lowest priority buffer; try to evict - we'll evict some other buffer.
-    LlapCacheableBuffer locked = inserted.get(0);
+    LlapDataBuffer locked = inserted.get(0);
     lock(lrfu, locked);
     mm.reserveMemory(1, false);
-    LlapCacheableBuffer evicted = et.evicted.get(0);
+    LlapDataBuffer evicted = et.evicted.get(0);
     assertNotNull(evicted);
     assertTrue(evicted.isInvalid());
     assertNotSame(locked, evicted);
@@ -164,30 +165,30 @@ public class TestLowLevelLrfuCachePolicy {
 
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
   public boolean cache(LowLevelCacheMemoryManager mm,
-      LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapCacheableBuffer buffer) {
+      LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapDataBuffer buffer) {
     if (!mm.reserveMemory(1, false)) {
       return false;
     }
     buffer.incRef();
-    lrfu.cache(buffer);
+    lrfu.cache(buffer, Priority.NORMAL);
     buffer.decRef();
     lrfu.notifyUnlock(buffer);
     return true;
   }
 
-  private LlapCacheableBuffer getOneEvictedBuffer(EvictionTracker et) {
+  private LlapDataBuffer getOneEvictedBuffer(EvictionTracker et) {
     assertTrue(et.evicted.size() == 0 || et.evicted.size() == 1); // test-specific
-    LlapCacheableBuffer result = et.evicted.isEmpty() ? null : et.evicted.get(0);
+    LlapDataBuffer result = et.evicted.isEmpty() ? null : et.evicted.get(0);
     et.evicted.clear();
     return result;
   }
 
-  private static void lock(LowLevelLrfuCachePolicy lrfu, LlapCacheableBuffer locked) {
+  private static void lock(LowLevelLrfuCachePolicy lrfu, LlapDataBuffer locked) {
     locked.incRef();
     lrfu.notifyLock(locked);
   }
 
-  private static void unlock(LowLevelLrfuCachePolicy lrfu, LlapCacheableBuffer locked) {
+  private static void unlock(LowLevelLrfuCachePolicy lrfu, LlapDataBuffer locked) {
     locked.decRef();
     lrfu.notifyUnlock(locked);
   }
@@ -204,13 +205,13 @@ public class TestLowLevelLrfuCachePolicy {
     lrfu.setEvictionListener(et);
     // Insert the number of elements plus 2, to trigger 2 evictions.
     int toEvict = 2;
-    ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
-    LlapCacheableBuffer[] evicted = new LlapCacheableBuffer[toEvict];
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
+    LlapDataBuffer[] evicted = new LlapDataBuffer[toEvict];
     Assume.assumeTrue(toEvict <= heapSize);
     for (int i = 0; i < heapSize + toEvict; ++i) {
-      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(mm, lrfu, et, buffer));
-      LlapCacheableBuffer evictedBuf = getOneEvictedBuffer(et);
+      LlapDataBuffer evictedBuf = getOneEvictedBuffer(et);
       if (i < toEvict) {
         evicted[i] = buffer;
       } else {
@@ -228,18 +229,18 @@ public class TestLowLevelLrfuCachePolicy {
     Collections.shuffle(inserted, rdm);
     LOG.info("Touch order " + dumpInserted(inserted));
     // Lock entire heap; heap is still full; we should not be able to evict or insert.
-    for (LlapCacheableBuffer buf : inserted) {
+    for (LlapDataBuffer buf : inserted) {
       lock(lrfu, buf);
     }
     assertFalse(mm.reserveMemory(1, false));
     if (!et.evicted.isEmpty()) {
       assertTrue("Got " + et.evicted.get(0), et.evicted.isEmpty());
     }
-    for (LlapCacheableBuffer buf : inserted) {
+    for (LlapDataBuffer buf : inserted) {
       unlock(lrfu, buf);
     }
     // To make (almost) sure we get definite order, touch blocks in order large number of times.
-    for (LlapCacheableBuffer buf : inserted) {
+    for (LlapDataBuffer buf : inserted) {
       // TODO: this seems to indicate that priorities change too little...
       //       perhaps we need to adjust the policy.
       for (int j = 0; j < 10; ++j) {
@@ -251,8 +252,8 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   private void verifyOrder(LowLevelCacheMemoryManager mm, LowLevelLrfuCachePolicy lrfu,
-      EvictionTracker et, ArrayList<LlapCacheableBuffer> inserted) {
-    LlapCacheableBuffer block;
+      EvictionTracker et, ArrayList<LlapDataBuffer> inserted) {
+    LlapDataBuffer block;
     // Evict all blocks.
     et.evicted.clear();
     for (int i = 0; i < inserted.size(); ++i) {
@@ -267,7 +268,7 @@ public class TestLowLevelLrfuCachePolicy {
     }
   }
 
-  private String dumpInserted(ArrayList<LlapCacheableBuffer> inserted) {
+  private String dumpInserted(ArrayList<LlapDataBuffer> inserted) {
     String debugStr = "";
     for (int i = 0; i < inserted.size(); ++i) {
       if (i != 0) debugStr += ", ";

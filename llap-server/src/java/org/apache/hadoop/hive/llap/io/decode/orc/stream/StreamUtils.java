@@ -76,7 +76,7 @@ public class StreamUtils {
       List<DiskRange> diskRanges) {
     long totalLength = 0;
     for (LlapMemoryBuffer memoryBuffer : streamBuffer.cacheBuffers) {
-      ByteBuffer buffer = memoryBuffer.byteBuffer.duplicate();
+      ByteBuffer buffer = memoryBuffer.getByteBufferDup();
       RecordReaderImpl.BufferChunk bufferChunk = new RecordReaderImpl.BufferChunk(buffer,
           totalLength);
       diskRanges.add(bufferChunk);

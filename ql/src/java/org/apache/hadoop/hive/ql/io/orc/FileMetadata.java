@@ -15,30 +15,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.orc;
 
-import java.io.IOException;
+package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.hive.llap.io.metadata.CompressionBuffer;
-import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 
 /**
- *
+ * Cached file metadata. Right now, it caches everything; we don't have to store all the
+ * protobuf structs actually, we could just store what we need, but that would require that
+ * ORC stop depending on them too. Luckily, they shouldn't be very big.
  */
-public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
+public interface FileMetadata {
+  boolean isOriginalFormat();
 
-  public RecordReader rows() throws IOException;
+  List<StripeInformation> getStripes();
 
-  /**
-   * Read rows out of given compression buffer.
-   *
-   * @param buffer   - compression buffer
-   * @param kind     - compression kind
-   * @param encoding - column encoding
-   * @return - record reader to read rows out of it
-   * @throws IOException
-   */
-  public RecordReader rows(CompressionBuffer buffer, CompressionKind kind,
-      OrcProto.ColumnEncoding encoding) throws IOException;
+  CompressionKind getCompressionKind();
+
+  int getCompressionBufferSize();
+
+  int getRowIndexStride();
+
+  int getColumnCount();
+
+  int getFlattenedColumnCount();
+
+  long getFileId();
+
+  List<Integer> getVersionList();
+
+  int getMetadataSize();
+
+  int getWriterVersionNum();
+
+  OrcProto.Metadata getMetadata();
+
+  OrcProto.Footer getFooter();
+
+  List<Type> getTypes();
 }

@@ -263,32 +263,7 @@ public class RecordReaderUtils {
         }
       } else if (doForceDirect) {
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
-        // TODO: HDFS API is a mess, so handle all kinds of crap.
-        // Before 2.7, read() also doesn't adjust position correctly, so track it.
-        int pos = directBuf.position(), startPos = pos, endPos = pos + len;
-        try {
-          while (pos < endPos) {
-            int count = file.read(directBuf);
-            if (count < 0) throw new EOFException();
-            if (count == 0) {
-              throw new IOException(
-                  "0-length read: " + (endPos - pos) + "@" + (pos - startPos) + " and " + pos);
-            }
-            pos += count;
-            if (pos > endPos) {
-              throw new AssertionError(
-                  "Position " + pos + " length " + len + "/" + endPos + " after reading " + count);
-            }
-            directBuf.position(pos);
-          }
-        } catch (UnsupportedOperationException ex) {
-          RecordReaderImpl.LOG.error("Stream does not support direct read; we will copy.");
-          byte[] buffer = new byte[len];
-          file.readFully(buffer, 0, buffer.length);
-          directBuf.put(buffer);
-        }
-        directBuf.position(startPos);
-        directBuf.limit(startPos + len);
+        readDirect(file, len, directBuf, true);
         range = range.replaceSelfWith(new BufferChunk(directBuf, range.offset));
       } else {
         byte[] buffer = new byte[len];
@@ -298,6 +273,39 @@ public class RecordReaderUtils {
       range = range.next;
     }
     return prev.next;
+  }
+
+  public static void readDirect(FSDataInputStream file,
+      int len, ByteBuffer directBuf, boolean doSetLimit) throws IOException {
+    // TODO: HDFS API is a mess, so handle all kinds of cases.
+    // Before 2.7, read() also doesn't adjust position correctly, so track it separately.
+    int pos = directBuf.position(), startPos = pos, endPos = pos + len;
+    try {
+      while (pos < endPos) {
+        int count = file.read(directBuf);
+        if (count < 0) throw new EOFException();
+        if (count == 0) {
+          throw new IOException(
+              "0-length read: " + (endPos - pos) + "@" + (pos - startPos) + " and " + pos);
+        }
+        pos += count;
+        if (pos > endPos) {
+          throw new AssertionError(
+              "Position " + pos + " > " + endPos + "(" + len + ") after reading " + count);
+        }
+        directBuf.position(pos);
+      }
+    } catch (UnsupportedOperationException ex) {
+      assert pos == startPos;
+      RecordReaderImpl.LOG.error("Stream does not support direct read; we will copy.");
+      byte[] buffer = new byte[len];
+      file.readFully(buffer, 0, buffer.length);
+      directBuf.put(buffer);
+    }
+    directBuf.position(startPos);
+    if (doSetLimit) {
+      directBuf.limit(startPos + len);
+    }
   }
 
 

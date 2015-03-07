@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.cache.Allocator;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
+import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
@@ -82,8 +83,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         " sessionId: " + sessionId);
 
     Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
-    LowLevelCacheImpl orcCache = createLowLevelCache(conf, useLowLevelCache, metrics);
-    OrcMetadataCache metadataCache = OrcMetadataCache.getInstance();
+    boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
+    LowLevelCachePolicy cachePolicy =
+        useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
+    OrcMetadataCache metadataCache = new OrcMetadataCache();
+    LowLevelCacheImpl orcCache = createLowLevelCache(
+        conf, cachePolicy, metadataCache, metrics, useLowLevelCache);
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
@@ -100,12 +105,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     buddyAllocatorMXBean = MBeans.register("LlapDaemon", "BuddyAllocatorInfo", allocator);
   }
 
-  private LowLevelCacheImpl createLowLevelCache(Configuration conf, boolean useLowLevelCache,
-      LlapDaemonCacheMetrics metrics) {
+  private LowLevelCacheImpl createLowLevelCache(Configuration conf,
+      LowLevelCachePolicy cachePolicy, OrcMetadataCache metadataCache,
+      LlapDaemonCacheMetrics metrics, boolean useLowLevelCache) {
     if (!useLowLevelCache) return null;
-    boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
-    LowLevelCachePolicy cachePolicy =
-        useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
     // Memory manager uses cache policy to trigger evictions.
     LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(conf, cachePolicy, metrics);
     // Allocator uses memory manager to request memory.
@@ -113,7 +116,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // Cache uses allocator to allocate and deallocate.
     LowLevelCacheImpl orcCache = new LowLevelCacheImpl(metrics, cachePolicy, allocator);
     // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
-    cachePolicy.setEvictionListener(orcCache);
+    cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
     orcCache.init();
     return orcCache;
   }

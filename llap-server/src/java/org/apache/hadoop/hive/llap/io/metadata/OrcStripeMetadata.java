@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
@@ -28,15 +31,15 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
-public class OrcStripeMetadata {
-  private final int stripeIx;
+public class OrcStripeMetadata extends LlapCacheableBuffer {
+  private final OrcBatchKey stripeKey;
   private final List<ColumnEncoding> encodings;
   private final List<Stream> streams;
   private RecordReaderImpl.Index rowIndex;
 
-  public OrcStripeMetadata(int stripeIx, MetadataReader mr, StripeInformation stripe,
+  public OrcStripeMetadata(OrcBatchKey stripeKey, MetadataReader mr, StripeInformation stripe,
       boolean[] includes, boolean[] sargColumns) throws IOException {
-    this.stripeIx = stripeIx;
+    this.stripeKey = stripeKey;
     StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
@@ -58,7 +61,7 @@ public class OrcStripeMetadata {
   }
 
   public int getStripeIx() {
-    return stripeIx;
+    return stripeKey.stripeIx;
   }
 
   public RowIndex[] getRowIndexes() {
@@ -77,4 +80,29 @@ public class OrcStripeMetadata {
     return streams;
   }
 
+  @Override
+  public long getMemoryUsage() {
+    // TODO#: add real estimate; we could do it almost entirely compile time (+list length),
+    //        if it were not for protobufs. Get rid of protobufs here, or estimate them once?
+    return 1024;
+  }
+
+  @Override
+  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
+    evictionDispatcher.notifyEvicted(this);
+  }
+
+  @Override
+  protected boolean invalidate() {
+    return true;
+  }
+
+  @Override
+  protected boolean isLocked() {
+    return false;
+  }
+
+  public OrcBatchKey getKey() {
+    return stripeKey;
+  }
 }

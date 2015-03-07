@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
@@ -64,7 +66,7 @@ public class ReaderImpl implements Reader {
   protected final CompressionKind compressionKind;
   protected final CompressionCodec codec;
   protected final int bufferSize;
-  private OrcProto.Metadata metadata = null;
+  private OrcProto.Metadata metadata = null; // TODO: we could just store what we need
   private final int metadataSize;
   protected final OrcProto.Footer footer;
   private final ObjectInspector inspector;
@@ -313,29 +315,44 @@ public class ReaderImpl implements Reader {
     this.path = path;
     this.conf = options.getConfiguration();
 
-    FileMetaInfo footerMetaData;
-    if (options.getFileMetaInfo() != null) {
-      footerMetaData = options.getFileMetaInfo();
+    boolean magic = false; // TODO#: HERE
+    FileMetadata fileMetadata = options.getFileMetadata();
+    if (fileMetadata != null) {
+      this.compressionKind = fileMetadata.getCompressionKind();
+      this.bufferSize = fileMetadata.getCompressionBufferSize();
+      this.codec = WriterImpl.createCodec(compressionKind);
+      this.metadataSize = fileMetadata.getMetadataSize();
+      this.versionList = fileMetadata.getVersionList();
+      this.writerVersion = WriterVersion.from(fileMetadata.getWriterVersionNum());
+      this.inspector =  OrcStruct.createObjectInspector(0, fileMetadata.getTypes());
+      this.metadata = fileMetadata.getMetadata();
+      this.footer = fileMetadata.getFooter();
+      this.footerByteBuffer = null;
     } else {
-      footerMetaData = extractMetaInfoFromFooter(fs, path,
-          options.getMaxLength());
+      FileMetaInfo footerMetaData;
+      if (options.getFileMetaInfo() != null) {
+        footerMetaData = options.getFileMetaInfo();
+      } else {
+        footerMetaData = extractMetaInfoFromFooter(fs, path,
+            options.getMaxLength());
+      }
+      MetaInfoObjExtractor rInfo =
+          new MetaInfoObjExtractor(footerMetaData.compressionType,
+                                   footerMetaData.bufferSize,
+                                   footerMetaData.metadataSize,
+                                   footerMetaData.footerBuffer
+                                   );
+      this.footerByteBuffer = footerMetaData.footerBuffer;
+      this.compressionKind = rInfo.compressionKind;
+      this.codec = rInfo.codec;
+      this.bufferSize = rInfo.bufferSize;
+      this.metadataSize = rInfo.metadataSize;
+      this.metadata = rInfo.metadata;
+      this.footer = rInfo.footer;
+      this.inspector = rInfo.inspector;
+      this.versionList = footerMetaData.versionList;
+      this.writerVersion = footerMetaData.writerVersion;
     }
-    MetaInfoObjExtractor rInfo =
-        new MetaInfoObjExtractor(footerMetaData.compressionType,
-                                 footerMetaData.bufferSize,
-                                 footerMetaData.metadataSize,
-                                 footerMetaData.footerBuffer
-                                 );
-    this.footerByteBuffer = footerMetaData.footerBuffer;
-    this.compressionKind = rInfo.compressionKind;
-    this.codec = rInfo.codec;
-    this.bufferSize = rInfo.bufferSize;
-    this.metadataSize = rInfo.metadataSize;
-    this.metadata = rInfo.metadata;
-    this.footer = rInfo.footer;
-    this.inspector = rInfo.inspector;
-    this.versionList = footerMetaData.versionList;
-    this.writerVersion = footerMetaData.writerVersion;
   }
 
   /**
@@ -396,11 +413,8 @@ public class ReaderImpl implements Reader {
     //check compression codec
     switch (ps.getCompression()) {
       case NONE:
-        break;
       case ZLIB:
-        break;
       case SNAPPY:
-        break;
       case LZO:
         break;
       default:
@@ -484,37 +498,6 @@ public class ReaderImpl implements Reader {
 
       footerBuffer.position(position);
       this.inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
-    }
-  }
-
-  /**
-   * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
-   * that is useful for Reader implementation
-   *
-   */
-  static class FileMetaInfo{
-    final String compressionType;
-    final int bufferSize;
-    final int metadataSize;
-    final ByteBuffer footerBuffer;
-    final List<Integer> versionList;
-    final OrcFile.WriterVersion writerVersion;
-
-    FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
-        ByteBuffer footerBuffer, OrcFile.WriterVersion writerVersion) {
-      this(compressionType, bufferSize, metadataSize, footerBuffer, null,
-          writerVersion);
-    }
-
-    FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
-                 ByteBuffer footerBuffer, List<Integer> versionList,
-                 OrcFile.WriterVersion writerVersion){
-      this.compressionType = compressionType;
-      this.bufferSize = bufferSize;
-      this.metadataSize = metadataSize;
-      this.footerBuffer = footerBuffer;
-      this.versionList = versionList;
-      this.writerVersion = writerVersion;
     }
   }
 
@@ -711,5 +694,25 @@ public class ReaderImpl implements Reader {
     boolean useZeroCopy = (conf != null) && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
     return new EncodedReaderImpl(fileSystem, path, useZeroCopy, footer.getTypesList(),
         codec, bufferSize, footer.getRowIndexStride(), lowLevelCache, consumer);
+  }
+
+  @Override
+  public Footer getFooterProto() {
+    return footer;
+  }
+
+  @Override
+  public OrcProto.Metadata getMetadataProto() {
+    return metadata;
+  }
+
+  @Override
+  public List<Integer> getVersionList() {
+    return versionList;
+  }
+
+  @Override
+  public int getMetadataSize() {
+    return metadataSize;
   }
 }

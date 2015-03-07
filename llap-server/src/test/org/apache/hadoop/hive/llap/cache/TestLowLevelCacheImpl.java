@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.junit.Test;
@@ -50,8 +51,8 @@ public class TestLowLevelCacheImpl {
     @Override
     public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
-        LlapCacheableBuffer buf = new LlapCacheableBuffer();
-        buf.initialize(0, null, -1, size, null);
+        LlapDataBuffer buf = new LlapDataBuffer();
+        buf.initialize(0, null, -1, size);
         dest[i] = buf;
       }
       return true;
@@ -71,7 +72,7 @@ public class TestLowLevelCacheImpl {
     public DummyCachePolicy() {
     }
 
-    public void cache(LlapCacheableBuffer buffer) {
+    public void cache(LlapCacheableBuffer buffer, Priority pri) {
     }
 
     public void notifyLock(LlapCacheableBuffer buffer) {
@@ -97,14 +98,14 @@ public class TestLowLevelCacheImpl {
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
-    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
-    assertNull(cache.putFileData(fn2, drs(1, 2), fbs(fakes, 2, 3), 0));
+    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL));
+    assertNull(cache.putFileData(fn2, drs(1, 2), fbs(fakes, 2, 3), 0, Priority.NORMAL));
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 3, fakes[2], fakes[3]);
     verifyCacheGet(cache, fn1, 2, 4, fakes[1], dr(3, 4));
     verifyRefcount(fakes, 3, 4, 3, 3, 1, 1);
     LlapMemoryBuffer[] bufsDiff = fbs(fakes, 4, 5);
-    long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0);
+    long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0, Priority.NORMAL);
     assertEquals(1, mask.length);
     assertEquals(2, mask[0]); // 2nd bit set - element 2 was already in cache.
     assertSame(fakes[0], bufsDiff[1]); // Should have been replaced
@@ -155,7 +156,8 @@ public class TestLowLevelCacheImpl {
         new DummyAllocator(), -1); // no cleanup thread
     long fn = 1;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
-    assertNull(cache.putFileData(fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0));
+    assertNull(cache.putFileData(
+        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL));
     verifyCacheGet(cache, fn, 1, 9, dr(1, 2), fakes[0], dr(4, 6), fakes[1], dr(8, 9));
     verifyCacheGet(cache, fn, 2, 8, fakes[0], dr(4, 6), fakes[1]);
     verifyCacheGet(cache, fn, 1, 5, dr(1, 2), fakes[0], dr(4, 5));
@@ -174,8 +176,8 @@ public class TestLowLevelCacheImpl {
         new DummyAllocator(), -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb() };
-    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0));
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0));
+    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0, Priority.NORMAL));
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, fakes[2]);
     verifyRefcount(fakes, 3, 3, 3);
@@ -195,14 +197,15 @@ public class TestLowLevelCacheImpl {
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
-    assertNull(cache.putFileData(fn1, drs(1, 2, 3), fbs(fakes, 0, 1, 2), 0));
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 3), 0));
+    assertNull(cache.putFileData(fn1, drs(1, 2, 3), fbs(fakes, 0, 1, 2), 0, Priority.NORMAL));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 3), 0, Priority.NORMAL));
     evict(cache, fakes[0]);
     evict(cache, fakes[3]);
-    long[] mask = cache.putFileData(fn1, drs(1, 2, 3, 4), fbs(fakes, 4, 5, 6, 7), 0);
+    long[] mask = cache.putFileData(
+        fn1, drs(1, 2, 3, 4), fbs(fakes, 4, 5, 6, 7), 0, Priority.NORMAL);
     assertEquals(1, mask.length);
     assertEquals(6, mask[0]); // Buffers at offset 2 & 3 exist; 1 exists and is stale; 4 doesn't
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 8), 0));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 8), 0, Priority.NORMAL));
     verifyCacheGet(cache, fn1, 1, 5, fakes[4], fakes[1], fakes[2], fakes[7]);
   }
 
@@ -231,7 +234,7 @@ public class TestLowLevelCacheImpl {
               count = generateOffsets(offsetsToUse, rdm, offsets);
               DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
               for (int j = 0; i < count; ++i) {
-                list.addOrMerge(offsets[i], offsets[i] + 1, true, false);
+                list.addOrMerge(offsets[j], offsets[j] + 1, true, false);
               }
 
               DiskRangeList iter = cache.getFileData(fileName, list.get(), 0);
@@ -243,7 +246,7 @@ public class TestLowLevelCacheImpl {
                   continue;
                 }
                 ++gets;
-                LlapCacheableBuffer result = (LlapCacheableBuffer)((CacheChunk)iter).buffer;
+                LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)iter).buffer;
                 assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.arenaIndex);
                 cache.releaseBuffer(result);
                 iter = iter.next;
@@ -258,11 +261,11 @@ public class TestLowLevelCacheImpl {
               }
               LlapMemoryBuffer[] buffers = new LlapMemoryBuffer[count];
               for (int j = 0; j < offsets.length; ++j) {
-                LlapCacheableBuffer buf = LowLevelCacheImpl.allocateFake();
+                LlapDataBuffer buf = LowLevelCacheImpl.allocateFake();
                 buf.arenaIndex = makeFakeArenaIndex(fileIndex, offsets[j]);
                 buffers[j] = buf;
               }
-              long[] mask = cache.putFileData(fileName, ranges, buffers, 0);
+              long[] mask = cache.putFileData(fileName, ranges, buffers, 0, Priority.NORMAL);
               puts += buffers.length;
               long maskVal = 0;
               if (mask != null) {
@@ -270,7 +273,7 @@ public class TestLowLevelCacheImpl {
                 maskVal = mask[0];
               }
               for (int j = 0; j < offsets.length; ++j) {
-                LlapCacheableBuffer buf = (LlapCacheableBuffer)(buffers[j]);
+                LlapDataBuffer buf = (LlapDataBuffer)(buffers[j]);
                 if ((maskVal & 1) == 1) {
                   assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.arenaIndex);
                 }
@@ -303,11 +306,11 @@ public class TestLowLevelCacheImpl {
           head = cache.getFileData(fileId, head, 0);
           DiskRange[] results = head.listToArray();
           int startIndex = rdm.nextInt(results.length), index = startIndex;
-          LlapCacheableBuffer victim = null;
+          LlapDataBuffer victim = null;
           do {
             DiskRange r = results[index];
             if (r instanceof CacheChunk) {
-              LlapCacheableBuffer result = (LlapCacheableBuffer)((CacheChunk)r).buffer;
+              LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)r).buffer;
               cache.releaseBuffer(result);
               if (victim == null && result.invalidate()) {
                 ++evictions;
@@ -357,7 +360,7 @@ public class TestLowLevelCacheImpl {
   }
 
   private void evict(LowLevelCacheImpl cache, LlapMemoryBuffer fake) {
-    LlapCacheableBuffer victimBuffer = (LlapCacheableBuffer)fake;
+    LlapDataBuffer victimBuffer = (LlapDataBuffer)fake;
     int refCount = victimBuffer.getRefCount();
     for (int i = 0; i < refCount; ++i) {
       victimBuffer.decRef();
@@ -368,7 +371,7 @@ public class TestLowLevelCacheImpl {
 
   private void verifyRefcount(LlapMemoryBuffer[] fakes, int... refCounts) {
     for (int i = 0; i < refCounts.length; ++i) {
-      assertEquals("At " + i, refCounts[i], ((LlapCacheableBuffer)fakes[i]).getRefCount());
+      assertEquals("At " + i, refCounts[i], ((LlapDataBuffer)fakes[i]).getRefCount());
     }
   }
 
@@ -380,8 +383,8 @@ public class TestLowLevelCacheImpl {
     return rv;
   }
 
-  private LlapCacheableBuffer fb() {
-    LlapCacheableBuffer fake = LowLevelCacheImpl.allocateFake();
+  private LlapDataBuffer fb() {
+    LlapDataBuffer fake = LowLevelCacheImpl.allocateFake();
     fake.incRef();
     return fake;
   }

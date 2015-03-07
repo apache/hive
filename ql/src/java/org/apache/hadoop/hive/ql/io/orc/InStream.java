@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
@@ -202,7 +203,7 @@ public abstract class InStream extends InputStream {
         singleAllocDest[0] = null;
         cache.allocateMultiple(singleAllocDest, size);
         cacheBuffer = singleAllocDest[0];
-        uncompressed = cacheBuffer.byteBuffer;
+        uncompressed = cacheBuffer.getByteBufferDup();
       }
     }
 
@@ -400,7 +401,7 @@ public abstract class InStream extends InputStream {
           } else {
             compressed = null;
             cacheBuffer = ((CacheChunk)range).buffer;
-            uncompressed = cacheBuffer.byteBuffer.duplicate();
+            uncompressed = cacheBuffer.getByteBufferDup();
             if (desired != range.offset) {
               throw new IOException("Cannot seek into the middle of uncompressed cached data");
             }
@@ -422,7 +423,7 @@ public abstract class InStream extends InputStream {
         } else {
           compressed = null;
           cacheBuffer = ((CacheChunk)range).buffer;
-          uncompressed = cacheBuffer.byteBuffer.duplicate();
+          uncompressed = cacheBuffer.getByteBufferDup();
           uncompressed.position(uncompressed.limit());
           if (desired != range.offset) {
             throw new IOException("Cannot seek into the middle of uncompressed cached data");
@@ -466,15 +467,6 @@ public abstract class InStream extends InputStream {
     if (LOG.isWarnEnabled()) {
       LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
     }
-  }
-
-  public static InStream create(String streamName,
-      ByteBuffer[] buffers,
-      long[] offsets,
-      long length,
-      CompressionCodec codec,
-      int bufferSize) throws IOException {
-    return create(null, streamName, buffers, offsets, length, codec, bufferSize);
   }
 
   /**
@@ -652,7 +644,7 @@ public abstract class InStream extends InputStream {
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
-      ByteBuffer dest = chunk.buffer.byteBuffer;
+      ByteBuffer dest = chunk.buffer.getByteBufferRaw();
       // After the below, position and limit will be screwed up (differently for if/else).
       // We will reset the position and limit for now.
       int startPos = dest.position(), startLim = dest.limit();
@@ -679,7 +671,8 @@ public abstract class InStream extends InputStream {
     }
 
     // 6. Finally, put data to cache.
-    long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
+    long[] collisionMask = cache.putFileData(
+        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
     processCacheCollisions(
         cache, collisionMask, toDecompress, targetBuffers, streamBuffer.cacheBuffers);
     return lastCached;

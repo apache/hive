@@ -37,7 +37,7 @@ import org.apache.hadoop.mapred.FileSplit;
  *
  */
 public class OrcSplit extends FileSplit {
-  private ReaderImpl.FileMetaInfo fileMetaInfo;
+  private FileMetaInfo fileMetaInfo;
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
@@ -56,7 +56,7 @@ public class OrcSplit extends FileSplit {
   }
 
   public OrcSplit(Path path, long offset, long length, String[] hosts,
-      ReaderImpl.FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
+      FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
       List<Long> deltas) {
     super(path, offset, length, hosts);
     this.fileMetaInfo = fileMetaInfo;
@@ -125,12 +125,12 @@ public class OrcSplit extends FileSplit {
       OrcFile.WriterVersion writerVersion =
           ReaderImpl.getWriterVersion(WritableUtils.readVInt(in));
 
-      fileMetaInfo = new ReaderImpl.FileMetaInfo(compressionType, bufferSize,
+      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize,
           metadataSize, footerBuff, writerVersion);
     }
   }
 
-  ReaderImpl.FileMetaInfo getFileMetaInfo(){
+  FileMetaInfo getFileMetaInfo(){
     return fileMetaInfo;
   }
 

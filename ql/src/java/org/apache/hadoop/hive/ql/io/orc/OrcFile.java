@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -122,6 +123,26 @@ public final class OrcFile {
     private WriterVersion(int id) {
       this.id = id;
     }
+
+    private static final WriterVersion[] values;
+    static {
+      // Assumes few non-negative values close to zero.
+      int max = Integer.MIN_VALUE;
+      for (WriterVersion v : WriterVersion.values()) {
+        if (v.id < 0) throw new AssertionError();
+        if (v.id > max) {
+          max = v.id;
+        }
+      }
+      values = new WriterVersion[max + 1];
+      for (WriterVersion v : WriterVersion.values()) {
+        values[v.id] = v;
+      }
+    }
+
+    public static WriterVersion from(int val) {
+      return values[val];
+    }
   }
 
   public static enum EncodingStrategy {
@@ -190,13 +211,14 @@ public final class OrcFile {
   public static class ReaderOptions {
     private final Configuration conf;
     private FileSystem filesystem;
-    private ReaderImpl.FileMetaInfo fileMetaInfo;
+    private FileMetaInfo fileMetaInfo; // TODO: this comes from some place.
     private long maxLength = Long.MAX_VALUE;
+    private FileMetadata fullFileMetadata; // Propagate from LLAP cache.
 
     public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
-    ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {
+    ReaderOptions fileMetaInfo(FileMetaInfo info) {
       fileMetaInfo = info;
       return this;
     }
@@ -219,12 +241,16 @@ public final class OrcFile {
       return filesystem;
     }
 
-    ReaderImpl.FileMetaInfo getFileMetaInfo() {
+    FileMetaInfo getFileMetaInfo() {
       return fileMetaInfo;
     }
 
     long getMaxLength() {
       return maxLength;
+    }
+
+    FileMetadata getFileMetadata() {
+      return fullFileMetadata;
     }
   }
 

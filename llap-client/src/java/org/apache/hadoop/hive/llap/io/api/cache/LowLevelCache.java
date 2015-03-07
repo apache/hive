@@ -23,8 +23,12 @@ import java.util.List;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 
-
 public interface LowLevelCache {
+  public enum Priority {
+    NORMAL,
+    HIGH
+    // TODO: we could add more priorities, e.g. tiered-high, where we always evict it last.
+  }
   /**
    * Gets file data for particular offsets. Null entries mean no data.
    * @param base base offset for the ranges (stripe offset in case of ORC).
@@ -37,7 +41,8 @@ public interface LowLevelCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base);
+  long[] putFileData(
+      long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base, Priority priority);
 
   /**
    * Releases the buffer returned by getFileData or allocateMultiple.

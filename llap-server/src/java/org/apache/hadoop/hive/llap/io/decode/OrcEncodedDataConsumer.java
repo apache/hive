@@ -45,11 +45,13 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 
 public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
   private RecordReaderImpl.TreeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
+  private CompressionCodec codec;
   private OrcStripeMetadata[] stripes;
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
@@ -66,6 +68,8 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
     assert fileMetadata == null;
     fileMetadata = f;
     stripes = new OrcStripeMetadata[f.getStripes().size()];
+    // TODO: get rid of this
+    codec = WriterImpl.createCodec(fileMetadata.getCompressionKind());
   }
 
   public void setStripeMetadata(OrcStripeMetadata m) {
@@ -90,7 +94,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       int numCols = batch.columnIxs.length;
       if (columnReaders == null || !sameStripe) {
-        this.columnReaders = createTreeReaders(numCols, batch, fileMetadata, stripeMetadata);
+        this.columnReaders = createTreeReaders(numCols, batch, codec, fileMetadata, stripeMetadata);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, numCols, fileMetadata,
             stripeMetadata);
@@ -124,6 +128,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
 
   RecordReaderImpl.TreeReader[] createTreeReaders(int numCols,
       EncodedColumnBatch<OrcBatchKey> batch,
+      CompressionCodec codec,
       OrcFileMetadata fileMetadata,
       OrcStripeMetadata stripeMetadata) throws IOException {
     long file = batch.batchKey.file;
@@ -140,7 +145,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       // positions in row index properly. If the file is originally compressed,
       // then 1st position (compressed offset) in row index should be skipped to get
       // uncompressed offset, else 1st position should not be skipped.
-      CompressionCodec codec = fileMetadata.getCompressionCodec();
+      // TODO: there should be a better way to do this, code just needs to be modified
       OrcProto.ColumnEncoding columnEncoding = stripeMetadata.getEncodings().get(columnIndex);
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);

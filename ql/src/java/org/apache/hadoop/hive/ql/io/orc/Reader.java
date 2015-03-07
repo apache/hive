@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -327,4 +328,11 @@ public interface Reader {
   EncodedReader encodedReader(LowLevelCache lowLevelCache,
       Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
 
+  Footer getFooterProto();
+
+  OrcProto.Metadata getMetadataProto();
+
+  List<Integer> getVersionList();
+
+  int getMetadataSize();
 }

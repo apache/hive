@@ -105,7 +105,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
     int ix = 0;
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
-      dest[i] = new LlapCacheableBuffer(); // TODO: pool of objects?
+      dest[i] = new LlapDataBuffer(); // TODO: pool of objects?
     }
     // First try to quickly lock some of the correct-sized free lists and allocate from them.
     int arenaCount = allocatedArenas.get();
@@ -141,7 +141,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
 
   @Override
   public void deallocate(LlapMemoryBuffer buffer) {
-    LlapCacheableBuffer buf = (LlapCacheableBuffer)buffer;
+    LlapDataBuffer buf = (LlapDataBuffer)buffer;
     metrics.decrCacheCapacityUsed(buf.byteBuffer.capacity());
     arenas[buf.arenaIndex].deallocate(buf);
   }
@@ -293,7 +293,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
             lastSplitBlocksRemaining = splitWays - toTake;
             for (; toTake > 0; ++ix, --toTake, headerIx += headerStep, offset += allocationSize) {
               headers[headerIx] = headerData;
-              ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, allocationSize, metrics);
+              ((LlapDataBuffer)dest[ix]).initialize(arenaIx, data, offset, allocationSize);
             }
             lastSplitNextHeader = headerIx;
             headerIx = data.getInt(origOffset + 4);
@@ -364,7 +364,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
         // Noone else has this either allocated or in a different free list; no sync needed.
         headers[current] = makeHeader(freeListIx, true);
         current = data.getInt(offset + 4);
-        ((LlapCacheableBuffer)dest[ix]).initialize(arenaIx, data, offset, size, metrics);
+        ((LlapDataBuffer)dest[ix]).initialize(arenaIx, data, offset, size);
         ++ix;
       }
       replaceListHeadUnderLock(freeList, current);
@@ -375,7 +375,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
       return (byte)(((freeListIx + 1) << 1) | (isInUse ? 1 : 0));
     }
 
-    public void deallocate(LlapCacheableBuffer buffer) {
+    public void deallocate(LlapDataBuffer buffer) {
       assert data != null;
       int freeListIx = 31 - Integer.numberOfLeadingZeros(buffer.byteBuffer.remaining())
           - minAllocLog2, headerIx = buffer.byteBuffer.position() >>> minAllocLog2;

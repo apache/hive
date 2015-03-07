@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 /**
@@ -86,11 +87,18 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public void cache(LlapCacheableBuffer buffer) {
+  public void cache(LlapCacheableBuffer buffer, Priority priority) {
     // LRFU cache policy doesn't store locked blocks. When we cache, the block is locked, so
     // we simply do nothing here. The fact that it was never updated will allow us to add it
     // properly on the first notifyUnlock.
-    assert buffer.isLocked();
+    // We'll do is set priority, to account for the inbound one. No lock - not in heap.
+    assert buffer.lastUpdate == -1;
+    long time = timer.incrementAndGet();
+    buffer.priority = F0;
+    buffer.lastUpdate = time;
+    if (priority == Priority.HIGH) {
+      buffer.priority *= 8; // this is arbitrary
+    }
   }
 
   @Override
@@ -180,7 +188,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         }
         // Update the state to removed-from-list, so that parallel notifyUnlock doesn't modify us.
         nextCandidate.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
-        evicted += nextCandidate.byteBuffer.remaining();
+        evicted += nextCandidate.getMemoryUsage();
         nextCandidate = nextCandidate.prev;
       }
       if (firstCandidate != nextCandidate) {
@@ -208,7 +216,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         buffer = evictFromHeapUnderLock(time);
       }
       if (buffer == null) return evicted;
-      evicted += buffer.byteBuffer.remaining();
+      evicted += buffer.getMemoryUsage();
       evictionListener.notifyEvicted(buffer);
     }
     return evicted;

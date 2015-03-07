@@ -633,7 +633,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final TreeMap<Long, BlockLocation> locations;
     private final FileInfo fileInfo;
     private List<StripeInformation> stripes;
-    private ReaderImpl.FileMetaInfo fileMetaInfo;
+    private FileMetaInfo fileMetaInfo;
     private Metadata metadata;
     private List<OrcProto.Type> types;
     private final boolean isOriginal;
@@ -709,7 +709,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * @throws IOException
      */
     void createSplit(long offset, long length,
-                     ReaderImpl.FileMetaInfo fileMetaInfo) throws IOException {
+                     FileMetaInfo fileMetaInfo) throws IOException {
       String[] hosts;
       Map.Entry<Long, BlockLocation> startEntry = locations.floorEntry(offset);
       BlockLocation start = startEntry.getValue();
@@ -988,7 +988,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     long modificationTime;
     long size;
     List<StripeInformation> stripeInfos;
-    ReaderImpl.FileMetaInfo fileMetaInfo;
+    FileMetaInfo fileMetaInfo;
     Metadata metadata;
     List<OrcProto.Type> types;
     private OrcFile.WriterVersion writerVersion;
@@ -997,7 +997,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     FileInfo(long modificationTime, long size,
              List<StripeInformation> stripeInfos,
              Metadata metadata, List<OrcProto.Type> types,
-             ReaderImpl.FileMetaInfo fileMetaInfo,
+             FileMetaInfo fileMetaInfo,
              OrcFile.WriterVersion writerVersion) {
       this.modificationTime = modificationTime;
       this.size = size;

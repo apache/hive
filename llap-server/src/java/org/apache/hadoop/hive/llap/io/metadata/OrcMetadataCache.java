@@ -19,53 +19,39 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-/**
- * TODO#: doc ORC-specific metadata cache.
- * TODO: should be merged with main cache somehow if we find this takes too much memory
- */
 public class OrcMetadataCache {
-  private static final int DEFAULT_CACHE_ACCESS_CONCURRENCY = 10;
-  private static final int DEFAULT_MAX_FILE_ENTRIES = 1000;
-  private static final int DEFAULT_MAX_STRIPE_ENTRIES = 10000;
-  private static Cache<Long, OrcFileMetadata> METADATA;
-  private static Cache<OrcBatchKey, OrcStripeMetadata> STRIPE_METADATA;
-  private static OrcMetadataCache instance = new OrcMetadataCache();
-  private OrcMetadataCache() {}
+  private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =
+      new ConcurrentHashMap<Long, OrcFileMetadata>();
+  private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
+      new ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata>();
 
-  static {
-    METADATA = CacheBuilder.newBuilder()
-        .concurrencyLevel(DEFAULT_CACHE_ACCESS_CONCURRENCY)
-        .maximumSize(DEFAULT_MAX_FILE_ENTRIES)
-        .build();
-    STRIPE_METADATA = CacheBuilder.newBuilder()
-        .concurrencyLevel(DEFAULT_CACHE_ACCESS_CONCURRENCY)
-        .maximumSize(DEFAULT_MAX_STRIPE_ENTRIES)
-        .build();
+  public void putFileMetadata(OrcFileMetadata metaData) {
+    metadata.put(metaData.getFileId(), metaData);
   }
 
-  public static OrcMetadataCache getInstance() {
-    return instance;
-  }
-
-  public void putFileMetadata(long fileId, OrcFileMetadata metaData) {
-    METADATA.put(fileId, metaData);
-  }
-
-  public void putStripeMetadata(OrcBatchKey stripeKey, OrcStripeMetadata metaData) {
-    STRIPE_METADATA.put(stripeKey, metaData);
+  public void putStripeMetadata(OrcStripeMetadata metaData) {
+    stripeMetadata.put(metaData.getKey(), metaData);
   }
 
   public OrcStripeMetadata getStripeMetadata(OrcBatchKey stripeKey) throws IOException {
-    return STRIPE_METADATA.getIfPresent(stripeKey);
+    return stripeMetadata.get(stripeKey);
   }
 
   public OrcFileMetadata getFileMetadata(long fileId) throws IOException {
-    return METADATA.getIfPresent(fileId);
+    return metadata.get(fileId);
+  }
+
+  public void notifyEvicted(OrcFileMetadata buffer) {
+    metadata.remove(buffer.getFileId());
+    // See OrcFileMetadata - we don't clear the object, it will be GCed when released by users.
+  }
+
+  public void notifyEvicted(OrcStripeMetadata buffer) {
+    stripeMetadata.remove(buffer.getKey());
+    // See OrcStripeMetadata - we don't clear the object, it will be GCed when released by users.
   }
 }

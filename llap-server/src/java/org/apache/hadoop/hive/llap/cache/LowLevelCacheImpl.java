@@ -101,21 +101,21 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
-      ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache) {
-    Iterator<Map.Entry<Long, LlapCacheableBuffer>> matches = cache.subMap(
+      ConcurrentSkipListMap<Long, LlapDataBuffer> cache) {
+    Iterator<Map.Entry<Long, LlapDataBuffer>> matches = cache.subMap(
         currentNotCached.offset + baseOffset, currentNotCached.end + baseOffset)
         .entrySet().iterator();
     long cacheEnd = -1;
     while (matches.hasNext()) {
       assert currentNotCached != null;
-      Map.Entry<Long, LlapCacheableBuffer> e = matches.next();
-      LlapCacheableBuffer buffer = e.getValue();
+      Map.Entry<Long, LlapDataBuffer> e = matches.next();
+      LlapDataBuffer buffer = e.getValue();
       // Lock the buffer, validate it and add to results.
       if (DebugUtils.isTraceLockingEnabled()) {
         LlapIoImpl.LOG.info("Locking " + buffer + " during get");
       }
 
-      if (!lockBuffer(buffer)) {
+      if (!lockBuffer(buffer, true)) {
         // If we cannot lock, remove this from cache and continue.
         matches.remove();
         continue;
@@ -172,34 +172,39 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     }
   }
 
-  private boolean lockBuffer(LlapCacheableBuffer buffer) {
+  private boolean lockBuffer(LlapDataBuffer buffer, boolean doNotifyPolicy) {
     int rc = buffer.incRef();
-    if (rc == 1) {
+    if (rc > 0) {
+      metrics.incrCacheNumLockedBuffers();
+    }
+    if (doNotifyPolicy && rc == 1) {
+      // We have just locked a buffer that wasn't previously locked.
       cachePolicy.notifyLock(buffer);
     }
     return rc > 0;
   }
 
   @Override
-  public long[] putFileData(
-      long fileId, DiskRange[] ranges, LlapMemoryBuffer[] buffers, long baseOffset) {
+  public long[] putFileData(long fileId, DiskRange[] ranges,
+      LlapMemoryBuffer[] buffers, long baseOffset, Priority priority) {
     long[] result = null;
     assert buffers.length == ranges.length;
     FileCache subCache = getOrAddFileSubCache(fileId);
     try {
       for (int i = 0; i < ranges.length; ++i) {
-        LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
+        LlapDataBuffer buffer = (LlapDataBuffer)buffers[i];
         if (DebugUtils.isTraceLockingEnabled()) {
           LlapIoImpl.LOG.info("Locking " + buffer + " at put time");
         }
-        buffer.incRef();
+        boolean canLock = lockBuffer(buffer, false);
+        assert canLock;
         long offset = ranges[i].offset + baseOffset;
         buffer.declaredLength = ranges[i].getLength();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
-          LlapCacheableBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
+          LlapDataBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
           if (oldVal == null) {
             // Cached successfully, add to policy.
-            cachePolicy.cache(buffer);
+            cachePolicy.cache(buffer, priority);
             break;
           }
           if (DebugUtils.isTraceCachingEnabled()) {
@@ -210,7 +215,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           if (DebugUtils.isTraceLockingEnabled()) {
             LlapIoImpl.LOG.info("Locking " + oldVal + "  due to cache collision");
           }
-          if (lockBuffer(oldVal)) {
+          if (lockBuffer(oldVal, true)) {
             // We don't do proper overlap checking because it would cost cycles and we
             // think it will never happen. We do perform the most basic check here.
             if (oldVal.declaredLength != buffer.declaredLength) {
@@ -223,7 +228,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
               LlapIoImpl.LOG.info("Unlocking " + buffer + " due to cache collision with " + oldVal);
             }
 
-            releaseBufferInternal(buffer);
+            unlockBuffer(buffer);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
@@ -279,32 +284,33 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   @Override
   public void releaseBuffer(LlapMemoryBuffer buffer) {
-    releaseBufferInternal((LlapCacheableBuffer)buffer);
+    unlockBuffer((LlapDataBuffer)buffer);
   }
 
   @Override
   public void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers) {
     for (LlapMemoryBuffer b : cacheBuffers) {
-      releaseBufferInternal((LlapCacheableBuffer)b);
+      unlockBuffer((LlapDataBuffer)b);
     }
   }
 
-  public void releaseBufferInternal(LlapCacheableBuffer buffer) {
+  public void unlockBuffer(LlapDataBuffer buffer) {
     if (buffer.decRef() == 0) {
       cachePolicy.notifyUnlock(buffer);
     }
+    metrics.decrCacheNumLockedBuffers();
   }
 
   private static final ByteBuffer fakeBuf = ByteBuffer.wrap(new byte[1]);
-  public static LlapCacheableBuffer allocateFake() {
-    LlapCacheableBuffer fake = new LlapCacheableBuffer();
-    fake.initialize(-1, fakeBuf, 0, 1, null);
+  public static LlapDataBuffer allocateFake() {
+    LlapDataBuffer fake = new LlapDataBuffer();
+    fake.initialize(-1, fakeBuf, 0, 1);
     return fake;
   }
 
   @Override
-  public void notifyEvicted(LlapCacheableBuffer buffer) {
-    allocator.deallocate(buffer);
+  public final void notifyEvicted(LlapCacheableBuffer buffer) {
+    allocator.deallocate((LlapDataBuffer)buffer);
     newEvictions.incrementAndGet();
   }
 
@@ -314,8 +320,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     //       In fact, CSLM has slow single-threaded operation, and one file is probably often read
     //       by just one (or few) threads, so a much more simple DS with locking might be better.
     //       Let's use CSLM for now, since it's available.
-    private ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache
-      = new ConcurrentSkipListMap<Long, LlapCacheableBuffer>();
+    private ConcurrentSkipListMap<Long, LlapDataBuffer> cache
+      = new ConcurrentSkipListMap<Long, LlapDataBuffer>();
     private AtomicInteger refCount = new AtomicInteger(0);
 
     boolean incRef() {
@@ -404,7 +410,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           throw new AssertionError("Something other than cleanup is removing elements from map");
         }
         // Iterate thru the file cache. This is best-effort.
-        Iterator<Map.Entry<Long, LlapCacheableBuffer>> subIter = fc.cache.entrySet().iterator();
+        Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.cache.entrySet().iterator();
         boolean isEmpty = true;
         while (subIter.hasNext()) {
           Thread.sleep((leftToCheck <= 0)
@@ -434,12 +440,14 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   @Override
   public LlapMemoryBuffer createUnallocated() {
-    return new LlapCacheableBuffer();
+    return new LlapDataBuffer();
   }
 
   @Override
   public void notifyReused(LlapMemoryBuffer buffer) {
-    ((LlapCacheableBuffer)buffer).incRef();
+    // notifyReused implies that buffer is already locked; it's also called once for new
+    // buffers that are not cached yet. Don't notify cache policy.
+    lockBuffer(((LlapDataBuffer)buffer), false);
   }
 
   @Override

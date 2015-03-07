@@ -15,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.llap.cache;
-
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,15 +25,35 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 import com.google.common.annotations.VisibleForTesting;
+/**
+ * Buffer that can be managed by LowLevelEvictionPolicy.
+ */
+public abstract class LlapCacheableBuffer {
 
-public final class LlapCacheableBuffer extends LlapMemoryBuffer {
-  private static final int EVICTED_REFCOUNT = -1;
-  static final int IN_LIST = -2, NOT_IN_CACHE = -1;
+  /** Priority for cache policy (should be pretty universal). */
+  public double priority;
+  /** Last priority update time for cache policy (should be pretty universal). */
+  public long lastUpdate = -1;
 
-  public void initialize(int arenaIndex, ByteBuffer byteBuffer, int offset, int length,
-      LlapDaemonCacheMetrics metrics) {
-    super.initialize(byteBuffer, offset, length, metrics);
-    this.arenaIndex = arenaIndex;
+  // TODO: remove some of these fields as needed?
+  /** Linked list pointers for LRFU/LRU cache policies. Given that each block is in cache
+   * that might be better than external linked list. Or not, since this is not concurrent. */
+  public LlapCacheableBuffer prev = null;
+  /** Linked list pointers for LRFU/LRU cache policies. Given that each block is in cache
+   * that might be better than external linked list. Or not, since this is not concurrent. */
+  public LlapCacheableBuffer next = null;
+  /** Index in heap for LRFU/LFU cache policies. */
+  protected static final int IN_LIST = -2;
+  protected static final int NOT_IN_CACHE = -1;
+  public int indexInHeap = NOT_IN_CACHE;
+
+  protected abstract boolean invalidate();
+  public abstract long getMemoryUsage();
+  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher);
+
+  @Override
+  public String toString() {
+    return "0x" + Integer.toHexString(System.identityHashCode(this));
   }
 
   public String toStringForCache() {
@@ -43,91 +61,5 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
 
-  private final AtomicInteger refCount = new AtomicInteger(0);
-
-  // All kinds of random stuff needed by various parts of the system, beyond the publicly
-  // visible bytes "interface". This is not so pretty since all concerns are mixed here.
-  // But at least we don't waste bunch of memory per every buffer and bunch of virtual calls.
-  /** Allocator uses this to remember which arena to alloc from.
-   * TODO Could wrap ByteBuffer instead? This needs reference anyway. */
-  public int arenaIndex = -1;
-  /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
-   * the lookup is on compressed ranges, so we need to know this. */
-  public int declaredLength;
-
-  /** Priority for cache policy (should be pretty universal). */
-  public double priority;
-  /** Last priority update time for cache policy (should be pretty universal). */
-  public long lastUpdate = -1;
-  /** Linked list pointers for LRFU/LRU cache policies. Given that each block is in cache
-   * that might be better than external linked list. Or not, since this is not concurrent. */
-  public LlapCacheableBuffer prev = null, next = null;
-  /** Index in heap for LRFU/LFU cache policies. */
-  public int indexInHeap = NOT_IN_CACHE;
-  // TODO: Add 4 more bytes of crap here!
-
-
-  @VisibleForTesting
-  int getRefCount() {
-    return refCount.get();
-  }
-
-  int incRef() {
-    int newRefCount = -1;
-    while (true) {
-      int oldRefCount = refCount.get();
-      if (oldRefCount == EVICTED_REFCOUNT) return -1;
-      assert oldRefCount >= 0 : "oldRefCount is " + oldRefCount + " " + this;
-      newRefCount = oldRefCount + 1;
-      if (refCount.compareAndSet(oldRefCount, newRefCount)) break;
-    }
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Locked " + this + "; new ref count " + newRefCount);
-    }
-    ((LlapDaemonCacheMetrics)metrics).incrCacheNumLockedBuffers();
-    return newRefCount;
-  }
-
-  public boolean isLocked() {
-    // Best-effort check. We cannot do a good check against caller thread, since
-    // refCount could still be > 0 if someone else locked. This is used for asserts.
-    return refCount.get() > 0;
-  }
-
-  public boolean isInvalid() {
-    return refCount.get() == EVICTED_REFCOUNT;
-  }
-
-  int decRef() {
-    int newRefCount = refCount.decrementAndGet();
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Unlocked " + this + "; refcount " + newRefCount);
-    }
-    if (newRefCount < 0) {
-      throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
-    }
-    ((LlapDaemonCacheMetrics)metrics).decrCacheNumLockedBuffers();
-    return newRefCount;
-  }
-
-  @Override
-  public String toString() {
-    int refCount = this.refCount.get();
-    return "0x" + Integer.toHexString(System.identityHashCode(this)) + "(" + refCount + ")";
-  }
-
-  /**
-   * @return Whether the we can invalidate; false if locked or already evicted.
-   */
-  boolean invalidate() {
-    while (true) {
-      int value = refCount.get();
-      if (value != 0) return false;
-      if (refCount.compareAndSet(value, EVICTED_REFCOUNT)) break;
-    }
-    if (DebugUtils.isTraceLockingEnabled()) {
-      LlapIoImpl.LOG.info("Invalidated " + this + " due to eviction");
-    }
-    return true;
-  }
+  protected abstract boolean isLocked();
 }

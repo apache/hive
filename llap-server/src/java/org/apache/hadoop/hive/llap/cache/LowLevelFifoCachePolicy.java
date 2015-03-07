@@ -28,6 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
@@ -43,7 +44,8 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public void cache(LlapCacheableBuffer buffer) {
+  public void cache(LlapCacheableBuffer buffer, Priority pri) {
+    // Ignore priority.
     lock.lock();
     try {
       buffers.add(buffer);
@@ -77,7 +79,7 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
         LlapCacheableBuffer candidate = iter.next();
         if (candidate.invalidate()) {
           iter.remove();
-          evicted += candidate.byteBuffer.remaining();
+          evicted += candidate.getMemoryUsage();
           evictionListener.notifyEvicted(candidate);
         }
       }

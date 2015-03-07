@@ -202,7 +202,7 @@ public class RecordReaderImpl implements RecordReader {
     this.included = options.getInclude();
     this.conf = conf;
     this.rowIndexStride = strideRate;
-    this.metadata = new MetadataReader(file, codec, bufferSize, types.size());
+    this.metadata = new MetadataReader(fileSystem, path, codec, bufferSize, types.size());
     SearchArgument sarg = options.getSearchArgument();
     if (sarg != null && strideRate != 0) {
       sargApp = new SargApplier(sarg, options.getColumnNames(), strideRate, types);
@@ -3118,7 +3118,8 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     public ByteBuffer getData() {
-      return buffer.byteBuffer;
+      // Callers duplicate the buffer, they have to for BufferChunk
+      return buffer.getByteBufferRaw();
     }
 
     @Override
