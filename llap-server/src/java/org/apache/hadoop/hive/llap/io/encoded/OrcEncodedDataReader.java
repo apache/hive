@@ -196,7 +196,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // readState has been modified for column x rgs that were fetched from cache.
 
     // 5. Create encoded data reader.
-    // TODO#: THIS
     ensureOrcReader();
     // In case if we have high-level cache, we will intercept the data and add it there;
     // otherwise just pass the data directly to the consumer.

@@ -315,7 +315,6 @@ public class ReaderImpl implements Reader {
     this.path = path;
     this.conf = options.getConfiguration();
 
-    boolean magic = false; // TODO#: HERE
     FileMetadata fileMetadata = options.getFileMetadata();
     if (fileMetadata != null) {
       this.compressionKind = fileMetadata.getCompressionKind();
