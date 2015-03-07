@@ -25,13 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -84,7 +84,11 @@ public class MapRecordProcessor extends RecordProcessor {
   ObjectCache cache;
 
   public MapRecordProcessor(final JobConf jconf) throws Exception {
-    cache = ObjectCacheFactory.getCache(jconf);
+    if (LlapIoProxy.isDaemon()) { // do not cache plan
+      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
+    } else {
+      cache = ObjectCacheFactory.getCache(jconf);
+    }
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();

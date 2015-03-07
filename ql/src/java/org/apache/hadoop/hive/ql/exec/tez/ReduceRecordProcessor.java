@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
@@ -80,7 +81,13 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
-    ObjectCache cache = ObjectCacheFactory.getCache(jconf);
+    ObjectCache cache;
+
+    if (LlapIoProxy.isDaemon()) { // don't cache plan
+      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
+    } else {
+      cache = ObjectCacheFactory.getCache(jconf);
+    }
 
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
     cacheKey = queryId + processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
