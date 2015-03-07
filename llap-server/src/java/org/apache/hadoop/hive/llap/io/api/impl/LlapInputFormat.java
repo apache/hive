@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -110,12 +111,14 @@ public class LlapInputFormat
     /** Vector that is currently being processed by our user. */
     private boolean isDone = false, isClosed = false;
     private ConsumerFeedback<ColumnVectorBatch> feedback;
+    private final QueryFragmentCounters counters;
 
     public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols) {
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = SearchArgumentFactory.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
+      this.counters = new QueryFragmentCounters();
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(job, split);
@@ -175,7 +178,7 @@ public class LlapInputFormat
 
     private void startRead() {
       // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-      ReadPipeline rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames);
+      ReadPipeline rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames, counters);
       feedback = rp;
       ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
       // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
@@ -235,6 +238,7 @@ public class LlapInputFormat
         LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
             + ", err " + pendingError + ", pending " + pendingData.size());
       }
+      LlapIoImpl.LOG.info("QueryFragmentCounters: " + counters);
       feedback.stop();
       rethrowErrorIfAny();
     }
@@ -253,6 +257,7 @@ public class LlapInputFormat
         LlapIoImpl.LOG.info("setDone called; closed " + isClosed
           + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
       }
+      LlapIoImpl.LOG.info("DONE: QueryFragmentCounters: " + counters);
       synchronized (pendingData) {
         isDone = true;
         pendingData.notifyAll();
@@ -276,9 +281,11 @@ public class LlapInputFormat
 
     @Override
     public void setError(Throwable t) {
+      counters.incrCounter(QueryFragmentCounters.Counter.NUM_ERRORS);
       LlapIoImpl.LOG.info("setError called; closed " + isClosed
         + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
       assert t != null;
+      LlapIoImpl.LOG.info("ERROR: QueryFragmentCounters: " + counters);
       synchronized (pendingData) {
         pendingError = t;
         pendingData.notifyAll();

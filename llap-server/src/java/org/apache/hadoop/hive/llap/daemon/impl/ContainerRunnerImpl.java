@@ -167,7 +167,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
       ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser());
 
-
       ContainerRunnerCallable callable = new ContainerRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
           workingDir, credentials, memoryPerExecutor);

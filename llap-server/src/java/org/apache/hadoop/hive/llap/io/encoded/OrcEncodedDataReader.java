@@ -8,13 +8,13 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
@@ -30,12 +30,12 @@ import org.apache.hadoop.hive.ql.io.orc.EncodedReader;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -52,7 +52,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final SearchArgument sarg;
   private final String[] columnNames;
   private final OrcEncodedDataConsumer consumer;
-
+  private final QueryFragmentCounters counters;
 
   // Read state.
   private int stripeIxFrom;
@@ -70,7 +70,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
       OrcMetadataCache metadataCache, Configuration conf, InputSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      OrcEncodedDataConsumer consumer) {
+      OrcEncodedDataConsumer consumer, QueryFragmentCounters counters) {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
     this.cache = cache;
@@ -83,6 +83,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.sarg = sarg;
     this.columnNames = columnNames;
     this.consumer = consumer;
+    this.counters = counters;
   }
 
   @Override
@@ -459,6 +460,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         readState[stripeIxMod][j] = (rgsToRead == null) ? null :
           Arrays.copyOf(rgsToRead, rgsToRead.length);
       }
+
+      int count = 0;
+      if (rgsToRead != null) {
+        for (boolean b : rgsToRead) {
+          if (b)
+            count++;
+        }
+      } else {
+        count = rgCount;
+      }
+      counters.setCounter(QueryFragmentCounters.Counter.SELECTED_ROWGROUPS, count);
     }
   }
 

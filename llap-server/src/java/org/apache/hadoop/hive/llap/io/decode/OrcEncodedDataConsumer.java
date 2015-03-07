@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.llap.io.decode;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.BinaryStreamReader;
@@ -52,11 +52,14 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
   private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
   private OrcStripeMetadata[] stripes;
   private final boolean skipCorrupt; // TODO: get rid of this
+  private final QueryFragmentCounters counters;
 
   public OrcEncodedDataConsumer(
-      Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt) {
+      Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
+      QueryFragmentCounters counters) {
     super(consumer, colCount);
     this.skipCorrupt = skipCorrupt;
+    this.counters = counters;
   }
 
   public void setFileMetadata(OrcFileMetadata f) {
@@ -109,7 +112,10 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
 
         // we are done reading a batch, send it to consumer for processing
         downstreamConsumer.consumeData(cvb);
+        counters.incrCounter(QueryFragmentCounters.Counter.ROWS_EMITTED, batchSize);
       }
+      counters.incrCounter(QueryFragmentCounters.Counter.NUM_VECTOR_BATCHES, maxBatchesRG);
+      counters.incrCounter(QueryFragmentCounters.Counter.NUM_DECODED_BATCHES);
     } catch (IOException e) {
       // Caller will return the batch.
       downstreamConsumer.setError(e);

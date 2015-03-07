@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.io.decode;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
@@ -30,5 +31,6 @@ import org.apache.hadoop.mapred.InputSplit;
  */
 public interface ColumnVectorProducer {
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, InputSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames);
+      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
+      QueryFragmentCounters counters);
 }

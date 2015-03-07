@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -43,7 +44,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final Configuration conf;
   private boolean _skipCorrupt; // TODO: get rid of this
   private LlapDaemonCacheMetrics metrics;
- 
+
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
       LowLevelCacheImpl lowLevelCache, Cache<OrcCacheKey> cache, Configuration conf,
       LlapDaemonCacheMetrics metrics) {
@@ -62,12 +63,13 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   @Override
   public ReadPipeline createReadPipeline(
       Consumer<ColumnVectorBatch> consumer, InputSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames) {
+      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
+      QueryFragmentCounters counters) {
     metrics.incrCacheReadRequests();
-    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
-        consumer, columnIds.size(), _skipCorrupt);
-    OrcEncodedDataReader reader = new OrcEncodedDataReader(
-        lowLevelCache, cache, metadataCache, conf, split, columnIds, sarg, columnNames, edc);
+    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
+        _skipCorrupt, counters);
+    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, cache, metadataCache,
+        conf, split, columnIds, sarg, columnNames, edc, counters);
     edc.init(reader, reader);
     return edc;
   }
