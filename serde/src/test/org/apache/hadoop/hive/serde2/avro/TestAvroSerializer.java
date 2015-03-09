@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -130,7 +132,10 @@ public class TestAvroSerializer {
     Collections.addAll(intList, 1,2, 3);
     String field = "{ \"name\":\"list1\", \"type\":{\"type\":\"array\", \"items\":\"int\"} }";
     GenericRecord r = serializeAndDeserialize(field, "list1", intList);
-    assertEquals(intList, r.get("list1"));
+    final Object list1 = r.get("list1");
+    Assert.assertTrue(list1 instanceof GenericArray);
+    Assert.assertTrue(list1 instanceof List);
+    assertEquals(intList, list1);
   }
 
   @Test
