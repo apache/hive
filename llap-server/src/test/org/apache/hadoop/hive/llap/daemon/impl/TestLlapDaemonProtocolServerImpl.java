@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.junit.Test;
 
 public class TestLlapDaemonProtocolServerImpl {
@@ -45,8 +45,9 @@ public class TestLlapDaemonProtocolServerImpl {
       LlapDaemonProtocolBlockingPB client =
           new LlapDaemonProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
               serverAddr.getPort());
-      client.runContainer(null,
-          RunContainerRequestProto.newBuilder().setAmHost("amhost")
+      client.submitWork(null,
+          SubmitWorkRequestProto.newBuilder()
+              .setAmHost("amhost")
               .setAmPort(2000).build());
 
     } finally {

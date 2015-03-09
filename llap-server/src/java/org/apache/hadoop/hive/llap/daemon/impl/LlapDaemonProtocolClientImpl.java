@@ -20,12 +20,11 @@ import java.net.InetSocketAddress;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerResponseProto;
 
 // TODO Change all this to be based on a regular interface instead of relying on the Proto service - Exception signatures cannot be controlled without this for the moment.
 
@@ -43,16 +42,15 @@ public class LlapDaemonProtocolClientImpl implements LlapDaemonProtocolBlockingP
   }
 
   @Override
-  public RunContainerResponseProto runContainer(RpcController controller,
-                                                RunContainerRequestProto request) throws
+  public LlapDaemonProtocolProtos.SubmitWorkResponseProto submitWork(RpcController controller,
+                                                                     LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
       ServiceException {
     try {
-      return getProxy().runContainer(null, request);
+      return getProxy().submitWork(null, request);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
   }
-
 
   public LlapDaemonProtocolBlockingPB getProxy() throws IOException {
     if (proxy == null) {
@@ -65,8 +63,7 @@ public class LlapDaemonProtocolClientImpl implements LlapDaemonProtocolBlockingP
     LlapDaemonProtocolBlockingPB p;
     // TODO Fix security
     RPC.setProtocolEngine(conf, LlapDaemonProtocolBlockingPB.class, ProtobufRpcEngine.class);
-    p = (LlapDaemonProtocolBlockingPB) RPC
-        .getProxy(LlapDaemonProtocolBlockingPB.class, 0, serverAddr, conf);
+    p =  RPC.getProxy(LlapDaemonProtocolBlockingPB.class, 0, serverAddr, conf);
     return p;
   }
 }

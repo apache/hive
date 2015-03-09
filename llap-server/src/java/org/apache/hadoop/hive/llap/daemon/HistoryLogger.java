@@ -29,6 +29,7 @@ public class HistoryLogger {
   private static final String HISTORY_VERTEX_NAME = "VertexName";
   private static final String HISTORY_TASK_ID = "TaskId";
   private static final String HISTORY_ATTEMPT_ID = "TaskAttemptId";
+  private static final String HISTORY_THREAD_NAME = "ThreadName";
   private static final String HISTORY_HOSTNAME = "HostName";
   private static final String HISTORY_SUCCEEDED = "Succeeded";
 
@@ -48,9 +49,9 @@ public class HistoryLogger {
 
   public static void logFragmentEnd(String applicationIdStr, String containerIdStr, String hostname,
                                     String dagName, String vertexName, int taskId, int attemptId,
-                                    long startTime, boolean failed) {
+                                    String threadName, long startTime, boolean failed) {
     HISTORY_LOGGER.info(constructFragmentEndString(applicationIdStr, containerIdStr, hostname,
-        dagName, vertexName, taskId, attemptId, startTime, failed));
+        dagName, vertexName, taskId, attemptId, threadName, startTime, failed));
   }
 
 
@@ -72,7 +73,7 @@ public class HistoryLogger {
   private static String constructFragmentEndString(String applicationIdStr, String containerIdStr,
                                                    String hostname, String dagName,
                                                    String vertexName, int taskId, int attemptId,
-                                                   long startTime, boolean succeeded) {
+                                                   String threadName, long startTime, boolean succeeded) {
     HistoryLineBuilder lb = new HistoryLineBuilder(EVENT_TYPE_FRAGMENT_END);
     lb.addHostName(hostname);
     lb.addAppid(applicationIdStr);
@@ -81,6 +82,7 @@ public class HistoryLogger {
     lb.addVertexName(vertexName);
     lb.addTaskId(taskId);
     lb.addTaskAttemptId(attemptId);
+    lb.addThreadName(threadName);
     lb.addSuccessStatus(succeeded);
     lb.addTime(HISTORY_START_TIME, startTime);
     lb.addTime(HISTORY_END_TIME);
@@ -120,6 +122,10 @@ public class HistoryLogger {
 
     HistoryLineBuilder addTaskAttemptId(int attemptId) {
       return setKeyValue(HISTORY_ATTEMPT_ID, String.valueOf(attemptId));
+    }
+
+    HistoryLineBuilder addThreadName(String threadName) {
+      return setKeyValue(HISTORY_THREAD_NAME, threadName);
     }
 
     HistoryLineBuilder addTime(String timeParam, long millis) {

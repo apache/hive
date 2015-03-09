@@ -16,9 +16,9 @@ package org.apache.hadoop.hive.llap.daemon;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 
 public interface ContainerRunner {
 
-  void queueContainer(LlapDaemonProtocolProtos.RunContainerRequestProto request) throws IOException;
+  void submitWork(SubmitWorkRequestProto request) throws IOException;
 }

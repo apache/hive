@@ -18,37 +18,50 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.llap.tezplugins.Converters;
 import org.apache.hadoop.io.DataInputBuffer;
+import org.apache.hadoop.ipc.RPC;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.apache.tez.common.TezCommonUtils;
+import org.apache.tez.common.TezTaskUmbilicalProtocol;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezConstants;
+import org.apache.tez.dag.api.TezException;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
-import org.apache.tez.runtime.task.TezChild;
+import org.apache.tez.runtime.task.TaskReporter;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
 
 import com.google.common.base.Preconditions;
@@ -59,6 +72,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.tez.runtime.task.TezTaskRunner;
 
 public class ContainerRunnerImpl extends AbstractService implements ContainerRunner {
 
@@ -73,6 +87,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private volatile FileSystem localFs;
   private final long memoryPerExecutor;
   private final LlapDaemonExecutorMetrics metrics;
+  private final ConfParams confParams;
   // TODO Support for removing queued containers, interrupting / killing specific containers
 
   public ContainerRunnerImpl(int numExecutors, String[] localDirsBase, int localShufflePort,
@@ -83,6 +98,13 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
     this.localDirsBase = localDirsBase;
     this.localAddress = localAddress;
+    this.confParams = new ConfParams();
+    // Setup to defaults to start with
+    confParams.amMaxEventsPerHeartbeat = TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT_DEFAULT;
+    confParams.amHeartbeatIntervalMsMax =
+        TezConfiguration.TEZ_AM_RM_HEARTBEAT_INTERVAL_MS_MAX_DEFAULT;
+    confParams.amCounterHeartbeatInterval =
+        TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS_DEFAULT;
 
     ExecutorService raw = Executors.newFixedThreadPool(numExecutors,
         new ThreadFactoryBuilder().setNameFormat(THREAD_NAME_FORMAT).build());
@@ -104,6 +126,16 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   public void serviceInit(Configuration conf) {
     try {
       localFs = FileSystem.getLocal(conf);
+      // TODO Fix visibility of these parameters - which
+      confParams.amCounterHeartbeatInterval = conf.getLong(
+          TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS,
+          TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS_DEFAULT);
+      confParams.amHeartbeatIntervalMsMax =
+          conf.getInt(TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS,
+              TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS_DEFAULT);
+      confParams.amMaxEventsPerHeartbeat =
+          conf.getInt(TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT,
+              TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT_DEFAULT);
     } catch (IOException e) {
       throw new RuntimeException("Failed to setup local filesystem instance", e);
     }
@@ -129,12 +161,21 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   }
 
   @Override
-  public void queueContainer(RunContainerRequestProto request) throws IOException {
+  public void submitWork(SubmitWorkRequestProto request) throws IOException {
     HistoryLogger.logFragmentStart(request.getApplicationIdString(), request.getContainerIdString(),
-        localAddress.get().getHostName(), null, null, -1, -1);
+        localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
+        request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
+        request.getFragmentSpec().getAttemptNumber());
     LOG.info("Queuing container for execution: " + request);
     // This is the start of container-annotated logging.
-    NDC.push(request.getContainerIdString());
+    // TODO Reduce the length of this string. Way too verbose at the moment.
+    String ndcContextString =
+        request.getContainerIdString() + "_" +
+            request.getFragmentSpec().getDagName() + "_" +
+            request.getFragmentSpec().getVertexName() +
+            "_" + request.getFragmentSpec().getFragmentNumber() + "_" +
+            request.getFragmentSpec().getAttemptNumber();
+    NDC.push(ndcContextString);
     try {
       Map<String, String> env = new HashMap<String, String>();
       // TODO What else is required in this environment map.
@@ -149,13 +190,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
             request.getUser());
         localFs.mkdirs(new Path(localDirs[i]));
       }
-      LOG.info("DEBUG: Dirs are: " + Arrays.toString(localDirs));
+      // TODO Avoid this directory creation on each work-unit submission.
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Dirs are: " + Arrays.toString(localDirs));
+      }
 
 
       // Setup workingDir. This is otherwise setup as Environment.PWD
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
-      // TODO Set this up to read user configuration if required. Ideally, Inputs / Outputs should be self configured.
-      // Setting this up correctly is more from framework components to setup security, ping intervals, etc.
       String workingDir = localDirs[0];
 
       Credentials credentials = new Credentials();
@@ -170,12 +212,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
       ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser());
 
-      ContainerRunnerCallable callable = new ContainerRunnerCallable(request, new Configuration(getConfig()),
+      TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          workingDir, credentials, memoryPerExecutor, localAddress.get().getHostName());
-      ListenableFuture<ContainerExecutionResult> future = executorService
-          .submit(callable);
-      Futures.addCallback(future, new ContainerRunnerCallback(request, callable));
+          workingDir, credentials, memoryPerExecutor, confParams);
+      ListenableFuture<ContainerExecutionResult> future = executorService.submit(callable);
+      Futures.addCallback(future, new TaskRunnerCallback(request, callable));
       metrics.incrExecutorTotalRequestsHandled();
       metrics.incrExecutorNumQueuedRequests();
     } finally {
@@ -183,28 +224,31 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     }
   }
 
-  static class ContainerRunnerCallable extends CallableWithNdc<ContainerExecutionResult> {
+  static class TaskRunnerCallable extends CallableWithNdc<ContainerExecutionResult> {
 
-    private final RunContainerRequestProto request;
+    private final SubmitWorkRequestProto request;
     private final Configuration conf;
     private final String workingDir;
     private final String[] localDirs;
     private final Map<String, String> envMap;
-    // TODO Is a null pid valid - will this work with multiple different ResourceMonitors ?
     private final String pid = null;
     private final ObjectRegistryImpl objectRegistry;
     private final ExecutionContext executionContext;
     private final Credentials credentials;
     private final long memoryAvailable;
-    private volatile TezChild tezChild;
-    private final String localHostname;
+    private final ListeningExecutorService executor;
+    private final ConfParams confParams;
+    private volatile TezTaskRunner taskRunner;
+    private volatile TaskReporter taskReporter;
+    private TezTaskUmbilicalProtocol umbilical;
     private volatile long startTime;
+    private volatile String threadName;
 
 
-    ContainerRunnerCallable(RunContainerRequestProto request, Configuration conf,
+    TaskRunnerCallable(SubmitWorkRequestProto request, Configuration conf,
                             ExecutionContext executionContext, Map<String, String> envMap,
                             String[] localDirs, String workingDir, Credentials credentials,
-                            long memoryAvailable, String localHostName) {
+                            long memoryAvailable, ConfParams confParams) {
       this.request = request;
       this.conf = conf;
       this.executionContext = executionContext;
@@ -214,40 +258,105 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       this.objectRegistry = new ObjectRegistryImpl();
       this.credentials = credentials;
       this.memoryAvailable = memoryAvailable;
-      this.localHostname = localHostName;
-
+      this.confParams = confParams;
+      // TODO This executor seems unnecessary. Here and TezChild
+      ExecutorService executorReal = Executors.newFixedThreadPool(1,
+          new ThreadFactoryBuilder()
+              .setDaemon(true)
+              .setNameFormat(
+                  "TezTaskRunner_" + request.getFragmentSpec().getTaskAttemptIdString())
+              .build());
+      executor = MoreExecutors.listeningDecorator(executorReal);
     }
 
     @Override
     protected ContainerExecutionResult callInternal() throws Exception {
       this.startTime = System.currentTimeMillis();
+      this.threadName = Thread.currentThread().getName();
+      // TODO Consolidate this code with TezChild.
       Stopwatch sw = new Stopwatch().start();
-      tezChild =
-          new TezChild(conf, request.getAmHost(), request.getAmPort(),
-              request.getContainerIdString(),
-              request.getTokenIdentifier(), request.getAppAttemptNumber(), workingDir, localDirs,
-              envMap, objectRegistry, pid,
-              executionContext, credentials, memoryAvailable, request.getUser(), null);
-      ContainerExecutionResult result = tezChild.run();
+       UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser(request.getUser());
+       taskUgi.addCredentials(credentials);
+
+       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
+       Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<String, ByteBuffer>();
+       serviceConsumerMetadata.put(TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
+           TezCommonUtils.convertJobTokenToBytes(jobToken));
+       Multimap<String, String> startedInputsMap = HashMultimap.create();
+
+       UserGroupInformation taskOwner =
+           UserGroupInformation.createRemoteUser(request.getTokenIdentifier());
+       final InetSocketAddress address =
+           NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
+       SecurityUtil.setTokenService(jobToken, address);
+       taskOwner.addToken(jobToken);
+       umbilical = taskOwner.doAs(new PrivilegedExceptionAction<TezTaskUmbilicalProtocol>() {
+         @Override
+         public TezTaskUmbilicalProtocol run() throws Exception {
+           return RPC.getProxy(TezTaskUmbilicalProtocol.class,
+               TezTaskUmbilicalProtocol.versionID, address, conf);
+         }
+       });
+
+       taskReporter = new TaskReporter(
+           umbilical,
+           confParams.amHeartbeatIntervalMsMax,
+           confParams.amCounterHeartbeatInterval,
+           confParams.amMaxEventsPerHeartbeat,
+           new AtomicLong(0),
+           request.getContainerIdString());
+
+       taskRunner = new TezTaskRunner(conf, taskUgi, localDirs,
+           Converters.getTaskSpecfromProto(request.getFragmentSpec()), umbilical,
+           request.getAppAttemptNumber(),
+           serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor, objectRegistry,
+           pid,
+           executionContext, memoryAvailable);
+
+       boolean shouldDie;
+       try {
+         shouldDie = !taskRunner.run();
+         if (shouldDie) {
+           LOG.info("Got a shouldDie notification via heartbeats. Shutting down");
+           return new ContainerExecutionResult(ContainerExecutionResult.ExitStatus.SUCCESS, null,
+               "Asked to die by the AM");
+         }
+       } catch (IOException e) {
+         return new ContainerExecutionResult(ContainerExecutionResult.ExitStatus.EXECUTION_FAILURE,
+             e, "TaskExecutionFailure: " + e.getMessage());
+       } catch (TezException e) {
+         return new ContainerExecutionResult(ContainerExecutionResult.ExitStatus.EXECUTION_FAILURE,
+             e, "TaskExecutionFailure: " + e.getMessage());
+       } finally {
+        // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
+//        FileSystem.closeAllForUGI(taskUgi);
+       }
       LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
           sw.stop().elapsedMillis());
-      return result;
+      return new ContainerExecutionResult(ContainerExecutionResult.ExitStatus.SUCCESS, null,
+          null);
     }
 
-    public TezChild getTezChild() {
-      return this.tezChild;
+    public void shutdown() {
+      executor.shutdownNow();
+      if (taskReporter != null) {
+        taskReporter.shutdown();
+      }
+      if (umbilical != null) {
+        RPC.stopProxy(umbilical);
+      }
     }
   }
 
-  final class ContainerRunnerCallback implements FutureCallback<ContainerExecutionResult> {
+  final class TaskRunnerCallback implements FutureCallback<ContainerExecutionResult> {
 
-    private final RunContainerRequestProto request;
-    private final ContainerRunnerCallable containerRunnerCallable;
+    private final SubmitWorkRequestProto request;
+    private final TaskRunnerCallable taskRunnerCallable;
 
-    ContainerRunnerCallback(RunContainerRequestProto request,
-                            ContainerRunnerCallable containerRunnerCallable) {
+    TaskRunnerCallback(SubmitWorkRequestProto request,
+                       TaskRunnerCallable taskRunnerCallable) {
       this.request = request;
-      this.containerRunnerCallable = containerRunnerCallable;
+      this.taskRunnerCallable = taskRunnerCallable;
     }
 
     // TODO Slightly more useful error handling
@@ -255,51 +364,62 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     public void onSuccess(ContainerExecutionResult result) {
       switch (result.getExitStatus()) {
         case SUCCESS:
-          LOG.info("Successfully finished: " + request.getApplicationIdString() + ", containerId=" +
-              request.getContainerIdString());
+          LOG.info("Successfully finished: " + getTaskIdentifierString(request));
           metrics.incrExecutorTotalSuccess();
           break;
         case EXECUTION_FAILURE:
-          LOG.info("Failed to run: " + request.getApplicationIdString() + ", containerId=" +
-              request.getContainerIdString(), result.getThrowable());
+          LOG.info("Failed to run: " + getTaskIdentifierString(request));
           metrics.incrExecutorTotalExecutionFailed();
           break;
         case INTERRUPTED:
-          LOG.info(
-              "Interrupted while running: " + request.getApplicationIdString() + ", containerId=" +
-                  request.getContainerIdString(), result.getThrowable());
+          LOG.info("Interrupted while running: " + getTaskIdentifierString(request));
           metrics.incrExecutorTotalInterrupted();
           break;
         case ASKED_TO_DIE:
-          LOG.info(
-              "Asked to die while running: " + request.getApplicationIdString() + ", containerId=" +
-                  request.getContainerIdString());
+          LOG.info("Asked to die while running: " + getTaskIdentifierString(request));
           metrics.incrExecutorTotalAskedToDie();
           break;
       }
+      taskRunnerCallable.shutdown();
       HistoryLogger
-          .logFragmentEnd(request.getApplicationIdString(),
-              request.getContainerIdString(),
-              localAddress.get().getHostName(), null, null, -1, -1,
-              containerRunnerCallable.startTime, true);
+          .logFragmentEnd(request.getApplicationIdString(), request.getContainerIdString(),
+              localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
+              request.getFragmentSpec().getVertexName(),
+              request.getFragmentSpec().getFragmentNumber(),
+              request.getFragmentSpec().getAttemptNumber(), taskRunnerCallable.threadName,
+              taskRunnerCallable.startTime, true);
       metrics.decrExecutorNumQueuedRequests();
     }
 
     @Override
     public void onFailure(Throwable t) {
-      LOG.error(
-          "TezChild execution failed for : " + request.getApplicationIdString() + ", containerId=" +
-              request.getContainerIdString());
-      TezChild tezChild = containerRunnerCallable.getTezChild();
-      if (tezChild != null) {
-        tezChild.shutdown();
-      }
+      LOG.error("TezTaskRunner execution failed for : " + getTaskIdentifierString(request), t);
+      taskRunnerCallable.shutdown();
       HistoryLogger
-          .logFragmentEnd(request.getApplicationIdString(),
-              request.getContainerIdString(),
-              localAddress.get().getHostName(), null, null, -1, -1,
-              containerRunnerCallable.startTime, false);
+          .logFragmentEnd(request.getApplicationIdString(), request.getContainerIdString(),
+              localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
+              request.getFragmentSpec().getVertexName(),
+              request.getFragmentSpec().getFragmentNumber(),
+              request.getFragmentSpec().getAttemptNumber(), taskRunnerCallable.threadName,
+              taskRunnerCallable.startTime, false);
       metrics.decrExecutorNumQueuedRequests();
     }
+
+    private String getTaskIdentifierString(SubmitWorkRequestProto request) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("AppId=").append(request.getApplicationIdString())
+          .append(", containerId=").append(request.getContainerIdString())
+          .append(", Dag=").append(request.getFragmentSpec().getDagName())
+          .append(", Vertex=").append(request.getFragmentSpec().getVertexName())
+          .append(", FragmentNum=").append(request.getFragmentSpec().getFragmentNumber())
+          .append(", Attempt=").append(request.getFragmentSpec().getAttemptNumber());
+      return sb.toString();
+    }
+  }
+
+  private static class ConfParams {
+    int amHeartbeatIntervalMsMax;
+    long amCounterHeartbeatInterval;
+    int amMaxEventsPerHeartbeat;
   }
 }

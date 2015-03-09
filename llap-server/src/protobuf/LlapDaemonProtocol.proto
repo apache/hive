@@ -21,7 +21,46 @@ option java_outer_classname = "LlapDaemonProtocolProtos";
 option java_generic_services = true;
 option java_generate_equals_and_hash = true;
 
-message RunContainerRequestProto {
+// TODO Change this as the interface evolves. Currently using Tez constructs.
+
+message UserPayloadProto {
+  optional bytes user_payload = 1;
+  optional int32 version = 2;
+}
+
+message EntityDescriptorProto {
+  optional string class_name = 1;
+  optional UserPayloadProto user_payload = 2;
+  optional bytes history_text = 3;
+}
+
+message IOSpecProto {
+  optional string connected_vertex_name = 1;
+  optional EntityDescriptorProto io_descriptor = 2;
+  optional int32 physical_edge_count = 3;
+}
+
+message GroupInputSpecProto {
+  optional string group_name = 1;
+  repeated string group_vertices = 2;
+  optional EntityDescriptorProto merged_input_descriptor = 3;
+}
+
+
+message FragmentSpecProto {
+  optional string task_attempt_id_string = 1;
+  optional string dag_name = 2;
+  optional string vertex_name = 3;
+  optional EntityDescriptorProto processor_descriptor = 4;
+  repeated IOSpecProto input_specs = 5;
+  repeated IOSpecProto output_specs = 6;
+  repeated GroupInputSpecProto grouped_input_specs = 7;
+  optional int32 vertex_parallelism = 8;
+  optional int32 fragment_number =9;
+  optional int32 attempt_number = 10;
+}
+
+message SubmitWorkRequestProto {
   optional string container_id_string = 1;
   optional string am_host = 2;
   optional int32 am_port = 3;
@@ -30,11 +69,12 @@ message RunContainerRequestProto {
   optional string user = 6;
   optional string application_id_string = 7;
   optional int32 app_attempt_number = 8;
+  optional FragmentSpecProto fragment_spec = 9;
 }
 
-message RunContainerResponseProto {
+message SubmitWorkResponseProto {
 }
 
 service LlapDaemonProtocol {
-  rpc runContainer(RunContainerRequestProto) returns (RunContainerResponseProto);
+  rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
 }

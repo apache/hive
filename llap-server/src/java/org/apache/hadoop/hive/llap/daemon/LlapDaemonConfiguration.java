@@ -57,8 +57,9 @@ public class LlapDaemonConfiguration extends Configuration {
 
 
   // Section for configs used in the AM //
-  public static final String LLAP_DAEMON_AM_SERVICE_HOSTS = LLAP_DAEMON_PREFIX + "service.hosts";
-  public static final String LLAP_DAEMON_AM_COMMUNICATOR_NUM_THREADS = LLAP_DAEMON_PREFIX + "communicator.num.threads";
-  public static final int LLAP_DAEMON_AM_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
+  public static final String LLAP_DAEMON_SERVICE_HOSTS = LLAP_DAEMON_PREFIX + "service.hosts";
+
+  public static final String LLAP_DAEMON_COMMUNICATOR_NUM_THREADS = LLAP_DAEMON_PREFIX + "communicator.num.threads";
+  public static final int LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
 
 }

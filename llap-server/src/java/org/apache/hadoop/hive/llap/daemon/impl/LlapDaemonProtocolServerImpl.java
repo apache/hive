@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
@@ -34,8 +35,6 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerResponseProto;
 
 public class LlapDaemonProtocolServerImpl extends AbstractService
     implements LlapDaemonProtocolBlockingPB {
@@ -58,18 +57,17 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
   }
 
   @Override
-  public RunContainerResponseProto runContainer(RpcController controller,
-                                                RunContainerRequestProto request) throws
+  public SubmitWorkResponseProto submitWork(RpcController controller,
+                                            LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
       ServiceException {
-    LOG.info("Received request: " + request);
+    LOG.info("DEBUG: Recevied request: " + request);
     try {
-      containerRunner.queueContainer(request);
+      containerRunner.submitWork(request);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
-    return RunContainerResponseProto.getDefaultInstance();
+    return SubmitWorkResponseProto.getDefaultInstance();
   }
-
 
   @Override
   public void serviceStart() {

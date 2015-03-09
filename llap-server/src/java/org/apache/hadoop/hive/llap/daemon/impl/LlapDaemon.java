@@ -24,7 +24,7 @@ import javax.management.ObjectName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
@@ -190,8 +190,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   @Override
-  public void queueContainer(RunContainerRequestProto request) throws IOException {
-    containerRunner.queueContainer(request);
+  public void submitWork(LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
+      IOException {
+    containerRunner.submitWork(request);
   }
 
   // LlapDaemonMXBean methods. Will be exposed via JMX
@@ -224,4 +225,6 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   public long getMaxJvmMemory() {
     return maxJvmMemory;
   }
+
+
 }

@@ -73,10 +73,12 @@ public class TezSessionState {
   public static final String LLAP_SERVICE = "LLAP";
   public static final String DEFAULT_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_NAME_DEFAULT;
   public static final String LOCAL_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_LOCAL_MODE_NAME_DEFAULT;
-  private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.DaemonTaskSchedulerService";
-  private static final String LLAP_LAUNCHER = "org.apache.tez.dag.app.launcher.DaemonContainerLauncher";
+  private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.LlapTaskSchedulerService";
+  private static final String LLAP_LAUNCHER = "org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher";
+  private static final String LLAP_TASK_COMMUNICATOR = "org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator";
   private static final String LLAP_SERVICE_SCHEDULER = LLAP_SERVICE + ":" + LLAP_SCHEDULER;
   private static final String LLAP_SERVICE_LAUNCHER = LLAP_SERVICE + ":" + LLAP_LAUNCHER;
+  private static final String LLAP_SERVICE_TASK_COMMUNICATOR = LLAP_SERVICE + ":" + LLAP_TASK_COMMUNICATOR;
 
   private HiveConf conf;
   private Path tezScratchDir;
@@ -209,7 +211,10 @@ public class TezSessionState {
         DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_SCHEDULER);
 
     tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS,
-	DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
+	      DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
+
+    tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS,
+        DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_TASK_COMMUNICATOR);
 
     // container prewarming. tell the am how many containers we need
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {

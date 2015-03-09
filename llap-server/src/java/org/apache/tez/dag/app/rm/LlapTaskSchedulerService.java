@@ -49,9 +49,9 @@ import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.tez.dag.app.AppContext;
 
 
-public class DaemonTaskSchedulerService extends TaskSchedulerService {
+public class LlapTaskSchedulerService extends TaskSchedulerService {
 
-  private static final Log LOG = LogFactory.getLog(DaemonTaskSchedulerService.class);
+  private static final Log LOG = LogFactory.getLog(LlapTaskSchedulerService.class);
 
   private final ExecutorService appCallbackExecutor;
   private final TaskSchedulerAppCallback appClientDelegate;
@@ -60,6 +60,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   private final Set<String> serviceHostSet;
   private final ContainerFactory containerFactory;
   private final Random random = new Random();
+  private final int containerPort;
 
   private final String clientHostname;
   private final int clientPort;
@@ -79,12 +80,12 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   // TODO: replace with service registry
   private final YarnClient yc = YarnClient.createYarnClient();
 
-  public DaemonTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
+  public LlapTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
                                     String clientHostname, int clientPort, String trackingUrl,
                                     long customAppIdIdentifier,
                                     Configuration conf) {
     // Accepting configuration here to allow setting up fields as final
-    super(DaemonTaskSchedulerService.class.getName());
+    super(LlapTaskSchedulerService.class.getName());
     this.appCallbackExecutor = createAppCallbackExecutorService();
     this.appClientDelegate = createAppCallbackDelegate(appClient);
     this.appContext = appContext;
@@ -107,7 +108,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
     int coresPerExecutor = (int) (coresPerInstance / (float) executorsPerInstance);
     this.resourcePerExecutor = Resource.newInstance(memoryPerExecutor, coresPerExecutor);
 
-    String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_AM_SERVICE_HOSTS);
+    String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts == null || hosts.length == 0) {
       hosts = new String[]{"localhost"};
       serviceHosts.add("localhost");
@@ -118,6 +119,8 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
         serviceHostSet.add(host);
       }
     }
+    this.containerPort = conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+        LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
 
     if (serviceHosts.size() > 0) {
       LOG.info("Running with configuration: " +
@@ -125,14 +128,16 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
           ", vcoresPerInstance=" + coresPerInstance +
           ", executorsPerInstance=" + executorsPerInstance +
           ", resourcePerInstanceInferred=" + resourcePerExecutor +
-          ", hosts=" + serviceHosts.toString());
+          ", hosts=" + serviceHosts.toString() +
+          ", rpcPort=" + containerPort);
     } else {
       LOG.info("Running with configuration: " +
           "memoryPerInstance=" + memoryPerInstance +
           ", vcoresPerInstance=" + coresPerInstance +
           ", executorsPerInstance=" + executorsPerInstance +
           ", resourcePerInstanceInferred=" + resourcePerExecutor +
-          ", hosts=<pending>");
+          ", hosts=<pending>" +
+          ", rpcPort=<pending>");
     }
 
   }
@@ -220,7 +225,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   public void allocateTask(Object task, Resource capability, String[] hosts, String[] racks,
                            Priority priority, Object containerSignature, Object clientCookie) {
     String host = selectHost(hosts);
-    Container container = containerFactory.createContainer(resourcePerExecutor, priority, host);
+    Container container = containerFactory.createContainer(resourcePerExecutor, priority, host, containerPort);
     runningTasks.put(task, container.getId());
     appClientDelegate.taskAllocated(task, clientCookie, container);
   }
@@ -230,7 +235,7 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
   public void allocateTask(Object task, Resource capability, ContainerId containerId,
                            Priority priority, Object containerSignature, Object clientCookie) {
     String host = selectHost(null);
-    Container container = containerFactory.createContainer(resourcePerExecutor, priority, host);
+    Container container = containerFactory.createContainer(resourcePerExecutor, priority, host, containerPort);
     runningTasks.put(task, container.getId());
     appClientDelegate.taskAllocated(task, clientCookie, container);
   }
@@ -316,9 +321,9 @@ public class DaemonTaskSchedulerService extends TaskSchedulerService {
           .newInstance(appId, appContext.getApplicationAttemptId().getAttemptId());
     }
 
-    public Container createContainer(Resource capability, Priority priority, String hostname) {
+    public Container createContainer(Resource capability, Priority priority, String hostname, int port) {
       ContainerId containerId = ContainerId.newInstance(customAppAttemptId, nextId.getAndIncrement());
-      NodeId nodeId = NodeId.newInstance(hostname, 0);
+      NodeId nodeId = NodeId.newInstance(hostname, port);
       String nodeHttpAddress = "hostname:0";
 
       Container container = Container.newInstance(containerId,
