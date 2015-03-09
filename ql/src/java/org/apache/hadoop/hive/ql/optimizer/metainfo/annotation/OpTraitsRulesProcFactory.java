@@ -82,7 +82,7 @@ public class OpTraitsRulesProcFactory {
   }
 
   /*
-   * Reduce sink operator is the de-facto operator
+   * Reduce sink operator is the de-facto operator 
    * for determining keyCols (emit keys of a map phase)
    */
   public static class ReduceSinkRule implements NodeProcessor {
@@ -106,25 +106,24 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(bucketCols);
       int numBuckets = -1;
-      int numReduceSinks = 1;
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
-        numReduceSinks += parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols);
       rs.setOpTraits(opTraits);
       return null;
     }
   }
 
   /*
-   * Table scan has the table object and pruned partitions that has information
-   * such as bucketing, sorting, etc. that is used later for optimization.
+   * Table scan has the table object and pruned partitions that has information such as
+   * bucketing, sorting, etc. that is used later for optimization.
    */
   public static class TableScanRule implements NodeProcessor {
 
-    public boolean checkBucketedTable(Table tbl, ParseContext pGraphContext,
+    public boolean checkBucketedTable(Table tbl, 
+        ParseContext pGraphContext,
         PrunedPartitionList prunedParts) throws SemanticException {
 
       if (tbl.isPartitioned()) {
@@ -132,11 +131,9 @@ public class OpTraitsRulesProcFactory {
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
         if (!partitions.isEmpty()) {
           for (Partition p : partitions) {
-            List<String> fileNames = 
-                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(), 
-                    pGraphContext);
-            // The number of files for the table should be same as number of
-            // buckets.
+            List<String> fileNames =
+                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(), pGraphContext);
+            // The number of files for the table should be same as number of buckets.
             int bucketCount = p.getBucketCount();
 
             if (fileNames.size() != 0 && fileNames.size() != bucketCount) {
@@ -146,9 +143,8 @@ public class OpTraitsRulesProcFactory {
         }
       } else {
 
-        List<String> fileNames = 
-            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(), 
-                pGraphContext);
+        List<String> fileNames =
+            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(), pGraphContext);
         Integer num = new Integer(tbl.getNumBuckets());
 
         // The number of files for the table should be same as number of buckets.
@@ -187,8 +183,7 @@ public class OpTraitsRulesProcFactory {
         }
         sortedColsList.add(sortCols);
       }
-      // num reduce sinks hardcoded to 0 because TS has no parents
-      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList, 0);
+      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -213,13 +208,8 @@ public class OpTraitsRulesProcFactory {
       }
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
-      int numReduceSinks = 0;
-      OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
-      if (parentOpTraits != null) {
-        numReduceSinks = parentOpTraits.getNumReduceSinks();
-      }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols);
       gbyOp.setOpTraits(opTraits);
       return null;
     }
@@ -227,8 +217,8 @@ public class OpTraitsRulesProcFactory {
 
   public static class SelectRule implements NodeProcessor {
 
-    public List<List<String>> getConvertedColNames(
-        List<List<String>> parentColNames, SelectOperator selOp) {
+    public List<List<String>> getConvertedColNames(List<List<String>> parentColNames,
+        SelectOperator selOp) {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       if (selOp.getColumnExprMap() != null) {
         if (parentColNames != null) {
@@ -254,8 +244,8 @@ public class OpTraitsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      SelectOperator selOp = (SelectOperator) nd;
-      List<List<String>> parentBucketColNames = 
+      SelectOperator selOp = (SelectOperator)nd;
+      List<List<String>> parentBucketColNames =
           selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
 
       List<List<String>> listBucketCols = null;
@@ -264,21 +254,18 @@ public class OpTraitsRulesProcFactory {
         if (parentBucketColNames != null) {
           listBucketCols = getConvertedColNames(parentBucketColNames, selOp);
         }
-        List<List<String>> parentSortColNames = 
-            selOp.getParentOperators().get(0).getOpTraits().getSortCols();
+        List<List<String>> parentSortColNames = selOp.getParentOperators().get(0).getOpTraits()
+            .getSortCols();
         if (parentSortColNames != null) {
           listSortCols = getConvertedColNames(parentSortColNames, selOp);
         }
       }
 
       int numBuckets = -1;
-      int numReduceSinks = 0;
-      OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
-      if (parentOpTraits != null) {
-        numBuckets = parentOpTraits.getNumBuckets();
-        numReduceSinks = parentOpTraits.getNumReduceSinks();
+      if (selOp.getParentOperators().get(0).getOpTraits() != null) {
+        numBuckets = selOp.getParentOperators().get(0).getOpTraits().getNumBuckets();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols);
       selOp.setOpTraits(opTraits);
       return null;
     }
@@ -289,31 +276,26 @@ public class OpTraitsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      JoinOperator joinOp = (JoinOperator) nd;
+      JoinOperator joinOp = (JoinOperator)nd;
       List<List<String>> bucketColsList = new ArrayList<List<String>>();
       List<List<String>> sortColsList = new ArrayList<List<String>>();
       byte pos = 0;
-      int numReduceSinks = 0; // will be set to the larger of the parents
       for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
         if (!(parentOp instanceof ReduceSinkOperator)) {
           // can be mux operator
           break;
         }
-        ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
+        ReduceSinkOperator rsOp = (ReduceSinkOperator)parentOp;
         if (rsOp.getOpTraits() == null) {
           ReduceSinkRule rsRule = new ReduceSinkRule();
           rsRule.process(rsOp, stack, procCtx, nodeOutputs);
         }
-        OpTraits parentOpTraits = rsOp.getOpTraits();
-        bucketColsList.add(getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos));
-        sortColsList.add(getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos));
-        if (parentOpTraits.getNumReduceSinks() > numReduceSinks) {
-          numReduceSinks = parentOpTraits.getNumReduceSinks();
-        }
+        bucketColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getBucketColNames(), pos));
+        sortColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getSortCols(), pos));
         pos++;
       }
 
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList));
       return null;
     }
 
@@ -329,7 +311,7 @@ public class OpTraitsRulesProcFactory {
         for (String colName : colNames) {
           for (ExprNodeDesc exprNode : joinOp.getConf().getExprs().get(pos)) {
             if (exprNode instanceof ExprNodeColumnDesc) {
-              if (((ExprNodeColumnDesc) (exprNode)).getColumn().equals(colName)) {
+              if(((ExprNodeColumnDesc)(exprNode)).getColumn().equals(colName)) {
                 for (Entry<String, ExprNodeDesc> entry : joinOp.getColumnExprMap().entrySet()) {
                   if (entry.getValue().isSame(exprNode)) {
                     bucketColNames.add(entry.getKey());
@@ -356,30 +338,20 @@ public class OpTraitsRulesProcFactory {
   }
 
   /*
-   * When we have operators that have multiple parents, it is not clear which
-   * parent's traits we need to propagate forward.
+   *  When we have operators that have multiple parents, it is not
+   *  clear which parent's traits we need to propagate forward.
    */
   public static class MultiParentRule implements NodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+      OpTraits opTraits = new OpTraits(null, -1, null);
       @SuppressWarnings("unchecked")
-      Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
-
-      int numReduceSinks = 0;
-      for (Operator<?> parentOp : operator.getParentOperators()) {
-        if (parentOp.getOpTraits() == null) {
-          continue;
-        }
-        if (parentOp.getOpTraits().getNumReduceSinks() > numReduceSinks) {
-          numReduceSinks = parentOp.getOpTraits().getNumReduceSinks();
-        }
-      }
-      OpTraits opTraits = new OpTraits(null, -1, null, numReduceSinks);
+      Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>)nd;
       operator.setOpTraits(opTraits);
       return null;
-    }
+    } 
   }
 
   public static NodeProcessor getTableScanRule() {
@@ -389,7 +361,7 @@ public class OpTraitsRulesProcFactory {
   public static NodeProcessor getReduceSinkRule() {
     return new ReduceSinkRule();
   }
-
+  
   public static NodeProcessor getSelectRule() {
     return new SelectRule();
   }
