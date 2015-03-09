@@ -588,8 +588,15 @@ public class SessionState {
       Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    LOG.debug("HDFS root scratch dir: " + rootHDFSDirPath + ", permission: "
-        + currentHDFSDirPermission);
+    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+      String schema = rootHDFSDirPath.toUri().getScheme();
+      LOG.debug(
+        "HDFS root scratch dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
+          currentHDFSDirPermission);
+    } else {
+      LOG.debug(
+        "HDFS root scratch dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
+    }
     // If the root HDFS scratch dir already exists, make sure it is writeable.
     if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
         .toShort()) == writableHDFSDirPermission.toShort())) {
