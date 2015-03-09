@@ -451,6 +451,7 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <optional>true</optional>
     </dependency>
     <!-- Following have only one version, which is cdh.hadoop.version -->
     <dependency>
