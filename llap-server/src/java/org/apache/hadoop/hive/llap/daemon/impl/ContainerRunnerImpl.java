@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
+import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RunContainerRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
@@ -129,7 +130,9 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
   @Override
   public void queueContainer(RunContainerRequestProto request) throws IOException {
-    LOG.info("Queing container for execution: " + request);
+    HistoryLogger.logFragmentStart(request.getApplicationIdString(), request.getContainerIdString(),
+        localAddress.get().getHostName(), null, null, -1, -1);
+    LOG.info("Queuing container for execution: " + request);
     // This is the start of container-annotated logging.
     NDC.push(request.getContainerIdString());
     try {
@@ -169,7 +172,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
       ContainerRunnerCallable callable = new ContainerRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          workingDir, credentials, memoryPerExecutor);
+          workingDir, credentials, memoryPerExecutor, localAddress.get().getHostName());
       ListenableFuture<ContainerExecutionResult> future = executorService
           .submit(callable);
       Futures.addCallback(future, new ContainerRunnerCallback(request, callable));
@@ -194,12 +197,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     private final Credentials credentials;
     private final long memoryAvailable;
     private volatile TezChild tezChild;
+    private final String localHostname;
+    private volatile long startTime;
 
 
     ContainerRunnerCallable(RunContainerRequestProto request, Configuration conf,
                             ExecutionContext executionContext, Map<String, String> envMap,
                             String[] localDirs, String workingDir, Credentials credentials,
-                            long memoryAvailable) {
+                            long memoryAvailable, String localHostName) {
       this.request = request;
       this.conf = conf;
       this.executionContext = executionContext;
@@ -209,11 +214,13 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       this.objectRegistry = new ObjectRegistryImpl();
       this.credentials = credentials;
       this.memoryAvailable = memoryAvailable;
+      this.localHostname = localHostName;
 
     }
 
     @Override
     protected ContainerExecutionResult callInternal() throws Exception {
+      this.startTime = System.currentTimeMillis();
       Stopwatch sw = new Stopwatch().start();
       tezChild =
           new TezChild(conf, request.getAmHost(), request.getAmPort(),
@@ -270,6 +277,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
           metrics.incrExecutorTotalAskedToDie();
           break;
       }
+      HistoryLogger
+          .logFragmentEnd(request.getApplicationIdString(),
+              request.getContainerIdString(),
+              localAddress.get().getHostName(), null, null, -1, -1,
+              containerRunnerCallable.startTime, true);
       metrics.decrExecutorNumQueuedRequests();
     }
 
@@ -282,6 +294,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       if (tezChild != null) {
         tezChild.shutdown();
       }
+      HistoryLogger
+          .logFragmentEnd(request.getApplicationIdString(),
+              request.getContainerIdString(),
+              localAddress.get().getHostName(), null, null, -1, -1,
+              containerRunnerCallable.startTime, false);
       metrics.decrExecutorNumQueuedRequests();
     }
   }
