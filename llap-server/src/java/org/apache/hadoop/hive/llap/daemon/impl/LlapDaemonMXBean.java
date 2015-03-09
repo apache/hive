@@ -50,10 +50,22 @@ public interface LlapDaemonMXBean {
   public String getLocalDirs();
 
   /**
-   * Gets llap daemon configured memory per instance.
+   * Gets llap daemon configured executor memory per instance.
    * @return memory per instance
    */
-  public long getMemoryPerInstance();
+  public long getExecutorMemoryPerInstance();
+
+  /**
+   * Gets llap daemon configured io memory per instance.
+   * @return memory per instance
+   */
+  public long getIoMemoryPerInstance();
+
+  /**
+   * Checks if Llap IO is enabled
+   * @return true if enabled, false if not
+   */
+  public boolean isIoEnabled();
 
   /**
    * Gets max available jvm memory.

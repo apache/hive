@@ -17,11 +17,14 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.ObjectName;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
@@ -33,6 +36,7 @@ import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.util.JvmPauseMonitor;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -42,59 +46,72 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
 
   private static final Logger LOG = Logger.getLogger(LlapDaemon.class);
 
-  private final LlapDaemonConfiguration daemonConf;
-  private final int numExecutors;
-  private final int rpcPort;
+  private final Configuration shuffleHandlerConf;
   private final LlapDaemonProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
-  private final String[] localDirs;
-  private final int shufflePort;
-  private final long memoryPerInstance;
-  private final long maxJvmMemory;
+  private final AtomicLong numSubmissions = new AtomicLong(0);
   private JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
   private final LlapDaemonExecutorMetrics metrics;
 
+  // Parameters used for JMX
+  private final boolean llapIoEnabled;
+  private final long executorMemoryPerInstance;
+  private final long ioMemoryPerInstance;
+  private final int numExecutors;
+  private final long maxJvmMemory;
+  private final String[] localDirs;
+
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> address = new AtomicReference<InetSocketAddress>();
 
-  public LlapDaemon(LlapDaemonConfiguration daemonConf) {
+  public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
+                    boolean ioEnabled, long ioMemoryBytes, String[] localDirs, int rpcPort,
+                    int shufflePort) {
     super("LlapDaemon");
 
     printAsciiArt();
 
-    // TODO This needs to read TezConfiguration to pick up things like the heartbeat interval from config.
-    // Ideally, this would be part of llap-daemon-configuration
-    this.numExecutors = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-        LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
-    this.rpcPort = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
-        LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
-    this.daemonConf = daemonConf;
-    this.localDirs = daemonConf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS);
-    this.shufflePort = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT, -1);
+    Preconditions.checkArgument(numExecutors > 0);
+    Preconditions.checkArgument(rpcPort == 0 || (rpcPort > 1024 && rpcPort < 65536),
+        "RPC Port must be between 1025 and 65535, or 0 automatic selection");
+    Preconditions.checkArgument(localDirs != null && localDirs.length > 0,
+        "Work dirs must be specified");
+    Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
+        "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
 
-    memoryPerInstance = this.daemonConf
-        .getInt(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-            LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT) * 1024l * 1024l;
-    maxJvmMemory = Runtime.getRuntime().maxMemory();
+    this.maxJvmMemory = Runtime.getRuntime().maxMemory();
+    this.llapIoEnabled = ioEnabled;
+    this.executorMemoryPerInstance = executorMemoryBytes;
+    this.ioMemoryPerInstance = ioMemoryBytes;
+    this.numExecutors = numExecutors;
+    this.localDirs = localDirs;
 
-    LOG.info("LlapDaemon started with the following configuration: " +
+    LOG.info("Attempting to start LlapDaemonConf with the following configuration: " +
         "numExecutors=" + numExecutors +
         ", rpcListenerPort=" + rpcPort +
         ", workDirs=" + Arrays.toString(localDirs) +
         ", shufflePort=" + shufflePort +
-        ", memoryConfigured=" + memoryPerInstance +
+        ", executorMemory=" + executorMemoryBytes +
+        ", llapIoEnabled=" + ioEnabled +
+        ", llapIoCacheSize=" + ioMemoryBytes +
         ", jvmAvailableMemory=" + maxJvmMemory);
 
-    Preconditions.checkArgument(this.numExecutors > 0);
-    Preconditions.checkArgument(this.rpcPort > 1024 && this.rpcPort < 65536,
-        "RPC Port must be between 1025 and 65534");
-    Preconditions.checkArgument(this.localDirs != null && this.localDirs.length > 0,
-        "Work dirs must be specified");
-    Preconditions.checkArgument(this.shufflePort > 0, "ShufflePort must be specified");
-    Preconditions.checkState(maxJvmMemory >= memoryPerInstance,
-        "Invalid configuration. Xmx value too small. maxAvailable=" + maxJvmMemory + ", configured=" +
-            memoryPerInstance);
+    long memRequired = executorMemoryBytes + (ioEnabled ? ioMemoryBytes : 0);
+    Preconditions.checkState(maxJvmMemory >= memRequired,
+        "Invalid configuration. Xmx value too small. maxAvailable=" + maxJvmMemory +
+            ", configured(exec + io if enabled)=" +
+            memRequired);
+
+    this.shuffleHandlerConf = new Configuration(daemonConf);
+    this.shuffleHandlerConf.setInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, shufflePort);
+    this.shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
+        StringUtils.arrayToString(localDirs));
+
+    // Less frequently set parameter, not passing in as a param.
+    int numHandlers = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
+        LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
+    this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
 
     // Initialize the metric system
     LlapMetricsSystem.initialize("LlapDaemon");
@@ -105,12 +122,11 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors);
     metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
-    LOG.info("Started LlapMetricsSystem with displayName: " + displayName
-        + " sessionId: " + sessionId);
+    LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
+        " sessionId: " + sessionId);
 
-    this.server = new LlapDaemonProtocolServerImpl(daemonConf, this, address);
     this.containerRunner = new ContainerRunnerImpl(numExecutors, localDirs, shufflePort, address,
-        memoryPerInstance, metrics);
+        executorMemoryBytes, metrics);
   }
 
   private void printAsciiArt() {
@@ -136,15 +152,18 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   @Override
-  public void serviceStart() {
+  public void serviceStart() throws Exception {
+    ShuffleHandler.initializeAndStart(shuffleHandlerConf);
     server.start();
     containerRunner.start();
   }
 
-  public void serviceStop() {
+  public void serviceStop() throws Exception {
+    // TODO Shutdown LlapIO
     shutdown();
     containerRunner.stop();
     server.stop();
+    ShuffleHandler.shutdown();
   }
 
   public void shutdown() {
@@ -167,14 +186,28 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   public static void main(String[] args) throws Exception {
     LlapDaemon llapDaemon = null;
     try {
+      // Cache settings will need to be setup in llap-daemon-site.xml - since the daemons don't read hive-site.xml
+      // Ideally, these properties should be part of LlapDameonConf rather than HiveConf
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+       int numExecutors = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+           LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
+       String[] localDirs =
+           daemonConf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS);
+       int rpcPort = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+           LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+       int shufflePort = daemonConf
+           .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+       long executorMemoryBytes = daemonConf
+           .getInt(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
+               LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT) * 1024l * 1024l;
+       long cacheMemoryBytes =
+           HiveConf.getLongVar(daemonConf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+       boolean llapIoEnabled = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED);
+       llapDaemon =
+           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled,
+               cacheMemoryBytes, localDirs,
+               rpcPort, shufflePort);
 
-      Configuration shuffleHandlerConf = new Configuration(daemonConf);
-      shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
-          daemonConf.get(LlapDaemonConfiguration.LLAP_DAEMON_WORK_DIRS));
-      ShuffleHandler.initializeAndStart(shuffleHandlerConf);
-
-      llapDaemon = new LlapDaemon(daemonConf);
       llapDaemon.init(daemonConf);
       llapDaemon.start();
       LOG.info("Started LlapDaemon");
@@ -192,13 +225,23 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   @Override
   public void submitWork(LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
       IOException {
+    numSubmissions.incrementAndGet();
     containerRunner.submitWork(request);
+  }
+
+  @VisibleForTesting
+  public long getNumSubmissions() {
+    return numSubmissions.get();
+  }
+
+  public InetSocketAddress getListenerAddress() {
+    return server.getBindAddress();
   }
 
   // LlapDaemonMXBean methods. Will be exposed via JMX
   @Override
   public int getRpcPort() {
-    return rpcPort;
+    return server.getBindAddress().getPort();
   }
 
   @Override
@@ -208,7 +251,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
 
   @Override
   public int getShufflePort() {
-    return shufflePort;
+    return ShuffleHandler.get().getPort();
   }
 
   @Override
@@ -217,8 +260,18 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   @Override
-  public long getMemoryPerInstance() {
-    return memoryPerInstance;
+  public long getExecutorMemoryPerInstance() {
+    return executorMemoryPerInstance;
+  }
+
+  @Override
+  public long getIoMemoryPerInstance() {
+    return ioMemoryPerInstance;
+  }
+
+  @Override
+  public boolean isIoEnabled() {
+    return llapIoEnabled;
   }
 
   @Override

@@ -110,7 +110,7 @@ public class ShuffleHandler {
 
   private static final Log LOG = LogFactory.getLog(ShuffleHandler.class);
 
-  public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "tez.shuffle.handler.local-dirs";
+  public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "llap.shuffle.handler.local-dirs";
 
   public static final String SHUFFLE_MANAGE_OS_CACHE = "mapreduce.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
@@ -147,11 +147,10 @@ public class ShuffleHandler {
   private Map<String,String> userRsrc;
   private JobTokenSecretManager secretManager;
 
-  // TODO Fix this for tez.
   public static final String MAPREDUCE_SHUFFLE_SERVICEID =
       "mapreduce_shuffle";
 
-  public static final String SHUFFLE_PORT_CONFIG_KEY = "tez.shuffle.port";
+  public static final String SHUFFLE_PORT_CONFIG_KEY = "llap.shuffle.port";
   public static final int DEFAULT_SHUFFLE_PORT = 15551;
 
   // TODO Change configs to remove mapreduce references.
@@ -287,7 +286,7 @@ public class ShuffleHandler {
     port = ((InetSocketAddress)ch.getLocalAddress()).getPort();
     conf.set(SHUFFLE_PORT_CONFIG_KEY, Integer.toString(port));
     pipelineFact.SHUFFLE.setPort(port);
-    LOG.info("TezShuffleHandler" + " listening on port " + port);
+    LOG.info("LlapShuffleHandler" + " listening on port " + port);
   }
 
   public static void initializeAndStart(Configuration conf) throws Exception {
@@ -295,6 +294,12 @@ public class ShuffleHandler {
       INSTANCE = new ShuffleHandler(conf);
       INSTANCE.start();
       started.set(true);
+    }
+  }
+
+  public static void shutdown() throws Exception {
+    if (INSTANCE != null) {
+      INSTANCE.stop();
     }
   }
 
@@ -348,6 +353,10 @@ public class ShuffleHandler {
     Token<JobTokenIdentifier> jt = new Token<JobTokenIdentifier>();
     jt.readFields(in);
     return jt;
+  }
+
+  public int getPort() {
+    return port;
   }
 
   public void registerApplication(String applicationIdString, Token<JobTokenIdentifier> appToken,

@@ -33,7 +33,6 @@ import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
-import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 
 public class LlapDaemonProtocolServerImpl extends AbstractService
@@ -41,26 +40,31 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
 
   private static final Log LOG = LogFactory.getLog(LlapDaemonProtocolServerImpl.class);
 
-  private final LlapDaemonConfiguration daemonConf;
+  private final int numHandlers;
   private final ContainerRunner containerRunner;
+  private final int configuredPort;
   private RPC.Server server;
   private final AtomicReference<InetSocketAddress> bindAddress;
 
 
-  public LlapDaemonProtocolServerImpl(LlapDaemonConfiguration daemonConf,
+  public LlapDaemonProtocolServerImpl(int numHandlers,
                                       ContainerRunner containerRunner,
-                                      AtomicReference<InetSocketAddress> address) {
+                                      AtomicReference<InetSocketAddress> address,
+                                      int configuredPort) {
     super("LlapDaemonProtocolServerImpl");
-    this.daemonConf = daemonConf;
+    this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
     this.bindAddress = address;
+    this.configuredPort = configuredPort;
+    LOG.info("Creating: " + LlapDaemonProtocolServerImpl.class.getSimpleName() +
+        " with port configured to: " + configuredPort);
   }
 
   @Override
   public SubmitWorkResponseProto submitWork(RpcController controller,
                                             LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
       ServiceException {
-    LOG.info("DEBUG: Recevied request: " + request);
+    LOG.info("DEBUG: Received request: " + request);
     try {
       containerRunner.submitWork(request);
     } catch (IOException e) {
@@ -73,20 +77,13 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
   public void serviceStart() {
     Configuration conf = getConfig();
 
-    int numHandlers = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
-        LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
-    int port = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
-        LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
-    InetSocketAddress addr = new InetSocketAddress(port);
-    LOG.info("Attempting to start LlapDaemonProtocol on port=" + port + ", with numHandlers=" +
-        numHandlers);
-
+    InetSocketAddress addr = new InetSocketAddress(configuredPort);
     try {
       server = createServer(LlapDaemonProtocolBlockingPB.class, addr, conf, numHandlers,
           LlapDaemonProtocolProtos.LlapDaemonProtocol.newReflectiveBlockingService(this));
       server.start();
     } catch (IOException e) {
-      LOG.error("Failed to run RPC Server on port: " + port, e);
+      LOG.error("Failed to run RPC Server on port: " + configuredPort, e);
       throw new RuntimeException(e);
     }
 
@@ -94,7 +91,8 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
     this.bindAddress.set(NetUtils.createSocketAddrForHost(
         serverBindAddress.getAddress().getCanonicalHostName(),
         serverBindAddress.getPort()));
-    LOG.info("Instantiated LlapDaemonProtocol at " + bindAddress);
+    LOG.info("Instantiated " + LlapDaemonProtocolBlockingPB.class.getSimpleName() + " at " +
+        bindAddress);
   }
 
   @Override
@@ -107,7 +105,7 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
   @InterfaceAudience.Private
   @VisibleForTesting
   InetSocketAddress getBindAddress() {
-    return this.bindAddress.get();
+    return bindAddress.get();
   }
 
   private RPC.Server createServer(Class<?> pbProtocol, InetSocketAddress addr, Configuration conf,
