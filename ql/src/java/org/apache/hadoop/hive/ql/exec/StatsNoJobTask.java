@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -377,7 +377,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   private List<Partition> getPartitionsList() throws HiveException {
     if (work.getTableSpecs() != null) {
-      tableSpec tblSpec = work.getTableSpecs();
+      TableSpec tblSpec = work.getTableSpecs();
       table = tblSpec.tableHandle;
       if (!table.isPartitioned()) {
         return null;

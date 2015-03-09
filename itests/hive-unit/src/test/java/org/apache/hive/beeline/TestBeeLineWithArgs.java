@@ -352,7 +352,7 @@ public class TestBeeLineWithArgs {
     argList.add("--outputformat=dsv");
     argList.add("--delimiterForDSV=;");
 
-    final String EXPECTED_PATTERN = "1;NULL;defg;\"ab\"\"c\";1.0";
+    final String EXPECTED_PATTERN = "1;NULL;defg;ab\"c;1.0";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
@@ -365,7 +365,7 @@ public class TestBeeLineWithArgs {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--outputformat=tsv2");
 
-    final String EXPECTED_PATTERN = "1\tNULL\tdefg\t\"ab\"\"c\"\t1.0";
+    final String EXPECTED_PATTERN = "1\tNULL\tdefg\tab\"c\t1.0";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
@@ -382,6 +382,81 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
+  /**
+   * Test writing output using new TSV format
+   */
+  @Test
+  public void testTSV2OutputWithDoubleQuotes() throws Throwable {
+    String SCRIPT_TEXT = getFormatTestQueryForEableQuotes();
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=tsv2");
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV,"false");
+
+    final String EXPECTED_PATTERN = "1\tNULL\tdefg\t\"ab\"\"c\"\t\"\"\"aa\"\"\"\t1.0";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "true");
+  }
+
+  /**
+   * Test writing output using TSV deprecated format
+   */
+  @Test
+  public void testTSVOutputWithDoubleQuotes() throws Throwable {
+    String SCRIPT_TEXT = getFormatTestQueryForEableQuotes();
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=tsv");
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "false");
+
+    final String EXPECTED_PATTERN = "'1'\t'NULL'\t'defg'\t'ab\"c'\t'\"aa\"'\t'1.0'";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "true");
+  }
+
+  /**
+   * Test writing output using new CSV format
+   */
+  @Test
+  public void testCSV2OutputWithDoubleQuotes() throws Throwable {
+    String SCRIPT_TEXT = getFormatTestQueryForEableQuotes();
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=csv2");
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "false");
+
+    final String EXPECTED_PATTERN = "1,NULL,defg,\"ab\"\"c\",\"\"\"aa\"\"\",1.0";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "true");
+  }
+
+  /**
+   * Test writing output using CSV deprecated format
+   */
+  @Test
+  public void testCSVOutputWithDoubleQuotes() throws Throwable {
+    String SCRIPT_TEXT = getFormatTestQueryForEableQuotes();
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=csv");
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "false");
+
+    final String EXPECTED_PATTERN = "'1','NULL','defg','ab\"c','\"aa\"','1.0'";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "true");
+  }
+
+  /**
+   * Test writing output using DSV format, with custom delimiter ";"
+   */
+  @Test
+  public void testDSVOutputWithDoubleQuotes() throws Throwable {
+    String SCRIPT_TEXT = getFormatTestQueryForEableQuotes();
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=dsv");
+    argList.add("--delimiterForDSV=;");
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "false");
+
+    final String EXPECTED_PATTERN = "1;NULL;defg;\"ab\"\"c\";\"\"\"aa\"\"\";1.0";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+    System.setProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV, "true");
+  }
 
   /**
    * Test writing output using TSV deprecated format
@@ -428,6 +503,12 @@ public class TestBeeLineWithArgs {
     return "set hive.support.concurrency = false;\n" +
         "select 1, null, 'defg', 'ab\"c', 1.0D from " + tableName + " limit 1 ;\n";
   }
+
+  private String getFormatTestQueryForEableQuotes() {
+    return "set hive.support.concurrency = false;\n" +
+        "select 1, null, 'defg', 'ab\"c', '\"aa\"', 1.0D from " + tableName + " limit 1 ;\n";
+  }
+
   /**
    * Select null from table , check if setting null to empty string works - Using beeling cmd line
    *  argument.

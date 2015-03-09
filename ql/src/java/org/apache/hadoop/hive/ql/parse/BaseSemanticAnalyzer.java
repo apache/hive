@@ -698,10 +698,10 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * tableSpec.
+   * TableSpec.
    *
    */
-  public static class tableSpec {
+  public static class TableSpec {
     public String tableName;
     public Table tableHandle;
     public Map<String, String> partSpec; // has to use LinkedHashMap to enforce order
@@ -711,12 +711,12 @@ public abstract class BaseSemanticAnalyzer {
     public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION};
     public SpecType specType;
 
-    public tableSpec(Hive db, HiveConf conf, ASTNode ast)
+    public TableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
       this(db, conf, ast, true, false);
     }
 
-    public tableSpec(Hive db, HiveConf conf, String tableName, Map<String, String> partSpec)
+    public TableSpec(Hive db, HiveConf conf, String tableName, Map<String, String> partSpec)
         throws HiveException {
       this.tableName = tableName;
       this.partSpec = partSpec;
@@ -730,7 +730,7 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
-    public tableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
+    public TableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
         boolean allowPartialPartitionsSpec) throws SemanticException {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
@@ -866,6 +866,47 @@ public abstract class BaseSemanticAnalyzer {
       } else {
         return tableHandle.toString();
       }
+    }
+  }
+
+  public class AnalyzeRewriteContext {
+
+    private String tableName;
+    private List<String> colName;
+    private List<String> colType;
+    private boolean tblLvl;
+
+
+    public String getTableName() {
+      return tableName;
+    }
+
+    public void setTableName(String tableName) {
+      this.tableName = tableName;
+    }
+
+    public List<String> getColName() {
+      return colName;
+    }
+
+    public void setColName(List<String> colName) {
+      this.colName = colName;
+    }
+
+    public boolean isTblLvl() {
+      return tblLvl;
+    }
+
+    public void setTblLvl(boolean isTblLvl) {
+      this.tblLvl = isTblLvl;
+    }
+
+    public List<String> getColType() {
+      return colType;
+    }
+
+    public void setColType(List<String> colType) {
+      this.colType = colType;
     }
   }
 

@@ -168,6 +168,7 @@ sign
 sin
 size
 sort_array
+soundex
 space
 split
 sqrt
@@ -187,6 +188,7 @@ to_unix_timestamp
 to_utc_timestamp
 translate
 trim
+trunc
 ucase
 unbase64
 unhex

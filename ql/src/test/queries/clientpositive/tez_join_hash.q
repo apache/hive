@@ -10,3 +10,26 @@ explain
 SELECT count(*) FROM src, orc_src where src.key=orc_src.key;
 
 SELECT count(*) FROM src, orc_src where src.key=orc_src.key;
+
+set hive.auto.convert.join=true;
+set hive.auto.convert.join.noconditionaltask=true;
+set hive.auto.convert.join.noconditionaltask.size=3000;
+
+explain
+select count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value;
+
+select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value;
+
+set hive.execution.engine=mr;
+select key, count(*) from (select x.key as key, y.value as value from
+srcpart x join srcpart y on (x.key = y.key)
+union all
+select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value;
+
+

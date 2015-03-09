@@ -63,7 +63,7 @@ PREHOOK: query: SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_5
+Operator:GBY_4
 Table:default@t1
 Keys:key
 

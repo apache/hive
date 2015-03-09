@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.jdo.JDODataStoreException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
@@ -41,7 +40,6 @@ import javax.jdo.datastore.JDOConnection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.derby.iapi.error.StandardException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -497,6 +495,7 @@ class MetaStoreDirectSql {
     @SuppressWarnings("unchecked")
     List<Object[]> sqlResult = executeWithArray(query, null, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
+    Deadline.checkTimeout();
 
     // Read all the fields and create partitions, SDs and serdes.
     TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
@@ -585,6 +584,7 @@ class MetaStoreDirectSql {
       serde.setSerializationLib((String)fields[13]);
       serdeSb.append(serdeId).append(",");
       sd.setSerdeInfo(serde);
+      Deadline.checkTimeout();
     }
     query.closeAll();
     timingTrace(doTrace, queryText, start, queryTime);

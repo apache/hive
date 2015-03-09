@@ -22,9 +22,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
@@ -55,6 +57,10 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
+  private ObjectCache cache;
+
+  private String cacheKey;
+
   public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
 
   private ReduceWork redWork;
@@ -68,20 +74,22 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private boolean abort;
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
-      Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
+  void init(final JobConf jconf, ProcessorContext processorContext,
+      MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
+      Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
 
-    redWork = (ReduceWork) cache.retrieve(REDUCE_PLAN_KEY);
-    if (redWork == null) {
-      redWork = Utilities.getReduceWork(jconf);
-      cache.cache(REDUCE_PLAN_KEY, redWork);
-    } else {
-      Utilities.setReduceWork(jconf, redWork);
-    }
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    cacheKey = queryId + REDUCE_PLAN_KEY;
+    redWork = (ReduceWork) cache.retrieve(cacheKey, new Callable<Object>() {
+        public Object call() {
+          return Utilities.getReduceWork(jconf);
+        }
+      });
+    Utilities.setReduceWork(jconf, redWork);
 
     reducer = redWork.getReducer();
     reducer.getParentOperators().clear();
@@ -188,6 +196,10 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   @Override
   void close(){
+    if (cache != null) {
+      cache.release(cacheKey);
+    }
+
     try {
       for (ReduceRecordSource rs: sources) {
         abort = abort && rs.close();

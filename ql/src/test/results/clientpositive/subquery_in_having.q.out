@@ -1108,11 +1108,11 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:b 
+        $hdt$_0:$hdt$_1:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:b 
+        $hdt$_0:$hdt$_1:b 
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

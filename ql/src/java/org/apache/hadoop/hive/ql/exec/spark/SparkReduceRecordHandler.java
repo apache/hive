@@ -27,8 +27,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -114,14 +112,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    ObjectCache cache = ObjectCacheFactory.getCache(jc);
-    ReduceWork gWork = (ReduceWork) cache.retrieve(PLAN_KEY);
-    if (gWork == null) {
-      gWork = Utilities.getReduceWork(job);
-      cache.cache(PLAN_KEY, gWork);
-    } else {
-      Utilities.setReduceWork(job, gWork);
-    }
+    ReduceWork gWork = Utilities.getReduceWork(job);
 
     reducer = gWork.getReducer();
     vectorized = gWork.getVectorMode();

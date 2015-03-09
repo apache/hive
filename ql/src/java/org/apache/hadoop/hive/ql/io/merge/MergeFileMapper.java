@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.io.merge;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,17 +52,7 @@ public class MergeFileMapper extends MapReduceBase implements Mapper {
   @Override
   public void configure(JobConf job) {
     jc = job;
-    ObjectCache cache = ObjectCacheFactory.getCache(job);
-    MapWork mapWork = (MapWork) cache.retrieve(PLAN_KEY);
-
-    // if map work is found in object cache then return it else retrieve the
-    // plan from filesystem and cache it
-    if (mapWork == null) {
-      mapWork = Utilities.getMapWork(job);
-      cache.cache(PLAN_KEY, mapWork);
-    } else {
-      Utilities.setMapWork(job, mapWork);
-    }
+    MapWork mapWork = Utilities.getMapWork(job);
 
     try {
       if (mapWork instanceof MergeFileWork) {

@@ -38,6 +38,7 @@ import org.apache.hadoop.security.token.Token;
  */
 public class SecureCmdDoAs {
   private final Path tokenPath;
+  private final File tokenFile;
 
   public SecureCmdDoAs(HiveConf conf) throws HiveException, IOException{
     // Get delegation token for user from filesystem and write the token along with
@@ -46,8 +47,8 @@ public class SecureCmdDoAs {
     FileSystem fs = FileSystem.get(conf);
     Token<?> fsToken = fs.getDelegationToken(uname);
 
-    File t = File.createTempFile("hive_hadoop_delegation_token", null);
-    tokenPath = new Path(t.toURI());
+    tokenFile = File.createTempFile("hive_hadoop_delegation_token", null);
+    tokenPath = new Path(tokenFile.toURI());
 
     //write credential with token to file
     Credentials cred = new Credentials();
@@ -60,4 +61,7 @@ public class SecureCmdDoAs {
         tokenPath.toUri().getPath());
   }
 
+  public void close() {
+    tokenFile.delete();
+  }
 }

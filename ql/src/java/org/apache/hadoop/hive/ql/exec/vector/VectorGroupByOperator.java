@@ -886,10 +886,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       for (int i = 0; i < aggregators.length; ++i) {
         forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(String.format("forwarding keys: %s: %s",
-            kw, Arrays.toString(forwardCache)));
-      }
       forward(forwardCache, outputObjInspector);
     } else {
       // Output keys and aggregates into the output batch.

@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
@@ -370,7 +370,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (work.getTableSpecs() != null) {
 
       // ANALYZE command
-      tableSpec tblSpec = work.getTableSpecs();
+      TableSpec tblSpec = work.getTableSpecs();
       table = tblSpec.tableHandle;
       if (!table.isPartitioned()) {
         return null;
