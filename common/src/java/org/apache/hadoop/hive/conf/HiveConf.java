@@ -601,6 +601,9 @@ public class HiveConf extends Configuration {
         + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
         " to fire events for DML operations"),
+    METASTORE_CLIENT_DROP_PARTITIONS_WITH_EXPRESSIONS("hive.metastore.client.drop.partitions.using.expressions", true,
+        "Choose whether dropping partitions with HCatClient pushes the partition-predicate to the metastore, " +
+            "or drops partitions iteratively"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
