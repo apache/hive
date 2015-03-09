@@ -139,7 +139,7 @@ public class SparkHashTableSinkOperator
       }
       // TODO find out numOfPartitions for the big table
       int numOfPartitions = replication;
-      replication = (short) Math.min(MIN_REPLICATION, numOfPartitions);
+      replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     }
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
