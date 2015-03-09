@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
@@ -237,7 +238,7 @@ class AvroSerializer {
 
   private Object serializeList(ListTypeInfo typeInfo, ListObjectInspector fieldOI, Object structFieldData, Schema schema) throws AvroSerdeException {
     List<?> list = fieldOI.getList(structFieldData);
-    List<Object> deserialized = new ArrayList<Object>(list.size());
+    List<Object> deserialized = new GenericData.Array<Object>(list.size(), schema);
 
     TypeInfo listElementTypeInfo = typeInfo.getListElementTypeInfo();
     ObjectInspector listElementObjectInspector = fieldOI.getListElementObjectInspector();
