@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;

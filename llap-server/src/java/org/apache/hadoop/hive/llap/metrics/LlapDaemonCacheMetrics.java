@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_ALLOCATED_ARENA;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_CAPACITY_REMAINING;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_CAPACITY_TOTAL;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_CAPACITY_USED;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_HIT_BYTES;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_HIT_RATIO;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_NUM_LOCKED_BUFFERS;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_READ_REQUESTS;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CACHE_REQUESTED_BYTES;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.LLAP_DAEMON_CACHE_METRICS;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheAllocatedArena;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheCapacityRemaining;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheCapacityTotal;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheCapacityUsed;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheHitBytes;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheHitRatio;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheNumLockedBuffers;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheReadRequests;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheRequestedBytes;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheInfo.CacheMetrics;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -42,10 +42,9 @@ import org.apache.hadoop.metrics2.lib.MutableCounterLong;
 /**
  * Llap daemon cache metrics source.
  */
-@Metrics(about = "LlapDaemon Cache Metrics", context = "llap")
+@Metrics(about = "LlapDaemon Cache Metrics", context = MetricsUtils.METRICS_CONTEXT)
 public class LlapDaemonCacheMetrics implements MetricsSource {
   final String name;
-  // TODO: SessionId should come from llap daemon. For now using random UUID.
   private String sessionId;
   private final MetricsRegistry registry;
 
@@ -68,7 +67,7 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
     this.name = name;
     this.sessionId = sessionId;
     this.registry = new MetricsRegistry("LlapDaemonCacheRegistry");
-    this.registry.tag(ProcessName, "LlapDaemon").tag(SessionId, sessionId);
+    this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
   }
 
   public static LlapDaemonCacheMetrics create(String displayName, String sessionId) {
@@ -118,8 +117,9 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
 
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
-    MetricsRecordBuilder rb = collector.addRecord(LLAP_DAEMON_CACHE_METRICS)
-        .setContext("llap").tag(ProcessName, "LlapDaemon")
+    MetricsRecordBuilder rb = collector.addRecord(CacheMetrics)
+        .setContext(MetricsUtils.METRICS_CONTEXT)
+        .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
         .tag(SessionId, sessionId);
     getCacheStats(rb);
   }
@@ -128,15 +128,15 @@ public class LlapDaemonCacheMetrics implements MetricsSource {
     float cacheHitRatio = cacheRequestedBytes.value() == 0 ? 0.0f :
         (float) cacheHitBytes.value() / (float) cacheRequestedBytes.value();
 
-    rb.addCounter(CACHE_CAPACITY_REMAINING, cacheCapacityTotal.value() - cacheCapacityUsed.value())
-        .addCounter(CACHE_CAPACITY_TOTAL, cacheCapacityTotal.value())
-        .addCounter(CACHE_CAPACITY_USED, cacheCapacityUsed.value())
-        .addCounter(CACHE_READ_REQUESTS, cacheReadRequests.value())
-        .addCounter(CACHE_REQUESTED_BYTES, cacheRequestedBytes.value())
-        .addCounter(CACHE_HIT_BYTES, cacheHitBytes.value())
-        .addCounter(CACHE_ALLOCATED_ARENA, cacheAllocatedArena.value())
-        .addCounter(CACHE_NUM_LOCKED_BUFFERS, cacheNumLockedBuffers.value())
-        .addGauge(CACHE_HIT_RATIO, cacheHitRatio);
+    rb.addCounter(CacheCapacityRemaining, cacheCapacityTotal.value() - cacheCapacityUsed.value())
+        .addCounter(CacheCapacityTotal, cacheCapacityTotal.value())
+        .addCounter(CacheCapacityUsed, cacheCapacityUsed.value())
+        .addCounter(CacheReadRequests, cacheReadRequests.value())
+        .addCounter(CacheRequestedBytes, cacheRequestedBytes.value())
+        .addCounter(CacheHitBytes, cacheHitBytes.value())
+        .addCounter(CacheAllocatedArena, cacheAllocatedArena.value())
+        .addCounter(CacheNumLockedBuffers, cacheNumLockedBuffers.value())
+        .addGauge(CacheHitRatio, cacheHitRatio);
   }
 
 }

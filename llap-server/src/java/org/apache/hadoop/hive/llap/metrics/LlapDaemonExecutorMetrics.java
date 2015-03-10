@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_NUM_QUEUED_REQUESTS;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_THREAD_CPU_TIME;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_THREAD_USER_TIME;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_TOTAL_ASKED_TO_DIE;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_TOTAL_EXECUTION_FAILURE;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_TOTAL_INTERRUPTED;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_TOTAL_REQUESTS_HANDLED;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.EXECUTOR_TOTAL_SUCCESS;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.LLAP_DAEMON_EXECUTOR_METRICS;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequests;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCPUTime;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadUserTime;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalAskedToDie;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalExecutionFailure;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalInterrupted;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalRequestsHandled;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalSuccess;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMetrics;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -51,7 +51,7 @@ import org.apache.hadoop.metrics2.source.JvmMetrics;
 /**
  * Metrics about the llap daemon executors.
  */
-@Metrics(about = "LlapDaemon Executor Metrics", context = "llap")
+@Metrics(about = "LlapDaemon Executor Metrics", context = MetricsUtils.METRICS_CONTEXT)
 public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   private final String name;
@@ -84,7 +84,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
     this.registry = new MetricsRegistry("LlapDaemonExecutorRegistry");
-    this.registry.tag(ProcessName, "LlapDaemon").tag(SessionId, sessionId);
+    this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
     this.numExecutors = numExecutors;
     this.threadMXBean = ManagementFactory.getThreadMXBean();
     this.executorThreadCpuTime = new MutableGaugeLong[numExecutors];
@@ -93,10 +93,10 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     this.userMetricsInfoMap = new ConcurrentHashMap<>();
 
     for (int i = 0; i < numExecutors; i++) {
-      MetricsInfo mic = new LlapDaemonCustomMetricsInfo(EXECUTOR_THREAD_CPU_TIME.name() + "_" + i,
-          EXECUTOR_THREAD_CPU_TIME.description());
-      MetricsInfo miu = new LlapDaemonCustomMetricsInfo(EXECUTOR_THREAD_USER_TIME.name() + "_" + i,
-          EXECUTOR_THREAD_USER_TIME.description());
+      MetricsInfo mic = new LlapDaemonCustomMetricsInfo(ExecutorThreadCPUTime.name() + "_" + i,
+          ExecutorThreadCPUTime.description());
+      MetricsInfo miu = new LlapDaemonCustomMetricsInfo(ExecutorThreadUserTime.name() + "_" + i,
+          ExecutorThreadUserTime.description());
       this.cpuMetricsInfoMap.put(i, mic);
       this.userMetricsInfoMap.put(i, miu);
       this.executorThreadCpuTime[i] = registry.newGauge(mic, 0L);
@@ -107,15 +107,16 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   public static LlapDaemonExecutorMetrics create(String displayName, String sessionId,
       int numExecutors) {
     MetricsSystem ms = LlapMetricsSystem.instance();
-    JvmMetrics jm = JvmMetrics.create("LlapDaemon", sessionId, ms);
+    JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
         new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors));
   }
 
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
-    MetricsRecordBuilder rb = collector.addRecord(LLAP_DAEMON_EXECUTOR_METRICS)
-        .setContext("llap").tag(ProcessName, "LlapDaemon")
+    MetricsRecordBuilder rb = collector.addRecord(ExecutorMetrics)
+        .setContext(MetricsUtils.METRICS_CONTEXT)
+        .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
         .tag(SessionId, sessionId);
     getExecutorStats(rb);
   }
@@ -151,12 +152,12 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private void getExecutorStats(MetricsRecordBuilder rb) {
     updateThreadMetrics(rb);
 
-    rb.addCounter(EXECUTOR_TOTAL_REQUESTS_HANDLED, executorTotalRequestHandled.value())
-        .addCounter(EXECUTOR_NUM_QUEUED_REQUESTS, executorNumQueuedRequests.value())
-        .addCounter(EXECUTOR_TOTAL_SUCCESS, executorTotalSuccess.value())
-        .addCounter(EXECUTOR_TOTAL_EXECUTION_FAILURE, executorTotalExecutionFailed.value())
-        .addCounter(EXECUTOR_TOTAL_INTERRUPTED, executorTotalInterrupted.value())
-        .addCounter(EXECUTOR_TOTAL_ASKED_TO_DIE, executorTotalAskedToDie.value());
+    rb.addCounter(ExecutorTotalRequestsHandled, executorTotalRequestHandled.value())
+        .addCounter(ExecutorNumQueuedRequests, executorNumQueuedRequests.value())
+        .addCounter(ExecutorTotalSuccess, executorTotalSuccess.value())
+        .addCounter(ExecutorTotalExecutionFailure, executorTotalExecutionFailed.value())
+        .addCounter(ExecutorTotalInterrupted, executorTotalInterrupted.value())
+        .addCounter(ExecutorTotalAskedToDie, executorTotalAskedToDie.value());
   }
 
   private void updateThreadMetrics(MetricsRecordBuilder rb) {

@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.ObjectName;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -39,6 +38,7 @@ import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
@@ -119,6 +119,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     pauseMonitor.start();
     String displayName = "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName();
     String sessionId = MetricsUtils.getUUID();
+    daemonConf.set("llap.daemon.metrics.sessionid", sessionId);
     this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors);
     metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);

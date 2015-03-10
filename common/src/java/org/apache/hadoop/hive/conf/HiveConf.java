@@ -2033,6 +2033,10 @@ public class HiveConf extends Configuration {
         "Chooses whether query fragments will run in container or in llap"),
     LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
 	"Cache objects (plans, hashtables, etc) in llap"),
+    LLAP_QUEUE_METRICS_PERCENTILE_INTERVALS("hive.llap.queue.metrics.percentiles.intervals", "",
+        "Comma-delimited set of integers denoting the desired rollover intervals (in seconds) for" +
+            "percentile latency metrics on the LLAP daemon producer-consumer queue. By default," +
+            "percentile latency metrics are disabled."),
 
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",

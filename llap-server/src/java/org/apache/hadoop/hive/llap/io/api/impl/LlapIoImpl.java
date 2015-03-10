@@ -44,13 +44,12 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.metrics2.util.MBeans;
-import org.apache.hadoop.util.JvmPauseMonitor;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -62,8 +61,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
   private final Configuration conf;
-  private LlapDaemonCacheMetrics metrics;
-  private JvmPauseMonitor pauseMonitor;
+  private LlapDaemonCacheMetrics cacheMetrics;
+  private LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
   private Allocator allocator;
 
@@ -76,10 +75,15 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     }
 
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
-    // TODO: Find a better way to pass in session id
-    String sessionId = conf.get("llap.daemon.sessionid");
-    this.metrics = LlapDaemonCacheMetrics.create(displayName, sessionId);
-    LOG.info("Started LlapDaemonCacheMetrics with displayName: " + displayName +
+    String sessionId = conf.get("llap.daemon.metrics.sessionid");
+    this.cacheMetrics = LlapDaemonCacheMetrics.create(displayName, sessionId);
+
+    displayName = "LlapDaemonQueueMetrics-" + MetricsUtils.getHostName();
+    int[] intervals = conf.getInts(String.valueOf(
+        HiveConf.ConfVars.LLAP_QUEUE_METRICS_PERCENTILE_INTERVALS));
+    this.queueMetrics = LlapDaemonQueueMetrics.create(displayName, sessionId, intervals);
+
+    LOG.info("Started llap daemon metrics with displayName: " + displayName +
         " sessionId: " + sessionId);
 
     Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
@@ -88,12 +92,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
     OrcMetadataCache metadataCache = new OrcMetadataCache();
     LowLevelCacheImpl orcCache = createLowLevelCache(
-        conf, cachePolicy, metadataCache, metrics, useLowLevelCache);
+        conf, cachePolicy, metadataCache, cacheMetrics, useLowLevelCache);
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
     // TODO: this should depends on input format and be in a map, or something.
-    this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, metrics);
+    this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
+        queueMetrics);
     if (LOGL.isInfoEnabled()) {
       LOG.info("LLAP IO initialized");
     }
@@ -128,17 +133,17 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     return new LlapInputFormat(sourceInputFormat, cvp, executor);
   }
 
-  public LlapDaemonCacheMetrics getMetrics() {
-    return metrics;
+  public LlapDaemonCacheMetrics getCacheMetrics() {
+    return cacheMetrics;
+  }
+
+  public LlapDaemonQueueMetrics getQueueMetrics() {
+    return queueMetrics;
   }
 
   @Override
   public void close() {
     LOG.info("Closing LlapIoImpl..");
-    if (pauseMonitor != null) {
-      pauseMonitor.stop();
-    }
-
     if (buddyAllocatorMXBean != null) {
       MBeans.unregister(buddyAllocatorMXBean);
       buddyAllocatorMXBean = null;

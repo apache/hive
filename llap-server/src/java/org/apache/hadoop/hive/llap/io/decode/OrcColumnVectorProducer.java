@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
@@ -43,11 +44,12 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final LowLevelCache lowLevelCache;
   private final Configuration conf;
   private boolean _skipCorrupt; // TODO: get rid of this
-  private LlapDaemonCacheMetrics metrics;
+  private LlapDaemonCacheMetrics cacheMetrics;
+  private LlapDaemonQueueMetrics queueMetrics;
 
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
       LowLevelCacheImpl lowLevelCache, Cache<OrcCacheKey> cache, Configuration conf,
-      LlapDaemonCacheMetrics metrics) {
+      LlapDaemonCacheMetrics metrics, LlapDaemonQueueMetrics queueMetrics) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     }
@@ -57,7 +59,8 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.cache = cache;
     this.conf = conf;
     this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
-    this.metrics = metrics;
+    this.cacheMetrics = metrics;
+    this.queueMetrics = queueMetrics;
   }
 
   @Override
@@ -65,9 +68,9 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
       Consumer<ColumnVectorBatch> consumer, InputSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       QueryFragmentCounters counters) {
-    metrics.incrCacheReadRequests();
+    cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
-        _skipCorrupt, counters);
+        _skipCorrupt, counters, queueMetrics);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, cache, metadataCache,
         conf, split, columnIds, sarg, columnNames, edc, counters);
     edc.init(reader, reader);

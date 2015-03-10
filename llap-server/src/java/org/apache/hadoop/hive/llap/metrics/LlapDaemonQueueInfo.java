@@ -17,8 +17,34 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import org.apache.hadoop.metrics2.MetricsInfo;
+
+import com.google.common.base.Objects;
+
 /**
- *
+ * Llap daemon producer / consumer queue related metrics.
  */
-public class LlapDaemonContainerRunnerInfo {
+public enum LlapDaemonQueueInfo implements MetricsInfo {
+  QueueMetrics("Llap daemon producer/consumer queue related metrics"),
+  QueueSize("Size of the queue used by producer and consumer"),
+  PercentileProcessingTime("Percentiles processing time for an element from queue"),
+  MaxProcessingTime("Max processing time for an element from queue so far");
+
+  private final String desc;
+
+  LlapDaemonQueueInfo(String desc) {
+    this.desc = desc;
+  }
+
+  @Override
+  public String description() {
+    return desc;
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(this)
+        .add("name", name()).add("description", desc)
+        .toString();
+  }
 }

@@ -25,15 +25,15 @@ import com.google.common.base.Objects;
  * Metrics information for llap daemon container.
  */
 public enum LlapDaemonExecutorInfo implements MetricsInfo {
-  LLAP_DAEMON_EXECUTOR_METRICS("Llap daemon cache related metrics"),
-  EXECUTOR_THREAD_CPU_TIME("Cpu time in nanoseconds"),
-  EXECUTOR_THREAD_USER_TIME("User time in nanoseconds"),
-  EXECUTOR_TOTAL_REQUESTS_HANDLED("Total number of requests handled by the container"),
-  EXECUTOR_NUM_QUEUED_REQUESTS("Number of requests queued by the container for processing"),
-  EXECUTOR_TOTAL_SUCCESS("Total number of requests handled by the container that succeeded"),
-  EXECUTOR_TOTAL_EXECUTION_FAILURE("Total number of requests handled by the container that failed execution"),
-  EXECUTOR_TOTAL_INTERRUPTED("Total number of requests handled by the container that got interrupted"),
-  EXECUTOR_TOTAL_ASKED_TO_DIE("Total number of requests handled by the container that were asked to die");
+  ExecutorMetrics("Llap daemon cache related metrics"),
+  ExecutorThreadCPUTime("Cpu time in nanoseconds"),
+  ExecutorThreadUserTime("User time in nanoseconds"),
+  ExecutorTotalRequestsHandled("Total number of requests handled by the container"),
+  ExecutorNumQueuedRequests("Number of requests queued by the container for processing"),
+  ExecutorTotalSuccess("Total number of requests handled by the container that succeeded"),
+  ExecutorTotalExecutionFailure("Total number of requests handled by the container that failed execution"),
+  ExecutorTotalInterrupted("Total number of requests handled by the container that got interrupted"),
+  ExecutorTotalAskedToDie("Total number of requests handled by the container that were asked to die");
 
   private final String desc;
 

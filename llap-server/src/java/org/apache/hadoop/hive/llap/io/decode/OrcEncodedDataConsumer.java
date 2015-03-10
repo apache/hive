@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.StringStreamRead
 import org.apache.hadoop.hive.llap.io.decode.orc.stream.readers.TimestampStreamReader;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
@@ -58,8 +59,8 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
-      QueryFragmentCounters counters) {
-    super(consumer, colCount);
+      QueryFragmentCounters counters, LlapDaemonQueueMetrics queueMetrics) {
+    super(consumer, colCount, queueMetrics);
     this.skipCorrupt = skipCorrupt;
     this.counters = counters;
   }

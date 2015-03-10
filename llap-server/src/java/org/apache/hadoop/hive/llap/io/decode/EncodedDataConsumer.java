@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 
 /**
  *
@@ -40,10 +41,13 @@ public abstract class EncodedDataConsumer<BatchKey> implements
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private Callable<Void> readCallable;
   private final int colCount;
+  private final LlapDaemonQueueMetrics queueMetrics;
 
-  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, int colCount) {
+  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, int colCount,
+      LlapDaemonQueueMetrics queueMetrics) {
     this.downstreamConsumer = consumer;
     this.colCount = colCount;
+    this.queueMetrics = queueMetrics;
   }
 
   public void init(ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback,
@@ -70,6 +74,7 @@ public abstract class EncodedDataConsumer<BatchKey> implements
           pendingData.put(data.batchKey, data);
         }
       }
+      queueMetrics.setQueueSize(pendingData.size());
     }
     if (localIsStopped) {
       returnProcessed(data.columnData);
@@ -98,7 +103,10 @@ public abstract class EncodedDataConsumer<BatchKey> implements
       return;
     }
     if (0 == targetBatch.colsRemaining) {
+      long start = System.currentTimeMillis();
       decodeBatch(targetBatch, downstreamConsumer);
+      long end = System.currentTimeMillis();
+      queueMetrics.addProcessingTime(end - start);
       // Batch has been decoded; unlock the buffers in cache
       returnProcessed(targetBatch.columnData);
     }

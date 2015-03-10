@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.llap.metrics;
 import org.apache.hadoop.metrics2.MetricsInfo;
 
 /**
- *
+ * Custom MetricsInfo to provide custom name for the metrics.
  */
 public class LlapDaemonCustomMetricsInfo implements MetricsInfo {
   private String name;
