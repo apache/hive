@@ -82,4 +82,6 @@ from tab1 a join tab_part b on a.key = b.key;
 
 explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
 
-
+explain
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key and a.ds = b.ds;

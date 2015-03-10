@@ -202,7 +202,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -627,7 +627,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1040,7 +1040,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1461,7 +1461,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
