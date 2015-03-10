@@ -62,8 +62,8 @@ PUBLISH_VARS=(
 BUILD_STATUS=0
 PATCH_URL="${JIRA_ROOT_URL}${PATCH_URL}"
 JIRA_URL="${JIRA_ROOT_URL}/jira"
-REPO_NAME="trunk"
-REPO="trunk"
+REPO_NAME="trunk" # not used, but JIRAService asks for it
+REPO="trunk"      # not used, but JIRAService asks for it
 TESTS_EXECUTED=0
 FAILED_TESTS=()
 MESSAGES=()
@@ -74,7 +74,7 @@ build_ptest2() {
 
 	test -d $path || mkdir -p $path
 	rm -rf $path/ptest2
-	svn co http://svn.apache.org/repos/asf/hive/trunk/testutils/ptest2/ $path/ptest2
+	svn co http://svn.apache.org/repos/asf/hive/$BRANCH/testutils/ptest2/ $path/ptest2
 	cd $path/ptest2
 	mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$WORKSPACE/.m2
 
@@ -136,8 +136,8 @@ wget "${PATCH_URL}" -O /tmp/${JIRA_NAME}.patch
 if cat /tmp/${JIRA_NAME}.patch | grep "^diff.*metastore/scripts/upgrade/" >/dev/null; then
 	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_HOST "
 		rm -rf metastore/ &&
-		svn co http://svn.apache.org/repos/asf/hive/trunk/testutils/metastore metastore &&
-		sudo bash -x metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\"
+		svn co http://svn.apache.org/repos/asf/hive/$BRANCH/testutils/metastore metastore &&
+		sudo bash -x metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\" --branch $BRANCH
 	"
 	ret=$?
 	if [[ $ret = 0 ]]; then
