@@ -24,11 +24,11 @@ create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key double, values bigint) stored as textfile
+PREHOOK: query: create table outputTbl1(key double, `values` bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key double, values bigint) stored as textfile
+POSTHOOK: query: create table outputTbl1(key double, `values` bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
@@ -44,18 +44,18 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM
 (
-  SELECT CAST(key AS DOUBLE) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS DOUBLE) AS key, count(1) as `values` FROM inputTbl1 group by key
   UNION ALL
-  SELECT CAST(key AS BIGINT) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM
 (
-  SELECT CAST(key AS DOUBLE) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS DOUBLE) AS key, count(1) as `values` FROM inputTbl1 group by key
   UNION ALL
-  SELECT CAST(key AS BIGINT) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -160,9 +160,9 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM
 (
-  SELECT CAST(key AS DOUBLE) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS DOUBLE) AS key, count(1) as `values` FROM inputTbl1 group by key
   UNION ALL
-  SELECT CAST(key AS BIGINT) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
@@ -170,9 +170,9 @@ PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM
 (
-  SELECT CAST(key AS DOUBLE) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS DOUBLE) AS key, count(1) as `values` FROM inputTbl1 group by key
   UNION ALL
-  SELECT CAST(key AS BIGINT) AS key, count(1) as values FROM inputTbl1 group by key
+  SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
@@ -215,11 +215,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from outputTbl1 order by key, values
+PREHOOK: query: select * from outputTbl1 order by key, `values`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 order by key, values
+POSTHOOK: query: select * from outputTbl1 order by key, `values`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####

@@ -19,28 +19,28 @@ set mapred.input.dir.recursive=true;
 -- columns being selected) is pushed above the union.
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(values bigint, key string) stored as textfile;
+create table outputTbl1(`values` bigint, key string) stored as textfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
 explain
 insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, values;
+select * from outputTbl1 order by key, `values`;

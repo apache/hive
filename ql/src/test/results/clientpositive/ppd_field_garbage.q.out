@@ -1,9 +1,11 @@
-PREHOOK: query: -- ppd leaves invalid expr in field expr
+PREHOOK: query: -- We need the above setting for backward compatibility because 'user' is a keyword in SQL2011
+-- ppd leaves invalid expr in field expr
 CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<user:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_issue
-POSTHOOK: query: -- ppd leaves invalid expr in field expr
+POSTHOOK: query: -- We need the above setting for backward compatibility because 'user' is a keyword in SQL2011
+-- ppd leaves invalid expr in field expr
 CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<user:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

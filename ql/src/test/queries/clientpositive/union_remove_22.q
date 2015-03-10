@@ -18,25 +18,25 @@ set mapred.input.dir.recursive=true;
 -- both the sub-qeuries of the union) is pushed above the union.
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, values bigint, values2 bigint) stored as textfile;
+create table outputTbl1(key string, `values` bigint, values2 bigint) stored as textfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
 explain
 insert overwrite table outputTbl1
-SELECT a.key, a.values, a.values
+SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1
-SELECT a.key, a.values, a.values
+SELECT a.key, a.`values`, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1;
@@ -45,20 +45,20 @@ select * from outputTbl1;
 
 explain
 insert overwrite table outputTbl1
-SELECT a.key, concat(a.values, a.values), concat(a.values, a.values)
+SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1
-SELECT a.key, concat(a.values, a.values), concat(a.values, a.values)
+SELECT a.key, concat(a.`values`, a.`values`), concat(a.`values`, a.`values`)
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, values;
+select * from outputTbl1 order by key, `values`;

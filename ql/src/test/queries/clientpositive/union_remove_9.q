@@ -21,7 +21,7 @@ set mapred.input.dir.recursive=true;
 -- to run the test only on hadoop 23
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, values bigint) stored as rcfile;
+create table outputTbl1(key string, `values` bigint) stored as rcfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
@@ -29,28 +29,28 @@ explain
 insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, count(1) as values from inputTbl1 group by key 
+select key, count(1) as `values` from inputTbl1 group by key 
 union all
 select * FROM (
-  SELECT key, 1 as values from inputTbl1 
+  SELECT key, 1 as `values` from inputTbl1 
   UNION ALL
-  SELECT key, 2 as values from inputTbl1
+  SELECT key, 2 as `values` from inputTbl1
 ) a
 )b;
 
 insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, count(1) as values from inputTbl1 group by key 
+select key, count(1) as `values` from inputTbl1 group by key 
 union all
 select * FROM (
-  SELECT key, 1 as values from inputTbl1 
+  SELECT key, 1 as `values` from inputTbl1 
   UNION ALL
-  SELECT key, 2 as values from inputTbl1
+  SELECT key, 2 as `values` from inputTbl1
 ) a
 )b;
 
 desc formatted outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, values;
+select * from outputTbl1 order by key, `values`;

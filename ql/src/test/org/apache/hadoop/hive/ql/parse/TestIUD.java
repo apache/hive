@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,7 +34,6 @@ public class TestIUD {
   private static HiveConf conf;
 
   private ParseDriver pd;
-  private SemanticAnalyzer sA;
 
   @BeforeClass
   public static void initialize() {
@@ -40,15 +42,20 @@ public class TestIUD {
   }
 
   @Before
-  public void setup() throws SemanticException {
+  public void setup() throws SemanticException, IOException {
     pd = new ParseDriver();
-    sA = new CalcitePlanner(conf);
   }
 
   ASTNode parse(String query) throws ParseException {
-    ASTNode nd = pd.parse(query);
+    ASTNode nd = null;
+    try {
+      nd = pd.parse(query, new Context(conf));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     return (ASTNode) nd.getChild(0);
   }
+  
   @Test
   public void testDeleteNoWhere() throws ParseException {
     ASTNode ast = parse("DELETE FROM src");
@@ -147,11 +154,11 @@ public class TestIUD {
   @Test
   public void testSelectStarFromAnonymousVirtTable1Row() throws ParseException {
     try {
-      parse("select * from values (3,4)");
+      parse("select * from `values` (3,4)");
       Assert.assertFalse("Expected ParseException", true);
     }
     catch(ParseException ex) {
-      Assert.assertEquals("Failure didn't match.", "line 1:21 missing EOF at '(' near 'values'",ex.getMessage());
+      Assert.assertEquals("Failure didn't match.", "line 1:23 missing EOF at '(' near 'values'",ex.getMessage());
     }
   }
   @Test

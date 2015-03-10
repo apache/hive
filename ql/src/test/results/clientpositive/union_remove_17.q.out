@@ -26,11 +26,11 @@ create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile
+PREHOOK: query: create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile
+POSTHOOK: query: create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
@@ -46,18 +46,18 @@ PREHOOK: query: explain
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, 1 as values, '1' as ds from inputTbl1
+  SELECT key, 1 as `values`, '1' as ds from inputTbl1
   UNION ALL
-  SELECT key, 2 as values, '2' as ds from inputTbl1
+  SELECT key, 2 as `values`, '2' as ds from inputTbl1
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, 1 as values, '1' as ds from inputTbl1
+  SELECT key, 1 as `values`, '1' as ds from inputTbl1
   UNION ALL
-  SELECT key, 2 as values, '2' as ds from inputTbl1
+  SELECT key, 2 as `values`, '2' as ds from inputTbl1
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -126,9 +126,9 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, 1 as values, '1' as ds from inputTbl1
+  SELECT key, 1 as `values`, '1' as ds from inputTbl1
   UNION ALL
-  SELECT key, 2 as values, '2' as ds from inputTbl1
+  SELECT key, 2 as `values`, '2' as ds from inputTbl1
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
@@ -136,9 +136,9 @@ PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, 1 as values, '1' as ds from inputTbl1
+  SELECT key, 1 as `values`, '1' as ds from inputTbl1
   UNION ALL
-  SELECT key, 2 as values, '2' as ds from inputTbl1
+  SELECT key, 2 as `values`, '2' as ds from inputTbl1
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
@@ -192,12 +192,12 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@outputtbl1
 ds=1
 ds=2
-PREHOOK: query: select * from outputTbl1 where ds = '1' order by key, values
+PREHOOK: query: select * from outputTbl1 where ds = '1' order by key, `values`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '1' order by key, values
+POSTHOOK: query: select * from outputTbl1 where ds = '1' order by key, `values`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=1
@@ -208,12 +208,12 @@ POSTHOOK: Input: default@outputtbl1@ds=1
 7	1	1
 8	1	1
 8	1	1
-PREHOOK: query: select * from outputTbl1 where ds = '2' order by key, values
+PREHOOK: query: select * from outputTbl1 where ds = '2' order by key, `values`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '2' order by key, values
+POSTHOOK: query: select * from outputTbl1 where ds = '2' order by key, `values`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=2
