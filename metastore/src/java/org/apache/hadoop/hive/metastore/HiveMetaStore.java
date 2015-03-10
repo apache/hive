@@ -220,6 +220,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -236,6 +237,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
   // embedded metastore or a remote one
   private static boolean isMetaStoreRemote = false;
+
+  // Used for testing to simulate method timeout.
+  @VisibleForTesting
+  static boolean TEST_TIMEOUT_ENABLED = false;
+  @VisibleForTesting
+  static long TEST_TIMEOUT_VALUE = -1;
 
   /** A fixed date format to be used for hive partition column values. */
   public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
@@ -470,6 +477,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS));
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS));
+      listeners.add(new SessionPropertiesListener(hiveConf));
       endFunctionListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreEndFunctionListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS));
@@ -881,6 +889,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         } catch (NoSuchObjectException e) {
           // expected
+        }
+
+        if (TEST_TIMEOUT_ENABLED) {
+          try {
+            Thread.sleep(TEST_TIMEOUT_VALUE);
+          } catch (InterruptedException e) {
+            // do nothing
+          }
+          Deadline.checkTimeout();
         }
 
         create_database_core(getMS(), db);
@@ -1518,8 +1535,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
-          boolean ifPurge = envContext != null &&
-              Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                            ||
+                             (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge);
           // Delete the data in the table
@@ -2561,15 +2586,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
           if (tbl != null && !isExternal(tbl)) {
+            // Data needs deletion. Check if trash may be skipped.
+            // Trash may be skipped iff:
+            //  1. deleteData == true, obviously.
+            //  2. tbl is external.
+            //  3. Either
+            //    3.1. User has specified PURGE from the commandline, and if not,
+            //    3.2. User has set the table to auto-purge.
+            boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                                ||
+                                 (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+            if (mustPurge) {
+              LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
+            }
+            else {
+              LOG.info("dropPartition() will move " + partPath + " to trash-directory.");
+            }
             // Archived partitions have har:/to_har_file as their location.
             // The original directory was saved in params
             if (isArchived) {
               assert (archiveParentDir != null);
-              wh.deleteDir(archiveParentDir, true);
+              wh.deleteDir(archiveParentDir, true, mustPurge);
             } else {
               assert (partPath != null);
-              wh.deleteDir(partPath, true);
-              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1);
+              wh.deleteDir(partPath, true, mustPurge);
+              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge);
             }
             // ok even if the data is not deleted
           }
@@ -2584,10 +2625,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return true;
     }
 
-    private void deleteParentRecursive(Path parent, int depth) throws IOException, MetaException {
+    private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
-        wh.deleteDir(parent, true);
-        deleteParentRecursive(parent.getParent(), depth - 1);
+        wh.deleteDir(parent, true, mustPurge);
+        deleteParentRecursive(parent.getParent(), depth - 1, mustPurge);
       }
     }
 
@@ -2714,15 +2755,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal(tbl)) {
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                              ||
+                              (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+          LOG.info( mustPurge?
+                      "dropPartition() will purge partition-directories directly, skipping trash."
+                    :  "dropPartition() will move partition-directories to trash-directory.");
           // Archived partitions have har:/to_har_file as their location.
           // The original directory was saved in params
           for (Path path : archToDelete) {
-            wh.deleteDir(path, true);
+            wh.deleteDir(path, true, mustPurge);
           }
           for (PathAndPartValSize p : dirsToDelete) {
-            wh.deleteDir(p.path, true);
+            wh.deleteDir(p.path, true, mustPurge);
             try {
-              deleteParentRecursive(p.path.getParent(), p.partValSize - 1);
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge);
             } catch (IOException ex) {
               LOG.warn("Error from deleteParentRecursive", ex);
               throw new MetaException("Failed to delete parent: " + ex.getMessage());
@@ -4088,12 +4142,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public TableStatsResult get_table_statistics_req(TableStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_table_statistics_req: db=" + dbName + " table=" + tblName);
       TableStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
       try {
-        ColumnStatistics cs = getMS().getTableColumnStatistics(
-            dbName, tblName, request.getColNames());
+        ColumnStatistics cs = getMS().getTableColumnStatistics(dbName, tblName, lowerCaseColNames);
         result = new TableStatsResult(
             cs == null ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
       } finally {
@@ -4131,13 +4189,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_partitions_statistics_req: db=" + dbName + " table=" + tblName);
 
       PartitionsStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
-            dbName, tblName, request.getPartNames(), request.getColNames());
+            dbName, tblName, lowerCasePartNames, lowerCaseColNames);
         Map<String, List<ColumnStatisticsObj>> map =
             new HashMap<String, List<ColumnStatisticsObj>>();
         for (ColumnStatistics stat : stats) {
@@ -5525,11 +5592,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
         throws NoSuchObjectException, MetaException, TException {
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
+
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
       AggrStats aggrStats = null;
+
       try {
-        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()));
+        aggrStats = new AggrStats(getMS().get_aggr_stats_for(dbName, tblName, lowerCasePartNames,
+            lowerCaseColNames));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());

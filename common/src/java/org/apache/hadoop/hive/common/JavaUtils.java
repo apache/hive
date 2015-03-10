@@ -70,6 +70,14 @@ public final class JavaUtils {
     return classLoader;
   }
 
+  public static Class loadClass(String className) throws ClassNotFoundException {
+    return loadClass(className, true);
+  }
+
+  public static Class loadClass(String className, boolean init) throws ClassNotFoundException {
+    return Class.forName(className, init, getClassLoader());
+  }
+
   public static boolean closeClassLoadersTo(ClassLoader current, ClassLoader stop) {
     if (!isValidHierarchy(current, stop)) {
       return false;

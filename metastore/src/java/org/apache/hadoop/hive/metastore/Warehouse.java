@@ -32,9 +32,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,8 +53,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -250,41 +246,25 @@ public class Warehouse {
       return false;
     }
     final FileStatus stat;
+    final FileSystem fs;
     try {
-      stat = getFs(path).getFileStatus(path);
+      fs = getFs(path);
+      stat = fs.getFileStatus(path);
+      ShimLoader.getHadoopShims().checkFileAccess(fs, stat, FsAction.WRITE);
+      return true;
     } catch (FileNotFoundException fnfe){
       // File named by path doesn't exist; nothing to validate.
       return true;
     } catch (Exception e) {
       // all other exceptions are considered as emanating from
       // unauthorized accesses
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Exception when checking if path (" + path + ")", e);
+      }
       return false;
     }
-    final UserGroupInformation ugi;
-    try {
-      ugi = Utils.getUGI();
-    } catch (LoginException le) {
-      throw new IOException(le);
-    }
-    String user = ugi.getShortUserName();
-    //check whether owner can delete
-    if (stat.getOwner().equals(user) &&
-        stat.getPermission().getUserAction().implies(FsAction.WRITE)) {
-      return true;
-    }
-    //check whether group of the user can delete
-    if (stat.getPermission().getGroupAction().implies(FsAction.WRITE)) {
-      String[] groups = ugi.getGroupNames();
-      if (ArrayUtils.contains(groups, stat.getGroup())) {
-        return true;
-      }
-    }
-    //check whether others can delete (uncommon case!!)
-    if (stat.getPermission().getOtherAction().implies(FsAction.WRITE)) {
-      return true;
-    }
-    return false;
   }
+
   /*
   // NOTE: This is for generating the internal path name for partitions. Users
   // should always use the MetaStore API to get the path name for a partition.

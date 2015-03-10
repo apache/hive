@@ -452,15 +452,17 @@ public class QTestGenTask extends Task {
       if (hadoopVersion == null) {
         hadoopVersion = "";
       }
-      if (hiveConfDir == null) {
-        hiveConfDir = "";
-      }
 
       // For each of the qFiles generate the test
+      System.out.println("hiveRootDir = " + hiveRootDir);
       VelocityContext ctx = new VelocityContext();
       ctx.put("className", className);
       ctx.put("hiveRootDir", escapePath(hiveRootDir.getCanonicalPath()));
-      ctx.put("queryDir", relativePath(hiveRootDir, queryDir));
+      System.out.println("hiveRootDir = " + hiveRootDir);
+      System.out.println("queryDir = " + queryDir);
+      String strQueryDir = relativePath(hiveRootDir, queryDir);
+      System.out.println("queryDir = " + strQueryDir);
+      ctx.put("queryDir", strQueryDir);
       ctx.put("qfiles", qFiles);
       ctx.put("qfilesMap", qFilesMap);
       if (resultsDir != null) {
@@ -468,7 +470,17 @@ public class QTestGenTask extends Task {
       }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
       ctx.put("clusterMode", clusterMode);
-      ctx.put("hiveConfDir", escapePath(hiveConfDir));
+      if (hiveConfDir == null || hiveConfDir.isEmpty()) {
+        ctx.put("hiveConfDir", "");
+      } else {
+        System.out.println("hiveConfDir = " + hiveConfDir);
+        hiveConfDir = relativePath(hiveRootDir, new File(hiveConfDir));
+        System.out.println("hiveConfDir = " + hiveConfDir);
+        if (!(new File(hiveRootDir, hiveConfDir)).isDirectory()) {
+          throw new BuildException("hiveConfDir is not dir " + new File(hiveRootDir, hiveConfDir));
+        }
+        ctx.put("hiveConfDir", hiveConfDir);
+      }
       ctx.put("hadoopVersion", hadoopVersion);
       ctx.put("initScript", initScript);
       ctx.put("cleanupScript", cleanupScript);

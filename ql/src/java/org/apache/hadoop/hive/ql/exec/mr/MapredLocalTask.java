@@ -64,8 +64,6 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -97,6 +95,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   private ExecMapperContext execContext = null;
 
   private Process executor;
+  private SecureCmdDoAs secureDoAs;
 
   public MapredLocalTask() {
     super();
@@ -123,7 +122,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   public static String now() {
     Calendar cal = Calendar.getInstance();
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     return sdf.format(cal.getTime());
   }
 
@@ -271,7 +270,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         //If kerberos security is enabled, and HS2 doAs is enabled,
         // then additional params need to be set so that the command is run as
         // intended user
-        SecureCmdDoAs secureDoAs = new SecureCmdDoAs(conf);
+        secureDoAs = new SecureCmdDoAs(conf);
         secureDoAs.addEnv(variables);
       }
 
@@ -314,9 +313,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       return exitVal;
     } catch (Exception e) {
-      e.printStackTrace();
-      LOG.error("Exception: " + e.getMessage());
+      LOG.error("Exception: " + e, e);
       return (1);
+    } finally {
+      if (secureDoAs != null) {
+        secureDoAs.close();
+      }
     }
   }
 

@@ -213,7 +213,7 @@ class ASTBuilder {
     case TIMESTAMP: {
       val = literal.getValue();
       type = HiveParser.TOK_TIMESTAMPLITERAL;
-      DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+      DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       val = df.format(((Calendar) val).getTime());
       val = "'" + val + "'";
     }

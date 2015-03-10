@@ -19,8 +19,8 @@
 
 package org.apache.hive.service.server;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.metastore.RawStore;
  */
 public class ThreadFactoryWithGarbageCleanup implements ThreadFactory {
 
-  private static Map<Long, RawStore> threadRawStoreMap = new HashMap<Long, RawStore>();
+  private static Map<Long, RawStore> threadRawStoreMap = new ConcurrentHashMap<Long, RawStore>();
 
   private final String namePrefix;
 

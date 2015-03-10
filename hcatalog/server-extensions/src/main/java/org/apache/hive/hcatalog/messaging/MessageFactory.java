@@ -19,6 +19,7 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,7 +67,7 @@ public abstract class MessageFactory {
 
   private static MessageFactory getInstance(String className) {
     try {
-      return (MessageFactory)ReflectionUtils.newInstance(Class.forName(className), hiveConf);
+      return (MessageFactory)ReflectionUtils.newInstance(JavaUtils.loadClass(className), hiveConf);
     }
     catch (ClassNotFoundException classNotFound) {
       throw new IllegalStateException("Could not construct MessageFactory implementation: ", classNotFound);

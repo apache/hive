@@ -438,6 +438,41 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  public void sqlCTAS() throws Exception {
+
+    driver.run("create table ctas_source (c int)");
+    driver.run("insert into table ctas_source values (1)");
+    driver.run("create table ctas_target as select c from ctas_source");
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+
+    assertEquals(6, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
+    event = rsp.getEvents().get(2);
+    assertEquals(firstEventId + 3, event.getEventId());
+    assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
+    // Make sure the files are listed in the insert
+    assertTrue(event.getMessage().matches(".*\"files\":\\[\"pfile.*"));
+    event = rsp.getEvents().get(4);
+    assertEquals(firstEventId + 5, event.getEventId());
+    assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
+  }
+
+  @Test
+  public void sqlTempTable() throws Exception {
+
+    LOG.info("XXX Starting temp table");
+    driver.run("create temporary table tmp1 (c int)");
+    driver.run("insert into table tmp1 values (1)");
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+
+    assertEquals(0, rsp.getEventsSize());
+  }
+
+  @Test
   public void sqlDb() throws Exception {
 
     driver.run("create database sd");

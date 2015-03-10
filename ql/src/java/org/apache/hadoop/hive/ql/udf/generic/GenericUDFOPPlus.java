@@ -18,19 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * The reason that we list evaluate methods with all numeric types is for both
@@ -48,7 +38,7 @@ import org.apache.hadoop.io.LongWritable;
   LongScalarAddLongColumn.class, LongScalarAddDoubleColumn.class, DoubleScalarAddLongColumn.class,
   DoubleScalarAddDoubleColumn.class, DecimalScalarAddDecimalColumn.class, DecimalColAddDecimalColumn.class,
   DecimalColAddDecimalScalar.class})
-public class GenericUDFOPPlus extends GenericUDFBaseNumeric {
+public class GenericUDFOPPlus extends GenericUDFBaseArithmetic {
 
   public GenericUDFOPPlus() {
     super();
@@ -56,59 +46,13 @@ public class GenericUDFOPPlus extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected ByteWritable evaluate(ByteWritable left, ByteWritable right) {
-    byteWritable.set((byte)(left.get() + right.get()));
-    return byteWritable;
+  protected GenericUDFBaseNumeric instantiateNumericUDF() {
+    return new GenericUDFOPNumericPlus();
   }
 
   @Override
-  protected ShortWritable evaluate(ShortWritable left, ShortWritable right) {
-    shortWritable.set((short)(left.get() + right.get()));
-    return shortWritable;
+  protected GenericUDF instantiateDTIUDF() {
+    // TODO: implement date-time/interval version of UDF
+    return new GenericUDFOPNumericPlus();
   }
-
-  @Override
-  protected IntWritable evaluate(IntWritable left, IntWritable right) {
-    intWritable.set(left.get() + right.get());
-    return intWritable;
-  }
-
-  @Override
-  protected LongWritable evaluate(LongWritable left, LongWritable right) {
-    longWritable.set(left.get() + right.get());
-    return longWritable;
-  }
-
-  @Override
-  protected FloatWritable evaluate(FloatWritable left, FloatWritable right) {
-    floatWritable.set(left.get() + right.get());
-    return floatWritable;
-  }
-
-  @Override
-  protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
-    doubleWritable.set(left.get() + right.get());
-    return doubleWritable;
-  }
-
-  @Override
-  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
-    HiveDecimal dec = left.add(right);
-
-    if (dec == null) {
-      return null;
-    }
-
-    decimalWritable.set(dec);
-    return decimalWritable;
-  }
-
-  @Override
-  protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    int intPart = Math.max(prec1 - scale1, prec2 - scale2);
-    int scale = Math.max(scale1, scale2);
-    int prec =  Math.min(intPart + scale + 1, HiveDecimal.MAX_PRECISION);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-  }
-
 }

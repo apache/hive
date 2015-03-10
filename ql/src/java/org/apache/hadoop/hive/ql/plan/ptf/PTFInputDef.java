@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.plan.ptf;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.util.StringUtils;
 
 public abstract class PTFInputDef {
   private String expressionTreeString;
@@ -43,7 +43,7 @@ public abstract class PTFInputDef {
   @Explain(displayName = "output shape")
   public String getOutputShapeExplain() {
     RowSchema schema = outputShape.getRr().getRowSchema();
-    return StringUtils.join(", ", schema.getSignature());
+    return StringUtils.join(schema.getSignature(), ", ");
   }
 
   public void setOutputShape(ShapeDetails outputShape) {

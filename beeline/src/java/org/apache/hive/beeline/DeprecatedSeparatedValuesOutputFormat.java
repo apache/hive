@@ -45,6 +45,11 @@ class DeprecatedSeparatedValuesOutputFormat implements OutputFormat {
   public int print(Rows rows) {
     int count = 0;
     while (rows.hasNext()) {
+      if (count == 0 && !beeLine.getOpts().getShowHeader()) {
+        rows.next();
+        count++;
+        continue;
+      }
       printRow(rows, (Rows.Row) rows.next());
       count++;
     }
