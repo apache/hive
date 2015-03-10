@@ -23,7 +23,7 @@ set mapred.input.dir.recursive=true;
 -- to run the test only on hadoop 23
 
 create table inputTbl1(key string, ds string) stored as textfile;
-create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as textfile;
+create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as textfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
@@ -31,17 +31,17 @@ explain
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as values, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
   UNION ALL
-  SELECT key, count(1) as values, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
 ) a;
 
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as values, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
   UNION ALL
-  SELECT key, count(1) as values, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
 ) a;
 
 desc formatted outputTbl1;
@@ -49,6 +49,6 @@ desc formatted outputTbl1;
 show partitions outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 where ds = '11' order by key, values;
-select * from outputTbl1 where ds = '18' order by key, values;
-select * from outputTbl1 where ds is not null order by key, values, ds;
+select * from outputTbl1 where ds = '11' order by key, `values`;
+select * from outputTbl1 where ds = '18' order by key, `values`;
+select * from outputTbl1 where ds is not null order by key, `values`, ds;
