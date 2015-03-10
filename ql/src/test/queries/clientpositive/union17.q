@@ -1,7 +1,7 @@
 CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE;
 CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
 
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 -- union case:map-reduce sub-queries followed by multi-table insert
 
 explain 
