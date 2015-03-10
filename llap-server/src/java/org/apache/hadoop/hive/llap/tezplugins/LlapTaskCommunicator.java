@@ -103,9 +103,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   public void registerRunningTaskAttempt(final ContainerId containerId, final TaskSpec taskSpec,
                                          Map<String, LocalResource> additionalResources,
                                          Credentials credentials,
-                                         boolean credentialsChanged)  {
+                                         boolean credentialsChanged,
+                                         int priority)  {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
-        credentialsChanged);
+        credentialsChanged, priority);
     SubmitWorkRequestProto requestProto = null;
     try {
       requestProto = constructSubmitWorkRequest(containerId, taskSpec);
