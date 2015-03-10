@@ -40,17 +40,21 @@ fail() {
 	exit 1
 }
 
-[[ $# != 2 ]] && fail "Usage: $0 --patch PATH_URL"
+[[ $# != 4 ]] && fail "Usage: $0 --patch PATH_URL --branch BRANCH"
 
 PATCH_URL=
+BRANCH=
 while [[ $# -gt 0 ]]; do
 	if [[ $1 = "--patch" ]]; then
 		PATCH_URL=$2
+	elif [[ $1 = "--branch" ]]; then
+		BRANCH=$2
 	fi
 
 	shift 2
 done
 
+test -n "$BRANCH" || fail "--branch value is required."
 test -n "$PATCH_URL" || fail "--patch value is required."
 
 get_supported_dbs() {
@@ -85,14 +89,14 @@ lxc_start() {
 }
 
 lxc_prepare() {
+	echo "Downloading hive source code from SVN, branch='$BRANCH' ..."
 	lxc-attach -n $1 -- rm -rf /tmp/hive
 	lxc-attach -n $1 -- mkdir /tmp/hive
 
-	# TODO: Copy hive code to the container using SCP.
-	lxc-attach -n $1 -- svn co http://svn.apache.org/repos/asf/hive/trunk /tmp/hive
+	lxc-attach -n $1 -- svn co http://svn.apache.org/repos/asf/hive/$BRANCH /tmp/hive >/dev/null
 
 	lxc-attach -n $1 -- wget $PATCH_URL -O /tmp/hive/hms.patch
-	lxc-attach -n $1 -- patch -d /tmp/hive -p1 -i /tmp/hive/hms.patch
+	lxc-attach -n $1 -- patch -s -N -d /tmp/hive -p1 -i /tmp/hive/hms.patch
 }
 
 lxc_print_metastore_log() {
@@ -100,7 +104,6 @@ lxc_print_metastore_log() {
 }
 
 run_tests() {
-	#lxc-attach -n $1 -- bash /tmp/dev-support/tests/metastore-upgrade/metastore-upgrade-test.sh --db $1
 	lxc-attach -n $1 -- bash /tmp/hive/testutils/metastore/metastore-upgrade-test.sh --db $1
 }
 
