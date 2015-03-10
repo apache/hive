@@ -336,7 +336,12 @@ public class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void close() throws IOException {
-    file.close();
+    try {
+      file.close();
+    } catch (IOException ex) {
+      // Tez might have closed our filesystem. Log and ignore error.
+      LOG.info("Failed to close file; ignoring: " + ex.getMessage());
+    }
     if (pool != null) {
       pool.clear();
     }

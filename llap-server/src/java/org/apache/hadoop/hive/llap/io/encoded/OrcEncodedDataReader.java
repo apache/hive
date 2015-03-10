@@ -196,13 +196,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // readState has been modified for column x rgs that were fetched from cache.
 
     // 5. Create encoded data reader.
-    ensureOrcReader();
     // In case if we have high-level cache, we will intercept the data and add it there;
     // otherwise just pass the data directly to the consumer.
     Consumer<EncodedColumnBatch<OrcBatchKey>> dataConsumer =
         (cache == null) ? this.consumer : this;
     EncodedReader stripeReader = null;
     try {
+      ensureOrcReader();
       stripeReader = orcReader.encodedReader(lowLevelCache, dataConsumer);
     } catch (Throwable t) {
       consumer.setError(t);
@@ -286,14 +286,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
 
-    // close the stripe reader, we are done reading
-    stripeReader.close();
-
     // Done with all the things.
     dataConsumer.setDone();
     if (DebugUtils.isTraceMttEnabled()) {
       LlapIoImpl.LOG.info("done processing " + split);
     }
+
+    // close the stripe reader, we are done reading
+    stripeReader.close();
     return null;
   }
 
