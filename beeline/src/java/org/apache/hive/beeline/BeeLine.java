@@ -28,11 +28,9 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,6 +51,7 @@ import java.sql.Statement;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -82,7 +81,6 @@ import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.FileHistory;
 
-import jline.internal.Log;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
@@ -157,6 +155,8 @@ public class BeeLine implements Closeable {
       "xmlelements", new XMLElementOutputFormat(this),
   });
 
+  private List<String> supportedLocalDriver =
+    new ArrayList<String>(Arrays.asList("com.mysql.jdbc.Driver", "org.postgresql.Driver"));
 
   final CommandHandler[] commandHandlers = new CommandHandler[] {
       new ReflectiveCommandHandler(this, new String[] {"quit", "done", "exit"},
@@ -249,6 +249,10 @@ public class BeeLine implements Closeable {
           null),
       new ReflectiveCommandHandler(this, new String[] {"nullemptystring"},
           new Completer[] {new BooleanCompleter()}),
+      new ReflectiveCommandHandler(this, new String[]{"addlocaldriverjar"},
+          null),
+      new ReflectiveCommandHandler(this, new String[]{"addlocaldrivername"},
+          null)
   };
 
 
@@ -1579,6 +1583,11 @@ public class BeeLine implements Closeable {
         return true;
       }
 
+      // find whether exists a local driver to accept the url
+      if (findLocalDriver(url) != null) {
+        return true;
+      }
+
       return false;
     } catch (Exception e) {
       debug(e.toString());
@@ -1601,6 +1610,40 @@ public class BeeLine implements Closeable {
     return null;
   }
 
+  public Driver findLocalDriver(String url) throws Exception {
+    if(drivers == null){
+      return null;
+    }
+
+    for (Driver d : drivers) {
+      try {
+        String clazzName = d.getClass().getName();
+        Driver driver = (Driver) Class.forName(clazzName, true,
+          Thread.currentThread().getContextClassLoader()).newInstance();
+        if (driver.acceptsURL(url) && isSupportedLocalDriver(driver)) {
+          return driver;
+        }
+      } catch (SQLException e) {
+        error(e);
+        throw new Exception(e);
+      }
+    }
+    return null;
+  }
+
+  public boolean isSupportedLocalDriver(Driver driver) {
+    String driverName = driver.getClass().getName();
+    for (String name : supportedLocalDriver) {
+      if (name.equals(driverName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public void addLocalDriverClazz(String driverClazz) {
+    supportedLocalDriver.add(driverClazz);
+  }
 
   Driver[] scanDrivers(String line) throws IOException {
     return scanDrivers(false);

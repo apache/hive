@@ -64,7 +64,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private boolean eof = false;
   private int schemaSize;
   private boolean skipTimestampConversion = false;
-
+  private JobConf jobConf;
   private final ProjectionPusher projectionPusher;
 
   public ParquetRecordReaderWrapper(
@@ -86,25 +86,26 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     this.splitLen = oldSplit.getLength();
     this.projectionPusher = pusher;
 
-    final ParquetInputSplit split = getSplit(oldSplit, oldJobConf);
+    jobConf = oldJobConf;
+    final ParquetInputSplit split = getSplit(oldSplit, jobConf);
 
-    TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf.get(IOConstants.MAPRED_TASK_ID));
+    TaskAttemptID taskAttemptID = TaskAttemptID.forName(jobConf.get(IOConstants.MAPRED_TASK_ID));
     if (taskAttemptID == null) {
       taskAttemptID = new TaskAttemptID();
     }
 
-    setFilter(oldJobConf);
+    setFilter(jobConf);
 
     // create a TaskInputOutputContext
-    Configuration conf = oldJobConf;
+    Configuration conf = jobConf;
     if (skipTimestampConversion ^ HiveConf.getBoolVar(
         conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
       conf = new JobConf(oldJobConf);
       HiveConf.setBoolVar(conf,
         HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
     }
-    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
 
+    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
     if (split != null) {
       try {
         realReader = newInputFormat.createRecordReader(split, taskContext);
@@ -236,14 +237,14 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     ParquetInputSplit split;
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
-      final JobConf cloneJob = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
+      jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
 
-      final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(cloneJob, finalPath);
+      final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(jobConf, finalPath);
       final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
       final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
 
       final ReadContext readContext = new DataWritableReadSupport()
-          .init(cloneJob, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
+          .init(jobConf, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
       schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
           .get(DataWritableReadSupport.HIVE_SCHEMA_KEY)).getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();

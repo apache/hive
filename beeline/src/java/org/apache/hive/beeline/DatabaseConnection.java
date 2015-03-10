@@ -25,9 +25,12 @@ package org.apache.hive.beeline;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -112,9 +115,9 @@ class DatabaseConnection {
       return beeLine.error(cnfe);
     }
 
-    boolean foundDriver = false;
+    boolean isDriverRegistered = false;
     try {
-      foundDriver = DriverManager.getDriver(getUrl()) != null;
+      isDriverRegistered = DriverManager.getDriver(getUrl()) != null;
     } catch (Exception e) {
     }
 
@@ -134,7 +137,13 @@ class DatabaseConnection {
       info.put(HIVE_CONF_PREFIX + var.getKey(), var.getValue());
     }
 
-    setConnection(DriverManager.getConnection(getUrl(), info));
+    if (isDriverRegistered) {
+      // if the driver registered in the driver manager, get the connection via the driver manager
+      setConnection(DriverManager.getConnection(getUrl(), info));
+    } else {
+      beeLine.debug("Use the driver from local added jar file.");
+      setConnection(getConnectionFromLocalDriver(getUrl(), info));
+    }
     setDatabaseMetaData(getConnection().getMetaData());
 
     try {
@@ -168,6 +177,26 @@ class DatabaseConnection {
     }
 
     return true;
+  }
+
+  public Connection getConnectionFromLocalDriver(String url, Properties properties) {
+    Collection<Driver> drivers = beeLine.getDrivers();
+    for (Driver d : drivers) {
+      try {
+        if (d.acceptsURL(url) && beeLine.isSupportedLocalDriver(d)) {
+          String clazzName = d.getClass().getName();
+          beeLine.debug("Driver name is " + clazzName);
+          Driver driver =
+            (Driver) Class.forName(clazzName, true, Thread.currentThread().getContextClassLoader())
+              .newInstance();
+          return driver.connect(url, properties);
+        }
+      } catch (Exception e) {
+        beeLine.error("Fail to connect with a local driver due to the exception:" + e);
+        beeLine.error(e);
+      }
+    }
+    return null;
   }
 
 

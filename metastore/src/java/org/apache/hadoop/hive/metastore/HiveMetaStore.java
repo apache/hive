@@ -4142,12 +4142,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public TableStatsResult get_table_statistics_req(TableStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_table_statistics_req: db=" + dbName + " table=" + tblName);
       TableStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
       try {
-        ColumnStatistics cs = getMS().getTableColumnStatistics(
-            dbName, tblName, request.getColNames());
+        ColumnStatistics cs = getMS().getTableColumnStatistics(dbName, tblName, lowerCaseColNames);
         result = new TableStatsResult(
             cs == null ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
       } finally {
@@ -4185,13 +4189,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_partitions_statistics_req: db=" + dbName + " table=" + tblName);
 
       PartitionsStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
-            dbName, tblName, request.getPartNames(), request.getColNames());
+            dbName, tblName, lowerCasePartNames, lowerCaseColNames);
         Map<String, List<ColumnStatisticsObj>> map =
             new HashMap<String, List<ColumnStatisticsObj>>();
         for (ColumnStatistics stat : stats) {
@@ -5579,11 +5592,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
         throws NoSuchObjectException, MetaException, TException {
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
+
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
       AggrStats aggrStats = null;
+
       try {
-        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()));
+        aggrStats = new AggrStats(getMS().get_aggr_stats_for(dbName, tblName, lowerCasePartNames,
+            lowerCaseColNames));
         return aggrStats;
       } finally {
           endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());

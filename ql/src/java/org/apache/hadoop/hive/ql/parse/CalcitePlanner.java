@@ -718,7 +718,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
-      hepPgmBldr.addRuleInstance(ProjectRemoveRule.NAME_CALC_INSTANCE);
+      hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
       hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
 
       hepPgm = hepPgmBldr.build();
@@ -792,7 +792,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
           RelFactories.DEFAULT_SEMI_JOIN_FACTORY, HiveSort.HIVE_SORT_REL_FACTORY,
-          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY, true);
+          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
       basePlan = fieldTrimmer.trim(basePlan);
 
       // 5. Rerun PPD through Project as column pruning would have introduced DT
