@@ -217,7 +217,7 @@
     </repository>
      <repository>
        <id>spark-1.3</id>
-       <url>http://ec2-50-18-79-139.us-west-1.compute.amazonaws.com/data/spark_2.10-1.3-rc1/</url>
+       <url>https://s3-us-west-1.amazonaws.com/hive-spark/maven2/spark_2.10-1.3-rc1/</url>
        <releases>
          <enabled>true</enabled>
        </releases>
