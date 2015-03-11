@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -53,8 +54,10 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 public class SparkSkewJoinResolver implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
+    SparkSkewJoinProcFactory.getVisitedJoinOp().clear();
     Dispatcher disp = new SparkSkewJoinTaskDispatcher(pctx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    // since we may split current task, use a pre-order walker
+    GraphWalker ogw = new PreOrderWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getRootTasks());
     ogw.startWalking(topNodes, null);
