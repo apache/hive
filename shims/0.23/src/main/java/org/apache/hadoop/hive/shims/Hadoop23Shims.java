@@ -704,18 +704,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
         try {
           AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-          List<AclEntry> aclEntries = aclStatus.getEntries();
-          removeBaseAclEntries(aclEntries);
+          if (aclStatus != null) {
+            List<AclEntry> aclEntries = aclStatus.getEntries();
+            removeBaseAclEntries(aclEntries);
 
-          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-          FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+            //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+            FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
 
-          //construct the -setfacl command
-          String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
-          run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+            //construct the -setfacl command
+            String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+            run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+          }
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
                   "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
