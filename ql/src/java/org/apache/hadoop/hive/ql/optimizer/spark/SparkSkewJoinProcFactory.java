@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.spark;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.physical.GenMRSkewJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.physical.GenSparkSkewJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.physical.SkewJoinProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
@@ -50,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -58,6 +61,9 @@ import java.util.Stack;
  * Spark-version of SkewJoinProcFactory.
  */
 public class SparkSkewJoinProcFactory {
+  // let's remember the join operators we have processed
+  private static final Set<JoinOperator> visitedJoinOp = new HashSet<JoinOperator>();
+
   private SparkSkewJoinProcFactory() {
     // prevent instantiation
   }
@@ -81,13 +87,12 @@ public class SparkSkewJoinProcFactory {
       JoinOperator op = (JoinOperator) nd;
       ReduceWork reduceWork = context.getReducerToReduceWork().get(op);
       ParseContext parseContext = context.getParseCtx();
-      if (!op.getConf().isFixedAsSorted() && currentTsk instanceof SparkTask
-        && reduceWork != null && ((SparkTask) currentTsk).getWork().contains(reduceWork)
-        && GenSparkSkewJoinProcessor.supportRuntimeSkewJoin(
-          op, currentTsk, parseContext.getConf())) {
+      if (reduceWork != null && !visitedJoinOp.contains(op) &&
+          supportRuntimeSkewJoin(op, reduceWork, currentTsk, parseContext.getConf())) {
         // first we try to split the task
         splitTask((SparkTask) currentTsk, reduceWork, parseContext);
         GenSparkSkewJoinProcessor.processSkewJoin(op, currentTsk, reduceWork, parseContext);
+        visitedJoinOp.add(op);
       }
       return null;
     }
@@ -112,8 +117,7 @@ public class SparkSkewJoinProcFactory {
       SparkWork newWork =
           new SparkWork(parseContext.getConf().getVar(HiveConf.ConfVars.HIVEQUERYID));
       newWork.add(childWork);
-      copyWorkGraph(currentWork, newWork, childWork, true);
-      copyWorkGraph(currentWork, newWork, childWork, false);
+      copyWorkGraph(currentWork, newWork, childWork);
       // remove them from current spark work
       for (BaseWork baseWork : newWork.getAllWorkUnsorted()) {
         currentWork.remove(baseWork);
@@ -196,22 +200,39 @@ public class SparkSkewJoinProcFactory {
   /**
    * Copy a sub-graph from originWork to newWork.
    */
-  private static void copyWorkGraph(SparkWork originWork, SparkWork newWork,
-      BaseWork baseWork, boolean upWards) {
-    if (upWards) {
-      for (BaseWork parent : originWork.getParents(baseWork)) {
-        newWork.add(parent);
-        SparkEdgeProperty edgeProperty = originWork.getEdgeProperty(parent, baseWork);
-        newWork.connect(parent, baseWork, edgeProperty);
-        copyWorkGraph(originWork, newWork, parent, true);
-      }
-    } else {
-      for (BaseWork child : originWork.getChildren(baseWork)) {
+  private static void copyWorkGraph(SparkWork originWork, SparkWork newWork, BaseWork baseWork) {
+    for (BaseWork child : originWork.getChildren(baseWork)) {
+      if (!newWork.contains(child)) {
         newWork.add(child);
         SparkEdgeProperty edgeProperty = originWork.getEdgeProperty(baseWork, child);
         newWork.connect(baseWork, child, edgeProperty);
-        copyWorkGraph(originWork, newWork, child, false);
+        copyWorkGraph(originWork, newWork, child);
       }
     }
+    for (BaseWork parent : originWork.getParents(baseWork)) {
+      if (!newWork.contains(parent)) {
+        newWork.add(parent);
+        SparkEdgeProperty edgeProperty = originWork.getEdgeProperty(parent, baseWork);
+        newWork.connect(parent, baseWork, edgeProperty);
+        copyWorkGraph(originWork, newWork, parent);
+      }
+    }
+  }
+
+  public static Set<JoinOperator> getVisitedJoinOp() {
+    return visitedJoinOp;
+  }
+
+  private static boolean supportRuntimeSkewJoin(JoinOperator joinOp, ReduceWork reduceWork,
+      Task<? extends Serializable> currTask, HiveConf hiveConf) {
+    if (currTask instanceof SparkTask &&
+        GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp)) {
+      SparkWork sparkWork = ((SparkTask) currTask).getWork();
+      List<Task<? extends Serializable>> children = currTask.getChildTasks();
+      return !joinOp.getConf().isFixedAsSorted() && sparkWork.contains(reduceWork) &&
+          (children == null || children.size() <= 1) &&
+          SparkMapJoinResolver.getOp(reduceWork, CommonJoinOperator.class).size() == 1;
+    }
+    return false;
   }
 }

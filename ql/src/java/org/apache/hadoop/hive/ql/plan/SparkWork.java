@@ -236,6 +236,7 @@ public class SparkWork extends AbstractOperatorDesc {
     List<BaseWork> parents = getParents(work);
 
     for (BaseWork w: children) {
+      edgeProperties.remove(new ImmutablePair<BaseWork, BaseWork>(work, w));
       invertedWorkGraph.get(w).remove(work);
       if (invertedWorkGraph.get(w).size() == 0) {
         roots.add(w);
@@ -243,6 +244,7 @@ public class SparkWork extends AbstractOperatorDesc {
     }
 
     for (BaseWork w: parents) {
+      edgeProperties.remove(new ImmutablePair<BaseWork, BaseWork>(w, work));
       workGraph.get(w).remove(work);
       if (workGraph.get(w).size() == 0) {
         leaves.add(w);
