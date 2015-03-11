@@ -222,6 +222,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     else {
       if (isMR2()) {
+        conf.set("mapreduce.framework.name", "yarn");
         conf.set("yarn.resourcemanager.address", val);
       } else {
         conf.set("mapred.job.tracker", val);
