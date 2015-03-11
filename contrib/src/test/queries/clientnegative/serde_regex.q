@@ -7,7 +7,7 @@ EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status INT,
@@ -24,7 +24,7 @@ STORED AS TEXTFILE;
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status INT,

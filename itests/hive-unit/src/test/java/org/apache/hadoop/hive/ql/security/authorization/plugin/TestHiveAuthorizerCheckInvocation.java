@@ -94,7 +94,7 @@ public class TestHiveAuthorizerCheckInvocation {
     SessionState.start(conf);
     driver = new Driver(conf);
     runCmd("create table " + tableName
-        + " (i int, j int, k string) partitioned by (city string, date string) ");
+        + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create database " + dbName);
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
     runCmd("create table " + acidTableName + " (i int, j int) clustered by (i) into 2 buckets " +

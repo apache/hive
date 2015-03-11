@@ -1955,7 +1955,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-
+    HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS("hive.support.sql11.reserved.keywords", true,
+        "This flag should be set to true to enable support for SQL2011 reserved keywords.\n" +
+        "The default value is true."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

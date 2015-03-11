@@ -35,6 +35,9 @@ k=3;
       RecognitionException e) {
     gParent.errors.add(new ParseError(gParent, e, tokenNames));
   }
+  protected boolean useSQL11ReservedKeywordsForIdentifier() {
+    return gParent.useSQL11ReservedKeywordsForIdentifier();
+  }
 }
 
 @rulecatch {
@@ -126,7 +129,7 @@ lateralView
 @init {gParent.pushMsg("lateral view", state); }
 @after {gParent.popMsg(state); }
 	:
-	KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
+	(KW_LATERAL KW_VIEW KW_OUTER) => KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW_OUTER ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
 	|
 	KW_LATERAL KW_VIEW function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
@@ -177,7 +180,12 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName (props=tableProperties)? (ts=tableSample)? (KW_AS? alias=Identifier)?
+    : tabname=tableName 
+    ((tableProperties) => props=tableProperties)?
+    ((tableSample) => ts=tableSample)? 
+    ((KW_AS) => (KW_AS alias=Identifier) 
+    |
+    (Identifier) => (alias=Identifier))?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
     ;
 
@@ -232,11 +240,11 @@ partitionedTableFunction
 @init { gParent.pushMsg("ptf clause", state); }
 @after { gParent.popMsg(state); } 
    :
-   name=Identifier
-   LPAREN KW_ON ptfsrc=partitionTableFunctionSource partitioningSpec?
-     ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)? 
-   RPAREN alias=Identifier?
-   ->   ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
+   name=Identifier LPAREN KW_ON 
+   ((partitionTableFunctionSource) => (ptfsrc=partitionTableFunctionSource spec=partitioningSpec?))
+   ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)?
+   ((RPAREN) => (RPAREN)) ((Identifier) => alias=Identifier)?
+   ->   ^(TOK_PTBLFUNCTION $name $alias? $ptfsrc $spec? expression*)
    ; 
 
 //----------------------- Rules for parsing whereClause -----------------------------
