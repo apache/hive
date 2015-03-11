@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
+import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.spark.counter.SparkCounters;
@@ -100,6 +102,7 @@ public class SparkTask extends Task<SparkWork> {
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
+      addToHistory(jobRef);
       rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (rc == 0) {
@@ -134,6 +137,14 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return rc;
+  }
+
+  private void addToHistory(SparkJobRef jobRef) {
+    console.printInfo("Starting Spark Job = " + jobRef.getJobId());
+    if (SessionState.get() != null) {
+      SessionState.get().getHiveHistory()
+	  .setQueryProperty(SessionState.get().getQueryId(), Keys.SPARK_JOB_ID, jobRef.getJobId());
+    }
   }
 
   private void logSparkStatistic(SparkStatistics sparkStatistic) {
