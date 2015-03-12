@@ -138,7 +138,9 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       transformations.add(new ReduceSinkDeDuplication());
     }
-    transformations.add(new NonBlockingOpDeDupProc());
+    if(!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+      transformations.add(new NonBlockingOpDeDupProc());
+    }
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)) {
       transformations.add(new IdentityProjectRemover());
     }

@@ -19,22 +19,49 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMdDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 
 import com.google.common.collect.ImmutableList;
 
 public class HiveDefaultRelMetadataProvider {
-  private HiveDefaultRelMetadataProvider() {
+
+  private final HiveConf hiveConf;
+
+
+  public HiveDefaultRelMetadataProvider(HiveConf hiveConf) {
+    this.hiveConf = hiveConf;
   }
 
-  public static final RelMetadataProvider INSTANCE = ChainedRelMetadataProvider.of(ImmutableList
-                                                       .of(HiveRelMdDistinctRowCount.SOURCE,
-                                                           HiveRelMdSelectivity.SOURCE,
-                                                           HiveRelMdRowCount.SOURCE,
-                                                           HiveRelMdUniqueKeys.SOURCE,
-                                                           new DefaultRelMetadataProvider()));
+  public RelMetadataProvider getMetadataProvider() {
+
+    // Init HiveRelMdParallelism with max split size
+    Double maxSplitSize = (double) HiveConf.getLongVar(
+            this.hiveConf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+    HiveRelMdParallelism hiveRelMdParallelism =
+            new HiveRelMdParallelism(maxSplitSize);
+
+    // Return MD provider
+    return ChainedRelMetadataProvider.of(ImmutableList
+            .of(HiveRelMdDistinctRowCount.SOURCE,
+                    HiveRelMdSelectivity.SOURCE,
+                    HiveRelMdRowCount.SOURCE,
+                    HiveRelMdUniqueKeys.SOURCE,
+                    HiveRelMdSize.SOURCE,
+                    HiveRelMdMemory.SOURCE,
+                    hiveRelMdParallelism.getMetadataProvider(),
+                    RelMdDistribution.SOURCE,
+                    HiveRelMdCollation.SOURCE,
+                    new DefaultRelMetadataProvider()));
+  }
+
 }

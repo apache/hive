@@ -116,6 +116,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfigContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -176,7 +177,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 public class CalcitePlanner extends SemanticAnalyzer {
-  private final AtomicInteger     noColsMissingStats = new AtomicInteger(0);
+
+  private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
   private List<FieldSchema> topLevelFieldSchema;
   private SemanticException semanticException;
   private boolean           runCBO             = true;
@@ -731,7 +733,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = HiveVolcanoPlanner.createPlanner();
+      HiveConfigContext confContext = new HiveConfigContext(conf);
+      RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
       final RelOptQuery query = new RelOptQuery(planner);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       cluster = query.createCluster(rexBuilder.getTypeFactory(), rexBuilder);
@@ -750,13 +753,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
 
+      // Create MD provider
+      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
+
       // 2. Apply Pre Join Order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
-          HiveDefaultRelMetadataProvider.INSTANCE);
+              mdProvider.getMetadataProvider());
 
       // 3. Appy Join Order Optimizations using Hep Planner (MST Algorithm)
       List<RelMetadataProvider> list = Lists.newArrayList();
-      list.add(HiveDefaultRelMetadataProvider.INSTANCE);
+      list.add(mdProvider.getMetadataProvider());
       RelTraitSet desiredTraits = cluster
           .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
 
@@ -832,7 +838,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           SemiJoinFilterTransposeRule.INSTANCE, SemiJoinProjectTransposeRule.INSTANCE);
 
       // 2. Add not null filters
-      basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+        basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
+      }
 
       // 3. PPD
       basePlan = hepPlan(basePlan, true, mdProvider,
@@ -1290,11 +1298,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 4. Build RelOptAbstractTable
         String fullyQualifiedTabName = tabMetaData.getDbName();
         if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-          fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName()
-                  + "." + tableAlias;
+          fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
         }
         else {
-          fullyQualifiedTabName = tabMetaData.getTableName() + "." + tableAlias;
+          fullyQualifiedTabName = tabMetaData.getTableName();
+        }
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+          fullyQualifiedTabName += "." + tableAlias;
         }
         RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
             tableAlias, rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
@@ -2821,4 +2831,5 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return tabAliases;
     }
   }
+
 }
