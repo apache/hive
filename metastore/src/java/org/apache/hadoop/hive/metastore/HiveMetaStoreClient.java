@@ -294,6 +294,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public void setHiveAddedJars(String addedJars) {
+    HiveConf.setVar(conf, ConfVars.HIVEADDEDJARS, addedJars);
+  }
+
+  @Override
   public void reconnect() throws MetaException {
     if (localMetaStore) {
       // For direct DB connections we don't yet support reestablishing connections.
@@ -1480,7 +1485,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getSchema(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    return deepCopyFieldSchemas(client.get_schema(db, tableName));
+      EnvironmentContext envCxt = null;
+      String addedJars = conf.getVar(ConfVars.HIVEADDEDJARS);
+      if(org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+         Map<String, String> props = new HashMap<String, String>();
+         props.put("hive.added.jars.path", addedJars);
+         envCxt = new EnvironmentContext(props);
+       }
+
+    return deepCopyFieldSchemas(client.get_schema_with_environment_context(db, tableName, envCxt));
   }
 
   @Override

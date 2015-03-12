@@ -228,6 +228,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_fields failed: unknown result')
     end
 
+    def get_fields_with_environment_context(db_name, table_name, environment_context)
+      send_get_fields_with_environment_context(db_name, table_name, environment_context)
+      return recv_get_fields_with_environment_context()
+    end
+
+    def send_get_fields_with_environment_context(db_name, table_name, environment_context)
+      send_message('get_fields_with_environment_context', Get_fields_with_environment_context_args, :db_name => db_name, :table_name => table_name, :environment_context => environment_context)
+    end
+
+    def recv_get_fields_with_environment_context()
+      result = receive_message(Get_fields_with_environment_context_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_fields_with_environment_context failed: unknown result')
+    end
+
     def get_schema(db_name, table_name)
       send_get_schema(db_name, table_name)
       return recv_get_schema()
@@ -244,6 +262,24 @@ module ThriftHiveMetastore
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema failed: unknown result')
+    end
+
+    def get_schema_with_environment_context(db_name, table_name, environment_context)
+      send_get_schema_with_environment_context(db_name, table_name, environment_context)
+      return recv_get_schema_with_environment_context()
+    end
+
+    def send_get_schema_with_environment_context(db_name, table_name, environment_context)
+      send_message('get_schema_with_environment_context', Get_schema_with_environment_context_args, :db_name => db_name, :table_name => table_name, :environment_context => environment_context)
+    end
+
+    def recv_get_schema_with_environment_context()
+      result = receive_message(Get_schema_with_environment_context_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_with_environment_context failed: unknown result')
     end
 
     def create_table(tbl)
@@ -2194,6 +2230,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_fields', seqid)
     end
 
+    def process_get_fields_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Get_fields_with_environment_context_args)
+      result = Get_fields_with_environment_context_result.new()
+      begin
+        result.success = @handler.get_fields_with_environment_context(args.db_name, args.table_name, args.environment_context)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::UnknownTableException => o2
+        result.o2 = o2
+      rescue ::UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_fields_with_environment_context', seqid)
+    end
+
     def process_get_schema(seqid, iprot, oprot)
       args = read_args(iprot, Get_schema_args)
       result = Get_schema_result.new()
@@ -2207,6 +2258,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'get_schema', seqid)
+    end
+
+    def process_get_schema_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_with_environment_context_args)
+      result = Get_schema_with_environment_context_result.new()
+      begin
+        result.success = @handler.get_schema_with_environment_context(args.db_name, args.table_name, args.environment_context)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::UnknownTableException => o2
+        result.o2 = o2
+      rescue ::UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_schema_with_environment_context', seqid)
     end
 
     def process_create_table(seqid, iprot, oprot)
@@ -4030,6 +4096,48 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_fields_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TABLE_NAME = 2
+    ENVIRONMENT_CONTEXT = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => ::EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_fields_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::UnknownTableException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Get_schema_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -4049,6 +4157,48 @@ module ThriftHiveMetastore
   end
 
   class Get_schema_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::UnknownTableException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TABLE_NAME = 2
+    ENVIRONMENT_CONTEXT = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => ::EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_with_environment_context_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
