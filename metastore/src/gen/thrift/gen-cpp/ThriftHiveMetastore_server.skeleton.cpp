@@ -87,9 +87,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_fields\n");
   }
 
+  void get_fields_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("get_fields_with_environment_context\n");
+  }
+
   void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) {
     // Your implementation goes here
     printf("get_schema\n");
+  }
+
+  void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("get_schema_with_environment_context\n");
   }
 
   void create_table(const Table& tbl) {
