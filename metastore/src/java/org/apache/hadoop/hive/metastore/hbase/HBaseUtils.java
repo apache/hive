@@ -640,12 +640,14 @@ class HBaseUtils {
   }
 
   static void assembleStorageDescriptor(StorageDescriptor sd, StorageDescriptorParts parts) {
-    sd.setLocation(parts.location);
-    sd.setParameters(parts.parameters);
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setLocation(parts.location);
+    ssd.setParameters(parts.parameters);
+    ssd.setShared(sd);
     if (parts.containingPartition != null) {
-      parts.containingPartition.setSd(sd);
+      parts.containingPartition.setSd(ssd);
     } else if (parts.containingTable != null) {
-      parts.containingTable.setSd(sd);
+      parts.containingTable.setSd(ssd);
     } else {
       throw new RuntimeException("Need either a partition or a table");
     }

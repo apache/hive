@@ -1879,7 +1879,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreAddPartitionEvent(tbl, part, this));
 
-        part.setSd(tbl.getSd());
+        part.setSd(tbl.getSd().deepCopy());
         partLocation = new Path(tbl.getSd().getLocation(), Warehouse
             .makePartName(tbl.getPartitionKeys(), part_vals));
         part.getSd().setLocation(partLocation.toString());
