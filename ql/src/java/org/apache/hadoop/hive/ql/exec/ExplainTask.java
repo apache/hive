@@ -284,15 +284,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonDependencies = getJSONDependencies(work);
         out.print(jsonDependencies);
       } else {
-        if (work.getDependency()) {
-          JSONObject jsonDependencies = getJSONDependencies(work);
-          out.print(jsonDependencies);
-        } else {
-          JSONObject jsonPlan = getJSONPlan(out, work);
-          if (work.isFormatted()) {
-            out.print(jsonPlan);
-          }
-        }
+	JSONObject jsonPlan = getJSONPlan(out, work);
+	if (work.isFormatted()) {
+	  out.print(jsonPlan);
+	}
       }
 
       out.close();
