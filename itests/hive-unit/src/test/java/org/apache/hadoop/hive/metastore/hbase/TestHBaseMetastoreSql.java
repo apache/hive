@@ -23,28 +23,30 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,9 +54,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Test that import from an RDBMS based metastore works
+ * Integration tests with HBase Mini-cluster for HBaseStore
  */
-public class TestHBaseImport {
+public class TestHBaseMetastoreSql {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
@@ -64,12 +66,15 @@ public class TestHBaseImport {
   private static HTableInterface partTable;
   private static HTableInterface dbTable;
   private static HTableInterface roleTable;
+  private static HTableInterface globalPrivsTable;
+  private static HTableInterface principalRoleMapTable;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private HBaseConnection hconn;
   private HBaseStore store;
   private HiveConf conf;
+  private Driver driver;
 
   @BeforeClass
   public static void startMiniCluster() throws Exception {
@@ -86,6 +91,12 @@ public class TestHBaseImport {
         HBaseReadWrite.CATALOG_CF);
     roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
+    globalPrivsTable =
+        utility.createTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE.getBytes(HBaseUtils.ENCODING),
+            HBaseReadWrite.CATALOG_CF);
+    principalRoleMapTable =
+        utility.createTable(HBaseReadWrite.USER_TO_ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
+            HBaseReadWrite.CATALOG_CF);
   }
 
   @AfterClass
@@ -101,95 +112,36 @@ public class TestHBaseImport {
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
     conf = new HiveConf();
-    // Turn off caching, as we want to test actual interaction with HBase
-    conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
     conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
+    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+        "org.apache.hadoop.hive.metastore.hbase.HBaseStore");
+    conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     HBaseReadWrite.setTestConnection(hconn);
-    /*HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
-    hbase.setConnection(hconn);*/
-    store = new HBaseStore();
-    store.setConf(conf);
+
+    SessionState.start(new CliSessionState(conf));
+    driver = new Driver(conf);
   }
 
   @Test
-  public void doImport() throws Exception {
-    RawStore rdbms = new ObjectStore();
-    rdbms.setConf(conf);
-
-    String[] dbNames = new String[] {"importdb1", "importdb2"};
-    String[] tableNames = new String[] {"nonparttable", "parttable"};
-    String[] partVals = new String[] {"na", "emea", "latam", "apac"};
-    String[] roles = new String[] {"role1", "role2"};
-    int now = (int)System.currentTimeMillis() / 1000;
-
-    for (int i = 0; i < roles.length; i++) {
-      rdbms.addRole(roles[i], "me");
-    }
-
-    for (int i = 0; i < dbNames.length; i++) {
-      rdbms.createDatabase(new Database(dbNames[i], "no description", "file:/tmp", emptyParameters));
-
-      List<FieldSchema> cols = new ArrayList<FieldSchema>();
-      cols.add(new FieldSchema("col1", "int", "nocomment"));
-      SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-      StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
-          serde, null, null, emptyParameters);
-      rdbms.createTable(new Table(tableNames[0], dbNames[i], "me", now, now, 0, sd, null,
-          emptyParameters, null, null, null));
-
-      List<FieldSchema> partCols = new ArrayList<FieldSchema>();
-      partCols.add(new FieldSchema("region", "string", ""));
-      rdbms.createTable(new Table(tableNames[1], dbNames[i], "me", now, now, 0, sd, partCols,
-          emptyParameters, null, null, null));
-
-      for (int j = 0; j < partVals.length; j++) {
-        StorageDescriptor psd = new StorageDescriptor(sd);
-        psd.setLocation("file:/tmp/region=" + partVals[j]);
-        Partition part = new Partition(Arrays.asList(partVals[j]), dbNames[i], tableNames[1],
-            now, now, psd, emptyParameters);
-        store.addPartition(part);
-      }
-    }
-
-    HBaseImport importer = new HBaseImport();
-    importer.setConnections(rdbms, store);
-    importer.run();
-
-    for (int i = 0; i < roles.length; i++) {
-      Role role = store.getRole(roles[i]);
-      Assert.assertNotNull(role);
-      Assert.assertEquals(roles[i], role.getRoleName());
-    }
-    // Make sure there aren't any extra roles
-    Assert.assertEquals(2, store.listRoleNames().size());
-
-    for (int i = 0; i < dbNames.length; i++) {
-      Database db = store.getDatabase(dbNames[i]);
-      Assert.assertNotNull(db);
-      // check one random value in the db rather than every value
-      Assert.assertEquals("file:/tmp", db.getLocationUri());
-
-      Table table = store.getTable(db.getName(), tableNames[0]);
-      Assert.assertNotNull(table);
-      Assert.assertEquals(now, table.getLastAccessTime());
-      Assert.assertEquals("input", table.getSd().getInputFormat());
-
-      table = store.getTable(db.getName(), tableNames[1]);
-      Assert.assertNotNull(table);
-
-      for (int j = 0; j < partVals.length; j++) {
-        Partition part = store.getPartition(dbNames[i], tableNames[1], Arrays.asList(partVals[j]));
-        Assert.assertNotNull(part);
-        Assert.assertEquals("file:/tmp/region=" + partVals[j], part.getSd().getLocation());
-      }
-
-      Assert.assertEquals(4, store.getPartitions(dbNames[i], tableNames[1], -1).size());
-      Assert.assertEquals(2, store.getAllTables(dbNames[i]).size());
-
-
-    }
-
-    Assert.assertEquals(2, store.getAllDatabases().size());
+  public void insertIntoTable() throws Exception {
+    driver.run("create table iit (c int)");
+    CommandProcessorResponse rsp = driver.run("insert into table iit values (3)");
+    Assert.assertEquals(0, rsp.getResponseCode());
   }
+
+  @Test
+  public void insertIntoPartitionTable() throws Exception {
+    driver.run("create table iipt (c int) partitioned by (ds string)");
+    CommandProcessorResponse rsp =
+        driver.run("insert into table iipt partition(ds) values (1, 'today'), (2, 'yesterday')," +
+            "(3, 'tomorrow')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+
 }

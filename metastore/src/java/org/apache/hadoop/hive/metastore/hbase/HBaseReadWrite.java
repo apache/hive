@@ -85,6 +85,7 @@ class HBaseReadWrite {
   private final static int TABLES_TO_CACHE = 10;
 
   @VisibleForTesting final static String TEST_CONN = "test_connection";
+  private static HBaseConnection testConn;
 
   private final static String[] tableNames = { DB_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
       USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
@@ -153,7 +154,11 @@ class HBaseReadWrite {
 
     try {
       String connClass = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS);
-      if (!TEST_CONN.equals(connClass)) {
+      if (TEST_CONN.equals(connClass)) {
+        conn = testConn;
+        LOG.debug("Using test connection.");
+      } else {
+        LOG.debug("Instantiating connection class " + connClass);
         Class c = Class.forName(connClass);
         Object o = c.newInstance();
         if (HBaseConnection.class.isAssignableFrom(o.getClass())) {
@@ -1629,8 +1634,8 @@ class HBaseReadWrite {
    * @param connection Mock connection objecct
    */
   @VisibleForTesting
-  void setConnection(HBaseConnection connection) {
-    conn = connection;
+  static void setTestConnection(HBaseConnection connection) {
+    testConn = connection;
   }
 
 

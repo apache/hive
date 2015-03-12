@@ -101,8 +101,8 @@ public class TestStatsCache {
     HiveConf conf = new HiveConf();
     conf.setIntVar(HiveConf.ConfVars.METASTORE_HBASE_CACHE_SIZE, 30);
     conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
+    HBaseReadWrite.setTestConnection(hconn);
     hrw = HBaseReadWrite.getInstance(conf);
-    hrw.setConnection(hconn);
     StatsCache.getInstance(conf).clear();
     puts[0] = puts[1] = null;
   }

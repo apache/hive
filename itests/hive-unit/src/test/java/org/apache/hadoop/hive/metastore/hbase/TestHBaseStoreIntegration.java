@@ -138,8 +138,8 @@ public class TestHBaseStoreIntegration {
     // Turn off caching, as we want to test actual interaction with HBase
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
     conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
-    HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
-    hbase.setConnection(hconn);
+    HBaseReadWrite.setTestConnection(hconn);
+    // HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
     store = new HBaseStore();
     store.setConf(conf);
   }

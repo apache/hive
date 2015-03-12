@@ -146,8 +146,8 @@ public class MockUtils {
     HBaseConnection hconn = Mockito.mock(HBaseConnection.class);
     Mockito.when(hconn.getHBaseTable(Mockito.anyString())).thenReturn(htable);
     HiveConf.setVar(conf, HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
+    HBaseReadWrite.setTestConnection(hconn);
     HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
-    hbase.setConnection(hconn);
     HBaseStore store = new HBaseStore();
     store.setConf(conf);
     return store;

@@ -190,11 +190,13 @@ class HBaseUtils {
     List<PrivilegeGrantInfo> results = new ArrayList<PrivilegeGrantInfo>();
     for (HbaseMetastoreProto.PrivilegeGrantInfo proto : privileges) {
       PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
-      pgi.setPrivilege(proto.getPrivilege());
+      if (proto.hasPrivilege()) pgi.setPrivilege(proto.getPrivilege());
       pgi.setCreateTime((int)proto.getCreateTime());
-      pgi.setGrantor(proto.getGrantor());
-      pgi.setGrantorType(convertPrincipalTypes(proto.getGrantorType()));
-      pgi.setGrantOption(proto.getGrantOption());
+      if (proto.hasGrantor()) pgi.setGrantor(proto.getGrantor());
+      if (proto.hasGrantorType()) {
+        pgi.setGrantorType(convertPrincipalTypes(proto.getGrantorType()));
+      }
+      if (proto.hasGrantOption()) pgi.setGrantOption(proto.getGrantOption());
       results.add(pgi);
     }
     return results;
@@ -272,7 +274,7 @@ class HBaseUtils {
     HbaseMetastoreProto.Role protoRole =
         HbaseMetastoreProto.Role.parseFrom(value);
     role.setCreateTime((int)protoRole.getCreateTime());
-    role.setOwnerName(protoRole.getOwnerName());
+    if (protoRole.hasOwnerName()) role.setOwnerName(protoRole.getOwnerName());
     return role;
   }
 
@@ -344,12 +346,14 @@ class HBaseUtils {
     db.setName(dbName);
     HbaseMetastoreProto.Database protoDb = HbaseMetastoreProto.Database.parseFrom(value);
     db.setName(dbName);
-    db.setDescription(protoDb.getDescription());
-    db.setLocationUri(protoDb.getUri());
-    db.setParameters(buildParameters(protoDb.getParameters()));
-    db.setPrivileges(buildPrincipalPrivilegeSet(protoDb.getPrivileges()));
-    db.setOwnerName(protoDb.getOwnerName());
-    db.setOwnerType(convertPrincipalTypes(protoDb.getOwnerType()));
+    if (protoDb.hasDescription()) db.setDescription(protoDb.getDescription());
+    if (protoDb.hasUri()) db.setLocationUri(protoDb.getUri());
+    if (protoDb.hasParameters()) db.setParameters(buildParameters(protoDb.getParameters()));
+    if (protoDb.hasPrivileges()) {
+      db.setPrivileges(buildPrincipalPrivilegeSet(protoDb.getPrivileges()));
+    }
+    if (protoDb.hasOwnerName()) db.setOwnerName(protoDb.getOwnerName());
+    if (protoDb.hasOwnerType()) db.setOwnerType(convertPrincipalTypes(protoDb.getOwnerType()));
 
     return db;
   }
@@ -372,7 +376,8 @@ class HBaseUtils {
   convertFieldSchemaListFromProto(List<HbaseMetastoreProto.FieldSchema> protoList) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(protoList.size());
     for (HbaseMetastoreProto.FieldSchema proto : protoList) {
-      schemas.add(new FieldSchema(proto.getName(), proto.getType(), proto.getComment()));
+      schemas.add(new FieldSchema(proto.getName(), proto.getType(),
+          proto.hasComment() ? proto.getComment() : null));
     }
     return schemas;
   }
@@ -557,35 +562,42 @@ class HBaseUtils {
         HbaseMetastoreProto.StorageDescriptor.parseFrom(serialized);
     StorageDescriptor sd = new StorageDescriptor();
     sd.setCols(convertFieldSchemaListFromProto(proto.getColsList()));
-    sd.setInputFormat(proto.getInputFormat());
-    sd.setOutputFormat(proto.getOutputFormat());
+    if (proto.hasInputFormat()) sd.setInputFormat(proto.getInputFormat());
+    if (proto.hasOutputFormat()) sd.setOutputFormat(proto.getOutputFormat());
     sd.setCompressed(proto.getIsCompressed());
     sd.setNumBuckets(proto.getNumBuckets());
-    SerDeInfo serde = new SerDeInfo();
-    serde.setName(proto.getSerdeInfo().getName());
-    serde.setSerializationLib(proto.getSerdeInfo().getSerializationLib());
-    serde.setParameters(buildParameters(proto.getSerdeInfo().getParameters()));
-    sd.setSerdeInfo(serde);
+    if (proto.hasSerdeInfo()) {
+      SerDeInfo serde = new SerDeInfo();
+      serde.setName(proto.getSerdeInfo().getName());
+      serde.setSerializationLib(proto.getSerdeInfo().getSerializationLib());
+      serde.setParameters(buildParameters(proto.getSerdeInfo().getParameters()));
+      sd.setSerdeInfo(serde);
+    }
     sd.setBucketCols(new ArrayList<String>(proto.getBucketColsList()));
     List<Order> sortCols = new ArrayList<Order>();
     for (HbaseMetastoreProto.StorageDescriptor.Order protoOrder : proto.getSortColsList()) {
       sortCols.add(new Order(protoOrder.getColumnName(), protoOrder.getOrder()));
     }
     sd.setSortCols(sortCols);
-    SkewedInfo skewed = new SkewedInfo();
-    skewed.setSkewedColNames(new ArrayList<String>(proto.getSkewedInfo().getSkewedColNamesList()));
-    for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList innerList :
-        proto.getSkewedInfo().getSkewedColValuesList()) {
-      skewed.addToSkewedColValues(new ArrayList<String>(innerList.getSkewedColValueList()));
+    if (proto.hasSkewedInfo()) {
+      SkewedInfo skewed = new SkewedInfo();
+      skewed
+          .setSkewedColNames(new ArrayList<String>(proto.getSkewedInfo().getSkewedColNamesList()));
+      for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList innerList :
+          proto.getSkewedInfo().getSkewedColValuesList()) {
+        skewed.addToSkewedColValues(new ArrayList<String>(innerList.getSkewedColValueList()));
+      }
+      Map<List<String>, String> colMaps = new HashMap<List<String>, String>();
+      for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap map :
+          proto.getSkewedInfo().getSkewedColValueLocationMapsList()) {
+        colMaps.put(new ArrayList<String>(map.getKeyList()), map.getValue());
+      }
+      skewed.setSkewedColValueLocationMaps(colMaps);
+      sd.setSkewedInfo(skewed);
     }
-    Map<List<String>, String> colMaps = new HashMap<List<String>, String>();
-    for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap map :
-        proto.getSkewedInfo().getSkewedColValueLocationMapsList()) {
-      colMaps.put(new ArrayList<String>(map.getKeyList()), map.getValue());
+    if (proto.hasStoredAsSubDirectories()) {
+      sd.setStoredAsSubDirectories(proto.getStoredAsSubDirectories());
     }
-    skewed.setSkewedColValueLocationMaps(colMaps);
-    sd.setSkewedInfo(skewed);
-    sd.setStoredAsSubDirectories(proto.getStoredAsSubDirectories());
     return sd;
   }
 
@@ -674,10 +686,10 @@ class HBaseUtils {
     part.setValues(partVals);
     part.setCreateTime((int)proto.getCreateTime());
     part.setLastAccessTime((int)proto.getLastAccessTime());
-    sdParts.location = proto.getLocation();
-    sdParts.parameters = buildParameters(proto.getSdParameters());
+    if (proto.hasLocation()) sdParts.location = proto.getLocation();
+    if (proto.hasSdParameters()) sdParts.parameters = buildParameters(proto.getSdParameters());
     sdParts.sdHash = proto.getSdHash().toByteArray();
-    part.setParameters(buildParameters(proto.getParameters()));
+    if (proto.hasParameters()) part.setParameters(buildParameters(proto.getParameters()));
     return sdParts;
   }
 
@@ -761,16 +773,18 @@ class HBaseUtils {
     table.setCreateTime((int)proto.getCreateTime());
     table.setLastAccessTime((int)proto.getLastAccessTime());
     table.setRetention((int)proto.getRetention());
-    sdParts.location = proto.getLocation();
-    sdParts.parameters = buildParameters(proto.getSdParameters());
+    if (proto.hasLocation()) sdParts.location = proto.getLocation();
+    if (proto.hasSdParameters()) sdParts.parameters = buildParameters(proto.getSdParameters());
     sdParts.sdHash = proto.getSdHash().toByteArray();
     table.setPartitionKeys(convertFieldSchemaListFromProto(proto.getPartitionKeysList()));
     table.setParameters(buildParameters(proto.getParameters()));
-    table.setViewOriginalText(proto.getViewOriginalText());
-    table.setViewExpandedText(proto.getViewExpandedText());
+    if (proto.hasViewOriginalText()) table.setViewOriginalText(proto.getViewOriginalText());
+    if (proto.hasViewExpandedText()) table.setViewExpandedText(proto.getViewExpandedText());
     table.setTableType(proto.getTableType());
-    table.setPrivileges(buildPrincipalPrivilegeSet(proto.getPrivileges()));
-    table.setTemporary(proto.getIsTemporary());
+    if (proto.hasPrivileges()) {
+      table.setPrivileges(buildPrincipalPrivilegeSet(proto.getPrivileges()));
+    }
+    if (proto.hasIsTemporary()) table.setTemporary(proto.getIsTemporary());
     return sdParts;
   }
 
@@ -880,15 +894,23 @@ class HBaseUtils {
       colData.setBooleanStats(boolData);
     } else if (proto.hasLongStats()) {
       LongColumnStatsData longData = new LongColumnStatsData();
-      longData.setLowValue(proto.getLongStats().getLowValue());
-      longData.setHighValue(proto.getLongStats().getHighValue());
+      if (proto.getLongStats().hasLowValue()) {
+        longData.setLowValue(proto.getLongStats().getLowValue());
+      }
+      if (proto.getLongStats().hasHighValue()) {
+        longData.setHighValue(proto.getLongStats().getHighValue());
+      }
       longData.setNumNulls(proto.getNumNulls());
       longData.setNumDVs(proto.getNumDistinctValues());
       colData.setLongStats(longData);
     } else if (proto.hasDoubleStats()) {
       DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
-      doubleData.setLowValue(proto.getDoubleStats().getLowValue());
-      doubleData.setHighValue(proto.getDoubleStats().getHighValue());
+      if (proto.getDoubleStats().hasLowValue()) {
+        doubleData.setLowValue(proto.getDoubleStats().getLowValue());
+      }
+      if (proto.getDoubleStats().hasHighValue()) {
+        doubleData.setHighValue(proto.getDoubleStats().getHighValue());
+      }
       doubleData.setNumNulls(proto.getNumNulls());
       doubleData.setNumDVs(proto.getNumDistinctValues());
       colData.setDoubleStats(doubleData);
@@ -907,14 +929,18 @@ class HBaseUtils {
       colData.setBinaryStats(binaryData);
     } else if (proto.hasDecimalStats()) {
       DecimalColumnStatsData decimalData = new DecimalColumnStatsData();
-      Decimal hiVal = new Decimal();
-      hiVal.setUnscaled(proto.getDecimalStats().getHighValue().getUnscaled().toByteArray());
-      hiVal.setScale((short) proto.getDecimalStats().getHighValue().getScale());
-      decimalData.setHighValue(hiVal);
-      Decimal loVal = new Decimal();
-      loVal.setUnscaled(proto.getDecimalStats().getLowValue().getUnscaled().toByteArray());
-      loVal.setScale((short) proto.getDecimalStats().getLowValue().getScale());
-      decimalData.setLowValue(loVal);
+      if (proto.getDecimalStats().hasHighValue()) {
+        Decimal hiVal = new Decimal();
+        hiVal.setUnscaled(proto.getDecimalStats().getHighValue().getUnscaled().toByteArray());
+        hiVal.setScale((short) proto.getDecimalStats().getHighValue().getScale());
+        decimalData.setHighValue(hiVal);
+      }
+      if (proto.getDecimalStats().hasLowValue()) {
+        Decimal loVal = new Decimal();
+        loVal.setUnscaled(proto.getDecimalStats().getLowValue().getUnscaled().toByteArray());
+        loVal.setScale((short) proto.getDecimalStats().getLowValue().getScale());
+        decimalData.setLowValue(loVal);
+      }
       decimalData.setNumNulls(proto.getNumNulls());
       decimalData.setNumDVs(proto.getNumDistinctValues());
       colData.setDecimalStats(decimalData);
