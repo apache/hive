@@ -25,7 +25,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +42,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1651,6 +1655,54 @@ public class MetaStoreUtils {
       // prune any nulls present in map values - this is the typical case.
       return Maps.newLinkedHashMap(Maps.filterValues(dnMap, Predicates.notNull()));
     }
+  }
+
+
+  /**
+   * Create a URL from a string representing a path to a local file.
+   * The path string can be just a path, or can start with file:/, file:///
+   * @param onestr  path string
+   * @return
+   */
+  private static URL urlFromPathString(String onestr) {
+    URL oneurl = null;
+    try {
+      if (StringUtils.indexOf(onestr, "file:/") == 0) {
+        oneurl = new URL(onestr);
+      } else {
+        oneurl = new File(onestr).toURL();
+      }
+    } catch (Exception err) {
+      LOG.error("Bad URL " + onestr + ", ignoring path");
+    }
+    return oneurl;
+  }
+
+  /**
+   * Add new elements to the classpath.
+   *
+   * @param newPaths
+   *          Array of classpath elements
+   */
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+    URLClassLoader loader = (URLClassLoader) cloader;
+    List<URL> curPath = Arrays.asList(loader.getURLs());
+    ArrayList<URL> newPath = new ArrayList<URL>();
+
+    // get a list with the current classpath components
+    for (URL onePath : curPath) {
+      newPath.add(onePath);
+    }
+    curPath = newPath;
+
+    for (String onestr : newPaths) {
+      URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null && !curPath.contains(oneurl)) {
+        curPath.add(oneurl);
+      }
+    }
+
+    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
   }
 
 }
