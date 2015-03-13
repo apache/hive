@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -177,7 +178,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
       newChildOperatorsTag[i] = toArray(childOperatorTags);
     }
     if (isLogInfoEnabled) {
-      LOG.info("newChildOperatorsTag " + newChildOperatorsTag);
+      LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
     }
     initializeChildren(hconf);
   }
