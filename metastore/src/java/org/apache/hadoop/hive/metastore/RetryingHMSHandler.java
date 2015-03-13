@@ -135,7 +135,8 @@ public class RetryingHMSHandler implements InvocationHandler {
           caughtException = e.getCause();
         } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
-          if (!methodName.startsWith("get_table") && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
+          if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
+              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
             LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           }
           throw e.getCause();
