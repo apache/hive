@@ -88,10 +88,10 @@
                      curl -Sso $DOWNLOAD_DIR/$tarName $url
                     fi
                     tar -zxf $DOWNLOAD_DIR/$tarName -C $BASE_DIR
-                    mv $BASE_DIR/spark-1.3.0-bin-hadoop2-without-hive $BASE_DIR/$finalName
+                    mv $BASE_DIR/spark-${spark.version}-bin-hadoop2-without-hive $BASE_DIR/$finalName
                   }
                   mkdir -p $DOWNLOAD_DIR
-                  download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-1.3.0-bin-hadoop2-without-hive.tgz" "spark"
+                  download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
                   cp -f $HIVE_ROOT/data/conf/spark/log4j.properties $BASE_DIR/spark/conf/
                 </echo>
               </target>
