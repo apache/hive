@@ -100,6 +100,21 @@ public class Deadline {
   }
 
   /**
+   * Check whether the timer is started.
+   * @return
+   * @throws MetaException
+   */
+  public static boolean isStarted() throws MetaException {
+    Deadline deadline = getCurrentDeadline();
+    if (deadline != null) {
+      return deadline.startTime >= 0;
+    } else {
+      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
+          " please register it firstly."));
+    }
+  }
+
+  /**
    * start the timer before a method is invoked.
    * @param method
    */
