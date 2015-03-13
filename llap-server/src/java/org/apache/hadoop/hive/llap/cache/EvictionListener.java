@@ -18,6 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-interface EvictionListener {
+public interface EvictionListener {
   void notifyEvicted(LlapCacheableBuffer buffer);
 }

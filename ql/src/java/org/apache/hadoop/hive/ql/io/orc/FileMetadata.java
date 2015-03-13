@@ -51,9 +51,13 @@ public interface FileMetadata {
 
   int getWriterVersionNum();
 
-  OrcProto.Metadata getMetadata();
-
-  OrcProto.Footer getFooter();
-
   List<Type> getTypes();
+
+  List<OrcProto.StripeStatistics> getStripeStats();
+
+  long getContentLength();
+
+  long getNumberOfRows();
+
+  List<OrcProto.ColumnStatistics> getFileStats();
 }

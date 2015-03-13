@@ -98,6 +98,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     buffer.lastUpdate = time;
     if (priority == Priority.HIGH) {
       buffer.priority *= 8; // this is arbitrary
+    } else {
+      assert priority == Priority.NORMAL;
     }
   }
 

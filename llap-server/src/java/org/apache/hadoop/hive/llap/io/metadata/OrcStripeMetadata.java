@@ -18,24 +18,48 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
+import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;
   private final List<ColumnEncoding> encodings;
   private final List<Stream> streams;
   private RecordReaderImpl.Index rowIndex;
+
+  private final int estimatedMemUsage;
+
+  private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
+  private final static ObjectEstimator SIZE_ESTIMATOR;
+  static {
+    OrcStripeMetadata osm = createDummy();
+    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimator(osm);
+    OrcFileMetadata.addLbsEstimator(SIZE_ESTIMATORS);
+    SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcStripeMetadata.class);
+  }
 
   public OrcStripeMetadata(OrcBatchKey stripeKey, MetadataReader mr, StripeInformation stripe,
       boolean[] includes, boolean[] sargColumns) throws IOException {
@@ -44,6 +68,30 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
     rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
+
+    estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
+  }
+
+  private OrcStripeMetadata() {
+    stripeKey = null;
+    encodings = new ArrayList<>();
+    streams = new ArrayList<>();
+    estimatedMemUsage = 0;
+  }
+
+  @VisibleForTesting
+  public static OrcStripeMetadata createDummy() {
+    OrcStripeMetadata dummy = new OrcStripeMetadata();
+    dummy.encodings.add(ColumnEncoding.getDefaultInstance());
+    dummy.streams.add(Stream.getDefaultInstance());
+    RowIndex ri = RowIndex.newBuilder().addEntry(
+        RowIndexEntry.newBuilder().addPositions(1).setStatistics(
+            OrcFileMetadata.createStatsDummy())).build();
+    BloomFilterIndex bfi = BloomFilterIndex.newBuilder().addBloomFilter(
+        BloomFilter.newBuilder().addBitset(0)).build();
+    dummy.rowIndex = new RecordReaderImpl.Index(
+        new RowIndex[] { ri }, new BloomFilterIndex[] { bfi });
+    return dummy;
   }
 
   public boolean hasAllIndexes(boolean[] includes) {
@@ -58,6 +106,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     // TODO: should we save footer to avoid a read here?
     rowIndex = mr.readRowIndex(stripe, null, includes, rowIndex.getRowGroupIndex(),
         sargColumns, rowIndex.getBloomFilterIndex());
+    // TODO: theoretically, we should re-estimate memory usage here and update memory manager
   }
 
   public int getStripeIx() {
@@ -66,10 +115,6 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   public RowIndex[] getRowIndexes() {
     return rowIndex.getRowGroupIndex();
-  }
-
-  public void setRowIndexes(RowIndex[] rowIndexes) {
-    this.rowIndex.setRowGroupIndex(rowIndexes);
   }
 
   public List<ColumnEncoding> getEncodings() {
@@ -82,9 +127,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   @Override
   public long getMemoryUsage() {
-    // TODO#: add real estimate; we could do it almost entirely compile time (+list length),
-    //        if it were not for protobufs. Get rid of protobufs here, or estimate them once?
-    return 1024;
+    return estimatedMemUsage;
   }
 
   @Override

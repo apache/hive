@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -118,13 +117,6 @@ public interface Reader {
    * @return the information about the column
    */
   ColumnStatistics[] getStatistics();
-
-  /**
-   * Get the metadata information like stripe level column statistics etc.
-   * @return the information about the column
-   * @throws IOException
-   */
-  Metadata getMetadata() throws IOException;
 
   /**
    * Get the list of types contained in the file. The root type is the first
@@ -328,11 +320,13 @@ public interface Reader {
   EncodedReader encodedReader(LowLevelCache lowLevelCache,
       Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
 
-  Footer getFooterProto();
-
-  OrcProto.Metadata getMetadataProto();
-
   List<Integer> getVersionList();
 
   int getMetadataSize();
+
+  List<OrcProto.StripeStatistics> getOrcProtoStripeStatistics();
+
+  List<StripeStatistics> getStripeStatistics();
+
+  List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
 }

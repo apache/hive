@@ -233,6 +233,11 @@ public final class OrcFile {
       return this;
     }
 
+    public ReaderOptions fileMetadata(FileMetadata metadata) {
+      this.fullFileMetadata = metadata;
+      return this;
+    }
+
     Configuration getConfiguration() {
       return conf;
     }

@@ -634,7 +634,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileInfo fileInfo;
     private List<StripeInformation> stripes;
     private FileMetaInfo fileMetaInfo;
-    private Metadata metadata;
+    private List<StripeStatistics> stripeStats;
     private List<OrcProto.Type> types;
     private final boolean isOriginal;
     private final List<Long> deltas;
@@ -790,7 +790,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               writerVersion != OrcFile.WriterVersion.ORIGINAL) {
             SearchArgument sarg = options.getSearchArgument();
             List<PredicateLeaf> sargLeaves = sarg.getLeaves();
-            List<StripeStatistics> stripeStats = metadata.getStripeStatistics();
             int[] filterColumns = RecordReaderImpl.mapSargColumns(sargLeaves,
                 options.getColumnNames(), getRootColumn(isOriginal));
 
@@ -876,7 +875,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (fileInfo != null) {
           stripes = fileInfo.stripeInfos;
           fileMetaInfo = fileInfo.fileMetaInfo;
-          metadata = fileInfo.metadata;
+          stripeStats = fileInfo.stripeStats;
           types = fileInfo.types;
           writerVersion = fileInfo.writerVersion;
           // For multiple runs, in case sendSplitsInFooter changes
@@ -884,7 +883,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             orcReader = OrcFile.createReader(file.getPath(),
                 OrcFile.readerOptions(context.conf).filesystem(fs));
             fileInfo.fileMetaInfo = ((ReaderImpl) orcReader).getFileMetaInfo();
-            fileInfo.metadata = orcReader.getMetadata();
+            fileInfo.stripeStats = orcReader.getStripeStatistics();
             fileInfo.types = orcReader.getTypes();
             fileInfo.writerVersion = orcReader.getWriterVersion();
           }
@@ -892,7 +891,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           orcReader = OrcFile.createReader(file.getPath(),
               OrcFile.readerOptions(context.conf).filesystem(fs));
           stripes = orcReader.getStripes();
-          metadata = orcReader.getMetadata();
+          stripeStats = orcReader.getStripeStatistics();
           types = orcReader.getTypes();
           writerVersion = orcReader.getWriterVersion();
           fileMetaInfo = context.footerInSplits ?
@@ -901,7 +900,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             // Populate into cache.
             Context.footerCache.put(file.getPath(),
                 new FileInfo(file.getModificationTime(), file.getLen(), stripes,
-                    metadata, types, fileMetaInfo, writerVersion));
+                    stripeStats, types, fileMetaInfo, writerVersion));
           }
         }
       } catch (Throwable th) {
@@ -989,21 +988,21 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     long size;
     List<StripeInformation> stripeInfos;
     FileMetaInfo fileMetaInfo;
-    Metadata metadata;
+    List<StripeStatistics> stripeStats;
     List<OrcProto.Type> types;
     private OrcFile.WriterVersion writerVersion;
 
 
     FileInfo(long modificationTime, long size,
              List<StripeInformation> stripeInfos,
-             Metadata metadata, List<OrcProto.Type> types,
+             List<StripeStatistics> stripeStats, List<OrcProto.Type> types,
              FileMetaInfo fileMetaInfo,
              OrcFile.WriterVersion writerVersion) {
       this.modificationTime = modificationTime;
       this.size = size;
       this.stripeInfos = stripeInfos;
       this.fileMetaInfo = fileMetaInfo;
-      this.metadata = metadata;
+      this.stripeStats = stripeStats;
       this.types = types;
       this.writerVersion = writerVersion;
     }

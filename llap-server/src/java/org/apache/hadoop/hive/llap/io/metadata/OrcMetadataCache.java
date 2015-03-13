@@ -21,19 +21,37 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.llap.cache.EvictionListener;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
+import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
+import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
-public class OrcMetadataCache {
+public class OrcMetadataCache implements EvictionListener {
   private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =
       new ConcurrentHashMap<Long, OrcFileMetadata>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
       new ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata>();
+  private final LowLevelCacheMemoryManager memoryManager;
+  private final LowLevelCachePolicy policy;
+
+  public OrcMetadataCache(LowLevelCacheMemoryManager memoryManager, LowLevelCachePolicy policy) {
+    this.memoryManager = memoryManager;
+    this.policy = policy;
+  }
 
   public void putFileMetadata(OrcFileMetadata metaData) {
+    memoryManager.reserveMemory(metaData.getMemoryUsage(), false);
+    policy.cache(metaData, Priority.HIGH);
+    policy.notifyUnlock(metaData); // See OrcFileMetadata, it is always unlocked.
     metadata.put(metaData.getFileId(), metaData);
   }
 
   public void putStripeMetadata(OrcStripeMetadata metaData) {
+    memoryManager.reserveMemory(metaData.getMemoryUsage(), false);
+    policy.cache(metaData, Priority.HIGH);
+    policy.notifyUnlock(metaData); // See OrcStripeMetadata, it is always unlocked.
     stripeMetadata.put(metaData.getKey(), metaData);
   }
 
@@ -53,5 +71,15 @@ public class OrcMetadataCache {
   public void notifyEvicted(OrcStripeMetadata buffer) {
     stripeMetadata.remove(buffer.getKey());
     // See OrcStripeMetadata - we don't clear the object, it will be GCed when released by users.
+  }
+
+  @Override
+  public void notifyEvicted(LlapCacheableBuffer buffer) {
+    if (buffer instanceof OrcStripeMetadata) {
+      notifyEvicted((OrcStripeMetadata)buffer);
+    } else {
+      assert buffer instanceof OrcFileMetadata;
+      notifyEvicted((OrcFileMetadata)buffer);
+    }
   }
 }

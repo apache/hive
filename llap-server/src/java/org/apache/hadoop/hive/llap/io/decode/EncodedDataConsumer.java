@@ -63,6 +63,7 @@ public abstract class EncodedDataConsumer<BatchKey> implements
 
   @Override
   public void consumeData(EncodedColumnBatch<BatchKey> data) {
+    // TODO: data arrives in whole batches now, not in columns. We could greatly simplify this.
     EncodedColumnBatch<BatchKey> targetBatch = null;
     boolean localIsStopped = false;
     synchronized (pendingData) {

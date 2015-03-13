@@ -60,14 +60,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
-  private final Configuration conf;
   private LlapDaemonCacheMetrics cacheMetrics;
   private LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
   private Allocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
-    this.conf = conf;
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
     // High-level cache not supported yet.
     if (LOGL.isInfoEnabled()) {
@@ -90,9 +88,22 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
     LowLevelCachePolicy cachePolicy =
         useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
-    OrcMetadataCache metadataCache = new OrcMetadataCache();
-    LowLevelCacheImpl orcCache = createLowLevelCache(
-        conf, cachePolicy, metadataCache, cacheMetrics, useLowLevelCache);
+    LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
+        conf, cachePolicy, cacheMetrics);
+    // Memory manager uses cache policy to trigger evictions.
+    OrcMetadataCache metadataCache = new OrcMetadataCache(memManager, cachePolicy);
+    LowLevelCacheImpl orcCache = null;
+    if (useLowLevelCache) {
+      // Allocator uses memory manager to request memory.
+      allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      // Cache uses allocator to allocate and deallocate.
+      orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator);
+      // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
+      cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
+      orcCache.init();
+    } else {
+      cachePolicy.setEvictionListener(metadataCache);
+    }
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
@@ -108,22 +119,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private void registerMXBeans() {
     buddyAllocatorMXBean = MBeans.register("LlapDaemon", "BuddyAllocatorInfo", allocator);
-  }
-
-  private LowLevelCacheImpl createLowLevelCache(Configuration conf,
-      LowLevelCachePolicy cachePolicy, OrcMetadataCache metadataCache,
-      LlapDaemonCacheMetrics metrics, boolean useLowLevelCache) {
-    if (!useLowLevelCache) return null;
-    // Memory manager uses cache policy to trigger evictions.
-    LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(conf, cachePolicy, metrics);
-    // Allocator uses memory manager to request memory.
-    allocator = new BuddyAllocator(conf, memManager, metrics);
-    // Cache uses allocator to allocate and deallocate.
-    LowLevelCacheImpl orcCache = new LowLevelCacheImpl(metrics, cachePolicy, allocator);
-    // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
-    cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
-    orcCache.init();
-    return orcCache;
   }
 
   @SuppressWarnings("rawtypes")

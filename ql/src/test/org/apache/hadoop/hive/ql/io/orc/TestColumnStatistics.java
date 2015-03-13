@@ -290,7 +290,7 @@ public class TestColumnStatistics {
     assertEquals(true, stats[2].hasNull());
 
     // check the stripe level stats
-    List<StripeStatistics> stripeStats = reader.getMetadata().getStripeStatistics();
+    List<StripeStatistics> stripeStats = reader.getStripeStatistics();
     // stripe 1 stats
     StripeStatistics ss1 = stripeStats.get(0);
     ColumnStatistics ss1_cs1 = ss1.getColumnStatistics()[0];

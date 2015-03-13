@@ -46,7 +46,12 @@ public enum JavaDataModel {
     public int hashMap(int entry) {
       // base  = JAVA32_OBJECT + PRIMITIVES1 * 4 + JAVA32_FIELDREF * 3 + JAVA32_ARRAY;
       // entry = JAVA32_OBJECT + JAVA32_FIELDREF + PRIMITIVES1
-      return 64 + 24 * entry;
+      return hashMapBase() + hashMapEntry() * entry;
+    }
+
+    @Override
+    public int hashMapBase() {
+      return 64;
     }
 
     @Override
@@ -57,7 +62,17 @@ public enum JavaDataModel {
     @Override
     public int hashSet(int entry) {
       // hashMap += JAVA32_OBJECT
-      return 80 + 24 * entry;
+      return hashSetBase() + hashSetEntry() * entry;
+    }
+
+    @Override
+    public int hashSetBase() {
+      return 80;
+    }
+
+    @Override
+    public int hashSetEntry() {
+      return 24;
     }
 
     @Override
@@ -71,8 +86,18 @@ public enum JavaDataModel {
     public int linkedList(int entry) {
       // base  = JAVA32_OBJECT + PRIMITIVES1 * 2 + JAVA32_FIELDREF;
       // entry = JAVA32_OBJECT + JAVA32_FIELDREF * 2
-      return 28 + 24 * entry;
-    }
+      return linkedListBase() + linkedListEntry() * entry;
+     }
+
+     @Override
+     public int linkedListBase() {
+       return 28;
+     }
+
+     @Override
+     public int linkedListEntry() {
+       return 24;
+     }
 
     @Override
     public int arrayList() {
@@ -104,8 +129,14 @@ public enum JavaDataModel {
     public int hashMap(int entry) {
       // base  = JAVA64_OBJECT + PRIMITIVES1 * 4 + JAVA64_FIELDREF * 3 + JAVA64_ARRAY;
       // entry = JAVA64_OBJECT + JAVA64_FIELDREF + PRIMITIVES1
-      return 112 + 44 * entry;
+      return hashMapBase() + hashMapEntry() * entry;
     }
+
+    @Override
+    public int hashMapBase() {
+      return 112;
+    }
+
 
     @Override
     public int hashMapEntry() {
@@ -115,8 +146,18 @@ public enum JavaDataModel {
     @Override
     public int hashSet(int entry) {
       // hashMap += JAVA64_OBJECT
-      return 144 + 44 * entry;
-    }
+      return hashSetBase() + hashSetEntry() * entry;
+     }
+
+     @Override
+     public int hashSetBase() {
+       return 144;
+     }
+
+     @Override
+     public int hashSetEntry() {
+       return 44;
+     }
 
     @Override
     public int linkedHashMap(int entry) {
@@ -129,8 +170,18 @@ public enum JavaDataModel {
     public int linkedList(int entry) {
       // base  = JAVA64_OBJECT + PRIMITIVES1 * 2 + JAVA64_FIELDREF;
       // entry = JAVA64_OBJECT + JAVA64_FIELDREF * 2
-      return 48 + 48 * entry;
-    }
+      return linkedListBase() + linkedListEntry() * entry;
+     }
+
+     @Override
+     public int linkedListBase() {
+       return 48;
+     }
+
+     @Override
+     public int linkedListEntry() {
+       return 48;
+     }
 
     @Override
     public int arrayList() {
@@ -148,9 +199,14 @@ public enum JavaDataModel {
   public abstract int array();
   public abstract int ref();
   public abstract int hashMap(int entry);
+  public abstract int hashMapBase();
   public abstract int hashMapEntry();
+  public abstract int hashSetBase();
+  public abstract int hashSetEntry();
   public abstract int hashSet(int entry);
   public abstract int linkedHashMap(int entry);
+  public abstract int linkedListBase();
+  public abstract int linkedListEntry();
   public abstract int linkedList(int entry);
   public abstract int arrayList();
   public abstract int memoryAlign();
@@ -234,6 +290,7 @@ public enum JavaDataModel {
     } catch (Exception e) {
       // ignore
     }
+    // TODO: separate model is needed for compressedOops, which can be guessed from memory size.
     return current = JAVA64;
   }
 

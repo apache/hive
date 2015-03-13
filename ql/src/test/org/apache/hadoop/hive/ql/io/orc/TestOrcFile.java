@@ -657,12 +657,12 @@ public class TestOrcFile {
     boolean[] included = OrcUtils.includeColumns("int1", "int1,string1", inspector);
     assertEquals(true, Arrays.equals(expected, included));
 
-    Metadata metadata = reader.getMetadata();
-    int numStripes = metadata.getStripeStatistics().size();
+    List<StripeStatistics> stats = reader.getStripeStatistics();
+    int numStripes = stats.size();
     assertEquals(3, numStripes);
-    StripeStatistics ss1 = metadata.getStripeStatistics().get(0);
-    StripeStatistics ss2 = metadata.getStripeStatistics().get(1);
-    StripeStatistics ss3 = metadata.getStripeStatistics().get(2);
+    StripeStatistics ss1 = stats.get(0);
+    StripeStatistics ss2 = stats.get(1);
+    StripeStatistics ss3 = stats.get(2);
 
     assertEquals(5000, ss1.getColumnStatistics()[0].getNumberOfValues());
     assertEquals(5000, ss2.getColumnStatistics()[0].getNumberOfValues());
@@ -776,8 +776,6 @@ public class TestOrcFile {
         "boolean1,byte1,short1,int1,long1,float1,double1,bytes1,string1,middle,list,map", inspector);
     assertEquals(true, Arrays.equals(expected, included));
 
-    Metadata metadata = reader.getMetadata();
-
     // check the stats
     ColumnStatistics[] stats = reader.getStatistics();
     assertEquals(2, stats[1].getNumberOfValues());
@@ -792,7 +790,7 @@ public class TestOrcFile {
     assertEquals("count: 2 hasNull: false min: 1024 max: 2048 sum: 3072",
         stats[3].toString());
 
-    StripeStatistics ss = metadata.getStripeStatistics().get(0);
+    StripeStatistics ss = reader.getStripeStatistics().get(0);
     assertEquals(2, ss.getColumnStatistics()[0].getNumberOfValues());
     assertEquals(1, ((BooleanColumnStatistics) ss.getColumnStatistics()[1]).getTrueCount());
     assertEquals(1024, ((IntegerColumnStatistics) ss.getColumnStatistics()[3]).getMinimum());
@@ -1146,8 +1144,7 @@ public class TestOrcFile {
       }
     }
     assertEquals(3, i);
-    Metadata metadata = reader.getMetadata();
-    int numStripes = metadata.getStripeStatistics().size();
+    int numStripes = reader.getStripeStatistics().size();
     assertEquals(1, numStripes);
   }
 

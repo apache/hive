@@ -127,7 +127,7 @@ public class RecordReaderImpl implements RecordReader {
     OrcProto.RowIndex[] rowGroupIndex;
     OrcProto.BloomFilterIndex[] bloomFilterIndex;
 
-    Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
+    public Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
       this.rowGroupIndex = rgIndex;
       this.bloomFilterIndex = bfIndex;
     }
