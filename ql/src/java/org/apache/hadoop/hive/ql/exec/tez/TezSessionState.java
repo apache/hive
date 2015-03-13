@@ -179,7 +179,7 @@ public class TezSessionState {
       commonLocalResources.put(utils.getBaseName(lr), lr);
     }
 
-    if("llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+    if ("llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
       // add configs for llap-daemon-site.xml + localize llap jars
       // they cannot be referred to directly as it would be a circular depedency
       conf.addResource("llap-daemon-site.xml");
@@ -192,6 +192,17 @@ public class TezSessionState {
         commonLocalResources.put(utils.getBaseName(daemonLr), daemonLr);
       } catch (ClassNotFoundException ce) {
         throw new IOException("Cannot find LlapInputFormat in the classpath", ce);
+      }
+
+      try {
+        final File registryJar =
+            new File(Utilities.jarFinderGetJar(Class
+                .forName("org.apache.hadoop.registry.client.api.RegistryOperations")));
+        final LocalResource registryLr =
+            createJarLocalResource(registryJar.toURI().toURL().toExternalForm());
+        commonLocalResources.put(utils.getBaseName(registryLr), registryLr);
+      } catch (ClassNotFoundException ce) {
+        throw new IOException("Cannot find Hadoop Registry in the classpath", ce);
       }
     }
 
@@ -401,7 +412,6 @@ public class TezSessionState {
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
     return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
   }
-
 
   private String getSha(Path localFile) throws IOException, IllegalArgumentException {
     InputStream is = null;

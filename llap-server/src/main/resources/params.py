@@ -29,6 +29,7 @@ pid_file = config['configurations']['global']['pid_file']
 
 additional_cp = config['configurations']['global']['additional_cp']
 app_log_dir = config['configurations']['global']['app_log_dir']
+app_log_level = config['configurations']['global']['app_log_level']
 
 port = config['configurations']['global']['listen_port']
 memory_val = config['configurations']['global']['memory_val']

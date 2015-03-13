@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
@@ -49,6 +50,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   private final Configuration shuffleHandlerConf;
   private final LlapDaemonProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
+  private final LlapRegistryService registry;
   private final AtomicLong numSubmissions = new AtomicLong(0);
   private JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
@@ -128,6 +130,8 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
 
     this.containerRunner = new ContainerRunnerImpl(numExecutors, localDirs, shufflePort, address,
         executorMemoryBytes, metrics);
+    
+    this.registry = new LlapRegistryService();
   }
 
   private void printAsciiArt() {
@@ -148,6 +152,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   public void serviceInit(Configuration conf) {
     server.init(conf);
     containerRunner.init(conf);
+    registry.init(conf);
     LlapIoProxy.setDaemon(true);
     LlapIoProxy.initializeLlapIo(conf);
   }
@@ -157,6 +162,8 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     ShuffleHandler.initializeAndStart(shuffleHandlerConf);
     server.start();
     containerRunner.start();
+    registry.start();
+    registry.registerWorker();
   }
 
   public void serviceStop() throws Exception {
@@ -164,6 +171,8 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     shutdown();
     containerRunner.stop();
     server.stop();
+    registry.unregisterWorker();
+    registry.stop();
     ShuffleHandler.shutdown();
   }
 

@@ -165,6 +165,12 @@
           <scope>test</scope>
         </dependency>
         <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-registry</artifactId>
+          <version>${hadoop-23.version}</version>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
           <groupId>org.apache.tez</groupId>
           <artifactId>tez-runtime-internals</artifactId>
           <version>${tez.version}</version>

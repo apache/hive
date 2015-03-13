@@ -44,6 +44,7 @@ class Llap(Script):
     # location containing llap-daemon-site.xml, tez and yarn configuration xmls as well.
     os.environ['LLAP_DAEMON_CONF_DIR'] = format("{app_root}/conf/")
     os.environ['LLAP_DAEMON_LOG_DIR'] = format("{app_log_dir}/")
+    os.environ['LLAP_DAEMON_LOGGER'] = format("{app_log_level}")
     os.environ['LLAP_DAEMON_HEAPSIZE'] = format("{memory_val}")
     os.environ['LLAP_DAEMON_PID_DIR'] = dirname(format("{pid_file}"))
     os.environ['LLAP_DAEMON_LD_PATH'] = format('{library_path}')

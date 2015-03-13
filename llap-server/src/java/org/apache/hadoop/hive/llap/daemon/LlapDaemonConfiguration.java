@@ -29,7 +29,7 @@ public class LlapDaemonConfiguration extends Configuration {
   }
 
 
-  private static final String LLAP_DAEMON_PREFIX = "llap.daemon.";
+  public static final String LLAP_DAEMON_PREFIX = "llap.daemon.";
   private static final String LLAP_DAEMON_SITE = "llap-daemon-site.xml";
 
 
@@ -40,6 +40,7 @@ public class LlapDaemonConfiguration extends Configuration {
   public static final String LLAP_DAEMON_WORK_DIRS = LLAP_DAEMON_PREFIX + "work.dirs";
 
   public static final String LLAP_DAEMON_YARN_SHUFFLE_PORT = LLAP_DAEMON_PREFIX + "yarn.shuffle.port";
+  public static final int LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT = 15551;
 
 
   // Section for configs used in AM and executors

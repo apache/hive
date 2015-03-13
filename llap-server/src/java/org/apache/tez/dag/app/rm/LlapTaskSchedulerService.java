@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,12 +29,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
+import org.apache.hadoop.registry.client.types.AddressTypes;
+import org.apache.hadoop.registry.client.types.Endpoint;
+import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -46,7 +52,9 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
 import org.apache.tez.dag.api.TaskAttemptEndReason;
+import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.app.AppContext;
 
 
@@ -78,8 +86,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   // Per Executor Thread
   private final Resource resourcePerExecutor;
 
-  // TODO: replace with service registry
-  private final YarnClient yc = YarnClient.createYarnClient();
+  private final LlapRegistryService registry = new LlapRegistryService();
 
   public LlapTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
                                     String clientHostname, int clientPort, String trackingUrl,
@@ -109,17 +116,17 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     int coresPerExecutor = (int) (coresPerInstance / (float) executorsPerInstance);
     this.resourcePerExecutor = Resource.newInstance(memoryPerExecutor, coresPerExecutor);
 
-    String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
-    if (hosts == null || hosts.length == 0) {
-      hosts = new String[]{"localhost"};
-      serviceHosts.add("localhost");
-      serviceHostSet.add("localhost");
-    } else if (!hosts[0].equals("*")) {
-      for (String host : hosts) {
-        serviceHosts.add(host);
-        serviceHostSet.add(host);
+    String instanceId = conf.getTrimmed(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+
+    if (instanceId == null || false == instanceId.startsWith("@")) {
+      String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+      if (hosts == null || hosts.length == 0) {
+        hosts = new String[] { "localhost" };
+        serviceHosts.add("localhost");
+        serviceHostSet.add("localhost");
       }
     }
+
     this.containerPort = conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
         LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
 
@@ -145,27 +152,30 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    yc.init(conf);
+    registry.init(conf);
   }
 
 
   @Override
   public void serviceStart() {
-    yc.start();
+    registry.start();
     if (serviceHosts.size() > 0) {
       return;
     }
-    LOG.info("Evaluating host usage criteria for service nodes");
+    LOG.info("Reading YARN registry for service records");
     try {
-      List<NodeReport> nodes = yc.getNodeReports(NodeState.RUNNING);
-      for (NodeReport nd : nodes) {
-        Resource used = nd.getUsed();
-        LOG.info("Examining node: " + nd);
-        if (nd.getNodeState() == NodeState.RUNNING
-            && used.getMemory() >= memoryPerInstance) {
-          // TODO: fix this with YARN registry
-          serviceHosts.add(nd.getNodeId().getHost());
-          serviceHostSet.add(nd.getNodeId().getHost());
+      Map<String, ServiceRecord> workers = registry.getWorkers();
+      for (ServiceRecord srv : workers.values()) {
+        Endpoint rpc = srv.getInternalEndpoint("llap");
+        if (rpc != null) {
+          LOG.info("Examining endpoint: " + rpc);
+          final String host =
+              RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+                  AddressTypes.ADDRESS_HOSTNAME_FIELD);
+          serviceHosts.add(host);
+          serviceHostSet.add(host);
+        } else {
+          LOG.info("The SRV record was " + srv);
         }
       }
       LOG.info("Re-inited with configuration: " +
@@ -174,10 +184,8 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
           ", executorsPerInstance=" + executorsPerInstance +
           ", resourcePerInstanceInferred=" + resourcePerExecutor +
           ", hosts="+ serviceHosts.toString());
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (YarnException e) {
-      e.printStackTrace();
+    } catch (IOException ioe) {
+      throw new TezUncheckedException(ioe);
     }
   }
 
