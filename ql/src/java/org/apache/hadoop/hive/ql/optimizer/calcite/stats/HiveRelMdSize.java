@@ -17,18 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.util.List;
+
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSize;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.BuiltInMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.calcite.util.ImmutableIntList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+
+import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdSize extends RelMdSize {
-
-  protected static final Log LOG  = LogFactory.getLog(HiveRelMdSize.class.getName());
 
   private static final HiveRelMdSize INSTANCE = new HiveRelMdSize();
 
@@ -42,6 +46,27 @@ public class HiveRelMdSize extends RelMdSize {
   private HiveRelMdSize() {}
 
   //~ Methods ----------------------------------------------------------------
+
+  public List<Double> averageColumnSizes(HiveTableScan scan) {
+    // Number of fields
+    final int numCols = scan.getRowType().getFieldList().size();
+    List<Integer> cols = ImmutableIntList.range(0, numCols);
+    // Get col stats
+    final RelOptHiveTable table = (RelOptHiveTable) scan.getTable();
+    List<ColStatistics> columnStatistics = table.getColStat(cols);
+    // Obtain list of col stats, or use default if they are not available
+    final ImmutableList.Builder<Double> list = ImmutableList.builder();
+    for (int i=0; i<columnStatistics.size(); i++) {
+      ColStatistics columnStatistic = columnStatistics.get(i);
+      if (columnStatistic == null) {
+        RelDataTypeField field = scan.getRowType().getFieldList().get(i);
+        list.add(averageTypeValueSize(field.getType()));
+      } else {
+        list.add(columnStatistic.getAvgColLen());
+      }
+    }
+    return list.build();
+  }
 
   public Double averageTypeValueSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
