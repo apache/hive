@@ -104,9 +104,15 @@ public class StorageFormat {
     }
   }
 
-  protected void fillDefaultStorageFormat() throws SemanticException {
+  protected void fillDefaultStorageFormat(boolean isExternal) throws SemanticException {
     if ((inputFormat == null) && (storageHandler == null)) {
       String defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
+      String defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+
+      if (!isExternal && !"none".equals(defaultManagedFormat)) {
+	defaultFormat = defaultManagedFormat;
+      }
+
       if (StringUtils.isBlank(defaultFormat)) {
         inputFormat = IOConstants.TEXTFILE_INPUT;
         outputFormat = IOConstants.TEXTFILE_OUTPUT;
