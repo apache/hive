@@ -26,7 +26,6 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollations;
@@ -272,7 +271,7 @@ public class HiveJoin extends Join implements HiveRelNode {
             orderedBucketed = false;
           }
         }
-        // Is bucketJoin possible? We need correct bucketing
+        // Is smbJoin or bucketJoin possible? We need correct bucketing
         if (bucketFitsMemory && bucketed) {
           RelDistribution distribution = RelMetadataQuery.distribution(input);
           if (distribution.getType() != Type.HASH_DISTRIBUTED) {

@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
-import org.apache.calcite.rel.metadata.RelMdDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
@@ -44,11 +44,9 @@ public class HiveDefaultRelMetadataProvider {
 
   public RelMetadataProvider getMetadataProvider() {
 
-    // Init HiveRelMdParallelism with max split size
-    Double maxSplitSize = (double) HiveConf.getLongVar(
+    // Get max split size for HiveRelMdParallelism 
+    final Double maxSplitSize = (double) HiveConf.getLongVar(
             this.hiveConf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
-    HiveRelMdParallelism hiveRelMdParallelism =
-            new HiveRelMdParallelism(maxSplitSize);
 
     // Return MD provider
     return ChainedRelMetadataProvider.of(ImmutableList
@@ -58,8 +56,8 @@ public class HiveDefaultRelMetadataProvider {
                     HiveRelMdUniqueKeys.SOURCE,
                     HiveRelMdSize.SOURCE,
                     HiveRelMdMemory.SOURCE,
-                    hiveRelMdParallelism.getMetadataProvider(),
-                    RelMdDistribution.SOURCE,
+                    new HiveRelMdParallelism(maxSplitSize).getMetadataProvider(),
+                    HiveRelMdDistribution.SOURCE,
                     HiveRelMdCollation.SOURCE,
                     new DefaultRelMetadataProvider()));
   }

@@ -28,6 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.calcite.plan.RelOptAbstractTable;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
+import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.RelFieldCollation.Direction;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
@@ -38,6 +43,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -45,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -145,6 +153,47 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   @Override
   public <T> T unwrap(Class<T> arg0) {
     return arg0.isInstance(this) ? arg0.cast(this) : null;
+  }
+
+  @Override
+  public List<RelCollation> getCollationList() {
+    ImmutableList.Builder<RelFieldCollation> collationList = new ImmutableList.Builder<RelFieldCollation>();
+    for (Order sortColumn : this.hiveTblMetadata.getSortCols()) {
+      for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
+        FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
+        if (field.getName().equals(sortColumn.getCol())) {
+          Direction direction;
+          if (sortColumn.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
+            direction = Direction.ASCENDING;
+          }
+          else {
+            direction = Direction.DESCENDING;
+          }
+          collationList.add(new RelFieldCollation(i,direction));
+          break;
+        }
+      }
+    }
+    return new ImmutableList.Builder<RelCollation>()
+            .add(RelCollationTraitDef.INSTANCE.canonize(
+                    new HiveRelCollation(collationList.build())))
+            .build();
+  }
+
+  @Override
+  public RelDistribution getDistribution() {
+    ImmutableList.Builder<Integer> columnPositions = new ImmutableList.Builder<Integer>();
+    for (String bucketColumn : this.hiveTblMetadata.getBucketCols()) {
+      for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
+        FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
+        if (field.getName().equals(bucketColumn)) {
+          columnPositions.add(i);
+          break;
+        }
+      }
+    }
+    return new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED,
+            columnPositions.build());
   }
 
   @Override
