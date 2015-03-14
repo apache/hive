@@ -1281,7 +1281,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
     URI uri = fs.getUri();
     if ("hdfs".equals(uri.getScheme())) {
-      return new HdfsEncryptionShim(uri, conf);
+      try {
+        return new HdfsEncryptionShim(uri, conf);
+      } catch (NoSuchMethodError e) {
+        // ignore error as encryption is not supported.
+        // let this method return the unsupported encryption shim instead
+      }
     }
     return new HadoopShims.NoopHdfsEncryptionShim();
   }
