@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.ReaderImpl.StripeInformationImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,
  * or instead use protobuf structs everywhere instead of the mix of things like now.
@@ -67,24 +69,14 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
     OrcFileMetadata ofm = createDummy();
-    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimator(ofm);
-    addLbsEstimator(SIZE_ESTIMATORS);
+    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(ofm);
+    IncrementalObjectSizeEstimator.addEstimator(
+        "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
     SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcFileMetadata.class);
   }
 
-  static void addLbsEstimator(HashMap<Class<?>, ObjectEstimator> sizeEstimators) {
-    // Create estimator for LiteralByteString for the thing to work.
-    Class<?> lbsClass = null;
-    try {
-      lbsClass = Class.forName("com.google.protobuf.LiteralByteString");
-    } catch (ClassNotFoundException e) {
-      // Ignore and hope for the best.
-      LlapIoImpl.LOG.warn("Cannot find LiteralByteString");
-    }
-    IncrementalObjectSizeEstimator.createEstimator(lbsClass, sizeEstimators);
-  }
-
-  private static OrcFileMetadata createDummy() {
+  @VisibleForTesting
+  public static OrcFileMetadata createDummy() {
     OrcFileMetadata ofm = new OrcFileMetadata();
     ofm.stripes.add(new StripeInformationImpl(
         OrcProto.StripeInformation.getDefaultInstance()));

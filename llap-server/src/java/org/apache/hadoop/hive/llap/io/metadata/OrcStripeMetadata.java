@@ -28,16 +28,12 @@ import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
@@ -56,8 +52,9 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
     OrcStripeMetadata osm = createDummy();
-    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimator(osm);
-    OrcFileMetadata.addLbsEstimator(SIZE_ESTIMATORS);
+    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(osm);
+    IncrementalObjectSizeEstimator.addEstimator(
+        "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
     SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcStripeMetadata.class);
   }
 
@@ -72,7 +69,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
   }
 
-  private OrcStripeMetadata() {
+  public OrcStripeMetadata() {
     stripeKey = null;
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
@@ -147,5 +144,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   public OrcBatchKey getKey() {
     return stripeKey;
+  }
+
+  @VisibleForTesting
+  public void resetRowIndex() {
+    rowIndex = null;
   }
 }

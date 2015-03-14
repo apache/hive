@@ -91,7 +91,6 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testGetPut() {
-    Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), -1); // no cleanup thread
@@ -150,7 +149,6 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testMultiMatch() {
-    Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), -1); // no cleanup thread
@@ -170,7 +168,6 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testStaleValueGet() {
-    Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), -1); // no cleanup thread
@@ -190,7 +187,6 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testStaleValueReplace() {
-    Configuration conf = createConf();
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), -1); // no cleanup thread
@@ -211,7 +207,6 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testMTTWithCleanup() {
-    Configuration conf = createConf();
     final LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(), new DummyAllocator(), 1);
     final long fn1 = 1, fn2 = 2;
@@ -399,15 +394,6 @@ public class TestLowLevelCacheImpl {
       result[i] = new DiskRange(offsets[i], offsets[i] + 1);
     }
     return result;
-  }
-
-  private Configuration createConf() {
-    Configuration conf = new Configuration();
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, 3);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_MAX_ALLOC.varname, 8);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_SIZE.varname, 8);
-    conf.setLong(ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, 8);
-    return conf;
   }
 
   private int generateOffsets(int offsetsToUse, Random rdm, int[] offsets) {

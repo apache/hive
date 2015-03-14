@@ -30,13 +30,13 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.datanucleus.store.types.backed.LinkedList;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.UnknownFieldSet;
@@ -50,15 +50,16 @@ public class IncrementalObjectSizeEstimator {
   private static final JavaDataModel memoryModel = JavaDataModel.get();
   private enum FieldType { PRIMITIVE_ARRAY, OBJECT_ARRAY, COLLECTION, MAP, OTHER };
 
-  public static HashMap<Class<?>, ObjectEstimator> createEstimator(Object rootObj) {
+  public static HashMap<Class<?>, ObjectEstimator> createEstimators(Object rootObj) {
     HashMap<Class<?>, ObjectEstimator> byType = new HashMap<>();
     addHardcodedEstimators(byType);
-    createEstimator(rootObj, byType);
+    createEstimators(rootObj, byType);
     return byType;
   }
 
-  public static void createEstimator(Object rootObj, HashMap<Class<?>, ObjectEstimator> byType) {
+  public static void createEstimators(Object rootObj, HashMap<Class<?>, ObjectEstimator> byType) {
     // Code initially inspired by Google ObjectExplorer.
+    // TODO: roll in the direct-only estimators from fields. Various other optimizations possible.
     Deque<Object> stack = createWorkStack(rootObj, byType);
 
     while (!stack.isEmpty()) {
@@ -126,6 +127,15 @@ public class IncrementalObjectSizeEstimator {
     if (Class.class.equals(rootClass)) {
       rootClass = (Class<?>)rootObj;
       rootObj = null;
+    } else {
+      // If root object is an array, map or collection, add estimators as for fields
+      if (rootClass.isArray() && !rootClass.getComponentType().isPrimitive()) {
+        addArrayEstimator(byType, stack, null, rootObj);
+      } else if (Collection.class.isAssignableFrom(rootClass)) {
+        addCollectionEstimator(byType, stack, null, rootClass, rootObj);
+      } else if (Map.class.isAssignableFrom(rootClass)) {
+        addMapEstimator(byType, stack, null, rootClass, rootObj);
+      }
     }
     addToProcessing(byType, stack, rootObj, rootClass);
     return stack;
@@ -134,9 +144,10 @@ public class IncrementalObjectSizeEstimator {
   private static void addHardcodedEstimators(
       HashMap<Class<?>, ObjectEstimator> byType) {
     // Add hacks for well-known collections and maps to avoid estimating them.
-    byType.put(ArrayList.class, new CollectionEstimator(memoryModel.arrayList(), 0));
+    byType.put(ArrayList.class, new CollectionEstimator(
+        memoryModel.arrayList(), memoryModel.ref()));
     byType.put(LinkedList.class, new CollectionEstimator(
-          memoryModel.linkedListBase(), memoryModel.linkedListEntry()));
+        memoryModel.linkedListBase(), memoryModel.linkedListEntry()));
     byType.put(HashSet.class, new CollectionEstimator(
         memoryModel.hashSetBase(), memoryModel.hashSetEntry()));
     byType.put(HashMap.class, new CollectionEstimator(
@@ -186,16 +197,18 @@ public class IncrementalObjectSizeEstimator {
         }
       }
     }
-    Class<?> collectionArg = getCollectionArg(field);
-    if (collectionArg != null) {
-      addToProcessing(byType, stack, null, collectionArg);
-    }
-    // TODO: there was code here to create guess-estimate for collection wrt how usage changes
-    //       when removing elements. However it's too error-prone for anything involving
-    //       pre-allocated capacity, so it was discarded.
+    if (field != null) {
+      Class<?> collectionArg = getCollectionArg(field);
+      if (collectionArg != null) {
+        addToProcessing(byType, stack, null, collectionArg);
+      }
+      // TODO: there was code here to create guess-estimate for collection wrt how usage changes
+      //       when removing elements. However it's too error-prone for anything involving
+      //       pre-allocated capacity, so it was discarded.
 
-    // We will estimate collection as an object. 
-    addToProcessing(byType, stack, fieldObj, fieldClass);
+      // We will estimate collection as an object (only if it's a field).
+      addToProcessing(byType, stack, fieldObj, fieldClass);
+    }
   }
 
   private static void addMapEstimator(HashMap<Class<?>, ObjectEstimator> byType,
@@ -221,14 +234,17 @@ public class IncrementalObjectSizeEstimator {
         }
       }
     }
-    Class<?>[] mapArgs = getMapArgs(field);
-    if (mapArgs != null) {
-      for (Class<?> mapArg : mapArgs) {
-        addToProcessing(byType, stack, null, mapArg);
+
+    if (field != null) {
+      Class<?>[] mapArgs = getMapArgs(field);
+      if (mapArgs != null) {
+        for (Class<?> mapArg : mapArgs) {
+          addToProcessing(byType, stack, null, mapArg);
+        }
       }
+      // We will estimate map as an object (only if it's a field).
+      addToProcessing(byType, stack, fieldObj, fieldClass);
     }
-    // We will estimate map as an object.
-    addToProcessing(byType, stack, fieldObj, fieldClass);
   }
 
   private static Class<?>[] getMapArgs(Field field) {
@@ -293,7 +309,7 @@ public class IncrementalObjectSizeEstimator {
         addToProcessing(byType, stack, element, element.getClass());
       }
     }
-    Class<?> elementClass = field.getType().getComponentType();
+    Class<?> elementClass = fieldObj.getClass().getComponentType();
     addToProcessing(byType, stack, null, elementClass);
   }
 
@@ -375,8 +391,14 @@ public class IncrementalObjectSizeEstimator {
 
     public int estimate(
         Object obj, HashMap<Class<?>, ObjectEstimator> parent) {
-      // TODO: track unique objects?
-      // TODO: maybe use stack of est+obj pairs instead of recursion
+      HashSet<Object> uniqueObjects = new HashSet<>();
+      uniqueObjects.add(obj);
+      return estimate(obj, parent, uniqueObjects);
+    }
+
+    protected int estimate(
+        Object obj, HashMap<Class<?>, ObjectEstimator> parent, HashSet<Object> uniqueObjects) {
+      // TODO: maybe use stack of est+obj pairs instead of recursion.
       if (fields == null) return directSize;
       int referencedSize = 0;
       for (FieldAndType e : fields) {
@@ -388,7 +410,7 @@ public class IncrementalObjectSizeEstimator {
         }
         // reference is already accounted for in the directSize.
         if (fieldObj == null) continue;
-        referencedSize += memoryModel.object();
+        if (!uniqueObjects.add(fieldObj)) continue;
         switch (e.type) {
         case COLLECTION: {
           Collection<?> c = (Collection<?>)fieldObj;
@@ -399,18 +421,20 @@ public class IncrementalObjectSizeEstimator {
               LlapIoImpl.LOG.info("Approximate estimation for collection "
                   + fieldObj.getClass().getName() + " from " + e.field);
             }
-            referencedSize += estimateCollectionElements(parent, c, e.field);
+            referencedSize += memoryModel.object();
+            referencedSize += estimateCollectionElements(parent, c, e.field, uniqueObjects);
             referencedSize += memoryModel.array() + c.size() * memoryModel.ref();
           } else if (collEstimator instanceof CollectionEstimator) {
-            referencedSize += estimateCollectionElements(parent, c, e.field);
-            referencedSize += collEstimator.estimate(c, parent);
+            referencedSize += memoryModel.object();
+            referencedSize += estimateCollectionElements(parent, c, e.field, uniqueObjects);
+            referencedSize += ((CollectionEstimator)collEstimator).estimateOverhead(c.size());
           } else {
             // We decided to treat this collection as regular object.
             if (DebugUtils.isTraceEnabled()) {
               LlapIoImpl.LOG.info("Verbose estimation for collection "
                   + fieldObj.getClass().getName() + " from " + e.field);
             }
-            referencedSize += collEstimator.estimate(c, parent);
+            referencedSize += collEstimator.estimate(c, parent, uniqueObjects);
           }
           break;
         }
@@ -423,19 +447,21 @@ public class IncrementalObjectSizeEstimator {
               LlapIoImpl.LOG.info("Approximate estimation for map "
                   + fieldObj.getClass().getName() + " from " + e.field);
             }
-            referencedSize += estimateMapElements(parent, m, e.field);
+            referencedSize += memoryModel.object();
+            referencedSize += estimateMapElements(parent, m, e.field, uniqueObjects);
             referencedSize += memoryModel.array() + m.size()
                 * (memoryModel.ref() * 2 + memoryModel.object());
           } else if (collEstimator instanceof CollectionEstimator) {
-            referencedSize += estimateMapElements(parent, m, e.field);
-            referencedSize += collEstimator.estimate(m, parent);
+            referencedSize += memoryModel.object();
+            referencedSize += estimateMapElements(parent, m, e.field, uniqueObjects);
+            referencedSize += ((CollectionEstimator)collEstimator).estimateOverhead(m.size());
           } else {
             // We decided to treat this map as regular object.
             if (DebugUtils.isTraceEnabled()) {
               LlapIoImpl.LOG.info("Verbose estimation for map "
                   + fieldObj.getClass().getName() + " from " + e.field);
             }
-            referencedSize += collEstimator.estimate(m, parent);
+            referencedSize += collEstimator.estimate(m, parent, uniqueObjects);
           }
           break;
         }
@@ -444,7 +470,7 @@ public class IncrementalObjectSizeEstimator {
           referencedSize += JavaDataModel.alignUp(
               memoryModel.array() + len * memoryModel.ref(), memoryModel.memoryAlign());
           if (len == 0) continue;
-          referencedSize += estimateArrayElements(parent, e, fieldObj, len);
+          referencedSize += estimateArrayElements(parent, e, fieldObj, len, uniqueObjects);
           break;
         }
         case PRIMITIVE_ARRAY: {
@@ -465,7 +491,7 @@ public class IncrementalObjectSizeEstimator {
             throw new AssertionError("Don't know how to measure "
                 + fieldObj.getClass().getName() + " from " + e.field);
           }
-          referencedSize += fieldEstimator.estimate(fieldObj, parent);
+          referencedSize += fieldEstimator.estimate(fieldObj, parent, uniqueObjects);
           break;
         }
         default: throw new AssertionError("Unknown type " + e.type);
@@ -475,13 +501,14 @@ public class IncrementalObjectSizeEstimator {
     }
 
     private int estimateArrayElements(HashMap<Class<?>, ObjectEstimator> parent,
-        FieldAndType e, Object fieldObj, int len) {
+        FieldAndType e, Object fieldObj, int len, HashSet<Object> uniqueObjects) {
       int result = 0;
       Class<?> lastClass = e.field.getType().getComponentType();
       ObjectEstimator lastEstimator = parent.get(lastClass);
       for (int i = 0; i < len; ++i) {
         Object element = Array.get(fieldObj, i);
         if (element == null) continue;
+        if (!uniqueObjects.add(element)) continue;
         Class<?> elementClass = element.getClass();
         if (lastClass != elementClass) {
           lastClass = elementClass;
@@ -492,18 +519,19 @@ public class IncrementalObjectSizeEstimator {
                 + lastClass.getName() + " from " + e.field);
           }
         }
-        result += lastEstimator.estimate(element, parent);
+        result += lastEstimator.estimate(element, parent, uniqueObjects);
       }
       return result;
     }
 
-    private int estimateCollectionElements(
-        HashMap<Class<?>, ObjectEstimator> parent, Collection<?> c, Field field) {
+    protected int estimateCollectionElements(HashMap<Class<?>, ObjectEstimator> parent,
+        Collection<?> c, Field field, HashSet<Object> uniqueObjects) {
       ObjectEstimator lastEstimator = null;
       Class<?> lastClass = null;
       int result = 0;
       for (Object element : c) {
         if (element == null) continue;
+        if (!uniqueObjects.add(element)) continue;
         Class<?> elementClass = element.getClass();
         if (lastClass != elementClass) {
           lastClass = elementClass;
@@ -514,18 +542,19 @@ public class IncrementalObjectSizeEstimator {
                 + lastClass.getName() + " from " + field);
           }
         }
-        result += lastEstimator.estimate(element, parent);
+        result += lastEstimator.estimate(element, parent, uniqueObjects);
       }
       return result;
     }
 
-    private int estimateMapElements(
-        HashMap<Class<?>, ObjectEstimator> parent, Map<?, ?> m, Field field) {
+    protected int estimateMapElements(HashMap<Class<?>, ObjectEstimator> parent,
+        Map<?, ?> m, Field field, HashSet<Object> uniqueObjects) {
       ObjectEstimator keyEstimator = null, valueEstimator = null;
       Class<?> lastKeyClass = null, lastValueClass = null;
       int result = 0;
       for (Map.Entry<?, ?> element : m.entrySet()) {
         Object key = element.getKey(), value = element.getValue();
+        if (!uniqueObjects.add(key)) continue;
         Class<?> keyClass = key.getClass();
         if (lastKeyClass != keyClass) {
           lastKeyClass = keyClass;
@@ -536,8 +565,9 @@ public class IncrementalObjectSizeEstimator {
                 + lastKeyClass.getName() + " from " + field);
           }
         }
-        result += keyEstimator.estimate(element, parent);
+        result += keyEstimator.estimate(element, parent, uniqueObjects);
         if (value == null) continue;
+        if (!uniqueObjects.add(value)) continue;
         Class<?> valueClass = value.getClass();
         if (lastValueClass != valueClass) {
           lastValueClass = valueClass;
@@ -548,7 +578,7 @@ public class IncrementalObjectSizeEstimator {
                 + lastValueClass.getName() + " from " + field);
           }
         }
-        result += valueEstimator.estimate(element, parent);
+        result += valueEstimator.estimate(element, parent, uniqueObjects);
       }
       return result;
     }
@@ -564,16 +594,36 @@ public class IncrementalObjectSizeEstimator {
     }
 
     @Override
-    public int estimate(Object obj,
-        HashMap<Class<?>, ObjectEstimator> parent) {
-// TODO: this is bad design, it does shallow estimate and caller checks type... we should do better
+    protected int estimate(Object obj,
+        HashMap<Class<?>, ObjectEstimator> parent, HashSet<Object> uniqueObjects) {
       if (obj instanceof Collection<?>) {
-        return directSize + perEntryOverhead * ((Collection<?>)obj).size();
+        Collection<?> c = (Collection<?>)obj;
+        int overhead = estimateOverhead(c.size()), elements = estimateCollectionElements(
+            parent, c, null, uniqueObjects);
+        return overhead + elements + memoryModel.object();
       } else if (obj instanceof Map<?, ?>) {
-        return directSize + perEntryOverhead * ((Map<?, ?>)obj).size();
-      } else {
-        throw new AssertionError(obj);
+        Map<?, ?> m = (Map<?, ?>)obj;
+        int overhead = estimateOverhead(m.size()), elements = estimateMapElements(
+            parent, m, null, uniqueObjects);
+        return overhead + elements + memoryModel.object();
       }
+      throw new AssertionError(obj.getClass().getName());
     }
+
+    int estimateOverhead(int size) {
+      return directSize + perEntryOverhead * size;
+    }
+  }
+
+  public static void addEstimator(String className,
+      HashMap<Class<?>, ObjectEstimator> sizeEstimators) {
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      // Ignore and hope for the best.
+      LlapIoImpl.LOG.warn("Cannot find " + className);
+    }
+    IncrementalObjectSizeEstimator.createEstimators(clazz, sizeEstimators);
   }
 }

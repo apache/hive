@@ -711,7 +711,7 @@ public class ReaderImpl implements Reader {
 
   @Override
   public MetadataReader metadata() throws IOException {
-    return new MetadataReader(fileSystem, path, codec, bufferSize, types.size());
+    return new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
   }
 
   @Override

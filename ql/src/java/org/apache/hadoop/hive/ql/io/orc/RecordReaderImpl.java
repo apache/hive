@@ -202,7 +202,7 @@ public class RecordReaderImpl implements RecordReader {
     this.included = options.getInclude();
     this.conf = conf;
     this.rowIndexStride = strideRate;
-    this.metadata = new MetadataReader(fileSystem, path, codec, bufferSize, types.size());
+    this.metadata = new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
     SearchArgument sarg = options.getSearchArgument();
     if (sarg != null && strideRate != 0) {
       sargApp = new SargApplier(sarg, options.getColumnNames(), strideRate, types);

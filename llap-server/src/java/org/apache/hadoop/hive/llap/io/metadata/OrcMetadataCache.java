@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.llap.cache.EvictionListener;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
+import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
@@ -33,10 +34,10 @@ public class OrcMetadataCache implements EvictionListener {
       new ConcurrentHashMap<Long, OrcFileMetadata>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
       new ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata>();
-  private final LowLevelCacheMemoryManager memoryManager;
+  private final MemoryManager memoryManager;
   private final LowLevelCachePolicy policy;
 
-  public OrcMetadataCache(LowLevelCacheMemoryManager memoryManager, LowLevelCachePolicy policy) {
+  public OrcMetadataCache(MemoryManager memoryManager, LowLevelCachePolicy policy) {
     this.memoryManager = memoryManager;
     this.policy = policy;
   }
