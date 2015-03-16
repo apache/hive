@@ -123,8 +123,8 @@ public class UDFJson extends UDF {
    */
   public Text evaluate(String jsonString, String pathString) {
 
-    if (jsonString == null || jsonString == "" || pathString == null
-        || pathString == "") {
+    if (jsonString == null || jsonString.isEmpty() || pathString == null
+        || pathString.isEmpty()) {
       return null;
     }
 
