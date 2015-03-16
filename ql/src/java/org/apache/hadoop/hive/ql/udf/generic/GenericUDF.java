@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -363,6 +364,17 @@ public abstract class GenericUDF implements Closeable {
     inputTypes[i] = inputType;
   }
 
+  protected void obtainDoubleConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    Converter converter = ObjectInspectorConverters.getConverter(
+        (PrimitiveObjectInspector) arguments[i],
+        PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+    converters[i] = converter;
+    inputTypes[i] = inputType;
+  }
+
   protected void obtainDateConverter(ObjectInspector[] arguments, int i,
       PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
     PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
@@ -437,6 +449,17 @@ public abstract class GenericUDF implements Closeable {
     }
     Object writableValue = converters[i].convert(obj);
     long v = ((LongWritable) writableValue).get();
+    return v;
+  }
+
+  protected Double getDoubleValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    Object writableValue = converters[i].convert(obj);
+    double v = ((DoubleWritable) writableValue).get();
     return v;
   }
 
