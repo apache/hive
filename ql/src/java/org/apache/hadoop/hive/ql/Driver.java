@@ -1309,7 +1309,9 @@ public class Driver implements CommandProcessor {
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
     String queryId = plan.getQueryId();
-    String queryStr = plan.getQueryStr();
+    // Get the query string from the conf file as the compileInternal() method might
+    // hide sensitive information during query redaction.
+    String queryStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
