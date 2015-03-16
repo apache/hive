@@ -58,8 +58,10 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -606,11 +608,37 @@ public class CalcitePlanner extends SemanticAnalyzer {
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
 
+    RelNode modifiedOptimizedOptiqPlan = introduceProjectIfNeeded(optimizedOptiqPlan);
+
     Operator hiveRoot = new HiveOpConverter(topOps, HiveOpConverter.getAggOPMode(conf),
-        conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(optimizedOptiqPlan);
+        conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(modifiedOptimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
     return genFileSinkPlan(getQB().getParseInfo().getClauseNames().iterator().next(), getQB(), hiveRoot);
+  }
+
+  private RelNode introduceProjectIfNeeded(RelNode optimizedOptiqPlan)
+      throws CalciteSemanticException {
+    RelNode parent = null;
+    RelNode input = optimizedOptiqPlan;
+    RelNode newRoot = optimizedOptiqPlan;
+
+    while (!(input instanceof Project) && (input instanceof Sort)) {
+      parent = input;
+      input = input.getInput(0);
+    }
+
+    if (!(input instanceof Project)) {
+      HiveProject hpRel = HiveProject.create(input,
+          HiveCalciteUtil.getProjsFromBelowAsInputRef(input), input.getRowType().getFieldNames());
+      if (input == optimizedOptiqPlan) {
+        newRoot = hpRel;
+      } else {
+        parent.replaceInput(0, hpRel);
+      }
+    }
+
+    return newRoot;
   }
 
   /***

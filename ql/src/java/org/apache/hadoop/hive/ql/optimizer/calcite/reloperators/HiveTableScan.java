@@ -17,15 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
@@ -100,4 +106,35 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return ((RelOptHiveTable) table).getColStat(projIndxLst);
   }
 
+  @Override
+  public RelNode project(ImmutableBitSet fieldsUsed, Set<RelDataTypeField> extraFields,
+      RelFactories.ProjectFactory projectFactory) {
+
+    // 1. If the schema is the same then bail out
+    final int fieldCount = getRowType().getFieldCount();
+    if (fieldsUsed.equals(ImmutableBitSet.range(fieldCount)) && extraFields.isEmpty()) {
+      return this;
+    }
+
+    // 2. Make sure there is no dynamic addition of virtual cols
+    if (extraFields != null && !extraFields.isEmpty()) {
+      throw new RuntimeException("Hive TS does not support adding virtual columns dynamically");
+    }
+
+    // 3. Create new TS schema that is a subset of original
+    final List<RelDataTypeField> fields = getRowType().getFieldList();
+    List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
+    List<String> fieldNames = new LinkedList<String>();
+    for (int i : fieldsUsed) {
+      RelDataTypeField field = fields.get(i);
+      fieldTypes.add(field.getType());
+      fieldNames.add(field.getName());
+    }
+
+    // 4. Build new TS
+    HiveTableScan newHT = copy(getCluster().getTypeFactory().createStructType(fieldTypes,
+        fieldNames));
+
+    return newHT;
+  }
 }
