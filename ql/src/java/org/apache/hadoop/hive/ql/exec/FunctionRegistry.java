@@ -212,6 +212,7 @@ public final class FunctionRegistry {
     system.registerUDF("atan", UDFAtan.class, false);
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("e", UDFE.class, false);
+    system.registerGenericUDF("factorial", GenericUDFFactorial.class);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);
