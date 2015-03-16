@@ -74,6 +74,7 @@ ewah_bitmap_empty
 ewah_bitmap_or
 exp
 explode
+factorial
 field
 find_in_set
 first_value
