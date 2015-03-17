@@ -17,32 +17,14 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.junit.Assert.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
+import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.junit.Test;
 
 public class TestOrcMetadataCache {
@@ -70,67 +52,47 @@ public class TestOrcMetadataCache {
   }
 
   private static class DummyMemoryManager implements MemoryManager {
+    int allocs = 0;
 
     @Override
     public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
-      return true; // TODO: record?
+      ++allocs;
+      return true;
+    }
+
+    @Override
+    public void releaseMemory(long memUsage) {
+      --allocs;
     }
   }
 
   @Test
-  public void testGetPut() {
+  public void testGetPut() throws Exception {
     DummyMemoryManager mm = new DummyMemoryManager();
     DummyCachePolicy cp = new DummyCachePolicy();
     OrcMetadataCache cache = new OrcMetadataCache(mm, cp);
-    // TODO#: implement
-  }
-  /*
-    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL));
-    assertNull(cache.putFileData(fn2, drs(1, 2), fbs(fakes, 2, 3), 0, Priority.NORMAL));
-    verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
-    verifyCacheGet(cache, fn2, 1, 3, fakes[2], fakes[3]);
-    verifyCacheGet(cache, fn1, 2, 4, fakes[1], dr(3, 4));
-    LlapMemoryBuffer[] bufsDiff = fbs(fakes, 4, 5);
-    long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0, Priority.NORMAL);
-    assertEquals(1, mask.length);
-    assertEquals(2, mask[0]); // 2nd bit set - element 2 was already in cache.
-    assertSame(fakes[0], bufsDiff[1]); // Should have been replaced
-    verifyCacheGet(cache, fn1, 1, 4, fakes[0], fakes[1], fakes[4]);
-  }
+    OrcFileMetadata ofm1 = OrcFileMetadata.createDummy(1), ofm2 = OrcFileMetadata.createDummy(2);
+    assertSame(ofm1, cache.putFileMetadata(ofm1));
+    assertEquals(1, mm.allocs);
+    assertSame(ofm2, cache.putFileMetadata(ofm2));
+    assertEquals(2, mm.allocs);
+    assertSame(ofm1, cache.getFileMetadata(1));
+    assertSame(ofm2, cache.getFileMetadata(2));
+    OrcFileMetadata ofm3 = OrcFileMetadata.createDummy(1);
+    assertSame(ofm1, cache.putFileMetadata(ofm3));
+    assertEquals(2, mm.allocs);
+    assertSame(ofm1, cache.getFileMetadata(1));
 
-  private void verifyCacheGet(LowLevelCacheImpl cache, long fileId, Object... stuff) {
-    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
-    DiskRangeList iter = null;
-    int intCount = 0, lastInt = -1;
-    int resultCount = stuff.length;
-    for (Object obj : stuff) {
-      if (obj instanceof Integer) {
-        --resultCount;
-        assertTrue(intCount >= 0);
-        if (intCount == 0) {
-          lastInt = (Integer)obj;
-          intCount = 1;
-        } else {
-          list.addOrMerge(lastInt, (Integer)obj, true, true);
-          intCount = 0;
-        }
-        continue;
-      } else if (intCount >= 0) {
-        assertTrue(intCount == 0);
-        intCount = -1;
-        iter = cache.getFileData(fileId, list.get(), 0);
-        assertEquals(resultCount, iter.listSize());
-      }
-      assertTrue(iter != null);
-      if (obj instanceof LlapMemoryBuffer) {
-        assertTrue(iter instanceof CacheChunk);
-        assertSame(obj, ((CacheChunk)iter).buffer);
-      } else {
-        assertTrue(iter.equals(obj));
-      }
-      iter = iter.next;
-    }
+    OrcStripeMetadata osm1 = OrcStripeMetadata.createDummy(1), osm2 = OrcStripeMetadata.createDummy(2);
+    assertSame(osm1, cache.putStripeMetadata(osm1));
+    assertEquals(3, mm.allocs);
+    assertSame(osm2, cache.putStripeMetadata(osm2));
+    assertEquals(4, mm.allocs);
+    assertSame(osm1, cache.getStripeMetadata(osm1.getKey()));
+    assertSame(osm2, cache.getStripeMetadata(osm2.getKey()));
+    OrcStripeMetadata osm3 = OrcStripeMetadata.createDummy(1);
+    assertSame(osm1, cache.putStripeMetadata(osm3));
+    assertEquals(4, mm.allocs);
+    assertSame(osm1, cache.getStripeMetadata(osm3.getKey()));
   }
-
-  */
 }

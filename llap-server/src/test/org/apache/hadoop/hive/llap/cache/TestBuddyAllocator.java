@@ -43,6 +43,10 @@ public class TestBuddyAllocator {
     public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
       return true;
     }
+
+    @Override
+    public void releaseMemory(long memUsage) {
+    }
   }
 
   @Test

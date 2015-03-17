@@ -51,7 +51,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
-    OrcStripeMetadata osm = createDummy();
+    OrcStripeMetadata osm = createDummy(0);
     SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(osm);
     IncrementalObjectSizeEstimator.addEstimator(
         "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
@@ -69,16 +69,16 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
   }
 
-  public OrcStripeMetadata() {
-    stripeKey = null;
+  public OrcStripeMetadata(long id) {
+    stripeKey = new OrcBatchKey(id, 0, 0);
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
     estimatedMemUsage = 0;
   }
 
   @VisibleForTesting
-  public static OrcStripeMetadata createDummy() {
-    OrcStripeMetadata dummy = new OrcStripeMetadata();
+  public static OrcStripeMetadata createDummy(long id) {
+    OrcStripeMetadata dummy = new OrcStripeMetadata(id);
     dummy.encodings.add(ColumnEncoding.getDefaultInstance());
     dummy.streams.add(Stream.getDefaultInstance());
     RowIndex ri = RowIndex.newBuilder().addEntry(

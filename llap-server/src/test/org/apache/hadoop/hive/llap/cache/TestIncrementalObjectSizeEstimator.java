@@ -139,7 +139,7 @@ public class TestIncrementalObjectSizeEstimator {
   @Test
   public void testMetadata() throws IOException {
     // Mostly tests that it doesn't crash.
-    OrcStripeMetadata osm = OrcStripeMetadata.createDummy();
+    OrcStripeMetadata osm = OrcStripeMetadata.createDummy(0);
     HashMap<Class<?>, ObjectEstimator> map =
         IncrementalObjectSizeEstimator.createEstimators(osm);
     IncrementalObjectSizeEstimator.addEstimator("com.google.protobuf.LiteralByteString", map);
@@ -169,7 +169,7 @@ public class TestIncrementalObjectSizeEstimator {
     osm.resetRowIndex();
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index after serde");
 
-    OrcFileMetadata ofm = OrcFileMetadata.createDummy();
+    OrcFileMetadata ofm = OrcFileMetadata.createDummy(0);
     map = IncrementalObjectSizeEstimator.createEstimators(ofm);
     IncrementalObjectSizeEstimator.addEstimator("com.google.protobuf.LiteralByteString", map);
     root = map.get(OrcFileMetadata.class);

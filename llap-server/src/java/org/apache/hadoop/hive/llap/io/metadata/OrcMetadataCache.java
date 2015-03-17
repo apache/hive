@@ -42,18 +42,36 @@ public class OrcMetadataCache implements EvictionListener {
     this.policy = policy;
   }
 
-  public void putFileMetadata(OrcFileMetadata metaData) {
-    memoryManager.reserveMemory(metaData.getMemoryUsage(), false);
-    policy.cache(metaData, Priority.HIGH);
-    policy.notifyUnlock(metaData); // See OrcFileMetadata, it is always unlocked.
-    metadata.put(metaData.getFileId(), metaData);
+  public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData) {
+    long memUsage = metaData.getMemoryUsage();
+    memoryManager.reserveMemory(memUsage, false);
+    OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileId(), metaData);
+    // See OrcFileMetadata; it is always unlocked, so we just "touch" it here to simulate use.
+    if (val == null) {
+      val = metaData;
+      policy.cache(val, Priority.HIGH);
+    } else {
+      memoryManager.releaseMemory(memUsage);
+      policy.notifyLock(val);
+    }
+    policy.notifyUnlock(val);
+    return val;
   }
 
-  public void putStripeMetadata(OrcStripeMetadata metaData) {
-    memoryManager.reserveMemory(metaData.getMemoryUsage(), false);
-    policy.cache(metaData, Priority.HIGH);
-    policy.notifyUnlock(metaData); // See OrcStripeMetadata, it is always unlocked.
-    stripeMetadata.put(metaData.getKey(), metaData);
+  public OrcStripeMetadata putStripeMetadata(OrcStripeMetadata metaData) {
+    long memUsage = metaData.getMemoryUsage();
+    memoryManager.reserveMemory(memUsage, false);
+    OrcStripeMetadata val = stripeMetadata.putIfAbsent(metaData.getKey(), metaData);
+    // See OrcStripeMetadata; it is always unlocked, so we just "touch" it here to simulate use.
+    if (val == null) {
+      val = metaData;
+      policy.cache(val, Priority.HIGH);
+    } else {
+      memoryManager.releaseMemory(memUsage);
+      policy.notifyLock(val);
+    }
+    policy.notifyUnlock(val);
+    return val;
   }
 
   public OrcStripeMetadata getStripeMetadata(OrcBatchKey stripeKey) throws IOException {

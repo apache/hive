@@ -254,13 +254,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
           if (stripeMetadata == null) {
             ensureMetadataReader();
-            stripeMetadata = new OrcStripeMetadata(
-                stripeKey, metadataReader, si, stripeIncludes, sargColumns);
+            stripeMetadata = metadataCache.putStripeMetadata(new OrcStripeMetadata(
+                stripeKey, metadataReader, si, stripeIncludes, sargColumns));
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                   + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
-            }
-            metadataCache.putStripeMetadata(stripeMetadata);
+            }            
             stripeKey = new OrcBatchKey(fileId, -1, 0);
           }
           consumer.setStripeMetadata(stripeMetadata);
@@ -359,8 +358,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (metadata != null) return metadata;
     ensureOrcReader();
     metadata = new OrcFileMetadata(fileId, orcReader);
-    metadataCache.putFileMetadata(metadata);
-    return metadata;
+    return metadataCache.putFileMetadata(metadata);
   }
 
   /**
@@ -377,8 +375,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         ensureMetadataReader();
         StripeInformation si = fileMetadata.getStripes().get(stripeKey.stripeIx);
         if (value == null) {
-          value = new OrcStripeMetadata(stripeKey, metadataReader, si, globalInc, sargColumns);
-          metadataCache.putStripeMetadata(value);
+          value = metadataCache.putStripeMetadata(
+              new OrcStripeMetadata(stripeKey, metadataReader, si, globalInc, sargColumns));
           if (DebugUtils.isTraceOrcEnabled()) {
             LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                 + " metadata with includes: " + DebugUtils.toString(globalInc));

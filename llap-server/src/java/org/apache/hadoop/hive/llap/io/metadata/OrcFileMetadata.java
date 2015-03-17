@@ -68,7 +68,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
   private final static ObjectEstimator SIZE_ESTIMATOR;
   static {
-    OrcFileMetadata ofm = createDummy();
+    OrcFileMetadata ofm = createDummy(0);
     SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(ofm);
     IncrementalObjectSizeEstimator.addEstimator(
         "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
@@ -76,8 +76,8 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   }
 
   @VisibleForTesting
-  public static OrcFileMetadata createDummy() {
-    OrcFileMetadata ofm = new OrcFileMetadata();
+  public static OrcFileMetadata createDummy(int fileId) {
+    OrcFileMetadata ofm = new OrcFileMetadata(fileId);
     ofm.stripes.add(new StripeInformationImpl(
         OrcProto.StripeInformation.getDefaultInstance()));
     ofm.fileStats.add(ColumnStatistics.getDefaultInstance());
@@ -93,14 +93,15 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
             StringStatistics.newBuilder().setMaximum("zzz"));
   }
 
-  // Ctor for memory estimation
-  private OrcFileMetadata() {
+  // Ctor for memory estimation and tests
+  private OrcFileMetadata(int fileId) {
+    this.fileId = fileId;
     stripes = new ArrayList<StripeInformation>();
     versionList = new ArrayList<Integer>();
     fileStats = new ArrayList<>();
     stripeStats = new ArrayList<>();
     types = new ArrayList<>();
-    fileId = writerVersionNum = metadataSize = compressionBufferSize = rowIndexStride = 0;
+    writerVersionNum = metadataSize = compressionBufferSize = rowIndexStride = 0;
     contentLength = numberOfRows = 0;
     estimatedMemUsage = 0;
     isOriginalFormat = false;

@@ -20,4 +20,5 @@ package org.apache.hadoop.hive.llap.cache;
 
 public interface MemoryManager {
   boolean reserveMemory(long memoryToReserve, boolean waitForEviction);
+  void releaseMemory(long memUsage);
 }

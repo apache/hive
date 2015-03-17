@@ -26,6 +26,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
+/**
+ * Implementation of memory manager for low level cache. Note that memory is released during
+ * reserve most of the time, by calling the evictor to evict some memory. releaseMemory is
+ * called rarely.
+ */
 public class LowLevelCacheMemoryManager implements MemoryManager {
   private final AtomicLong usedMemory;
   protected final long maxSize;
@@ -69,4 +74,15 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     metrics.incrCacheCapacityUsed(memoryToReserve);
     return true;
   }
+
+  @Override
+  // Not used by the data cache.
+  public void releaseMemory(long memoryToRelease) {
+    long oldV;
+    do {
+      oldV = usedMemory.get();
+      assert oldV >= memoryToRelease;
+    } while (!usedMemory.compareAndSet(oldV, oldV - memoryToRelease));
+  }
+
 }
