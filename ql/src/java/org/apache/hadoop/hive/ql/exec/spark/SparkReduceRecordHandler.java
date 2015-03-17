@@ -282,6 +282,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
     } catch (Throwable e) {
       abort = true;
+      Utilities.setReduceWork(jc, null);
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
