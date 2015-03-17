@@ -152,7 +152,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         if (bl != null && bl.length() > 0) {
           String[] bls = bl.split(",");
           for (String b : bls) {
-            b.replaceAll(".", "_");
             blackListedConfEntries.add(b);
           }
         }
