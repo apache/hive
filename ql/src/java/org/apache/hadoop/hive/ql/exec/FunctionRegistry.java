@@ -188,6 +188,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("round", GenericUDFRound.class);
     system.registerGenericUDF("floor", GenericUDFFloor.class);
     system.registerUDF("sqrt", UDFSqrt.class, false);
+    system.registerGenericUDF("cbrt", GenericUDFCbrt.class);
     system.registerGenericUDF("ceil", GenericUDFCeil.class);
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
@@ -212,6 +213,7 @@ public final class FunctionRegistry {
     system.registerUDF("atan", UDFAtan.class, false);
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("e", UDFE.class, false);
+    system.registerGenericUDF("factorial", GenericUDFFactorial.class);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);

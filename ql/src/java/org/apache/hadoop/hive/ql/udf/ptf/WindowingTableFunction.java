@@ -1190,7 +1190,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
           (PrimitiveObjectInspector) expressionDef.getOI());
       String s2 = PrimitiveObjectInspectorUtils.getString(v2,
           (PrimitiveObjectInspector) expressionDef.getOI());
-      return (s1 == null && s2 == null) || s1.equals(s2);
+      return (s1 == null && s2 == null) || (s1 != null && s1.equals(s2));
     }
   }
 

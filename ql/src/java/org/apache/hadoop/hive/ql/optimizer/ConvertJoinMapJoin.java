@@ -93,7 +93,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return retval;
       } else {
         int pos = 0; // it doesn't matter which position we use in this case.
-        convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+        convertJoinSMBJoin(joinOp, context, pos, 0, false);
         return null;
       }
     }
@@ -135,7 +135,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       } else {
         // only case is full outer join with SMB enabled which is not possible. Convert to regular
         // join.
-        convertJoinSMBJoin(joinOp, context, 0, 0, false, false);
+        convertJoinSMBJoin(joinOp, context, 0, 0, false);
         return null;
       }
     }
@@ -155,7 +155,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
       int pos = 0; // it doesn't matter which position we use in this case.
-      convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+      convertJoinSMBJoin(joinOp, context, pos, 0, false);
       return null;
     }
 
@@ -180,7 +180,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // map join either based on the size. Check if we can convert to SMB join.
     if ((context.conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN) == false)
         || (joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
-      convertJoinSMBJoin(joinOp, context, 0, 0, false, false);
+      convertJoinSMBJoin(joinOp, context, 0, 0, false);
       return null;
     }
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
@@ -188,7 +188,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       String selector = HiveConf.getVar(context.parseContext.getConf(),
           HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR);
       bigTableMatcherClass =
-          (Class<? extends BigTableSelectorForAutoSMJ>) JavaUtils.loadClass(selector);
+          JavaUtils.loadClass(selector);
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e.getMessage());
     }
@@ -210,18 +210,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
       int pos = 0; // it doesn't matter which position we use in this case.
-      convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+      convertJoinSMBJoin(joinOp, context, pos, 0, false);
       return null;
     }
 
     if (checkConvertJoinSMBJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
       convertJoinSMBJoin(joinOp, context, mapJoinConversionPos,
-          tezBucketJoinProcCtx.getNumBuckets(), tezBucketJoinProcCtx.isSubQuery(), true);
+          tezBucketJoinProcCtx.getNumBuckets(), true);
     } else {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
       int pos = 0; // it doesn't matter which position we use in this case.
-      convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+      convertJoinSMBJoin(joinOp, context, pos, 0, false);
     }
     return null;
   }
@@ -229,7 +229,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   // replaces the join operator with a new CommonJoinOperator, removes the
   // parent reduce sinks
   private void convertJoinSMBJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-      int mapJoinConversionPos, int numBuckets, boolean isSubQuery, boolean adjustParentsChildren)
+      int mapJoinConversionPos, int numBuckets, boolean adjustParentsChildren)
       throws SemanticException {
     MapJoinDesc mapJoinDesc = null;
     if (adjustParentsChildren) {
@@ -253,7 +253,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     CommonMergeJoinOperator mergeJoinOp =
         (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
-            isSubQuery, mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
+            mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp
         .getOpTraits().getSortCols(), numReduceSinks);
@@ -363,8 +363,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     Map<String, Integer> bigTableBucketNumMapping = new HashMap<String, Integer>();
     bigTableBucketNumMapping.put(joinDesc.getBigTableAlias(), tezBucketJoinProcCtx.getNumBuckets());
     joinDesc.setBigTableBucketNumMapping(bigTableBucketNumMapping);
-    LOG.info("Setting legacy map join to " + (!tezBucketJoinProcCtx.isSubQuery()));
-    joinDesc.setCustomBucketMapJoin(!tezBucketJoinProcCtx.isSubQuery());
 
     return true;
   }
@@ -405,13 +403,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
-    boolean isSubQuery = false;
     if (numBuckets < 0) {
-      isSubQuery = true;
       numBuckets = bigTableRS.getConf().getNumReducers();
     }
     tezBucketJoinProcCtx.setNumBuckets(numBuckets);
-    tezBucketJoinProcCtx.setIsSubQuery(isSubQuery);
     LOG.info("We can convert the join to an SMB join.");
     return true;
   }
@@ -457,13 +452,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
      * this is the case when the big table is a sub-query and is probably already bucketed by the
      * join column in say a group by operation
      */
-    boolean isSubQuery = false;
     if (numBuckets < 0) {
-      isSubQuery = true;
       numBuckets = rs.getConf().getNumReducers();
     }
     tezBucketJoinProcCtx.setNumBuckets(numBuckets);
-    tezBucketJoinProcCtx.setIsSubQuery(isSubQuery);
     return true;
   }
 
