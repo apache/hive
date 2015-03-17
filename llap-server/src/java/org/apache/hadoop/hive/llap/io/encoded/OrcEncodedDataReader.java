@@ -127,7 +127,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease the" +
             " value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());
       }
-      // TODO#: HERE 1
       if (columnIds == null) {
         columnIds = createColumnIds(fileMetadata);
       }

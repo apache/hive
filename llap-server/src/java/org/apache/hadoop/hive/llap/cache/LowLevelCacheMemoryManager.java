@@ -69,7 +69,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
           LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
           nextLog <<= 1;
           try {
-            Thread.sleep(500); // TODO#: incremental fallback
+            Thread.sleep(Math.min(1000, nextLog));
           } catch (InterruptedException e) {
           }
         }
