@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -64,7 +66,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
   /* (non-Javadoc)
    * This processor addresses the RS-MJ case that occurs in tez on the small/hash
-   * table side of things. The work that RS will be a part of must be connected 
+   * table side of things. The work that RS will be a part of must be connected
    * to the MJ work via be a broadcast edge.
    * We should not walk down the tree when we encounter this pattern because:
    * the type of work (map work or reduce work) needs to be determined
@@ -91,7 +93,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     parentRS.setSkipTag(true);
     // remember the original parent list before we start modifying it.
     if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
-      List<Operator<?>> parents = new ArrayList(mapJoinOp.getParentOperators());
+      List<Operator<?>> parents = new ArrayList<Operator<?>>(mapJoinOp.getParentOperators());
       context.mapJoinParentMap.put(mapJoinOp, parents);
     }
 
@@ -173,9 +175,12 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
 
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
-      if (joinConf.getCustomBucketMapJoin()) {
+      Operator<?> rootOp = OperatorUtils.findSingleOperatorUpstream(mapJoinOp.getParentOperators()
+          .get(joinConf.getPosBigTable()), TableScanOperator.class);
+
+      if (rootOp instanceof TableScanOperator) { // we will run in mapper
         edgeType = EdgeType.CUSTOM_EDGE;
-      } else {
+      } else { // we will run in reducer
         edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
       }
     }
@@ -218,8 +223,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     }
     linkWorkMap.put(parentWork, edgeProp);
     context.linkOpWithWorkMap.put(mapJoinOp, linkWorkMap);
-    
-    List<ReduceSinkOperator> reduceSinks 
+
+    List<ReduceSinkOperator> reduceSinks
       = context.linkWorkWithReduceSinkMap.get(parentWork);
     if (reduceSinks == null) {
       reduceSinks = new ArrayList<ReduceSinkOperator>();
