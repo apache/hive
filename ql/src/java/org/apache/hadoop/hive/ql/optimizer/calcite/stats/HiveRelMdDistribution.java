@@ -10,6 +10,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 
@@ -29,6 +30,11 @@ public class HiveRelMdDistribution {
   private HiveRelMdDistribution() {}
 
   //~ Methods ----------------------------------------------------------------
+
+  public RelDistribution distribution(HiveAggregate aggregate) {
+    return new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED,
+            aggregate.getGroupSet().asList());
+  }
 
   public RelDistribution distribution(HiveJoin join) {
     // Compute distribution

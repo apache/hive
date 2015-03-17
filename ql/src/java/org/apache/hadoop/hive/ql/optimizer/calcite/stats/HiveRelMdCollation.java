@@ -12,6 +12,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 
@@ -31,6 +32,20 @@ public class HiveRelMdCollation {
   private HiveRelMdCollation() {}
 
   //~ Methods ----------------------------------------------------------------
+
+  public ImmutableList<RelCollation> collations(HiveAggregate aggregate) {
+    // Compute collations
+    ImmutableList.Builder<RelFieldCollation> collationListBuilder =
+            new ImmutableList.Builder<RelFieldCollation>();
+    for (int pos : aggregate.getGroupSet().asList()) {
+      final RelFieldCollation fieldCollation = new RelFieldCollation(pos);
+      collationListBuilder.add(fieldCollation);
+    }
+    // Return aggregate collations
+    return ImmutableList.of(
+                RelCollationTraitDef.INSTANCE.canonize(
+                        new HiveRelCollation(collationListBuilder.build())));
+  }
 
   public ImmutableList<RelCollation> collations(HiveJoin join) {
     // Compute collations
