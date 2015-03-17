@@ -127,6 +127,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease the" +
             " value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());
       }
+      // TODO#: HERE 1
       if (columnIds == null) {
         columnIds = createColumnIds(fileMetadata);
       }
@@ -234,15 +235,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         } else {
           // We are reading subset of the original columns, remove unnecessary bitmasks/etc.
           // This will never happen w/o high-level cache.
-          stripeIncludes = OrcInputFormat.genIncludedColumns(
-              fileMetadata.getTypes(), cols, true);
-          boolean[][] colRgs2 = new boolean[cols.size()][];
-          for (int i = 0, i2 = -1; i < colRgs.length; ++i) {
-            if (colRgs[i] == null) continue;
-            colRgs2[i2] = colRgs[i];
-            ++i2;
-          }
-          colRgs = colRgs2;
+          stripeIncludes = OrcInputFormat.genIncludedColumns(fileMetadata.getTypes(), cols, true);
+          colRgs = genStripeColRgs(cols, colRgs);
         }
 
         // 6.2. Ensure we have stripe metadata. We might have read it before for RG filtering.
@@ -291,9 +285,19 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       LlapIoImpl.LOG.info("done processing " + split);
     }
 
-    // close the stripe reader, we are done reading
+    // Close the stripe reader, we are done reading.
     stripeReader.close();
     return null;
+  }
+
+  private boolean[][] genStripeColRgs(List<Integer> stripeCols, boolean[][] globalColRgs) {
+    boolean[][] stripeColRgs = new boolean[stripeCols.size()][];
+    for (int i = 0, i2 = -1; i < globalColRgs.length; ++i) {
+      if (globalColRgs[i] == null) continue;
+      stripeColRgs[i2] = globalColRgs[i];
+      ++i2;
+    }
+    return stripeColRgs;
   }
 
   /**

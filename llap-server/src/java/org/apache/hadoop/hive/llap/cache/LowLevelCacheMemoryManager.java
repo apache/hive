@@ -52,6 +52,8 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   @Override
   public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
+    int badCallCount = 0;
+    int nextLog = 4;
     while (memoryToReserve > 0) {
       long usedMem = usedMemory.get(), newUsedMem = usedMem + memoryToReserve;
       if (newUsedMem <= maxSize) {
@@ -60,7 +62,20 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
       }
       // TODO: for one-block case, we could move notification for the last block out of the loop.
       long evicted = evictor.evictSomeBlocks(memoryToReserve);
-      if (!waitForEviction && evicted == 0) return false;
+      if (evicted == 0) {
+        if (!waitForEviction) return false;
+        ++badCallCount;
+        if (badCallCount == nextLog) {
+          LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
+          nextLog <<= 1;
+          try {
+            Thread.sleep(500); // TODO#: incremental fallback
+          } catch (InterruptedException e) {
+          }
+        }
+        continue;
+      }
+      badCallCount = 0;
       // Adjust the memory - we have to account for what we have just evicted.
       while (true) {
         long reserveWithEviction = Math.min(memoryToReserve, maxSize - usedMem + evicted);

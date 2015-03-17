@@ -256,7 +256,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     boolean[] result = new boolean[numColumns];
     result[0] = true;
     OrcProto.Type root = types.get(rootColumn);
-    for(int i=0; i < root.getSubtypesCount(); ++i) {
+    for (int i = 0; i < root.getSubtypesCount(); ++i) {
       if (included.contains(i)) {
         includeColumnRecursive(types, result, root.getSubtypes(i),
             rootColumn);

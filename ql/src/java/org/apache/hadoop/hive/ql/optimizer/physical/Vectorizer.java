@@ -949,6 +949,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return validateMapJoinDesc(desc);
   }
 
+  // TODO#: validate this
   private boolean validateTableScanOperator(TableScanOperator op, MapWork mWork) {
     TableScanDesc desc = op.getConf();
     if (desc.isGatherStats()) {
@@ -1154,6 +1155,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ExprNodeGenericFuncDesc d = (ExprNodeGenericFuncDesc) desc;
       boolean r = validateGenericUdf(d);
       if (!r) {
+        LOG.info("Cannot vectorize UDF " + d);
         return false;
       }
     }

@@ -253,12 +253,12 @@
 
 <property>
   <name>hive.llap.io.cache.orc.size</name>
-  <value>2097152</value>
+  <value>8388608</value>
 </property>
 
 <property>
   <name>hive.llap.io.cache.orc.arena.size</name>
-  <value>2097152</value>
+  <value>8388608</value>
 </property>
 
 <property>

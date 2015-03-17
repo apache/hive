@@ -208,10 +208,13 @@ public class RecordReaderUtils {
     boolean isFirst = true;
     while (range != null) {
       if (!isFirst) {
-        buffer.append(", ");
+        buffer.append(", {");
+      } else {
+        buffer.append("{");
       }
       isFirst = false;
       buffer.append(range.toString());
+      buffer.append("}");
       range = range.next;
     }
     buffer.append("]");

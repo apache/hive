@@ -82,9 +82,6 @@ public class LlapInputFormat
     try {
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
-      if (includedCols.isEmpty()) {
-        includedCols = null; // Also means read all columns? WTF?
-      }
       return new LlapRecordReader(job, fileSplit, includedCols);
     } catch (Exception ex) {
       throw new IOException(ex);
@@ -178,7 +175,8 @@ public class LlapInputFormat
 
     private void startRead() {
       // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-      ReadPipeline rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames, counters);
+      ReadPipeline rp = cvp.createReadPipeline(
+          this, split, columnIds, sarg, columnNames, counters);
       feedback = rp;
       ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
       // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.

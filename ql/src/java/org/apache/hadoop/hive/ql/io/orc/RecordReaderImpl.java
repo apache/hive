@@ -2926,9 +2926,9 @@ public class RecordReaderImpl implements RecordReader {
               bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
             }
             leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Stats = " + stats);
-              LOG.debug("Setting " + sargLeaves.get(pred) + " to " +
+            if (LOG.isTraceEnabled()) {
+              LOG.trace("Stats = " + stats);
+              LOG.trace("Setting " + sargLeaves.get(pred) + " to " +
                   leafValues[pred]);
             }
           } else {

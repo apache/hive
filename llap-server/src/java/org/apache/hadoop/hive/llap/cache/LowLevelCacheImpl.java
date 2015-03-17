@@ -165,7 +165,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         return null;  // No more matches expected...
       } else {
         // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRangeList(currentCached.end - baseOffset, endOffset);
+        currentNotCached = new DiskRangeList(
+            currentCached.end - baseOffset, endOffset - baseOffset);
         currentCached.insertAfter(currentNotCached);
         return currentNotCached;
       }

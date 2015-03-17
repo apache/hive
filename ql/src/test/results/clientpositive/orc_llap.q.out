@@ -80,116 +80,393 @@ POSTHOOK: Lineage: orc_llap.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 POSTHOOK: Lineage: orc_llap.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_llap.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_llap.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (cross_numbers)cross_numbers.FieldSchema(name:i, type:int, comment:null), ]
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: -- Hash cannot be vectorized, so run hash as the last step on a temp table
+drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Hash cannot be vectorized, so run hash as the last step on a temp table
+drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 10) and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 10) and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_temp_table
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -558222259686
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select * from orc_llap where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select * from orc_llap where cint > 10 and cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 10) and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 10) and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 20480 Data size: 4846656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select * from orc_llap where cint > 10 and cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select * from orc_llap where cint > 10 and cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--558222259686
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -197609091139
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select cstring2 from orc_llap where cint > 5 and cint < 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select cstring2 from orc_llap where cint > 5 and cint < 10
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 5) and (cint < 10)) (type: boolean)
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 5) and (cint < 10)) (type: boolean)
+              Statistics: Num rows: 13653 Data size: 3231025 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cstring2 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 13653 Data size: 3231025 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 13653 Data size: 3231025 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cstring2 from orc_llap where cint > 5 and cint < 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cstring2 from orc_llap where cint > 5 and cint < 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--197609091139
-PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: query: explain
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cstring1 (type: string), cstring2 (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count()
+                keys: _col0 (type: string), _col1 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 61440 Data size: 14539970 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 61440 Data size: 14539970 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cross_numbers
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cross_numbers
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--3966955638
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@cross_numbers
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cross_numbers
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--3966955638
-PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -201218541193
-PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
+POSTHOOK: query: explain
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        o1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        o1 
+          TableScan
+            alias: o1
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 csmallint (type: smallint)
+                  1 csmallint (type: smallint)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: o2
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 csmallint (type: smallint)
+                  1 csmallint (type: smallint)
+                outputColumnNames: _col6, _col22
+                Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col6 (type: string), _col22 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--201218541193
-PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--735462183586256
-PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -735462183586256
 Warning: Map Join MAPJOIN[12][bigTable=?] in task 'Stage-4:MAPRED' is a cross product
@@ -229,115 +506,402 @@ POSTHOOK: query: alter table orc_llap concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: default@orc_llap
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 10) and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 99862 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 10) and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 16644 Data size: 266305 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 16644 Data size: 266305 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 16644 Data size: 266305 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_temp_table
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -1116444519372
-PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select * from orc_llap where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select * from orc_llap where cint > 10 and cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 10) and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 4993 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 10) and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 832 Data size: 266246 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 832 Data size: 266246 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 832 Data size: 266246 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select * from orc_llap where cint > 10 and cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select * from orc_llap where cint > 10 and cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--1116444519372
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -395218182278
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select cstring2 from orc_llap where cint > 5 and cint < 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) tmp
+POSTHOOK: query: explain
+select cstring2 from orc_llap where cint > 5 and cint < 10
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            filterExpr: ((cint > 5) and (cint < 10)) (type: boolean)
+            Statistics: Num rows: 15363 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((cint > 5) and (cint < 10)) (type: boolean)
+              Statistics: Num rows: 1707 Data size: 177533 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: cstring2 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1707 Data size: 177533 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1707 Data size: 177533 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cstring2 from orc_llap where cint > 5 and cint < 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cstring2 from orc_llap where cint > 5 and cint < 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--395218182278
-PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) tmp
+POSTHOOK: query: explain
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: orc_llap
+            Statistics: Num rows: 7989 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cstring1 (type: string), cstring2 (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 7989 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count()
+                keys: _col0 (type: string), _col1 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 7989 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 7989 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 3994 Data size: 798800 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 3994 Data size: 798800 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cross_numbers
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cross_numbers
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--7933911276
-PREHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@cross_numbers
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap inner join cross_numbers on csmallint = i) tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cross_numbers
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--7933911276
-PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -201218418313
-PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: explain
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) tmp
+POSTHOOK: query: explain
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
 POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        o1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        o1 
+          TableScan
+            alias: o1
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 14266 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 3567 Data size: 399506 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 csmallint (type: smallint)
+                  1 csmallint (type: smallint)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: o2
+            filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+            Statistics: Num rows: 14266 Data size: 1597800 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+              Statistics: Num rows: 3567 Data size: 399506 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 csmallint (type: smallint)
+                  1 csmallint (type: smallint)
+                outputColumnNames: _col6, _col22
+                Statistics: Num rows: 3923 Data size: 439456 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col6 (type: string), _col22 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 3923 Data size: 439456 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3923 Data size: 439456 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table llap_temp_table as
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: create table llap_temp_table as
+select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--201218418313
-PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) tmp
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -2941848734345024
-PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null)  tmp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null)  tmp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
-#### A masked pattern was here ####
--2941848734345024
+PREHOOK: query: drop table llap_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_temp_table
+PREHOOK: Output: default@llap_temp_table
+POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Output: default@llap_temp_table
