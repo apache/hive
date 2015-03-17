@@ -1627,6 +1627,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNodeConverter converter = new RexNodeConverter(this.cluster, srcRel.getRowType(), posMap,
           0, false);
 
+      final boolean hasGroupSets = groupSets != null && !groupSets.isEmpty();
       final List<RexNode> gbChildProjLst = Lists.newArrayList();
       final HashMap<String, Integer> rexNodeToPosMap = new HashMap<String, Integer>();
       final List<Integer> groupSetPositions = Lists.newArrayList();
@@ -1641,23 +1642,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       final ImmutableBitSet groupSet = ImmutableBitSet.of(groupSetPositions);
 
-      List<AggregateCall> aggregateCalls = Lists.newArrayList();
-      for (AggInfo agg : aggInfoLst) {
-        aggregateCalls.add(convertGBAgg(agg, srcRel, gbChildProjLst, converter, rexNodeToPosMap,
-            gbChildProjLst.size()));
-      }
-
-      if (gbChildProjLst.isEmpty()) {
-        // This will happen for count(*), in such cases we arbitarily pick
-        // first element from srcRel
-        gbChildProjLst.add(this.cluster.getRexBuilder().makeInputRef(srcRel, 0));
-      }
-      RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
-
       // Grouping sets: we need to transform them into ImmutableBitSet
       // objects for Calcite
       List<ImmutableBitSet> transformedGroupSets = null;
-      if(groupSets != null && !groupSets.isEmpty()) {
+      if(hasGroupSets) {
         Set<ImmutableBitSet> setTransformedGroupSets =
                 new HashSet<ImmutableBitSet>(groupSets.size());
         for(int val: groupSets) {
@@ -1667,6 +1655,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
         transformedGroupSets = new ArrayList<ImmutableBitSet>(setTransformedGroupSets);
         Collections.sort(transformedGroupSets, ImmutableBitSet.COMPARATOR);
       }
+
+      List<AggregateCall> aggregateCalls = Lists.newArrayList();
+      for (AggInfo agg : aggInfoLst) {
+        aggregateCalls.add(convertGBAgg(agg, srcRel, gbChildProjLst, converter, rexNodeToPosMap,
+            gbChildProjLst.size()));
+      }
+      if (hasGroupSets) {
+        // Create GroupingID column
+        AggregateCall aggCall = new AggregateCall(HiveGroupingID.INSTANCE,
+                false, new ImmutableList.Builder<Integer>().build(),
+                this.cluster.getTypeFactory().createSqlType(SqlTypeName.INTEGER),
+                HiveGroupingID.INSTANCE.getName());
+        aggregateCalls.add(aggCall);
+      }
+
+      if (gbChildProjLst.isEmpty()) {
+        // This will happen for count(*), in such cases we arbitarily pick
+        // first element from srcRel
+        gbChildProjLst.add(this.cluster.getRexBuilder().makeInputRef(srcRel, 0));
+      }
+      RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
 
       HiveRelNode aggregateRel = null;
       try {
@@ -1890,7 +1899,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
             groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
           }
-          groupingColsSize = groupingColsSize * 2;
+          
+          final int limit = groupingColsSize * 2;
+          while (groupingColsSize < limit) {
+            String field = getColumnInternalName(groupingColsSize);
+            outputColumnNames.add(field);
+            groupByOutputRowResolver.put(null, field,
+                    new ColumnInfo(
+                            field,
+                            TypeInfoFactory.booleanTypeInfo,
+                            null,
+                            false));
+            groupingColsSize++;
+          }
         }
 
         // 5. Construct aggregation function Info
@@ -1928,55 +1949,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
+        // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id
+        if(groupingSets != null && !groupingSets.isEmpty()) {
+          String field = getColumnInternalName(groupingColsSize + aggregations.size());
+          outputColumnNames.add(field);
+          groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+                  new ColumnInfo(
+                          field,
+                          TypeInfoFactory.intTypeInfo,
+                          null,
+                          true));
+        }
+
+        // 7. We create the group_by operator
         gbRel = genGBRelNode(gbExprNDescLst, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(gbRel,
             buildHiveToCalciteColumnMap(groupByOutputRowResolver, gbRel));
         this.relToHiveRR.put(gbRel, groupByOutputRowResolver);
-
-        // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id.
-        // Further, we insert a project operator on top to remove the grouping
-        // boolean associated to each column in Calcite; this will avoid
-        // recalculating all column positions when we go back from Calcite to Hive
-        if(groupingSets != null && !groupingSets.isEmpty()) {
-          RowResolver selectOutputRowResolver = new RowResolver();
-          selectOutputRowResolver.setIsExprResolver(true);
-          RowResolver.add(selectOutputRowResolver, groupByOutputRowResolver);
-          outputColumnNames = new ArrayList<String>(outputColumnNames);
-
-          // 6.1 List of columns to keep from groupBy operator
-          List<RelDataTypeField> gbOutput = gbRel.getRowType().getFieldList();
-          List<RexNode> calciteColLst = new ArrayList<RexNode>();
-          for(RelDataTypeField gbOut: gbOutput) {
-            if(gbOut.getIndex() < gbExprNDescLst.size() ||
-                    gbOut.getIndex() >= gbExprNDescLst.size() * 2) {
-              calciteColLst.add(new RexInputRef(gbOut.getIndex(), gbOut.getType()));
-            }
-          }
-
-          // 6.2 Add column for grouping_id function
-          String field = getColumnInternalName(groupingColsSize + aggregations.size());
-          outputColumnNames.add(field);
-          selectOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
-                  new ColumnInfo(
-                          field,
-                          TypeInfoFactory.stringTypeInfo,
-                          null,
-                          true));
-
-          // 6.3 Compute column for grouping_id function in Calcite
-          List<RexNode> identifierCols = new ArrayList<RexNode>();
-          for(int i = gbExprNDescLst.size(); i < gbExprNDescLst.size() * 2; i++) {
-            identifierCols.add(new RexInputRef(
-                    i, gbOutput.get(i).getType()));
-          }
-          final RexBuilder rexBuilder = cluster.getRexBuilder();
-          RexNode groupingID = rexBuilder.makeCall(HiveGroupingID.GROUPING__ID,
-                  identifierCols);
-          calciteColLst.add(groupingID);
-
-          // Create select
-          gbRel = this.genSelectRelNode(calciteColLst, selectOutputRowResolver, gbRel);
-        }
       }
 
       return gbRel;

@@ -189,31 +189,7 @@ public class ASTConverter {
       int i = 0;
 
       for (RexNode r : select.getChildExps()) {
-        // If it is a GroupBy with grouping sets and grouping__id column
-        // is selected, we reformulate to project that column from
-        // the output of the GroupBy operator
-        boolean reformulate = false;
-        if (groupBy != null && groupBy.indicator) {
-          RexNode expr = select.getChildExps().get(i);
-          if (expr instanceof RexCall) {
-            if ( ((RexCall) expr).getOperator().
-                    equals(HiveGroupingID.GROUPING__ID)) {
-              reformulate = true;
-            }
-          }
-        }
-        ASTNode expr;
-        if(reformulate) {
-          RexInputRef iRef = new RexInputRef(
-                  groupBy.getGroupCount() * 2 + groupBy.getAggCallList().size(),
-                  TypeConverter.convert(
-                          VirtualColumn.GROUPINGID.getTypeInfo(),
-                          groupBy.getCluster().getTypeFactory()));
-          expr = iRef.accept(new RexVisitor(schema));
-        }
-        else {
-          expr = r.accept(new RexVisitor(schema, r instanceof RexLiteral));
-        }
+        ASTNode expr = r.accept(new RexVisitor(schema, r instanceof RexLiteral));
         String alias = select.getRowType().getFieldNames().get(i++);
         ASTNode selectExpr = ASTBuilder.selectExpr(expr, alias);
         b.add(selectExpr);
@@ -631,6 +607,10 @@ public class ASTConverter {
       }
       List<AggregateCall> aggs = gBy.getAggCallList();
       for (AggregateCall agg : aggs) {
+        if (agg.getAggregation() == HiveGroupingID.INSTANCE) {
+          add(new ColumnInfo(null,VirtualColumn.GROUPINGID.getName()));
+          continue;
+        }
         int argCount = agg.getArgList().size();
         ASTBuilder b = agg.isDistinct() ? ASTBuilder.construct(HiveParser.TOK_FUNCTIONDI,
             "TOK_FUNCTIONDI") : argCount == 0 ? ASTBuilder.construct(HiveParser.TOK_FUNCTIONSTAR,
@@ -642,9 +622,6 @@ public class ASTConverter {
           b.add(iRef.accept(new RexVisitor(src)));
         }
         add(new ColumnInfo(null, b.node()));
-      }
-      if(gBy.indicator) {
-        add(new ColumnInfo(null,VirtualColumn.GROUPINGID.getName()));
       }
     }
 
