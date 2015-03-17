@@ -94,7 +94,6 @@ log "Server prepared."
 #
 
 execute_test() {
-	log "Executing sql test: $DB_SERVER/$(basename $1)"
 	if ! bash -x -e $SCRIPT_EXECUTE $1; then
 		log "Test failed: $DB_SERVER/$(basename $1)"
 		return 1
@@ -108,6 +107,8 @@ if [ ! -f $HIVE_SCHEMA_BASE ]; then
 	log "Error: $HIVE_SCHEMA_BASE is not found."
 	exit 1
 fi
+
+log "Calling $SCRIPT_EXECUTE ..."
 
 if ! execute_test $HIVE_SCHEMA_BASE; then
 	echo "Error: Cannot execute SQL file: $HIVE_SCHEMA_BASE"
@@ -124,3 +125,5 @@ do
 		fi
 	fi
 done
+
+log "Tests executed."

@@ -305,6 +305,7 @@ class JIRAService {
   private static final String FIELD_JIRA_URL = "jiraUrl";
   private static final String FIELD_REPO = "repository";
   private static final String FIELD_REPO_NAME = "repositoryName";
+  private static final String FIELD_REPO_TYPE = "repositoryType";
   private static final String FIELD_REPO_BRANCH = "branch";
   private static final String FIELD_NUM_TESTS_EXECUTED = "numTestsExecuted";
   private static final String FIELD_FAILED_TESTS = "failedTests";
@@ -323,6 +324,7 @@ class JIRAService {
       put(FIELD_JIRA_URL, String.class);
       put(FIELD_REPO, String.class);
       put(FIELD_REPO_NAME, String.class);
+      put(FIELD_REPO_TYPE, String.class);
       put(FIELD_REPO_BRANCH, String.class);
       put(FIELD_NUM_TESTS_EXECUTED, Integer.class);
       put(FIELD_FAILED_TESTS, SortedSet.class);
@@ -417,6 +419,7 @@ class JIRAService {
     context.put(FIELD_LOGS_URL, (String)jsonValues.get(FIELD_LOGS_URL));
     context.put(FIELD_REPO, (String)jsonValues.get(FIELD_REPO));
     context.put(FIELD_REPO_NAME, (String)jsonValues.get(FIELD_REPO_NAME));
+    context.put(FIELD_REPO_TYPE, (String)jsonValues.get(FIELD_REPO_TYPE));
     context.put(FIELD_REPO_BRANCH, (String)jsonValues.get(FIELD_REPO_BRANCH));
     context.put(FIELD_JENKINS_URL, (String)jsonValues.get(FIELD_JENKINS_URL));
 
