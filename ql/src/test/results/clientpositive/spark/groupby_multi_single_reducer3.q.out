@@ -1,9 +1,15 @@
 PREHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
+
+-- SORT_QUERY_RESULTS
+
 create table e1 (key string, count int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@e1
 POSTHOOK: query: -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
+
+-- SORT_QUERY_RESULTS
+
 create table e1 (key string, count int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -177,8 +183,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-200	2
 100	2
+200	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -349,8 +355,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-val_200	2
 val_100	2
+val_200	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -521,8 +527,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-200	2
 100	2
+200	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
@@ -693,8 +699,8 @@ POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
-val_200	2
 val_100	2
+val_200	2
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2

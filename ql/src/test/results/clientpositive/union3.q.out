@@ -1,4 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
@@ -18,7 +18,7 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
