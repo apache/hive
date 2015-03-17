@@ -7183,6 +7183,2009 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.FieldSchema)
   }
 
+  public interface FunctionOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string class_name = 1;
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    boolean hasClassName();
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    java.lang.String getClassName();
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getClassNameBytes();
+
+    // optional string owner_name = 2;
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    boolean hasOwnerName();
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    java.lang.String getOwnerName();
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getOwnerNameBytes();
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+     */
+    boolean hasOwnerType();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType getOwnerType();
+
+    // optional sint64 create_time = 4;
+    /**
+     * <code>optional sint64 create_time = 4;</code>
+     */
+    boolean hasCreateTime();
+    /**
+     * <code>optional sint64 create_time = 4;</code>
+     */
+    long getCreateTime();
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+     */
+    boolean hasFunctionType();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType getFunctionType();
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> 
+        getResourceUrisList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri getResourceUris(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    int getResourceUrisCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder> 
+        getResourceUrisOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder getResourceUrisOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Function}
+   */
+  public static final class Function extends
+      com.google.protobuf.GeneratedMessage
+      implements FunctionOrBuilder {
+    // Use Function.newBuilder() to construct.
+    private Function(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private Function(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final Function defaultInstance;
+    public static Function getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public Function getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Function(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              className_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              ownerName_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              int rawValue = input.readEnum();
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType value = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(3, rawValue);
+              } else {
+                bitField0_ |= 0x00000004;
+                ownerType_ = value;
+              }
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              createTime_ = input.readSInt64();
+              break;
+            }
+            case 40: {
+              int rawValue = input.readEnum();
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType value = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(5, rawValue);
+              } else {
+                bitField0_ |= 0x00000010;
+                functionType_ = value;
+              }
+              break;
+            }
+            case 50: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                resourceUris_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              resourceUris_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          resourceUris_ = java.util.Collections.unmodifiableList(resourceUris_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<Function> PARSER =
+        new com.google.protobuf.AbstractParser<Function>() {
+      public Function parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Function(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Function> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code org.apache.hadoop.hive.metastore.hbase.Function.FunctionType}
+     */
+    public enum FunctionType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>JAVA = 1;</code>
+       */
+      JAVA(0, 1),
+      ;
+
+      /**
+       * <code>JAVA = 1;</code>
+       */
+      public static final int JAVA_VALUE = 1;
+
+
+      public final int getNumber() { return value; }
+
+      public static FunctionType valueOf(int value) {
+        switch (value) {
+          case 1: return JAVA;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<FunctionType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<FunctionType>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<FunctionType>() {
+              public FunctionType findValueByNumber(int number) {
+                return FunctionType.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final FunctionType[] VALUES = values();
+
+      public static FunctionType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private FunctionType(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.metastore.hbase.Function.FunctionType)
+    }
+
+    public interface ResourceUriOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+       */
+      boolean hasResourceType();
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType getResourceType();
+
+      // required string uri = 2;
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      boolean hasUri();
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      java.lang.String getUri();
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      com.google.protobuf.ByteString
+          getUriBytes();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri}
+     */
+    public static final class ResourceUri extends
+        com.google.protobuf.GeneratedMessage
+        implements ResourceUriOrBuilder {
+      // Use ResourceUri.newBuilder() to construct.
+      private ResourceUri(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private ResourceUri(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final ResourceUri defaultInstance;
+      public static ResourceUri getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public ResourceUri getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private ResourceUri(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                int rawValue = input.readEnum();
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType value = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(1, rawValue);
+                } else {
+                  bitField0_ |= 0x00000001;
+                  resourceType_ = value;
+                }
+                break;
+              }
+              case 18: {
+                bitField0_ |= 0x00000002;
+                uri_ = input.readBytes();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<ResourceUri> PARSER =
+          new com.google.protobuf.AbstractParser<ResourceUri>() {
+        public ResourceUri parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ResourceUri(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<ResourceUri> getParserForType() {
+        return PARSER;
+      }
+
+      /**
+       * Protobuf enum {@code org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType}
+       */
+      public enum ResourceType
+          implements com.google.protobuf.ProtocolMessageEnum {
+        /**
+         * <code>JAR = 1;</code>
+         */
+        JAR(0, 1),
+        /**
+         * <code>FILE = 2;</code>
+         */
+        FILE(1, 2),
+        /**
+         * <code>ARCHIVE = 3;</code>
+         */
+        ARCHIVE(2, 3),
+        ;
+
+        /**
+         * <code>JAR = 1;</code>
+         */
+        public static final int JAR_VALUE = 1;
+        /**
+         * <code>FILE = 2;</code>
+         */
+        public static final int FILE_VALUE = 2;
+        /**
+         * <code>ARCHIVE = 3;</code>
+         */
+        public static final int ARCHIVE_VALUE = 3;
+
+
+        public final int getNumber() { return value; }
+
+        public static ResourceType valueOf(int value) {
+          switch (value) {
+            case 1: return JAR;
+            case 2: return FILE;
+            case 3: return ARCHIVE;
+            default: return null;
+          }
+        }
+
+        public static com.google.protobuf.Internal.EnumLiteMap<ResourceType>
+            internalGetValueMap() {
+          return internalValueMap;
+        }
+        private static com.google.protobuf.Internal.EnumLiteMap<ResourceType>
+            internalValueMap =
+              new com.google.protobuf.Internal.EnumLiteMap<ResourceType>() {
+                public ResourceType findValueByNumber(int number) {
+                  return ResourceType.valueOf(number);
+                }
+              };
+
+        public final com.google.protobuf.Descriptors.EnumValueDescriptor
+            getValueDescriptor() {
+          return getDescriptor().getValues().get(index);
+        }
+        public final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptorForType() {
+          return getDescriptor();
+        }
+        public static final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.getDescriptor().getEnumTypes().get(0);
+        }
+
+        private static final ResourceType[] VALUES = values();
+
+        public static ResourceType valueOf(
+            com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+          if (desc.getType() != getDescriptor()) {
+            throw new java.lang.IllegalArgumentException(
+              "EnumValueDescriptor is not for this type.");
+          }
+          return VALUES[desc.getIndex()];
+        }
+
+        private final int index;
+        private final int value;
+
+        private ResourceType(int index, int value) {
+          this.index = index;
+          this.value = value;
+        }
+
+        // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType)
+      }
+
+      private int bitField0_;
+      // required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;
+      public static final int RESOURCE_TYPE_FIELD_NUMBER = 1;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType resourceType_;
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+       */
+      public boolean hasResourceType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType getResourceType() {
+        return resourceType_;
+      }
+
+      // required string uri = 2;
+      public static final int URI_FIELD_NUMBER = 2;
+      private java.lang.Object uri_;
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      public boolean hasUri() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      public java.lang.String getUri() {
+        java.lang.Object ref = uri_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            uri_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string uri = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUriBytes() {
+        java.lang.Object ref = uri_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          uri_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      private void initFields() {
+        resourceType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType.JAR;
+        uri_ = "";
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasResourceType()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasUri()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeEnum(1, resourceType_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBytes(2, getUriBytes());
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(1, resourceType_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(2, getUriBytes());
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          resourceType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType.JAR;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          uri_ = "";
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.resourceType_ = resourceType_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.uri_ = uri_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.getDefaultInstance()) return this;
+          if (other.hasResourceType()) {
+            setResourceType(other.getResourceType());
+          }
+          if (other.hasUri()) {
+            bitField0_ |= 0x00000002;
+            uri_ = other.uri_;
+            onChanged();
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasResourceType()) {
+            
+            return false;
+          }
+          if (!hasUri()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;
+        private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType resourceType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType.JAR;
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+         */
+        public boolean hasResourceType() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType getResourceType() {
+          return resourceType_;
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+         */
+        public Builder setResourceType(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000001;
+          resourceType_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri.ResourceType resource_type = 1;</code>
+         */
+        public Builder clearResourceType() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          resourceType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.ResourceType.JAR;
+          onChanged();
+          return this;
+        }
+
+        // required string uri = 2;
+        private java.lang.Object uri_ = "";
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public boolean hasUri() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public java.lang.String getUri() {
+          java.lang.Object ref = uri_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            uri_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public com.google.protobuf.ByteString
+            getUriBytes() {
+          java.lang.Object ref = uri_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            uri_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public Builder setUri(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          uri_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public Builder clearUri() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          uri_ = getDefaultInstance().getUri();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string uri = 2;</code>
+         */
+        public Builder setUriBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          uri_ = value;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri)
+      }
+
+      static {
+        defaultInstance = new ResourceUri(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri)
+    }
+
+    private int bitField0_;
+    // optional string class_name = 1;
+    public static final int CLASS_NAME_FIELD_NUMBER = 1;
+    private java.lang.Object className_;
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    public boolean hasClassName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    public java.lang.String getClassName() {
+      java.lang.Object ref = className_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          className_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string class_name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getClassNameBytes() {
+      java.lang.Object ref = className_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        className_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string owner_name = 2;
+    public static final int OWNER_NAME_FIELD_NUMBER = 2;
+    private java.lang.Object ownerName_;
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    public boolean hasOwnerName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    public java.lang.String getOwnerName() {
+      java.lang.Object ref = ownerName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          ownerName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string owner_name = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getOwnerNameBytes() {
+      java.lang.Object ref = ownerName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        ownerName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;
+    public static final int OWNER_TYPE_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType ownerType_;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+     */
+    public boolean hasOwnerType() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType getOwnerType() {
+      return ownerType_;
+    }
+
+    // optional sint64 create_time = 4;
+    public static final int CREATE_TIME_FIELD_NUMBER = 4;
+    private long createTime_;
+    /**
+     * <code>optional sint64 create_time = 4;</code>
+     */
+    public boolean hasCreateTime() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional sint64 create_time = 4;</code>
+     */
+    public long getCreateTime() {
+      return createTime_;
+    }
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;
+    public static final int FUNCTION_TYPE_FIELD_NUMBER = 5;
+    private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType functionType_;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+     */
+    public boolean hasFunctionType() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType getFunctionType() {
+      return functionType_;
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;
+    public static final int RESOURCE_URIS_FIELD_NUMBER = 6;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> resourceUris_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> getResourceUrisList() {
+      return resourceUris_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder> 
+        getResourceUrisOrBuilderList() {
+      return resourceUris_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    public int getResourceUrisCount() {
+      return resourceUris_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri getResourceUris(int index) {
+      return resourceUris_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder getResourceUrisOrBuilder(
+        int index) {
+      return resourceUris_.get(index);
+    }
+
+    private void initFields() {
+      className_ = "";
+      ownerName_ = "";
+      ownerType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType.USER;
+      createTime_ = 0L;
+      functionType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType.JAVA;
+      resourceUris_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getResourceUrisCount(); i++) {
+        if (!getResourceUris(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getClassNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getOwnerNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeEnum(3, ownerType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeSInt64(4, createTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeEnum(5, functionType_.getNumber());
+      }
+      for (int i = 0; i < resourceUris_.size(); i++) {
+        output.writeMessage(6, resourceUris_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getClassNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getOwnerNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(3, ownerType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSInt64Size(4, createTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(5, functionType_.getNumber());
+      }
+      for (int i = 0; i < resourceUris_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, resourceUris_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Function}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.FunctionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getResourceUrisFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        className_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        ownerName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        ownerType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType.USER;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        createTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        functionType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType.JAVA;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        if (resourceUrisBuilder_ == null) {
+          resourceUris_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+        } else {
+          resourceUrisBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.className_ = className_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.ownerName_ = ownerName_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.ownerType_ = ownerType_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.createTime_ = createTime_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.functionType_ = functionType_;
+        if (resourceUrisBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            resourceUris_ = java.util.Collections.unmodifiableList(resourceUris_);
+            bitField0_ = (bitField0_ & ~0x00000020);
+          }
+          result.resourceUris_ = resourceUris_;
+        } else {
+          result.resourceUris_ = resourceUrisBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.getDefaultInstance()) return this;
+        if (other.hasClassName()) {
+          bitField0_ |= 0x00000001;
+          className_ = other.className_;
+          onChanged();
+        }
+        if (other.hasOwnerName()) {
+          bitField0_ |= 0x00000002;
+          ownerName_ = other.ownerName_;
+          onChanged();
+        }
+        if (other.hasOwnerType()) {
+          setOwnerType(other.getOwnerType());
+        }
+        if (other.hasCreateTime()) {
+          setCreateTime(other.getCreateTime());
+        }
+        if (other.hasFunctionType()) {
+          setFunctionType(other.getFunctionType());
+        }
+        if (resourceUrisBuilder_ == null) {
+          if (!other.resourceUris_.isEmpty()) {
+            if (resourceUris_.isEmpty()) {
+              resourceUris_ = other.resourceUris_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+            } else {
+              ensureResourceUrisIsMutable();
+              resourceUris_.addAll(other.resourceUris_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.resourceUris_.isEmpty()) {
+            if (resourceUrisBuilder_.isEmpty()) {
+              resourceUrisBuilder_.dispose();
+              resourceUrisBuilder_ = null;
+              resourceUris_ = other.resourceUris_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+              resourceUrisBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getResourceUrisFieldBuilder() : null;
+            } else {
+              resourceUrisBuilder_.addAllMessages(other.resourceUris_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getResourceUrisCount(); i++) {
+          if (!getResourceUris(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string class_name = 1;
+      private java.lang.Object className_ = "";
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public boolean hasClassName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public java.lang.String getClassName() {
+        java.lang.Object ref = className_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          className_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getClassNameBytes() {
+        java.lang.Object ref = className_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          className_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public Builder setClassName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        className_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public Builder clearClassName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        className_ = getDefaultInstance().getClassName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string class_name = 1;</code>
+       */
+      public Builder setClassNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        className_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string owner_name = 2;
+      private java.lang.Object ownerName_ = "";
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public boolean hasOwnerName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public java.lang.String getOwnerName() {
+        java.lang.Object ref = ownerName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          ownerName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getOwnerNameBytes() {
+        java.lang.Object ref = ownerName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          ownerName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public Builder setOwnerName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        ownerName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public Builder clearOwnerName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        ownerName_ = getDefaultInstance().getOwnerName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string owner_name = 2;</code>
+       */
+      public Builder setOwnerNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        ownerName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType ownerType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType.USER;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+       */
+      public boolean hasOwnerType() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType getOwnerType() {
+        return ownerType_;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+       */
+      public Builder setOwnerType(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
+        ownerType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PrincipalType owner_type = 3;</code>
+       */
+      public Builder clearOwnerType() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        ownerType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalType.USER;
+        onChanged();
+        return this;
+      }
+
+      // optional sint64 create_time = 4;
+      private long createTime_ ;
+      /**
+       * <code>optional sint64 create_time = 4;</code>
+       */
+      public boolean hasCreateTime() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional sint64 create_time = 4;</code>
+       */
+      public long getCreateTime() {
+        return createTime_;
+      }
+      /**
+       * <code>optional sint64 create_time = 4;</code>
+       */
+      public Builder setCreateTime(long value) {
+        bitField0_ |= 0x00000008;
+        createTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional sint64 create_time = 4;</code>
+       */
+      public Builder clearCreateTime() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        createTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType functionType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType.JAVA;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+       */
+      public boolean hasFunctionType() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType getFunctionType() {
+        return functionType_;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+       */
+      public Builder setFunctionType(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000010;
+        functionType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Function.FunctionType function_type = 5;</code>
+       */
+      public Builder clearFunctionType() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        functionType_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.FunctionType.JAVA;
+        onChanged();
+        return this;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> resourceUris_ =
+        java.util.Collections.emptyList();
+      private void ensureResourceUrisIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          resourceUris_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri>(resourceUris_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder> resourceUrisBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> getResourceUrisList() {
+        if (resourceUrisBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(resourceUris_);
+        } else {
+          return resourceUrisBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public int getResourceUrisCount() {
+        if (resourceUrisBuilder_ == null) {
+          return resourceUris_.size();
+        } else {
+          return resourceUrisBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri getResourceUris(int index) {
+        if (resourceUrisBuilder_ == null) {
+          return resourceUris_.get(index);
+        } else {
+          return resourceUrisBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder setResourceUris(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri value) {
+        if (resourceUrisBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResourceUrisIsMutable();
+          resourceUris_.set(index, value);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder setResourceUris(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder builderForValue) {
+        if (resourceUrisBuilder_ == null) {
+          ensureResourceUrisIsMutable();
+          resourceUris_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          resourceUrisBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder addResourceUris(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri value) {
+        if (resourceUrisBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResourceUrisIsMutable();
+          resourceUris_.add(value);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder addResourceUris(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri value) {
+        if (resourceUrisBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResourceUrisIsMutable();
+          resourceUris_.add(index, value);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder addResourceUris(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder builderForValue) {
+        if (resourceUrisBuilder_ == null) {
+          ensureResourceUrisIsMutable();
+          resourceUris_.add(builderForValue.build());
+          onChanged();
+        } else {
+          resourceUrisBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder addResourceUris(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder builderForValue) {
+        if (resourceUrisBuilder_ == null) {
+          ensureResourceUrisIsMutable();
+          resourceUris_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          resourceUrisBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder addAllResourceUris(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri> values) {
+        if (resourceUrisBuilder_ == null) {
+          ensureResourceUrisIsMutable();
+          super.addAll(values, resourceUris_);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder clearResourceUris() {
+        if (resourceUrisBuilder_ == null) {
+          resourceUris_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public Builder removeResourceUris(int index) {
+        if (resourceUrisBuilder_ == null) {
+          ensureResourceUrisIsMutable();
+          resourceUris_.remove(index);
+          onChanged();
+        } else {
+          resourceUrisBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder getResourceUrisBuilder(
+          int index) {
+        return getResourceUrisFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder getResourceUrisOrBuilder(
+          int index) {
+        if (resourceUrisBuilder_ == null) {
+          return resourceUris_.get(index);  } else {
+          return resourceUrisBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder> 
+           getResourceUrisOrBuilderList() {
+        if (resourceUrisBuilder_ != null) {
+          return resourceUrisBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(resourceUris_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder addResourceUrisBuilder() {
+        return getResourceUrisFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder addResourceUrisBuilder(
+          int index) {
+        return getResourceUrisFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.Function.ResourceUri resource_uris = 6;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder> 
+           getResourceUrisBuilderList() {
+        return getResourceUrisFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder> 
+          getResourceUrisFieldBuilder() {
+        if (resourceUrisBuilder_ == null) {
+          resourceUrisBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUri.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Function.ResourceUriOrBuilder>(
+                  resourceUris_,
+                  ((bitField0_ & 0x00000020) == 0x00000020),
+                  getParentForChildren(),
+                  isClean());
+          resourceUris_ = null;
+        }
+        return resourceUrisBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.Function)
+    }
+
+    static {
+      defaultInstance = new Function(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Function)
+  }
+
   public interface ParameterEntryOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -23864,6 +25867,16 @@ public final class HbaseMetastoreProto {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -23995,80 +26008,93 @@ public final class HbaseMetastoreProto {
       "type\030\006 \001(\01625.org.apache.hadoop.hive.meta" +
       "store.hbase.PrincipalType\":\n\013FieldSchema" +
       "\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002 \002(\t\022\017\n\007comment\030" +
-      "\003 \001(\t\",\n\016ParameterEntry\022\013\n\003key\030\001 \002(\t\022\r\n\005" +
-      "value\030\002 \002(\t\"W\n\nParameters\022I\n\tparameter\030\001",
-      " \003(\01326.org.apache.hadoop.hive.metastore." +
-      "hbase.ParameterEntry\"\360\001\n\tPartition\022\023\n\013cr" +
-      "eate_time\030\001 \001(\003\022\030\n\020last_access_time\030\002 \001(" +
-      "\003\022\020\n\010location\030\003 \001(\t\022I\n\rsd_parameters\030\004 \001" +
-      "(\01322.org.apache.hadoop.hive.metastore.hb" +
-      "ase.Parameters\022\017\n\007sd_hash\030\005 \002(\014\022F\n\nparam" +
-      "eters\030\006 \001(\01322.org.apache.hadoop.hive.met" +
-      "astore.hbase.Parameters\"\204\001\n\032PrincipalPri" +
-      "vilegeSetEntry\022\026\n\016principal_name\030\001 \002(\t\022N" +
-      "\n\nprivileges\030\002 \003(\0132:.org.apache.hadoop.h",
-      "ive.metastore.hbase.PrivilegeGrantInfo\"\275" +
-      "\001\n\025PrincipalPrivilegeSet\022Q\n\005users\030\001 \003(\0132" +
-      "B.org.apache.hadoop.hive.metastore.hbase" +
-      ".PrincipalPrivilegeSetEntry\022Q\n\005roles\030\002 \003" +
-      "(\0132B.org.apache.hadoop.hive.metastore.hb" +
-      "ase.PrincipalPrivilegeSetEntry\"\260\001\n\022Privi" +
-      "legeGrantInfo\022\021\n\tprivilege\030\001 \001(\t\022\023\n\013crea" +
-      "te_time\030\002 \001(\003\022\017\n\007grantor\030\003 \001(\t\022K\n\014granto" +
-      "r_type\030\004 \001(\01625.org.apache.hadoop.hive.me" +
-      "tastore.hbase.PrincipalType\022\024\n\014grant_opt",
-      "ion\030\005 \001(\010\"\374\001\n\rRoleGrantInfo\022\026\n\016principal" +
-      "_name\030\001 \002(\t\022M\n\016principal_type\030\002 \002(\01625.or" +
-      "g.apache.hadoop.hive.metastore.hbase.Pri" +
-      "ncipalType\022\020\n\010add_time\030\003 \001(\003\022\017\n\007grantor\030" +
-      "\004 \001(\t\022K\n\014grantor_type\030\005 \001(\01625.org.apache" +
-      ".hadoop.hive.metastore.hbase.PrincipalTy" +
-      "pe\022\024\n\014grant_option\030\006 \001(\010\"^\n\021RoleGrantInf" +
-      "oList\022I\n\ngrant_info\030\001 \003(\01325.org.apache.h" +
-      "adoop.hive.metastore.hbase.RoleGrantInfo" +
-      "\"\030\n\010RoleList\022\014\n\004role\030\001 \003(\t\"/\n\004Role\022\023\n\013cr",
-      "eate_time\030\001 \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\254\010\n\021" +
-      "StorageDescriptor\022A\n\004cols\030\001 \003(\01323.org.ap" +
-      "ache.hadoop.hive.metastore.hbase.FieldSc" +
-      "hema\022\024\n\014input_format\030\002 \001(\t\022\025\n\routput_for" +
-      "mat\030\003 \001(\t\022\025\n\ris_compressed\030\004 \001(\010\022\023\n\013num_" +
-      "buckets\030\005 \001(\021\022W\n\nserde_info\030\006 \001(\0132C.org." +
-      "apache.hadoop.hive.metastore.hbase.Stora" +
-      "geDescriptor.SerDeInfo\022\023\n\013bucket_cols\030\007 " +
-      "\003(\t\022R\n\tsort_cols\030\010 \003(\0132?.org.apache.hado" +
-      "op.hive.metastore.hbase.StorageDescripto",
-      "r.Order\022Y\n\013skewed_info\030\t \001(\0132D.org.apach" +
-      "e.hadoop.hive.metastore.hbase.StorageDes" +
-      "criptor.SkewedInfo\022!\n\031stored_as_sub_dire" +
-      "ctories\030\n \001(\010\032.\n\005Order\022\023\n\013column_name\030\001 " +
-      "\002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|\n\tSerDeInfo\022\014\n\004na" +
-      "me\030\001 \001(\t\022\031\n\021serialization_lib\030\002 \001(\t\022F\n\np" +
-      "arameters\030\003 \001(\01322.org.apache.hadoop.hive" +
-      ".metastore.hbase.Parameters\032\214\003\n\nSkewedIn" +
-      "fo\022\030\n\020skewed_col_names\030\001 \003(\t\022r\n\021skewed_c" +
-      "ol_values\030\002 \003(\0132W.org.apache.hadoop.hive",
-      ".metastore.hbase.StorageDescriptor.Skewe" +
-      "dInfo.SkewedColValueList\022\206\001\n\036skewed_col_" +
-      "value_location_maps\030\003 \003(\0132^.org.apache.h" +
-      "adoop.hive.metastore.hbase.StorageDescri" +
-      "ptor.SkewedInfo.SkewedColValueLocationMa" +
-      "p\032.\n\022SkewedColValueList\022\030\n\020skewed_col_va" +
-      "lue\030\001 \003(\t\0327\n\031SkewedColValueLocationMap\022\013" +
-      "\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n\005" +
-      "owner\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003\022\030\n\020last" +
-      "_access_time\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020\n",
-      "\010location\030\005 \001(\t\022I\n\rsd_parameters\030\006 \001(\01322" +
+      "\003 \001(\t\"\206\004\n\010Function\022\022\n\nclass_name\030\001 \001(\t\022\022" +
+      "\n\nowner_name\030\002 \001(\t\022I\n\nowner_type\030\003 \001(\01625",
       ".org.apache.hadoop.hive.metastore.hbase." +
-      "Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K\n\016partition" +
-      "_keys\030\010 \003(\01323.org.apache.hadoop.hive.met" +
-      "astore.hbase.FieldSchema\022F\n\nparameters\030\t" +
-      " \001(\01322.org.apache.hadoop.hive.metastore." +
-      "hbase.Parameters\022\032\n\022view_original_text\030\n" +
-      " \001(\t\022\032\n\022view_expanded_text\030\013 \001(\t\022\022\n\ntabl" +
-      "e_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\0132=.org.a" +
-      "pache.hadoop.hive.metastore.hbase.Princi",
-      "palPrivilegeSet\022\024\n\014is_temporary\030\016 \001(\010*#\n" +
-      "\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
+      "PrincipalType\022\023\n\013create_time\030\004 \001(\022\022T\n\rfu" +
+      "nction_type\030\005 \001(\0162=.org.apache.hadoop.hi" +
+      "ve.metastore.hbase.Function.FunctionType" +
+      "\022S\n\rresource_uris\030\006 \003(\0132<.org.apache.had" +
+      "oop.hive.metastore.hbase.Function.Resour" +
+      "ceUri\032\254\001\n\013ResourceUri\022`\n\rresource_type\030\001" +
+      " \002(\0162I.org.apache.hadoop.hive.metastore." +
+      "hbase.Function.ResourceUri.ResourceType\022" +
+      "\013\n\003uri\030\002 \002(\t\".\n\014ResourceType\022\007\n\003JAR\020\001\022\010\n",
+      "\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014FunctionType\022\010\n\004" +
+      "JAVA\020\001\",\n\016ParameterEntry\022\013\n\003key\030\001 \002(\t\022\r\n" +
+      "\005value\030\002 \002(\t\"W\n\nParameters\022I\n\tparameter\030" +
+      "\001 \003(\01326.org.apache.hadoop.hive.metastore" +
+      ".hbase.ParameterEntry\"\360\001\n\tPartition\022\023\n\013c" +
+      "reate_time\030\001 \001(\003\022\030\n\020last_access_time\030\002 \001" +
+      "(\003\022\020\n\010location\030\003 \001(\t\022I\n\rsd_parameters\030\004 " +
+      "\001(\01322.org.apache.hadoop.hive.metastore.h" +
+      "base.Parameters\022\017\n\007sd_hash\030\005 \002(\014\022F\n\npara" +
+      "meters\030\006 \001(\01322.org.apache.hadoop.hive.me",
+      "tastore.hbase.Parameters\"\204\001\n\032PrincipalPr" +
+      "ivilegeSetEntry\022\026\n\016principal_name\030\001 \002(\t\022" +
+      "N\n\nprivileges\030\002 \003(\0132:.org.apache.hadoop." +
+      "hive.metastore.hbase.PrivilegeGrantInfo\"" +
+      "\275\001\n\025PrincipalPrivilegeSet\022Q\n\005users\030\001 \003(\013" +
+      "2B.org.apache.hadoop.hive.metastore.hbas" +
+      "e.PrincipalPrivilegeSetEntry\022Q\n\005roles\030\002 " +
+      "\003(\0132B.org.apache.hadoop.hive.metastore.h" +
+      "base.PrincipalPrivilegeSetEntry\"\260\001\n\022Priv" +
+      "ilegeGrantInfo\022\021\n\tprivilege\030\001 \001(\t\022\023\n\013cre",
+      "ate_time\030\002 \001(\003\022\017\n\007grantor\030\003 \001(\t\022K\n\014grant" +
+      "or_type\030\004 \001(\01625.org.apache.hadoop.hive.m" +
+      "etastore.hbase.PrincipalType\022\024\n\014grant_op" +
+      "tion\030\005 \001(\010\"\374\001\n\rRoleGrantInfo\022\026\n\016principa" +
+      "l_name\030\001 \002(\t\022M\n\016principal_type\030\002 \002(\01625.o" +
+      "rg.apache.hadoop.hive.metastore.hbase.Pr" +
+      "incipalType\022\020\n\010add_time\030\003 \001(\003\022\017\n\007grantor" +
+      "\030\004 \001(\t\022K\n\014grantor_type\030\005 \001(\01625.org.apach" +
+      "e.hadoop.hive.metastore.hbase.PrincipalT" +
+      "ype\022\024\n\014grant_option\030\006 \001(\010\"^\n\021RoleGrantIn",
+      "foList\022I\n\ngrant_info\030\001 \003(\01325.org.apache." +
+      "hadoop.hive.metastore.hbase.RoleGrantInf" +
+      "o\"\030\n\010RoleList\022\014\n\004role\030\001 \003(\t\"/\n\004Role\022\023\n\013c" +
+      "reate_time\030\001 \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\254\010\n" +
+      "\021StorageDescriptor\022A\n\004cols\030\001 \003(\01323.org.a" +
+      "pache.hadoop.hive.metastore.hbase.FieldS" +
+      "chema\022\024\n\014input_format\030\002 \001(\t\022\025\n\routput_fo" +
+      "rmat\030\003 \001(\t\022\025\n\ris_compressed\030\004 \001(\010\022\023\n\013num" +
+      "_buckets\030\005 \001(\021\022W\n\nserde_info\030\006 \001(\0132C.org" +
+      ".apache.hadoop.hive.metastore.hbase.Stor",
+      "ageDescriptor.SerDeInfo\022\023\n\013bucket_cols\030\007" +
+      " \003(\t\022R\n\tsort_cols\030\010 \003(\0132?.org.apache.had" +
+      "oop.hive.metastore.hbase.StorageDescript" +
+      "or.Order\022Y\n\013skewed_info\030\t \001(\0132D.org.apac" +
+      "he.hadoop.hive.metastore.hbase.StorageDe" +
+      "scriptor.SkewedInfo\022!\n\031stored_as_sub_dir" +
+      "ectories\030\n \001(\010\032.\n\005Order\022\023\n\013column_name\030\001" +
+      " \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|\n\tSerDeInfo\022\014\n\004n" +
+      "ame\030\001 \001(\t\022\031\n\021serialization_lib\030\002 \001(\t\022F\n\n" +
+      "parameters\030\003 \001(\01322.org.apache.hadoop.hiv",
+      "e.metastore.hbase.Parameters\032\214\003\n\nSkewedI" +
+      "nfo\022\030\n\020skewed_col_names\030\001 \003(\t\022r\n\021skewed_" +
+      "col_values\030\002 \003(\0132W.org.apache.hadoop.hiv" +
+      "e.metastore.hbase.StorageDescriptor.Skew" +
+      "edInfo.SkewedColValueList\022\206\001\n\036skewed_col" +
+      "_value_location_maps\030\003 \003(\0132^.org.apache." +
+      "hadoop.hive.metastore.hbase.StorageDescr" +
+      "iptor.SkewedInfo.SkewedColValueLocationM" +
+      "ap\032.\n\022SkewedColValueList\022\030\n\020skewed_col_v" +
+      "alue\030\001 \003(\t\0327\n\031SkewedColValueLocationMap\022",
+      "\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n" +
+      "\005owner\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003\022\030\n\020las" +
+      "t_access_time\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020" +
+      "\n\010location\030\005 \001(\t\022I\n\rsd_parameters\030\006 \001(\0132" +
+      "2.org.apache.hadoop.hive.metastore.hbase" +
+      ".Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K\n\016partitio" +
+      "n_keys\030\010 \003(\01323.org.apache.hadoop.hive.me" +
+      "tastore.hbase.FieldSchema\022F\n\nparameters\030" +
+      "\t \001(\01322.org.apache.hadoop.hive.metastore" +
+      ".hbase.Parameters\022\032\n\022view_original_text\030",
+      "\n \001(\t\022\032\n\022view_expanded_text\030\013 \001(\t\022\022\n\ntab" +
+      "le_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\0132=.org." +
+      "apache.hadoop.hive.metastore.hbase.Princ" +
+      "ipalPrivilegeSet\022\024\n\014is_temporary\030\016 \001(\010*#" +
+      "\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -24129,68 +26155,80 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor,
               new java.lang.String[] { "Name", "Type", "Comment", });
-          internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor =
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor =
             getDescriptor().getMessageTypes().get(3);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor,
+              new java.lang.String[] { "ClassName", "OwnerName", "OwnerType", "CreateTime", "FunctionType", "ResourceUris", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor,
+              new java.lang.String[] { "ResourceType", "Uri", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor =
+            getDescriptor().getMessageTypes().get(4);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor =
-            getDescriptor().getMessageTypes().get(4);
+            getDescriptor().getMessageTypes().get(5);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor,
               new java.lang.String[] { "Parameter", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor,
               new java.lang.String[] { "CreateTime", "LastAccessTime", "Location", "SdParameters", "SdHash", "Parameters", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor,
               new java.lang.String[] { "PrincipalName", "Privileges", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor,
               new java.lang.String[] { "Users", "Roles", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor,
               new java.lang.String[] { "Privilege", "CreateTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor,
               new java.lang.String[] { "PrincipalName", "PrincipalType", "AddTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor,
               new java.lang.String[] { "GrantInfo", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor,
               new java.lang.String[] { "Role", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor,
               new java.lang.String[] { "CreateTime", "OwnerName", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor,
@@ -24226,7 +26264,7 @@ public final class HbaseMetastoreProto {
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_SkewedInfo_SkewedColValueLocationMap_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,

@@ -28,7 +28,12 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -63,6 +68,7 @@ public class TestHBaseImport {
   private static HTableInterface sdTable;
   private static HTableInterface partTable;
   private static HTableInterface dbTable;
+  private static HTableInterface funcTable;
   private static HTableInterface roleTable;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
 
@@ -84,6 +90,8 @@ public class TestHBaseImport {
         families);
     dbTable = utility.createTable(HBaseReadWrite.DB_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
+    funcTable = utility.createTable(HBaseReadWrite.FUNC_TABLE.getBytes(HBaseUtils.ENCODING),
+                                  HBaseReadWrite.CATALOG_CF);
     roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
   }
@@ -100,6 +108,7 @@ public class TestHBaseImport {
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.FUNC_TABLE)).thenReturn(funcTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
     conf = new HiveConf();
     // Turn off caching, as we want to test actual interaction with HBase
@@ -120,6 +129,7 @@ public class TestHBaseImport {
     String[] dbNames = new String[] {"importdb1", "importdb2"};
     String[] tableNames = new String[] {"nonparttable", "parttable"};
     String[] partVals = new String[] {"na", "emea", "latam", "apac"};
+    String[] funcNames = new String[] {"func1", "func2"};
     String[] roles = new String[] {"role1", "role2"};
     int now = (int)System.currentTimeMillis() / 1000;
 
@@ -149,6 +159,12 @@ public class TestHBaseImport {
         Partition part = new Partition(Arrays.asList(partVals[j]), dbNames[i], tableNames[1],
             now, now, psd, emptyParameters);
         store.addPartition(part);
+      }
+
+      for (String funcName : funcNames) {
+        store.createFunction(new Function(funcName, dbNames[i], "classname", "ownername",
+            PrincipalType.USER, (int)System.currentTimeMillis()/1000, FunctionType.JAVA,
+            Arrays.asList(new ResourceUri(ResourceType.JAR, "uri"))));
       }
     }
 
@@ -187,7 +203,10 @@ public class TestHBaseImport {
       Assert.assertEquals(4, store.getPartitions(dbNames[i], tableNames[1], -1).size());
       Assert.assertEquals(2, store.getAllTables(dbNames[i]).size());
 
-
+      Assert.assertEquals(2, store.getFunctions(dbNames[i], "*").size());
+      for (int j = 0; j < funcNames.length; j++) {
+        Assert.assertNotNull(store.getFunction(dbNames[i], funcNames[j]));
+      }
     }
 
     Assert.assertEquals(2, store.getAllDatabases().size());

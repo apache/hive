@@ -42,10 +42,15 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -133,6 +138,70 @@ public class TestHBaseStore {
     store.dropDatabase(dbname);
     thrown.expect(NoSuchObjectException.class);
     store.getDatabase(dbname);
+  }
+
+  @Test
+  public void createFunction() throws Exception {
+    String dbname = "default";
+    String funcName = "createfunc";
+    int now = (int)(System.currentTimeMillis()/ 1000);
+    Function func = new Function(funcName, dbname, "o.a.h.h.myfunc", "me", PrincipalType.USER,
+        now, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR,
+        "file:/tmp/somewhere")));
+    store.createFunction(func);
+
+    Function f = store.getFunction(dbname, funcName);
+    Assert.assertEquals(dbname, f.getDbName());
+    Assert.assertEquals(funcName, f.getFunctionName());
+    Assert.assertEquals("o.a.h.h.myfunc", f.getClassName());
+    Assert.assertEquals("me", f.getOwnerName());
+    Assert.assertEquals(PrincipalType.USER, f.getOwnerType());
+    Assert.assertTrue(now <= f.getCreateTime());
+    Assert.assertEquals(FunctionType.JAVA, f.getFunctionType());
+    Assert.assertEquals(1, f.getResourceUrisSize());
+    Assert.assertEquals(ResourceType.JAR, f.getResourceUris().get(0).getResourceType());
+    Assert.assertEquals("file:/tmp/somewhere", f.getResourceUris().get(0).getUri());
+  }
+
+  @Test
+  public void alterFunction() throws Exception {
+    String dbname = "default";
+    String funcName = "alterfunc";
+    int now = (int)(System.currentTimeMillis()/ 1000);
+    List<ResourceUri> uris = new ArrayList<ResourceUri>();
+    uris.add(new ResourceUri(ResourceType.FILE, "whatever"));
+    Function func = new Function(funcName, dbname, "o.a.h.h.myfunc", "me", PrincipalType.USER,
+        now, FunctionType.JAVA, uris);
+    store.createFunction(func);
+
+    Function f = store.getFunction(dbname, funcName);
+    Assert.assertEquals(ResourceType.FILE, f.getResourceUris().get(0).getResourceType());
+
+    func.addToResourceUris(new ResourceUri(ResourceType.ARCHIVE, "file"));
+    store.alterFunction(dbname, funcName, func);
+
+    f = store.getFunction(dbname, funcName);
+    Assert.assertEquals(2, f.getResourceUrisSize());
+    Assert.assertEquals(ResourceType.FILE, f.getResourceUris().get(0).getResourceType());
+    Assert.assertEquals(ResourceType.ARCHIVE, f.getResourceUris().get(1).getResourceType());
+
+  }
+
+  @Test
+  public void dropFunction() throws Exception {
+    String dbname = "default";
+    String funcName = "delfunc";
+    int now = (int)(System.currentTimeMillis()/ 1000);
+    Function func = new Function(funcName, dbname, "o.a.h.h.myfunc", "me", PrincipalType.USER,
+        now, FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, "file:/tmp/somewhere")));
+    store.createFunction(func);
+
+    Function f = store.getFunction(dbname, funcName);
+    Assert.assertNotNull(f);
+
+    store.dropFunction(dbname, funcName);
+    //thrown.expect(NoSuchObjectException.class);
+    Assert.assertNull(store.getFunction(dbname, funcName));
   }
 
   @Test

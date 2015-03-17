@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -46,7 +47,8 @@ import java.util.List;
  */
 public class HBaseSchemaTool {
 
-  private static String[] commands = {"db", "part", "parts", "role", "table", "install"};
+  private static String[] commands = {"db", "part", "parts", "role", "table", "function",
+                                      "install"};
 
   public static void main(String[] args) throws Exception {
     Options options = new Options();
@@ -62,6 +64,12 @@ public class HBaseSchemaTool {
         .withDescription("Database name")
         .hasArg()
         .create('d'));
+
+    options.addOption(OptionBuilder
+        .withLongOpt("function")
+        .withDescription("Function name")
+        .hasArg()
+        .create('f'));
 
     options.addOption(OptionBuilder
         .withLongOpt("help")
@@ -122,7 +130,7 @@ public class HBaseSchemaTool {
     }
 
     HBaseSchemaTool tool = new HBaseSchemaTool(cli.getOptionValue('d'), cli.getOptionValue('t'),
-        parts, cli.getOptionValue('r'), cols, cli.hasOption('s'));
+        parts, cli.getOptionValue('f'), cli.getOptionValue('r'), cols, cli.hasOption('s'));
     Method method = tool.getClass().getMethod(cmd);
     method.invoke(tool);
 
@@ -131,17 +139,19 @@ public class HBaseSchemaTool {
 
   private HBaseReadWrite hrw;
   private String dbName;
+  private String funcName;
   private String tableName;
   private List<String> partVals;
   private String roleName;
   private List<String> colNames;
   private boolean hasStats;
 
-  private HBaseSchemaTool(String dbname, String tn, List<String> pv, String rn, List<String> cn,
-                          boolean s) {
+  private HBaseSchemaTool(String dbname, String tn, List<String> pv, String fn, String rn,
+                          List<String> cn, boolean s) {
     dbName = dbname;
     tableName = tn;
     partVals = pv;
+    funcName = fn;
     roleName = rn;
     colNames = cn;
     hasStats = s;
@@ -210,6 +220,12 @@ public class HBaseSchemaTool {
       if (table == null) System.err.println("No such table: " + dbName + "." + tableName);
       else dump(table);
     }
+  }
+
+  public void function() throws IOException, TException {
+    Function func = hrw.getFunction(dbName, funcName);
+    if (func == null) System.err.println("No such function: " + dbName + "." + funcName);
+    else dump(func);
   }
 
   private void dump(TBase thriftObj) throws TException {

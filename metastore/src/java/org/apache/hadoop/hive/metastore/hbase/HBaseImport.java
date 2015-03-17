@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -76,11 +77,13 @@ public class HBaseImport {
   @VisibleForTesting
   void run() throws MetaException, InstantiationException, IllegalAccessException,
       NoSuchObjectException, InvalidObjectException {
+    // Order here is crucial, as you can't add tables until you've added databases, etc.
     init();
     copyRoles();
     copyDbs();
     copyTables();
     copyPartitions();
+    copyFunctions();
   }
 
   private void init() throws MetaException, IllegalAccessException, InstantiationException {
@@ -150,6 +153,18 @@ public class HBaseImport {
         hbaseStore.addPartition(part);
       }
       System.out.println();
+    }
+  }
+
+  private void copyFunctions() throws MetaException, NoSuchObjectException, InvalidObjectException {
+    screen("Copying functions");
+    for (Database db : dbs) {
+      screen("Copying functions in database " + db.getName());
+      for (String funcName : rdbmsStore.getFunctions(db.getName(), "*")) {
+        Function func = rdbmsStore.getFunction(db.getName(), funcName);
+        screen("Copying function " + db.getName() + "." + funcName);
+        hbaseStore.createFunction(func);
+      }
     }
   }
 

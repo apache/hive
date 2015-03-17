@@ -144,7 +144,7 @@ public class HBaseStore implements RawStore {
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
-      throw new MetaException("Unable to drop database " + dbname);
+      throw new MetaException("Unable to drop database " + e.getMessage());
     }
   }
 
@@ -1492,29 +1492,57 @@ public class HBaseStore implements RawStore {
 
   @Override
   public void createFunction(Function func) throws InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      getHBase().putFunction(func);
+    } catch (IOException e) {
+      LOG.error("Unable to create function", e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public void alterFunction(String dbName, String funcName, Function newFunction) throws
       InvalidObjectException, MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      getHBase().putFunction(newFunction);
+    } catch (IOException e) {
+      LOG.error("Unable to alter function ", e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public void dropFunction(String dbName, String funcName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    throw new UnsupportedOperationException();
+    try {
+      getHBase().deleteFunction(dbName, funcName);
+    } catch (IOException e) {
+      LOG.error("Unable to delete function" + e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public Function getFunction(String dbName, String funcName) throws MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      return getHBase().getFunction(dbName, funcName);
+    } catch (IOException e) {
+      LOG.error("Unable to get function" + e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public List<String> getFunctions(String dbName, String pattern) throws MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      List<Function> funcs = getHBase().scanFunctions(dbName, likeToRegex(pattern));
+      List<String> funcNames = new ArrayList<String>(funcs.size());
+      for (Function func : funcs) funcNames.add(func.getFunctionName());
+      return funcNames;
+    } catch (IOException e) {
+      LOG.error("Unable to get functions" + e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override

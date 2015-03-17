@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -69,6 +70,7 @@ import java.util.Set;
 class HBaseReadWrite {
 
   @VisibleForTesting final static String DB_TABLE = "HBMS_DBS";
+  @VisibleForTesting final static String FUNC_TABLE = "HBMS_FUNCS";
   @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "HBMS_GLOBAL_PRIVS";
   @VisibleForTesting final static String PART_TABLE = "HBMS_PARTITIONS";
   @VisibleForTesting final static String ROLE_TABLE = "HBMS_ROLES";
@@ -87,7 +89,7 @@ class HBaseReadWrite {
   @VisibleForTesting final static String TEST_CONN = "test_connection";
   private static HBaseConnection testConn;
 
-  private final static String[] tableNames = { DB_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
+  private final static String[] tableNames = { DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
       USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
   static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
 
@@ -336,6 +338,73 @@ class HBaseReadWrite {
   void deleteDb(String name) throws IOException {
     byte[] key = HBaseUtils.buildKey(name);
     delete(DB_TABLE, key, null, null);
+  }
+
+  /**********************************************************************************************
+   * Function related methods
+   *********************************************************************************************/
+
+  /**
+   * Fetch a function object
+   * @param dbName name of the database the function is in
+   * @param functionName name of the function to fetch
+   * @return the function object, or null if there is no such function
+   * @throws IOException
+   */
+  Function getFunction(String dbName, String functionName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, functionName);
+    byte[] serialized = read(FUNC_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeFunction(dbName, functionName, serialized);
+  }
+
+  /**
+   * Get a list of functions.
+   * @param dbName Name of the database to search in.
+   * @param regex Regular expression to use in searching for function names.  It is expected to
+   *              be a Java regular expression.  If it is null then all functions will be returned.
+   * @return list of functions matching the regular expression.
+   * @throws IOException
+   */
+  List<Function> scanFunctions(String dbName, String regex) throws IOException {
+    byte[] keyPrefix = null;
+    if (dbName != null) {
+      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName);
+    }
+    Filter filter = null;
+    if (regex != null) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    }
+    Iterator<Result> iter =
+        scanWithFilter(FUNC_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
+    List<Function> functions = new ArrayList<Function>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      functions.add(HBaseUtils.deserializeFunction(result.getRow(),
+                                                   result.getValue(CATALOG_CF, CATALOG_COL)));
+    }
+    return functions;
+  }
+
+  /**
+   * Store a function object
+   * @param function function object to store
+   * @throws IOException
+   */
+  void putFunction(Function function) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeFunction(function);
+    store(FUNC_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
+  }
+
+  /**
+   * Drop a function
+   * @param dbName name of database the function is in
+   * @param functionName name of function to drop
+   * @throws IOException
+   */
+  void deleteFunction(String dbName, String functionName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, functionName);
+    delete(FUNC_TABLE, key, null, null);
   }
 
   /**********************************************************************************************

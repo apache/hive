@@ -65,8 +65,6 @@ message ColumnStats {
   optional DecimalStats decimal_stats = 10;
 }
 
-
-
 message Database {
   optional string description = 1;
   optional string uri = 2;
@@ -80,6 +78,29 @@ message FieldSchema {
   required string name = 1;
   required string type = 2;
   optional string comment = 3;
+}
+
+message Function {
+  enum FunctionType {
+    JAVA = 1;
+  }
+
+  message ResourceUri {
+    enum ResourceType {
+      JAR = 1;
+      FILE = 2;
+      ARCHIVE = 3;
+    }
+    required ResourceType resource_type = 1;
+    required string uri = 2;
+  }
+
+  optional string class_name = 1;
+  optional string owner_name = 2;
+  optional PrincipalType owner_type = 3;
+  optional sint64 create_time = 4;
+  optional FunctionType function_type = 5;
+  repeated ResourceUri resource_uris = 6;
 }
 
 message ParameterEntry {

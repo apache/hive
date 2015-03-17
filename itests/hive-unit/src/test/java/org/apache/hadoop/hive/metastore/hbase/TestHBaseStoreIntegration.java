@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -48,6 +50,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -86,6 +90,7 @@ public class TestHBaseStoreIntegration {
   private static HTableInterface sdTable;
   private static HTableInterface partTable;
   private static HTableInterface dbTable;
+  private static HTableInterface funcTable;
   private static HTableInterface roleTable;
   private static HTableInterface globalPrivsTable;
   private static HTableInterface principalRoleMapTable;
@@ -109,6 +114,8 @@ public class TestHBaseStoreIntegration {
         families);
     dbTable = utility.createTable(HBaseReadWrite.DB_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
+    funcTable = utility.createTable(HBaseReadWrite.FUNC_TABLE.getBytes(HBaseUtils.ENCODING),
+                                  HBaseReadWrite.CATALOG_CF);
     roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
         HBaseReadWrite.CATALOG_CF);
     globalPrivsTable =
@@ -131,6 +138,7 @@ public class TestHBaseStoreIntegration {
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
+    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.FUNC_TABLE)).thenReturn(funcTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
     Mockito.when(hconn.getHBaseTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
@@ -206,6 +214,35 @@ public class TestHBaseStoreIntegration {
     namesFromStore = dbs.toArray(new String[3]);
     Arrays.sort(namesFromStore);
     Assert.assertArrayEquals(dbNames, namesFromStore);
+  }
+
+  @Test
+  public void getFuncsRegex() throws Exception {
+    String dbname = "default";
+    int now = (int)(System.currentTimeMillis()/1000);
+    String[] funcNames = new String[3];
+    for (int i = 0; i < funcNames.length; i++) {
+      funcNames[i] = "func" + i;
+      store.createFunction(new Function(funcNames[i], dbname, "o.a.h.h.myfunc", "me",
+                                        PrincipalType.USER, now, FunctionType.JAVA,
+                                        Arrays.asList(new ResourceUri(ResourceType.JAR,
+                                        "file:/tmp/somewhere"))));
+    }
+
+    List<String> funcs = store.getFunctions(dbname, "func1|func2");
+    Assert.assertEquals(2, funcs.size());
+    String[] namesFromStore = funcs.toArray(new String[2]);
+    Arrays.sort(namesFromStore);
+    Assert.assertArrayEquals(Arrays.copyOfRange(funcNames, 1, 3), namesFromStore);
+
+    funcs = store.getFunctions(dbname, "func*");
+    Assert.assertEquals(3, funcs.size());
+    namesFromStore = funcs.toArray(new String[3]);
+    Arrays.sort(namesFromStore);
+    Assert.assertArrayEquals(funcNames, namesFromStore);
+
+    funcs = store.getFunctions("nosuchdb", "func*");
+    Assert.assertEquals(0, funcs.size());
   }
 
   @Test

@@ -34,12 +34,16 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -345,7 +349,6 @@ class HBaseUtils {
     Database db = new Database();
     db.setName(dbName);
     HbaseMetastoreProto.Database protoDb = HbaseMetastoreProto.Database.parseFrom(value);
-    db.setName(dbName);
     if (protoDb.hasDescription()) db.setDescription(protoDb.getDescription());
     if (protoDb.hasUri()) db.setLocationUri(protoDb.getUri());
     if (protoDb.hasParameters()) db.setParameters(buildParameters(protoDb.getParameters()));
@@ -370,6 +373,114 @@ class HBaseUtils {
       throws InvalidProtocolBufferException {
     String dbName = new String(key, ENCODING);
     return deserializeDatabase(dbName, value);
+  }
+
+  /**
+   * Serialize a function
+   * @param func function to serialize
+   * @return two byte arrays, first contains the key, the second the value.
+   */
+  static byte[][] serializeFunction(Function func) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(func.getDbName(), func.getFunctionName());
+    HbaseMetastoreProto.Function.Builder builder = HbaseMetastoreProto.Function.newBuilder();
+    if (func.getClassName() != null) builder.setClassName(func.getClassName());
+    if (func.getOwnerName() != null) builder.setOwnerName(func.getOwnerName());
+    if (func.getOwnerType() != null) {
+      builder.setOwnerType(convertPrincipalTypes(func.getOwnerType()));
+    }
+    builder.setCreateTime(func.getCreateTime());
+    if (func.getFunctionType() != null) {
+      builder.setFunctionType(convertFunctionTypes(func.getFunctionType()));
+    }
+    if (func.getResourceUris() != null) {
+      for (ResourceUri uri : func.getResourceUris()) {
+        builder.addResourceUris(HbaseMetastoreProto.Function.ResourceUri.newBuilder()
+            .setResourceType(convertResourceTypes(uri.getResourceType()))
+            .setUri(uri.getUri()));
+      }
+    }
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a function.  This method should be used when the function and db name are
+   * already known.
+   * @param dbName name of the database the function is in
+   * @param functionName name of the function
+   * @param value serialized value of the function
+   * @return function as an object
+   * @throws InvalidProtocolBufferException
+   */
+  static Function deserializeFunction(String dbName, String functionName, byte[] value)
+      throws InvalidProtocolBufferException {
+    Function func = new Function();
+    func.setDbName(dbName);
+    func.setFunctionName(functionName);
+    HbaseMetastoreProto.Function protoFunc = HbaseMetastoreProto.Function.parseFrom(value);
+    if (protoFunc.hasClassName()) func.setClassName(protoFunc.getClassName());
+    if (protoFunc.hasOwnerName()) func.setOwnerName(protoFunc.getOwnerName());
+    if (protoFunc.hasOwnerType()) {
+      func.setOwnerType(convertPrincipalTypes(protoFunc.getOwnerType()));
+    }
+    func.setCreateTime((int)protoFunc.getCreateTime());
+    if (protoFunc.hasFunctionType()) {
+      func.setFunctionType(convertFunctionTypes(protoFunc.getFunctionType()));
+    }
+    for (HbaseMetastoreProto.Function.ResourceUri protoUri : protoFunc.getResourceUrisList()) {
+      func.addToResourceUris(new ResourceUri(convertResourceTypes(protoUri.getResourceType()),
+                                             protoUri.getUri()));
+    }
+    return func;
+  }
+
+  /**
+   * Deserialize a function.  This method should be used when the dbname and function name are
+   * not already known, such as in a scan.
+   * @param key key from hbase
+   * @param value value from hbase
+   * @return function object
+   * @throws InvalidProtocolBufferException
+   */
+  static Function deserializeFunction(byte[] key, byte[] value)
+      throws  InvalidProtocolBufferException {
+    String[] keys = deserializeKey(key);
+    return deserializeFunction(keys[0], keys[1], value);
+  }
+
+  private static HbaseMetastoreProto.Function.FunctionType convertFunctionTypes(FunctionType type) {
+    switch (type) {
+    case JAVA: return HbaseMetastoreProto.Function.FunctionType.JAVA;
+    default: throw new RuntimeException("Unknown function type " + type.toString());
+    }
+  }
+
+  private static FunctionType convertFunctionTypes(HbaseMetastoreProto.Function.FunctionType type) {
+    switch (type) {
+    case JAVA: return FunctionType.JAVA;
+    default: throw new RuntimeException("Unknown function type " + type.toString());
+    }
+  }
+
+  private static HbaseMetastoreProto.Function.ResourceUri.ResourceType
+  convertResourceTypes(ResourceType type) {
+    switch (type) {
+    case JAR: return HbaseMetastoreProto.Function.ResourceUri.ResourceType.JAR;
+    case FILE: return HbaseMetastoreProto.Function.ResourceUri.ResourceType.FILE;
+    case ARCHIVE: return HbaseMetastoreProto.Function.ResourceUri.ResourceType.ARCHIVE;
+    default: throw new RuntimeException("Unknown resource type " + type.toString());
+    }
+  }
+
+  private static ResourceType convertResourceTypes(
+      HbaseMetastoreProto.Function.ResourceUri.ResourceType type) {
+    switch (type) {
+    case JAR: return ResourceType.JAR;
+    case FILE: return ResourceType.FILE;
+    case ARCHIVE: return ResourceType.ARCHIVE;
+    default: throw new RuntimeException("Unknown resource type " + type.toString());
+    }
   }
 
   private static List<FieldSchema>
