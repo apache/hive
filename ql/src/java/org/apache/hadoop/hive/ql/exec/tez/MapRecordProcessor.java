@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
@@ -55,6 +57,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
@@ -98,6 +101,7 @@ public class MapRecordProcessor extends RecordProcessor {
 
     // create map and fetch operators
     mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
+        @Override
         public Object call() {
           return Utilities.getMapWork(jconf);
         }
@@ -119,6 +123,7 @@ public class MapRecordProcessor extends RecordProcessor {
 	mergeWorkList.add(
           (MapWork) cache.retrieve(key,
               new Callable<Object>() {
+                @Override
                 public Object call() {
                   return Utilities.getMergeWork(jconf, prefix);
                 }
@@ -132,6 +137,10 @@ public class MapRecordProcessor extends RecordProcessor {
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, processorContext, mrReporter, inputs, outputs);
+
+    MapredContext.init(true, new JobConf(jconf));
+    ((TezContext) MapredContext.get()).setInputs(inputs);
+    ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
 
     // Update JobConf using MRInput, info like filename comes via this
     legacyMRInput = getMRInput(inputs);
@@ -160,6 +169,8 @@ public class MapRecordProcessor extends RecordProcessor {
         mapOp = new MapOperator();
       }
 
+      mapOp.setExecContext(execContext);
+
       connectOps.clear();
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
@@ -176,12 +187,13 @@ public class MapRecordProcessor extends RecordProcessor {
             mergeMapOp.setConf(mergeMapWork);
             l4j.info("Input name is " + mergeMapWork.getName());
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
+            mergeMapOp.initialize(jconf, null);
             mergeMapOp.setChildren(jconf);
 
             DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
             connectOps.put(mergeMapWork.getTag(), dummyOp);
 
-            mergeMapOp.setExecContext(new ExecMapperContext(jconf));
+            mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
           }
         }
@@ -191,21 +203,19 @@ public class MapRecordProcessor extends RecordProcessor {
       mapOp.setConf(mapWork);
       l4j.info("Main input name is " + mapWork.getName());
       jconf.set(Utilities.INPUT_NAME, mapWork.getName());
+      mapOp.initialize(jconf, null);
       mapOp.setChildren(jconf);
+      mapOp.passExecContext(execContext);
       l4j.info(mapOp.dump(0));
 
-      MapredContext.init(true, new JobConf(jconf));
-      ((TezContext) MapredContext.get()).setInputs(inputs);
-      ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
-      mapOp.setExecContext(execContext);
       mapOp.initializeLocalWork(jconf);
 
       initializeMapRecordSources();
-      mapOp.initialize(jconf, null);
+      mapOp.initializeMapOperator(jconf);
       if ((mergeMapOpList != null) && mergeMapOpList.isEmpty() == false) {
         for (MapOperator mergeMapOp : mergeMapOpList) {
           jconf.set(Utilities.INPUT_NAME, mergeMapOp.getConf().getName());
-          mergeMapOp.initialize(jconf, null);
+          mergeMapOp.initializeMapOperator(jconf);
         }
       }
 
@@ -353,6 +363,17 @@ public class MapRecordProcessor extends RecordProcessor {
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
     // there should be only one MRInput
     MRInputLegacy theMRInput = null;
+
+    // start all mr/multi-mr inputs
+    Set<Input> li = new HashSet<Input>();
+    for (LogicalInput inp: inputs.values()) {
+      if (inp instanceof MRInputLegacy || inp instanceof MultiMRInput) {
+        inp.start();
+        li.add(inp);
+      }
+    }
+    processorContext.waitForAllInputsReady(li);
+
     l4j.info("The input names are: " + Arrays.toString(inputs.keySet().toArray()));
     for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
       if (inp.getValue() instanceof MRInputLegacy) {

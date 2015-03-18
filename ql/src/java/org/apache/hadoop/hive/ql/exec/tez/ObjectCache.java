@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.runtime.api.ObjectRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.tez.runtime.api.ObjectRegistry;
 
 import com.google.common.base.Preconditions;
 
@@ -41,6 +44,8 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   // before anything else.
   private volatile static ObjectRegistry staticRegistry;
 
+  private static ExecutorService staticPool;
+
   private final ObjectRegistry registry;
 
   public ObjectCache() {
@@ -51,6 +56,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;
+    staticPool = Executors.newCachedThreadPool();
   }
 
   @Override
@@ -59,21 +65,32 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
     LOG.info("Releasing key: " + key);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Object retrieve(String key, Callable<?> fn) throws HiveException {
-    Object o;
+  public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
+    T value;
     try {
-      o = registry.get(key);
-      if (o == null) {
-	o = fn.call();
-	LOG.info("Caching key: " + key);
-	registry.cacheForVertex(key, o);
+      value = (T) registry.get(key);
+      if (value == null) {
+        value = fn.call();
+        LOG.info("Caching key: " + key);
+        registry.cacheForVertex(key, value);
       } else {
-	LOG.info("Found " + key + " in cache with value: " + o);
+        LOG.info("Found " + key + " in cache with value: " + value);
       }
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    return o;
+    return value;
+  }
+
+  @Override
+  public <T> Future<T> retrieveAsync(final String key, final Callable<T> fn) throws HiveException {
+    return staticPool.submit(new Callable<T>() {
+      @Override
+      public T call() throws Exception {
+        return retrieve(key, fn);
+      }
+    });
   }
 }

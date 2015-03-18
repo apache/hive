@@ -39,7 +39,7 @@ public class VectorLimitOperator extends LimitOperator  {
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
     if (currCount < limit) {

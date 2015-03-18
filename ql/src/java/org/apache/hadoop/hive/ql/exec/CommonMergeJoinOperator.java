@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -85,10 +87,10 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   @SuppressWarnings("unchecked")
   @Override
-  public void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     firstFetchHappened = false;
-    initializeChildren(hconf);
+
     int maxAlias = 0;
     for (byte pos = 0; pos < order.length; pos++) {
       if (pos > maxAlias) {
@@ -132,6 +134,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
 
     sources = ((TezContext) MapredContext.get()).getRecordSources();
+    return result;
   }
 
   @Override
@@ -155,7 +158,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
    * push but the rest is pulled until we run out of records.
    */
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     posBigTable = (byte) conf.getBigTablePosition();
 
     byte alias = (byte) tag;

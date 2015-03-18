@@ -20,17 +20,21 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
@@ -94,9 +98,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     unwrapContainer = new UnwrapRowContainer[conf.getTagLength()];
-    super.initializeOp(hconf);
+
+    Collection<Future<?>> result = super.initializeOp(hconf);
+    if (result == null) {
+      result = new HashSet<Future<?>>();
+    }
 
     int tagLen = conf.getTagLength();
 
@@ -116,6 +124,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     generateMapMetaData();
 
+    final ExecMapperContext mapContext = getExecContext();
+    final MapredContext mrContext = MapredContext.get();
+
     if (!conf.isBucketMapJoin()) {
       /*
        * The issue with caching in case of bucket map join is that different tasks
@@ -126,27 +137,42 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
       if (isLogInfoEnabled) {
-	LOG.info("This is not bucket map join, so cache");
+        LOG.info("This is not bucket map join, so cache");
       }
 
-      Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
-	(Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>)
-	cache.retrieve(cacheKey, new Callable<Object>() {
-	  public Object call() throws HiveException {
-	    return loadHashTable();
-	  }
-	});
+      Future<Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>> future =
+          cache.retrieveAsync(
+              cacheKey,
+              new Callable<Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>>() {
+                @Override
+                public Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> call()
+                    throws HiveException {
+                  return loadHashTable(mapContext, mrContext);
+                }
+              });
+      result.add(future);
+    } else if (mapContext == null || mapContext.getLocalWork() == null
+        || mapContext.getLocalWork().getInputFileChangeSensitive() == false) {
+      loadHashTable(mapContext, mrContext);
+      hashTblInitedOnce = true;
+    }
+    return result;
+  }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  protected final void completeInitializationOp(Object[] os) throws HiveException {
+    if (os.length != 0) {
+      Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
+          (Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>) os[0];
       mapJoinTables = pair.getLeft();
       mapJoinTableSerdes = pair.getRight();
       hashTblInitedOnce = true;
-    } else {
-      loadHashTable();
     }
 
     if (this.getExecContext() != null) {
       // reset exec context so that initialization of the map operator happens
-      // poperly
+      // properly
       this.getExecContext().setLastInputPath(null);
       this.getExecContext().setCurrentInputPath(null);
     }
@@ -182,45 +208,44 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
       SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
-	  null);
+ null);
       SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
       MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
       for (int pos = 0; pos < order.length; pos++) {
-	if (pos == posBigTable) {
-	  continue;
-	}
-	TableDesc valueTableDesc;
-	if (conf.getNoOuterJoin()) {
-	  valueTableDesc = conf.getValueTblDescs().get(pos);
-	} else {
-	  valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
-	}
-	SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
-	    null);
-	SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
-	MapJoinObjectSerDeContext valueContext = new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
-	mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
+        if (pos == posBigTable) {
+          continue;
+        }
+        TableDesc valueTableDesc;
+        if (conf.getNoOuterJoin()) {
+          valueTableDesc = conf.getValueTblDescs().get(pos);
+        } else {
+          valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
+        }
+        SerDe valueSerDe =
+            (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
+        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+        MapJoinObjectSerDeContext valueContext =
+            new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
+        mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);
       }
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
   }
 
-  private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>
-    loadHashTable() throws HiveException {
+  private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
+      ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
 
     if (this.hashTblInitedOnce
-	&& ((this.getExecContext() == null)
-	    || (this.getExecContext().getLocalWork() == null)
-	    || (this.getExecContext().getLocalWork().getInputFileChangeSensitive()
-		== false))) {
+        && ((mapContext == null) || (mapContext.getLocalWork() == null) || (mapContext
+            .getLocalWork().getInputFileChangeSensitive() == false))) {
       // no need to reload
-      return new ImmutablePair<MapJoinTableContainer[],
-	MapJoinTableContainerSerDe[]> (mapJoinTables, mapJoinTableSerdes);
+      return new ImmutablePair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>(
+          mapJoinTables, mapJoinTableSerdes);
     }
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
-    loader.init(getExecContext(), hconf, this);
+    loader.init(mapContext, mrContext, hconf, this);
     long memUsage = (long)(MapJoinMemoryExhaustionHandler.getMaxHeapSize()
         * conf.getHashTableMemoryUsage());
     loader.load(mapJoinTables, mapJoinTableSerdes, memUsage);
@@ -239,7 +264,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Load the hash table
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
-    loadHashTable();
+    loadHashTable(getExecContext(), MapredContext.get());
   }
 
   protected void setMapJoinKey(
@@ -260,7 +285,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
       alias = (byte) tag;
       if (hashMapRowGetters == null) {

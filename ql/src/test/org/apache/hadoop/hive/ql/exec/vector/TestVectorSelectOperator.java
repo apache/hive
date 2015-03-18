@@ -119,7 +119,7 @@ public class TestVectorSelectOperator {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE, 4, 17);
 
-    vso.processOp(vrg, 0);
+    vso.process(vrg, 0);
   }
 
 }

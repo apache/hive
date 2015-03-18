@@ -67,7 +67,7 @@ public class TestVectorLimitOperator {
     lo.initialize(new Configuration(), null);
 
     // Process the batch
-    lo.processOp(vrb, 0);
+    lo.process(vrb, 0);
 
     // Verify batch size
     Assert.assertEquals(vrb.size, expectedBatchSize);

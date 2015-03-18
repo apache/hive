@@ -368,7 +368,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         return persistPartitionStats();
       }
     } catch (Exception e) {
-        LOG.info(e);
+      LOG.error("Failed to run column stats task", e);
     }
     return 1;
   }

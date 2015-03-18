@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +58,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
   private VectorExpression[] bigTableFilterExpressions;
   private VectorExpression[] bigTableValueExpressions;
-  
+
   private VectorizationContext vOutContext;
 
   // The above members are initialized by the constructor and must not be
@@ -76,7 +78,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   private transient VectorExpressionWriter[] keyOutputWriters;
 
   private transient VectorizedRowBatchCtx vrbCtx = null;
-  
+
   public VectorMapJoinOperator() {
     super();
   }
@@ -112,9 +114,9 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   }
 
   @Override
-  public void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
-    
+  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
+
     List<ExprNodeDesc> keyDesc = conf.getKeys().get(posBigTable);
     keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
 
@@ -178,6 +180,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     filterMaps[posBigTable] = null;
 
     outputVectorAssigners = new HashMap<ObjectInspector, VectorColumnAssign[]>();
+    return result;
   }
 
   /**
@@ -220,7 +223,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     byte alias = (byte) tag;
     VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
 
@@ -246,7 +249,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     // of row-mode small-tables) this is a reasonable trade-off.
     //
     for(batchIndex=0; batchIndex < inBatch.size; ++batchIndex) {
-      super.processOp(row, tag);
+      super.process(row, tag);
     }
 
     // Set these two to invalid values so any attempt to use them

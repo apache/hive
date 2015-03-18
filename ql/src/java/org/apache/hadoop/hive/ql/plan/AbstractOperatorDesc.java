@@ -54,11 +54,11 @@ public class AbstractOperatorDesc implements OperatorDesc {
     this.vectorMode = vm;
   }
   
-  public OpTraits getOpTraits() {
+  public OpTraits getTraits() {
     return opTraits;
   }
   
-  public void setOpTraits(OpTraits opTraits) {
+  public void setTraits(OpTraits opTraits) {
     this.opTraits = opTraits;
   }
 

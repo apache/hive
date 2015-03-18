@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -185,7 +187,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   @Override
   @SuppressWarnings("unchecked")
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
 
@@ -319,6 +322,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     if (isLogInfoEnabled) {
       LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
     }
+    return result;
   }
 
   transient boolean newGroupStarted = false;
