@@ -2034,7 +2034,9 @@ public class HiveConf extends Configuration {
     SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
-      "Name of the SASL mechanism to use for authentication.");
+      "Name of the SASL mechanism to use for authentication."),
+    NWAYJOINREORDER("hive.reorder.nway.joins", true,
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)");
 
     public final String varname;
     private final String defaultExpr;
