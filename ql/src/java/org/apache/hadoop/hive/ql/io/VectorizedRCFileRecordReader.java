@@ -146,11 +146,11 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
 
   @Override
   public VectorizedRowBatch createValue() {
-    VectorizedRowBatch result = null;
+    VectorizedRowBatch result;
     try {
       result = rbCtx.createVectorizedRowBatch();
     } catch (HiveException e) {
-      new RuntimeException("Error creating a batch", e);
+      throw new RuntimeException("Error creating a batch", e);
     }
     return result;
   }
@@ -193,7 +193,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
         }
       }
     } catch (Exception e) {
-      new RuntimeException("Error while getting next row", e);
+      throw new RuntimeException("Error while getting next row", e);
     }
     value.size = i;
     return more;
