@@ -48,6 +48,7 @@ class Llap(Script):
     os.environ['LLAP_DAEMON_HEAPSIZE'] = format("{memory_val}")
     os.environ['LLAP_DAEMON_PID_DIR'] = dirname(format("{pid_file}"))
     os.environ['LLAP_DAEMON_LD_PATH'] = format('{library_path}')
+    os.environ['LLAP_DAEMON_OPTS'] = format('{daemon_args}')
     print "Debug from LLAP python script"
     print os.environ['LLAP_DAEMON_CONF_DIR']
     self.configure(env)

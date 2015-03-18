@@ -35,8 +35,10 @@ public class LlapOptionsProcessor {
   public class LlapOptions {
     private int instances = 0;
     private String directory = null;
+    private String name;
+    private String args;
 
-    public LlapOptions(int instances, String directory)
+    public LlapOptions(String name, int instances, String directory)
         throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
@@ -44,9 +46,14 @@ public class LlapOptionsProcessor {
       }
       this.instances = instances;
       this.directory = directory;
+      this.name = name;
     }
 
-    public int getNumInstances() {
+    public String getName() {
+      return name;
+    }
+
+    public int getInstances() {
       return instances;
     }
 
@@ -67,11 +74,17 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("instances").withLongOpt("instances")
         .withDescription("Specify the number of instances to run this on").create('i'));
 
-    // [-H|--help]
-    options.addOption(new Option("H", "help", false, "Print help information"));
+    options.addOption(OptionBuilder.hasArg().withArgName("name").withLongOpt("name")
+        .withDescription("Cluster name for YARN registry").create('n'));
 
     options.addOption(OptionBuilder.hasArg().withArgName("directory").withLongOpt("directory")
         .withDescription("Temp directory for jars etc.").create('d'));
+
+    options.addOption(OptionBuilder.hasArg().withArgName("args").withLongOpt("args")
+        .withDescription("java arguments to the llap instance").create('a'));
+
+    // [-H|--help]
+    options.addOption(new Option("H", "help", false, "Print help information"));
   }
 
   public LlapOptions processOptions(String argv[]) throws ParseException {
@@ -84,10 +97,12 @@ public class LlapOptionsProcessor {
     int instances = Integer.parseInt(commandLine.getOptionValue("instances"));
     String directory = commandLine.getOptionValue("directory");
 
-    return new LlapOptions(instances, directory);
+    String name = commandLine.getOptionValue("name", null);
+
+    return new LlapOptions(name, instances, directory);
   }
 
   private void printUsage() {
-    new HelpFormatter().printHelp("hive", options);
+    new HelpFormatter().printHelp("llap", options);
   }
 }

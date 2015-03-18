@@ -60,9 +60,40 @@ public class LlapServiceDriver {
     System.exit(ret);
   }
 
+  /**
+   * Intersect llap-daemon-site.xml configuration properties against an existing Configuration
+   * object, while resolving any ${} parameters that might be present.
+   * 
+   * @param raw
+   * @return configuration object which is a slice of configured
+   */
+  public static Configuration resolve(Configuration configured, String first, String... resources) {
+    Configuration defaults = new Configuration(false);
+
+    defaults.addResource(first);
+
+    for (String resource : resources) {
+      defaults.addResource(resource);
+    }
+
+    Configuration slice = new Configuration(false);
+    // for everything in defaults, slice out those from the configured
+    for (Map.Entry<String, String> kv : defaults) {
+      slice.set(kv.getKey(), configured.getRaw(kv.getKey()));
+    }
+
+    return slice;
+  }
+
   private int run(String[] args) throws Exception {
     LlapOptionsProcessor optionsProcessor = new LlapOptionsProcessor();
     LlapOptions options = optionsProcessor.processOptions(args);
+
+    if (options == null) {
+      // help
+      return 0;
+    }
+
     Path tmpDir = new Path(options.getDirectory());
 
     if (conf == null) {
@@ -86,6 +117,12 @@ public class LlapServiceDriver {
     }
 
     conf.reloadConfiguration();
+
+    if (options.getName() != null) {
+      // update service registry configs - caveat: this has nothing to do with the actual settings as read by the AM
+      // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between instances
+      conf.set(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS, "@" + options.getName());
+    }
 
     URL logger = conf.getResource("llap-daemon-log4j.properties");
 
@@ -115,8 +152,7 @@ public class LlapServiceDriver {
     }
     lfs.mkdirs(libDir);
     fs.copyToLocalFile(new Path(tezLibs), new Path(libDir, "tez.tar.gz"));
-    CompressionUtils.unTar(new Path(libDir, "tez.tar.gz").toString(), 
-        libDir.toString(), true);
+    CompressionUtils.unTar(new Path(libDir, "tez.tar.gz").toString(), libDir.toString(), true);
     lfs.delete(new Path(libDir, "tez.tar.gz"), false);
 
     // TODO: aux jars (like compression libs)
@@ -128,8 +164,17 @@ public class LlapServiceDriver {
     lfs.mkdirs(confPath);
 
     for (String f : neededConfig) {
-      // they will be file:// URLs
-      lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
+      if (f.equals("llap-daemon-site.xml")) {
+        FSDataOutputStream confStream = lfs.create(new Path(confPath, f));
+
+        Configuration copy = resolve(conf, "llap-daemon-site.xml");
+
+        copy.writeXml(confStream);
+        confStream.close();
+      } else {
+        // they will be file:// URLs
+        lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
+      }
     }
 
     lfs.copyFromLocalFile(new Path(logger.toString()), confPath);

@@ -75,6 +75,7 @@ appConfig = """
     "site.global.app_root": "${AGENT_WORK_ROOT}/app/install/",
     "site.global.app_log_level": "INFO,RFA",
     "site.global.additional_cp": "%(hadoop_home)s",
+    "site.global.daemon_args": "%(daemon_args)s",
     "site.global.library_path": "%(hadoop_home)s/lib/native",
     "site.global.memory_val": "%(heap)d",
     "site.global.pid_file": "${AGENT_WORK_ROOT}/app/run/llap-daemon.pid"

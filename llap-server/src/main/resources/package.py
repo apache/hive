@@ -47,21 +47,27 @@ def zipdir(path, zip, prefix="."):
 			zip.write(src, dst)
 	
 def main(args):
-	opts, args = getopt(args,"n:o:i:",["instances=","output=", "input="])
+	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name="])
 	version = os.getenv("HIVE_VERSION")
 	if not version:
 		version = strftime("%d%b%Y", gmtime()) 
 	home = os.getenv("HIVE_HOME")
 	output = "llap-slider-%(version)s" % ({"version": version})
 	instances=1
+	name = "llap0"
+	d_args = ""
 	input = None
 	for k,v in opts:
-		if k in ("--input", "-i"):
+		if k in ("--input"):
 			input = v
-		elif k in ("--output", "-o"):
+		elif k in ("--output"):
 			output = v
-		elif k in ("--instances", "-n"):
+		elif k in ("--instances"):
 			instances = int(v)
+		elif k in ("--name"):
+			name = v 
+		elif k in ("--args"):
+			d_args = v
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
@@ -77,7 +83,8 @@ def main(args):
 		"container.cores" : resource.container_cores,
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
 		"java_home" : os.getenv("JAVA_HOME"),
-		"name" : "llap0"
+		"name" : name,
+		"daemon_args" : d_args
 	}
 	
 	if not exists(output):

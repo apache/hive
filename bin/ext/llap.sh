@@ -37,10 +37,13 @@ llap () {
   test -f $TMPDIR/config.json
 
   python $HIVE_HOME/scripts/llap/slider/package.py --input $TMPDIR "$@"
+
+  # remove temp files
+  rm -rf $TMPDIR
 }
 
 llap_help () {
-  CLASS=org.apache.hadoop.hive.llap.ServiceDriver
+  CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
   execHiveCmd $CLASS "--help"
 } 
 
