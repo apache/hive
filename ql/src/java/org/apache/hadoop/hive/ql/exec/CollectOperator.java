@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -41,16 +43,17 @@ public class CollectOperator extends Operator<CollectDesc> implements
   transient int maxSize;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     rowList = new ArrayList<Object>();
     maxSize = conf.getBufferSize().intValue();
+    return result;
   }
 
   boolean firstRow = true;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (firstRow) {
       firstRow = false;

@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,7 +110,8 @@ public class DemuxOperator extends Operator<DemuxDesc>
   private int[][] newChildOperatorsTag;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     // A DemuxOperator should have at least one child
     if (childOperatorsArray.length == 0) {
       throw new HiveException(
@@ -180,7 +183,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     if (isLogInfoEnabled) {
       LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
     }
-    initializeChildren(hconf);
+    return result;
   }
 
   private int[] toArray(List<Integer> list) {
@@ -253,7 +256,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     int currentChildIndex = newTagToChildIndex[tag];
 
     // Check if we start to forward rows to a new child.
@@ -277,7 +280,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     if (child.getDone()) {
       childrenDone++;
     } else {
-      child.processOp(row, oldTag);
+      child.process(row, oldTag);
     }
 
     // if all children are done, this operator is also done

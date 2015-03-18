@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Collection;
+import java.util.concurrent.Future;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -34,7 +37,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   // Writer for producing row from input batch.
   private VectorExpressionWriter[] rowWriters;
-  
+
   protected transient Object[] singleRow;
 
   public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
@@ -49,7 +52,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     // We need a input object inspector that is for the row we will extract out of the
     // vectorized row batch, not for example, an original inspector for an ORC table, etc.
     VectorExpressionWriterFactory.processVectorInspector(
@@ -64,17 +67,16 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
             });
     singleRow = new Object[rowWriters.length];
 
-    // Call ReduceSinkOperator with new input inspector.
-    super.initializeOp(hconf);
+    return super.initializeOp(hconf);
   }
 
   @Override
-  public void processOp(Object data, int tag) throws HiveException {
+  public void process(Object data, int tag) throws HiveException {
     VectorizedRowBatch vrg = (VectorizedRowBatch) data;
 
     for (int batchIndex = 0 ; batchIndex < vrg.size; ++batchIndex) {
       Object row = getRowObject(vrg, batchIndex);
-      super.processOp(row, tag);
+      super.process(row, tag);
     }
   }
 

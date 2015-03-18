@@ -103,6 +103,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private List<VectorExpressionWriter>[] valueStringWriters;
   private MapredLocalWork localWork = null;
 
+  @Override
   @SuppressWarnings("unchecked")
   public void init(JobConf job, OutputCollector output, Reporter reporter) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
@@ -132,7 +133,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         keyStructInspector = (StructObjectInspector) keyObjectInspector;
         batches = new VectorizedRowBatch[maxTags];
         valueStructInspectors = new StructObjectInspector[maxTags];
-        valueStringWriters = (List<VectorExpressionWriter>[]) new List[maxTags];
+        valueStringWriters = new List[maxTags];
         keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
         buffer = new DataOutputBuffer();
       }
@@ -196,7 +197,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     localWork = gWork.getMapRedLocalWork();
     execContext.setJc(jc);
     execContext.setLocalWork(localWork);
-    reducer.setExecContext(execContext);
+    reducer.passExecContext(execContext);
 
     reducer.setReporter(rp);
     OperatorUtils.setChildrenCollector(
@@ -318,7 +319,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         logMemoryInfo();
       }
       try {
-        reducer.processOp(row, tag);
+        reducer.process(row, tag);
       } catch (Exception e) {
         String rowString = null;
         try {
@@ -360,7 +361,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         rowIdx++;
         if (rowIdx >= BATCH_SIZE) {
           VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-          reducer.processOp(batch, tag);
+          reducer.process(batch, tag);
           rowIdx = 0;
           if (isLogInfoEnabled) {
             logMemoryInfo();
@@ -369,7 +370,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       }
       if (rowIdx > 0) {
         VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-        reducer.processOp(batch, tag);
+        reducer.process(batch, tag);
       }
       if (isLogInfoEnabled) {
         logMemoryInfo();
@@ -401,6 +402,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     }
   }
 
+  @Override
   public void close() {
 
     // No row was processed

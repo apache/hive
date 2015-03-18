@@ -319,7 +319,7 @@ public class TestFileSinkOperator {
   }
 
   private void processRows(FileSinkOperator op) throws HiveException {
-    for (TFSORow r : rows) op.processOp(r, 0);
+    for (TFSORow r : rows) op.process(r, 0);
     op.jobCloseOp(jc, true);
     op.close(false);
   }

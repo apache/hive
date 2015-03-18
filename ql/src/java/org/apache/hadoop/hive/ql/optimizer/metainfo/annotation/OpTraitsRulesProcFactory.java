@@ -107,7 +107,7 @@ public class OpTraitsRulesProcFactory {
       listBucketCols.add(bucketCols);
       int numBuckets = -1;
       int numReduceSinks = 1;
-      OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getOpTraits();
+      OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
         numReduceSinks += parentOpTraits.getNumReduceSinks();

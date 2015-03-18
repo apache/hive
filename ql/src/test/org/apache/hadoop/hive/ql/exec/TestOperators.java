@@ -236,7 +236,7 @@ public class TestOperators extends TestCase {
 
       // evaluate on row
       for (int i = 0; i < 5; i++) {
-        op.processOp(r[i].o, 0);
+        op.process(r[i].o, 0);
       }
       op.close(false);
 
