@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -36,6 +38,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * implemented, this transformation can also be done based on costs.
  */
 public class JoinReorder implements Transform {
+
+  private final Map<Operator<?>, Integer> cache = new IdentityHashMap<Operator<?>, Integer>();
   /**
    * Estimate the size of the output based on the STREAMTABLE hints. To do so
    * the whole tree is traversed. Possible sizes: 0: the operator and its
@@ -49,8 +53,25 @@ public class JoinReorder implements Transform {
    * @return The estimated size - 0 (no streamed tables), 1 (streamed tables in
    *         subtree) or 2 (a streamed table)
    */
+
   private int getOutputSize(Operator<? extends OperatorDesc> operator,
       Set<String> bigTables) {
+
+    // memoize decorator for getOutputSizeInternal
+    if (cache.containsKey(operator)) {
+      return cache.get(operator);
+    }
+
+    int result = getOutputSizeInternal(operator, bigTables);
+
+    cache.put(operator, result);
+
+    return result;
+  }
+
+  private int getOutputSizeInternal(Operator<? extends OperatorDesc> operator,
+      Set<String> bigTables) {
+
     // If a join operator contains a big subtree, there is a chance that its
     // output is also big, so the output size is 1 (medium)
     if (operator instanceof JoinOperator) {
@@ -74,6 +95,7 @@ public class JoinReorder implements Transform {
     int maxSize = 0;
     if (operator.getParentOperators() != null) {
       for (Operator<? extends OperatorDesc> o : operator.getParentOperators()) {
+        // recurse into memoized decorator
         int current = getOutputSize(o, bigTables);
         if (current > maxSize) {
           maxSize = current;
@@ -151,8 +173,10 @@ public class JoinReorder implements Transform {
    * @param pactx
    *          current parse context
    */
+  @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
     Set<String> bigTables = getBigTables(pactx);
+    cache.clear();
 
     for (JoinOperator joinOp : pactx.getJoinOps()) {
       reorder(joinOp, bigTables);
