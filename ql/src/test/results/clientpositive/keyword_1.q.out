@@ -1,12 +1,12 @@
 PREHOOK: query: -- SORT_BEFORE_DIFF
 
-create table test_user (user string, `group` string)
+create table test_user (`user` string, `group` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_user
 POSTHOOK: query: -- SORT_BEFORE_DIFF
 
-create table test_user (user string, `group` string)
+create table test_user (`user` string, `group` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_user
@@ -16,9 +16,9 @@ PREHOOK: Output: default@test_user
 POSTHOOK: query: grant select on table test_user to user hive_test
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@test_user
-PREHOOK: query: explain select user from test_user
+PREHOOK: query: explain select `user` from test_user
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select user from test_user
+POSTHOOK: query: explain select `user` from test_user
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

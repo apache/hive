@@ -98,10 +98,11 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       cacheKey = queryId + MAP_PLAN_KEY;
 
       MapWork mapWork = (MapWork) cache.retrieve(cacheKey, new Callable<Object>() {
-	  public Object call() {
-	    return Utilities.getMapWork(jconf);
-	  }
-	});
+        @Override
+        public Object call() {
+          return Utilities.getMapWork(jconf);
+        }
+      });
       Utilities.setMapWork(jconf, mapWork);
 
       if (mapWork instanceof MergeFileWork) {
@@ -116,7 +117,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
 
       MapredContext.init(true, new JobConf(jconf));
       ((TezContext) MapredContext.get()).setInputs(inputs);
-      mergeOp.setExecContext(execContext);
+      mergeOp.passExecContext(execContext);
       mergeOp.initializeLocalWork(jconf);
       mergeOp.initialize(jconf, null);
 
@@ -198,7 +199,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       } else {
         row[0] = key;
         row[1] = value;
-        mergeOp.processOp(row, 0);
+        mergeOp.process(row, 0);
       }
     } catch (Throwable e) {
       abort = true;

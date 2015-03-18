@@ -404,7 +404,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         if (row == null) {
           break;
         }
-        forwardOp.processOp(row.o, 0);
+        forwardOp.process(row.o, 0);
       }
       forwardOp.flush();
     }
@@ -445,7 +445,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       Operator<? extends OperatorDesc> forwardOp = work.getAliasToWork().get(alias);
 
       // put the exe context into all the operators
-      forwardOp.setExecContext(execContext);
+      forwardOp.passExecContext(execContext);
       // All the operators need to be initialized before process
       FetchOperator fetchOp = entry.getValue();
       JobConf jobConf = fetchOpJobConfMap.get(fetchOp);

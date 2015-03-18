@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -43,13 +44,14 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   private transient int numRows;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     try {
       fetcher = initializeFetcher(hconf);
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    super.initializeOp(hconf);
+    return result;
   }
 
   private FetchFormatter initializeFetcher(Configuration conf) throws Exception {
@@ -81,8 +83,9 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
     return numRows;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
       res.add(fetcher.convert(row, inputObjInspectors[0]));
       numRows++;
@@ -91,6 +94,7 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
     }
   }
 
+  @Override
   public OperatorType getType() {
     return OperatorType.FORWARD;
   }

@@ -24,12 +24,14 @@ import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javolution.util.FastBitSet;
 
@@ -178,7 +180,8 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     numRowsInput = 0;
     numRowsHashTbl = 0;
 
@@ -390,7 +393,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
-    initializeChildren(hconf);
+    return result;
   }
 
   /**
@@ -700,7 +703,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     firstRow = false;
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only

@@ -232,7 +232,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(valueObject[tag]);
 
         try {
-          reducer.processOp(row, tag);
+          reducer.process(row, tag);
         } catch (Exception e) {
           String rowString = null;
           try {

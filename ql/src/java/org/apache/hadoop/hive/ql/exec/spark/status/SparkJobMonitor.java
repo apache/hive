@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.spark.status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobStatus;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -77,7 +76,7 @@ abstract class SparkJobMonitor {
       final int failed = progress.getFailedTaskCount();
       String stageName = "Stage-" + s;
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", stageName, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", stageName));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);

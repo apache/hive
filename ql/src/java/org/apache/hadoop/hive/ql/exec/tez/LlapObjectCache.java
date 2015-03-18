@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
@@ -46,6 +50,8 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   private static final ReentrantLock lock = new ReentrantLock();
 
+  private static ExecutorService staticPool = Executors.newCachedThreadPool();
+
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private static final boolean isLogInfoEnabled = LOG.isInfoEnabled();
 
@@ -58,20 +64,19 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
   }
 
   @Override
-  public Object retrieve(String key, Callable<?> fn)
-    throws HiveException {
+  public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
 
-    Object o = null;
+    T value = null;
     ReentrantLock objectLock = null;
 
     lock.lock();
     try {
-      o = registry.getIfPresent(key);
-      if (o != null) {
+      value = (T) registry.getIfPresent(key);
+      if (value != null) {
         if (isLogInfoEnabled) {
           LOG.info("Found " + key + " in cache");
         }
-        return o;
+        return value;
       }
 
       if (locks.containsKey(key)) {
@@ -88,19 +93,19 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
     try{
       lock.lock();
       try {
-        o = registry.getIfPresent(key);
-        if (o != null) {
+        value = (T) registry.getIfPresent(key);
+        if (value != null) {
           if (isLogInfoEnabled) {
             LOG.info("Found " + key + " in cache");
           }
-          return o;
+          return value;
         }
       } finally {
         lock.unlock();
       }
 
       try {
-        o = fn.call();
+        value = fn.call();
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -111,7 +116,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
           LOG.info("Caching new object for key: " + key);
         }
 
-        registry.put(key, o);
+        registry.put(key, value);
         locks.remove(key);
       } finally {
         lock.unlock();
@@ -119,6 +124,16 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
     } finally {
       objectLock.unlock();
     }
-    return o;
+    return value;
+  }
+
+  @Override
+  public <T> Future<T> retrieveAsync(final String key, final Callable<T> fn) throws HiveException {
+    return staticPool.submit(new Callable<T>() {
+      @Override
+      public T call() throws Exception {
+        return retrieve(key, fn);
+      }
+    });
   }
 }

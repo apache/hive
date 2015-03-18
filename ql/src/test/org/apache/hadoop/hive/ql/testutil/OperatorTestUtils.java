@@ -67,7 +67,7 @@ public class OperatorTestUtils {
       InspectableObject [] sourceData, InspectableObject [] expected) throws HiveException {
     InspectableObject resultRef = new InspectableObject();
     for (int i = 0; i < sourceData.length; i++) {
-      selectOp.processOp(sourceData[i].o, 0);
+      selectOp.process(sourceData[i].o, 0);
       collectOp.retrieve(resultRef);
       StructObjectInspector expectedOi = (StructObjectInspector) expected[i].oi;
       List<? extends StructField> expectedFields = expectedOi.getAllStructFieldRefs();

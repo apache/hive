@@ -1142,44 +1142,46 @@ POSTHOOK: Input: default@dest_j1
 98	val_98
 98	val_98
 PREHOOK: query: -- verify that INNER is a non-reserved word for backwards compatibility
-create table inner(i int)
+-- change from HIVE-6617, inner is a SQL2011 reserved keyword.
+create table `inner`(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inner
 POSTHOOK: query: -- verify that INNER is a non-reserved word for backwards compatibility
-create table inner(i int)
+-- change from HIVE-6617, inner is a SQL2011 reserved keyword.
+create table `inner`(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inner
-PREHOOK: query: select i from inner
+PREHOOK: query: select i from `inner`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inner
 #### A masked pattern was here ####
-POSTHOOK: query: select i from inner
+POSTHOOK: query: select i from `inner`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inner
 #### A masked pattern was here ####
-PREHOOK: query: create table i(inner int)
+PREHOOK: query: create table i(`inner` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@i
-POSTHOOK: query: create table i(inner int)
+POSTHOOK: query: create table i(`inner` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i
-PREHOOK: query: select inner from i
+PREHOOK: query: select `inner` from i
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i
 #### A masked pattern was here ####
-POSTHOOK: query: select inner from i
+POSTHOOK: query: select `inner` from i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@i
 #### A masked pattern was here ####
-PREHOOK: query: explain select * from (select * from src) inner left outer join src
-on inner.key=src.key
+PREHOOK: query: explain select * from (select * from src) `inner` left outer join src
+on `inner`.key=src.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select * from src) inner left outer join src
-on inner.key=src.key
+POSTHOOK: query: explain select * from (select * from src) `inner` left outer join src
+on `inner`.key=src.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

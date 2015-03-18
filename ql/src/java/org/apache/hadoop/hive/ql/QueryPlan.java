@@ -149,7 +149,7 @@ public class QueryPlan implements Serializable {
 
     return userid
         + "_"
-        + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%5$02d", gc
+        + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%6$02d", gc
         .get(Calendar.YEAR), gc.get(Calendar.MONTH) + 1, gc
         .get(Calendar.DAY_OF_MONTH), gc.get(Calendar.HOUR_OF_DAY), gc
         .get(Calendar.MINUTE), gc.get(Calendar.SECOND))
@@ -435,7 +435,7 @@ public class QueryPlan implements Serializable {
     return "\"" + key + "\":" + getJSONValue(value) + ",";
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   private String getJSONList(List list) {
     if (list == null) {
       return "null";
@@ -451,7 +451,7 @@ public class QueryPlan implements Serializable {
     return sb.toString();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public String getJSONMap(Map map) {
     if (map == null) {
       return "null";

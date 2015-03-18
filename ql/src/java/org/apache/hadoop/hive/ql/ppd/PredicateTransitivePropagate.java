@@ -108,8 +108,6 @@ public class PredicateTransitivePropagate implements Transform {
       RowSchema parentRS, ExprNodeDesc filterExpr) {
     Operator<FilterDesc> filter = OperatorFactory.get(new FilterDesc(filterExpr, false),
         new RowSchema(parentRS.getSignature()));
-    filter.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
-    filter.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
     filter.getParentOperators().add(parent);
     filter.getChildOperators().add(target);
     parent.replaceChild(target, filter);
@@ -224,7 +222,7 @@ public class PredicateTransitivePropagate implements Transform {
 
   private static class Vectors {
 
-    private Set<Integer>[] vector;
+    private final Set<Integer>[] vector;
 
     @SuppressWarnings("unchecked")
     public Vectors(int length) {

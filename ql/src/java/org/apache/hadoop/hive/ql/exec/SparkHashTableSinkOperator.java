@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.logging.Log;
@@ -50,7 +52,7 @@ public class SparkHashTableSinkOperator
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
 
-  private HashTableSinkOperator htsOperator;
+  private final HashTableSinkOperator htsOperator;
 
   // The position of this table
   private byte tag;
@@ -60,18 +62,20 @@ public class SparkHashTableSinkOperator
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     // Ignore the tag passed in, which should be 0, not what we want
-    htsOperator.processOp(row, this.tag);
+    htsOperator.process(row, this.tag);
   }
 
   @Override

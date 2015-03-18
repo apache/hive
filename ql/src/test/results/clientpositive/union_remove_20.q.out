@@ -28,11 +28,11 @@ create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(values bigint, key string) stored as textfile
+PREHOOK: query: create table outputTbl1(`values` bigint, key string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(values bigint, key string) stored as textfile
+POSTHOOK: query: create table outputTbl1(`values` bigint, key string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
@@ -46,20 +46,20 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain
 insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -163,21 +163,21 @@ STAGE PLANS:
                   name: default.outputtbl1
 
 PREHOOK: query: insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
 PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: insert overwrite table outputTbl1
-SELECT a.values, a.key
+SELECT a.`values`, a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
@@ -220,11 +220,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from outputTbl1 order by key, values
+PREHOOK: query: select * from outputTbl1 order by key, `values`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 order by key, values
+POSTHOOK: query: select * from outputTbl1 order by key, `values`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####

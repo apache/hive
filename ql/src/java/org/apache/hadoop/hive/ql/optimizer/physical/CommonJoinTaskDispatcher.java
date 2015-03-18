@@ -554,10 +554,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       return false;
     }
 
-    if (op.getChildOperators() == null) {
-      return true;
-    }
-
     for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
       if (!checkOperatorOKMapJoinConversion(childOp)) {
         return false;

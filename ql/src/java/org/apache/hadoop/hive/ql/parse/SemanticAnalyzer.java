@@ -10749,7 +10749,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    storageFormat.fillDefaultStorageFormat();
+    storageFormat.fillDefaultStorageFormat(isExt);
 
     if ((command_type == CTAS) && (storageFormat.getStorageHandler() != null)) {
       throw new SemanticException(ErrorMsg.CREATE_NON_NATIVE_AS.getMsg());
@@ -10768,7 +10768,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    addDbAndTabToOutputs(qualifiedTabName);
+    addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE);
 
     if (isTemporary) {
       if (partCols.size() > 0) {
@@ -10868,11 +10868,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void addDbAndTabToOutputs(String[] qualifiedTabName) throws SemanticException {
+  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
-    outputs.add(new WriteEntity(new Table(qualifiedTabName[0], qualifiedTabName[1]),
-        WriteEntity.WriteType.DDL_NO_LOCK));
+
+    Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
+    t.setTableType(type);
+    outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
@@ -10938,7 +10940,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));
 
-    addDbAndTabToOutputs(qualTabName);
+    addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
     return selectStmt;
   }
 

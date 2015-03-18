@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -92,12 +91,12 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
         if (found == -1) {
           found = i;
         } else {
-          throw new AmbiguousMethodException(udafClass, null, null); 
+          throw new AmbiguousMethodException(udafClass, argClasses, mList);
         }
       }
     }
     assert (found != -1);
-    
+
     return cList.get(found);
   }
 

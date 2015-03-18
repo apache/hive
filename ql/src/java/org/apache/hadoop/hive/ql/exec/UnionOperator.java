@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,7 +56,8 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
    * needsTransform[].
    */
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     int parents = parentOperators.size();
     parentObjInspectors = new StructObjectInspector[parents];
@@ -116,11 +119,11 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
             + "] from " + inputObjInspectors[p] + " to " + outputObjInspector);
       }
     }
-    initializeChildren(hconf);
+    return result;
   }
 
   @Override
-  public synchronized void processOp(Object row, int tag) throws HiveException {
+  public synchronized void process(Object row, int tag) throws HiveException {
 
     StructObjectInspector soi = parentObjInspectors[tag];
     List<? extends StructField> fields = parentFields[tag];

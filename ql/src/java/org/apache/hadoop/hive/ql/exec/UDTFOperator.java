@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -57,7 +59,8 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   transient AutoProgressor autoProgressor;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     genericUDTF = conf.getGenericUDTF();
     collector = new UDTFCollector(this);
 
@@ -90,13 +93,11 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
               hconf, HiveConf.ConfVars.HIVES_AUTO_PROGRESS_TIMEOUT, TimeUnit.MILLISECONDS));
       autoProgressor.go();
     }
-
-    // Initialize the rest of the operator DAG
-    super.initializeOp(hconf);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     // The UDTF expects arguments in an object[]
     StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
     List<? extends StructField> fields = soi.getAllStructFieldRefs();

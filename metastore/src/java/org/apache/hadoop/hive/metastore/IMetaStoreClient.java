@@ -95,6 +95,12 @@ public interface IMetaStoreClient {
   boolean isCompatibleWith(HiveConf conf);
 
   /**
+   * Set added jars path info to MetaStoreClient.
+   * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
+   */
+  void setHiveAddedJars(String addedJars);
+
+  /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
    */
   void reconnect() throws MetaException;

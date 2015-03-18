@@ -24,22 +24,16 @@ import java.io.Serializable;
 public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private int numBuckets;
-  private boolean isSubQuery;
   private int mapJoinConversionPos;
 
   CommonMergeJoinDesc() {
   }
 
-  public CommonMergeJoinDesc(int numBuckets, boolean isSubQuery, int mapJoinConversionPos,
+  public CommonMergeJoinDesc(int numBuckets, int mapJoinConversionPos,
       MapJoinDesc joinDesc) {
     super(joinDesc);
     this.numBuckets = numBuckets;
-    this.isSubQuery = isSubQuery;
     this.mapJoinConversionPos = mapJoinConversionPos;
-  }
-
-  public boolean getCustomMerge() {
-    return isSubQuery;
   }
 
   public int getNumBuckets() {

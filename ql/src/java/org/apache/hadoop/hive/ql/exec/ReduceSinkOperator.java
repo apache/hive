@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,13 +52,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.hash.MurmurHash;
-
-import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
@@ -153,7 +155,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private final transient LongWritable recordCounter = new LongWritable();
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     try {
 
       numRows = 0;
@@ -237,12 +240,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       useUniformHash = conf.getReducerTraits().contains(UNIFORM);
 
       firstRow = true;
-      initializeChildren(hconf);
     } catch (Exception e) {
       String msg = "Error initializing ReduceSinkOperator: " + e.getMessage();
       LOG.error(msg, e);
       throw new RuntimeException(e);
     }
+    return result;
   }
 
 
@@ -291,7 +294,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   @Override
   @SuppressWarnings("unchecked")
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
       ObjectInspector rowInspector = inputObjInspectors[tag];
       if (firstRow) {
@@ -514,6 +517,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return keyWritable;
   }
 
+  @Override
   public void collect(byte[] key, byte[] value, int hash) throws IOException {
     HiveKey keyWritable = new HiveKey(key, hash);
     BytesWritable valueWritable = new BytesWritable(value);
@@ -608,6 +612,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return inputAliases;
   }
 
+  @Override
   public void setOutputCollector(OutputCollector _out) {
     this.out = _out;
   }

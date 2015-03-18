@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
     cacheKey = queryId + processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
     redWork = (ReduceWork) cache.retrieve(cacheKey, new Callable<Object>() {
+        @Override
         public Object call() {
           return Utilities.getReduceWork(jconf);
         }
@@ -110,9 +112,14 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     for (int tag = 0; tag < redWork.getTagToValueDesc().size(); tag++) {
       TableDesc keyTableDesc = redWork.getKeyDesc();
       TableDesc valueTableDesc = redWork.getTagToValueDesc().get(tag);
-      KeyValuesReader reader =
-          (KeyValuesReader) inputs.get(redWork.getTagToInput().get(tag)).getReader();
 
+      // make the reader ready for prime time
+      Input input = inputs.get(redWork.getTagToInput().get(tag));
+      input.start();
+      processorContext.waitForAnyInputReady(Collections.singleton(input));
+      KeyValuesReader reader = (KeyValuesReader) input.getReader();
+
+      // now we can setup the record source
       sources[tag] = new ReduceRecordSource();
       sources[tag].init(jconf, reducer, redWork.getVectorMode(), keyTableDesc, valueTableDesc,
           reader, tag == position, (byte) tag,

@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TemporaryHashSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -58,7 +59,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private MapJoinDesc desc;
 
   @Override
-  public void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp) {
+  public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
+      MapJoinOperator joinOp) {
     this.context = context;
     this.hconf = hconf;
     this.joinOp = joinOp;
@@ -66,9 +68,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   }
 
   @Override
-  public void load(
-      MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage) throws HiveException {
+  public void load(MapJoinTableContainer[] mapJoinTables,
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage)
+      throws HiveException {
 
     // Note: it's possible that a MJ operator is in a ReduceWork, in which case the
     // currentInputPath will be null. But, since currentInputPath is only interesting

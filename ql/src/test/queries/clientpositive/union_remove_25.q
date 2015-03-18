@@ -19,9 +19,9 @@ set mapred.input.dir.recursive=true;
 -- to run the test only on hadoop 23
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as textfile;
-create table outputTbl2(key string, values bigint) partitioned by (ds string) stored as textfile;
-create table outputTbl3(key string, values bigint) partitioned by (ds string,hr string) stored as textfile;
+create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as textfile;
+create table outputTbl2(key string, `values` bigint) partitioned by (ds string) stored as textfile;
+create table outputTbl3(key string, `values` bigint) partitioned by (ds string,hr string) stored as textfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
@@ -29,23 +29,23 @@ explain
 insert overwrite table outputTbl1 partition(ds='2004')
 SELECT *
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1 partition(ds='2004')
 SELECT *
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1 partition(ds='2004');
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, values;
+select * from outputTbl1 order by key, `values`;
 
 explain 
 insert overwrite table outputTbl2 partition(ds)

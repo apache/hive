@@ -766,6 +766,11 @@ public class HiveConf extends Configuration {
 
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE TABLE statement. Users can explicitly override it by CREATE TABLE ... STORED AS [FORMAT]"),
+    HIVEDEFAULTMANAGEDFILEFORMAT("hive.default.fileformat.managed", "none",
+	new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+	"Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
+	"created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
+	"for all tables."),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
@@ -1958,7 +1963,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-
+    HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS("hive.support.sql11.reserved.keywords", true,
+        "This flag should be set to true to enable support for SQL2011 reserved keywords.\n" +
+        "The default value is true."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

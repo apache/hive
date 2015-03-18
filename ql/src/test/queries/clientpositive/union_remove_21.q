@@ -27,17 +27,17 @@ explain
 insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1;

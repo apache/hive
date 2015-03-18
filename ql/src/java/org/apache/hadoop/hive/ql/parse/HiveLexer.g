@@ -42,7 +42,6 @@ KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
 KW_NONE: 'NONE';
-KW_DEFAULT : 'DEFAULT';
 KW_AND : 'AND';
 KW_OR : 'OR';
 KW_NOT : 'NOT' | '!';

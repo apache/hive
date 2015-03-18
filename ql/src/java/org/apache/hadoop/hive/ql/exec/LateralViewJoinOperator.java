@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -82,7 +84,8 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   public static final byte UDTF_TAG = 1;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
     ArrayList<String> fieldNames = conf.getOutputInternalColNames();
@@ -104,9 +107,8 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, ois);
+    return result;
 
-    // Initialize the rest of the operator DAG
-    super.initializeOp(hconf);
   }
 
   // acc is short for accumulator. It's used to build the row before forwarding
@@ -121,7 +123,7 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
    * by all the corresponding rows from the UDTF operator. And so on.
    */
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
     if (tag == SELECT_TAG) {
       selectObjs.clear();
