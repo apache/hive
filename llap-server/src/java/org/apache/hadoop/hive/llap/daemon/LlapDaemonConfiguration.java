@@ -63,4 +63,12 @@ public class LlapDaemonConfiguration extends Configuration {
   public static final String LLAP_DAEMON_COMMUNICATOR_NUM_THREADS = LLAP_DAEMON_PREFIX + "communicator.num.threads";
   public static final int LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
 
+  /**
+   * Time after which a previously disabled node will be re-enabled for scheduling. This may be
+   * modified by an exponential back-off if failures persist
+   */
+  public static final String LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS =
+      LLAP_DAEMON_PREFIX + "task.scheduler.node.re-enable.timeout.ms";
+  public static final long LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT = 2000l;
+
 }

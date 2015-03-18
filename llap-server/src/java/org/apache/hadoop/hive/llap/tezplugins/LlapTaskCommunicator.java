@@ -19,8 +19,10 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -28,10 +30,12 @@ import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.tez.dag.api.TaskAttemptEndReason;
 import org.apache.tez.dag.api.TaskCommunicatorContext;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -62,7 +66,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     BASE_SUBMIT_WORK_REQUEST = baseBuilder.build();
 
-    credentialMap = new ConcurrentHashMap<String, ByteBuffer>();
+    credentialMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -107,7 +111,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                                          int priority)  {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
         credentialsChanged, priority);
-    SubmitWorkRequestProto requestProto = null;
+    SubmitWorkRequestProto requestProto;
     try {
       requestProto = constructSubmitWorkRequest(containerId, taskSpec);
     } catch (IOException e) {
@@ -126,20 +130,49 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       throw new RuntimeException("ContainerInfo not found for container: " + containerId +
           ", while trying to launch task: " + taskSpec.getTaskAttemptID());
     }
+    // Have to register this up front right now. Otherwise, it's possible for the task to start
+    // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
+    getTaskCommunicatorContext()
+        .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
     communicator.submitWork(requestProto, host, port,
         new TaskCommunicator.ExecuteRequestCallback<SubmitWorkResponseProto>() {
           @Override
           public void setResponse(SubmitWorkResponseProto response) {
             LOG.info("Successfully launched task: " + taskSpec.getTaskAttemptID());
-            getTaskCommunicatorContext()
-                .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
           }
 
           @Override
           public void indicateError(Throwable t) {
-            // TODO Handle this error. This is where an API on the context to indicate failure / rejection comes in.
-            LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
-                containerId, t);
+            LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
+            if (t instanceof ServiceException) {
+              ServiceException se = (ServiceException) t;
+              t = se.getCause();
+            }
+            if (t instanceof RemoteException) {
+              RemoteException re = (RemoteException)t;
+              String message = re.toString();
+              // RejectedExecutions from the remote service treated as KILLED
+              if (message.contains(RejectedExecutionException.class.getName())) {
+                getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
+                    TaskAttemptEndReason.SERVICE_BUSY, "Service Busy");
+              } else {
+                // All others from the remote service cause the task to FAIL.
+                getTaskCommunicatorContext()
+                    .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
+                        t.toString());
+              }
+            } else {
+              // Exception from the RPC layer - communication failure, consider as KILLED / service down.
+              if (t instanceof IOException) {
+                getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
+                    TaskAttemptEndReason.COMMUNICATION_ERROR, "Communication Error");
+              } else {
+                // Anything else is a FAIL.
+                getTaskCommunicatorContext()
+                    .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
+                        t.getMessage());
+              }
+            }
           }
         });
   }
@@ -179,8 +212,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     containerCredentials.addAll(credentials);
     DataOutputBuffer containerTokens_dob = new DataOutputBuffer();
     containerCredentials.writeTokenStorageToStream(containerTokens_dob);
-    ByteBuffer containerCredentialsBuffer = ByteBuffer.wrap(containerTokens_dob.getData(), 0,
-        containerTokens_dob.getLength());
-    return containerCredentialsBuffer;
+    return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
   }
 }
