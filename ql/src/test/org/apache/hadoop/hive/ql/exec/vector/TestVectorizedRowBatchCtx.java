@@ -21,11 +21,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
-
-import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -58,6 +57,7 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.DefaultCodec;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -100,7 +100,7 @@ public class TestVectorizedRowBatchCtx {
       serDe = new ColumnarSerDe();
       SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     } catch (SerDeException e) {
-      new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -292,7 +292,7 @@ public class TestVectorizedRowBatchCtx {
               BytesWritable batchBinary = (BytesWritable) bcv.getWritableObject(i);
               byte[] a = colBinary.getBytes();
               byte[] b = batchBinary.getBytes();
-              Assert.assertEquals(true, a.equals(b));
+              Assert.assertEquals(true, Arrays.equals(a, b));
           }
             break;
           case STRING: {
@@ -312,7 +312,7 @@ public class TestVectorizedRowBatchCtx {
           }
             break;
           default:
-            Assert.assertEquals("Unknown type", false);
+            Assert.assertTrue("Unknown type", false);
           }
         } else {
           Assert.assertEquals(true, batch.cols[j].isNull[i]);
