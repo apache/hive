@@ -20,111 +20,37 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Integration tests with HBase Mini-cluster for HBaseStore
+ * Integration tests with HBase Mini-cluster using actual SQL
  */
-public class TestHBaseMetastoreSql {
+public class TestHBaseMetastoreSql extends IMockUtils {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
-  private static HBaseTestingUtility utility;
-  private static HTableInterface tblTable;
-  private static HTableInterface sdTable;
-  private static HTableInterface partTable;
-  private static HTableInterface dbTable;
-  private static HTableInterface roleTable;
-  private static HTableInterface globalPrivsTable;
-  private static HTableInterface principalRoleMapTable;
-  private static Map<String, String> emptyParameters = new HashMap<String, String>();
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
-  @Mock private HBaseConnection hconn;
-  private HBaseStore store;
-  private HiveConf conf;
-  private Driver driver;
-
   @BeforeClass
-  public static void startMiniCluster() throws Exception {
-    utility = new HBaseTestingUtility();
-    utility.startMiniCluster();
-    byte[][] families = new byte[][] {HBaseReadWrite.CATALOG_CF, HBaseReadWrite.STATS_CF};
-    tblTable = utility.createTable(HBaseReadWrite.TABLE_TABLE.getBytes(HBaseUtils.ENCODING),
-        families);
-    sdTable = utility.createTable(HBaseReadWrite.SD_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    partTable = utility.createTable(HBaseReadWrite.PART_TABLE.getBytes(HBaseUtils.ENCODING),
-        families);
-    dbTable = utility.createTable(HBaseReadWrite.DB_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    globalPrivsTable =
-        utility.createTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE.getBytes(HBaseUtils.ENCODING),
-            HBaseReadWrite.CATALOG_CF);
-    principalRoleMapTable =
-        utility.createTable(HBaseReadWrite.USER_TO_ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
-            HBaseReadWrite.CATALOG_CF);
+  public static void startup() throws Exception {
+    IMockUtils.startMiniCluster();
+
   }
 
   @AfterClass
-  public static void shutdownMiniCluster() throws Exception {
-    utility.shutdownMiniCluster();
+  public static void shutdown() throws Exception {
+    IMockUtils.shutdownMiniCluster();
   }
 
   @Before
-  public void setupConnection() throws IOException {
-    MockitoAnnotations.initMocks(this);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(globalPrivsTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(principalRoleMapTable);
-    conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-        "org.apache.hadoop.hive.metastore.hbase.HBaseStore");
-    conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HBaseReadWrite.setTestConnection(hconn);
-
-    SessionState.start(new CliSessionState(conf));
-    driver = new Driver(conf);
+  public void before() throws IOException {
+    setupConnection();
+    setupDriver();
   }
 
   @Test
@@ -140,6 +66,58 @@ public class TestHBaseMetastoreSql {
     CommandProcessorResponse rsp =
         driver.run("insert into table iipt partition(ds) values (1, 'today'), (2, 'yesterday')," +
             "(3, 'tomorrow')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Test
+  public void database() throws Exception {
+    CommandProcessorResponse rsp = driver.run("create database db");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter database db set owner user me");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("drop database db");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Ignore
+  public void table() throws Exception {
+    driver.run("create table tbl (c int)");
+    CommandProcessorResponse rsp = driver.run("insert into table tbl values (3)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("select * from tbl");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table tbl set tblproperties ('example', 'true')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("drop table tbl");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Ignore
+  public void partitionedTable() throws Exception {
+    driver.run("create table parttbl (c int) partitioned by (ds string)");
+    CommandProcessorResponse rsp =
+        driver.run("insert into table parttbl partition(ds) values (1, 'today'), (2, 'yesterday')" +
+            ", (3, 'tomorrow')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    // Do it again, to check insert into existing partitions
+    rsp = driver.run("insert into table parttbl partition(ds) values (4, 'today'), (5, 'yesterday')"
+        + ", (6, 'tomorrow')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("insert into table parttbl partition(ds = 'someday') values (1)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("insert into table parttbl partition(ds = 'someday') values (2)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table parttbl add partition (ds = 'whenever')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("insert into table parttbl partition(ds = 'whenever') values (2)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table parttbl touch partition (ds = 'whenever')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table parttbl drop partition (ds = 'whenever')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("select * from parttbl");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("select * from parttbl where ds = 'today'");
     Assert.assertEquals(0, rsp.getResponseCode());
   }
 
