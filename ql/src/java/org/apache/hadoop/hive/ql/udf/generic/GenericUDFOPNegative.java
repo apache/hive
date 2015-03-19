@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
@@ -28,6 +30,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -81,6 +85,16 @@ public class GenericUDFOPNegative extends GenericUDFBaseUnary {
       HiveDecimal dec = ((HiveDecimalWritable)input).getHiveDecimal();
       decimalWritable.set(dec.negate());
       return decimalWritable;
+    case INTERVAL_YEAR_MONTH:
+      HiveIntervalYearMonth intervalYearMonth =
+          ((HiveIntervalYearMonthWritable) input).getHiveIntervalYearMonth();
+      this.intervalYearMonthWritable.set(intervalYearMonth.negate());
+      return this.intervalYearMonthWritable;
+    case INTERVAL_DAY_TIME:
+      HiveIntervalDayTime intervalDayTime =
+          ((HiveIntervalDayTimeWritable) input).getHiveIntervalDayTime();
+      this.intervalDayTimeWritable.set(intervalDayTime.negate());
+      return intervalDayTimeWritable;
     default:
       // Should never happen.
       throw new RuntimeException("Unexpected type in evaluating " + opName + ": " +
