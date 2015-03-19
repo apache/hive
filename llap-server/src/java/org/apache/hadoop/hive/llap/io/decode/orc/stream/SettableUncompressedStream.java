@@ -22,9 +22,6 @@ import java.util.List;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.ql.io.orc.InStream;
 
-/**
- *
- */
 public class SettableUncompressedStream extends InStream.UncompressedStream {
 
   public SettableUncompressedStream(Long fileId, String name,
@@ -33,7 +30,6 @@ public class SettableUncompressedStream extends InStream.UncompressedStream {
   }
 
   public void setBuffers(List<DiskRange> input, long length) {
-    this.bytes = input;
-    this.length = length;
+    reset(input, length);
   }
 }

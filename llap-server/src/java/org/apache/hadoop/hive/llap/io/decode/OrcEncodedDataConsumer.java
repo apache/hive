@@ -103,13 +103,14 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       previousStripeIndex = currentStripeIndex;
 
       for (int i = 0; i < maxBatchesRG; i++) {
-        ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
-
         // for last batch in row group, adjust the batch size
         if (i == maxBatchesRG - 1) {
           batchSize = (int) (nonNullRowCount % VectorizedRowBatch.DEFAULT_SIZE);
-          cvb.size = batchSize;
+          if (batchSize == 0) break;
         }
+
+        ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
+        cvb.size = batchSize;
 
         for (int idx = 0; idx < batch.columnIxs.length; idx++) {
           cvb.cols[idx] = (ColumnVector)columnReaders[idx].nextVector(null, batchSize);

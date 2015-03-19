@@ -227,7 +227,7 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
       for (int i = 0; i < headers.length; ++i) {
         byte header = headers[i];
         if (header == 0) continue;
-        int freeListIx = (header >> 1) - 1, offset = offsetFromHeaderIndex(i);
+        int freeListIx = freeListFromHeader(header), offset = offsetFromHeaderIndex(i);
         boolean isFree = (header & 1) == 0;
         result.append("\n  block " + i + " at " + offset + ": size "
         + (1 << (freeListIx + minAllocLog2)) + ", " + (isFree ? "free" : "allocated"));
@@ -247,6 +247,10 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
           freeList.lock.unlock();
         }
       }
+    }
+
+    private int freeListFromHeader(byte header) {
+      return (header >> 1) - 1;
     }
 
     private int allocateFast(
@@ -377,8 +381,9 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
 
     public void deallocate(LlapDataBuffer buffer) {
       assert data != null;
-      int freeListIx = 31 - Integer.numberOfLeadingZeros(buffer.byteBuffer.remaining())
-          - minAllocLog2, headerIx = buffer.byteBuffer.position() >>> minAllocLog2;
+      int headerIx = buffer.byteBuffer.position() >>> minAllocLog2,
+          freeListIx = freeListFromHeader(headers[headerIx]);
+      assert freeListIx == (31 - Integer.numberOfLeadingZeros(buffer.allocSize) - minAllocLog2);
       while (true) {
         FreeList freeList = freeLists[freeListIx];
         int bHeaderIx = headerIx ^ (1 << freeListIx);

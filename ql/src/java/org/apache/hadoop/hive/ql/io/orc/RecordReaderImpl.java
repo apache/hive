@@ -1553,7 +1553,8 @@ public class RecordReaderImpl implements RecordReader {
       while (len > 0) {
         int bytesRead = stream.read(allBytes, offset, len);
         if (bytesRead < 0) {
-          throw new EOFException("Can't finish byte read from " + stream);
+          throw new EOFException("Can't finish byte read of " + len + "/" + totalLength
+              + " bytes for batchSize " + batchSize + " from [" + stream + "]");
         }
         len -= bytesRead;
         offset += bytesRead;

@@ -42,12 +42,15 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements LlapMem
   /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
    * the lookup is on compressed ranges, so we need to know this. */
   public int declaredLength;
+  public int allocSize;
 
-  public void initialize(int arenaIndex, ByteBuffer byteBuffer, int offset, int length) {
+  public void initialize(
+      int arenaIndex, ByteBuffer byteBuffer, int offset, int length) {
     this.byteBuffer = byteBuffer.slice();
     this.byteBuffer.position(offset);
     this.byteBuffer.limit(offset + length);
     this.arenaIndex = arenaIndex;
+    this.allocSize = length;
   }
 
   @Override
@@ -62,7 +65,7 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements LlapMem
 
   @Override
   public long getMemoryUsage() {
-    return byteBuffer.remaining();
+    return allocSize;
   }
 
   @Override

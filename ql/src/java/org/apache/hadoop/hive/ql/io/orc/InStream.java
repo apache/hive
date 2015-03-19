@@ -47,7 +47,7 @@ public abstract class InStream extends InputStream {
 
   protected final Long fileId;
   protected final String name;
-  protected final long length;
+  protected long length;
 
   public InStream(Long fileId, String name, long length) {
     this.fileId = fileId;
@@ -59,23 +59,24 @@ public abstract class InStream extends InputStream {
     return name;
   }
 
-  public long getStreamLength() {
-    return length;
-  }
 
   public static class UncompressedStream extends InStream {
     protected List<DiskRange> bytes;
-    protected long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;
 
     public UncompressedStream(Long fileId, String name, List<DiskRange> input, long length) {
       super(fileId, name, length);
+      reset(input, length);
+    }
+
+    protected void reset(List<DiskRange> input, long length) {
       this.bytes = input;
       this.length = length;
       currentRange = 0;
       currentOffset = 0;
+      range = null;
     }
 
     @Override
@@ -645,16 +646,28 @@ public abstract class InStream extends InputStream {
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
       ByteBuffer dest = chunk.buffer.getByteBufferRaw();
-      // After the below, position and limit will be screwed up (differently for if/else).
-      // We will reset the position and limit for now.
       int startPos = dest.position(), startLim = dest.limit();
       if (chunk.isCompressed) {
         codec.decompress(chunk.originalData, dest);
+        // Codec resets the position to 0 and limit to correct limit.
+        dest.position(startPos);
+        int newLim = dest.limit();
+        if (newLim > startLim) {
+          throw new AssertionError("After codec, buffer [" + startPos + ", " + startLim
+              + ") became [" + dest.position() + ", " + newLim + ")");
+        }
       } else {
         dest.put(chunk.originalData); // Copy uncompressed data to cache.
+        // Put moves position forward by the size of the data.
+        int newPos = dest.position();
+        if (newPos > startLim) {
+          throw new AssertionError("After copying, buffer [" + startPos + ", " + startLim
+              + ") became [" + newPos + ", " + dest.limit() + ")");
+        }
+        dest.position(startPos);
+        dest.limit(newPos);
       }
-      dest.position(startPos);
-      dest.limit(startLim);
+
       chunk.originalData = null;
       if (DebugUtils.isTraceLockingEnabled()) {
         LOG.info("Locking " + chunk.buffer + " due to reuse (after decompression)");

@@ -72,6 +72,7 @@ public class StreamUtils {
    * @param diskRanges - initial empty list of disk ranges
    * @return - total length of disk ranges
    */
+  // TODO: unnecessary
   public static long createDiskRanges(EncodedColumnBatch.StreamBuffer streamBuffer,
       List<DiskRange> diskRanges) {
     long totalLength = 0;

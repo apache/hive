@@ -23,8 +23,8 @@ import org.apache.hadoop.metrics2.MetricsSource;
 
 
 public interface LlapMemoryBuffer {
-  /** Note - position/limit of this should NOT be modified after it's in cache.
-  We could add a wrapper to enforce that, but for now it's shared and should be duplicated. */
+  /** Note - position of the raw buffer should NOT be modified ever;
+   * limit should not be modified after it's in cache. */
   public ByteBuffer getByteBufferRaw();
   public ByteBuffer getByteBufferDup();
 }
