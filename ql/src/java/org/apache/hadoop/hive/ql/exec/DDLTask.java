@@ -219,7 +219,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
 
-  transient HiveConf conf;
   private static final int separator = Utilities.tabCode;
   private static final int terminator = Utilities.newLineCode;
 
@@ -243,7 +242,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
-    this.conf = conf;
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
@@ -601,7 +599,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
     mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
-    Task task = null;
+    Task task;
     if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       TezWork tezWork = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
       mergeWork.setName("File Merge");
