@@ -110,7 +110,11 @@ public final class LazyObjectInspectorFactory {
         throw new IllegalArgumentException("Illegal ObjectInspector type [" + option + "]");
       }
 
-      cachedLazySimpleStructObjectInspector.put(signature, result);
+      LazySimpleStructObjectInspector prev =
+        cachedLazySimpleStructObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -132,7 +136,11 @@ public final class LazyObjectInspectorFactory {
     if (result == null) {
       result = new LazyListObjectInspector(listElementObjectInspector,
           separator, nullSequence, escaped, escapeChar);
-      cachedLazySimpleListObjectInspector.put(signature, result);
+      LazyListObjectInspector prev =
+        cachedLazySimpleListObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -159,7 +167,11 @@ public final class LazyObjectInspectorFactory {
       result = new LazyMapObjectInspector(mapKeyObjectInspector,
           mapValueObjectInspector, itemSeparator, keyValueSeparator,
           nullSequence, escaped, escapeChar);
-      cachedLazySimpleMapObjectInspector.put(signature, result);
+      LazyMapObjectInspector prev =
+        cachedLazySimpleMapObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -182,7 +194,11 @@ public final class LazyObjectInspectorFactory {
     if (result == null) {
       result = new LazyUnionObjectInspector(ois, separator,
           nullSequence, escaped, escapeChar);
-      cachedLazyUnionObjectInspector.put(signature, result);
+      LazyUnionObjectInspector prev =
+        cachedLazyUnionObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
