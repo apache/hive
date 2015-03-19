@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -67,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.spark.counter.SparkCounters;
@@ -75,6 +78,8 @@ import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
+  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final LogHelper console = new LogHelper(LOG);
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private SparkCounters sparkCounters;
