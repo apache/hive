@@ -49,6 +49,23 @@ public class TestHooks {
   }
 
   @Test
+  public void testRedactLogString() throws Exception {
+    HiveConf conf = new HiveConf(TestHooks.class);
+    String str;
+
+    HiveConf.setVar(conf, HiveConf.ConfVars.QUERYREDACTORHOOKS, SimpleQueryRedactor.class.getName());
+
+    str = HookUtils.redactLogString(null, null);
+    assertEquals(str, null);
+
+    str = HookUtils.redactLogString(conf, null);
+    assertEquals(str, null);
+
+    str = HookUtils.redactLogString(conf, "select 'XXX' from t1");
+    assertEquals(str, "select 'AAA' from t1");
+  }
+
+  @Test
   public void testQueryRedactor() throws Exception {
     HiveConf conf = new HiveConf(TestHooks.class);
     HiveConf.setVar(conf, HiveConf.ConfVars.QUERYREDACTORHOOKS,
