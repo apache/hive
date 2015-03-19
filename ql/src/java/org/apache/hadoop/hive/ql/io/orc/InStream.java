@@ -132,7 +132,7 @@ public abstract class InStream extends InputStream {
         return;
       }
       int i = 0;
-      for(DiskRange curRange : bytes) {
+      for (DiskRange curRange : bytes) {
         if (desired == 0 && curRange.getData().remaining() == 0) {
           logEmptySeek(name);
           return;
@@ -148,6 +148,18 @@ public abstract class InStream extends InputStream {
           return;
         }
         ++i;
+      }
+      // if they are seeking to the precise end, go ahead and let them go there
+      int segments = bytes.size();
+      if (segments != 0 && desired == bytes.get(segments - 1).end) {
+        currentOffset = desired;
+        currentRange = segments - 1;
+        DiskRange curRange = bytes.get(currentRange);
+        this.range = curRange.getData().duplicate();
+        int pos = range.position();
+        pos += (int)(desired - curRange.offset); // this is why we duplicate
+        this.range.position(pos);
+        return;
       }
       throw new IllegalArgumentException("Seek in " + name + " to " +
         desired + " is outside of the data");
