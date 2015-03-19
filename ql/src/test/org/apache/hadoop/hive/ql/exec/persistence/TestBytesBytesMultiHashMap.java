@@ -165,7 +165,7 @@ public class TestBytesBytesMultiHashMap {
 
     @Override
     public void writeKey(RandomAccessOutput dest) throws SerDeException {
-      lastKey += 465623573; // This number is certified to be random.
+      lastKey += 465623573;
       int len = LazyBinaryUtils.writeVLongToByteArray(buffer, lastKey);
       lastBuffer = Arrays.copyOf(buffer, len);
       keys.add(lastBuffer);

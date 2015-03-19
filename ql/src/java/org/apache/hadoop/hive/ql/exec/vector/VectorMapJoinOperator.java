@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -211,6 +212,11 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
   @Override
   public void closeOp(boolean aborted) throws HiveException {
+    for (MapJoinTableContainer tableContainer : mapJoinTables) {
+      if (tableContainer != null) {
+        tableContainer.dumpMetrics();
+      }
+    }
     if (!aborted && 0 < outputBatch.size) {
       flushOutput();
     }
