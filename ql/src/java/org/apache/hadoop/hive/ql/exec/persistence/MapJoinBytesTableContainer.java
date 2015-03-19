@@ -424,7 +424,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
 
     public void setFromOutput(Output output) {
       if (refs == null) {
-        refs = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
+        refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
       }
       byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
       this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
@@ -472,12 +472,15 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     @Override
     public List<Object> first() throws HiveException {
       currentRow = 0;
-      return next();
+      return nextInternal();
     }
-
 
     @Override
     public List<Object> next() throws HiveException {
+      return nextInternal();
+    }
+
+    private List<Object> nextInternal() throws HiveException {
       if (dummyRow != null) {
         List<Object> result = dummyRow;
         dummyRow = null;
