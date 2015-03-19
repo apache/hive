@@ -56,6 +56,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -937,10 +938,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(renamePartitionDesc.getTableName());
 
-    Partition oldPart = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
-    Partition part = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
+    LinkedHashMap<String, String> oldPartSpec = renamePartitionDesc.getOldPartSpec();
+    Partition oldPart = db.getPartition(tbl, oldPartSpec, false);
+    if (oldPart == null) {
+      String partName = FileUtils.makePartName(new ArrayList<String>(oldPartSpec.keySet()),
+          new ArrayList<String>(oldPartSpec.values()));
+      throw new HiveException("Rename partition: source partition [" + partName
+          + "] does not exist.");
+    }
+    Partition part = db.getPartition(tbl, oldPartSpec, false);
     part.setValues(renamePartitionDesc.getNewPartSpec());
-    db.renamePartition(tbl, renamePartitionDesc.getOldPartSpec(), part);
+    db.renamePartition(tbl, oldPartSpec, part);
     Partition newPart = db
         .getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
     work.getInputs().add(new ReadEntity(oldPart));
