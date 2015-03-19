@@ -46,7 +46,6 @@ public class GenericUDFOPMinus extends GenericUDFBaseArithmetic {
 
   @Override
   protected GenericUDF instantiateDTIUDF() {
-    // TODO: implement date-time/interval version of UDF
-    return new GenericUDFOPNumericMinus();
+    return new GenericUDFOPDTIMinus();
   }
 }

@@ -59,6 +59,8 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo shortTypeInfo = new PrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
   public static final PrimitiveTypeInfo dateTypeInfo = new PrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME);
   public static final PrimitiveTypeInfo timestampTypeInfo = new PrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
+  public static final PrimitiveTypeInfo intervalYearMonthTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+  public static final PrimitiveTypeInfo intervalDayTimeTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   public static final PrimitiveTypeInfo binaryTypeInfo = new PrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
 
   /**
@@ -87,6 +89,8 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.SMALLINT_TYPE_NAME, shortTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.DATE_TYPE_NAME, dateTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_TYPE_NAME, timestampTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, intervalYearMonthTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, intervalDayTimeTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
     cachedPrimitiveTypeInfo.put(decimalTypeInfo.getQualifiedName(), decimalTypeInfo);
     cachedPrimitiveTypeInfo.put("unknown", unknownTypeInfo);

@@ -99,6 +99,10 @@ public class serdeConstants {
 
   public static final String BINARY_TYPE_NAME = "binary";
 
+  public static final String INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month";
+
+  public static final String INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time";
+
   public static final String LIST_TYPE_NAME = "array";
 
   public static final String MAP_TYPE_NAME = "map";
@@ -129,6 +133,8 @@ public class serdeConstants {
     PrimitiveTypes.add("date");
     PrimitiveTypes.add("datetime");
     PrimitiveTypes.add("timestamp");
+    PrimitiveTypes.add("interval_year_month");
+    PrimitiveTypes.add("interval_day_time");
     PrimitiveTypes.add("decimal");
     PrimitiveTypes.add("binary");
   }

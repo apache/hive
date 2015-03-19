@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
@@ -84,6 +86,10 @@ public final class LazyBinaryFactory {
       return new LazyBinaryDate((WritableDateObjectInspector) oi);
     case TIMESTAMP:
       return new LazyBinaryTimestamp((WritableTimestampObjectInspector) oi);
+    case INTERVAL_YEAR_MONTH:
+      return new LazyBinaryHiveIntervalYearMonth((WritableHiveIntervalYearMonthObjectInspector) oi);
+    case INTERVAL_DAY_TIME:
+      return new LazyBinaryHiveIntervalDayTime((WritableHiveIntervalDayTimeObjectInspector) oi);
     case BINARY:
       return new LazyBinaryBinary((WritableBinaryObjectInspector) oi);
     case DECIMAL:
