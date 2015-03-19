@@ -40,7 +40,7 @@
 
 <property>
   <name>hive.execution.mode</name>
-  <value>llap</value>
+  <value>container</value>
 </property>
 
 <property>

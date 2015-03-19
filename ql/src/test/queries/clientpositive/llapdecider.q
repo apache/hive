@@ -1,4 +1,5 @@
 set hive.stats.fetch.column.stats=true;
+set hive.execution.mode=llap;
 set hive.llap.execution.mode=auto;
 
 -- simple query with multiple reduce stages
@@ -58,3 +59,5 @@ set hive.llap.execution.mode=auto;
 EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1;
 EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1;
 EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(test_udf_get_java_string(cast(key as string)) as int) > 1;
+
+set hive.execution.mode=container;

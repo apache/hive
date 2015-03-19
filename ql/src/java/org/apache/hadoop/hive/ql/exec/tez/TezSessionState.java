@@ -151,6 +151,8 @@ public class TezSessionState {
     this.conf = conf;
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+    
+    final boolean llapMode = "llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
 
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
@@ -179,7 +181,7 @@ public class TezSessionState {
       commonLocalResources.put(utils.getBaseName(lr), lr);
     }
 
-    if ("llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+    if (llapMode) {
       // add configs for llap-daemon-site.xml + localize llap jars
       // they cannot be referred to directly as it would be a circular depedency
       conf.addResource("llap-daemon-site.xml");
@@ -217,15 +219,26 @@ public class TezSessionState {
     // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
 
-    // we need plugins to handle llap and uber mode
-    tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS,
-        DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_SCHEDULER);
+    if (llapMode) {
+      // we need plugins to handle llap and uber mode
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS, DEFAULT_SERVICE, LOCAL_SERVICE,
+          LLAP_SERVICE_SCHEDULER);
 
-    tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS,
-	      DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS, DEFAULT_SERVICE,
+          LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
 
-    tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS,
-        DEFAULT_SERVICE, LOCAL_SERVICE, LLAP_SERVICE_TASK_COMMUNICATOR);
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS, DEFAULT_SERVICE,
+          LOCAL_SERVICE, LLAP_SERVICE_TASK_COMMUNICATOR);
+    } else {
+      // we need plugins to handle llap and uber mode
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS, DEFAULT_SERVICE, LOCAL_SERVICE);
+
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS, DEFAULT_SERVICE,
+          LOCAL_SERVICE);
+
+      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS, DEFAULT_SERVICE,
+          LOCAL_SERVICE);
+    }
 
     // container prewarming. tell the am how many containers we need
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
