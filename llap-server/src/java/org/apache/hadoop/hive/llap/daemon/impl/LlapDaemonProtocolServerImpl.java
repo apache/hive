@@ -64,7 +64,6 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
   public SubmitWorkResponseProto submitWork(RpcController controller,
                                             LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
       ServiceException {
-    LOG.info("DEBUG: Received request: " + request);
     try {
       containerRunner.submitWork(request);
     } catch (IOException e) {

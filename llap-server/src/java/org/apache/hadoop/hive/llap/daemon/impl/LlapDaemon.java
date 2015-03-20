@@ -109,6 +109,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     this.shuffleHandlerConf.setInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, shufflePort);
     this.shuffleHandlerConf.set(ShuffleHandler.SHUFFLE_HANDLER_LOCAL_DIRS,
         StringUtils.arrayToString(localDirs));
+    this.shuffleHandlerConf.setBoolean(ShuffleHandler.SHUFFLE_DIR_WATCHER_ENABLED, daemonConf
+        .getBoolean(LlapDaemonConfiguration.LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED,
+            LlapDaemonConfiguration.LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT));
 
     // Less frequently set parameter, not passing in as a param.
     int numHandlers = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,

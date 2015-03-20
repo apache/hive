@@ -35,6 +35,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
@@ -166,7 +170,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
         localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
         request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
         request.getFragmentSpec().getAttemptNumber());
-    LOG.info("Queuing container for execution: " + request);
+    LOG.info("Queueing container for execution: " + stringifyRequest(request));
     // This is the start of container-annotated logging.
     // TODO Reduce the length of this string. Way too verbose at the moment.
     String ndcContextString =
@@ -210,7 +214,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
       // TODO Unregistering does not happen at the moment, since there's no signals on when an app completes.
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
-      ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser());
+      ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser(), localDirs);
 
       TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
@@ -421,5 +425,45 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     int amHeartbeatIntervalMsMax;
     long amCounterHeartbeatInterval;
     int amMaxEventsPerHeartbeat;
+  }
+
+  private String stringifyRequest(SubmitWorkRequestProto request) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("am_details=").append(request.getAmHost()).append(":").append(request.getAmPort());
+    sb.append(", user=").append(request.getUser());
+    sb.append(", appIdString=").append(request.getApplicationIdString());
+    sb.append(", appAttemptNum=").append(request.getAppAttemptNumber());
+    sb.append(", containerIdString=").append(request.getContainerIdString());
+    FragmentSpecProto fragmentSpec = request.getFragmentSpec();
+    sb.append(", dagName=").append(fragmentSpec.getDagName());
+    sb.append(", vertexName=").append(fragmentSpec.getVertexName());
+    sb.append(", taskInfo=").append(fragmentSpec.getTaskAttemptIdString());
+    sb.append(", processor=").append(fragmentSpec.getProcessorDescriptor().getClassName());
+    sb.append(", numInputs=").append(fragmentSpec.getInputSpecsCount());
+    sb.append(", numOutputs=").append(fragmentSpec.getOutputSpecsCount());
+    sb.append(", numGroupedInputs=").append(fragmentSpec.getGroupedInputSpecsCount());
+    sb.append(", Inputs={");
+    if (fragmentSpec.getInputSpecsCount() > 0) {
+      for (IOSpecProto ioSpec : fragmentSpec.getInputSpecsList()) {
+        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",").append(ioSpec.getIoDescriptor().getClassName()).append(",").append(ioSpec.getPhysicalEdgeCount()).append("}");
+      }
+    }
+    sb.append("}");
+    sb.append(", Outputs={");
+    if (fragmentSpec.getOutputSpecsCount() > 0) {
+      for (IOSpecProto ioSpec : fragmentSpec.getOutputSpecsList()) {
+        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",").append(ioSpec.getIoDescriptor().getClassName()).append(",").append(ioSpec.getPhysicalEdgeCount()).append("}");
+      }
+    }
+    sb.append("}");
+    sb.append(", GroupedInputs={");
+    if (fragmentSpec.getGroupedInputSpecsCount() > 0) {
+      for (GroupInputSpecProto group : fragmentSpec.getGroupedInputSpecsList()) {
+        sb.append("{").append("groupName=").append(group.getGroupName()).append(", elements=").append(group.getGroupVerticesList()).append("}");
+        sb.append(group.getGroupVerticesList());
+      }
+    }
+    sb.append("}");
+    return sb.toString();
   }
 }

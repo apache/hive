@@ -711,9 +711,9 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     public int compareTo(Delayed o) {
       NodeInfo other = (NodeInfo) o;
       if (other.expireTimeMillis > this.expireTimeMillis) {
-        return 1;
-      } else if (other.expireTimeMillis < this.expireTimeMillis) {
         return -1;
+      } else if (other.expireTimeMillis < this.expireTimeMillis) {
+        return 1;
       } else {
         return 0;
       }

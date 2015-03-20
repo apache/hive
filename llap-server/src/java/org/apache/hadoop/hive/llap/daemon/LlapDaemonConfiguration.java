@@ -42,6 +42,9 @@ public class LlapDaemonConfiguration extends Configuration {
   public static final String LLAP_DAEMON_YARN_SHUFFLE_PORT = LLAP_DAEMON_PREFIX + "yarn.shuffle.port";
   public static final int LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT = 15551;
 
+  public static final String LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED = LLAP_DAEMON_PREFIX + "shuffle.dir-watcher.enabled";
+  public static final boolean LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT = false;
+
 
   // Section for configs used in AM and executors
   public static final String LLAP_DAEMON_NUM_EXECUTORS = LLAP_DAEMON_PREFIX + "num.executors";
@@ -70,5 +73,6 @@ public class LlapDaemonConfiguration extends Configuration {
   public static final String LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS =
       LLAP_DAEMON_PREFIX + "task.scheduler.node.re-enable.timeout.ms";
   public static final long LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT = 2000l;
+
 
 }

@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +51,12 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -106,7 +113,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.jboss.netty.util.CharsetUtil;
 
-public class ShuffleHandler {
+public class ShuffleHandler implements AttemptRegistrationListener {
 
   private static final Log LOG = LogFactory.getLog(ShuffleHandler.class);
 
@@ -117,6 +124,9 @@ public class ShuffleHandler {
 
   public static final String SHUFFLE_READAHEAD_BYTES = "mapreduce.shuffle.readahead.bytes";
   public static final int DEFAULT_SHUFFLE_READAHEAD_BYTES = 4 * 1024 * 1024;
+
+  public static final String SHUFFLE_DIR_WATCHER_ENABLED = "llap.shuffle.dir-watcher.enabled";
+  public static final boolean SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT = false;
   
   // pattern to identify errors related to the client closing the socket early
   // idea borrowed from Netty SslHandler
@@ -130,8 +140,8 @@ public class ShuffleHandler {
   protected HttpPipelineFactory pipelineFact;
   private final int sslFileBufferSize;
   private final Configuration conf;
-
-  private final ConcurrentMap<String, Boolean> registeredApps = new ConcurrentHashMap<String, Boolean>();
+  private final String[] localDirs;
+  private final DirWatcher dirWatcher;
 
   /**
    * Should the shuffle use posix_fadvise calls to manage the OS cache during
@@ -144,7 +154,10 @@ public class ShuffleHandler {
   private final boolean shuffleTransferToAllowed;
   private final ReadaheadPool readaheadPool = ReadaheadPool.getInstance();
 
-  private Map<String,String> userRsrc;
+  /* List of registered applications */
+  private final ConcurrentMap<String, Boolean> registeredApps = new ConcurrentHashMap<String, Boolean>();
+  /* Maps application identifiers (jobIds) to the associated user for the app */
+  private final ConcurrentMap<String,String> userRsrc;
   private JobTokenSecretManager secretManager;
 
   public static final String MAPREDUCE_SHUFFLE_SERVICEID =
@@ -165,7 +178,7 @@ public class ShuffleHandler {
   public static final String SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE =
       "mapreduce.shuffle.mapoutput-info.meta.cache.size";
   public static final int DEFAULT_SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE =
-      1000;
+      10000;
 
   public static final String CONNECTION_CLOSE = "close";
 
@@ -191,12 +204,26 @@ public class ShuffleHandler {
   public static final boolean WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = 
       false;
 
-  final boolean connectionKeepAliveEnabled;
-  final int connectionKeepAliveTimeOut;
-  final int mapOutputMetaInfoCacheSize;
+  static final String DATA_FILE_NAME = "file.out";
+  static final String INDEX_FILE_NAME = "file.out.index";
   private static final AtomicBoolean started = new AtomicBoolean(false);
   private static final AtomicBoolean initing = new AtomicBoolean(false);
   private static ShuffleHandler INSTANCE;
+
+
+  final boolean connectionKeepAliveEnabled;
+  final int connectionKeepAliveTimeOut;
+  final int mapOutputMetaInfoCacheSize;
+  private final LocalDirAllocator lDirAlloc =
+      new LocalDirAllocator(SHUFFLE_HANDLER_LOCAL_DIRS);
+  private final Shuffle shuffle;
+
+  @Override
+  public void registerAttemptDirs(AttemptPathIdentifier identifier,
+                                  AttemptPathInfo pathInfo) {
+    shuffle.registerAttemptDirs(identifier, pathInfo);
+  }
+
 
   @Metrics(about="Shuffle output metrics", context="mapred")
   static class ShuffleMetrics implements ChannelFutureListener {
@@ -236,6 +263,8 @@ public class ShuffleHandler {
       maxShuffleThreads = 2 * Runtime.getRuntime().availableProcessors();
     }
 
+    localDirs = conf.getTrimmedStrings(SHUFFLE_HANDLER_LOCAL_DIRS);
+
     shuffleBufferSize = conf.getInt(SHUFFLE_BUFFER_SIZE,
         DEFAULT_SHUFFLE_BUFFER_SIZE);
 
@@ -267,8 +296,22 @@ public class ShuffleHandler {
         Math.max(1, conf.getInt(SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE,
             DEFAULT_SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE));
 
-    userRsrc = new ConcurrentHashMap<String,String>();
+    userRsrc = new ConcurrentHashMap<>();
     secretManager = new JobTokenSecretManager();
+    shuffle = new Shuffle(conf);
+    if (conf.getBoolean(SHUFFLE_DIR_WATCHER_ENABLED, SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT)) {
+      LOG.info("Attempting to start dirWatcher");
+      DirWatcher localDirWatcher = null;
+      try {
+        localDirWatcher = new DirWatcher(this);
+      } catch (IOException e) {
+        LOG.warn("Unable to start DirWatcher. Active scans disabled");
+      }
+      dirWatcher = localDirWatcher;
+    } else {
+      LOG.info("DirWatcher disabled by config");
+      dirWatcher = null;
+    }
   }
 
 
@@ -286,6 +329,9 @@ public class ShuffleHandler {
     port = ((InetSocketAddress)ch.getLocalAddress()).getPort();
     conf.set(SHUFFLE_PORT_CONFIG_KEY, Integer.toString(port));
     pipelineFact.SHUFFLE.setPort(port);
+    if (dirWatcher != null) {
+      dirWatcher.start();
+    }
     LOG.info("LlapShuffleHandler" + " listening on port " + port);
   }
 
@@ -359,16 +405,34 @@ public class ShuffleHandler {
     return port;
   }
 
+  /**
+   * Register an application and it's associated credentials and user information.
+   * @param applicationIdString
+   * @param appToken
+   * @param user
+   */
   public void registerApplication(String applicationIdString, Token<JobTokenIdentifier> appToken,
-                                  String user) {
+                                  String user, String [] appDirs) {
+    // TODO Fix this. There's a race here, where an app may think everything is registered, finish really fast, send events and the consumer will not find the registration.
     Boolean registered = registeredApps.putIfAbsent(applicationIdString, Boolean.valueOf(true));
     if (registered == null) {
+      LOG.info("DEBUG: Registering watches for AppDirs: appId=" + applicationIdString);
       recordJobShuffleInfo(applicationIdString, user, appToken);
+      if (dirWatcher != null) {
+        for (String appDir : appDirs) {
+          try {
+            dirWatcher.registerApplicationDir(appDir, applicationIdString, user, 5 * 60 * 1000);
+          } catch (IOException e) {
+            LOG.warn("Unable to register dir: " + appDir + " with watcher");
+          }
+        }
+      }
     }
   }
 
   public void unregisterApplication(String applicationIdString) {
     removeJobShuffleInfo(applicationIdString);
+    // TOOD Unregister from the dirWatcher
   }
 
 
@@ -381,15 +445,20 @@ public class ShuffleHandler {
     if (pipelineFact != null) {
       pipelineFact.destroy();
     }
+    if (dirWatcher != null) {
+      dirWatcher.stop();
+    }
   }
 
   protected Shuffle getShuffle(Configuration conf) {
-    return new Shuffle(conf);
+    return shuffle;
   }
 
 
   private void addJobToken(String appIdString, String user,
       Token<JobTokenIdentifier> jobToken) {
+    // This is in place to be compatible with the MR ShuffleHandler. Requests from ShuffleInputs
+    // arrive with a job_ prefix.
     String jobIdString = appIdString.replace("application", "job");
     userRsrc.put(jobIdString, user);
     secretManager.addTokenForJob(jobIdString, jobToken);
@@ -450,10 +519,48 @@ public class ShuffleHandler {
   class Shuffle extends SimpleChannelUpstreamHandler {
 
     private final Configuration conf;
+    // TODO Change the indexCache to be a guava loading cache, rather than a custom implementation.
     private final IndexCache indexCache;
-    private final LocalDirAllocator lDirAlloc =
-      new LocalDirAllocator(SHUFFLE_HANDLER_LOCAL_DIRS);
     private int port;
+
+    private final LoadingCache<AttemptPathIdentifier, AttemptPathInfo> pathCache =
+        CacheBuilder.newBuilder().expireAfterAccess(300, TimeUnit.SECONDS).softValues()
+            .concurrencyLevel(16)
+            .removalListener(new RemovalListener<AttemptPathIdentifier, AttemptPathInfo>() {
+              @Override
+              public void onRemoval(
+                  RemovalNotification<AttemptPathIdentifier, AttemptPathInfo> notification) {
+                LOG.info("DEBUG: PathCacheEviction: " + notification.getKey() + ", Reason=" +
+                    notification.getCause());
+              }
+            })
+            .maximumWeight(10 * 1024 * 1024).weigher(
+            new Weigher<AttemptPathIdentifier, AttemptPathInfo>() {
+              @Override
+              public int weigh(AttemptPathIdentifier key, AttemptPathInfo value) {
+                return key.jobId.length() + key.user.length() + key.attemptId.length() +
+                    value.indexPath.toString().length() +
+                    value.dataPath.toString().length();
+              }
+            }).build(new CacheLoader<AttemptPathIdentifier, AttemptPathInfo>() {
+          @Override
+          public AttemptPathInfo load(AttemptPathIdentifier key) throws
+              Exception {
+            String base = getBaseLocation(key.jobId, key.user);
+            String attemptBase = base + key.attemptId;
+            Path indexFileName =
+                lDirAlloc.getLocalPathToRead(attemptBase + "/" + INDEX_FILE_NAME, conf);
+            Path mapOutputFileName =
+                lDirAlloc.getLocalPathToRead(attemptBase + "/" + DATA_FILE_NAME, conf);
+
+            LOG.info("DEBUG: Loaded : " + key + " via loader");
+            if (dirWatcher != null) {
+              dirWatcher.attemptInfoFound(key);
+            }
+            return new AttemptPathInfo(indexFileName, mapOutputFileName);
+
+          }
+        });
 
     public Shuffle(Configuration conf) {
       this.conf = conf;
@@ -463,6 +570,12 @@ public class ShuffleHandler {
     
     public void setPort(int port) {
       this.port = port;
+    }
+
+    void registerAttemptDirs(AttemptPathIdentifier identifier,
+                                    AttemptPathInfo pathInfo) {
+      LOG.info("DEBUG: Registering " + identifier + " via watcher");
+      pathCache.put(identifier, pathInfo);
     }
 
     private List<String> splitMaps(List<String> mapq) {
@@ -569,14 +682,9 @@ public class ShuffleHandler {
       Channel ch = evt.getChannel();
       String user = userRsrc.get(jobId);
 
-      // $x/$user/appcache/$appId/output/$mapId
-      // TODO: Once Shuffle is out of NM, this can use MR APIs to convert
-      // between App and Job
-      String outputBasePathStr = getBaseLocation(jobId, user);
-
       try {
-        populateHeaders(mapIds, outputBasePathStr, user, reduceId, request,
-          response, keepAliveParam, mapOutputInfoMap);
+        populateHeaders(mapIds, jobId, user, reduceId,
+            response, keepAliveParam, mapOutputInfoMap);
       } catch(IOException e) {
         ch.write(response);
         LOG.error("Shuffle error in populating headers :", e);
@@ -590,8 +698,10 @@ public class ShuffleHandler {
       for (String mapId : mapIds) {
         try {
           MapOutputInfo info = mapOutputInfoMap.get(mapId);
+          // This will be hit if there's a large number of mapIds in a single request
+          // (Determined by the cache size further up), in which case we go to disk again.
           if (info == null) {
-            info = getMapOutputInfo(outputBasePathStr, mapId, reduceId, user);
+            info = getMapOutputInfo(jobId, mapId, reduceId, user);
           }
           lastMap =
               sendMapOutput(ctx, ch, user, mapId,
@@ -619,61 +729,56 @@ public class ShuffleHandler {
       return sb.toString();
     }
 
-    private final String USERCACHE_CONSTANT = "usercache";
-    private final String APPCACHE_CONSTANT = "appcache";
 
-    private String getBaseLocation(String jobIdString, String user) {
-      String parts[] = jobIdString.split("_");
-      Preconditions.checkArgument(parts.length == 3, "Invalid jobId. Expecting 3 parts");
-      final ApplicationId appID =
-          ApplicationId.newInstance(Long.parseLong(parts[1]), Integer.parseInt(parts[2]));
-      final String baseStr =
-          USERCACHE_CONSTANT + "/" + user + "/"
-              + APPCACHE_CONSTANT + "/"
-              + ConverterUtils.toString(appID) + "/output" + "/";
-      return baseStr;
-    }
-
-    protected MapOutputInfo getMapOutputInfo(String base, String mapId,
-        int reduce, String user) throws IOException {
-      // Index file
-      Path indexFileName =
-          lDirAlloc.getLocalPathToRead(base + "/file.out.index", conf);
-      TezIndexRecord info =
-          indexCache.getIndexInformation(mapId, reduce, indexFileName, user);
-
-      Path mapOutputFileName =
-          lDirAlloc.getLocalPathToRead(base + "/file.out", conf);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(base + " : " + mapOutputFileName + " : " + indexFileName);
+    protected MapOutputInfo getMapOutputInfo(String jobId, String mapId,
+                                             int reduce, String user) throws IOException {
+      AttemptPathInfo pathInfo;
+      try {
+        AttemptPathIdentifier identifier = new AttemptPathIdentifier(jobId, user, mapId);
+        pathInfo = pathCache.get(identifier);
+        LOG.info("DEBUG: Retrieved pathInfo for " + identifier + " check for corresponding loaded messages to determine whether it was loaded or cached");
+      } catch (ExecutionException e) {
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        } else {
+          throw new RuntimeException(e.getCause());
+        }
       }
-      MapOutputInfo outputInfo = new MapOutputInfo(mapOutputFileName, info);
+
+      TezIndexRecord info =
+          indexCache.getIndexInformation(mapId, reduce, pathInfo.indexPath, user);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("jobId=" + jobId + ", mapId=" + mapId + ",dataFile=" + pathInfo.dataPath +
+            ", indexFile=" + pathInfo.indexPath);
+      }
+
+      // TODO Get rid of MapOutputInfo if possible
+      MapOutputInfo outputInfo = new MapOutputInfo(pathInfo.dataPath, info);
       return outputInfo;
     }
 
-    protected void populateHeaders(List<String> mapIds, String outputBaseStr,
-        String user, int reduce, HttpRequest request, HttpResponse response,
+    protected void populateHeaders(List<String> mapIds, String jobId,
+        String user, int reduce, HttpResponse response,
         boolean keepAliveParam, Map<String, MapOutputInfo> mapOutputInfoMap)
         throws IOException {
+      // Reads the index file for each requested mapId, and figures out the overall
+      // length of the response - which is populated into the response header.
 
       long contentLength = 0;
       for (String mapId : mapIds) {
-        String base = outputBaseStr + mapId;
-        MapOutputInfo outputInfo = getMapOutputInfo(base, mapId, reduce, user);
+        MapOutputInfo outputInfo = getMapOutputInfo(jobId, mapId, reduce, user);
+        // mapOutputInfoMap is used to share the lookups with the caller
         if (mapOutputInfoMap.size() < mapOutputMetaInfoCacheSize) {
           mapOutputInfoMap.put(mapId, outputInfo);
         }
-        // Index file
-        Path indexFileName =
-            lDirAlloc.getLocalPathToRead(base + "/file.out.index", conf);
-        TezIndexRecord info =
-            indexCache.getIndexInformation(mapId, reduce, indexFileName, user);
         ShuffleHeader header =
-            new ShuffleHeader(mapId, info.getPartLength(), info.getRawLength(), reduce);
+            new ShuffleHeader(mapId, outputInfo.indexRecord.getPartLength(),
+                outputInfo.indexRecord.getRawLength(), reduce);
         DataOutputBuffer dob = new DataOutputBuffer();
         header.write(dob);
 
-        contentLength += info.getPartLength();
+        contentLength += outputInfo.indexRecord.getPartLength();
         contentLength += dob.getLength();
       }
 
@@ -697,8 +802,8 @@ public class ShuffleHandler {
     }
 
     class MapOutputInfo {
-      final Path mapOutputFileName;
-      final TezIndexRecord indexRecord;
+      final Path mapOutputFileName; // 100-200 byte string. Maybe replace with a local-dir-id, and construct on the fly.
+      final TezIndexRecord indexRecord; // 3 longs + reference overheads.
 
       MapOutputInfo(Path mapOutputFileName, TezIndexRecord indexRecord) {
         this.mapOutputFileName = mapOutputFileName;
@@ -842,4 +947,84 @@ public class ShuffleHandler {
       }
     }
   }
+
+
+  private static final String USERCACHE_CONSTANT = "usercache";
+  private static final String APPCACHE_CONSTANT = "appcache";
+
+  private static String getBaseLocation(String jobIdString, String user) {
+    // $x/$user/appcache/$appId/output/$mapId
+    // TODO: Once Shuffle is out of NM, this can use MR APIs to convert
+    // between App and Job
+    String parts[] = jobIdString.split("_");
+    Preconditions.checkArgument(parts.length == 3, "Invalid jobId. Expecting 3 parts");
+    final ApplicationId appID =
+        ApplicationId.newInstance(Long.parseLong(parts[1]), Integer.parseInt(parts[2]));
+    final String baseStr =
+        USERCACHE_CONSTANT + "/" + user + "/"
+            + APPCACHE_CONSTANT + "/"
+            + ConverterUtils.toString(appID) + "/output" + "/";
+    return baseStr;
+  }
+
+  static class AttemptPathInfo {
+    // TODO Change this over to just store local dir indices, instead of the entire path. Far more efficient.
+    private final Path indexPath;
+    private final Path dataPath;
+
+    public AttemptPathInfo(Path indexPath, Path dataPath) {
+      this.indexPath = indexPath;
+      this.dataPath = dataPath;
+    }
+  }
+
+  static class AttemptPathIdentifier {
+    private final String jobId;
+    private final String user;
+    private final String attemptId;
+
+    public AttemptPathIdentifier(String jobId, String user, String attemptId) {
+      this.jobId = jobId;
+      this.user = user;
+      this.attemptId = attemptId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      AttemptPathIdentifier that = (AttemptPathIdentifier) o;
+
+      if (!attemptId.equals(that.attemptId)) {
+        return false;
+      }
+      if (!jobId.equals(that.jobId)) {
+        return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = jobId.hashCode();
+      result = 31 * result + attemptId.hashCode();
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "AttemptPathIdentifier{" +
+          "attemptId='" + attemptId + '\'' +
+          ", jobId='" + jobId + '\'' +
+          '}';
+    }
+  }
+
+
 }
