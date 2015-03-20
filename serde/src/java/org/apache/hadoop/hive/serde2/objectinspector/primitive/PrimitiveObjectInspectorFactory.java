@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -91,8 +91,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveWritableObjectInspector.
-  private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
-      new HashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector>();
+  private static ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
+      new ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector>();
   static {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         writableBooleanObjectInspector);
@@ -175,8 +175,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveJavaObjectInspector.
-  private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
-      new HashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector>();
+  private static ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
+      new ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector>();
   static {
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         javaBooleanObjectInspector);
@@ -270,7 +270,11 @@ public final class PrimitiveObjectInspectorFactory {
       throw new RuntimeException("Failed to create object inspector for " + typeInfo );
     }
 
-    cachedPrimitiveWritableInspectorCache.put(typeInfo, result);
+    AbstractPrimitiveWritableObjectInspector prev =
+      cachedPrimitiveWritableInspectorCache.putIfAbsent(typeInfo, result);
+    if (prev != null) {
+      result = prev;
+    }
     return result;
   }
 
@@ -365,7 +369,11 @@ public final class PrimitiveObjectInspectorFactory {
         throw new RuntimeException("Failed to create JavaHiveVarcharObjectInspector for " + typeInfo );
     }
 
-    cachedPrimitiveJavaInspectorCache.put(typeInfo, result);
+    AbstractPrimitiveJavaObjectInspector prev =
+      cachedPrimitiveJavaInspectorCache.putIfAbsent(typeInfo, result);
+    if (prev != null) {
+      result = prev;
+    }
     return result;
   }
 
