@@ -1687,7 +1687,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost").end().build();
-    conf.set(OrcInputFormat.SARG_PUSHDOWN, isNull.toKryo());
+    conf.set(SearchArgumentFactory.SARG_PUSHDOWN, isNull.toKryo());
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});

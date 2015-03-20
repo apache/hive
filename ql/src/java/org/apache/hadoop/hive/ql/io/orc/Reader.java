@@ -318,4 +318,5 @@ public interface Reader {
                     boolean[] include, SearchArgument sarg,
                     String[] neededColumns) throws IOException;
 
+  MetadataReader metadata() throws IOException;
 }
