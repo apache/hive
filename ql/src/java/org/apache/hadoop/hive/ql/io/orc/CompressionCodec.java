@@ -23,7 +23,7 @@ import java.util.EnumSet;
 
 import javax.annotation.Nullable;
 
-interface CompressionCodec {
+public interface CompressionCodec {
 
   public enum Modifier {
     /* speed/compression tradeoffs */

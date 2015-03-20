@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
+import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
@@ -776,109 +776,88 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testOverlap() throws Exception {
-    assertTrue(!RecordReaderImpl.overlap(0, 10, -10, -1));
-    assertTrue(RecordReaderImpl.overlap(0, 10, -1, 0));
-    assertTrue(RecordReaderImpl.overlap(0, 10, -1, 1));
-    assertTrue(RecordReaderImpl.overlap(0, 10, 2, 8));
-    assertTrue(RecordReaderImpl.overlap(0, 10, 5, 10));
-    assertTrue(RecordReaderImpl.overlap(0, 10, 10, 11));
-    assertTrue(RecordReaderImpl.overlap(0, 10, 0, 10));
-    assertTrue(RecordReaderImpl.overlap(0, 10, -1, 11));
-    assertTrue(!RecordReaderImpl.overlap(0, 10, 11, 12));
+    assertTrue(!RecordReaderUtils.overlap(0, 10, -10, -1));
+    assertTrue(RecordReaderUtils.overlap(0, 10, -1, 0));
+    assertTrue(RecordReaderUtils.overlap(0, 10, -1, 1));
+    assertTrue(RecordReaderUtils.overlap(0, 10, 2, 8));
+    assertTrue(RecordReaderUtils.overlap(0, 10, 5, 10));
+    assertTrue(RecordReaderUtils.overlap(0, 10, 10, 11));
+    assertTrue(RecordReaderUtils.overlap(0, 10, 0, 10));
+    assertTrue(RecordReaderUtils.overlap(0, 10, -1, 11));
+    assertTrue(!RecordReaderUtils.overlap(0, 10, 11, 12));
   }
 
-  private static List<RecordReaderImpl.DiskRange> diskRanges(Integer... points) {
-    List<RecordReaderImpl.DiskRange> result =
-        new ArrayList<RecordReaderImpl.DiskRange>();
-    for(int i=0; i < points.length; i += 2) {
-      result.add(new RecordReaderImpl.DiskRange(points[i], points[i+1]));
+  private static DiskRangeList diskRanges(Integer... points) {
+    DiskRangeList head = null, tail = null;
+    for(int i = 0; i < points.length; i += 2) {
+      DiskRangeList range = new DiskRangeList(points[i], points[i+1]);
+      if (tail == null) {
+        head = tail = range;
+      } else {
+        tail = tail.insertAfter(range);
+      }
     }
-    return result;
-  }
-
-  @Test
-  public void testMergeDiskRanges() throws Exception {
-    List<RecordReaderImpl.DiskRange> list = diskRanges();
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges()));
-    list = diskRanges(100, 200, 300, 400, 500, 600);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 200, 300, 400, 500, 600)));
-    list = diskRanges(100, 200, 150, 300, 400, 500);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 300, 400, 500)));
-    list = diskRanges(100, 200, 300, 400, 400, 500);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 200, 300, 500)));
-    list = diskRanges(100, 200, 0, 300);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 300)));
-    list = diskRanges(0, 500, 200, 400);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 500)));
-    list = diskRanges(0, 100, 100, 200, 200, 300, 300, 400);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 400)));
+    return head;
   }
 
   @Test
   public void testGetIndexPosition() throws Exception {
-    assertEquals(0, RecordReaderImpl.getIndexPosition
+    assertEquals(0, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.INT,
             OrcProto.Stream.Kind.PRESENT, true, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.INT,
             OrcProto.Stream.Kind.DATA, true, true));
-    assertEquals(3, RecordReaderImpl.getIndexPosition
+    assertEquals(3, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.INT,
             OrcProto.Stream.Kind.DATA, false, true));
-    assertEquals(0, RecordReaderImpl.getIndexPosition
+    assertEquals(0, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.INT,
             OrcProto.Stream.Kind.DATA, true, false));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DICTIONARY, OrcProto.Type.Kind.STRING,
             OrcProto.Stream.Kind.DATA, true, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.BINARY,
             OrcProto.Stream.Kind.DATA, true, true));
-    assertEquals(3, RecordReaderImpl.getIndexPosition
+    assertEquals(3, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.BINARY,
             OrcProto.Stream.Kind.DATA, false, true));
-    assertEquals(6, RecordReaderImpl.getIndexPosition
+    assertEquals(6, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.BINARY,
             OrcProto.Stream.Kind.LENGTH, true, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.BINARY,
             OrcProto.Stream.Kind.LENGTH, false, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.DECIMAL,
             OrcProto.Stream.Kind.DATA, true, true));
-    assertEquals(3, RecordReaderImpl.getIndexPosition
+    assertEquals(3, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.DECIMAL,
             OrcProto.Stream.Kind.DATA, false, true));
-    assertEquals(6, RecordReaderImpl.getIndexPosition
+    assertEquals(6, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.DECIMAL,
             OrcProto.Stream.Kind.SECONDARY, true, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.DECIMAL,
             OrcProto.Stream.Kind.SECONDARY, false, true));
-    assertEquals(4, RecordReaderImpl.getIndexPosition
+    assertEquals(4, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.TIMESTAMP,
             OrcProto.Stream.Kind.DATA, true, true));
-    assertEquals(3, RecordReaderImpl.getIndexPosition
+    assertEquals(3, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.TIMESTAMP,
             OrcProto.Stream.Kind.DATA, false, true));
-    assertEquals(7, RecordReaderImpl.getIndexPosition
+    assertEquals(7, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.TIMESTAMP,
             OrcProto.Stream.Kind.SECONDARY, true, true));
-    assertEquals(5, RecordReaderImpl.getIndexPosition
+    assertEquals(5, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.TIMESTAMP,
             OrcProto.Stream.Kind.SECONDARY, false, true));
   }
 
   @Test
   public void testPartialPlan() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    DiskRangeList result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();
@@ -947,38 +926,53 @@ public class TestRecordReaderImpl {
 
     // filter by rows and groups
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, false, encodings, types, 32768);
+        columns, rowGroups, false, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(0, 1000, 100, 1000, 400, 1000,
-        1000, 11000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP,
-        11000, 21000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP,
-        41000, 51000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP)));
+        1000, 11000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP,
+        11000, 21000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP,
+        41000, 51000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP)));
+    result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
+        columns, rowGroups, false, encodings, types, 32768, true);
+    assertThat(result, is(diskRanges(0, 21000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP,
+        41000, 51000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP)));
 
     // if we read no rows, don't read any bytes
     rowGroups = new boolean[]{false, false, false, false, false, false};
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, false, encodings, types, 32768);
-    assertThat(result, is(diskRanges()));
+        columns, rowGroups, false, encodings, types, 32768, false);
+    assertNull(result);
 
     // all rows, but only columns 0 and 2.
     rowGroups = null;
     columns = new boolean[]{true, false, true};
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, null, false, encodings, types, 32768);
+        columns, null, false, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(100000, 102000, 102000, 200000)));
+    result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
+        columns, null, false, encodings, types, 32768, true);
+    assertThat(result, is(diskRanges(100000, 200000)));
 
     rowGroups = new boolean[]{false, true, false, false, false, false};
     indexes[2] = indexes[1];
     indexes[1] = null;
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, false, encodings, types, 32768);
+        columns, rowGroups, false, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(100100, 102000,
-        112000, 122000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP)));
+        112000, 122000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP)));
+    result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
+        columns, rowGroups, false, encodings, types, 32768, true);
+    assertThat(result, is(diskRanges(100100, 102000,
+        112000, 122000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP)));
 
     rowGroups = new boolean[]{false, false, false, false, false, true};
     indexes[1] = indexes[2];
     columns = new boolean[]{true, true, true};
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, false, encodings, types, 32768);
+        columns, rowGroups, false, encodings, types, 32768, false);
+    assertThat(result, is(diskRanges(500, 1000, 51000, 100000, 100500, 102000,
+        152000, 200000)));
+    result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
+        columns, rowGroups, false, encodings, types, 32768, true);
     assertThat(result, is(diskRanges(500, 1000, 51000, 100000, 100500, 102000,
         152000, 200000)));
   }
@@ -986,7 +980,7 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testPartialPlanCompressed() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    DiskRangeList result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();
@@ -1055,20 +1049,20 @@ public class TestRecordReaderImpl {
 
     // filter by rows and groups
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, true, encodings, types, 32768);
+        columns, rowGroups, true, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(0, 1000, 100, 1000,
         400, 1000, 1000, 11000+(2*32771),
         11000, 21000+(2*32771), 41000, 100000)));
 
     rowGroups = new boolean[]{false, false, false, false, false, true};
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, true, encodings, types, 32768);
+        columns, rowGroups, true, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(500, 1000, 51000, 100000)));
   }
 
   @Test
   public void testPartialPlanString() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    DiskRangeList result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();
@@ -1143,10 +1137,10 @@ public class TestRecordReaderImpl {
 
     // filter by rows and groups
     result = RecordReaderImpl.planReadPartialDataStreams(streams, indexes,
-        columns, rowGroups, false, encodings, types, 32768);
+        columns, rowGroups, false, encodings, types, 32768, false);
     assertThat(result, is(diskRanges(100, 1000, 400, 1000, 500, 1000,
-        11000, 21000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP,
-        41000, 51000 + RecordReaderImpl.WORST_UNCOMPRESSED_SLOP,
+        11000, 21000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP,
+        41000, 51000 + RecordReaderUtils.WORST_UNCOMPRESSED_SLOP,
         51000, 95000, 95000, 97000, 97000, 100000)));
   }
 

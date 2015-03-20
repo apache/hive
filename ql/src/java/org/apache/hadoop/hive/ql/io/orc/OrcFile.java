@@ -193,7 +193,7 @@ public final class OrcFile {
     private ReaderImpl.FileMetaInfo fileMetaInfo;
     private long maxLength = Long.MAX_VALUE;
 
-    ReaderOptions(Configuration conf) {
+    public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
     ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {

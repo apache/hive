@@ -157,7 +157,7 @@ public final class FileDump {
           for (int colIdx : rowIndexCols) {
             sargColumns[colIdx] = true;
           }
-          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, sargColumns);
+          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
           for (int col : rowIndexCols) {
             StringBuilder buf = new StringBuilder();
             String rowIdxString = getFormattedRowIndices(col, indices.getRowGroupIndex());
