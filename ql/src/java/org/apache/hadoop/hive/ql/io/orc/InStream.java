@@ -621,16 +621,10 @@ public abstract class InStream extends InputStream {
           toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
         }
         long originalOffset = bc.offset;
-        next = addOneCompressionBuffer(bc, zcr, bufferSize,
+        lastCached = addOneCompressionBuffer(bc, zcr, bufferSize,
             cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
-        if (next != null) {
-          currentCOffset = next.offset;
-          lastCached = next.prev;
-          // addOne... always adds one CC and returns next range after it
-          assert lastCached instanceof CacheChunk;
-        } else {
-          currentCOffset = originalOffset;
-        }
+        next = (lastCached != null) ? lastCached.next : null;
+        currentCOffset = (next != null) ? next.offset : originalOffset;
       }
       if ((endCOffset >= 0 && currentCOffset >= endCOffset) || next == null) {
         break;
@@ -766,9 +760,9 @@ public abstract class InStream extends InputStream {
    * @param toDecompress The list of work to decompress - pairs of compressed buffers and the 
    *                     target buffers (same as the ones added to cacheBuffers).
    * @param toRelease The list of buffers to release to zcr because they are no longer in use.
-   * @return The total number of compressed bytes consumed.
+   * @return The resulting cache chunk.
    */
-  private static DiskRangeList addOneCompressionBuffer(BufferChunk current, ZeroCopyReaderShim zcr,
+  private static ProcCacheChunk addOneCompressionBuffer(BufferChunk current, ZeroCopyReaderShim zcr,
       int bufferSize, LowLevelCache cache, List<LlapMemoryBuffer> cacheBuffers,
       List<ProcCacheChunk> toDecompress, List<ByteBuffer> toRelease) throws IOException {
     ByteBuffer slice = null;
@@ -793,12 +787,12 @@ public abstract class InStream extends InputStream {
       // Simple case - CB fits entirely in the disk range.
       slice = compressed.slice();
       slice.limit(chunkLength);
-      DiskRangeList next = addOneCompressionBlockByteBuffer(slice, isUncompressed, cbStartOffset,
+      ProcCacheChunk cc = addOneCompressionBlockByteBuffer(slice, isUncompressed, cbStartOffset,
           cbEndOffset, chunkLength, consumedLength, current, cache, toDecompress, cacheBuffers);
       if (compressed.remaining() <= 0 && zcr != null) {
         toRelease.add(compressed);
       }
-      return next;
+      return cc;
     }
     if (current.end < cbEndOffset && !current.hasContiguousNext()) {
       return null; // This is impossible to read from this chunk.
@@ -833,12 +827,13 @@ public abstract class InStream extends InputStream {
         slice = compressed.slice();
         slice.limit(remaining);
         copy.put(slice);
-        next = addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset, cbEndOffset,
-            remaining, remaining, (BufferChunk)next, cache, toDecompress, cacheBuffers);
+        ProcCacheChunk cc = addOneCompressionBlockByteBuffer(
+            copy, isUncompressed, cbStartOffset, cbEndOffset, remaining, remaining,
+            (BufferChunk)next, cache, toDecompress, cacheBuffers);
         if (compressed.remaining() <= 0 && zcr != null) {
           zcr.releaseBuffer(compressed); // We copied the entire buffer.
         }
-        return next;
+        return cc;
       }
       remaining -= compressed.remaining();
       copy.put(compressed);
@@ -869,8 +864,9 @@ public abstract class InStream extends InputStream {
    * @param lastChunk 
    * @param toDecompress See addOneCompressionBuffer.
    * @param cacheBuffers See addOneCompressionBuffer.
+   * @return New cache buffer.
    */
-  private static DiskRangeList addOneCompressionBlockByteBuffer(ByteBuffer fullCompressionBlock,
+  private static ProcCacheChunk addOneCompressionBlockByteBuffer(ByteBuffer fullCompressionBlock,
       boolean isUncompressed, long cbStartOffset, long cbEndOffset, int lastPartChunkLength,
       int lastPartConsumedLength, BufferChunk lastChunk, LowLevelCache cache,
       List<ProcCacheChunk> toDecompress, List<LlapMemoryBuffer> cacheBuffers) {
@@ -897,13 +893,12 @@ public abstract class InStream extends InputStream {
       }
       assert lastChunk.offset == lastChunk.end;
       lastChunk.replaceSelfWith(cc);
-      return cc.next;
     } else {
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Adding " + cc + " before " + lastChunk + " in the buffers");
       }
       lastChunk.insertBefore(cc);
-      return lastChunk;
     }
+    return cc;
   }
 }

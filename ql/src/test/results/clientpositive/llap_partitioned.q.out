@@ -1481,55 +1481,46 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:od 
+        od 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:od 
+        od 
           TableScan
             alias: od
-            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: ctinyint (type: tinyint)
-              outputColumnNames: _col0
-              Statistics: Num rows: 10 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: tinyint)
-                  1 _col0 (type: tinyint)
+            HashTable Sink Operator
+              keys:
+                0 ctinyint (type: tinyint)
+                1 ctinyint (type: tinyint)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: oft
-            filterExpr: ctinyint is not null (type: boolean)
-            Statistics: Num rows: 9173 Data size: 1419435 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: cint (type: int), ctinyint (type: tinyint)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 9173 Data size: 1419435 Basic stats: COMPLETE Column stats: NONE
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: tinyint)
-                  1 _col0 (type: tinyint)
+            Statistics: Num rows: 12288 Data size: 2142853 Basic stats: COMPLETE Column stats: NONE
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 ctinyint (type: tinyint)
+                1 ctinyint (type: tinyint)
+              outputColumnNames: _col1, _col9
+              Statistics: Num rows: 13516 Data size: 2357138 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col9 (type: tinyint), _col1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10090 Data size: 1561378 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: tinyint), _col0 (type: int)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10090 Data size: 1561378 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 10090 Data size: 1561378 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 13516 Data size: 2357138 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 13516 Data size: 2357138 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      LLAP IO: all inputs
       Local Work:
         Map Reduce Local Work
 
@@ -1682,6 +1673,7 @@ PREHOOK: Input: default@orc_llap_part@ctinyint=62
 PREHOOK: Input: default@orc_llap_part@ctinyint=7
 PREHOOK: Input: default@orc_llap_part@ctinyint=8
 PREHOOK: Input: default@orc_llap_part@ctinyint=9
+PREHOOK: Input: default@orc_llap_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_temp_table
 POSTHOOK: query: create table llap_temp_table as
@@ -1827,6 +1819,7 @@ POSTHOOK: Input: default@orc_llap_part@ctinyint=62
 POSTHOOK: Input: default@orc_llap_part@ctinyint=7
 POSTHOOK: Input: default@orc_llap_part@ctinyint=8
 POSTHOOK: Input: default@orc_llap_part@ctinyint=9
+POSTHOOK: Input: default@orc_llap_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
 PREHOOK: query: select sum(hash(*)) from llap_temp_table

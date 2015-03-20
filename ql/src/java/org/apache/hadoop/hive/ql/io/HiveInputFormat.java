@@ -221,10 +221,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return castInputFormat(llapIo.getInputFormat(inputFormat));
   }
 
-  public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
+  public static boolean isLlapEnabled(Configuration conf) {
     // Don't check IO - it needn't be initialized on client.
-    return HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED)
-        && Utilities.isVectorMode(conf, mapWork);
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED);
+  }
+
+  public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
+    return Utilities.isVectorMode(conf, mapWork);
   }
 
   public static boolean canWrapForLlap(Class<? extends InputFormat> inputFormatClass) {

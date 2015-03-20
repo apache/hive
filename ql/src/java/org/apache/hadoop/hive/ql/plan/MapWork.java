@@ -204,18 +204,21 @@ public class MapWork extends BaseWork {
 
   public void deriveLlap(Configuration conf) {
     boolean hasLlap = false, hasNonLlap = false;
-    boolean isLlapOn = HiveInputFormat.canWrapAnyForLlap(conf, this);
+    boolean isLlapOn = HiveInputFormat.isLlapEnabled(conf),
+        canWrapAny = isLlapOn && HiveInputFormat.canWrapAnyForLlap(conf, this);
     boolean hasPathToPartInfo = (pathToPartitionInfo != null && !pathToPartitionInfo.isEmpty());
-    if (hasPathToPartInfo) {
+    if (canWrapAny && hasPathToPartInfo) {
       for (PartitionDesc part : pathToPartitionInfo.values()) {
         boolean isUsingLlapIo = isLlapOn
             && HiveInputFormat.canWrapForLlap(part.getInputFileFormatClass());
         hasLlap |= isUsingLlapIo;
         hasNonLlap |= (!isUsingLlapIo);
       }
+    } else {
+      hasNonLlap = true;
     }
-    llapIoDesc = isLlapOn ? (hasPathToPartInfo ? ((hasLlap == hasNonLlap) ? "some inputs"
-        : (hasLlap ? "all inputs" : "no inputs")) : "unknown") : null;
+    llapIoDesc = isLlapOn ? (canWrapAny ? (hasPathToPartInfo ? ((hasLlap == hasNonLlap) ?
+        "some inputs" : (hasLlap ? "all inputs" : "no inputs")) : "unknown") : "no inputs") : null;
   }
 
   public void internTable(Interner<TableDesc> interner) {
