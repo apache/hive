@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -27,6 +28,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -38,30 +41,6 @@ public class TestSharedStorageDescriptor {
 
 
   @Test
-  public void location() {
-    StorageDescriptor sd = new StorageDescriptor();
-    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
-    ssd.setLocation("here");
-    ssd.setShared(sd);
-    ssd.setLocation("there");
-    Assert.assertTrue(sd == ssd.getShared());
-  }
-
-  @Test
-  public void changeOnInputFormat() {
-    StorageDescriptor sd = new StorageDescriptor();
-    sd.setInputFormat("input");
-    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
-    ssd.setShared(sd);
-    Assert.assertEquals("input", ssd.getInputFormat());
-    ssd.setInputFormat("different");
-    Assert.assertFalse(sd == ssd.getShared());
-    Assert.assertEquals("input", sd.getInputFormat());
-    Assert.assertEquals("different", ssd.getInputFormat());
-    Assert.assertEquals("input", sd.getInputFormat());
-  }
-
-  @Test
   public void changeOnSerde() {
     StorageDescriptor sd = new StorageDescriptor();
     SerDeInfo serde = new SerDeInfo();
@@ -69,32 +48,33 @@ public class TestSharedStorageDescriptor {
     sd.setSerdeInfo(serde);
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
-    Assert.assertEquals("serde", ssd.getSerdeInfo().getName());
     ssd.getSerdeInfo().setName("different");
-    Assert.assertFalse(sd == ssd.getShared());
+    Assert.assertFalse(sd.getSerdeInfo() == ssd.getSerdeInfo());
     Assert.assertEquals("serde", serde.getName());
     Assert.assertEquals("different", ssd.getSerdeInfo().getName());
     Assert.assertEquals("serde", sd.getSerdeInfo().getName());
   }
 
   @Test
-  public void multipleChangesDontCauseMultipleCopies() {
+  public void changeOnSkewed() {
     StorageDescriptor sd = new StorageDescriptor();
-    sd.setInputFormat("input");
-    sd.setOutputFormat("output");
+    SkewedInfo skew = new SkewedInfo();
+    sd.setSkewedInfo(skew);
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
-    Assert.assertEquals("input", ssd.getInputFormat());
-    ssd.setInputFormat("different");
-    Assert.assertFalse(sd == ssd.getShared());
-    Assert.assertEquals("input", sd.getInputFormat());
-    Assert.assertEquals("different", ssd.getInputFormat());
-    StorageDescriptor keep = ssd.getShared();
-    ssd.setOutputFormat("different_output");
-    Assert.assertEquals("different", ssd.getInputFormat());
-    Assert.assertEquals("different_output", ssd.getOutputFormat());
-    Assert.assertEquals("output", sd.getOutputFormat());
-    Assert.assertTrue(keep == ssd.getShared());
+    ssd.setSkewedInfo(new SkewedInfo());
+    Assert.assertFalse(sd.getSkewedInfo() == ssd.getSkewedInfo());
+  }
+
+  @Test
+  public void changeOnUnset() {
+    StorageDescriptor sd = new StorageDescriptor();
+    SkewedInfo skew = new SkewedInfo();
+    sd.setSkewedInfo(skew);
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setShared(sd);
+    ssd.unsetSkewedInfo();
+    Assert.assertFalse(sd.getSkewedInfo() == ssd.getSkewedInfo());
   }
 
   @Test
@@ -103,25 +83,71 @@ public class TestSharedStorageDescriptor {
     sd.addToSortCols(new Order("fred", 1));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
-    Assert.assertEquals(1, ssd.getSortCols().get(0).getOrder());
     ssd.getSortCols().get(0).setOrder(2);
-    Assert.assertFalse(sd == ssd.getShared());
+    Assert.assertFalse(sd.getSortCols() == ssd.getSortCols());
     Assert.assertEquals(2, ssd.getSortCols().get(0).getOrder());
     Assert.assertEquals(1, sd.getSortCols().get(0).getOrder());
   }
 
   @Test
-  public void changeOrderList() {
+  public void unsetOrder() {
     StorageDescriptor sd = new StorageDescriptor();
     sd.addToSortCols(new Order("fred", 1));
     SharedStorageDescriptor ssd = new SharedStorageDescriptor();
     ssd.setShared(sd);
-    Assert.assertEquals(1, ssd.getSortCols().get(0).getOrder());
-    List<Order> list = ssd.getSortCols();
-    list.add(new Order("bob", 2));
-    Assert.assertFalse(sd == ssd.getShared());
-    Assert.assertEquals(2, ssd.getSortColsSize());
+    ssd.unsetSortCols();
+    Assert.assertFalse(sd.getSortCols() == ssd.getSortCols());
+    Assert.assertEquals(0, ssd.getSortColsSize());
     Assert.assertEquals(1, sd.getSortColsSize());
+  }
+
+  @Test
+  public void changeBucketList() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.addToBucketCols(new String("fred"));
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setShared(sd);
+    List<String> list = ssd.getBucketCols();
+    list.add(new String("bob"));
+    Assert.assertFalse(sd.getBucketCols() == ssd.getBucketCols());
+    Assert.assertEquals(2, ssd.getBucketColsSize());
+    Assert.assertEquals(1, sd.getBucketColsSize());
+  }
+
+  @Test
+  public void addToColList() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.addToCols(new FieldSchema("fred", "string", ""));
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setShared(sd);
+    ssd.addToCols(new FieldSchema("joe", "int", ""));
+    Assert.assertFalse(sd.getCols() == ssd.getCols());
+    Assert.assertEquals(2, ssd.getColsSize());
+    Assert.assertEquals(1, sd.getColsSize());
+  }
+
+  @Test
+  public void colIterator() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.addToCols(new FieldSchema("fred", "string", ""));
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setShared(sd);
+    Iterator<FieldSchema> iter = ssd.getColsIterator();
+    Assert.assertTrue(iter.hasNext());
+    Assert.assertEquals("fred", iter.next().getName());
+    Assert.assertFalse(sd.getCols() == ssd.getCols());
+  }
+
+  @Test
+  public void setReadOnly() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.addToCols(new FieldSchema("fred", "string", ""));
+    SharedStorageDescriptor ssd = new SharedStorageDescriptor();
+    ssd.setShared(sd);
+    ssd.setReadOnly();
+    List<FieldSchema> cols = ssd.getCols();
+    Assert.assertEquals(1, cols.size());
+    Assert.assertTrue(sd.getCols() == ssd.getCols());
   }
 
 }
