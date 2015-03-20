@@ -610,7 +610,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     RelNode modifiedOptimizedOptiqPlan = introduceProjectIfNeeded(optimizedOptiqPlan);
 
-    Operator hiveRoot = new HiveOpConverter(topOps, HiveOpConverter.getAggOPMode(conf),
+    Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps, HiveOpConverter.getAggOPMode(conf),
         conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(modifiedOptimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
@@ -2332,15 +2332,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      return genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel);
+      return genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel, windowExpressions);
     }
 
     private RelNode genSelectRelNode(List<RexNode> calciteColLst, RowResolver out_rwsch,
-        RelNode srcRel) throws CalciteSemanticException {
+            RelNode srcRel) throws CalciteSemanticException {
+      return genSelectRelNode(calciteColLst, out_rwsch, srcRel, null);
+    }
+
+    private RelNode genSelectRelNode(List<RexNode> calciteColLst, RowResolver out_rwsch,
+        RelNode srcRel, List<WindowExpressionSpec> windowExpressions) throws CalciteSemanticException {
       // 1. Build Column Names
       Set<String> colNamesSet = new HashSet<String>();
       List<ColumnInfo> cInfoLst = out_rwsch.getRowSchema().getSignature();
       ArrayList<String> columnNames = new ArrayList<String>();
+      Map<String,String> windowToAlias = null;
+      if (windowExpressions != null ) {
+        windowToAlias = new HashMap<String,String>();
+        for (WindowExpressionSpec wes : windowExpressions) {
+          windowToAlias.put(wes.getExpression().toStringTree().toLowerCase(), wes.getAlias());
+        }
+      }
       String[] qualifiedColNames;
       String tmpColAlias;
       for (int i = 0; i < calciteColLst.size(); i++) {
@@ -2358,8 +2370,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
          * the names so we don't run into this issue when converting back to
          * Hive AST.
          */
-        if (tmpColAlias.startsWith("_c"))
+        if (tmpColAlias.startsWith("_c")) {
           tmpColAlias = "_o_" + tmpColAlias;
+        } else if (windowToAlias != null && windowToAlias.containsKey(tmpColAlias)) {
+          tmpColAlias = windowToAlias.get(tmpColAlias);
+        }
         int suffix = 1;
         while (colNamesSet.contains(tmpColAlias)) {
           tmpColAlias = qualifiedColNames[1] + suffix;

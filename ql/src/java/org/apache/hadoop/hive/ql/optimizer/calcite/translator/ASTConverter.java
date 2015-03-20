@@ -54,6 +54,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -639,6 +640,12 @@ public class ASTConverter {
       Project select = (Project) order.getInput();
       for (String projName : select.getRowType().getFieldNames()) {
         add(new ColumnInfo(null, projName));
+      }
+    }
+
+    public Schema(String tabAlias, List<RelDataTypeField> fieldList) {
+      for (RelDataTypeField field : fieldList) {
+        add(new ColumnInfo(tabAlias, field.getName()));
       }
     }
   }

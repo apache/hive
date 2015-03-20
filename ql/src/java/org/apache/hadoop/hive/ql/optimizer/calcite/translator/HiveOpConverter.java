@@ -69,7 +69,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
 import org.apache.hadoop.hive.ql.parse.JoinType;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
+import org.apache.hadoop.hive.ql.parse.PTFTranslator;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
+import org.apache.hadoop.hive.ql.parse.WindowingComponentizer;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -78,6 +87,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -100,6 +110,9 @@ public class HiveOpConverter {
   };
 
   // TODO: remove this after stashing only rqd pieces from opconverter
+  private final SemanticAnalyzer                              semanticAnalyzer;
+  private final HiveConf                                      hiveConf;
+  private final UnparseTranslator                             unparseTranslator;
   private final Map<String, Operator<? extends OperatorDesc>> topOps;
   private final HIVEAGGOPMODE                                 aggMode;
   private final boolean                                       strictMode;
@@ -121,8 +134,13 @@ public class HiveOpConverter {
     return aggOpMode;
   }
 
-  public HiveOpConverter(Map<String, Operator<? extends OperatorDesc>> topOps,
+  public HiveOpConverter(SemanticAnalyzer semanticAnalyzer,
+          HiveConf hiveConf, UnparseTranslator unparseTranslator,
+          Map<String, Operator<? extends OperatorDesc>> topOps,
           HIVEAGGOPMODE aggMode, boolean strictMode) {
+    this.semanticAnalyzer = semanticAnalyzer;
+    this.hiveConf = hiveConf;
+    this.unparseTranslator = unparseTranslator;
     this.topOps = topOps;
     this.aggMode = aggMode;
     this.strictMode = strictMode;
@@ -250,8 +268,22 @@ public class HiveOpConverter {
               " with row type: [" + projectRel.getRowType() + "]");
     }
 
-    List<ExprNodeDesc> exprCols = convertToExprNodes(projectRel.getChildExps(), projectRel.getInput(),
-        inputOpAf.tabAlias);
+    WindowingSpec windowingSpec = new WindowingSpec();
+    List<ExprNodeDesc> exprCols = new ArrayList<ExprNodeDesc>();
+    for (int pos=0; pos<projectRel.getChildExps().size(); pos++) {
+      ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias,
+              projectRel.getRowType().getFieldNames().get(pos),
+              projectRel.getInput().getRowType(), projectRel.getRowType(), false);
+      exprCols.add((ExprNodeDesc) projectRel.getChildExps().get(pos).
+              accept(converter));
+      if (converter.getWindowFunctionSpec() != null) {
+        windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
+      }
+    }
+    if (windowingSpec.getWindowExpressions() != null &&
+            !windowingSpec.getWindowExpressions().isEmpty()) {
+      inputOpAf = genPTF(inputOpAf, windowingSpec);
+    }
     // TODO: is this a safe assumption (name collision, external names...)
     List<String> exprNames = new ArrayList<String>(projectRel.getRowType().getFieldNames());
     SelectDesc sd = new SelectDesc(exprCols, exprNames);
@@ -363,26 +395,12 @@ public class HiveOpConverter {
       // Use only 1 reducer for order by
       int numReducers = 1;
   
-      // 1.b. Generate reduce sink 
-      resultOp = genReduceSink(resultOp, sortCols.toArray(new ExprNodeDesc[sortCols.size()]),
+      // 1.b. Generate reduce sink and project operator
+      resultOp = genReduceSinkAndBacktrackSelect(resultOp, sortCols.toArray(new ExprNodeDesc[sortCols.size()]),
               -1, new ArrayList<ExprNodeDesc>(), order.toString(), numReducers,
               Operation.NOT_ACID, strictMode);
-  
-      // 1.c. Generate project operator
-      Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(
-              (ReduceSinkOperator) resultOp, inputOp);
-      SelectDesc selectDesc = new SelectDesc(
-              new ArrayList<ExprNodeDesc>(descriptors.values()),
-              new ArrayList<String>(descriptors.keySet()));
-      ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
-      resultOp = OperatorFactory.getAndMakeChild(selectDesc,
-              new RowSchema(cinfoLst), resultOp);
-      resultOp.setColumnExprMap(descriptors);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Generated " + resultOp + " with row schema: [" + resultOp.getSchema() + "]");
-      }
     }
-  
+
     // 2. If we need to generate limit
     if (sortRel.fetch != null) {
       int limit = RexLiteral.intValue(sortRel.fetch);
@@ -484,7 +502,73 @@ public class HiveOpConverter {
     return inputOpAf.clone(rsOp);
   }
 
-  private static ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo,
+  private OpAttr genPTF(OpAttr inputOpAf, WindowingSpec wSpec) throws SemanticException {
+    Operator<?> input = inputOpAf.inputs.get(0);
+    
+    wSpec.validateAndMakeEffective();
+    WindowingComponentizer groups = new WindowingComponentizer(wSpec);
+    RowResolver rr = new RowResolver();
+    for (ColumnInfo ci : input.getSchema().getSignature()) {
+      rr.put(ci.getTabAlias(), ci.getInternalName(), ci);
+    }
+
+    while(groups.hasNext() ) {
+      wSpec = groups.next(hiveConf, semanticAnalyzer, unparseTranslator, rr);
+
+      // 1. Create RS and backtrack Select operator on top
+      ArrayList<ExprNodeDesc> keyCols = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
+      StringBuilder order = new StringBuilder();
+
+      for (PartitionExpression partCol : wSpec.getQueryPartitionSpec().getExpressions()) {
+        ExprNodeDesc partExpr = semanticAnalyzer.genExprNodeDesc(partCol.getExpression(), rr);
+        if (ExprNodeDescUtils.indexOf(partExpr, partCols) < 0) {
+          keyCols.add(partExpr);
+          partCols.add(partExpr);
+          order.append('+');
+        }
+      }
+
+      if (wSpec.getQueryOrderSpec() != null) {
+        for (OrderExpression orderCol : wSpec.getQueryOrderSpec().getExpressions()) {
+          ExprNodeDesc orderExpr = semanticAnalyzer.genExprNodeDesc(orderCol.getExpression(), rr);
+          char orderChar = orderCol.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+          int index = ExprNodeDescUtils.indexOf(orderExpr, keyCols);
+          if (index >= 0) {
+            order.setCharAt(index, orderChar);
+            continue;
+          }
+          keyCols.add(orderExpr);
+          order.append(orderChar);
+        }
+      }
+
+      SelectOperator selectOp = genReduceSinkAndBacktrackSelect(input,
+              keyCols.toArray(new ExprNodeDesc[keyCols.size()]),
+              reduceSinkTagGenerator++, partCols, order.toString(),
+              -1, Operation.NOT_ACID, strictMode);
+
+      // 2. Finally create PTF
+      PTFTranslator translator = new PTFTranslator();
+      PTFDesc ptfDesc = translator.translate(wSpec, semanticAnalyzer, hiveConf, rr, unparseTranslator);
+      RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
+
+      Operator<?> ptfOp = OperatorFactory.getAndMakeChild(ptfDesc,
+            new RowSchema(ptfOpRR.getColumnInfos()), selectOp);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Generated " + ptfOp + " with row schema: [" + ptfOp.getSchema() + "]");
+      }
+
+      // 3. Prepare for next iteration (if any)
+      rr = ptfOpRR;
+      input = ptfOp;
+    }
+    
+    return inputOpAf.clone(input);
+  }
+
+  private ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo,
           List<RelNode> inputs) {
     ExprNodeDesc[][] joinKeys = new ExprNodeDesc[inputs.size()][];
     for (int i = 0; i < inputs.size(); i++) {
@@ -496,6 +580,32 @@ public class HiveOpConverter {
       }
     }
     return joinKeys;
+  }
+
+  private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
+          ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols,
+          String order, int numReducers, Operation acidOperation,
+          boolean strictMode) throws SemanticException {
+    // 1. Generate RS operator
+    ReduceSinkOperator rsOp = genReduceSink(input, keys, tag, partitionCols,
+            order, numReducers, acidOperation, strictMode);
+
+    // 2. Generate backtrack Select operator
+    Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(
+            (ReduceSinkOperator) rsOp, input);
+    SelectDesc selectDesc = new SelectDesc(
+            new ArrayList<ExprNodeDesc>(descriptors.values()),
+            new ArrayList<String>(descriptors.keySet()));
+    ArrayList<ColumnInfo> cinfoLst = createColInfos(input);
+    SelectOperator selectOp = (SelectOperator) OperatorFactory.getAndMakeChild(selectDesc,
+            new RowSchema(cinfoLst), rsOp);
+    selectOp.setColumnExprMap(descriptors);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Generated " + selectOp + " with row schema: [" + selectOp.getSchema() + "]");
+    }
+
+    return selectOp;
   }
 
   private static ReduceSinkOperator genReduceSink(Operator<?> input, ExprNodeDesc[] keys,
@@ -748,15 +858,6 @@ public class HiveOpConverter {
       columnDescriptors.put(outputColumnNames.get(initialPos+i), desc);
     }
     return columnDescriptors;
-  }
-
-  private static List<ExprNodeDesc> convertToExprNodes(List<RexNode> rNodeLst,
-      RelNode inputRel, String tabAlias) {
-    List<ExprNodeDesc> exprNodeLst = new ArrayList<ExprNodeDesc>();
-    for (RexNode rn : rNodeLst) {
-      exprNodeLst.add(convertToExprNode(rn, inputRel, tabAlias));
-    }
-    return exprNodeLst;
   }
 
   private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel,

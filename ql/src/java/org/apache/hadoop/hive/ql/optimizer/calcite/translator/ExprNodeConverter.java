@@ -24,41 +24,77 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexFieldCollation;
+import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.rex.RexWindow;
+import org.apache.calcite.rex.RexWindowBound;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexVisitorImpl;
 
 /*
  * convert a RexNode to an ExprNodeDesc
  */
 public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
-  RelDataType rType;
-  String      tabAlias;
-  boolean     partitioningExpr;
+  String             tabAlias;
+  String             columnAlias;
+  RelDataType        inputRowType;
+  RelDataType        outputRowType;
+  boolean            partitioningExpr;
+  WindowFunctionSpec wfs;
 
-  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr) {
+  public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
+          boolean partitioningExpr) {
+    this(tabAlias, null, inputRowType, null, partitioningExpr);
+  }
+
+  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
+          RelDataType outputRowType, boolean partitioningExpr) {
     super(true);
     this.tabAlias = tabAlias;
-    this.rType = rType;
+    this.columnAlias = columnAlias;
+    this.inputRowType = inputRowType;
+    this.outputRowType = outputRowType;
     this.partitioningExpr = partitioningExpr;
+  }
+
+  public WindowFunctionSpec getWindowFunctionSpec() {
+    return this.wfs;
   }
 
   @Override
   public ExprNodeDesc visitInputRef(RexInputRef inputRef) {
-    RelDataTypeField f = rType.getFieldList().get(inputRef.getIndex());
+    RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
     return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), f.getName(), tabAlias,
         partitioningExpr);
   }
@@ -161,6 +197,140 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     default:
       return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
     }
+  }
+
+  @Override
+  public ExprNodeDesc visitOver(RexOver over) {
+    if (!deep) {
+      return null;
+    }
+
+    final RexWindow window = over.getWindow();
+
+    final WindowSpec windowSpec = new WindowSpec();
+    final PartitioningSpec partitioningSpec = getPSpec(window);
+    windowSpec.setPartitioning(partitioningSpec);
+    final WindowFrameSpec windowFrameSpec = getWindowRange(window);
+    windowSpec.setWindowFrame(windowFrameSpec);
+
+    wfs = new WindowFunctionSpec();
+    wfs.setWindowSpec(windowSpec);
+    final Schema schema = new Schema(tabAlias, inputRowType.getFieldList());
+    final ASTNode wUDAFAst = new ASTConverter.RexVisitor(schema).visitOver(over);
+    wfs.setExpression(wUDAFAst);
+    ASTNode nameNode = (ASTNode) wUDAFAst.getChild(0);
+    wfs.setName(nameNode.getText());
+    for(int i=1; i < wUDAFAst.getChildCount()-1; i++) {
+      ASTNode child = (ASTNode) wUDAFAst.getChild(i);
+      wfs.addArg(child);
+    }
+    wfs.setAlias(columnAlias);
+
+    RelDataTypeField f = outputRowType.getField(columnAlias, false, false);
+    return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), columnAlias, tabAlias,
+            partitioningExpr);
+  }
+
+  private PartitioningSpec getPSpec(RexWindow window) {
+    PartitioningSpec partitioning = new PartitioningSpec();
+
+    if (window.partitionKeys != null && !window.partitionKeys.isEmpty()) {
+      PartitionSpec pSpec = new PartitionSpec();
+      for (RexNode pk : window.partitionKeys) {
+        PartitionExpression exprSpec = new PartitionExpression();
+        RexInputRef inputRef = (RexInputRef) pk;
+        RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
+        ASTNode astCol;
+        if (tabAlias == null || tabAlias.isEmpty()) {
+          astCol = ASTBuilder.unqualifiedName(f.getName());
+        } else {
+          astCol = ASTBuilder.qualifiedName(tabAlias, f.getName());
+        }
+        exprSpec.setExpression(astCol);
+        pSpec.addExpression(exprSpec);
+      }
+      partitioning.setPartSpec(pSpec);
+    }
+
+    if (window.orderKeys != null && !window.orderKeys.isEmpty()) {
+      OrderSpec oSpec = new OrderSpec();
+      for (RexFieldCollation ok : window.orderKeys) {
+        OrderExpression exprSpec = new OrderExpression();
+        Order order = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ?
+                Order.ASC : Order.DESC;
+        exprSpec.setOrder(order);
+        RexInputRef inputRef = (RexInputRef) ok.left;
+        RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
+        ASTNode astCol;
+        if (tabAlias == null || tabAlias.isEmpty()) {
+          astCol = ASTBuilder.unqualifiedName(f.getName());
+        } else {
+          astCol = ASTBuilder.qualifiedName(tabAlias, f.getName());
+        }
+        exprSpec.setExpression(astCol);
+        oSpec.addExpression(exprSpec);
+      }
+      partitioning.setOrderSpec(oSpec);
+    }
+
+    return partitioning;
+  }
+
+  private WindowFrameSpec getWindowRange(RexWindow window) {
+    // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
+
+    WindowFrameSpec windowFrame = new WindowFrameSpec();
+
+    BoundarySpec start = null;
+    RexWindowBound ub = window.getUpperBound();
+    if (ub != null) {
+      start = getWindowBound(ub, window.isRows());
+    }
+
+    BoundarySpec end = null;
+    RexWindowBound lb = window.getLowerBound();
+    if (lb != null) {
+      end = getWindowBound(lb, window.isRows());
+    }
+
+    if (start != null || end != null) {
+      if (start != null) {
+        windowFrame.setStart(start);
+      }
+      if (end != null) {
+        windowFrame.setEnd(end);
+      }
+    }
+
+    return windowFrame;
+  }
+
+  private BoundarySpec getWindowBound(RexWindowBound wb, boolean isRows) {
+    BoundarySpec boundarySpec;
+
+    if (wb.isCurrentRow()) {
+      boundarySpec = new CurrentRowSpec();
+    } else {
+      final Direction direction;
+      final int amt;
+      if (wb.isPreceding()) {
+        direction = Direction.PRECEDING;
+      } else {
+        direction = Direction.FOLLOWING;
+      }
+      if (wb.isUnbounded()) {
+        amt = BoundarySpec.UNBOUNDED_AMOUNT;
+      } else {
+        amt = RexLiteral.intValue(wb.getOffset());
+      }
+      if (isRows) {
+        boundarySpec = new RangeBoundarySpec(direction, amt);
+      } else {
+        boundarySpec = new ValueBoundarySpec(direction, amt);
+      }
+    }
+
+    return boundarySpec;
   }
 
 }
