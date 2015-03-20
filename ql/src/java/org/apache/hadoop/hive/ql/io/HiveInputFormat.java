@@ -221,6 +221,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return castInputFormat(llapIo.getInputFormat(inputFormat));
   }
 
+  public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
+    // Don't check IO - it needn't be initialized on client.
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED)
+        && Utilities.isVectorMode(conf, mapWork);
+  }
+
+  public static boolean canWrapForLlap(Class<? extends InputFormat> inputFormatClass) {
+    return LlapWrappableInputFormatInterface.class.isAssignableFrom(inputFormatClass);
+  }
+
   @SuppressWarnings("unchecked")
   private static <T, U, V, W> InputFormat<T, U> castInputFormat(InputFormat<V, W> from) {
     // This is ugly in two ways...

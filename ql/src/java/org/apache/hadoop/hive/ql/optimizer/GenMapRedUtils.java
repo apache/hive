@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -871,6 +872,45 @@ public final class GenMapRedUtils {
 
     for (Task<? extends Serializable> childTask : task.getChildTasks()) {
       setKeyAndValueDescForTaskTree(childTask);
+    }
+  }
+
+  /**
+   * Called at the end of TaskCompiler::compile to derive final
+   * explain attributes based on previous compilation.
+   */
+  public static void deriveFinalExplainAttributes(
+      Task<? extends Serializable> task, Configuration conf) {
+    // TODO: deriveExplainAttributes should be called here, code is too fragile to move it around.
+    if (task instanceof ConditionalTask) {
+      for (Task<? extends Serializable> tsk : ((ConditionalTask) task).getListTasks()) {
+        deriveFinalExplainAttributes(tsk, conf);
+      }
+    } else if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      work.getMapWork().deriveLlap(conf);
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveLlap(conf);
+        }
+      }
+    } else if (task instanceof SparkTask) {
+      SparkWork work = (SparkWork) task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork) w).deriveLlap(conf);
+        }
+      }
+    }
+
+    if (task.getChildTasks() == null) {
+      return;
+    }
+
+    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      deriveFinalExplainAttributes(childTask, conf);
     }
   }
 
@@ -1874,4 +1914,5 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
+
 }
