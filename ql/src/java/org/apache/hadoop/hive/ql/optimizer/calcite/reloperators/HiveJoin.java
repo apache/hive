@@ -78,13 +78,15 @@ public class HiveJoin extends Join implements HiveRelNode {
   private JoinAlgorithm joinAlgorithm;
   private MapJoinStreamingRelation mapJoinStreamingSide;
   private RelOptCost joinCost;
+  // Whether inputs are already sorted
+  private ImmutableBitSet sortedInputs;
 
   public static HiveJoin getJoin(RelOptCluster cluster, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
-          JoinAlgorithm.NONE, MapJoinStreamingRelation.NONE, leftSemiJoin);
+          JoinAlgorithm.NONE, MapJoinStreamingRelation.NONE, ImmutableBitSet.of(), leftSemiJoin);
     } catch (InvalidRelException e) {
       throw new RuntimeException(e);
     }
@@ -92,12 +94,13 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
-      JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin, boolean leftSemiJoin)
-      throws InvalidRelException {
+      JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin,
+      ImmutableBitSet sortedInputs, boolean leftSemiJoin) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
     this.joinAlgorithm = joinAlgo;
     this.mapJoinStreamingSide = streamingSideForMapJoin;
+    this.sortedInputs = sortedInputs;
     this.leftSemiJoin = leftSemiJoin;
     this.maxMemory = (double) HiveConf.getLongVar(
             cluster.getPlanner().getContext().unwrap(HiveConf.class),
@@ -114,7 +117,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinAlgorithm, mapJoinStreamingSide, leftSemiJoin);
+          variablesStopped, joinAlgorithm, mapJoinStreamingSide, sortedInputs, leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
@@ -146,9 +149,11 @@ public class HiveJoin extends Join implements HiveRelNode {
   private RelOptCost chooseJoinAlgorithmAndGetCost() {
     // 1. Choose streaming side
     chooseStreamingSide();
-    // 2. Get possible algorithms
+    // 2. Store order inputs
+    checkInputsCorrectOrder();
+    // 3. Get possible algorithms
     Set<JoinAlgorithm> possibleAlgorithms = obtainJoinAlgorithms();
-    // 3. For each possible algorithm, calculate cost, and select best
+    // 4. For each possible algorithm, calculate cost, and select best
     RelOptCost selfCost = null;
     for (JoinAlgorithm possibleAlgorithm : possibleAlgorithms) {
       switch (possibleAlgorithm) {
@@ -219,6 +224,27 @@ public class HiveJoin extends Join implements HiveRelNode {
     }
   }
 
+  private void checkInputsCorrectOrder() {
+    JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(this);
+    List<ImmutableIntList> joinKeysInChildren = new ArrayList<ImmutableIntList>();
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromLeftPartOfJoinKeysInChildSchema()));
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
+
+    for (int i=0; i<this.getInputs().size(); i++) {
+      boolean correctOrderFound = RelCollations.contains(
+              RelMetadataQuery.collations(getInputs().get(i)),
+              joinKeysInChildren.get(i));
+      if (correctOrderFound) {
+        sortedInputs.set(i);
+      }
+    }
+  }
+
   private Set<JoinAlgorithm> obtainJoinAlgorithms() {
     Set<JoinAlgorithm> possibleAlgorithms = new HashSet<JoinAlgorithm>();
 
@@ -265,8 +291,7 @@ public class HiveJoin extends Join implements HiveRelNode {
         RelNode input = getInputs().get(i);
         // Is smbJoin possible? We need correct order
         if (orderedBucketed) {
-          boolean orderFound = RelCollations.contains(
-                  RelMetadataQuery.collations(input), joinKeysInChildren.get(i));
+          boolean orderFound = sortedInputs.get(i);
           if (!orderFound) {
             orderedBucketed = false;
           }
@@ -278,8 +303,7 @@ public class HiveJoin extends Join implements HiveRelNode {
             orderedBucketed = false;
             bucketed = false;
           }
-          if (!(joinKeysInChildren.get(i).containsAll(distribution.getKeys())
-                  && distribution.getKeys().containsAll(joinKeysInChildren.get(i)))) {
+          if (!distribution.getKeys().containsAll(joinKeysInChildren.get(i))) {
             orderedBucketed = false;
             bucketed = false;
           }
@@ -328,9 +352,7 @@ public class HiveJoin extends Join implements HiveRelNode {
             add(leftRCount).
             add(rightRCount).
             build();
-    // TODO: Check whether inputs are already sorted; currently we assume
-    //       we need to sort all of them
-    final double cpuCost = HiveCostUtil.computeCommonJoinCPUCost(cardinalities,ImmutableBitSet.range(2));
+    final double cpuCost = HiveCostUtil.computeSortMergeCPUCost(cardinalities, sortedInputs);
     // 3. IO cost = cost of writing intermediary results to local FS +
     //              cost of reading from local FS for transferring to join +
     //              cost of transferring map outputs to Join operator
@@ -343,7 +365,7 @@ public class HiveJoin extends Join implements HiveRelNode {
             add(new Pair<Double,Double>(leftRCount,leftRAverageSize)).
             add(new Pair<Double,Double>(rightRCount,rightRAverageSize)).
             build();
-    final double ioCost = HiveCostUtil.computeCommonJoinIOCost(relationInfos);
+    final double ioCost = HiveCostUtil.computeSortMergeIOCost(relationInfos);
     // 4. Result
     return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
   }

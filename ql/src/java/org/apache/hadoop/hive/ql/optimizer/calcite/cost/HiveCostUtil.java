@@ -44,17 +44,16 @@ public class HiveCostUtil {
     return new HiveCost(cardinality, 0, HDFS_WRITE_COST * cardinality * 0);
   }
 
-  public static double computeCommonJoinCPUCost(
+  public static double computeSortMergeCPUCost(
           ImmutableList<Double> cardinalities,
           ImmutableBitSet sorted) {
     // Sort-merge join
-    assert cardinalities.size() == sorted.length();
     double cpuCost = 0.0;
     for (int i=0; i<cardinalities.size(); i++) {
       double cardinality = cardinalities.get(i);
       if (!sorted.get(i)) {
         // Sort cost
-        cpuCost += cardinality * Math.log(cardinality) * CPU_COST;
+        cpuCost += computeSortCPUCost(cardinality);
       }
       // Merge cost
       cpuCost += cardinality * CPU_COST;
@@ -62,20 +61,31 @@ public class HiveCostUtil {
     return cpuCost;
   }
 
-  public static double computeCommonJoinIOCost(
+  public static double computeSortCPUCost(Double cardinality) {
+    return cardinality * Math.log(cardinality) * CPU_COST;
+  }
+
+  public static double computeSortMergeIOCost(
           ImmutableList<Pair<Double, Double>> relationInfos) {
     // Sort-merge join
     double ioCost = 0.0;
     for (Pair<Double,Double> relationInfo : relationInfos) {
-      double cardinality = relationInfo.left;
-      double averageTupleSize = relationInfo.right;
-      // Write cost
-      ioCost += cardinality * averageTupleSize * LOCAL_WRITE_COST;
-      // Read cost
-      ioCost += cardinality * averageTupleSize * LOCAL_READ_COST;
-      // Net transfer cost
-      ioCost += cardinality * averageTupleSize * NET_COST;
+      ioCost += computeSortIOCost(relationInfo);
     }
+    return ioCost;
+  }
+
+  public static double computeSortIOCost(Pair<Double, Double> relationInfo) {
+    // Sort-merge join
+    double ioCost = 0.0;
+    double cardinality = relationInfo.left;
+    double averageTupleSize = relationInfo.right;
+    // Write cost
+    ioCost += cardinality * averageTupleSize * LOCAL_WRITE_COST;
+    // Read cost
+    ioCost += cardinality * averageTupleSize * LOCAL_READ_COST;
+    // Net transfer cost
+    ioCost += cardinality * averageTupleSize * NET_COST;
     return ioCost;
   }
 
