@@ -216,6 +216,11 @@ public class EncodedReaderImpl implements EncodedReader {
       offset += length;
     }
 
+    if (listToRead.get() == null) {
+      LOG.warn("Nothing to read for stripe [" + stripe + "]");
+      return;
+    }
+
     // 2. Now, read all of the ranges from cache or disk.
     DiskRangeListMutateHelper toRead = new DiskRangeListMutateHelper(listToRead.get());
     if (DebugUtils.isTraceOrcEnabled()) {
