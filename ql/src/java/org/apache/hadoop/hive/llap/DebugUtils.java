@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap;
 
+import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl;
+
 /**
  * A class that contains debug methods; also allows enabling the logging of various
  * trace messages with low runtime cost, in order to investigate reproducible bugs.
@@ -28,8 +30,9 @@ public class DebugUtils {
     return false;
   }
 
+  private final static boolean isTraceOrcEnabled = EncodedReaderImpl.LOG.isDebugEnabled();
   public static boolean isTraceOrcEnabled() {
-    return true;
+    return isTraceOrcEnabled; // TODO: temporary, should be hardcoded false
   }
 
   public static boolean isTraceLockingEnabled() {

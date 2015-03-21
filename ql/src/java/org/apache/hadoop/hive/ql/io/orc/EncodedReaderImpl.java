@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 
 
 public class EncodedReaderImpl implements EncodedReader {
-  private static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
+  public static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
 
   private final long fileId;
   private final FSDataInputStream file;
