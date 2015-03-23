@@ -33,11 +33,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -203,6 +201,70 @@ public class TestLowLevelCacheImpl {
     assertEquals(6, mask[0]); // Buffers at offset 2 & 3 exist; 1 exists and is stale; 4 doesn't
     assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 8), 0, Priority.NORMAL));
     verifyCacheGet(cache, fn1, 1, 5, fakes[4], fakes[1], fakes[2], fakes[7]);
+  }
+
+  @Test
+  public void testCacheMetrics() {
+    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 100, true, false);
+    list.addOrMerge(100, 200, true, false);
+    list.addOrMerge(200, 300, true, false);
+    list.addOrMerge(300, 400, true, false);
+    list.addOrMerge(400, 500, true, false);
+    assertEquals(1, list.get().listSize());
+    assertEquals(500, list.get().getTotalLength());
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 100, false, false);
+    list.addOrMerge(100, 200, false, false);
+    list.addOrMerge(200, 300, false, false);
+    list.addOrMerge(300, 400, false, false);
+    list.addOrMerge(400, 500, false, false);
+    assertEquals(5, list.get().listSize());
+    assertEquals(500, list.get().getTotalLength());
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 100, true, false);
+    list.addOrMerge(100, 200, true, false);
+    list.addOrMerge(200, 300, false, false);
+    list.addOrMerge(300, 400, true, false);
+    list.addOrMerge(400, 500, true, false);
+    assertEquals(2, list.get().listSize());
+    assertEquals(500, list.get().getTotalLength());
+
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("test", "1");
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(metrics,
+        new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+    long fn = 1;
+    LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[]{fb(), fb(), fb()};
+    cache.putFileData(fn, new DiskRange[]{dr(0, 100), dr(300, 500), dr(800, 1000)},
+        fakes, 0, Priority.NORMAL);
+    assertEquals(0, metrics.getCacheRequestedBytes());
+    assertEquals(0, metrics.getCacheHitBytes());
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 1000, true, false);
+    cache.getFileData(fn, list.get(), 0);
+    assertEquals(1000, metrics.getCacheRequestedBytes());
+    assertEquals(500, metrics.getCacheHitBytes());
+
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 100, true, false);
+    cache.getFileData(fn, list.get(), 0);
+    assertEquals(1100, metrics.getCacheRequestedBytes());
+    assertEquals(600, metrics.getCacheHitBytes());
+
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(0, 100, true, false);
+    list.addOrMerge(300, 500, true, false);
+    list.addOrMerge(800, 1000, true, false);
+    cache.getFileData(fn, list.get(), 0);
+    assertEquals(1600, metrics.getCacheRequestedBytes());
+    assertEquals(1100, metrics.getCacheHitBytes());
+
+    list = new DiskRangeListCreateHelper();
+    list.addOrMerge(300, 500, true, false);
+    list.addOrMerge(1000, 2000, true, false);
+    cache.getFileData(fn, list.get(), 0);
+    assertEquals(2800, metrics.getCacheRequestedBytes());
+    assertEquals(1300, metrics.getCacheHitBytes());
   }
 
   @Test

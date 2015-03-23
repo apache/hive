@@ -79,9 +79,11 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   @Override
   public DiskRangeList getFileData(long fileId, DiskRangeList ranges, long baseOffset) {
     if (ranges == null) return null;
-    metrics.incrCacheRequestedBytes(ranges.getLength());
     FileCache subCache = cache.get(fileId);
-    if (subCache == null || !subCache.incRef()) return ranges;
+    if (subCache == null || !subCache.incRef()) {
+      metrics.incrCacheRequestedBytes(ranges.getTotalLength());
+      return ranges;
+    }
     try {
       DiskRangeList prev = ranges.prev;
       if (prev == null) {
@@ -89,6 +91,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       }
       DiskRangeList current = ranges;
       while (current != null) {
+        metrics.incrCacheRequestedBytes(current.getLength());
         // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
         DiskRangeList next = current.next;
         getOverlappingRanges(baseOffset, current, subCache.cache);

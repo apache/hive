@@ -111,6 +111,21 @@ public class DiskRangeList extends DiskRange {
     return result;
   }
 
+  @Override
+  public int getLength() {
+    return super.getLength();
+  }
+
+  public long getTotalLength() {
+    long totalLength = getLength();
+    DiskRangeList current = next;
+    while (current != null) {
+      totalLength += current.getLength();
+      current = current.next;
+    }
+    return totalLength;
+  }
+
   @VisibleForTesting
   public DiskRangeList[] listToArray() {
     DiskRangeList[] result = new DiskRangeList[listSize()];
