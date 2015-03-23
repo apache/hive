@@ -27,23 +27,28 @@ case "$BUILD_PROFILE" in
   trunk-mr1|trunk-mr2)
    test -n "$TRUNK_URL" || fail "TRUNK_URL must be specified"
    url="$TRUNK_URL&ISSUE_NUM=$ISSUE_NUM"
-   curl -v -i "$url"
-   exit 0
   ;;
   spark-mr2)
    test -n "$SPARK_URL" || fail "SPARK_URL must be specified"
    url="$SPARK_URL&ISSUE_NUM=$ISSUE_NUM"
-   curl -v -i "$url"
-   exit 0
   ;;
   encryption-mr2)
    test -n "$ENCRYPTION_URL" || fail "ENCRYPTION_URL must be specified"
    url="$ENCRYPTION_URL&ISSUE_NUM=$ISSUE_NUM"
-   curl -v -i "$url"
-   exit 0
   ;;
   *)
   echo "Unknown profile '$BUILD_PROFILE'"
   exit 1
   ;;
 esac
+
+# Execute jenkins job for HMS upgrade tests if needed
+if patch_contains_hms_upgrade "${JIRA_ROOT_URL}$PATCH_URL"; then
+  test -n "$HMS_UPGRADE_URL" || fail "HMS_UPGRADE_URL must be specified"
+  echo "Calling HMS upgrade testing job..."
+  curl -v -i "${HMS_UPGRADE_URL}&ISSUE_NUM=${ISSUE_NUM}&BRANCH=${BRANCH}"
+fi
+
+# Execute jenkins job for specific profile
+echo "Calling Precommit $BRANCH Build..."
+curl -v -i "$url"
