@@ -96,14 +96,20 @@ public class SparkPlanGenerator {
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
 
-    for (BaseWork work : sparkWork.getAllWork()) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
-      SparkTran tran = generate(work);
-      SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
-      sparkPlan.addTran(tran);
-      sparkPlan.connect(parentTran, tran);
-      workToTranMap.put(work, tran);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+    try {
+      for (BaseWork work : sparkWork.getAllWork()) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+        SparkTran tran = generate(work);
+        SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
+        sparkPlan.addTran(tran);
+        sparkPlan.connect(parentTran, tran);
+        workToTranMap.put(work, tran);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+      }
+    } finally {
+      // clear all ThreadLocal cached MapWork/ReduceWork after plan generation
+      // as this may executed in a pool thread.
+      Utilities.clearWorkMap();
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
