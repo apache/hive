@@ -113,6 +113,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       assert currentNotCached != null;
       Map.Entry<Long, LlapDataBuffer> e = matches.next();
       LlapDataBuffer buffer = e.getValue();
+      long requestedLength = currentNotCached.getLength();
       // Lock the buffer, validate it and add to results.
       if (DebugUtils.isTraceLockingEnabled()) {
         LlapIoImpl.LOG.info("Locking " + buffer + " during get");
@@ -133,7 +134,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, baseOffset);
       // Now that we've added it into correct position, we can adjust it by base offset.
       currentCached.shiftBy(-baseOffset);
-      metrics.incrCacheHitBytes(currentCached.getLength());
+      metrics.incrCacheHitBytes(Math.min(requestedLength, currentCached.getLength()));
     }
   }
 
