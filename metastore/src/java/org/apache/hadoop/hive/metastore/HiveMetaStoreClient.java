@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -1912,6 +1913,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+                                   List<String> partNames) throws TException {
+    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
   }
 
   @Override

@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -5563,6 +5564,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
       return getTxnHandler().showCompact(rqst);
+    }
+
+    @Override
+    public void add_dynamic_partitions(AddDynamicPartitions rqst)
+        throws NoSuchTxnException, TxnAbortedException, TException {
+      getTxnHandler().addDynamicPartitions(rqst);
     }
 
     @Override

@@ -971,6 +971,7 @@ public class Driver implements CommandProcessor {
         if (txnId == SessionState.NO_CURRENT_TXN) {
           txnId = txnMgr.openTxn(userFromUGI);
           ss.setCurrentTxn(txnId);
+          LOG.debug("Setting current transaction to " + txnId);
         }
         // Set the transaction id in all of the acid file sinks
         if (acidSinks != null) {

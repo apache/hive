@@ -617,6 +617,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("show_compact\n");
   }
 
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
+    // Your implementation goes here
+    printf("add_dynamic_partitions\n");
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     // Your implementation goes here
     printf("get_next_notification\n");

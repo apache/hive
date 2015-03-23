@@ -135,6 +135,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void heartbeat_txn_range(HeartbeatTxnRangeResponse& _return, const HeartbeatTxnRangeRequest& txns) = 0;
   virtual void compact(const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
+  virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
@@ -545,6 +546,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
+    return;
+  }
+  void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -16899,6 +16903,124 @@ class ThriftHiveMetastore_show_compact_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_args__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_add_dynamic_partitions_args__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_args {
+ public:
+
+  ThriftHiveMetastore_add_dynamic_partitions_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_args() throw() {}
+
+  AddDynamicPartitions rqst;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_args__isset __isset;
+
+  void __set_rqst(const AddDynamicPartitions& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_add_dynamic_partitions_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_dynamic_partitions_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_dynamic_partitions_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_dynamic_partitions_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_pargs() throw() {}
+
+  const AddDynamicPartitions* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_result__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_add_dynamic_partitions_result__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_result {
+ public:
+
+  ThriftHiveMetastore_add_dynamic_partitions_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_result() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_result__isset __isset;
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnAbortedException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_add_dynamic_partitions_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_dynamic_partitions_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_dynamic_partitions_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_presult__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_add_dynamic_partitions_presult__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_presult() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
   _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
   bool rqst;
@@ -17578,6 +17700,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
   void send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return);
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst);
+  void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
+  void recv_add_dynamic_partitions();
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -17716,6 +17841,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_heartbeat_txn_range(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -17842,6 +17968,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["heartbeat_txn_range"] = &ThriftHiveMetastoreProcessor::process_heartbeat_txn_range;
     processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
+    processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
@@ -19017,6 +19144,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
     ifaces_[i]->show_compact(_return, rqst);
     return;
+  }
+
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_dynamic_partitions(rqst);
+    }
+    ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.log4j.Level;
@@ -26,8 +28,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static junit.framework.Assert.*;
 
@@ -38,6 +43,7 @@ public class TestCompactionTxnHandler {
 
   private HiveConf conf = new HiveConf();
   private CompactionTxnHandler txnHandler;
+  static final private Log LOG = LogFactory.getLog(TestCompactionTxnHandler.class);
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
@@ -415,6 +421,40 @@ public class TestCompactionTxnHandler {
     txnHandler.cleanEmptyAbortedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
+  }
+
+  @Test
+  public void addDynamicPartitions() throws Exception {
+    String dbName = "default";
+    String tableName = "adp_table";
+    OpenTxnsResponse openTxns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
+    long txnId = openTxns.getTxn_ids().get(0);
+    // lock a table, as in dynamic partitions
+    LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
+    lc.setTablename(tableName);
+    LockRequest lr = new LockRequest(Arrays.asList(lc), "me", "localhost");
+    lr.setTxnid(txnId);
+    LockResponse lock = txnHandler.lock(new LockRequest(Arrays.asList(lc), "me", "localhost"));
+    assertEquals(LockState.ACQUIRED, lock.getState());
+
+    txnHandler.addDynamicPartitions(new AddDynamicPartitions(txnId, dbName, tableName,
+        Arrays.asList("ds=yesterday", "ds=today")));
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000);
+    assertEquals(2, potentials.size());
+    SortedSet<CompactionInfo> sorted = new TreeSet<CompactionInfo>(potentials);
+
+    int i = 0;
+    for (CompactionInfo ci : sorted) {
+      assertEquals(dbName, ci.dbname);
+      assertEquals(tableName, ci.tableName);
+      switch (i++) {
+      case 0: assertEquals("ds=today", ci.partName); break;
+      case 1: assertEquals("ds=yesterday", ci.partName); break;
+      default: throw new RuntimeException("What?");
+      }
+    }
   }
 
   @Before

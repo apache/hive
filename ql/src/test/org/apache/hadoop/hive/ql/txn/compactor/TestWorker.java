@@ -204,7 +204,7 @@ public class TestWorker extends CompactorTest {
     List<Order> sortCols = new ArrayList<Order>(1);
     sortCols.add(new Order("b", 1));
 
-    Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols);
+    Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols, false);
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
@@ -229,7 +229,7 @@ public class TestWorker extends CompactorTest {
     List<Order> sortCols = new ArrayList<Order>(1);
     sortCols.add(new Order("b", 1));
 
-    Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols);
+    Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols, false);
     Partition p = newPartition(t, "today", sortCols);
 
     addBaseFile(t, p, 20L, 20);
