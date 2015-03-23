@@ -163,10 +163,6 @@ create_publish_file() {
 	echo $json_file
 }
 
-patch_contains_hms_upgrade() {
-	curl -s "$1" | grep "^diff.*metastore/scripts/upgrade/" >/dev/null
-}
-
 if patch_contains_hms_upgrade "$PATCH_URL"; then
 	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_HOST "
 		rm -rf metastore/ &&
@@ -184,6 +180,10 @@ if patch_contains_hms_upgrade "$PATCH_URL"; then
 		do
 			if echo $line | grep 'Test failed' > /dev/null; then
 				FAILED_TESTS+=("$line")
+			elif echo $line | grep 'Executing sql test' >/dev/null; then
+				# Remove 'Executing sql test' line from MESSAGES log to avoid a verbose
+				# comment on JIRA
+				continue
 			fi
 
 			MESSAGES+=("$line")

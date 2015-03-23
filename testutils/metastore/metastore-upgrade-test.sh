@@ -94,6 +94,7 @@ log "Server prepared."
 #
 
 execute_test() {
+	log "Executing sql test: $DB_SERVER/$(basename $1)"
 	if ! bash -x -e $SCRIPT_EXECUTE $1; then
 		log "Test failed: $DB_SERVER/$(basename $1)"
 		return 1
