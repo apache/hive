@@ -73,7 +73,10 @@ public class TestHBaseMetastoreSql extends IMockUtils {
   public void database() throws Exception {
     CommandProcessorResponse rsp = driver.run("create database db");
     Assert.assertEquals(0, rsp.getResponseCode());
-    rsp = driver.run("alter database db set owner user me");
+    rsp = driver.run("set role admin");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    // security doesn't let me change the properties
+    rsp = driver.run("alter database db set dbproperties ('key' = 'value')");
     Assert.assertEquals(0, rsp.getResponseCode());
     rsp = driver.run("drop database db");
     Assert.assertEquals(0, rsp.getResponseCode());
@@ -121,6 +124,59 @@ public class TestHBaseMetastoreSql extends IMockUtils {
     rsp = driver.run("select * from parttbl");
     Assert.assertEquals(0, rsp.getResponseCode());
     rsp = driver.run("select * from parttbl where ds = 'today'");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Test
+  public void role() throws Exception {
+    CommandProcessorResponse rsp = driver.run("set role admin");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("create role role1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("grant role1 to user fred with admin option");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("create role role2");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("grant role1 to role role2");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("show principals role1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("show role grant role role1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("show role grant user " + System.getProperty("user.name"));
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("show roles");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("revoke admin option for role1 from user fred");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("revoke role1 from user fred");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("revoke role1 from role role2");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("show current roles");
+    Assert.assertEquals(0, rsp.getResponseCode());
+
+    rsp = driver.run("drop role role2");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("drop role role1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Test
+  public void grant() throws Exception {
+    CommandProcessorResponse rsp = driver.run("set role admin");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("create role role3");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    driver.run("create table granttbl (c int)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    driver.run("grant select on granttbl to " + System.getProperty("user.name"));
+    Assert.assertEquals(0, rsp.getResponseCode());
+    driver.run("grant select on granttbl to role3 with grant option");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    driver.run("revoke select on granttbl from " + System.getProperty("user.name"));
+    Assert.assertEquals(0, rsp.getResponseCode());
+    driver.run("revoke grant option for select on granttbl from role3");
     Assert.assertEquals(0, rsp.getResponseCode());
   }
 

@@ -617,17 +617,22 @@ public class HBaseStore implements RawStore {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       PrincipalPrivilegeSet global = getHBase().getGlobalPrivs();
       if (global == null) return null;
-      List<PrivilegeGrantInfo> pgi = global.getUserPrivileges().get(userName);
-      if (pgi != null) {
-        pps.putToUserPrivileges(userName, pgi);
+      List<PrivilegeGrantInfo> pgi;
+      if (global.getUserPrivileges() != null) {
+        pgi = global.getUserPrivileges().get(userName);
+        if (pgi != null) {
+          pps.putToUserPrivileges(userName, pgi);
+        }
       }
 
-      List<String> roles = getHBase().getUserRoles(userName);
-      if (roles != null) {
-        for (String role : roles) {
-          pgi = global.getRolePrivileges().get(role);
-          if (pgi != null) {
-            pps.putToRolePrivileges(role, pgi);
+      if (global.getRolePrivileges() != null) {
+        List<String> roles = getHBase().getUserRoles(userName);
+        if (roles != null) {
+          for (String role : roles) {
+            pgi = global.getRolePrivileges().get(role);
+            if (pgi != null) {
+              pps.putToRolePrivileges(role, pgi);
+            }
           }
         }
       }
@@ -645,18 +650,25 @@ public class HBaseStore implements RawStore {
     try {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       Database db = getHBase().getDb(dbName);
-      // Find the user privileges for this db
-      List<PrivilegeGrantInfo> pgi = db.getPrivileges().getUserPrivileges().get(userName);
-      if (pgi != null) {
-        pps.putToUserPrivileges(userName, pgi);
-      }
-
-      List<String> roles = getHBase().getUserRoles(userName);
-      if (roles != null) {
-        for (String role : roles) {
-          pgi = db.getPrivileges().getRolePrivileges().get(role);
+      if (db.getPrivileges() != null) {
+        List<PrivilegeGrantInfo> pgi;
+        // Find the user privileges for this db
+        if (db.getPrivileges().getUserPrivileges() != null) {
+          pgi = db.getPrivileges().getUserPrivileges().get(userName);
           if (pgi != null) {
-            pps.putToRolePrivileges(role, pgi);
+            pps.putToUserPrivileges(userName, pgi);
+          }
+        }
+
+        if (db.getPrivileges().getRolePrivileges() != null) {
+          List<String> roles = getHBase().getUserRoles(userName);
+          if (roles != null) {
+            for (String role : roles) {
+              pgi = db.getPrivileges().getRolePrivileges().get(role);
+              if (pgi != null) {
+                pps.putToRolePrivileges(role, pgi);
+              }
+            }
           }
         }
       }
@@ -674,18 +686,24 @@ public class HBaseStore implements RawStore {
     try {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       Table table = getHBase().getTable(dbName, tableName);
-      // Find the user privileges for this db
-      List<PrivilegeGrantInfo> pgi = table.getPrivileges().getUserPrivileges().get(userName);
-      if (pgi != null) {
-        pps.putToUserPrivileges(userName, pgi);
-      }
-
-      List<String> roles = getHBase().getUserRoles(userName);
-      if (roles != null) {
-        for (String role : roles) {
-          pgi = table.getPrivileges().getRolePrivileges().get(role);
+      List<PrivilegeGrantInfo> pgi;
+      if (table.getPrivileges() != null) {
+        if (table.getPrivileges().getUserPrivileges() != null) {
+          pgi = table.getPrivileges().getUserPrivileges().get(userName);
           if (pgi != null) {
-            pps.putToRolePrivileges(role, pgi);
+            pps.putToUserPrivileges(userName, pgi);
+          }
+        }
+
+        if (table.getPrivileges().getRolePrivileges() != null) {
+          List<String> roles = getHBase().getUserRoles(userName);
+          if (roles != null) {
+            for (String role : roles) {
+              pgi = table.getPrivileges().getRolePrivileges().get(role);
+              if (pgi != null) {
+                pps.putToRolePrivileges(role, pgi);
+              }
+            }
           }
         }
       }
@@ -1068,12 +1086,14 @@ public class HBaseStore implements RawStore {
       List<RolePrincipalGrant> rpgs = new ArrayList<RolePrincipalGrant>(roles.size());
       for (Role role : roles) {
         HbaseMetastoreProto.RoleGrantInfoList grants = getHBase().getRolePrincipals(role.getRoleName());
-        for (HbaseMetastoreProto.RoleGrantInfo grant : grants.getGrantInfoList()) {
-          if (grant.getPrincipalType().equals(principalType) &&
-              grant.getPrincipalName().equals(principalName)) {
-            rpgs.add(new RolePrincipalGrant(role.getRoleName(), principalName, principalType,
-                grant.getGrantOption(), (int)grant.getAddTime(), grant.getGrantor(),
-                HBaseUtils.convertPrincipalTypes(grant.getGrantorType())));
+        if (grants != null) {
+          for (HbaseMetastoreProto.RoleGrantInfo grant : grants.getGrantInfoList()) {
+            if (grant.getPrincipalType() == HBaseUtils.convertPrincipalTypes(principalType) &&
+                grant.getPrincipalName().equals(principalName)) {
+              rpgs.add(new RolePrincipalGrant(role.getRoleName(), principalName, principalType,
+                  grant.getGrantOption(), (int) grant.getAddTime(), grant.getGrantor(),
+                  HBaseUtils.convertPrincipalTypes(grant.getGrantorType())));
+            }
           }
         }
       }

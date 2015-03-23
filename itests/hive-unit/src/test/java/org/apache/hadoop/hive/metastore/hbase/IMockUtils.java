@@ -25,6 +25,8 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -107,6 +109,14 @@ public class IMockUtils {
         "org.apache.hadoop.hive.metastore.hbase.HBaseStore");
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    // Setup so we can test SQL standard auth
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        SQLStdHiveAuthorizerFactoryForTest.class.getName());
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
+        SessionStateConfigUserAuthenticator.class.getName());
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
+    conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
     HBaseReadWrite.setTestConnection(hconn);
 
     SessionState.start(new CliSessionState(conf));
