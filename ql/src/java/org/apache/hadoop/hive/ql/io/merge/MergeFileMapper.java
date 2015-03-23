@@ -97,7 +97,7 @@ public class MergeFileMapper extends MapReduceBase implements Mapper {
     row[0] = key;
     row[1] = value;
     try {
-      mergeOp.processOp(row, 0);
+      mergeOp.process(row, 0);
     } catch (HiveException e) {
       abort = true;
       throw new IOException(e);

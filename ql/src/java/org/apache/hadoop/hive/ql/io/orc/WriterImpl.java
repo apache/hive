@@ -99,7 +99,7 @@ import com.google.protobuf.CodedOutputStream;
  * particular, because the MemoryManager is shared between writers, this class
  * assumes that checkMemory may be called from a separate thread.
  */
-class WriterImpl implements Writer, MemoryManager.Callback {
+public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final Log LOG = LogFactory.getLog(WriterImpl.class);
 
@@ -313,7 +313,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     return totalMemoryPool;
   }
 
-  static CompressionCodec createCodec(CompressionKind kind) {
+  public static CompressionCodec createCodec(CompressionKind kind) {
     switch (kind) {
       case NONE:
         return null;

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -26,11 +27,14 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hive.common.util.DateTimeMath;
 
 class ASTBuilder {
 
@@ -218,6 +222,23 @@ class ASTBuilder {
       val = "'" + val + "'";
     }
       break;
+    case INTERVAL_YEAR_MONTH: {
+      type = HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL;
+      BigDecimal monthsBd = (BigDecimal) literal.getValue();
+      HiveIntervalYearMonth intervalYearMonth = new HiveIntervalYearMonth(monthsBd.intValue());
+      val = "'" + intervalYearMonth.toString() + "'";
+      break;
+    }
+    case INTERVAL_DAY_TIME: {
+      type = HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL;
+      BigDecimal millisBd = (BigDecimal) literal.getValue();
+
+      // Calcite literal is in millis, convert to seconds
+      BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
+      HiveIntervalDayTime intervalDayTime = new HiveIntervalDayTime(secsBd);
+      val = "'" + intervalDayTime.toString() + "'";
+      break;
+    }
     case NULL:
       type = HiveParser.TOK_NULL;
       break;

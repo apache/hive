@@ -19,11 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -31,13 +32,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * Select operator implementation.
  */
-public class VectorSelectOperator extends SelectOperator implements VectorizationContextRegion {
+public class VectorSelectOperator extends Operator<SelectDesc> implements
+    VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
 
@@ -62,7 +65,7 @@ public class VectorSelectOperator extends SelectOperator implements Vectorizatio
     }
 
     /**
-     * Create a new vectorization context to create a new projection, but keep 
+     * Create a new vectorization context to create a new projection, but keep
      * same output column manager must be inherited to track the scratch the columns.
      */
     vOutContext = new VectorizationContext(vContext);
@@ -74,7 +77,7 @@ public class VectorSelectOperator extends SelectOperator implements Vectorizatio
     for (int i=0; i < colList.size(); ++i) {
       String columnName = this.conf.getOutputColumnNames().get(i);
       VectorExpression ve = vExpressions[i];
-      vOutContext.addProjectionColumn(columnName, 
+      vOutContext.addProjectionColumn(columnName,
               ve.getOutputColumn());
     }
   }
@@ -83,11 +86,11 @@ public class VectorSelectOperator extends SelectOperator implements Vectorizatio
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      initializeChildren(hconf);
-      return;
+      return null;
     }
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
@@ -102,15 +105,15 @@ public class VectorSelectOperator extends SelectOperator implements Vectorizatio
     outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
         outputFieldNames, objectInspectors);
 
-    initializeChildren(hconf);
     projectedColumns = new int [vExpressions.length];
     for (int i = 0; i < projectedColumns.length; i++) {
       projectedColumns[i] = vExpressions[i].getOutputColumn();
     }
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
@@ -166,5 +169,10 @@ public class VectorSelectOperator extends SelectOperator implements Vectorizatio
   @Override
   public VectorizationContext getOuputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  public OperatorType getType() {
+    return OperatorType.SELECT;
   }
 }

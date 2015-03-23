@@ -183,7 +183,7 @@ public class SplitSparkWorkResolver implements PhysicalPlanResolver {
   private void setStatistics(Operator<? extends OperatorDesc> origin,
       Operator<? extends OperatorDesc> clone) {
     clone.getConf().setStatistics(origin.getConf().getStatistics());
-    clone.getConf().setOpTraits(origin.getConf().getOpTraits());
+    clone.getConf().setTraits(origin.getConf().getTraits());
     if (origin.getChildOperators().size() == clone.getChildOperators().size()) {
       for (int i = 0; i < clone.getChildOperators().size(); i++) {
         setStatistics(origin.getChildOperators().get(i), clone.getChildOperators().get(i));

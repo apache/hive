@@ -44,6 +44,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -102,8 +105,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface,
-    AcidInputFormat<NullWritable, OrcStruct>, 
-    CombineHiveInputFormat.AvoidSplitCombination {
+    AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
 
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
@@ -111,7 +113,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       SHIMS.getHadoopConfNames().get("MAPREDMINSPLITSIZE");
   static final String MAX_SPLIT_SIZE =
       SHIMS.getHadoopConfNames().get("MAPREDMAXSPLITSIZE");
-  static final String SARG_PUSHDOWN = "sarg.pushdown";
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
@@ -217,12 +218,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                                   long offset, long length
                                                   ) throws IOException {
     Reader.Options options = new Reader.Options().range(offset, length);
-    boolean isOriginal =
-        !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
+    boolean isOriginal = isOriginal(file);
     List<OrcProto.Type> types = file.getTypes();
-    setIncludedColumns(options, types, conf, isOriginal);
+    options.include(genIncludedColumns(types, conf, isOriginal));
     setSearchArgument(options, types, conf, isOriginal);
     return file.rowsOptions(options);
+  }
+
+  public static boolean isOriginal(Reader file) {
+    return !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
   }
 
   /**
@@ -244,6 +248,21 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  public static boolean[] genIncludedColumns(
+      List<OrcProto.Type> types, List<Integer> included, boolean isOriginal) {
+    int rootColumn = getRootColumn(isOriginal);
+    int numColumns = types.size() - rootColumn;
+    boolean[] result = new boolean[numColumns];
+    result[0] = true;
+    OrcProto.Type root = types.get(rootColumn);
+    for(int i=0; i < root.getSubtypesCount(); ++i) {
+      if (included.contains(i)) {
+        includeColumnRecursive(types, result, root.getSubtypes(i),
+            rootColumn);
+      }
+    }
+    return result;
+  }
   /**
    * Take the configuration and figure out which columns we need to include.
    * @param options the options to update
@@ -251,64 +270,51 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * @param conf the configuration
    * @param isOriginal is the file in the original format?
    */
-  static void setIncludedColumns(Reader.Options options,
-                                 List<OrcProto.Type> types,
-                                 Configuration conf,
-                                 boolean isOriginal) {
-    int rootColumn = getRootColumn(isOriginal);
-    if (!ColumnProjectionUtils.isReadAllColumns(conf)) {
-      int numColumns = types.size() - rootColumn;
-      boolean[] result = new boolean[numColumns];
-      result[0] = true;
-      OrcProto.Type root = types.get(rootColumn);
+  public static boolean[] genIncludedColumns(
+      List<OrcProto.Type> types, Configuration conf, boolean isOriginal) {
+     if (!ColumnProjectionUtils.isReadAllColumns(conf)) {
       List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
-      for(int i=0; i < root.getSubtypesCount(); ++i) {
-        if (included.contains(i)) {
-          includeColumnRecursive(types, result, root.getSubtypes(i),
-              rootColumn);
-        }
-      }
-      options.include(result);
+      return genIncludedColumns(types, included, isOriginal);
     } else {
-      options.include(null);
+      return null;
     }
+  }
+
+  public static String[] getSargColumnNames(String[] originalColumnNames,
+      List<OrcProto.Type> types, boolean[] includedColumns, boolean isOriginal) {
+    int rootColumn = getRootColumn(isOriginal);
+    String[] columnNames = new String[types.size() - rootColumn];
+    int i = 0;
+    for(int columnId: types.get(rootColumn).getSubtypesList()) {
+      if (includedColumns == null || includedColumns[columnId - rootColumn]) {
+        // this is guaranteed to be positive because types only have children
+        // ids greater than their own id.
+        columnNames[columnId - rootColumn] = originalColumnNames[i++];
+      }
+    }
+    return columnNames;
   }
 
   static void setSearchArgument(Reader.Options options,
                                 List<OrcProto.Type> types,
                                 Configuration conf,
                                 boolean isOriginal) {
-    int rootColumn = getRootColumn(isOriginal);
-    String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-    String sargPushdown = conf.get(SARG_PUSHDOWN);
-    String columnNamesString =
-        conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    if ((sargPushdown == null && serializedPushdown == null)
-        || columnNamesString == null) {
+    String columnNamesString = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    if (columnNamesString == null) {
+      LOG.debug("No ORC pushdown predicate - no column names");
+      options.searchArgument(null, null);
+      return;
+    }
+    SearchArgument sarg = SearchArgumentFactory.createFromConf(conf);
+    if (sarg == null) {
       LOG.debug("No ORC pushdown predicate");
       options.searchArgument(null, null);
-    } else {
-      SearchArgument sarg;
-      if (serializedPushdown != null) {
-        sarg = SearchArgumentFactory.create
-            (Utilities.deserializeExpression(serializedPushdown));
-      } else {
-        sarg = SearchArgumentFactory.create(sargPushdown);
-      }
-      LOG.info("ORC pushdown predicate: " + sarg);
-      String[] neededColumnNames = columnNamesString.split(",");
-      String[] columnNames = new String[types.size() - rootColumn];
-      boolean[] includedColumns = options.getInclude();
-      int i = 0;
-      for(int columnId: types.get(rootColumn).getSubtypesList()) {
-        if (includedColumns == null || includedColumns[columnId - rootColumn]) {
-          // this is guaranteed to be positive because types only have children
-          // ids greater than their own id.
-          columnNames[columnId - rootColumn] = neededColumnNames[i++];
-        }
-      }
-      options.searchArgument(sarg, columnNames);
+      return;
     }
+
+    LOG.info("ORC pushdown predicate: " + sarg);
+    options.searchArgument(sarg, getSargColumnNames(
+        columnNamesString.split(","), types, options.getInclude(), isOriginal));
   }
 
   @Override
@@ -776,7 +782,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         // deltas may change the rows making them match the predicate.
         if (deltas.isEmpty()) {
           Reader.Options options = new Reader.Options();
-          setIncludedColumns(options, types, context.conf, isOriginal);
+          options.include(genIncludedColumns(types, context.conf, isOriginal));
           setSearchArgument(options, types, context.conf, isOriginal);
           // only do split pruning if HIVE-8732 has been fixed in the writer
           if (options.getSearchArgument() != null &&
@@ -1124,7 +1130,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           .getBucket();
       reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
       final List<OrcProto.Type> types = reader.getTypes();
-      setIncludedColumns(readOptions, types, conf, split.isOriginal());
+      readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
       setSearchArgument(readOptions, types, conf, split.isOriginal());
     } else {
       bucket = (int) split.getStart();

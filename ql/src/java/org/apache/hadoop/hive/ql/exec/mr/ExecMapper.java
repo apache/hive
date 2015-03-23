@@ -24,9 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -105,6 +105,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
       mo.setConf(mrwork);
       // initialize map operator
+      mo.initialize(job, null);
       mo.setChildren(job);
       l4j.info(mo.dump(0));
       // initialize map local work
@@ -113,9 +114,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       MapredContext.init(true, new JobConf(jc));
 
-      mo.setExecContext(execContext);
+      mo.passExecContext(execContext);
       mo.initializeLocalWork(jc);
-      mo.initialize(jc, null);
+      mo.initializeMapOperator(jc);
 
       if (localWork == null) {
         return;
@@ -126,7 +127,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       l4j.info("Initializing dummy operator");
       List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
       for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
-        dummyOp.setExecContext(execContext);
+        dummyOp.passExecContext(execContext);
         dummyOp.initialize(jc,null);
       }
     } catch (Throwable e) {

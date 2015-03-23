@@ -273,16 +273,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     List<Operator<? extends OperatorDesc>> childOperators = mergeJoinOp.getChildOperators();
-    if (childOperators == null) {
-      childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-      mergeJoinOp.setChildOperators(childOperators);
-    }
-
     List<Operator<? extends OperatorDesc>> parentOperators = mergeJoinOp.getParentOperators();
-    if (parentOperators == null) {
-      parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-      mergeJoinOp.setParentOperators(parentOperators);
-    }
 
     childOperators.clear();
     parentOperators.clear();

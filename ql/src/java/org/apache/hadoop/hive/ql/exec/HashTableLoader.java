@@ -19,11 +19,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 
 /**
  * HashTableLoader is an interface used by MapJoinOperator used to load the hashtables
@@ -31,8 +29,9 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
  */
 public interface HashTableLoader {
 
-  void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp);
+  void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
+      MapJoinOperator joinOp);
 
-  void load(MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage) throws HiveException;
+  void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes,
+      long memUsage) throws HiveException;
 }

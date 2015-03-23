@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -40,21 +42,21 @@ public interface MapJoinTableContainer {
      * Changes current rows to which adaptor is referring to the rows corresponding to
      * the key represented by a VHKW object, and writers and batch used to interpret it.
      */
-    void setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
+    JoinUtil.JoinResult setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
         VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException;
 
     /**
      * Changes current rows to which adaptor is referring to the rows corresponding to
      * the key represented by a row object, and fields and ois used to interpret it.
      */
-    void setFromRow(Object row, List<ExprNodeEvaluator> fields, List<ObjectInspector> ois)
+    JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields, List<ObjectInspector> ois)
         throws HiveException;
 
     /**
      * Changes current rows to which adaptor is referring to the rows corresponding to
      * the key that another adaptor has already deserialized via setFromVector/setFromRow.
      */
-    void setFromOther(ReusableGetAdaptor other);
+    JoinUtil.JoinResult setFromOther(ReusableGetAdaptor other) throws HiveException;
 
     /**
      * Checks whether the current key has any nulls.
@@ -77,7 +79,7 @@ public interface MapJoinTableContainer {
    */
   MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
       MapJoinObjectSerDeContext valueContext, Writable currentValue)
-          throws SerDeException, HiveException;
+      throws SerDeException, HiveException, IOException;
 
   /**
    * Indicates to the container that the puts have ended; table is now r/o.
@@ -98,4 +100,10 @@ public interface MapJoinTableContainer {
   MapJoinKey getAnyKey();
 
   void dumpMetrics();
+
+  /**
+   * Checks if the container has spilled any data onto disk.
+   * This is only applicable for HybridHashTableContainer.
+   */
+  boolean hasSpill();
 }

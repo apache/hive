@@ -58,12 +58,15 @@ public abstract class GenericUDFBaseArithmetic extends GenericUDFBaseBinary {
     // Determine if we are dealing with a numeric or date arithmetic operation
     boolean isDateTimeOp = false;
     for (int idx = 0; idx < 2; ++idx) {
-      if (arguments[idx].getCategory() == Category.PRIMITIVE) {
-        if (PrimitiveGrouping.DATE_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
-            ((PrimitiveObjectInspector) arguments[idx]).getPrimitiveCategory())) {
+      switch (((PrimitiveObjectInspector) arguments[idx]).getPrimitiveCategory()) {
+        case DATE:
+        case TIMESTAMP:
+        case INTERVAL_YEAR_MONTH:
+        case INTERVAL_DAY_TIME:
           isDateTimeOp = true;
           break;
-        }
+        default:
+          break;
       }
     }
 

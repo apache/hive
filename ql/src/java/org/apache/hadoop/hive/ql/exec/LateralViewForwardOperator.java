@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Collection;
+import java.util.concurrent.Future;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -33,7 +37,7 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     forward(row, inputObjInspectors[tag]);
   }
 
@@ -49,5 +53,10 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
   @Override
   public OperatorType getType() {
     return OperatorType.LATERALVIEWFORWARD;
+  }
+
+  @Override
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    return super.initializeOp(hconf);
   }
 }

@@ -52,6 +52,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   // TODO: should these rather be arrays?
   private Map<Integer, String> parentToInput = new HashMap<Integer, String>();
   private Map<Integer, Long> parentKeyCounts = new HashMap<Integer, Long>();
+  private Map<Integer, Long> parentDataSizes = new HashMap<Integer, Long>();
 
   // table alias (small) --> input file name (big) --> target file names (small)
   private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
@@ -87,6 +88,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.dumpFilePrefix = clone.dumpFilePrefix;
     this.parentToInput = clone.parentToInput;
     this.parentKeyCounts = clone.parentKeyCounts;
+    this.parentDataSizes = clone.parentDataSizes;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -130,6 +132,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public Map<Integer, Long> getParentKeyCounts() {
     return parentKeyCounts;
+  }
+
+  public Map<Integer, Long> getParentDataSizes() {
+    return parentDataSizes;
   }
 
   @Explain(displayName = "Estimated key counts", normalExplain = false)

@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -54,6 +56,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -425,6 +429,20 @@ public class LazyBinarySerDe extends AbstractSerDe {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
+        return;
+      }
+
+      case INTERVAL_YEAR_MONTH: {
+        HiveIntervalYearMonthWritable intervalYearMonth =
+            ((HiveIntervalYearMonthObjectInspector) poi).getPrimitiveWritableObject(obj);
+        intervalYearMonth.writeToByteStream(byteStream);
+        return;
+      }
+
+      case INTERVAL_DAY_TIME: {
+        HiveIntervalDayTimeWritable intervalDayTime =
+            ((HiveIntervalDayTimeObjectInspector) poi).getPrimitiveWritableObject(obj);
+        intervalDayTime.writeToByteStream(byteStream);
         return;
       }
 

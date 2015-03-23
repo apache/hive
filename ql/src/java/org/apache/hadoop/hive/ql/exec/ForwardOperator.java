@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -32,7 +35,7 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     forward(row, inputObjInspectors[tag]);
   }
 
@@ -56,5 +59,10 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
 
   static public String getOperatorName() {
     return "FOR";
+  }
+
+  @Override
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    return super.initializeOp(hconf);
   }
 }

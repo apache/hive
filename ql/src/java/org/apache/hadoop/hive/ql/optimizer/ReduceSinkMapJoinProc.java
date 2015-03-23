@@ -124,12 +124,14 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     }
     MapJoinDesc joinConf = mapJoinOp.getConf();
     long keyCount = Long.MAX_VALUE, rowCount = Long.MAX_VALUE, bucketCount = 1;
+    long tableSize = Long.MAX_VALUE;
     Statistics stats = parentRS.getStatistics();
     if (stats != null) {
       keyCount = rowCount = stats.getNumRows();
       if (keyCount <= 0) {
         keyCount = rowCount = Long.MAX_VALUE;
       }
+      tableSize = stats.getDataSize();
       ArrayList<String> keyCols = parentRS.getConf().getOutputKeyColumnNames();
       if (keyCols != null && !keyCols.isEmpty()) {
         // See if we can arrive at a smaller number using distinct stats from key columns.
@@ -157,6 +159,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           // We cannot obtain a better estimate without CustomPartitionVertex providing it
           // to us somehow; in which case using statistics would be completely unnecessary.
           keyCount /= bucketCount;
+          tableSize /= bucketCount;
         }
       }
     }
@@ -166,6 +169,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (keyCount != Long.MAX_VALUE) {
       joinConf.getParentKeyCounts().put(pos, keyCount);
     }
+    joinConf.getParentDataSizes().put(pos, tableSize);
 
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;

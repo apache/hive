@@ -52,7 +52,6 @@ public class GenericUDFOPPlus extends GenericUDFBaseArithmetic {
 
   @Override
   protected GenericUDF instantiateDTIUDF() {
-    // TODO: implement date-time/interval version of UDF
-    return new GenericUDFOPNumericPlus();
+    return new GenericUDFOPDTIPlus();
   }
 }
