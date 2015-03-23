@@ -1296,6 +1296,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     switch (op.getType()) {
       case MAPJOIN:
+        // Disable Hybrid Grace Hash Join when vectorization is in effect, for now
+        HiveConf.setBoolVar(physicalContext.getConf(),
+            HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
       case GROUPBY:
       case FILTER:
       case SELECT:

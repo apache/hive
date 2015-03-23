@@ -48,6 +48,15 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 public class JoinUtil {
 
+  /**
+   * Represents the join result between two tables
+   */
+  public static enum JoinResult {
+    MATCH,    // A match is found
+    NOMATCH,  // No match is found, and the current row will be dropped
+    SPILL     // The current row has been spilled to disk, as the join is postponed
+  }
+
   public static List<ObjectInspector>[] getObjectInspectorsFromEvaluators(
       List<ExprNodeEvaluator>[] exprEntries,
       ObjectInspector[] inputObjInspector,

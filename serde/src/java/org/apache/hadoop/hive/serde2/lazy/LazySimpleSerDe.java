@@ -126,7 +126,8 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(serdeParams
-        .getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
+        .getColumnNames(), serdeParams.getColumnTypes(),
+        new LazyObjectInspectorParametersImpl(serdeParams));
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
