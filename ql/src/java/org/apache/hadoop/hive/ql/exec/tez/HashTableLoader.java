@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -76,7 +77,15 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     boolean useOptimizedTables = HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+    boolean useHybridGraceHashJoin = HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
     boolean isFirstKey = true;
+
+    // Disable hybrid grace hash join for n-way join
+    if (mapJoinTables.length > 2) {
+      useHybridGraceHashJoin = false;
+    }
+
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
         continue;
@@ -111,15 +120,17 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         isFirstKey = false;
         Long keyCountObj = parentKeyCounts.get(pos);
         long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
+
         MapJoinTableContainer tableContainer = useOptimizedTables
-            ? new MapJoinBytesTableContainer(hconf, valCtx, keyCount, memUsage)
+            ? (useHybridGraceHashJoin ? new HybridHashTableContainer(hconf, keyCount, memUsage,
+                                                                     desc.getParentDataSizes().get(pos))
+                                      : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, memUsage))
             : new HashMapWrapper(hconf, keyCount);
 
         while (kvReader.next()) {
           tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
               valCtx, (Writable)kvReader.getCurrentValue());
         }
-
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
       } catch (IOException e) {

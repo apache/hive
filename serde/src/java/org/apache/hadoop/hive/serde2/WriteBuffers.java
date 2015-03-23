@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.util.hash.MurmurHash;
 
 
 /**
@@ -495,7 +494,7 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   // Lifted from org.apache.hadoop.util.hash.MurmurHash... but supports offset.
-  private static int murmurHash(byte[] data, int offset, int length) {
+  public static int murmurHash(byte[] data, int offset, int length) {
     int m = 0x5bd1e995;
     int r = 24;
 
@@ -543,5 +542,13 @@ public final class WriteBuffers implements RandomAccessOutput {
     h ^= h >>> 15;
 
     return h;
+  }
+
+  /**
+   * Write buffer size
+   * @return write buffer size
+   */
+  public long size() {
+    return writeBuffers.size() * (long) wbSize;
   }
 }

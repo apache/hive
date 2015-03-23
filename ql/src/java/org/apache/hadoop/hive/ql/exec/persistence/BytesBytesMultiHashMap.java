@@ -124,6 +124,7 @@ public final class BytesBytesMultiHashMap {
 
   private int resizeThreshold;
   private int keysAssigned;
+  private int numValues;
 
   /**
    * Largest number of probe steps ever taken to find location for a key. When getting, we can
@@ -154,7 +155,7 @@ public final class BytesBytesMultiHashMap {
   private final static int DEFAULT_MAX_CAPACITY = 1024 * 1024 * 1024;
 
   public BytesBytesMultiHashMap(int initialCapacity,
-      float loadFactor, int wbSize, long memUsage, int defaultCapacity) {
+      float loadFactor, int wbSize, long memUsage) {
     if (loadFactor < 0 || loadFactor > 1) {
       throw new AssertionError("Load factor must be between (0, 1].");
     }
@@ -180,7 +181,7 @@ public final class BytesBytesMultiHashMap {
 
   @VisibleForTesting
   BytesBytesMultiHashMap(int initialCapacity, float loadFactor, int wbSize) {
-    this(initialCapacity, loadFactor, wbSize, -1, 100000);
+    this(initialCapacity, loadFactor, wbSize, -1);
   }
 
   /** The source of keys and values to put into hashtable; avoids byte copying. */
@@ -204,7 +205,7 @@ public final class BytesBytesMultiHashMap {
    * @param kv Keyvalue writer. Each method will be called at most once.
    */
   private static final byte[] FOUR_ZEROES = new byte[] { 0, 0, 0, 0 };
-  public void put(KvSource kv) throws SerDeException {
+  public void put(KvSource kv, int keyHashCode) throws SerDeException {
     if (resizeThreshold <= keysAssigned) {
       expandAndRehash();
     }
@@ -218,7 +219,7 @@ public final class BytesBytesMultiHashMap {
 
     kv.writeKey(writeBuffers);
     int keyLength = (int)(writeBuffers.getWritePoint() - keyOffset);
-    int hashCode = writeBuffers.hashCode(keyOffset, keyLength);
+    int hashCode = (keyHashCode == -1) ? writeBuffers.hashCode(keyOffset, keyLength) : keyHashCode;
 
     int slot = findKeySlotToWrite(keyOffset, keyLength, hashCode);
     // LOG.info("Write hash code is " + Integer.toBinaryString(hashCode) + " - " + slot);
@@ -243,6 +244,7 @@ public final class BytesBytesMultiHashMap {
       }
       refs[slot] = Ref.setListFlag(ref);
     }
+    ++numValues;
   }
 
   /**
@@ -301,8 +303,31 @@ public final class BytesBytesMultiHashMap {
     writeBuffers.populateValue(valueRef);
   }
 
+  /**
+   * Number of keys in the hashmap
+   * @return number of keys
+   */
   public int size() {
     return keysAssigned;
+  }
+
+  /**
+   * Number of values in the hashmap
+   * This is equal to or bigger than number of keys, since some values may share the same key
+   * @return number of values
+   */
+  public int getNumValues() {
+    return numValues;
+  }
+
+  /**
+   * Number of bytes used by the hashmap
+   * There are two main components that take most memory: writeBuffers and refs
+   * Others include instance fields: 100
+   * @return number of bytes
+   */
+  public long memorySize() {
+    return writeBuffers.size() + refs.length * 8 + 100;
   }
 
   public void seal() {
