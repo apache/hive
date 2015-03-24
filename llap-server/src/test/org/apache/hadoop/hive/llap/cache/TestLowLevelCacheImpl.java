@@ -91,7 +91,7 @@ public class TestLowLevelCacheImpl {
   public void testGetPut() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
-        new DummyAllocator(), -1); // no cleanup thread
+        new DummyAllocator(), true, -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
@@ -149,7 +149,7 @@ public class TestLowLevelCacheImpl {
   public void testMultiMatch() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
-        new DummyAllocator(), -1); // no cleanup thread
+        new DummyAllocator(), true, -1); // no cleanup thread
     long fn = 1;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(
@@ -165,10 +165,24 @@ public class TestLowLevelCacheImpl {
   }
 
   @Test
+  public void testMultiMatchNonGranular() {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), false, -1); // no cleanup thread
+    long fn = 1;
+    LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb() };
+    assertNull(cache.putFileData(
+        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL));
+    // We expect cache requests from the middle here
+    verifyCacheGet(cache, fn, 3, 4, fakes[0]);
+    verifyCacheGet(cache, fn, 3, 7, fakes[0], dr(4, 6), fakes[1]);
+  }
+
+  @Test
   public void testStaleValueGet() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
-        new DummyAllocator(), -1); // no cleanup thread
+        new DummyAllocator(), true, -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] { fb(), fb(), fb() };
     assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL));
@@ -187,7 +201,7 @@ public class TestLowLevelCacheImpl {
   public void testStaleValueReplace() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
-        new DummyAllocator(), -1); // no cleanup thread
+        new DummyAllocator(), true, -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
@@ -232,7 +246,7 @@ public class TestLowLevelCacheImpl {
 
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("test", "1");
     LowLevelCacheImpl cache = new LowLevelCacheImpl(metrics,
-        new DummyCachePolicy(), new DummyAllocator(), -1); // no cleanup thread
+        new DummyCachePolicy(), new DummyAllocator(), true, -1); // no cleanup thread
     long fn = 1;
     LlapMemoryBuffer[] fakes = new LlapMemoryBuffer[]{fb(), fb(), fb()};
     cache.putFileData(fn, new DiskRange[]{dr(0, 100), dr(300, 500), dr(800, 1000)},
@@ -269,8 +283,8 @@ public class TestLowLevelCacheImpl {
 
   @Test
   public void testMTTWithCleanup() {
-    final LowLevelCacheImpl cache = new LowLevelCacheImpl(
-        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(), new DummyAllocator(), 1);
+    final LowLevelCacheImpl cache = new LowLevelCacheImpl(LlapDaemonCacheMetrics.create(
+        "test", "1"), new DummyCachePolicy(), new DummyAllocator(), true, 1);
     final long fn1 = 1, fn2 = 2;
     final int offsetsToUse = 8;
     final CountDownLatch cdlIn = new CountDownLatch(4), cdlOut = new CountDownLatch(1);

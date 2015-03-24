@@ -47,15 +47,16 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
   private LlapDaemonCacheMetrics metrics;
+  private final boolean doAssumeGranularBlocks;
 
   public LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
-      Allocator allocator) {
-    this(metrics, cachePolicy, allocator, DEFAULT_CLEANUP_INTERVAL);
+      Allocator allocator, boolean doAssumeGranularBlocks) {
+    this(metrics, cachePolicy, allocator, doAssumeGranularBlocks, DEFAULT_CLEANUP_INTERVAL);
   }
 
   @VisibleForTesting
-  LowLevelCacheImpl(LlapDaemonCacheMetrics metrics,
-      LowLevelCachePolicy cachePolicy, Allocator allocator, long cleanupInterval) {
+  LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
+      Allocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
     }
@@ -63,6 +64,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     this.allocator = allocator;
     this.cleanupInterval = cleanupInterval;
     this.metrics = metrics;
+    this.doAssumeGranularBlocks = doAssumeGranularBlocks;
   }
 
   public void init() {
@@ -105,8 +107,16 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
       ConcurrentSkipListMap<Long, LlapDataBuffer> cache) {
+    long absOffset = currentNotCached.offset + baseOffset;
+    if (!doAssumeGranularBlocks) {
+      // This currently only happens in tests. See getFileData comment on the interface.
+      Long prevOffset = cache.floorKey(absOffset);
+      if (prevOffset != null) {
+        absOffset = prevOffset;
+      }
+    }
     Iterator<Map.Entry<Long, LlapDataBuffer>> matches = cache.subMap(
-        currentNotCached.offset + baseOffset, currentNotCached.end + baseOffset)
+        absOffset, currentNotCached.end + baseOffset)
         .entrySet().iterator();
     long cacheEnd = -1;
     while (matches.hasNext()) {
@@ -150,7 +160,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     // Both currentNotCached and currentCached already include baseOffset.
     long startOffset = baseOffset + currentNotCached.offset,
         endOffset = baseOffset + currentNotCached.end;
-    if (startOffset == currentCached.offset) {
+    if (startOffset >= currentCached.offset) {
       if (endOffset <= currentCached.end) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
         currentNotCached.replaceSelfWith(currentCached);
@@ -162,7 +172,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         return currentNotCached;
       }
     } else {
-      assert startOffset < currentCached.offset;
+      assert startOffset < currentCached.offset
+        || currentNotCached.prev == null || currentNotCached.prev.end <= currentCached.offset;
       currentNotCached.end = currentCached.offset - baseOffset;
       currentNotCached.insertAfter(currentCached);
       if (endOffset <= currentCached.end) { // we assume it's always "==" now

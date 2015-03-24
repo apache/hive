@@ -97,7 +97,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       // Allocator uses memory manager to request memory.
       allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       // Cache uses allocator to allocate and deallocate.
-      orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator);
+      orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator, true);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
       orcCache.init();
