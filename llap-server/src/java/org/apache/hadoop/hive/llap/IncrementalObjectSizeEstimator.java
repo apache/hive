@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -391,13 +392,13 @@ public class IncrementalObjectSizeEstimator {
 
     public int estimate(
         Object obj, HashMap<Class<?>, ObjectEstimator> parent) {
-      HashSet<Object> uniqueObjects = new HashSet<>();
-      uniqueObjects.add(obj);
+      IdentityHashMap<Object, Boolean> uniqueObjects = new IdentityHashMap<>();
+      uniqueObjects.put(obj, Boolean.TRUE);
       return estimate(obj, parent, uniqueObjects);
     }
 
-    protected int estimate(
-        Object obj, HashMap<Class<?>, ObjectEstimator> parent, HashSet<Object> uniqueObjects) {
+    protected int estimate(Object obj, HashMap<Class<?>, ObjectEstimator> parent,
+        IdentityHashMap<Object, Boolean> uniqueObjects) {
       // TODO: maybe use stack of est+obj pairs instead of recursion.
       if (fields == null) return directSize;
       int referencedSize = 0;
@@ -410,7 +411,7 @@ public class IncrementalObjectSizeEstimator {
         }
         // reference is already accounted for in the directSize.
         if (fieldObj == null) continue;
-        if (!uniqueObjects.add(fieldObj)) continue;
+        if (null != uniqueObjects.put(fieldObj, Boolean.TRUE)) continue;
         switch (e.type) {
         case COLLECTION: {
           Collection<?> c = (Collection<?>)fieldObj;
@@ -500,15 +501,15 @@ public class IncrementalObjectSizeEstimator {
       return directSize + referencedSize;
     }
 
-    private int estimateArrayElements(HashMap<Class<?>, ObjectEstimator> parent,
-        FieldAndType e, Object fieldObj, int len, HashSet<Object> uniqueObjects) {
+    private int estimateArrayElements(HashMap<Class<?>, ObjectEstimator> parent, FieldAndType e,
+        Object fieldObj, int len, IdentityHashMap<Object, Boolean> uniqueObjects) {
       int result = 0;
       Class<?> lastClass = e.field.getType().getComponentType();
       ObjectEstimator lastEstimator = parent.get(lastClass);
       for (int i = 0; i < len; ++i) {
         Object element = Array.get(fieldObj, i);
         if (element == null) continue;
-        if (!uniqueObjects.add(element)) continue;
+        if (null != uniqueObjects.put(element, Boolean.TRUE)) continue;
         Class<?> elementClass = element.getClass();
         if (lastClass != elementClass) {
           lastClass = elementClass;
@@ -525,13 +526,13 @@ public class IncrementalObjectSizeEstimator {
     }
 
     protected int estimateCollectionElements(HashMap<Class<?>, ObjectEstimator> parent,
-        Collection<?> c, Field field, HashSet<Object> uniqueObjects) {
+        Collection<?> c, Field field, IdentityHashMap<Object, Boolean> uniqueObjects) {
       ObjectEstimator lastEstimator = null;
       Class<?> lastClass = null;
       int result = 0;
       for (Object element : c) {
         if (element == null) continue;
-        if (!uniqueObjects.add(element)) continue;
+        if (null != uniqueObjects.put(element, Boolean.TRUE)) continue;
         Class<?> elementClass = element.getClass();
         if (lastClass != elementClass) {
           lastClass = elementClass;
@@ -548,13 +549,13 @@ public class IncrementalObjectSizeEstimator {
     }
 
     protected int estimateMapElements(HashMap<Class<?>, ObjectEstimator> parent,
-        Map<?, ?> m, Field field, HashSet<Object> uniqueObjects) {
+        Map<?, ?> m, Field field, IdentityHashMap<Object, Boolean> uniqueObjects) {
       ObjectEstimator keyEstimator = null, valueEstimator = null;
       Class<?> lastKeyClass = null, lastValueClass = null;
       int result = 0;
       for (Map.Entry<?, ?> element : m.entrySet()) {
         Object key = element.getKey(), value = element.getValue();
-        if (!uniqueObjects.add(key)) continue;
+        if (null != uniqueObjects.put(key, Boolean.TRUE)) continue;
         Class<?> keyClass = key.getClass();
         if (lastKeyClass != keyClass) {
           lastKeyClass = keyClass;
@@ -567,7 +568,7 @@ public class IncrementalObjectSizeEstimator {
         }
         result += keyEstimator.estimate(element, parent, uniqueObjects);
         if (value == null) continue;
-        if (!uniqueObjects.add(value)) continue;
+        if (null != uniqueObjects.put(value, Boolean.TRUE)) continue;
         Class<?> valueClass = value.getClass();
         if (lastValueClass != valueClass) {
           lastValueClass = valueClass;
@@ -594,8 +595,8 @@ public class IncrementalObjectSizeEstimator {
     }
 
     @Override
-    protected int estimate(Object obj,
-        HashMap<Class<?>, ObjectEstimator> parent, HashSet<Object> uniqueObjects) {
+    protected int estimate(Object obj, HashMap<Class<?>, ObjectEstimator> parent,
+        IdentityHashMap<Object, Boolean> uniqueObjects) {
       if (obj instanceof Collection<?>) {
         Collection<?> c = (Collection<?>)obj;
         int overhead = estimateOverhead(c.size()), elements = estimateCollectionElements(
