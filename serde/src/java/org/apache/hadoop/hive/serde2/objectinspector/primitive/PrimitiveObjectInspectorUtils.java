@@ -1058,27 +1058,33 @@ public final class PrimitiveObjectInspectorUtils {
     }
 
     Timestamp result = null;
+    long longValue = 0;
     switch (oi.getPrimitiveCategory()) {
     case VOID:
       result = null;
       break;
     case BOOLEAN:
-      result = new Timestamp(((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      longValue = ((BooleanObjectInspector) oi).get(o) ? 1 : 0;
+      result = TimestampWritable.longToTimestamp(longValue); 
       break;
     case BYTE:
-      result = new Timestamp(((ByteObjectInspector) oi).get(o));
+      longValue = ((ByteObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case SHORT:
-      result = new Timestamp(((ShortObjectInspector) oi).get(o));
+      longValue = ((ShortObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case INT:
-      result = new Timestamp(((IntObjectInspector) oi).get(o));
+      longValue = ((IntObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case LONG:
-      result = new Timestamp(((LongObjectInspector) oi).get(o));
+      longValue = ((LongObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case FLOAT:
-      result = TimestampWritable.floatToTimestamp(((FloatObjectInspector) oi).get(o));
+      result = TimestampWritable.doubleToTimestamp(((FloatObjectInspector) oi).get(o));
       break;
     case DOUBLE:
       result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
