@@ -555,16 +555,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: encryptedtable
-            Statistics: Num rows: 12 Data size: 2695 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 2777 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 12 Data size: 2695 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 2777 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 12 Data size: 2695 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 2777 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
                 value expressions: _col0 (type: string), _col1 (type: string)
                 auto parallelism: false
@@ -595,7 +595,7 @@ STAGE PLANS:
               serialization.ddl struct encryptedtable { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1351
+              totalSize 1392
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -643,7 +643,7 @@ STAGE PLANS:
               serialization.ddl struct encryptedtable { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1344
+              totalSize 1385
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -675,14 +675,14 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12 Data size: 2695 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 2777 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 1
 #### A PARTIAL masked pattern was here #### data/warehouse/unencryptedtable/ds=today/.hive-staging
             NumFilesPerFileSink: 1
             Static Partition Specification: ds=today/
-            Statistics: Num rows: 12 Data size: 2695 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 2777 Basic stats: COMPLETE Column stats: NONE
 #### A PARTIAL masked pattern was here #### data/warehouse/unencryptedtable/ds=today/.hive-staging
             table:
                 input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
