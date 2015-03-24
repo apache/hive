@@ -39,7 +39,7 @@ File Statistics:
   Column 3: count: 21000 hasNull: false min: Darkness, max: worst sum: 81761
 
 Stripes:
-  Stripe: offset: 3 data: 63765 rows: 5000 tail: 79 index: 441
+  Stripe: offset: 3 data: 63765 rows: 5000 tail: 91 index: 441
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 164
     Stream: column 2 section ROW_INDEX start: 184 length 173
@@ -71,16 +71,16 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: Darkness, max: worst sum: 3893 positions: 0,1531,3
       Entry 3: count: 1000 hasNull: false min: Darkness, max: worst sum: 3798 positions: 0,2281,32
       Entry 4: count: 1000 hasNull: false min: Darkness, max: worst sum: 3843 positions: 0,3033,45
-  Stripe: offset: 64288 data: 63754 rows: 5000 tail: 79 index: 433
-    Stream: column 0 section ROW_INDEX start: 64288 length 17
-    Stream: column 1 section ROW_INDEX start: 64305 length 162
-    Stream: column 2 section ROW_INDEX start: 64467 length 171
-    Stream: column 3 section ROW_INDEX start: 64638 length 83
-    Stream: column 1 section DATA start: 64721 length 20029
-    Stream: column 2 section DATA start: 84750 length 40035
-    Stream: column 3 section DATA start: 124785 length 3532
-    Stream: column 3 section LENGTH start: 128317 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 128342 length 133
+  Stripe: offset: 64300 data: 63754 rows: 5000 tail: 91 index: 433
+    Stream: column 0 section ROW_INDEX start: 64300 length 17
+    Stream: column 1 section ROW_INDEX start: 64317 length 162
+    Stream: column 2 section ROW_INDEX start: 64479 length 171
+    Stream: column 3 section ROW_INDEX start: 64650 length 83
+    Stream: column 1 section DATA start: 64733 length 20029
+    Stream: column 2 section DATA start: 84762 length 40035
+    Stream: column 3 section DATA start: 124797 length 3532
+    Stream: column 3 section LENGTH start: 128329 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 128354 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -103,16 +103,16 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: Darkness, max: worst sum: 3817 positions: 0,1472,70
       Entry 3: count: 1000 hasNull: false min: Darkness, max: worst sum: 3931 positions: 0,2250,43
       Entry 4: count: 1000 hasNull: false min: Darkness, max: worst sum: 3964 positions: 0,2978,88
-  Stripe: offset: 128554 data: 63766 rows: 5000 tail: 79 index: 437
-    Stream: column 0 section ROW_INDEX start: 128554 length 17
-    Stream: column 1 section ROW_INDEX start: 128571 length 159
-    Stream: column 2 section ROW_INDEX start: 128730 length 171
-    Stream: column 3 section ROW_INDEX start: 128901 length 90
-    Stream: column 1 section DATA start: 128991 length 20029
-    Stream: column 2 section DATA start: 149020 length 40035
-    Stream: column 3 section DATA start: 189055 length 3544
-    Stream: column 3 section LENGTH start: 192599 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 192624 length 133
+  Stripe: offset: 128578 data: 63766 rows: 5000 tail: 91 index: 437
+    Stream: column 0 section ROW_INDEX start: 128578 length 17
+    Stream: column 1 section ROW_INDEX start: 128595 length 159
+    Stream: column 2 section ROW_INDEX start: 128754 length 171
+    Stream: column 3 section ROW_INDEX start: 128925 length 90
+    Stream: column 1 section DATA start: 129015 length 20029
+    Stream: column 2 section DATA start: 149044 length 40035
+    Stream: column 3 section DATA start: 189079 length 3544
+    Stream: column 3 section LENGTH start: 192623 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 192648 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -135,16 +135,16 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: Darkness, max: worst sum: 3999 positions: 0,1469,69
       Entry 3: count: 1000 hasNull: false min: Darkness, max: worst sum: 3817 positions: 0,2133,194
       Entry 4: count: 1000 hasNull: false min: Darkness, max: worst sum: 4000 positions: 0,3005,43
-  Stripe: offset: 192836 data: 63796 rows: 5000 tail: 79 index: 440
-    Stream: column 0 section ROW_INDEX start: 192836 length 17
-    Stream: column 1 section ROW_INDEX start: 192853 length 162
-    Stream: column 2 section ROW_INDEX start: 193015 length 170
-    Stream: column 3 section ROW_INDEX start: 193185 length 91
-    Stream: column 1 section DATA start: 193276 length 20029
-    Stream: column 2 section DATA start: 213305 length 40035
-    Stream: column 3 section DATA start: 253340 length 3574
-    Stream: column 3 section LENGTH start: 256914 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 256939 length 133
+  Stripe: offset: 192872 data: 63796 rows: 5000 tail: 91 index: 440
+    Stream: column 0 section ROW_INDEX start: 192872 length 17
+    Stream: column 1 section ROW_INDEX start: 192889 length 162
+    Stream: column 2 section ROW_INDEX start: 193051 length 170
+    Stream: column 3 section ROW_INDEX start: 193221 length 91
+    Stream: column 1 section DATA start: 193312 length 20029
+    Stream: column 2 section DATA start: 213341 length 40035
+    Stream: column 3 section DATA start: 253376 length 3574
+    Stream: column 3 section LENGTH start: 256950 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 256975 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -167,16 +167,16 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: Darkness, max: worst sum: 3909 positions: 0,1485,52
       Entry 3: count: 1000 hasNull: false min: Darkness, max: worst sum: 3947 positions: 0,2196,104
       Entry 4: count: 1000 hasNull: false min: Darkness, max: worst sum: 3813 positions: 0,2934,131
-  Stripe: offset: 257151 data: 12940 rows: 1000 tail: 71 index: 131
-    Stream: column 0 section ROW_INDEX start: 257151 length 12
-    Stream: column 1 section ROW_INDEX start: 257163 length 38
-    Stream: column 2 section ROW_INDEX start: 257201 length 41
-    Stream: column 3 section ROW_INDEX start: 257242 length 40
-    Stream: column 1 section DATA start: 257282 length 4007
-    Stream: column 2 section DATA start: 261289 length 8007
-    Stream: column 3 section DATA start: 269296 length 768
-    Stream: column 3 section LENGTH start: 270064 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 270089 length 133
+  Stripe: offset: 257199 data: 12940 rows: 1000 tail: 83 index: 131
+    Stream: column 0 section ROW_INDEX start: 257199 length 12
+    Stream: column 1 section ROW_INDEX start: 257211 length 38
+    Stream: column 2 section ROW_INDEX start: 257249 length 41
+    Stream: column 3 section ROW_INDEX start: 257290 length 40
+    Stream: column 1 section DATA start: 257330 length 4007
+    Stream: column 2 section DATA start: 261337 length 8007
+    Stream: column 3 section DATA start: 269344 length 768
+    Stream: column 3 section LENGTH start: 270112 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 270137 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -188,6 +188,6 @@ Stripes:
     Row group indices for column 3:
       Entry 0: count: 1000 hasNull: false min: Darkness, max: worst sum: 3866 positions: 0,0,0
 
-File length: 270838 bytes
+File length: 270898 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
