@@ -102,3 +102,42 @@ POSTHOOK: Input: default@src_stat_part_two
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	0                   	30                  	1.72                	40                  	                    	                    	from deserializer   
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: query: describe formatted default.src_stat_part_two key PARTITION(px=1, py='a')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat_part_two
+POSTHOOK: query: describe formatted default.src_stat_part_two key PARTITION(px=1, py='a')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat_part_two
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	40                  	1.72                	50                  	                    	                    	from deserializer   
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb

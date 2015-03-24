@@ -103,3 +103,55 @@ POSTHOOK: Input: default@src_stat_int
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	double              	333.22              	22.22               	10                  	2222                	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: ALTER TABLE default.src_stat UPDATE STATISTICS for column key SET ('numDVs'='3333','avgColLen'='2.222')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.src_stat UPDATE STATISTICS for column key SET ('numDVs'='3333','avgColLen'='2.222')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted default.src_stat key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat
+POSTHOOK: query: describe formatted default.src_stat key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	3333                	2.222               	3                   	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.src_stat UPDATE STATISTICS for column value SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.src_stat UPDATE STATISTICS for column value SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted default.src_stat value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_stat
+POSTHOOK: query: describe formatted default.src_stat value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_stat
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	233                 	232                 	2.34                	235                 	                    	                    	from deserializer   
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb

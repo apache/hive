@@ -80,7 +80,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
@@ -217,7 +217,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
@@ -280,7 +280,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
@@ -417,7 +417,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
@@ -480,7 +480,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeid, employeename
           Column Types: int, string
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
 PREHOOK: type: QUERY
@@ -560,7 +560,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeid, employeename
           Column Types: int, string
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -635,7 +635,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeid, employeename
           Column Types: int, string
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -658,3 +658,60 @@ POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	2                   	14                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: analyze table default.Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_part
+PREHOOK: Input: default@employee_part@employeesalary=2000.0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table default.Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part@employeesalary=2000.0
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_part
+POSTHOOK: query: describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_part
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_part
+PREHOOK: Input: default@employee_part@employeesalary=2000.0
+PREHOOK: Input: default@employee_part@employeesalary=4000.0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table default.Employee_Part  compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part@employeesalary=2000.0
+POSTHOOK: Input: default@employee_part@employeesalary=4000.0
+#### A masked pattern was here ####
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb

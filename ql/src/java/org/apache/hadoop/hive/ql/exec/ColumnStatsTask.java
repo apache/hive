@@ -267,7 +267,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
 
   private List<ColumnStatistics> constructColumnStatsFromPackedRows() throws HiveException, MetaException, IOException {
 
-    String dbName = SessionState.get().getCurrentDatabase();
+    String currentDb = SessionState.get().getCurrentDatabase();
     String tableName = work.getColStats().getTableName();
     String partName = null;
     List<String> colName = work.getColStats().getColName();
@@ -286,7 +286,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
       List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
 
-      Table tbl = db.getTable(dbName,tableName);
+      Table tbl = db.getTable(currentDb,tableName);
       List<FieldSchema> partColSchema = tbl.getPartCols();
       // Partition columns are appended at end, we only care about stats column
       int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
@@ -313,8 +313,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
       }
-
-      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName, partName, isTblLevel);
+      String [] names = Utilities.getDbTableName(currentDb, tableName);
+      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1], partName, isTblLevel);
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);

@@ -23,3 +23,15 @@ describe formatted src_stat_part_two.key PARTITION(px=1, py='a');
 ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40');
 
 describe formatted src_stat_part_two.key PARTITION(px=1, py='a');
+
+create database if not exists dummydb;
+
+use dummydb;
+
+ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50');
+
+describe formatted default.src_stat_part_two key PARTITION(px=1, py='a');
+
+use default;
+
+drop database dummydb;

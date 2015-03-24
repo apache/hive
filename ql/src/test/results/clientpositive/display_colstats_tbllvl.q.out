@@ -97,7 +97,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
-          Table: uservisits_web_text_none
+          Table: default.uservisits_web_text_none
 
 PREHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
@@ -220,7 +220,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
-          Table: uservisits_web_text_none
+          Table: default.uservisits_web_text_none
           Is Table Level Stats: true
 
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
@@ -330,7 +330,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b, c, d, e
           Column Types: int, double, string, boolean, binary
-          Table: empty_tab
+          Table: default.empty_tab
 
 PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
 PREHOOK: type: QUERY
