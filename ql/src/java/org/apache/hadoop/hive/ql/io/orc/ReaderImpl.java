@@ -715,10 +715,10 @@ public class ReaderImpl implements Reader {
   }
 
   @Override
-  public EncodedReader encodedReader(LowLevelCache lowLevelCache,
+  public EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
       Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException {
     boolean useZeroCopy = (conf != null) && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
-    return new EncodedReaderImpl(fileSystem, path, useZeroCopy, types,
+    return new EncodedReaderImpl(fileSystem, path, fileId, useZeroCopy, types,
         codec, bufferSize, rowIndexStride, lowLevelCache, consumer);
   }
 

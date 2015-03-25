@@ -85,7 +85,8 @@ public class RecordReaderImpl implements RecordReader {
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private final Path path;
-  private final long fileId;
+  private final FileSystem fileSystem;
+  private long fileId;
   private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -114,6 +115,7 @@ public class RecordReaderImpl implements RecordReader {
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
   private final MetadataReader metadata;
+  private LowLevelCache cache = null;
 
   private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
   private final ZeroCopyReaderShim zcr;
@@ -188,9 +190,9 @@ public class RecordReaderImpl implements RecordReader {
                    long strideRate,
                    Configuration conf
                   ) throws IOException {
+    this.fileSystem = fileSystem;
     this.path = path;
     this.file = fileSystem.open(path);
-    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
@@ -3217,9 +3219,10 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private LowLevelCache cache = null;
-  public void setCache(LowLevelCache cache) {
+  public void setCache(LowLevelCache cache) throws IOException {
     this.cache = cache;
+    // TODO: if this is actually used, get fileId from split, like main LLAP path.
+    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
   }
 
   private void readPartialDataStreams(StripeInformation stripe) throws IOException {

@@ -418,7 +418,7 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/b/part-04", 1000, new byte[0]));
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
-          new MockPath(fs, "mock:/a/b"));
+          new MockPath(fs, "mock:/a/b"), false);
     gen.run();
     if (context.getErrors().size() > 0) {
       for(Throwable th: context.getErrors()) {

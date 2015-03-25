@@ -260,8 +260,8 @@ public abstract class InStream extends InputStream {
           }
           codec.decompress(slice, uncompressed);
           if (cache != null) {
-            // TODO: this is the inefficient path
-            // TODO#: this is invalid; base stripe offset should be passed, return value handled.
+            // this is the inefficient path
+            // TODO: this is invalid; base stripe offset should be passed, return value handled.
             //cache.putFileData(fileId, new DiskRange[] { new DiskRange(originalOffset,
             //  chunkLength + OutStream.HEADER_SIZE) }, new LlapMemoryBuffer[] { cacheBuffer }, 0);
           }

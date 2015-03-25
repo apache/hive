@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
@@ -32,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
@@ -43,6 +47,7 @@ import org.apache.hadoop.mapred.InputSplit;
 
 public class OrcEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<StreamBuffer>, Consumer<EncodedColumnBatch<OrcBatchKey>> {
+  private static final Log LOG = LogFactory.getLog(OrcEncodedDataReader.class);
 
   private final OrcMetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
@@ -60,7 +65,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private OrcFileMetadata fileMetadata;
   private Reader orcReader;
   private MetadataReader metadataReader;
-  private Long fileId;
+  private long fileId;
   private FileSystem fs;
   /**
    * readState[stripeIx'][colIx'] => boolean array (could be a bitmask) of rg-s that need to be
@@ -116,7 +121,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // 1. Get file metadata from cache, or create the reader and read it.
     // Disable filesystem caching for now; Tez closes it and FS cache will fix all that
     fs = split.getPath().getFileSystem(conf);
-    this.fileId = RecordReaderUtils.getFileId(fs, split.getPath());
+    fileId = determineFileId(fs, split);
+
     try {
       fileMetadata = getOrReadFileMetadata();
       consumer.setFileMetadata(fileMetadata);
@@ -203,7 +209,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     EncodedReader stripeReader = null;
     try {
       ensureOrcReader();
-      stripeReader = orcReader.encodedReader(lowLevelCache, dataConsumer);
+      stripeReader = orcReader.encodedReader(fileId, lowLevelCache, dataConsumer);
     } catch (Throwable t) {
       consumer.setError(t);
       cleanupReaders(null);
@@ -252,7 +258,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                   + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
-            }            
+            }
             stripeKey = new OrcBatchKey(fileId, -1, 0);
           }
           consumer.setStripeMetadata(stripeMetadata);
@@ -287,6 +293,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Close the stripe reader, we are done reading.
     stripeReader.close();
     return null;
+  }
+
+  private static long determineFileId(FileSystem fs, FileSplit split) throws IOException {
+    if (split instanceof OrcSplit) {
+      Long fileId = ((OrcSplit)split).getFileId();
+      if (fileId != null) {
+        return fileId;
+      }
+    }
+    LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
+    return RecordReaderUtils.getFileId(fs, split.getPath());
   }
 
   private boolean[][] genStripeColRgs(List<Integer> stripeCols, boolean[][] globalColRgs) {
@@ -349,8 +366,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
+    Path path = RecordReaderUtils.getFileIdPath(fs, split.getPath(), fileId);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Creating reader for " + path + " (" + split.getPath() + ")");
+    }
     ReaderOptions opts = OrcFile.readerOptions(conf).filesystem(fs).fileMetadata(fileMetadata);
-    orcReader = OrcFile.createReader(split.getPath(), opts);
+    orcReader = OrcFile.createReader(path, opts);
   }
 
   /**

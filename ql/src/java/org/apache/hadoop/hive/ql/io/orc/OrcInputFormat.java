@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -78,6 +80,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -501,22 +504,24 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final Context context;
     private final FileSystem fs;
     private final Path dir;
+    private final boolean useFileIds;
 
-    FileGenerator(Context context, FileSystem fs, Path dir) {
+    FileGenerator(Context context, FileSystem fs, Path dir, boolean useFileIds) {
       this.context = context;
       this.fs = fs;
       this.dir = dir;
+      this.useFileIds = useFileIds;
     }
 
-    private void scheduleSplits(FileStatus file,
+    private void scheduleSplits(HdfsFileStatusWithId child,
                                 boolean isOriginal,
                                 boolean hasBase,
                                 List<Long> deltas) throws IOException{
       FileInfo info = null;
       if (context.cacheStripeDetails) {
-        info = verifyCachedFileInfo(file);
+        info = verifyCachedFileInfo(child.getFileStatus());
       }
-      new SplitGenerator(context, fs, file, info, isOriginal, deltas,
+      new SplitGenerator(context, fs, child, info, isOriginal, deltas,
           hasBase).schedule();
     }
 
@@ -527,11 +532,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     public void run() {
       try {
         AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
-            context.conf, context.transactionList);
+            context.conf, context.transactionList, useFileIds);
         List<Long> deltas =
             AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
         Path base = dirInfo.getBaseDirectory();
-        List<FileStatus> original = dirInfo.getOriginalFiles();
+        List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
 
         boolean[] covered = new boolean[context.numBuckets];
         boolean isOriginal = base == null;
@@ -540,16 +545,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (base != null || !original.isEmpty()) {
 
           // find the base files (original or new style)
-          List<FileStatus> children = original;
+          List<HdfsFileStatusWithId> children = original;
           if (base != null) {
-            children = SHIMS.listLocatedStatus(fs, base,
-               AcidUtils.hiddenFileFilter);
+            children = findBaseFiles(base, useFileIds);
           }
 
           // for each child, schedule splits and mark off the bucket
-          for(FileStatus child: children) {
+          for (HdfsFileStatusWithId child : children) {
             AcidOutputFormat.Options opts = AcidUtils.parseBaseBucketFilename
-                (child.getPath(), context.conf);
+                (child.getFileStatus().getPath(), context.conf);
             scheduleSplits(child, isOriginal, true, deltas);
             int b = opts.getBucket();
             // If the bucket is in the valid range, mark it as covered.
@@ -567,7 +571,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           for (int b = 0; b < context.numBuckets; ++b) {
             if (!covered[b]) {
               synchronized (context.splits) {
-                context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
+                context.splits.add(new OrcSplit(dir, null, b, 0, new String[0], null,
                     false, false, deltas));
               }
             }
@@ -586,6 +590,23 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       } finally {
         context.decrementSchedulers();
       }
+    }
+
+    private List<HdfsFileStatusWithId> findBaseFiles(
+        Path base, boolean useFileIds) throws IOException {
+      if (useFileIds) {
+        try {
+          return SHIMS.listLocatedHdfsStatus(fs, base, AcidUtils.hiddenFileFilter);
+        } catch (Throwable t) {
+          LOG.error("Failed to get files with ID; using regular API", t);
+        }
+      }
+      List<FileStatus> children = SHIMS.listLocatedStatus(fs, base, AcidUtils.hiddenFileFilter);
+      List<HdfsFileStatusWithId> result = new ArrayList<>(children.size());
+      for (FileStatus child : children) {
+        result.add(AcidUtils.createOriginalObj(null, child));
+      }
+      return result;
     }
 
     private FileInfo verifyCachedFileInfo(FileStatus file) {
@@ -628,6 +649,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   static final class SplitGenerator implements Runnable {
     private final Context context;
     private final FileSystem fs;
+    private final HdfsFileStatusWithId fileWithId;
     private final FileStatus file;
     private final long blockSize;
     private final TreeMap<Long, BlockLocation> locations;
@@ -642,31 +664,42 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private OrcFile.WriterVersion writerVersion;
 
     SplitGenerator(Context context, FileSystem fs,
-                   FileStatus file, FileInfo fileInfo,
+                   HdfsFileStatusWithId fileWithId, FileInfo fileInfo,
                    boolean isOriginal,
                    List<Long> deltas,
                    boolean hasBase) throws IOException {
       this.context = context;
       this.fs = fs;
-      this.file = file;
-      this.blockSize = file.getBlockSize();
+      this.fileWithId = fileWithId;
+      this.file = this.fileWithId.getFileStatus();
+      this.blockSize = this.file.getBlockSize();
       this.fileInfo = fileInfo;
-      locations = SHIMS.getLocationsWithOffset(fs, file);
+      locations = SHIMS.getLocationsWithOffset(fs, this.file);
       this.isOriginal = isOriginal;
       this.deltas = deltas;
       this.hasBase = hasBase;
     }
 
+    @VisibleForTesting
+    SplitGenerator(Context context, FileSystem fs,
+        FileStatus file, FileInfo fileInfo,
+        boolean isOriginal,
+        List<Long> deltas,
+        boolean hasBase) throws IOException {
+      this(context, fs, AcidUtils.createOriginalObj(null, file),
+          fileInfo, isOriginal, deltas, hasBase);
+    }
+
     Path getPath() {
-      return file.getPath();
+      return fileWithId.getFileStatus().getPath();
     }
 
     void schedule() throws IOException {
       if(locations.size() == 1 && file.getLen() < context.maxSize) {
         String[] hosts = locations.firstEntry().getValue().getHosts();
         synchronized (context.splits) {
-          context.splits.add(new OrcSplit(file.getPath(), 0, file.getLen(),
-                hosts, fileMetaInfo, isOriginal, hasBase, deltas));
+          context.splits.add(new OrcSplit(file.getPath(), fileWithId.getFileId(), 0,
+              file.getLen(), hosts, fileMetaInfo, isOriginal, hasBase, deltas));
         }
       } else {
         // if it requires a compute task
@@ -763,7 +796,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hostList.toArray(hosts);
       }
       synchronized (context.splits) {
-        context.splits.add(new OrcSplit(file.getPath(), offset, length,
+        context.splits.add(new OrcSplit(file.getPath(), fileWithId.getFileId(), offset, length,
             hosts, fileMetaInfo, isOriginal, hasBase, deltas));
       }
     }
@@ -943,9 +976,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       throws IOException {
     // use threads to resolve directories into splits
     Context context = new Context(conf);
-    for(Path dir: getInputPaths(conf)) {
+    boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
+    for (Path dir : getInputPaths(conf)) {
       FileSystem fs = dir.getFileSystem(conf);
-      context.schedule(new FileGenerator(context, fs, dir));
+      context.schedule(new FileGenerator(context, fs, dir, useFileIds));
     }
     context.waitForTasks();
     // deal with exceptions

@@ -949,7 +949,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     return validateMapJoinDesc(desc);
   }
 
-  // TODO#: validate this
   private boolean validateTableScanOperator(TableScanOperator op, MapWork mWork) {
     TableScanDesc desc = op.getConf();
     if (desc.isGatherStats()) {

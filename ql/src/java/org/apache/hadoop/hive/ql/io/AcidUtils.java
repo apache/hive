@@ -28,6 +28,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -195,7 +198,7 @@ public class AcidUtils {
      * Get the list of original files.
      * @return the list of original files (eg. 000000_0)
      */
-    List<FileStatus> getOriginalFiles();
+    List<HdfsFileStatusWithId> getOriginalFiles();
 
     /**
      * Get the list of base and delta directories that are valid and not
@@ -336,6 +339,20 @@ public class AcidUtils {
     return false;
   }
 
+  @VisibleForTesting
+  public static Directory getAcidState(Path directory,
+      Configuration conf,
+      ValidTxnList txnList
+      ) throws IOException {
+    return getAcidState(directory, conf, txnList, false);
+  }
+
+  /** State class for getChildState; cannot modify 2 things in a method. */
+  private static class TxnBase {
+    private FileStatus status;
+    private long txn;
+  }
+
   /**
    * Get the ACID state of the given directory. It finds the minimal set of
    * base and diff directories. Note that because major compactions don't
@@ -349,51 +366,40 @@ public class AcidUtils {
    */
   public static Directory getAcidState(Path directory,
                                        Configuration conf,
-                                       ValidTxnList txnList
+                                       ValidTxnList txnList,
+                                       boolean useFileIds
                                        ) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
-    FileStatus bestBase = null;
-    long bestBaseTxn = 0;
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
-    List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory,
-        hiddenFileFilter);
-    for(FileStatus child: children) {
-      Path p = child.getPath();
-      String fn = p.getName();
-      if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
-        long txn = parseBase(p);
-        if (bestBase == null) {
-          bestBase = child;
-          bestBaseTxn = txn;
-        } else if (bestBaseTxn < txn) {
-          obsolete.add(bestBase);
-          bestBase = child;
-          bestBaseTxn = txn;
-        } else {
-          obsolete.add(child);
-        }
-      } else if (fn.startsWith(DELTA_PREFIX) && child.isDir()) {
-        ParsedDelta delta = parseDelta(child);
-        if (txnList.isTxnRangeValid(delta.minTransaction,
-            delta.maxTransaction) !=
-            ValidTxnList.RangeResponse.NONE) {
-          working.add(delta);
-        }
-      } else {
-        // This is just the directory.  We need to recurse and find the actual files.  But don't
-        // do this until we have determined there is no base.  This saves time.  Plus,
-        // it is possible that the cleaner is running and removing these original files,
-        // in which case recursing through them could cause us to get an error.
-        originalDirectories.add(child);
+    List<HdfsFileStatusWithId> childrenWithId = null;
+    if (useFileIds) {
+      try {
+        childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, hiddenFileFilter);
+      } catch (Throwable t) {
+        LOG.error("Failed to get files with ID; using regular API", t);
+        useFileIds = false;
+      }
+    }
+    TxnBase bestBase = new TxnBase();
+    final List<HdfsFileStatusWithId> original = new ArrayList<>();
+    if (childrenWithId != null) {
+      for (HdfsFileStatusWithId child : childrenWithId) {
+        getChildState(child.getFileStatus(), child, txnList, working,
+            originalDirectories, original, obsolete, bestBase);
+      }
+    } else {
+      List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory, hiddenFileFilter);
+      for (FileStatus child : children) {
+        getChildState(
+            child, null, txnList, working, originalDirectories, original, obsolete, bestBase);
       }
     }
 
-    final List<FileStatus> original = new ArrayList<FileStatus>();
-    // if we have a base, the original files are obsolete.
-    if (bestBase != null) {
+    // If we have a base, the original files are obsolete.
+    if (bestBase.status != null) {
       // remove the entries so we don't get confused later and think we should
       // use them.
       original.clear();
@@ -401,12 +407,12 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
       for (FileStatus origDir : originalDirectories) {
-        findOriginals(fs, origDir, original);
+        findOriginals(fs, origDir, original, useFileIds);
       }
     }
 
     Collections.sort(working);
-    long current = bestBaseTxn;
+    long current = bestBase.txn;
     for(ParsedDelta next: working) {
       if (next.maxTransaction > current) {
         // are any of the new transactions ones that we care about?
@@ -420,7 +426,7 @@ public class AcidUtils {
       }
     }
 
-    final Path base = bestBase == null ? null : bestBase.getPath();
+    final Path base = bestBase.status == null ? null : bestBase.status.getPath();
     LOG.debug("in directory " + directory.toUri().toString() + " base = " + base + " deltas = " +
         deltas.size());
 
@@ -432,7 +438,7 @@ public class AcidUtils {
       }
 
       @Override
-      public List<FileStatus> getOriginalFiles() {
+      public List<HdfsFileStatusWithId> getOriginalFiles() {
         return original;
       }
 
@@ -448,23 +454,100 @@ public class AcidUtils {
     };
   }
 
+  private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
+      ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
+      List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase) {
+    Path p = child.getPath();
+    String fn = p.getName();
+    if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
+      long txn = parseBase(p);
+      if (bestBase.status == null) {
+        bestBase.status = child;
+        bestBase.txn = txn;
+      } else if (bestBase.txn < txn) {
+        obsolete.add(bestBase.status);
+        bestBase.status = child;
+        bestBase.txn = txn;
+      } else {
+        obsolete.add(child);
+      }
+    } else if (fn.startsWith(DELTA_PREFIX) && child.isDir()) {
+      ParsedDelta delta = parseDelta(child);
+      if (txnList.isTxnRangeValid(delta.minTransaction,
+          delta.maxTransaction) !=
+          ValidTxnList.RangeResponse.NONE) {
+        working.add(delta);
+      }
+    } else if (child.isDir()) {
+      // This is just the directory.  We need to recurse and find the actual files.  But don't
+      // do this until we have determined there is no base.  This saves time.  Plus,
+      // it is possible that the cleaner is running and removing these original files,
+      // in which case recursing through them could cause us to get an error.
+      originalDirectories.add(child);
+    } else {
+      original.add(createOriginalObj(childWithId, child));
+    }
+  }
+
+  public static HdfsFileStatusWithId createOriginalObj(
+      HdfsFileStatusWithId childWithId, FileStatus child) {
+    return childWithId != null ? childWithId : new HdfsFileStatusWithoutId(child);
+  }
+
+  private static class HdfsFileStatusWithoutId implements HdfsFileStatusWithId {
+    private FileStatus fs;
+
+    public HdfsFileStatusWithoutId(FileStatus fs) {
+      this.fs = fs;
+    }
+
+    @Override
+    public FileStatus getFileStatus() {
+      return fs;
+    }
+
+    @Override
+    public Long getFileId() {
+      return null;
+    }
+  }
+
   /**
-   * Find the original files (non-ACID layout) recursively under the partition
-   * directory.
+   * Find the original files (non-ACID layout) recursively under the partition directory.
    * @param fs the file system
-   * @param stat the file/directory to add
+   * @param stat the directory to add
    * @param original the list of original files
    * @throws IOException
    */
   private static void findOriginals(FileSystem fs, FileStatus stat,
-                                    List<FileStatus> original
-                                    ) throws IOException {
-    if (stat.isDir()) {
-      for(FileStatus child: SHIMS.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter)) {
-        findOriginals(fs, child, original);
+      List<HdfsFileStatusWithId> original, boolean useFileIds) throws IOException {
+    assert stat.isDir();
+    List<HdfsFileStatusWithId> childrenWithId = null;
+    if (useFileIds) {
+      try {
+        childrenWithId = SHIMS.listLocatedHdfsStatus(fs, stat.getPath(), hiddenFileFilter);
+      } catch (Throwable t) {
+        LOG.error("Failed to get files with ID; using regular API", t);
+        useFileIds = false;
+      }
+    }
+    if (childrenWithId != null) {
+      for (HdfsFileStatusWithId child : childrenWithId) {
+        if (child.getFileStatus().isDir()) {
+          findOriginals(fs, child.getFileStatus(), original, useFileIds);
+        } else {
+          original.add(child);
+        }
       }
     } else {
-      original.add(stat);
+      List<FileStatus> children = SHIMS.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
+      for (FileStatus child : children) {
+        if (child.isDir()) {
+          findOriginals(fs, child, original, useFileIds);
+        } else {
+          original.add(createOriginalObj(null, child));
+        }
+      }
     }
   }
 }

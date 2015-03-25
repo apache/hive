@@ -698,4 +698,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public Path getPathWithoutSchemeAndAuthority(Path path) {
     return path;
   }
+
+  @Override
+  public List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path path, PathFilter filter) throws IOException {
+    throw new UnsupportedOperationException("Not supported on old version");
+  }
 }

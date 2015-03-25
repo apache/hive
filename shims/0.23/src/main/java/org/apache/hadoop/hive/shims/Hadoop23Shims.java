@@ -61,10 +61,13 @@ import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
+import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
+import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.io.LongWritable;
@@ -659,6 +662,58 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       if (filter == null || filter.accept(stat.getPath())) {
         result.add(stat);
       }
+    }
+    return result;
+  }
+
+  private static final class HdfsFileStatusWithIdImpl implements HdfsFileStatusWithId {
+    private final LocatedFileStatus lfs;
+    private final long fileId;
+
+    public HdfsFileStatusWithIdImpl(LocatedFileStatus lfs, long fileId) {
+      this.lfs = lfs;
+      this.fileId = fileId;
+    }
+
+    @Override
+    public FileStatus getFileStatus() {
+      return lfs;
+    }
+
+    @Override
+    public Long getFileId() {
+      return fileId;
+    }
+  }
+
+  @Override
+  public List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path p, PathFilter filter) throws IOException {
+    if (!(fs instanceof DistributedFileSystem)) {
+      throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());
+    }
+    DFSClient dfsc = ((DistributedFileSystem)fs).getClient();
+    final String src = p.toUri().getPath();
+    DirectoryListing current = dfsc.listPaths(src,
+        org.apache.hadoop.hdfs.protocol.HdfsFileStatus.EMPTY_NAME, true);
+    if (current == null) { // the directory does not exist
+      throw new FileNotFoundException("File " + p + " does not exist.");
+    }
+    final URI fsUri = fs.getUri();
+    List<HdfsFileStatusWithId> result = new ArrayList<HdfsFileStatusWithId>(
+        current.getPartialListing().length);
+    while (current != null) {
+      org.apache.hadoop.hdfs.protocol.HdfsFileStatus[] hfss = current.getPartialListing();
+      for (int i = 0; i < hfss.length; ++i) {
+        HdfsLocatedFileStatus next = (HdfsLocatedFileStatus)(hfss[i]);
+        if (filter != null) {
+          Path filterPath = next.getFullPath(p).makeQualified(fsUri, null);
+          if (!filter.accept(filterPath)) continue;
+        }
+        LocatedFileStatus lfs = next.makeQualifiedLocated(fsUri, p);
+        result.add(new HdfsFileStatusWithIdImpl(lfs, next.getFileId()));
+      }
+      current = current.hasMore() ? dfsc.listPaths(src, current.getLastName(), true) : null;
     }
     return result;
   }

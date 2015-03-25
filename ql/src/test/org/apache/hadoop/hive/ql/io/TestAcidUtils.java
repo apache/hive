@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockFile;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockFileSystem;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockPath;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.junit.Test;
 
 import java.util.List;
@@ -96,13 +97,14 @@ public class TestAcidUtils {
     assertEquals(null, dir.getBaseDirectory());
     assertEquals(0, dir.getCurrentDirectories().size());
     assertEquals(0, dir.getObsolete().size());
-    List<FileStatus> result = dir.getOriginalFiles();
+    List<HdfsFileStatusWithId> result = dir.getOriginalFiles();
     assertEquals(5, result.size());
-    assertEquals("mock:/tbl/part1/000000_0", result.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/000001_1", result.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/000002_0", result.get(2).getPath().toString());
-    assertEquals("mock:/tbl/part1/random", result.get(3).getPath().toString());
-    assertEquals("mock:/tbl/part1/subdir/000000_0", result.get(4).getPath().toString());
+    assertEquals("mock:/tbl/part1/000000_0", result.get(0).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/000001_1", result.get(1).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/000002_0", result.get(2).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/random", result.get(3).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/subdir/000000_0",
+        result.get(4).getFileStatus().getPath().toString());
   }
 
   @Test
@@ -130,13 +132,14 @@ public class TestAcidUtils {
         obsolete.get(0).getPath().toString());
     assertEquals("mock:/tbl/part1/delta_029_029",
         obsolete.get(1).getPath().toString());
-    List<FileStatus> result = dir.getOriginalFiles();
+    List<HdfsFileStatusWithId> result = dir.getOriginalFiles();
     assertEquals(5, result.size());
-    assertEquals("mock:/tbl/part1/000000_0", result.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/000001_1", result.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/000002_0", result.get(2).getPath().toString());
-    assertEquals("mock:/tbl/part1/random", result.get(3).getPath().toString());
-    assertEquals("mock:/tbl/part1/subdir/000000_0", result.get(4).getPath().toString());
+    assertEquals("mock:/tbl/part1/000000_0", result.get(0).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/000001_1", result.get(1).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/000002_0", result.get(2).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/random", result.get(3).getFileStatus().getPath().toString());
+    assertEquals("mock:/tbl/part1/subdir/000000_0",
+        result.get(4).getFileStatus().getPath().toString());
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     assertEquals(2, deltas.size());
     AcidUtils.ParsedDelta delt = deltas.get(0);

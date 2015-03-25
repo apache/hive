@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -131,7 +132,8 @@ public class CompactorMR {
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(
+        new Path(sd.getLocation()), conf, txns, false);
     StringableList dirsToSearch = new StringableList();
     Path baseDir = null;
     if (isMajor) {
@@ -139,12 +141,13 @@ public class CompactorMR {
       // partition is just now being converted to ACID.
       baseDir = dir.getBaseDirectory();
       if (baseDir == null) {
-        List<FileStatus> originalFiles = dir.getOriginalFiles();
+        List<HdfsFileStatusWithId> originalFiles = dir.getOriginalFiles();
         if (!(originalFiles == null) && !(originalFiles.size() == 0)) {
           // There are original format files
-          for (FileStatus stat : originalFiles) {
-            dirsToSearch.add(stat.getPath());
-            LOG.debug("Adding original file " + stat.getPath().toString() + " to dirs to search");
+          for (HdfsFileStatusWithId stat : originalFiles) {
+            Path path = stat.getFileStatus().getPath();
+            dirsToSearch.add(path);
+            LOG.debug("Adding original file " + path + " to dirs to search");
           }
           // Set base to the location so that the input format reads the original files.
           baseDir = new Path(sd.getLocation());

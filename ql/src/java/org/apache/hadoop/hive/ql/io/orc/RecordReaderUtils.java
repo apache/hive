@@ -462,4 +462,15 @@ public class RecordReaderUtils {
         + "," + nameHash + "," + fileSize + ")");
     return id;
   }
+
+  // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
+  //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
+  //       as public utility method in HDFS to obtain the inode-based path.
+  private static String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
+
+  public static Path getFileIdPath(
+      FileSystem fileSystem, Path path, long fileId) {
+    return (fileSystem instanceof DistributedFileSystem)
+        ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
+  }
 }

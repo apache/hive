@@ -59,11 +59,11 @@ public class EncodedReaderImpl implements EncodedReader {
   // For now, one consumer for all calls.
   private final Consumer<EncodedColumnBatch<OrcBatchKey>> consumer;
 
-  public EncodedReaderImpl(FileSystem fileSystem, Path path, boolean useZeroCopy,
+  public EncodedReaderImpl(FileSystem fileSystem, Path path, long fileId, boolean useZeroCopy,
       List<OrcProto.Type> types, CompressionCodec codec, int bufferSize, long strideRate,
       LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer)
           throws IOException {
-    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
+    this.fileId = fileId;
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
@@ -257,7 +257,7 @@ public class EncodedReaderImpl implements EncodedReader {
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
           // RG x col filtered.
           isRGSelected = false;
-          continue; // TODO#: this would be invalid with HL cache, where RG x col can be excluded.
+          continue; // TODO: this would be invalid with HL cache, where RG x col can be excluded.
         }
         ColumnReadContext ctx = colCtxs[colIxMod];
         RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),

@@ -317,7 +317,7 @@ public interface Reader {
 
   MetadataReader metadata() throws IOException;
 
-  EncodedReader encodedReader(LowLevelCache lowLevelCache,
+  EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
       Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
 
   List<Integer> getVersionList();

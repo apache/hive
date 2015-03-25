@@ -254,6 +254,10 @@ public interface HadoopShims {
   List<FileStatus> listLocatedStatus(FileSystem fs, Path path,
                                      PathFilter filter) throws IOException;
 
+
+  List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path path, PathFilter filter) throws IOException;
+
   /**
    * For file status returned by listLocatedStatus, convert them into a list
    * of block locations.
@@ -312,6 +316,11 @@ public interface HadoopShims {
   public interface HdfsFileStatus {
     public FileStatus getFileStatus();
     public void debugLog();
+  }
+
+  public interface HdfsFileStatusWithId {
+    public FileStatus getFileStatus();
+    public Long getFileId();
   }
 
   public HCatHadoopShims getHCatShim();
