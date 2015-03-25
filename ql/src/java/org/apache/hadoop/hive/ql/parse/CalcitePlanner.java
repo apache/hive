@@ -611,7 +611,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     RelNode modifiedOptimizedOptiqPlan = introduceProjectIfNeeded(optimizedOptiqPlan);
 
-    Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps, HiveOpConverter.getAggOPMode(conf),
+    Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps, 
         conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(modifiedOptimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
@@ -1836,10 +1836,40 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genGBLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
-
-      // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
+      List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
+      HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
+      // NOTE: Multi Insert is not supported
+      boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+          || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
+
+      // 0. Sanity check
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
+          && qbp.getDistinctFuncExprsForClause(detsClauseName).size() > 1) {
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.getMsg());
+      }
+      if (cubeRollupGrpSetPresent) {
+        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
+          throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR.getMsg());
+        }
+
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+          checkExpressionsForGroupingSet(grpByAstExprs, qb.getParseInfo()
+              .getDistinctFuncExprsForClause(detsClauseName), aggregationTrees,
+              this.relToHiveRR.get(srcRel));
+
+          if (qbp.getDestGroupingSets().size() > conf
+              .getIntVar(HiveConf.ConfVars.HIVE_NEW_JOB_GROUPING_SET_CARDINALITY)) {
+            String errorMsg = "The number of rows per input row due to grouping sets is "
+                + qbp.getDestGroupingSets().size();
+            throw new SemanticException(
+                ErrorMsg.HIVE_GROUPING_SETS_THRESHOLD_NOT_ALLOWED_WITH_SKEW.getMsg(errorMsg));
+          }
+        }
+      }
+
+      // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // Check and transform group by *. This will only happen for select distinct *.
       // Here the "genSelectPlan" is being leveraged.
       // The main benefits are (1) remove virtual columns that should
@@ -1857,8 +1887,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
         }
       }
-      List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
-      HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
       boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
           : false;
@@ -1890,9 +1918,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 4. GroupingSets, Cube, Rollup
         int groupingColsSize = gbExprNDescLst.size();
         List<Integer> groupingSets = null;
-        if (!qbp.getDestRollups().isEmpty()
-                || !qbp.getDestGroupingSets().isEmpty()
-                || !qbp.getDestCubes().isEmpty()) {
+        if (cubeRollupGrpSetPresent) {
           if (qbp.getDestRollups().contains(detsClauseName)) {
             groupingSets = getGroupingSetsForRollup(grpByAstExprs.size());
           } else if (qbp.getDestCubes().contains(detsClauseName)) {

@@ -3443,7 +3443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return ret;
   }
 
-  private int setBit(int bitmap, int bitIdx) {
+  public static int setBit(int bitmap, int bitIdx) {
     return bitmap | (1 << bitIdx);
   }
 
@@ -3979,10 +3979,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Class to store GenericUDAF related information.
    */
-  static class GenericUDAFInfo {
-    ArrayList<ExprNodeDesc> convertedParameters;
-    GenericUDAFEvaluator genericUDAFEvaluator;
-    TypeInfo returnType;
+  public static class GenericUDAFInfo {
+    public ArrayList<ExprNodeDesc> convertedParameters;
+    public GenericUDAFEvaluator genericUDAFEvaluator;
+    public TypeInfo returnType;
   }
 
   /**
@@ -4023,7 +4023,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Returns the GenericUDAFEvaluator for the aggregation. This is called once
    * for each GroupBy aggregation.
    */
-  static GenericUDAFEvaluator getGenericUDAFEvaluator(String aggName,
+  public static GenericUDAFEvaluator getGenericUDAFEvaluator(String aggName,
       ArrayList<ExprNodeDesc> aggParameters, ASTNode aggTree,
       boolean isDistinct, boolean isAllColumns)
       throws SemanticException {
@@ -4053,7 +4053,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    *           when the UDAF is not found or has problems.
    */
-  static GenericUDAFInfo getGenericUDAFInfo(GenericUDAFEvaluator evaluator,
+  public static GenericUDAFInfo getGenericUDAFInfo(GenericUDAFEvaluator evaluator,
       GenericUDAFEvaluator.Mode emode, ArrayList<ExprNodeDesc> aggParameters)
       throws SemanticException {
 
@@ -4082,7 +4082,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return r;
   }
 
-  static GenericUDAFEvaluator.Mode groupByDescModeToUDAFMode(
+  public static GenericUDAFEvaluator.Mode groupByDescModeToUDAFMode(
       GroupByDesc.Mode mode, boolean isDistinct) {
     switch (mode) {
     case COMPLETE:
@@ -4125,7 +4125,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return the ExprNodeDesc of the constant parameter if the given internalName represents
    *         a constant parameter; otherwise, return null
    */
-  private ExprNodeDesc isConstantParameterInAggregationParameters(String internalName,
+  public static ExprNodeDesc isConstantParameterInAggregationParameters(String internalName,
       List<ExprNodeDesc> reduceValues) {
     // only the pattern of "VALUE._col([0-9]+)" should be handled.
 
@@ -5572,7 +5572,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  private void checkExpressionsForGroupingSet(List<ASTNode> grpByExprs,
+  void checkExpressionsForGroupingSet(List<ASTNode> grpByExprs,
       List<ASTNode> distinctGrpByExprs,
       Map<String, ASTNode> aggregationTrees,
       RowResolver inputRowResolver) throws SemanticException {

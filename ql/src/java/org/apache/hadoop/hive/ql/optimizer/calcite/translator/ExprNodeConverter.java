@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexFieldCollation;
@@ -36,6 +37,8 @@ import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
@@ -72,20 +75,22 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   RelDataType        outputRowType;
   boolean            partitioningExpr;
   WindowFunctionSpec wfs;
+  private final RelDataTypeFactory dTFactory;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
-          boolean partitioningExpr) {
-    this(tabAlias, null, inputRowType, null, partitioningExpr);
+          boolean partitioningExpr, RelDataTypeFactory dTFactory) {
+    this(tabAlias, null, inputRowType, null, partitioningExpr, dTFactory);
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
-          RelDataType outputRowType, boolean partitioningExpr) {
+          RelDataType outputRowType, boolean partitioningExpr, RelDataTypeFactory dTFactory) {
     super(true);
     this.tabAlias = tabAlias;
     this.columnAlias = columnAlias;
     this.inputRowType = inputRowType;
     this.outputRowType = outputRowType;
     this.partitioningExpr = partitioningExpr;
+    this.dTFactory = dTFactory;    
   }
 
   public WindowFunctionSpec getWindowFunctionSpec() {
@@ -116,9 +121,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       args.add(operand.accept(this));
     }
 
-    // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
-    // exprnode
-    if (ASTConverter.isFlat(call)) {
+    // If Call is a redundant cast then bail out. Ex: cast(true)BOOLEAN
+    if (call.isA(SqlKind.CAST)
+        && (call.operands.size() == 1)
+        && SqlTypeUtil.equalSansNullability(dTFactory, call.getType(),
+            call.operands.get(0).getType())) {
+      return args.get(0);
+    } else if (ASTConverter.isFlat(call)) {
+        // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
+        // exprnode
       ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
       tmpExprArgs.addAll(args.subList(0, 2));
       gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),

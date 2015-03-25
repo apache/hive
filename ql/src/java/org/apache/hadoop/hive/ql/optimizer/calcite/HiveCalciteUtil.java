@@ -31,6 +31,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
@@ -47,7 +48,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -613,5 +616,45 @@ public class HiveCalciteUtil {
     }
 
     return bldr.build();
+  }
+
+  public static ImmutableList<RexNode> getInputRef(List<Integer> inputRefs, RelNode inputRel) {
+    ImmutableList.Builder<RexNode> bldr = ImmutableList.<RexNode> builder();
+    for (int i : inputRefs) {
+      bldr.add(new RexInputRef(i, (RelDataType) inputRel.getRowType().getFieldList().get(i).getType()));
+    }
+    return bldr.build();
+  }
+
+  public static ExprNodeDesc getExprNode(Integer inputRefIndx, RelNode inputRel,
+      ExprNodeConverter exprConv) {
+    ExprNodeDesc exprNode = null;
+    RexNode rexInputRef = new RexInputRef(inputRefIndx, (RelDataType) inputRel.getRowType()
+        .getFieldList().get(inputRefIndx).getType());
+    exprNode = rexInputRef.accept(exprConv);
+
+    return exprNode;
+  }
+
+  public static List<ExprNodeDesc> getExprNodes(List<Integer> inputRefs, RelNode inputRel,
+      String inputTabAlias) {
+    List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
+    List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
+    // TODO: Change ExprNodeConverter to be independent of Partition Expr
+    ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(), false, inputRel.getCluster().getTypeFactory());
+    for (RexNode iRef : rexInputRefs) {
+      exprNodes.add(iRef.accept(exprConv));
+    }
+    return exprNodes;
+  }
+  
+  public static List<String> getFieldNames(List<Integer> inputRefs, RelNode inputRel) {
+    List<String> fieldNames = new ArrayList<String>();
+    List<String> schemaNames = inputRel.getRowType().getFieldNames();
+    for (Integer iRef : inputRefs) {
+      fieldNames.add(schemaNames.get(iRef));
+    }
+    
+    return fieldNames;
   }  
 }
