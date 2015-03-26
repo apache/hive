@@ -181,7 +181,7 @@ public class GenericUDFIn extends GenericUDF {
             conversionHelper.convertIfNecessary(
                 arguments[0].get(), argumentOIs[0]), compareOI,
             conversionHelper.convertIfNecessary(
-                arguments[i].get(), argumentOIs[i]), compareOI) == 0) {
+                arguments[i].get(), argumentOIs[i], false), compareOI) == 0) {
           bw.set(true);
           return bw;
         }
