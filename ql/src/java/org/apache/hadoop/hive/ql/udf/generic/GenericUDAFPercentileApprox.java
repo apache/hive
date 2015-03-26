@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
@@ -300,20 +301,21 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
         return;
       }
       PercentileAggBuf myagg = (PercentileAggBuf) agg;
-      List<DoubleWritable> partialHistogram = (List<DoubleWritable>) loi.getList(partial);
+      List partialHistogram = (List) loi.getList(partial);
+      DoubleObjectInspector doi = (DoubleObjectInspector)loi.getListElementObjectInspector();
 
       // remove requested quantiles from the head of the list
-      int nquantiles = (int) partialHistogram.get(0).get();
+      int nquantiles = (int) doi.get(partialHistogram.get(0));
       if(nquantiles > 0) {
         myagg.quantiles = new double[nquantiles];
         for(int i = 1; i <= nquantiles; i++) {
-          myagg.quantiles[i-1] = partialHistogram.get(i).get();
+          myagg.quantiles[i-1] = doi.get(partialHistogram.get(i));
         }
         partialHistogram.subList(0, nquantiles+1).clear();
       }
 
       // merge histograms
-      myagg.histogram.merge(partialHistogram);
+      myagg.histogram.merge(partialHistogram, doi);
     }
 
     @Override
