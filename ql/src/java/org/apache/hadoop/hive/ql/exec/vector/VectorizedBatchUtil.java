@@ -242,10 +242,30 @@ public class VectorizedBatchUtil {
     final int off = colOffset;
     // Iterate thru the cols and load the batch
     for (int i = 0; i < fieldRefs.size(); i++) {
-      setVector(row, oi, fieldRefs, batch, buffer, rowIndex, i, off);
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, i, off);
     }
   }
 
+  /**
+   * Add only the projected column of a regular row to the specified vectorized row batch
+   * @param row the regular row
+   * @param oi object inspector for the row
+   * @param rowIndex the offset to add in the batch
+   * @param batch vectorized row batch
+   * @param buffer data output buffer
+   * @throws HiveException
+   */
+  public static void addProjectedRowToBatchFrom(Object row, StructObjectInspector oi,
+      int rowIndex, VectorizedRowBatch batch, DataOutputBuffer buffer) throws HiveException {
+    List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
+    for (int i = 0; i < fieldRefs.size(); i++) {
+      int projectedOutputCol = batch.projectedColumns[i];
+      if (batch.cols[projectedOutputCol] == null) {
+        continue;
+      }
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, projectedOutputCol, 0);
+    }
+  }
   /**
    * Iterates thru all the columns in a given row and populates the batch
    * from a given offset
@@ -275,21 +295,21 @@ public class VectorizedBatchUtil {
         // The value will have already been set before we're called, so don't overwrite it
         continue;
       }
-      setVector(row, oi, fieldRefs, batch, buffer, rowIndex, i, 0);
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, i, 0);
     }
   }
 
   private static void setVector(Object row,
                                 StructObjectInspector oi,
-                                List<? extends StructField> fieldRefs,
+                                StructField field,
                                 VectorizedRowBatch batch,
                                 DataOutputBuffer buffer,
                                 int rowIndex,
                                 int colIndex,
                                 int offset) throws HiveException {
 
-    Object fieldData = oi.getStructFieldData(row, fieldRefs.get(colIndex));
-    ObjectInspector foi = fieldRefs.get(colIndex).getFieldObjectInspector();
+    Object fieldData = oi.getStructFieldData(row, field);
+    ObjectInspector foi = field.getFieldObjectInspector();
 
     // Vectorization only supports PRIMITIVE data types. Assert the same
     assert (foi.getCategory() == Category.PRIMITIVE);

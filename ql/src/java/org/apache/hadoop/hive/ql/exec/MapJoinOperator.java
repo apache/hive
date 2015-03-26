@@ -404,7 +404,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
    * @param hybridHtContainer Hybrid hashtable container
    * @param row big table row
    */
-  private void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row) {
+  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row) throws HiveException {
     HybridHashTableContainer ht = (HybridHashTableContainer) hybridHtContainer;
     int partitionId = ht.getToSpillPartitionId();
     HashPartition hp = ht.getHashPartitions()[partitionId];
@@ -469,8 +469,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   /**
-   * Continue processing each pair of spilled hashtable and big table row container,
-   * by bringing them back to memory and calling process() again.
+   * Continue processing each pair of spilled hashtable and big table row container
    * @param partition hash partition to process
    * @param hybridHtContainer Hybrid hashtable container
    * @throws HiveException
@@ -481,13 +480,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private void continueProcess(HashPartition partition, HybridHashTableContainer hybridHtContainer)
       throws HiveException, IOException, ClassNotFoundException, SerDeException {
     reloadHashTable(partition, hybridHtContainer);
-    // Iterate thru the on-disk matchfile, and feed processOp with leftover rows
-    ObjectContainer bigTable = partition.getMatchfileObjContainer();
-    while (bigTable.hasNext()) {
-      Object row = bigTable.next();
-      process(row, tag);
-    }
-    bigTable.clear();
+    reProcessBigTable(partition);
   }
 
   /**
@@ -544,6 +537,20 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     currentSmallTable = new MapJoinBytesTableContainer(restoredHashMap);
     currentSmallTable.setInternalValueOi(hybridHtContainer.getInternalValueOi());
     currentSmallTable.setSortableSortOrders(hybridHtContainer.getSortableSortOrders());
+  }
+
+  /**
+   * Iterate over the big table row container and feed process() with leftover rows
+   * @param partition the hash partition being brought back to memory at the moment
+   * @throws HiveException
+   */
+  protected void reProcessBigTable(HashPartition partition) throws HiveException {
+    ObjectContainer bigTable = partition.getMatchfileObjContainer();
+    while (bigTable.hasNext()) {
+      Object row = bigTable.next();
+      process(row, tag);
+    }
+    bigTable.clear();
   }
 
   /**
