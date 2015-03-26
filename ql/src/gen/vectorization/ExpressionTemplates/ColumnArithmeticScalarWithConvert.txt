@@ -19,35 +19,39 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.exec.vector.<InputColumnVectorType>;
+import org.apache.hadoop.hive.ql.exec.vector.<OutputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 
 /**
- * Generated from template ColumnUnaryMinus.txt, which covers unary negation operator. 
+ * Generated from template ColumnArithmeticScalarWithConvert.txt, which covers binary arithmetic 
+ * expressions between a column and a scalar.
  */
 public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
   private int colNum;
+  private <VectorOperandType2> value;
   private int outputColumn;
 
-  public <ClassName>(int colNum, int outputColumn) {
-    this();
+  public <ClassName>(int colNum, <VectorOperandType2> value, int outputColumn) {
     this.colNum = colNum;
+    this.value = <TypeConversion2>(value);
     this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
-    super();
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
-      this.evaluateChildren(batch);
+      super.evaluateChildren(batch);
     }
 
     <InputColumnVectorType> inputColVector = (<InputColumnVectorType>) batch.cols[colNum];
@@ -56,9 +60,10 @@ public class <ClassName> extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
+    outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
-    <OperandType>[] vector = inputColVector.vector;
-    <ReturnType>[] outputVector = outputColVector.vector;
+    <VectorOperandType1>[] vector = inputColVector.vector;
+    <VectorReturnType>[] outputVector = outputColVector.vector;
     
     // return immediately if batch is empty
     if (n == 0) {
@@ -66,39 +71,37 @@ public class <ClassName> extends VectorExpression {
     }
 
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      outputVector[0] = - vector[0];
+      outputVector[0] = <TypeConversion1>(vector[0]) <OperatorSymbol> value;
+      
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0]; 
-      outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = -vector[i];
+          outputVector[i] = <TypeConversion1>(vector[i]) <OperatorSymbol> value;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = -vector[i];
+          outputVector[i] = <TypeConversion1>(vector[i]) <OperatorSymbol> value;
         }
       }
-      outputColVector.isRepeating = false;
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = -vector[i];
+          outputVector[i] = <TypeConversion1>(vector[i]) <OperatorSymbol> value;
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = -vector[i];
+          outputVector[i] = <TypeConversion1>(vector[i]) <OperatorSymbol> value;
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
+    
+    NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override
@@ -108,15 +111,23 @@ public class <ClassName> extends VectorExpression {
   
   @Override
   public String getOutputType() {
-    return "<ReturnType>";
+    return "<VectorReturnType>";
   }
   
   public int getColNum() {
     return colNum;
   }
-
+  
   public void setColNum(int colNum) {
     this.colNum = colNum;
+  }
+
+  public <VectorOperandType2> getValue() {
+    return value;
+  }
+
+  public void setValue(<VectorOperandType2> value) {
+    this.value = value;
   }
 
   public void setOutputColumn(int outputColumn) {
@@ -128,10 +139,12 @@ public class <ClassName> extends VectorExpression {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
             VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(1)
+        .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType>"))
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
         .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }

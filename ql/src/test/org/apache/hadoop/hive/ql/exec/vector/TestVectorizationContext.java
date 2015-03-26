@@ -151,7 +151,7 @@ public class TestVectorizationContext {
     VectorUDFUnixTimeStampLong v1 = new VectorUDFUnixTimeStampLong();
     VectorExpressionDescriptor.Builder builder1 = new VectorExpressionDescriptor.Builder();
     VectorExpressionDescriptor.Descriptor d1 = builder1.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY)
+        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY)
         .setInputExpressionTypes(VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
     assertTrue(d1.matches(v1.getDescriptor()));
 

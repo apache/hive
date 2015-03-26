@@ -55,7 +55,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   TimestampColNotEqualLongScalar.class, LongScalarNotEqualTimestampColumn.class,
   FilterTimestampColNotEqualLongScalar.class, FilterLongScalarNotEqualTimestampColumn.class,
   TimestampColNotEqualDoubleScalar.class, DoubleScalarNotEqualTimestampColumn.class,
-  FilterTimestampColNotEqualDoubleScalar.class, FilterDoubleScalarNotEqualTimestampColumn.class
+  FilterTimestampColNotEqualDoubleScalar.class, FilterDoubleScalarNotEqualTimestampColumn.class,
+  IntervalYearMonthScalarNotEqualIntervalYearMonthColumn.class, FilterIntervalYearMonthScalarNotEqualIntervalYearMonthColumn.class,
+  IntervalYearMonthColNotEqualIntervalYearMonthScalar.class, FilterIntervalYearMonthColNotEqualIntervalYearMonthScalar.class,
+  IntervalDayTimeScalarNotEqualIntervalDayTimeColumn.class, FilterIntervalDayTimeScalarNotEqualIntervalDayTimeColumn.class,
+  IntervalDayTimeColNotEqualIntervalDayTimeScalar.class, FilterIntervalDayTimeColNotEqualIntervalDayTimeScalar.class,
+  DateColNotEqualDateScalar.class,FilterDateColNotEqualDateScalar.class,
+  DateScalarNotEqualDateColumn.class,FilterDateScalarNotEqualDateColumn.class,
   })
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){
