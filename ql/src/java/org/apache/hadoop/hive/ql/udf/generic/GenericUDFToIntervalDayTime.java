@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToIntervalDayTime;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 */
 @Description(name = "interval_day_time",
   value = "CAST(<string> AS INTERVAL DAY TO SECOND) - Returns the day-time interval represented by the string")
+@VectorizedExpressions({CastStringToIntervalDayTime.class})
 public class GenericUDFToIntervalDayTime extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;

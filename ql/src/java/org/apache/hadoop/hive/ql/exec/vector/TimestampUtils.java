@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+
 public final class TimestampUtils {
 
   /**
@@ -57,5 +59,9 @@ public final class TimestampUtils {
 
   public static long doubleToNanoseconds(double d) {
     return (long) (d * 1000000000);
+  }
+
+  public static long daysToNanoseconds(long daysSinceEpoch) {
+    return DateWritable.daysToMillis((int) daysSinceEpoch) * 1000000;
   }
 }
