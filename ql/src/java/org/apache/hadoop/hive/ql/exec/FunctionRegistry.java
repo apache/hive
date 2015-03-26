@@ -68,8 +68,11 @@ import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftLeft;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRight;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRightUnsigned;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
 import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
 import org.apache.hadoop.hive.ql.udf.UDFPI;
@@ -294,6 +297,9 @@ public final class FunctionRegistry {
     system.registerUDF("|", UDFOPBitOr.class, true);
     system.registerUDF("^", UDFOPBitXor.class, true);
     system.registerUDF("~", UDFOPBitNot.class, true);
+    system.registerUDF("shiftleft", UDFOPBitShiftLeft.class, true);
+    system.registerUDF("shiftright", UDFOPBitShiftRight.class, true);
+    system.registerUDF("shiftrightunsigned", UDFOPBitShiftRightUnsigned.class, true);
 
     system.registerGenericUDF("current_database", UDFCurrentDB.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
