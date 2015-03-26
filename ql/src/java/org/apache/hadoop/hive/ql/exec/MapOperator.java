@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
@@ -88,6 +89,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   private final transient LongWritable recordCounter = new LongWritable();
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
   private final Map<String, Map<Operator<?>, MapOpCtx>> opCtxMap =
@@ -426,6 +428,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
 
     numRows = 0;
+    cntr = 1;
+    logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
     String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     if (context != null && !context.isEmpty()) {
@@ -521,7 +525,11 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     numRows += rows;
     if (isLogInfoEnabled) {
       while (numRows >= cntr) {
-        cntr *= 10;
+        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+        if (cntr < 0 || numRows < 0) {
+          cntr = 1;
+          numRows = 0;
+        }
         LOG.info(toString() + ": records read - " + numRows);
       }
     }
