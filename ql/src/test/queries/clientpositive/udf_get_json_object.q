@@ -42,3 +42,24 @@ INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 SELECT * FROM dest2;
 
 SELECT get_json_object(c1, '$.a') FROM dest2;
+
+--root is array
+SELECT
+get_json_object('[1,2,3]', '$[0]'),
+get_json_object('[1,2,3]', '$.[0]'),
+get_json_object('[1,2,3]', '$.[1]'),
+get_json_object('[1,2,3]', '$[1]'),
+get_json_object('[1,2,3]', '$[2]'),
+get_json_object('[1,2,3]', '$[*]'),
+get_json_object('[1,2,3]', '$'),
+get_json_object('[{"k1":"v1"},{"k2":"v2"},{"k3":"v3"}]', '$[2]'),
+get_json_object('[{"k1":"v1"},{"k2":"v2"},{"k3":"v3"}]', '$[2].k3'),
+get_json_object('[[1,2,3],[4,5,6],[7,8,9]]', '$[1]'),
+get_json_object('[[1,2,3],[4,5,6],[7,8,9]]', '$[1][0]'),
+get_json_object('[{"k1":[{"k11":[1,2,3]}]}]', '$[0].k1[0].k11[1]');
+
+--null
+SELECT
+get_json_object('[1,2,3]', '[2]'),
+get_json_object('[1,2,3]', '$0'),
+get_json_object('[1,2,3]', '$[3]');
