@@ -569,12 +569,12 @@ public class HiveCalciteUtil {
     return deterministic;
   }
 
-  public static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols,
+  public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
       int startIndx) {
-    Builder<Integer, ColumnInfo> bldr = ImmutableMap.<Integer, ColumnInfo> builder();
+    Builder<Integer, T> bldr = ImmutableMap.<Integer, T> builder();
 
     int indx = startIndx;
-    for (ColumnInfo ci : hiveCols) {
+    for (T ci : hiveCols) {
       bldr.put(indx, ci);
       indx++;
     }
@@ -612,6 +612,18 @@ public class HiveCalciteUtil {
     int indx = 0;
     for (FieldSchema fs : tableFields) {
       bldr.put(fs.getName(), indx);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<String, Integer> getRowColNameIndxMap(List<RelDataTypeField> rowFields) {
+    Builder<String, Integer> bldr = ImmutableMap.<String, Integer> builder();
+
+    int indx = 0;
+    for (RelDataTypeField rdt : rowFields) {
+      bldr.put(rdt.getName(), indx);
       indx++;
     }
 

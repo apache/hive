@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
@@ -37,6 +38,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
 
 /**
  * Relational expression representing a scan of a HiveDB collection.
@@ -47,7 +51,9 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
  * </p>
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
-
+  private final RelDataType rowtype;
+  private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
+  
   /**
    * Creates a HiveTableScan.
    *
@@ -61,8 +67,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    *          HiveDB table
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table) {
+    this(cluster, traitSet, table, table.getRowType());
+  }
+
+  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+      RelDataType newRowtype) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
+    this.rowtype = newRowtype;
+    this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
   }
 
   @Override
@@ -79,7 +92,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype));
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table));
+  }
+
+  @Override
+  public RelDataType deriveRowType() {
+    return rowtype;
   }
 
   @Override
@@ -136,5 +154,23 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         fieldNames));
 
     return newHT;
+  }
+
+  public List<Integer> getNeededColIndxsFrmReloptHT() {
+    return neededColIndxsFrmReloptHT;
+  }
+
+  private static ImmutableList<Integer> buildNeededColIndxsFrmReloptHT(RelDataType htRowtype,
+      RelDataType scanRowType) {
+    Builder<Integer> neededColIndxsFrmReloptHTBldr = new ImmutableList.Builder<Integer>();
+    Map<String, Integer> colNameToPosInReloptHT = HiveCalciteUtil.getRowColNameIndxMap(htRowtype
+        .getFieldList());
+    List<String> colNamesInScanRowType = scanRowType.getFieldNames();
+
+    for (int i = 0; i < colNamesInScanRowType.size(); i++) {
+      neededColIndxsFrmReloptHTBldr.add(colNameToPosInReloptHT.get(colNamesInScanRowType.get(i)));
+    }
+
+    return neededColIndxsFrmReloptHTBldr.build();
   }
 }

@@ -35,7 +35,6 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.logical.LogicalExchange;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -192,48 +191,60 @@ public class HiveOpConverter {
     }
 
     RelOptHiveTable ht = (RelOptHiveTable) scanRel.getTable();
-    Map<Integer, VirtualColumn> newVColMap = new HashMap<Integer, VirtualColumn>();
 
     // 1. Setup TableScan Desc
-    // 1.1 Create TableScanDesc
-    String tableAlias = ht.getTableAlias();
+    // 1.1 Build col details used by scan
+    ArrayList<ColumnInfo> colInfos = new ArrayList<ColumnInfo>();
     List<VirtualColumn> virtualCols = new ArrayList<VirtualColumn>(ht.getVirtualCols());
-    TableScanDesc tsd = new TableScanDesc(tableAlias, virtualCols, ht.getHiveTableMD());
-
-    // 1.2. Set Partition cols in TSDesc
-    List<ColumnInfo> partColInfos = ht.getPartColumns();
+    Map<Integer, VirtualColumn> hiveScanVColMap = new HashMap<Integer, VirtualColumn>();
     List<String> partColNames = new ArrayList<String>();
-    for (ColumnInfo ci : partColInfos) {
-      partColNames.add(ci.getInternalName());
-    }
-    tsd.setPartColumns(partColNames);
-
-    // 1.3. Set needed cols in TSDesc
     List<Integer> neededColumnIDs = new ArrayList<Integer>();
     List<String> neededColumns = new ArrayList<String>();
-    Map<String, Integer> colNameToIndxMap = HiveCalciteUtil.getColNameIndxMap(ht.getHiveTableMD()
-        .getCols());
-    for (RelDataTypeField rdtf : scanRel.getRowType().getFieldList()) {
-      neededColumnIDs.add(colNameToIndxMap.get(rdtf.getName()));
-      neededColumns.add(rdtf.getName());
+
+    Map<Integer, VirtualColumn> posToVColMap = HiveCalciteUtil.getVColsMap(virtualCols,
+        ht.getNoOfNonVirtualCols());
+    Map<Integer, ColumnInfo> posToPartColInfo = ht.getPartColInfoMap();
+    Map<Integer, ColumnInfo> posToNonPartColInfo = ht.getNonPartColInfoMap();
+    List<Integer> neededColIndxsFrmReloptHT = scanRel.getNeededColIndxsFrmReloptHT();
+    List<String> scanColNames = scanRel.getRowType().getFieldNames();
+    String tableAlias = ht.getTableAlias();
+
+    String colName;
+    ColumnInfo colInfo;
+    VirtualColumn vc;
+    Integer posInRHT;
+
+    for (int i = 0; i < neededColIndxsFrmReloptHT.size(); i++) {
+      colName = scanColNames.get(i);
+      posInRHT = neededColIndxsFrmReloptHT.get(i);
+      if (posToVColMap.containsKey(posInRHT)) {
+        vc = posToVColMap.get(posInRHT);
+        virtualCols.add(vc);
+        colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden());
+        hiveScanVColMap.put(i, vc);
+      } else if (posToPartColInfo.containsKey(posInRHT)) {
+        partColNames.add(colName);
+        colInfo = posToPartColInfo.get(posInRHT);
+      } else {
+        colInfo = posToNonPartColInfo.get(posInRHT);
+      }
+      neededColumnIDs.add(posInRHT);
+      neededColumns.add(colName);
+      colInfos.add(colInfo);
     }
+
+    // 1.2 Create TableScanDesc
+    TableScanDesc tsd = new TableScanDesc(tableAlias, virtualCols, ht.getHiveTableMD());
+
+    // 1.3. Set Partition cols in TSDesc
+    tsd.setPartColumns(partColNames);
+
+    // 1.4. Set needed cols in TSDesc
     tsd.setNeededColumnIDs(neededColumnIDs);
     tsd.setNeededColumns(neededColumns);
 
     // 2. Setup TableScan
-    TableScanOperator ts = null;
-    // 2.1 Construct ordered colInfo list for TS RowSchema & update vcolMap
-    ArrayList<ColumnInfo> colInfos = new ArrayList<ColumnInfo>(ht.getNonPartColumns());
-    colInfos.addAll(ht.getPartColumns());
-    ColumnInfo ci;
-    for (VirtualColumn vc : virtualCols) {
-      ci = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden());
-      colInfos.add(ci);
-      newVColMap.put(colInfos.size(), vc);
-    }
-
-    // 2.2. Create TS OP
-    ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
+    TableScanOperator ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
 
     topOps.put(ht.getQBID(), ts);
 
@@ -241,7 +252,7 @@ public class HiveOpConverter {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");
     }
 
-    return new OpAttr(tableAlias, newVColMap, ts);
+    return new OpAttr(tableAlias, hiveScanVColMap, ts);
   }
 
   OpAttr visit(HiveProject projectRel) throws SemanticException {
@@ -877,5 +888,4 @@ public class HiveOpConverter {
 
     return new Pair<ArrayList<ColumnInfo>, Map<Integer, VirtualColumn>>(colInfos, newVColMap);
   }
-
 }

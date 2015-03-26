@@ -454,4 +454,16 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public String getQBID() {
     return qbID;
   }
+
+  public int getNoOfNonVirtualCols() {
+    return noOfNonVirtualCols;
+  }
+
+  public Map<Integer, ColumnInfo> getPartColInfoMap() {
+    return hivePartitionColsMap;
+  }
+
+  public Map<Integer, ColumnInfo> getNonPartColInfoMap() {
+    return hiveNonPartitionColsMap;
+  }
 }
