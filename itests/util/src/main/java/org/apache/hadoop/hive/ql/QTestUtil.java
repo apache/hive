@@ -874,7 +874,7 @@ public class QTestUtil {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
-    Utilities.clearWorkMap();
+    Utilities.clearWorkMap(conf);
     if (QTestUtil.clusterType == MiniClusterType.tezlocal) {
       conf.setBoolean("tez.local.mode", true);
       conf.set("fs.defaultFS", "file:///");
@@ -937,6 +937,7 @@ public class QTestUtil {
 
   private CliSessionState createSessionState() {
    return new CliSessionState(conf) {
+      @Override
       public void setSparkSession(SparkSession sparkSession) {
         super.setSparkSession(sparkSession);
         if (sparkSession != null) {

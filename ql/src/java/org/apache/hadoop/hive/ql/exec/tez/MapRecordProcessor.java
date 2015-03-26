@@ -79,7 +79,7 @@ public class MapRecordProcessor extends RecordProcessor {
   private int position;
   MRInputLegacy legacyMRInput;
   MultiMRInput mainWorkMultiMRInput;
-  private ExecMapperContext execContext;
+  private final ExecMapperContext execContext;
   private boolean abort;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
@@ -353,7 +353,7 @@ public class MapRecordProcessor extends RecordProcessor {
         throw new RuntimeException("Hive Runtime Error while closing operators", e);
       }
     } finally {
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jconf);
       MapredContext.close();
     }
   }

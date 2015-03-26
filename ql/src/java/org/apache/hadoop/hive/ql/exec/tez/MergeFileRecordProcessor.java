@@ -179,7 +179,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
             e);
       }
     } finally {
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jconf);
       MapredContext.close();
     }
   }

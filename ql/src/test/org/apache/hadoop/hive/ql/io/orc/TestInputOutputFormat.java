@@ -1245,8 +1245,8 @@ public class TestInputOutputFormat {
                                          boolean isVectorized,
                                          int partitions
                                          ) throws IOException {
-    Utilities.clearWorkMap();
     JobConf conf = new JobConf();
+    Utilities.clearWorkMap(conf);
     conf.set("hive.exec.plan", workDir.toString());
     conf.set("mapred.job.tracker", "local");
     conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));

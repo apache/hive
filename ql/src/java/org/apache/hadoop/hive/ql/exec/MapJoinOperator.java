@@ -170,6 +170,17 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       hashTblInitedOnce = true;
     }
 
+    alias = (byte) conf.getPosBigTable();
+    if (hashMapRowGetters == null) {
+      hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
+      MapJoinKey refKey = getRefKey(alias);
+      for (byte pos = 0; pos < order.length; pos++) {
+        if (pos != alias) {
+          hashMapRowGetters[pos] = mapJoinTables[pos].createGetter(refKey);
+        }
+      }
+    }
+
     if (this.getExecContext() != null) {
       // reset exec context so that initialization of the map operator happens
       // properly
@@ -287,17 +298,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   public void process(Object row, int tag) throws HiveException {
     try {
-      alias = (byte) tag;
-      if (hashMapRowGetters == null) {
-        hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
-        MapJoinKey refKey = getRefKey(alias);
-        for (byte pos = 0; pos < order.length; pos++) {
-          if (pos != alias) {
-            hashMapRowGetters[pos] = mapJoinTables[pos].createGetter(refKey);
-          }
-        }
-      }
-
       // compute keys and values as StandardObjects
       ReusableGetAdaptor firstSetKey = null;
       int fieldCount = joinKeys[alias].size();
