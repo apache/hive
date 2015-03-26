@@ -26,13 +26,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
 import org.apache.hadoop.mapred.split.TezMapredSplitsGrouper;
 import org.apache.tez.dag.api.TaskLocationHint;
@@ -49,7 +56,14 @@ public class SplitGrouper {
 
   private static final Log LOG = LogFactory.getLog(SplitGrouper.class);
 
+  // TODO This needs to be looked at. Map of Map to Map... Made concurrent for now since split generation
+  // can happen in parallel.
+  private static final Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cache =
+      new ConcurrentHashMap<>();
+
   private final TezMapredSplitsGrouper tezGrouper = new TezMapredSplitsGrouper();
+
+
 
   /**
    * group splits for each bucket separately - while evenly filling all the
@@ -87,12 +101,83 @@ public class SplitGrouper {
     return bucketGroupedSplitMultimap;
   }
 
+
+  /**
+   * Create task location hints from a set of input splits
+   * @param splits the actual splits
+   * @return taskLocationHints - 1 per input split specified
+   * @throws IOException
+   */
+  public List<TaskLocationHint> createTaskLocationHints(InputSplit[] splits) throws IOException {
+
+    List<TaskLocationHint> locationHints = Lists.newArrayListWithCapacity(splits.length);
+
+    for (InputSplit split : splits) {
+      String rack = (split instanceof TezGroupedSplit) ? ((TezGroupedSplit) split).getRack() : null;
+      if (rack == null) {
+        if (split.getLocations() != null) {
+          locationHints.add(TaskLocationHint.createTaskLocationHint(new HashSet<String>(Arrays.asList(split
+              .getLocations())), null));
+        } else {
+          locationHints.add(TaskLocationHint.createTaskLocationHint(null, null));
+        }
+      } else {
+        locationHints.add(TaskLocationHint.createTaskLocationHint(null, Collections.singleton(rack)));
+      }
+    }
+
+    return locationHints;
+  }
+
+  /** Generate groups of splits, separated by schema evolution boundaries */
+  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+                                                                    Configuration conf,
+                                                                    InputSplit[] splits,
+                                                                    float waves, int availableSlots)
+      throws Exception {
+    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true);
+  }
+
+  /** Generate groups of splits, separated by schema evolution boundaries */
+  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
+                                                                    Configuration conf,
+                                                                    InputSplit[] splits,
+                                                                    float waves, int availableSlots,
+                                                                    String inputName,
+                                                                    boolean groupAcrossFiles) throws
+      Exception {
+
+    MapWork work = populateMapWork(jobConf, inputName);
+    Multimap<Integer, InputSplit> bucketSplitMultiMap =
+        ArrayListMultimap.<Integer, InputSplit> create();
+
+    int i = 0;
+    InputSplit prevSplit = null;
+    for (InputSplit s : splits) {
+      // this is the bit where we make sure we don't group across partition
+      // schema boundaries
+      if (schemaEvolved(s, prevSplit, groupAcrossFiles, work)) {
+        ++i;
+        prevSplit = s;
+      }
+      bucketSplitMultiMap.put(i, s);
+    }
+    LOG.info("# Src groups for split generation: " + (i + 1));
+
+    // group them into the chunks we want
+    Multimap<Integer, InputSplit> groupedSplits =
+        this.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
+
+    return groupedSplits;
+  }
+
+
   /**
    * get the size estimates for each bucket in tasks. This is used to make sure
    * we allocate the head room evenly
    */
   private Map<Integer, Integer> estimateBucketSizes(int availableSlots, float waves,
-      Map<Integer, Collection<InputSplit>> bucketSplitMap) {
+                                                    Map<Integer, Collection<InputSplit>> bucketSplitMap) {
 
     // mapping of bucket id to size of all splits in bucket in bytes
     Map<Integer, Long> bucketSizeMap = new HashMap<Integer, Long>();
@@ -147,24 +232,54 @@ public class SplitGrouper {
     return bucketTaskMap;
   }
 
-  public List<TaskLocationHint> createTaskLocationHints(InputSplit[] splits) throws IOException {
-
-    List<TaskLocationHint> locationHints = Lists.newArrayListWithCapacity(splits.length);
-
-    for (InputSplit split : splits) {
-      String rack = (split instanceof TezGroupedSplit) ? ((TezGroupedSplit) split).getRack() : null;
-      if (rack == null) {
-        if (split.getLocations() != null) {
-          locationHints.add(TaskLocationHint.createTaskLocationHint(new HashSet<String>(Arrays.asList(split
-              .getLocations())), null));
-        } else {
-          locationHints.add(TaskLocationHint.createTaskLocationHint(null, null));
-        }
-      } else {
-        locationHints.add(TaskLocationHint.createTaskLocationHint(null, Collections.singleton(rack)));
-      }
+  private static MapWork populateMapWork(JobConf jobConf, String inputName) {
+    MapWork work = null;
+    if (inputName != null) {
+      work = (MapWork) Utilities.getMergeWork(jobConf, inputName);
+      // work can still be null if there is no merge work for this input
+    }
+    if (work == null) {
+      work = Utilities.getMapWork(jobConf);
     }
 
-    return locationHints;
+    return work;
   }
+
+  private boolean schemaEvolved(InputSplit s, InputSplit prevSplit, boolean groupAcrossFiles,
+                                       MapWork work) throws IOException {
+    boolean retval = false;
+    Path path = ((FileSplit) s).getPath();
+    PartitionDesc pd =
+        HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
+            path, cache);
+    String currentDeserializerClass = pd.getDeserializerClassName();
+    Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
+
+    Class<?> previousInputFormatClass = null;
+    String previousDeserializerClass = null;
+    if (prevSplit != null) {
+      Path prevPath = ((FileSplit) prevSplit).getPath();
+      if (!groupAcrossFiles) {
+        return !path.equals(prevPath);
+      }
+      PartitionDesc prevPD =
+          HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
+              prevPath, cache);
+      previousDeserializerClass = prevPD.getDeserializerClassName();
+      previousInputFormatClass = prevPD.getInputFileFormatClass();
+    }
+
+    if ((currentInputFormatClass != previousInputFormatClass)
+        || (!currentDeserializerClass.equals(previousDeserializerClass))) {
+      retval = true;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Adding split " + path + " to src new group? " + retval);
+    }
+    return retval;
+  }
+
+
+
 }
