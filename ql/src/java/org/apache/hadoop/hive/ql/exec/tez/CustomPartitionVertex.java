@@ -274,9 +274,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         for (Integer key : bucketToInitialSplitMap.keySet()) {
           InputSplit[] inputSplitArray =
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
-          HiveSplitGenerator hiveSplitGenerator = new HiveSplitGenerator();
           Multimap<Integer, InputSplit> groupedSplit =
-              hiveSplitGenerator.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
+              grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
                   availableSlots, inputName, mainWorkName.isEmpty());
           if (mainWorkName.isEmpty() == false) {
             Multimap<Integer, InputSplit> singleBucketToGroupedSplit =
@@ -295,11 +294,10 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         // grouped split. This would affect SMB joins where we want to find the smallest key in
         // all the bucket files.
         for (Integer key : bucketToInitialSplitMap.keySet()) {
-          HiveSplitGenerator hiveSplitGenerator = new HiveSplitGenerator();
           InputSplit[] inputSplitArray =
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
           Multimap<Integer, InputSplit> groupedSplit =
-              hiveSplitGenerator.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
+              grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
                     availableSlots, inputName, false);
             bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
         }
