@@ -531,7 +531,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: CAST( '58.174' AS decimal(10,0)) (type: decimal(10,0))
+            expressions: 58 (type: decimal(10,0))
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
