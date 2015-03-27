@@ -624,31 +624,31 @@ public final class ColumnPrunerProcFactory {
       // get the SEL(*) branch
       Operator<?> select = op.getChildOperators().get(LateralViewJoinOperator.SELECT_TAG);
 
+      // Update the info of SEL operator based on the pruned reordered columns
       // these are from ColumnPrunerSelectProc
       List<String> cols = cppCtx.getPrunedColList(select);
       RowResolver rr = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
-      if (rr.getColumnInfos().size() != cols.size()) {
-        ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-        ArrayList<String> outputColNames = new ArrayList<String>();
-        for (String col : cols) {
-          // revert output cols of SEL(*) to ExprNodeColumnDesc
-          String[] tabcol = rr.reverseLookup(col);
-          ColumnInfo colInfo = rr.get(tabcol[0], tabcol[1]);
-          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
-          colList.add(colExpr);
-          outputColNames.add(col);
-        }
-        // replace SEL(*) to SEL(exprs)
-        ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
-        ((SelectDesc)select.getConf()).setColList(colList);
-        ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
-        pruneOperator(ctx, select, outputColNames);
-        
-        Operator<?> udtfPath = op.getChildOperators().get(LateralViewJoinOperator.UDTF_TAG);
-        List<String> lvFCols = new ArrayList<String>(cppCtx.getPrunedColLists().get(udtfPath));
-        lvFCols = Utilities.mergeUniqElems(lvFCols, outputColNames);
-        pruneOperator(ctx, op, lvFCols);
+      ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+      ArrayList<String> outputColNames = new ArrayList<String>();
+      for (String col : cols) {
+        // revert output cols of SEL(*) to ExprNodeColumnDesc
+        String[] tabcol = rr.reverseLookup(col);
+        ColumnInfo colInfo = rr.get(tabcol[0], tabcol[1]);
+        ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
+        colList.add(colExpr);
+        outputColNames.add(col);
       }
+      // replace SEL(*) to SEL(exprs)
+      ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
+      ((SelectDesc)select.getConf()).setColList(colList);
+      ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
+      pruneOperator(ctx, select, outputColNames);
+      
+      Operator<?> udtfPath = op.getChildOperators().get(LateralViewJoinOperator.UDTF_TAG);
+      List<String> lvFCols = new ArrayList<String>(cppCtx.getPrunedColLists().get(udtfPath));
+      lvFCols = Utilities.mergeUniqElems(lvFCols, outputColNames);
+      pruneOperator(ctx, op, lvFCols);
+      
       return null;
     }
   }
