@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
@@ -37,6 +38,8 @@ import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
@@ -206,6 +209,7 @@ public class SparkPlanGenerator {
   private SparkTran generate(BaseWork work) throws Exception {
     initStatsPublisher(work);
     JobConf newJobConf = cloneJobConf(work);
+    checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     if (work instanceof MapWork) {
       MapTran mapTran = new MapTran();
@@ -220,6 +224,15 @@ public class SparkPlanGenerator {
     } else {
       throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
         + "but found " + work.getClass().getName());
+    }
+  }
+
+  private void checkSpecs(BaseWork work, JobConf jc) throws Exception {
+    Set<Operator<?>> opList = work.getAllOperators();
+    for (Operator<?> op : opList) {
+      if (op instanceof FileSinkOperator) {
+        ((FileSinkOperator) op).checkOutputSpecs(null, jc);
+      }
     }
   }
 
