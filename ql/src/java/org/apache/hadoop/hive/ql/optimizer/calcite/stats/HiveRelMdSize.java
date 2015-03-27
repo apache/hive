@@ -19,14 +19,18 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.List;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSize;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableIntList;
+import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -66,6 +70,32 @@ public class HiveRelMdSize extends RelMdSize {
       }
     }
     return list.build();
+  }
+
+  public List<Double> averageColumnSizes(HiveJoin rel) {
+    final RelNode left = rel.getLeft();
+    final RelNode right = rel.getRight();
+    final List<Double> lefts =
+        RelMetadataQuery.getAverageColumnSizes(left);
+    List<Double> rights = null;
+    if (!rel.isLeftSemiJoin()) {
+        rights = RelMetadataQuery.getAverageColumnSizes(right);
+    }
+    if (lefts == null && rights == null) {
+      return null;
+    }
+    final int fieldCount = rel.getRowType().getFieldCount();
+    Double[] sizes = new Double[fieldCount];
+    if (lefts != null) {
+      lefts.toArray(sizes);
+    }
+    if (rights != null) {
+      final int leftCount = left.getRowType().getFieldCount();
+      for (int i = 0; i < rights.size(); i++) {
+        sizes[leftCount + i] = rights.get(i);
+      }
+    }
+    return ImmutableNullableList.copyOf(sizes);
   }
 
   public Double averageTypeValueSize(RelDataType type) {
