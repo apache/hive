@@ -22,13 +22,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -45,8 +48,28 @@ import java.util.SortedMap;
  */
 public class MockUtils {
 
+  /**
+   * The default impl is in ql package and is not available in unit tests.
+   */
+  public static class NOOPProxy implements PartitionExpressionProxy {
+
+    @Override
+    public String convertExprToFilter(byte[] expr) throws MetaException {
+      return null;
+    }
+
+    @Override
+    public boolean filterPartitionsByExpr(List<String> partColumnNames,
+        List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
+        List<String> partitionNames) throws MetaException {
+      return false;
+    }
+
+  }
+
   static HBaseStore init(Configuration conf, HTableInterface htable,
                          final SortedMap<String, Cell> rows) throws IOException {
+    ((HiveConf)conf).setVar(ConfVars.METASTORE_EXPRESSION_PROXY_CLASS, NOOPProxy.class.getName());
     Mockito.when(htable.get(Mockito.any(Get.class))).thenAnswer(new Answer<Result>() {
       @Override
       public Result answer(InvocationOnMock invocation) throws Throwable {
@@ -65,8 +88,9 @@ public class MockUtils {
       public ResultScanner answer(InvocationOnMock invocation) throws Throwable {
         Scan scan = (Scan)invocation.getArguments()[0];
         List<Result> results = new ArrayList<Result>();
-        SortedMap<String, Cell> sub =
-            rows.subMap(new String(scan.getStartRow()), new String(scan.getStopRow()));
+        String start = new String(scan.getStartRow());
+        String stop = new String(scan.getStopRow());
+        SortedMap<String, Cell> sub = rows.subMap(start, stop);
         for (Map.Entry<String, Cell> e : sub.entrySet()) {
           results.add(Result.create(new Cell[]{e.getValue()}));
         }

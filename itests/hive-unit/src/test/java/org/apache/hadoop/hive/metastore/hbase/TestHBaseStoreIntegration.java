@@ -58,7 +58,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -67,6 +66,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Integration tests with HBase Mini-cluster for HBaseStore
@@ -521,7 +522,7 @@ public class TestHBaseStoreIntegration extends IMockUtils {
   @Test
   public void listPartitionsWithPs() throws Exception {
     String dbName = "default";
-    String tableName = "listPartsPs";
+    String tableName = "listPartitionsWithPs";
     int startTime = (int)(System.currentTimeMillis() / 1000);
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(new FieldSchema("col1", "int", "nocomment"));
@@ -580,6 +581,91 @@ public class TestHBaseStoreIntegration extends IMockUtils {
     Arrays.sort(names);
     Assert.assertArrayEquals(new String[] {"ds=today/region=europe",
         "ds=tomorrow/region=europe"}, names);
+  }
+
+
+  @Test
+  public void getPartitionsByFilter() throws Exception {
+    String dbName = "default";
+    String tableName = "getPartitionsByFilter";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("ds", "string", ""));
+    partCols.add(new FieldSchema("region", "string", ""));
+    Table table = new Table(tableName, dbName, "me", startTime, startTime, 0, sd, partCols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    String[][] partVals = new String[][]{{"20010101", "north america"}, {"20010101", "europe"},
+        {"20010102", "north america"}, {"20010102", "europe"}, {"20010103", "north america"}};
+    for (String[] pv : partVals) {
+      List<String> vals = new ArrayList<String>();
+      for (String v : pv) vals.add(v);
+      StorageDescriptor psd = new StorageDescriptor(sd);
+      psd.setLocation("file:/tmp/ds=" + pv[0] + "/region=" + pv[1]);
+      Partition part = new Partition(vals, dbName, tableName, startTime, startTime, psd,
+          emptyParameters);
+      store.addPartition(part);
+    }
+
+    // We only test getPartitionsByFilter since it calls same code as getPartitionsByExpr anyway.
+    // Test the case where we completely specify the partition
+    List<Partition> parts = null;
+    parts = store.getPartitionsByFilter(dbName, tableName, "ds > '20010101'", (short) -1);
+    checkPartVals(parts, "[20010102, north america]", "[20010102, europe]",
+        "[20010103, north america]");
+
+    parts = store.getPartitionsByFilter(dbName, tableName, "ds >= '20010102'", (short) -1);
+    checkPartVals(parts, "[20010102, north america]", "[20010102, europe]",
+        "[20010103, north america]");
+
+    parts = store.getPartitionsByFilter(dbName, tableName,
+        "ds >= '20010102' and region = 'europe' ", (short) -1);
+    // filtering on first partition is only implemented as of now, so it will
+    // not filter on region
+    checkPartVals(parts, "[20010102, north america]", "[20010102, europe]",
+        "[20010103, north america]");
+
+    parts = store.getPartitionsByFilter(dbName, tableName,
+        "ds >= '20010101' and ds < '20010102'", (short) -1);
+    checkPartVals(parts,"[20010101, north america]", "[20010101, europe]");
+
+    parts = store.getPartitionsByFilter(dbName, tableName,
+        "ds = '20010102' or ds < '20010103'", (short) -1);
+    checkPartVals(parts, "[20010101, north america]", "[20010101, europe]",
+        "[20010102, north america]", "[20010102, europe]");
+
+    // test conversion to DNF
+    parts = store.getPartitionsByFilter(dbName, tableName,
+        "ds = '20010102' and (ds = '20010102' or region = 'europe')", (short) -1);
+    // filtering on first partition is only implemented as of now, so it will not filter on region
+    checkPartVals(parts, "[20010102, north america]", "[20010102, europe]");
+
+    parts = store.getPartitionsByFilter(dbName, tableName,
+        "region = 'europe'", (short) -1);
+    // filtering on first partition is only implemented as of now, so it will not filter on region
+    checkPartVals(parts, "[20010101, north america]", "[20010101, europe]",
+        "[20010102, north america]", "[20010102, europe]", "[20010103, north america]");
+
+  }
+
+  /**
+   * Check if the given partitions have same values as given partitions value strings
+   * @param parts given partitions
+   * @param expectedPartVals
+   */
+  private void checkPartVals(List<Partition> parts, String ... expectedPartVals) {
+    Assert.assertEquals("number of partitions", expectedPartVals.length, parts.size());
+    Set<String> partValStrings = new TreeSet<String>();
+    for(Partition part : parts) {
+      partValStrings.add(part.getValues().toString());
+    }
+    partValStrings.equals(new TreeSet(Arrays.asList(expectedPartVals)));
   }
 
   @Test

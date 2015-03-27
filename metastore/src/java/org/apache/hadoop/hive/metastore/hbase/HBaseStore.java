@@ -25,6 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
+import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -52,12 +54,14 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
+import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -67,6 +71,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -79,6 +84,7 @@ public class HBaseStore implements RawStore {
   private HBaseReadWrite hbase = null;
   private Configuration conf;
   private int txnNestLevel = 0;
+  private PartitionExpressionProxy expressionProxy = null;
 
   public HBaseStore() {
   }
@@ -450,17 +456,74 @@ public class HBaseStore implements RawStore {
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
                                                short maxParts) throws MetaException,
       NoSuchObjectException {
-    // TODO - Needs to wait for ability to push filters into HBase
-    throw new UnsupportedOperationException();
+    final ExpressionTree exprTree = (filter != null && !filter.isEmpty()) ? PartFilterExprUtil
+        .getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+    List<Partition> result = new ArrayList<Partition>();
+    getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+    return result;
   }
 
   @Override
   public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
                                      String defaultPartitionName, short maxParts,
                                      List<Partition> result) throws TException {
-    // TODO for now just return all partitions, need to add real expression parsing later.
-    result.addAll(getPartitions(dbName, tblName, maxParts));
-    return true;
+    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr);
+    // TODO: investigate if there should be any role for defaultPartitionName in this
+    // implementation. direct sql code path in ObjectStore does not use it.
+
+    return getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+  }
+
+  private boolean getPartitionsByExprInternal(String dbName, String tblName,
+      ExpressionTree exprTree, short maxParts, List<Partition> result) throws MetaException,
+      NoSuchObjectException {
+
+    Table table = getTable(dbName, tblName);
+    if (table == null) {
+      throw new NoSuchObjectException("Unable to find table " + dbName + "." + tblName);
+    }
+    String firstPartitionColumn = table.getPartitionKeys().get(0).getName();
+    // general hbase filter plan from expression tree
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, firstPartitionColumn);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Hbase Filter Plan generated : " + planRes.plan);
+    }
+
+    // results from scans need to be merged as there can be overlapping results between
+    // the scans. Use a map of list of partition values to partition for this.
+    Map<List<String>, Partition> mergedParts = new HashMap<List<String>, Partition>();
+    for (ScanPlan splan : planRes.plan.getPlans()) {
+      try {
+        List<Partition> parts = getHBase().scanPartitions(dbName, tblName,
+            splan.getStartRowSuffix(), splan.getEndRowSuffix(), null, -1);
+        boolean reachedMax = false;
+        for (Partition part : parts) {
+          mergedParts.put(part.getValues(), part);
+          if (mergedParts.size() == maxParts) {
+            reachedMax = true;
+            break;
+          }
+        }
+        if (reachedMax) {
+          break;
+        }
+      } catch (IOException e) {
+        LOG.error("Unable to get partitions", e);
+        throw new MetaException("Error scanning partitions" + tableNameForErrorMsg(dbName, tblName)
+            + ": " + e);
+      }
+    }
+    for (Entry<List<String>, Partition> mp : mergedParts.entrySet()) {
+      result.add(mp.getValue());
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Matched partitions " + result);
+    }
+
+    // return true if there might be some additional partitions that don't match filter conditions
+    // being returned
+    return !planRes.hasUnsupportedCondition;
   }
 
   @Override
@@ -1599,6 +1662,12 @@ public class HBaseStore implements RawStore {
 
   @Override
   public void setConf(Configuration configuration) {
+    // initialize expressionProxy. Also re-initialize it if
+    // setConf is being called with new configuration object (though that
+    // is not expected to happen, doing it just for safety)
+    if(expressionProxy == null || conf != configuration) {
+      expressionProxy = PartFilterExprUtil.createExpressionProxy(configuration);
+    }
     conf = configuration;
   }
 

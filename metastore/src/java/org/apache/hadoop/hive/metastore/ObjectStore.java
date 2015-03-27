@@ -274,33 +274,14 @@ public class ObjectStore implements RawStore, Configurable {
     pm = getPersistenceManager();
     isInitialized = pm != null;
     if (isInitialized) {
-      expressionProxy = createExpressionProxy(hiveConf);
+      expressionProxy = PartFilterExprUtil.createExpressionProxy(hiveConf);
       directSql = new MetaStoreDirectSql(pm, hiveConf);
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
         " created in the thread with id: " + Thread.currentThread().getId());
   }
 
-  /**
-   * Creates the proxy used to evaluate expressions. This is here to prevent circular
-   * dependency - ql -&gt; metastore client &lt;-&gt metastore server -&gt ql. If server and
-   * client are split, this can be removed.
-   * @param conf Configuration.
-   * @return The partition expression proxy.
-   */
-  private static PartitionExpressionProxy createExpressionProxy(Configuration conf) {
-    String className = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS);
-    try {
-      @SuppressWarnings("unchecked")
-      Class<? extends PartitionExpressionProxy> clazz =
-          (Class<? extends PartitionExpressionProxy>)MetaStoreUtils.getClass(className);
-      return MetaStoreUtils.newInstance(
-          clazz, new Class<?>[0], new Object[0]);
-    } catch (MetaException e) {
-      LOG.error("Error loading PartitionExpressionProxy", e);
-      throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
-    }
-  }
+
 
   /**
    * Properties specified in hive-default.xml override the properties specified
@@ -2036,24 +2017,7 @@ public class ObjectStore implements RawStore, Configurable {
       final String defaultPartitionName, final  short maxParts, List<Partition> result,
       boolean allowSql, boolean allowJdo) throws TException {
     assert result != null;
-
-    // We will try pushdown first, so make the filter. This will also validate the expression,
-    // if serialization fails we will throw incompatible metastore error to the client.
-    String filter = null;
-    try {
-      filter = expressionProxy.convertExprToFilter(expr);
-    } catch (MetaException ex) {
-      throw new IMetaStoreClient.IncompatibleMetastoreException(ex.getMessage());
-    }
-
-    // Make a tree out of the filter.
-    // TODO: this is all pretty ugly. The only reason we need all these transformations
-    //       is to maintain support for simple filters for HCat users that query metastore.
-    //       If forcing everyone to use thick client is out of the question, maybe we could
-    //       parse the filter into standard hive expressions and not all this separate tree
-    //       Filter.g stuff. That way this method and ...ByFilter would just be merged.
-    final ExpressionTree exprTree = makeExpressionTree(filter);
-
+    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr);
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
     result.addAll(new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
       @Override
@@ -2093,50 +2057,7 @@ public class ObjectStore implements RawStore, Configurable {
     return hasUnknownPartitions.get();
   }
 
-  private class LikeChecker extends ExpressionTree.TreeVisitor {
-    private boolean hasLike;
 
-    public boolean hasLike() {
-      return hasLike;
-    }
-
-    @Override
-    protected boolean shouldStop() {
-      return hasLike;
-    }
-
-    @Override
-    protected void visit(LeafNode node) throws MetaException {
-      hasLike = hasLike || (node.operator == Operator.LIKE);
-    }
-  }
-
-  /**
-   * Makes expression tree out of expr.
-   * @param filter Filter.
-   * @return Expression tree. Null if there was an error.
-   */
-  private ExpressionTree makeExpressionTree(String filter) throws MetaException {
-    // TODO: ExprNodeDesc is an expression tree, we could just use that and be rid of Filter.g.
-    if (filter == null || filter.isEmpty()) {
-      return ExpressionTree.EMPTY_TREE;
-    }
-    LOG.debug("Filter specified is " + filter);
-    ExpressionTree tree = null;
-    try {
-      tree = getFilterParser(filter).tree;
-    } catch (MetaException ex) {
-      LOG.info("Unable to make the expression tree from expression string ["
-          + filter + "]" + ex.getMessage()); // Don't log the stack, this is normal.
-    }
-    if (tree == null) {
-      return null;
-    }
-    // We suspect that LIKE pushdown into JDO is invalid; see HIVE-5134. Check for like here.
-    LikeChecker lc = new LikeChecker();
-    tree.accept(lc);
-    return lc.hasLike() ? null : tree;
-  }
 
   /**
    * Gets the partition names from a table, pruned using an expression.
@@ -2491,7 +2412,7 @@ public class ObjectStore implements RawStore, Configurable {
       String filter, final short maxParts, boolean allowSql, boolean allowJdo)
       throws MetaException, NoSuchObjectException {
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
-        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
       @Override
@@ -2534,24 +2455,6 @@ public class ObjectStore implements RawStore, Configurable {
     return convertToTable(ensureGetMTable(dbName, tblName));
   }
 
-  private FilterParser getFilterParser(String filter) throws MetaException {
-    FilterLexer lexer = new FilterLexer(new ANTLRNoCaseStringStream(filter));
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-    FilterParser parser = new FilterParser(tokens);
-    try {
-      parser.filter();
-    } catch(RecognitionException re) {
-      throw new MetaException("Error parsing partition filter; lexer error: "
-          + lexer.errorMsg + "; exception " + re);
-    }
-
-    if (lexer.errorMsg != null) {
-      throw new MetaException("Error parsing partition filter : " + lexer.errorMsg);
-    }
-    return parser;
-  }
-
   /**
    * Makes a JDO query filter string.
    * Makes a JDO query filter string for tables or partitions.
@@ -2565,7 +2468,7 @@ public class ObjectStore implements RawStore, Configurable {
   private String makeQueryFilterString(String dbName, MTable mtable, String filter,
       Map<String, Object> params) throws MetaException {
     ExpressionTree tree = (filter != null && !filter.isEmpty())
-        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     return makeQueryFilterString(dbName, convertToTable(mtable), tree, params, true);
   }
 

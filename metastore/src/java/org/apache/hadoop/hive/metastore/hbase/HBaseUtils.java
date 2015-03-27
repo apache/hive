@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1064,4 +1063,20 @@ class HBaseUtils {
     obj.setStatsData(colData);
     return obj;
   }
+
+  /**
+   * @param keyStart byte array representing the start prefix
+   * @return byte array corresponding to the next possible prefix
+   */
+  static byte[] getEndPrefix(byte[] keyStart) {
+    if (keyStart == null) {
+      return null;
+    }
+    // Since this is a prefix and not full key, the usual hbase technique of
+    // appending 0 byte does not work. Instead of that, increment the last byte.
+    byte[] keyEnd = Arrays.copyOf(keyStart, keyStart.length);
+    keyEnd[keyEnd.length - 1]++;
+    return keyEnd;
+  }
+
 }

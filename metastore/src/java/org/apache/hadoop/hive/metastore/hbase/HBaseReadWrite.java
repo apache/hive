@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -106,27 +108,27 @@ class HBaseReadWrite {
   private static boolean tablesCreated = false;
   private static Configuration staticConf = null;
 
-  private Configuration conf;
+  private final Configuration conf;
   private HBaseConnection conn;
   private MessageDigest md;
   private ObjectCache<ObjectPair<String, String>, Table> tableCache;
   private ObjectCache<ByteArrayWrapper, StorageDescriptor> sdCache;
   private PartitionCache partCache;
   private StatsCache statsCache;
-  private Counter tableHits;
-  private Counter tableMisses;
-  private Counter tableOverflows;
-  private Counter partHits;
-  private Counter partMisses;
-  private Counter partOverflows;
-  private Counter sdHits;
-  private Counter sdMisses;
-  private Counter sdOverflows;
-  private List<Counter> counters;
+  private final Counter tableHits;
+  private final Counter tableMisses;
+  private final Counter tableOverflows;
+  private final Counter partHits;
+  private final Counter partMisses;
+  private final Counter partOverflows;
+  private final Counter sdHits;
+  private final Counter sdMisses;
+  private final Counter sdOverflows;
+  private final List<Counter> counters;
   // roleCache doesn't use ObjectCache because I don't want to limit the size.  I am assuming
   // that the number of roles will always be small (< 100) so caching the whole thing should not
   // be painful.
-  private Map<String, HbaseMetastoreProto.RoleGrantInfoList> roleCache;
+  private final Map<String, HbaseMetastoreProto.RoleGrantInfoList> roleCache;
   boolean entireRoleTableInCache;
 
   /**
@@ -310,7 +312,7 @@ class HBaseReadWrite {
       filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
     }
     Iterator<Result> iter =
-        scanWithFilter(DB_TABLE, null, CATALOG_CF, CATALOG_COL, filter);
+        scan(DB_TABLE, CATALOG_CF, CATALOG_COL, filter);
     List<Database> databases = new ArrayList<Database>();
     while (iter.hasNext()) {
       Result result = iter.next();
@@ -376,7 +378,7 @@ class HBaseReadWrite {
       filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
     }
     Iterator<Result> iter =
-        scanWithFilter(FUNC_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
+        scan(FUNC_TABLE, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), CATALOG_CF, CATALOG_COL, filter);
     List<Function> functions = new ArrayList<Function>();
     while (iter.hasNext()) {
       Result result = iter.next();
@@ -584,7 +586,7 @@ class HBaseReadWrite {
           : new ArrayList<Partition>(cached);
     }
     byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-    List<Partition> parts = scanPartitions(keyPrefix, -1);
+    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), -1, null);
     partCache.put(dbName, tableName, parts, true);
     return maxPartitions < parts.size() ? parts.subList(0, maxPartitions) : parts;
   }
@@ -670,10 +672,36 @@ class HBaseReadWrite {
           regex + ">");
     }
 
-    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, maxPartitions, filter);
+    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), maxPartitions, filter);
     partCache.put(dbName, tableName, parts, false);
     return parts;
   }
+
+  List<Partition> scanPartitions(String dbName, String tableName, byte[] keyStart, byte[] keyEnd,
+      Filter filter, int maxPartitions) throws IOException, NoSuchObjectException {
+    List<String> keyElements = new ArrayList<String>();
+    keyElements.add(dbName);
+    keyElements.add(tableName);
+
+    byte[] keyPrefix =
+        HBaseUtils.buildKeyWithTrailingSeparator(keyElements.toArray(new String[keyElements.size()]));
+    byte[] startRow = ArrayUtils.addAll(keyPrefix, keyStart);
+    byte[] endRow;
+    if (keyEnd == null || keyEnd.length == 0) {
+      // stop when current db+table entries are over
+      endRow = HBaseUtils.getEndPrefix(keyPrefix);
+    } else {
+      endRow = ArrayUtils.addAll(keyPrefix, keyEnd);
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Scanning partitions with start row <" + new String(startRow) + "> and end row <"
+          + new String(endRow) + ">");
+    }
+    return scanPartitionsWithFilter(startRow, endRow, maxPartitions, filter);
+  }
+
+
 
   /**
    * Delete a partition
@@ -707,28 +735,23 @@ class HBaseReadWrite {
     return sdParts.containingPartition;
   }
 
-
-  private List<Partition> scanPartitions(byte[] keyPrefix, int maxResults) throws IOException {
-    return scanPartitionsWithFilter(keyPrefix, maxResults, null);
-  }
-
-  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, int maxResults, Filter filter)
+  private List<Partition> scanPartitionsWithFilter(byte[] startRow, byte [] endRow,
+      int maxResults, Filter filter)
       throws IOException {
     Iterator<Result> iter =
-        scanWithFilter(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
+        scan(PART_TABLE, startRow, endRow, CATALOG_CF, CATALOG_COL, filter);
     List<Partition> parts = new ArrayList<Partition>();
     int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       Result result = iter.next();
-      HBaseUtils.StorageDescriptorParts sdParts =
-          HBaseUtils.deserializePartition(result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL));
+      HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializePartition(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL));
       StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
       HBaseUtils.assembleStorageDescriptor(sd, sdParts);
       parts.add(sdParts.containingPartition);
     }
     return parts;
   }
-
 
   /**********************************************************************************************
    * Role related methods
@@ -818,7 +841,7 @@ class HBaseReadWrite {
   Set<String> findAllUsersInRole(String roleName) throws IOException {
     // Walk the userToRole table and collect every user that matches this role.
     Set<String> users = new HashSet<String>();
-    Iterator<Result> iter = scanWithFilter(USER_TO_ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
+    Iterator<Result> iter = scan(USER_TO_ROLE_TABLE, CATALOG_CF, CATALOG_COL);
     while (iter.hasNext()) {
       Result result = iter.next();
       List<String> roleList =
@@ -1066,7 +1089,7 @@ class HBaseReadWrite {
    * @throws IOException
    */
   List<Role> scanRoles() throws IOException {
-    Iterator<Result> iter = scanWithFilter(ROLE_TABLE, null, CATALOG_CF, CATALOG_COL, null);
+    Iterator<Result> iter = scan(ROLE_TABLE, CATALOG_CF, CATALOG_COL);
     List<Role> roles = new ArrayList<Role>();
     while (iter.hasNext()) {
       Result result = iter.next();
@@ -1099,7 +1122,7 @@ class HBaseReadWrite {
 
   private void buildRoleCache() throws IOException {
     if (!entireRoleTableInCache) {
-      Iterator<Result> roles = scanWithFilter(ROLE_TABLE, null, CATALOG_CF, ROLES_COL, null);
+      Iterator<Result> roles = scan(ROLE_TABLE, CATALOG_CF, ROLES_COL);
       while (roles.hasNext()) {
         Result res = roles.next();
         String roleName = new String(res.getRow(), HBaseUtils.ENCODING);
@@ -1196,7 +1219,8 @@ class HBaseReadWrite {
       filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
     }
     Iterator<Result> iter =
-        scanWithFilter(TABLE_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
+        scan(TABLE_TABLE, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix),
+            CATALOG_CF, CATALOG_COL, filter);
     List<Table> tables = new ArrayList<Table>();
     while (iter.hasNext()) {
       Result result = iter.next();
@@ -1661,22 +1685,35 @@ class HBaseReadWrite {
     htab.delete(d);
   }
 
-  private Iterator<Result> scanWithFilter(String table, byte[] keyPrefix, byte[] colFam,
+  private Iterator<Result> scan(String table, byte[] colFam,
+      byte[] colName) throws IOException {
+    return scan(table, null, null, colFam, colName, null);
+  }
+
+  private Iterator<Result> scan(String table, byte[] colFam, byte[] colName,
+      Filter filter) throws IOException {
+    return scan(table, null, null, colFam, colName, filter);
+  }
+
+  private Iterator<Result> scan(String table, byte[] keyStart, byte[] keyEnd, byte[] colFam,
                                           byte[] colName, Filter filter) throws IOException {
     HTableInterface htab = conn.getHBaseTable(table);
-    Scan s;
-    if (keyPrefix == null) {
-      s = new Scan();
-    } else {
-      byte[] stop = Arrays.copyOf(keyPrefix, keyPrefix.length);
-      stop[stop.length - 1]++;
-      s = new Scan(keyPrefix, stop);
+    Scan s = new Scan();
+    if (keyStart != null) {
+      s.setStartRow(keyStart);
+    }
+    if (keyEnd != null) {
+      s.setStopRow(keyEnd);
     }
     s.addColumn(colFam, colName);
-    if (filter != null) s.setFilter(filter);
+    if (filter != null) {
+      s.setFilter(filter);
+    }
     ResultScanner scanner = htab.getScanner(s);
     return scanner.iterator();
   }
+
+
 
   /**********************************************************************************************
    * Testing methods and classes
