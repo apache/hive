@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.tez.common.counters.TaskCounter;
@@ -73,17 +74,17 @@ import jline.TerminalFactory;
 public class TezJobMonitor {
 
   private static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final int MIN_TERMINAL_WIDTH = 80;
+  private static final int MIN_TERMINAL_WIDTH = 89;
   private static final int COLUMN_1_WIDTH = 16;
-  private static final int SEPARATOR_WIDTH = 80;
+  private static final int SEPARATOR_WIDTH = MIN_TERMINAL_WIDTH;
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and separator width accordingly
-  private static final String HEADER_FORMAT = "%16s%12s  %5s  %9s  %7s  %7s  %6s  %6s";
-  private static final String VERTEX_FORMAT = "%-16s%12s  %5s  %9s  %7s  %7s  %6s  %6s";
+  private static final String HEADER_FORMAT = "%16s%11s %9s  %5s  %9s  %7s  %7s  %6s  %6s";
+  private static final String VERTEX_FORMAT = "%-16s%11s %9s  %5s  %9s  %7s  %7s  %6s  %6s";
   private static final String FOOTER_FORMAT = "%-15s  %-30s %-4s  %-25s";
   private static final String HEADER = String.format(HEADER_FORMAT,
-      "VERTICES", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
+      "VERTICES", "EXECUTOR", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
 
   // method and dag summary format
   private static final String SUMMARY_HEADER_FORMAT = "%-16s %-12s %-12s %-12s %-19s %-19s %-15s %-15s %-15s";
@@ -114,6 +115,7 @@ public class TezJobMonitor {
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
   private static final List<DAGClient> shutdownList;
+  private Map<String, BaseWork> workMap;
 
   static {
     shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
@@ -140,7 +142,8 @@ public class TezJobMonitor {
         "Shutdown hook was not properly initialized");
   }
 
-  public TezJobMonitor() {
+  public TezJobMonitor(Map<String, BaseWork> workMap) {
+    this.workMap = workMap;
     console = SessionState.getConsole();
     secondsFormat = new DecimalFormat("#0.00");
     commaFormat = NumberFormat.getNumberInstance(Locale.US);
@@ -672,10 +675,12 @@ public class TezJobMonitor {
         }
       }
 
-      // Map 1 ..........  SUCCEEDED      7          7        0        0       0       0
+      // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
       String nameWithProgress = getNameWithProgress(s, complete, total);
+      String mode = getMode(s, workMap);
       String vertexStr = String.format(VERTEX_FORMAT,
           nameWithProgress,
+          mode,
           vertexState.toString(),
           total,
           complete,
@@ -699,6 +704,21 @@ public class TezJobMonitor {
     String footer = getFooter(keys.size(), completed.size(), progress, startTime);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(separator);
+  }
+
+  private String getMode(String name, Map<String, BaseWork> workMap) {
+    String mode = "container";
+    BaseWork work = workMap.get(name);
+    if (work != null) {
+      if (work.getLlapMode()) {
+        mode = "llap";
+      } else if (work.getUberMode()) {
+        mode = "uber";
+      } else {
+        mode = "container";
+      }
+    }
+    return mode;
   }
 
   // Map 1 ..........
