@@ -47,8 +47,13 @@ public class DiskRangeList extends DiskRange {
     return other;
   }
 
-  /** Inserts an element before current in the list; returns the new element. */
-  public DiskRangeList insertBefore(DiskRangeList other) {
+  /**
+   * Inserts an intersecting range before current in the list and adjusts offset accordingly.
+   * @returns the new element.
+   */
+  public DiskRangeList insertPartBefore(DiskRangeList other) {
+    assert other.end >= this.offset;
+    this.offset = other.end;
     other.prev = this.prev;
     other.next = this;
     if (this.prev != null) {
@@ -58,7 +63,10 @@ public class DiskRangeList extends DiskRange {
     return other;
   }
 
-  /** Inserts an element after current in the list; returns the new element. */
+  /**
+   * Inserts an element after current in the list.
+   * @returns the new element.
+   * */
   public DiskRangeList insertAfter(DiskRangeList other) {
     other.next = this.next;
     other.prev = this;
@@ -67,6 +75,16 @@ public class DiskRangeList extends DiskRange {
     }
     this.next = other;
     return other;
+  }
+
+  /**
+   * Inserts an intersecting range after current in the list and adjusts offset accordingly.
+   * @returns the new element.
+   */
+  public DiskRangeList insertPartAfter(DiskRangeList other) {
+    assert other.offset <= this.end;
+    this.end = other.offset;
+    return insertAfter(other);
   }
 
   /** Removes an element after current from the list. */
@@ -92,8 +110,8 @@ public class DiskRangeList extends DiskRange {
 
   /** Splits current element in the list, using DiskRange::slice */
   public DiskRangeList split(long cOffset) {
-    insertAfter((DiskRangeList)this.slice(cOffset, end));
-    return replaceSelfWith((DiskRangeList)this.slice(offset, cOffset));
+    insertAfter((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
+    return replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
   }
 
   public boolean hasContiguousNext() {
@@ -149,29 +167,19 @@ public class DiskRangeList extends DiskRange {
     }
 
     public void addOrMerge(long offset, long end, boolean doMerge, boolean doLogNew) {
-      if (doMerge && tail != null && overlap(tail.offset, tail.end, offset, end)) {
-        tail.offset = Math.min(tail.offset, offset);
-        tail.end = Math.max(tail.end, end);
+      if (doMerge && tail != null && tail.merge(offset, end)) return;
+      if (doLogNew) {
+        LOG.info("Creating new range; last range (which can include some previous adds) was "
+            + tail);
+      }
+      DiskRangeList node = new DiskRangeList(offset, end);
+      if (tail == null) {
+        head = tail = node;
       } else {
-        if (doLogNew) {
-          LOG.info("Creating new range; last range (which can include some previous adds) was "
-              + tail);
-        }
-        DiskRangeList node = new DiskRangeList(offset, end);
-        if (tail == null) {
-          head = tail = node;
-        } else {
-          tail = tail.insertAfter(node);
-        }
+        tail = tail.insertAfter(node);
       }
     }
 
-    private static boolean overlap(long leftA, long rightA, long leftB, long rightB) {
-      if (leftA <= leftB) {
-        return rightA >= leftB;
-      }
-      return rightB >= leftA;
-    }
 
     public DiskRangeList get() {
       return head;

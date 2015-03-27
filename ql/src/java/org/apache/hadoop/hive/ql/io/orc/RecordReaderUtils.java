@@ -245,8 +245,8 @@ public class RecordReaderUtils {
         range = range.next;
         continue;
       }
-      int len = (int) (range.end - range.offset);
-      long off = range.offset;
+      int len = (int) (range.getEnd() - range.getOffset());
+      long off = range.getOffset();
       file.seek(base + off);
       if (zcr != null) {
         boolean hasReplaced = false;
@@ -267,11 +267,11 @@ public class RecordReaderUtils {
       } else if (doForceDirect) {
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
         readDirect(file, len, directBuf, true);
-        range = range.replaceSelfWith(new BufferChunk(directBuf, range.offset));
+        range = range.replaceSelfWith(new BufferChunk(directBuf, range.getOffset()));
       } else {
         byte[] buffer = new byte[len];
         file.readFully(buffer, 0, buffer.length);
-        range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
+        range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.getOffset()));
       }
       range = range.next;
     }
@@ -320,37 +320,31 @@ public class RecordReaderUtils {
     boolean inRange = false;
     while (range != null) {
       if (!inRange) {
-        if (range.end <= offset) {
+        if (range.getEnd() <= offset) {
           range = range.next;
           continue; // Skip until we are in range.
         }
         inRange = true;
-        if (range.offset < offset) {
+        if (range.getOffset() < offset) {
           // Partial first buffer, add a slice of it.
-          DiskRange partial = range.slice(offset, Math.min(streamEnd, range.end));
-          partial.shiftBy(-offset);
-          buffers.add(partial);
-          if (range.end >= streamEnd) break; // Partial first buffer is also partial last buffer.
+          buffers.add(range.sliceAndShift(offset, Math.min(streamEnd, range.getEnd()), -offset));
+          if (range.getEnd() >= streamEnd) break; // Partial first buffer is also partial last buffer.
           range = range.next;
           continue;
         }
-      } else if (range.offset >= streamEnd) {
+      } else if (range.getOffset() >= streamEnd) {
         break;
       }
-      if (range.end > streamEnd) {
+      if (range.getEnd() > streamEnd) {
         // Partial last buffer (may also be the first buffer), add a slice of it.
-        DiskRange partial = range.slice(range.offset, streamEnd);
-        partial.shiftBy(-offset);
-        buffers.add(partial);
+        buffers.add(range.sliceAndShift(range.getOffset(), streamEnd, -offset));
         break;
       }
       // Buffer that belongs entirely to one stream.
       // TODO: ideally we would want to reuse the object and remove it from the list, but we cannot
       //       because bufferChunks is also used by clearStreams for zcr. Create a useless dup.
-      DiskRange full = range.slice(range.offset, range.end);
-      full.shiftBy(-offset);
-      buffers.add(full);
-      if (range.end == streamEnd) break;
+      buffers.add(range.sliceAndShift(range.getOffset(), range.getEnd(), -offset));
+      if (range.getEnd() == streamEnd) break;
       range = range.next;
     }
     return buffers;

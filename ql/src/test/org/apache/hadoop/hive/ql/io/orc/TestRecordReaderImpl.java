@@ -801,28 +801,6 @@ public class TestRecordReaderImpl {
   }
 
   @Test
-  public void testMergeDiskRanges() throws Exception {
-    DiskRangeList list = diskRanges(100, 200, 300, 400, 500, 600);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 200, 300, 400, 500, 600)));
-    list = diskRanges(100, 200, 150, 300, 400, 500);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 300, 400, 500)));
-    list = diskRanges(100, 200, 300, 400, 400, 500);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(100, 200, 300, 500)));
-    list = diskRanges(100, 200, 0, 300);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 300)));
-    list = diskRanges(0, 500, 200, 400);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 500)));
-    list = diskRanges(0, 100, 100, 200, 200, 300, 300, 400);
-    RecordReaderImpl.mergeDiskRanges(list);
-    assertThat(list, is(diskRanges(0, 400)));
-  }
-
-  @Test
   public void testGetIndexPosition() throws Exception {
     assertEquals(0, RecordReaderUtils.getIndexPosition
         (OrcProto.ColumnEncoding.Kind.DIRECT, OrcProto.Type.Kind.INT,

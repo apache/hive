@@ -24,9 +24,9 @@ import java.nio.ByteBuffer;
  */
 public class DiskRange {
   /** The first address. */
-  public long offset;
+  protected long offset;
   /** The address afterwards. */
-  public long end;
+  protected long end;
 
   public DiskRange(long offset, long end) {
     this.offset = offset;
@@ -50,6 +50,14 @@ public class DiskRange {
     return "range start: " + offset + " end: " + end;
   }
 
+  public long getOffset() {
+    return offset;
+  }
+
+  public long getEnd() {
+    return end;
+  }
+
   public int getLength() {
     long len = this.end - this.offset;
     assert len <= Integer.MAX_VALUE;
@@ -61,7 +69,7 @@ public class DiskRange {
     return false;
   }
 
-  public DiskRange slice(long offset, long end) {
+  public DiskRange sliceAndShift(long offset, long end, long shiftBy) {
     // Rather, unexpected usage exception.
     throw new UnsupportedOperationException();
   }
@@ -70,8 +78,17 @@ public class DiskRange {
     throw new UnsupportedOperationException();
   }
 
-  public void shiftBy(long offsetDelta) {
-    offset += offsetDelta;
-    end += offsetDelta;
+  protected boolean merge(long otherOffset, long otherEnd) {
+    if (!overlap(offset, end, otherOffset, otherEnd)) return false;
+    offset = Math.min(offset, otherOffset);
+    end = Math.max(end, otherEnd);
+    return true;
+  }
+
+  private static boolean overlap(long leftA, long rightA, long leftB, long rightB) {
+    if (leftA <= leftB) {
+      return rightA >= leftB;
+    }
+    return rightB >= leftA;
   }
 }

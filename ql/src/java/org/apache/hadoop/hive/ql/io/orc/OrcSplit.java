@@ -145,7 +145,6 @@ public class OrcSplit extends FileSplit {
     if (hasFileId) {
       fileId = in.readLong();
     }
-    LOG.error("TODO# Got file ID " + fileId + " for " + getPath());
   }
 
   FileMetaInfo getFileMetaInfo(){

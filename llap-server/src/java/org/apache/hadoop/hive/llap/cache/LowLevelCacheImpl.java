@@ -107,7 +107,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
       ConcurrentSkipListMap<Long, LlapDataBuffer> cache) {
-    long absOffset = currentNotCached.offset + baseOffset;
+    long absOffset = currentNotCached.getOffset() + baseOffset;
     if (!doAssumeGranularBlocks) {
       // This currently only happens in tests. See getFileData comment on the interface.
       Long prevOffset = cache.floorKey(absOffset);
@@ -116,7 +116,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       }
     }
     Iterator<Map.Entry<Long, LlapDataBuffer>> matches = cache.subMap(
-        absOffset, currentNotCached.end + baseOffset)
+        absOffset, currentNotCached.getEnd() + baseOffset)
         .entrySet().iterator();
     long cacheEnd = -1;
     while (matches.hasNext()) {
@@ -140,48 +140,42 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
             + cacheOffset + ", " + (cacheOffset + buffer.declaredLength) + ")");
       }
       cacheEnd = cacheOffset + buffer.declaredLength;
-      CacheChunk currentCached = new CacheChunk(buffer, cacheOffset, cacheEnd);
-      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, baseOffset);
-      // Now that we've added it into correct position, we can adjust it by base offset.
-      currentCached.shiftBy(-baseOffset);
+      CacheChunk currentCached = new CacheChunk(buffer,
+          cacheOffset - baseOffset, cacheEnd - baseOffset);
+      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached);
       metrics.incrCacheHitBytes(Math.min(requestedLength, currentCached.getLength()));
     }
   }
 
   /**
    * Adds cached buffer to buffer list.
-   * @param currentNotCached Pointer to the list node where we are inserting. Expressed in stripe/stream offset.
-   * @param currentCached The cached buffer found for this node, to insert. Expressed in file offset.
-   * @param baseOffset 
+   * @param currentNotCached Pointer to the list node where we are inserting.
+   * @param currentCached The cached buffer found for this node, to insert.
    * @return The new currentNotCached pointer, following the cached buffer insertion.
    */
   private DiskRangeList addCachedBufferToIter(
-      DiskRangeList currentNotCached, CacheChunk currentCached, long baseOffset) {
-    // Both currentNotCached and currentCached already include baseOffset.
-    long startOffset = baseOffset + currentNotCached.offset,
-        endOffset = baseOffset + currentNotCached.end;
-    if (startOffset >= currentCached.offset) {
-      if (endOffset <= currentCached.end) {  // we assume it's always "==" now
+      DiskRangeList currentNotCached, CacheChunk currentCached) {
+    if (currentNotCached.getOffset() >= currentCached.getOffset()) {
+      if (currentNotCached.getEnd() <= currentCached.getEnd()) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
         currentNotCached.replaceSelfWith(currentCached);
         return null;
       } else {
         // Insert the new cache range before the disk range.
-        currentNotCached.offset = currentCached.end - baseOffset;
-        currentNotCached.insertBefore(currentCached);
+        currentNotCached.insertPartBefore(currentCached);
         return currentNotCached;
       }
     } else {
-      assert startOffset < currentCached.offset
-        || currentNotCached.prev == null || currentNotCached.prev.end <= currentCached.offset;
-      currentNotCached.end = currentCached.offset - baseOffset;
-      currentNotCached.insertAfter(currentCached);
-      if (endOffset <= currentCached.end) { // we assume it's always "==" now
+      assert currentNotCached.getOffset() < currentCached.getOffset()
+        || currentNotCached.prev == null
+        || currentNotCached.prev.getEnd() <= currentCached.getOffset();
+      long endOffset = currentNotCached.getEnd();
+      currentNotCached.insertPartAfter(currentCached);
+      if (endOffset <= currentCached.getEnd()) { // we assume it's always "==" now
         return null;  // No more matches expected...
       } else {
         // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRangeList(
-            currentCached.end - baseOffset, endOffset - baseOffset);
+        currentNotCached = new DiskRangeList(currentCached.getEnd(), endOffset);
         currentCached.insertAfter(currentNotCached);
         return currentNotCached;
       }
@@ -214,7 +208,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         }
         boolean canLock = lockBuffer(buffer, false);
         assert canLock;
-        long offset = ranges[i].offset + baseOffset;
+        long offset = ranges[i].getOffset() + baseOffset;
         buffer.declaredLength = ranges[i].getLength();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);

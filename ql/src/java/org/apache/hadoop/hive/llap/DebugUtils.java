@@ -32,7 +32,7 @@ public class DebugUtils {
 
   private final static boolean isTraceOrcEnabled = EncodedReaderImpl.LOG.isDebugEnabled();
   public static boolean isTraceOrcEnabled() {
-    return isTraceOrcEnabled; // TODO: temporary, should be hardcoded false
+    return true; // TODO: temporary, should be hardcoded false
   }
 
   public static boolean isTraceLockingEnabled() {

@@ -2974,12 +2974,9 @@ public class RecordReaderImpl implements RecordReader {
     }
     if (bufferChunks != null) {
       if (zcr != null) {
-        DiskRangeList range = bufferChunks;
-        while (range != null) {
-          if (range instanceof BufferChunk) {
-            zcr.releaseBuffer(((BufferChunk)range).chunk);
-          }
-          range = range.next;
+        for (DiskRangeList range = bufferChunks; range != null; range = range.next) {
+          if (!(range instanceof BufferChunk)) continue;
+          zcr.releaseBuffer(((BufferChunk)range).chunk);
         }
       }
       bufferChunks = null;
@@ -3077,22 +3074,23 @@ public class RecordReaderImpl implements RecordReader {
     }
 
     @Override
-    public DiskRange slice(long offset, long end) {
+    public DiskRange sliceAndShift(long offset, long end, long shiftBy) {
       assert offset <= end && offset >= this.offset && end <= this.end;
+      assert offset + shiftBy >= 0;
       ByteBuffer sliceBuf = chunk.slice();
       int newPos = (int)(offset - this.offset);
       int newLimit = newPos + (int)(end - offset);
-      // TODO: temporary
       try {
         sliceBuf.position(newPos);
         sliceBuf.limit(newLimit);
       } catch (Throwable t) {
         LOG.error("Failed to slice buffer chunk with range" + " [" + this.offset + ", " + this.end
             + "), position: " + chunk.position() + " limit: " + chunk.limit() + ", "
-            + (chunk.isDirect() ? "direct" : "array") + "; to [" + offset + ", " + end + ") " + t.getClass());
+            + (chunk.isDirect() ? "direct" : "array") + "; to [" + offset + ", " + end + ") "
+            + t.getClass());
         throw new RuntimeException(t);
       }
-      return new BufferChunk(sliceBuf, offset);
+      return new BufferChunk(sliceBuf, offset + shiftBy);
     }
 
     @Override
@@ -3176,24 +3174,6 @@ public class RecordReaderImpl implements RecordReader {
     return list.extract();
   }
 
-  /**
-   * Update the disk ranges to collapse adjacent or overlapping ranges. It
-   * assumes that the ranges are sorted.
-   * @param ranges the list of disk ranges to merge
-   */
-  static void mergeDiskRanges(DiskRangeList range) {
-    while (range != null && range.next != null) {
-      DiskRangeList next = range.next;
-      if (RecordReaderUtils.overlap(range.offset, range.end, next.offset, next.end)) {
-        range.offset = Math.min(range.offset, next.offset);
-        range.end = Math.max(range.end, next.end);
-        range.removeAfter();
-      } else {
-        range = next;
-      }
-    }
-  }
-
   void createStreams(List<OrcProto.Stream> streamDescriptions,
                             DiskRangeList ranges,
                             boolean[] includeColumn,
@@ -3233,7 +3213,6 @@ public class RecordReaderImpl implements RecordReader {
     if (LOG.isDebugEnabled()) {
       LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
-    mergeDiskRanges(toRead);
     if (this.cache != null) {
       toRead = cache.getFileData(fileId, toRead, stripe.getOffset());
     }
