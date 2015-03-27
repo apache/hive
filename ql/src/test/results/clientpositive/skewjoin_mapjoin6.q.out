@@ -117,9 +117,8 @@ STAGE PLANS:
                     Lateral View Forward
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        SELECT * : (no compute)
                         expressions: _col0 (type: string), _col1 (type: array<string>)
-                        outputColumnNames: org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc, org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col2
@@ -171,9 +170,8 @@ STAGE PLANS:
                     Lateral View Forward
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        SELECT * : (no compute)
                         expressions: _col0 (type: string), _col1 (type: array<string>)
-                        outputColumnNames: org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc, org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col2
