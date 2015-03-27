@@ -649,7 +649,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((key * CAST( value AS decimal(10,0))) > CAST( 0 AS decimal(31,10))) (type: boolean)
+            predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
             Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
@@ -907,7 +907,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key / CAST( 0 AS decimal(10,0))) (type: decimal(22,12))
+            expressions: (key / 0) (type: decimal(22,12))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -973,7 +973,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (key <> CAST( 0 AS decimal(20,10))) (type: boolean)
+            predicate: (key <> 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / key) (type: decimal(38,24))
@@ -1808,7 +1808,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: ((key + CAST( 1 AS decimal(10,0))) % (key / CAST( 2 AS decimal(10,0)))) (type: decimal(22,12))
+            expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
