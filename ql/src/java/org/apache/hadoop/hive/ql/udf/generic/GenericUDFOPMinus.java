@@ -31,7 +31,38 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
   LongScalarSubtractLongColumn.class, LongScalarSubtractDoubleColumn.class,
   DoubleScalarSubtractLongColumn.class, DoubleScalarSubtractDoubleColumn.class,
   DecimalColSubtractDecimalColumn.class, DecimalColSubtractDecimalScalar.class,
-  DecimalScalarSubtractDecimalColumn.class})
+  DecimalScalarSubtractDecimalColumn.class,
+  IntervalYearMonthColSubtractIntervalYearMonthColumn.class,
+  IntervalYearMonthColSubtractIntervalYearMonthScalar.class,
+  IntervalYearMonthScalarSubtractIntervalYearMonthColumn.class,
+  IntervalDayTimeColSubtractIntervalDayTimeColumn.class,
+  IntervalDayTimeColSubtractIntervalDayTimeScalar.class,
+  IntervalDayTimeScalarSubtractIntervalDayTimeColumn.class,
+  TimestampColSubtractIntervalDayTimeColumn.class,
+  TimestampColSubtractIntervalDayTimeScalar.class,
+  TimestampScalarSubtractIntervalDayTimeColumn.class,
+  TimestampColSubtractTimestampColumn.class,
+  TimestampColSubtractTimestampScalar.class,
+  TimestampScalarSubtractTimestampColumn.class,
+  DateColSubtractDateColumn.class,
+  DateColSubtractDateScalar.class,
+  DateScalarSubtractDateColumn.class,
+  DateColSubtractTimestampColumn.class,
+  DateColSubtractTimestampScalar.class,
+  DateScalarSubtractTimestampColumn.class,
+  TimestampColSubtractDateColumn.class,
+  TimestampColSubtractDateScalar.class,
+  TimestampScalarSubtractDateColumn.class,
+  DateColSubtractIntervalDayTimeColumn.class,
+  DateColSubtractIntervalDayTimeScalar.class,
+  DateScalarSubtractIntervalDayTimeColumn.class,
+  DateColSubtractIntervalYearMonthColumn.class,
+  DateScalarSubtractIntervalYearMonthColumn.class,
+  DateColSubtractIntervalYearMonthScalar.class,
+  TimestampColSubtractIntervalYearMonthColumn.class,
+  TimestampScalarSubtractIntervalYearMonthColumn.class,
+  TimestampColSubtractIntervalYearMonthScalar.class,
+})
 public class GenericUDFOPMinus extends GenericUDFBaseArithmetic {
 
   public GenericUDFOPMinus() {
@@ -46,7 +77,6 @@ public class GenericUDFOPMinus extends GenericUDFBaseArithmetic {
 
   @Override
   protected GenericUDF instantiateDTIUDF() {
-    // TODO: implement date-time/interval version of UDF
-    return new GenericUDFOPNumericMinus();
+    return new GenericUDFOPDTIMinus();
   }
 }

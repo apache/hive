@@ -10,7 +10,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -55,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -88,6 +89,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     //"org.apache.hadoop.hive.ql.io.HiveInputFormat"
 
     TxnDbUtil.setConfValues(hiveConf);
@@ -278,6 +280,124 @@ public class TestCompactor {
       colAStatsPart2, colStats.get(0).getStatsData().getLongStats());
     Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
       colBStatsPart2, colStats.get(1).getStatsData().getStringStats());
+  }
+
+  @Test
+  public void dynamicPartitioningInsert() throws Exception {
+    String tblName = "dpct";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(ds string)" +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
+        "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    Initiator initiator = new Initiator();
+    initiator.setThreadId((int)initiator.getId());
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    initiator.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean();
+    stop.set(true);
+    initiator.init(stop, new AtomicBoolean());
+    initiator.run();
+
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(2, compacts.size());
+    SortedSet<String> partNames = new TreeSet<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals("default", compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    List<String> names = new ArrayList<String>(partNames);
+    Assert.assertEquals("ds=today", names.get(0));
+    Assert.assertEquals("ds=yesterday", names.get(1));
+  }
+
+  @Test
+  public void dynamicPartitioningUpdate() throws Exception {
+    String tblName = "udpct";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(ds string)" +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
+        "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    executeStatementOnDriver("update " + tblName + " set b = 'barney'", driver);
+
+    Initiator initiator = new Initiator();
+    initiator.setThreadId((int)initiator.getId());
+    // Set to 1 so insert doesn't set it off but update does
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
+    initiator.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean();
+    stop.set(true);
+    initiator.init(stop, new AtomicBoolean());
+    initiator.run();
+
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(2, compacts.size());
+    SortedSet<String> partNames = new TreeSet<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals("default", compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    List<String> names = new ArrayList<String>(partNames);
+    Assert.assertEquals("ds=today", names.get(0));
+    Assert.assertEquals("ds=yesterday", names.get(1));
+  }
+
+  @Test
+  public void dynamicPartitioningDelete() throws Exception {
+    String tblName = "ddpct";
+    List<String> colNames = Arrays.asList("a", "b");
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " PARTITIONED BY(ds string)" +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
+        "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    executeStatementOnDriver("update " + tblName + " set a = 3", driver);
+
+    executeStatementOnDriver("delete from " + tblName + " where b = 'fred'", driver);
+
+    Initiator initiator = new Initiator();
+    initiator.setThreadId((int)initiator.getId());
+    // Set to 2 so insert and update don't set it off but delete does
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    initiator.setHiveConf(conf);
+    AtomicBoolean stop = new AtomicBoolean();
+    stop.set(true);
+    initiator.init(stop, new AtomicBoolean());
+    initiator.run();
+
+    CompactionTxnHandler txnHandler = new CompactionTxnHandler(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    SortedSet<String> partNames = new TreeSet<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals("default", compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    List<String> names = new ArrayList<String>(partNames);
+    Assert.assertEquals("ds=today", names.get(0));
   }
 
   @Test

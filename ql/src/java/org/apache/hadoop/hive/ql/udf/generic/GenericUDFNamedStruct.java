@@ -19,16 +19,15 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 @Description(name = "named_struct",
@@ -51,12 +50,12 @@ public class GenericUDFNamedStruct extends GenericUDF {
     ArrayList<String> fname = new ArrayList<String>(numFields / 2);
     ArrayList<ObjectInspector> retOIs = new ArrayList<ObjectInspector>(numFields / 2);
     for (int f = 0; f < numFields; f+=2) {
-      if (!(arguments[f] instanceof WritableConstantStringObjectInspector)) {
+      if (!(arguments[f] instanceof ConstantObjectInspector)) {
         throw new UDFArgumentTypeException(f, "Even arguments" +
             " to NAMED_STRUCT must be a constant STRING." + arguments[f].toString());
       }
-      WritableConstantStringObjectInspector constantOI =
-        (WritableConstantStringObjectInspector)arguments[f];
+      ConstantObjectInspector constantOI =
+        (ConstantObjectInspector)arguments[f];
       fname.add(constantOI.getWritableConstantValue().toString());
       retOIs.add(arguments[f + 1]);
     }

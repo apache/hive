@@ -99,17 +99,22 @@ public abstract class CompactorTest {
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
-    return newTable(dbName, tableName, partitioned, new HashMap<String, String>(), null);
+    return newTable(dbName, tableName, partitioned, new HashMap<String, String>(), null, false);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
                            Map<String, String> parameters)  throws TException {
-    return newTable(dbName, tableName, partitioned, parameters, null);
+    return newTable(dbName, tableName, partitioned, parameters, null, false);
 
   }
 
+  protected Table newTempTable(String tableName) throws TException {
+    return newTable("default", tableName, false, null, null, true);
+  }
+
   protected Table newTable(String dbName, String tableName, boolean partitioned,
-                           Map<String, String> parameters, List<Order> sortCols)
+                           Map<String, String> parameters, List<Order> sortCols,
+                           boolean  isTemporary)
       throws  TException {
     Table table = new Table();
     table.setTableName(tableName);
@@ -123,6 +128,7 @@ public abstract class CompactorTest {
     }
 
     table.setParameters(parameters);
+    if (isTemporary) table.setTemporary(true);
 
     // drop the table first, in case some previous test created it
     ms.dropTable(dbName, tableName);

@@ -102,7 +102,7 @@
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.0.0-incubating</calcite.version>
+    <calcite.version>1.1.0-incubating</calcite.version>
     <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.10</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
@@ -174,49 +174,7 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
-    <repository>
-      <id>datanucleus</id>
-      <name>datanucleus maven repository</name>
-      <url>http://www.datanucleus.org/downloads/maven2</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>glassfish-repository</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>glassfish-repo-archive</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-     </repository>
-     <repository>
-       <id>sonatype-snapshot</id>
-       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-       <releases>
-         <enabled>false</enabled>
-       </releases>
-       <snapshots>
-         <enabled>false</enabled>
-       </snapshots>
-    </repository>
+
   </repositories>
 
   <!-- Hadoop dependency management is done at the bottom under profiles -->

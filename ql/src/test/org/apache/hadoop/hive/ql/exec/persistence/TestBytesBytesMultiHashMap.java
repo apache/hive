@@ -49,10 +49,10 @@ public class TestBytesBytesMultiHashMap {
   public void testPutGetOne() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(0, 0);
-    map.put(kv);
+    map.put(kv, -1);
     verifyResults(map, kv.getLastKey(), kv.getLastValue());
     kv = new RandomKvSource(10, 100);
-    map.put(kv);
+    map.put(kv, -1);
     verifyResults(map, kv.getLastKey(), kv.getLastValue());
   }
 
@@ -60,12 +60,12 @@ public class TestBytesBytesMultiHashMap {
   public void testPutGetMultiple() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(0, 100);
-    map.put(kv);
+    map.put(kv, -1);
     verifyResults(map, kv.getLastKey(), kv.getLastValue());
     FixedKeyKvSource kv2 = new FixedKeyKvSource(kv.getLastKey(), 0, 100);
     kv2.values.add(kv.getLastValue());
     for (int i = 0; i < 3; ++i) {
-      map.put(kv2);
+      map.put(kv2, -1);
       verifyResults(map, kv2.key, kv2.values.toArray(new byte[kv2.values.size()][]));
     }
   }
@@ -74,11 +74,11 @@ public class TestBytesBytesMultiHashMap {
   public void testGetNonExistent() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(1, 100);
-    map.put(kv);
+    map.put(kv, -1);
     byte[] key = kv.getLastKey();
     key[0] = (byte)(key[0] + 1);
     FixedKeyKvSource kv2 = new FixedKeyKvSource(kv.getLastKey(), 0, 100);
-    map.put(kv2);
+    map.put(kv2, -1);
     key[0] = (byte)(key[0] + 1);
     List<WriteBuffers.ByteSegmentRef> results = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
     map.getValueRefs(key, key.length, results);
@@ -93,7 +93,7 @@ public class TestBytesBytesMultiHashMap {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, 1f, WB_SIZE);
     UniqueKeysKvSource kv = new UniqueKeysKvSource();
     for (int i = 0; i < CAPACITY; ++i) {
-      map.put(kv);
+      map.put(kv, -1);
     }
     for (int i = 0; i < kv.keys.size(); ++i) {
       verifyResults(map, kv.keys.get(i), kv.values.get(i));
@@ -111,7 +111,7 @@ public class TestBytesBytesMultiHashMap {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(1, 0.0000001f, WB_SIZE);
     UniqueKeysKvSource kv = new UniqueKeysKvSource();
     for (int i = 0; i < 18; ++i) {
-      map.put(kv);
+      map.put(kv, -1);
       for (int j = 0; j <= i; ++j) {
         verifyResults(map, kv.keys.get(j), kv.values.get(j));
       }
@@ -165,7 +165,7 @@ public class TestBytesBytesMultiHashMap {
 
     @Override
     public void writeKey(RandomAccessOutput dest) throws SerDeException {
-      lastKey += 465623573; // This number is certified to be random.
+      lastKey += 465623573;
       int len = LazyBinaryUtils.writeVLongToByteArray(buffer, lastKey);
       lastBuffer = Arrays.copyOf(buffer, len);
       keys.add(lastBuffer);

@@ -56,7 +56,13 @@ import org.apache.hadoop.io.Text;
     TimestampColLessLongScalar.class, LongScalarLessTimestampColumn.class,
     FilterTimestampColLessLongScalar.class, FilterLongScalarLessTimestampColumn.class,
     TimestampColLessDoubleScalar.class, DoubleScalarLessTimestampColumn.class,
-    FilterTimestampColLessDoubleScalar.class, FilterDoubleScalarLessTimestampColumn.class
+    FilterTimestampColLessDoubleScalar.class, FilterDoubleScalarLessTimestampColumn.class,
+    IntervalYearMonthScalarLessIntervalYearMonthColumn.class, FilterIntervalYearMonthScalarLessIntervalYearMonthColumn.class,
+    IntervalYearMonthColLessIntervalYearMonthScalar.class, FilterIntervalYearMonthColLessIntervalYearMonthScalar.class,
+    IntervalDayTimeScalarLessIntervalDayTimeColumn.class, FilterIntervalDayTimeScalarLessIntervalDayTimeColumn.class,
+    IntervalDayTimeColLessIntervalDayTimeScalar.class, FilterIntervalDayTimeColLessIntervalDayTimeScalar.class,
+    DateColLessDateScalar.class,FilterDateColLessDateScalar.class,
+    DateScalarLessDateColumn.class,FilterDateScalarLessDateColumn.class,
     })
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){

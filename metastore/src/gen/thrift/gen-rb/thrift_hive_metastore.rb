@@ -2013,6 +2013,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
     end
 
+    def add_dynamic_partitions(rqst)
+      send_add_dynamic_partitions(rqst)
+      recv_add_dynamic_partitions()
+    end
+
+    def send_add_dynamic_partitions(rqst)
+      send_message('add_dynamic_partitions', Add_dynamic_partitions_args, :rqst => rqst)
+    end
+
+    def recv_add_dynamic_partitions()
+      result = receive_message(Add_dynamic_partitions_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def get_next_notification(rqst)
       send_get_next_notification(rqst)
       return recv_get_next_notification()
@@ -3602,6 +3618,19 @@ module ThriftHiveMetastore
       result = Show_compact_result.new()
       result.success = @handler.show_compact(args.rqst)
       write_result(result, oprot, 'show_compact', seqid)
+    end
+
+    def process_add_dynamic_partitions(seqid, iprot, oprot)
+      args = read_args(iprot, Add_dynamic_partitions_args)
+      result = Add_dynamic_partitions_result.new()
+      begin
+        @handler.add_dynamic_partitions(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::TxnAbortedException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_dynamic_partitions', seqid)
     end
 
     def process_get_next_notification(seqid, iprot, oprot)
@@ -8187,6 +8216,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowCompactResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_dynamic_partitions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AddDynamicPartitions}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_dynamic_partitions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
     }
 
     def struct_fields; FIELDS; end

@@ -134,11 +134,15 @@ public class DateWritable implements WritableComparable<DateWritable> {
     return millisUtc - LOCAL_TIMEZONE.get().getOffset(tmp);
   }
 
+  public static int millisToDays(long millisLocal) {
+    long millisUtc = millisLocal + LOCAL_TIMEZONE.get().getOffset(millisLocal);
+    return (int)(millisUtc / MILLIS_PER_DAY);
+  }
+
   public static int dateToDays(Date d) {
     // convert to equivalent time in UTC, then get day offset
     long millisLocal = d.getTime();
-    long millisUtc = millisLocal + LOCAL_TIMEZONE.get().getOffset(millisLocal);
-    return (int)(millisUtc / MILLIS_PER_DAY);
+    return millisToDays(millisLocal);
   }
 
   public void setFromBytes(byte[] bytes, int offset, int length, VInt vInt) {

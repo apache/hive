@@ -38,6 +38,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -113,6 +115,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * Context class for vectorization execution.
@@ -253,6 +256,8 @@ public class VectorizationContext {
     castExpressionUdfs.add(GenericUDFToChar.class);
     castExpressionUdfs.add(GenericUDFToVarchar.class);
     castExpressionUdfs.add(GenericUDFTimestamp.class);
+    castExpressionUdfs.add(GenericUDFToIntervalYearMonth.class);
+    castExpressionUdfs.add(GenericUDFToIntervalDayTime.class);
     castExpressionUdfs.add(UDFToByte.class);
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
@@ -658,6 +663,12 @@ public class VectorizationContext {
       case TIMESTAMP:
         genericUdf = new GenericUDFToUnixTimeStamp();
         break;
+      case INTERVAL_YEAR_MONTH:
+        genericUdf = new GenericUDFToIntervalYearMonth();
+        break;
+      case INTERVAL_DAY_TIME:
+        genericUdf = new GenericUDFToIntervalDayTime();
+        break;
       case BINARY:
         genericUdf = new GenericUDFToBinary();
         break;
@@ -871,8 +882,16 @@ public class VectorizationContext {
     switch (vectorArgType) {
     case INT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).longValue());
+    case DATE:
+      return new ConstantVectorExpression(outCol, DateWritable.dateToDays((Date) constantValue));
     case TIMESTAMP:
       return new ConstantVectorExpression(outCol, TimestampUtils.getTimeNanoSec((Timestamp) constantValue));
+    case INTERVAL_YEAR_MONTH:
+      return new ConstantVectorExpression(outCol,
+          ((HiveIntervalYearMonth) constantValue).getTotalMonths());
+    case INTERVAL_DAY_TIME:
+      return new ConstantVectorExpression(outCol,
+          DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) constantValue));
     case FLOAT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).doubleValue());
     case DECIMAL:
@@ -1773,6 +1792,14 @@ public class VectorizationContext {
     return resultType.equalsIgnoreCase("date");
   }
 
+  public static boolean isIntervalYearMonthFamily(String resultType) {
+    return resultType.equalsIgnoreCase("interval_year_month");
+  }
+
+  public static boolean isIntervalDayTimeFamily(String resultType) {
+    return resultType.equalsIgnoreCase("interval_day_time");
+  }
+
   // return true if this is any kind of float
   public static boolean isFloatFamily(String resultType) {
     return resultType.equalsIgnoreCase("double")
@@ -1843,12 +1870,19 @@ public class VectorizationContext {
 
   private Object getVectorTypeScalarValue(ExprNodeConstantDesc constDesc) throws HiveException {
     String t = constDesc.getTypeInfo().getTypeName();
-    if (isTimestampFamily(t)) {
-      return TimestampUtils.getTimeNanoSec((Timestamp) getScalarValue(constDesc));
-    } else if (isDateFamily(t)) {
-      return DateWritable.dateToDays((Date) getScalarValue(constDesc));
-    } else {
-      return getScalarValue(constDesc);
+    VectorExpression.Type type = VectorExpression.Type.getValue(t);
+    Object scalarValue = getScalarValue(constDesc);
+    switch (type) {
+      case TIMESTAMP:
+        return TimestampUtils.getTimeNanoSec((Timestamp) scalarValue);
+      case DATE:
+        return DateWritable.dateToDays((Date) scalarValue);
+      case INTERVAL_YEAR_MONTH:
+        return ((HiveIntervalYearMonth) scalarValue).getTotalMonths();
+      case INTERVAL_DAY_TIME:
+        return DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) scalarValue);
+      default:
+        return scalarValue;
     }
   }
 
@@ -1935,6 +1969,9 @@ public class VectorizationContext {
       return "Date";
     case TIMESTAMP:
       return "Timestamp";
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return hiveTypeName;
     default:
       return "None";
     }
@@ -1959,6 +1996,9 @@ public class VectorizationContext {
       return "Date";
     case TIMESTAMP:
       return "Timestamp";
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return hiveTypeName;
     default:
       return "None";
     }
@@ -1969,16 +2009,16 @@ public class VectorizationContext {
   // TODO:   And, investigate if different reduce-side versions are needed for var* and std*, or if map-side aggregate can be used..  Right now they are conservatively
   //         marked map-side (HASH).
   static ArrayList<AggregateDefinition> aggregatesDefinition = new ArrayList<AggregateDefinition>() {{
-    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    null,                          VectorUDAFMinLong.class));
+    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMinLong.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMinDouble.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMinString.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMinDecimal.class));
-    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    null,                          VectorUDAFMaxLong.class));
+    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMaxLong.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMaxDouble.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMaxString.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMaxDecimal.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.NONE,                   GroupByDesc.Mode.HASH,         VectorUDAFCountStar.class));
-    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.MERGEPARTIAL, VectorUDAFCountMerge.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          GroupByDesc.Mode.HASH,         VectorUDAFCount.class));

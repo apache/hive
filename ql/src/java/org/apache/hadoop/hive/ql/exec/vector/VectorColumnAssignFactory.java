@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -47,6 +49,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * This class is used as a static factory for VectorColumnAssign.
@@ -338,6 +341,35 @@ public class VectorColumnAssignFactory {
           }
         }.init(outputBatch, (LongColumnVector) destCol);
         break;
+      case INTERVAL_YEAR_MONTH:
+        outVCA = new VectorLongColumnAssign() {
+          @Override
+          public void assignObjectValue(Object val, int destIndex) throws HiveException {
+            if (val == null) {
+              assignNull(destIndex);
+            }
+            else {
+              HiveIntervalYearMonthWritable bw = (HiveIntervalYearMonthWritable) val;
+              assignLong(bw.getHiveIntervalYearMonth().getTotalMonths(), destIndex);
+            }
+          }
+        }.init(outputBatch, (LongColumnVector) destCol);
+        break;
+      case INTERVAL_DAY_TIME:outVCA = new VectorLongColumnAssign() {
+        @Override
+        public void assignObjectValue(Object val, int destIndex) throws HiveException {
+          if (val == null) {
+            assignNull(destIndex);
+          }
+          else {
+            HiveIntervalDayTimeWritable bw = (HiveIntervalDayTimeWritable) val;
+            assignLong(
+                DateUtils.getIntervalDayTimeTotalNanos(bw.getHiveIntervalDayTime()),
+                destIndex);
+          }
+        }
+      }.init(outputBatch, (LongColumnVector) destCol);
+      break;
       default:
         throw new HiveException("Incompatible Long vector column and primitive category " +
             category);
@@ -535,6 +567,10 @@ public class VectorColumnAssignFactory {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BINARY);
       } else if (writables[i] instanceof TimestampWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.TIMESTAMP);
+      } else if (writables[i] instanceof HiveIntervalYearMonthWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_YEAR_MONTH);
+      } else if (writables[i] instanceof HiveIntervalDayTimeWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_DAY_TIME);
       } else if (writables[i] instanceof BooleanWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BOOLEAN);
       } else {

@@ -142,6 +142,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest txns)'
   print '  void compact(CompactionRequest rqst)'
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
+  print '  void add_dynamic_partitions(AddDynamicPartitions rqst)'
   print '  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)'
   print '  CurrentNotificationEventId get_current_notificationEventId()'
   print '  FireEventResponse fire_listener_event(FireEventRequest rqst)'
@@ -909,6 +910,12 @@ elif cmd == 'show_compact':
     print 'show_compact requires 1 args'
     sys.exit(1)
   pp.pprint(client.show_compact(eval(args[0]),))
+
+elif cmd == 'add_dynamic_partitions':
+  if len(args) != 1:
+    print 'add_dynamic_partitions requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
 
 elif cmd == 'get_next_notification':
   if len(args) != 1:

@@ -198,11 +198,17 @@ public final class GenericUDFUtils {
       return returnObjectInspector != null ? returnObjectInspector : defaultOI;
     }
 
+    public Object convertIfNecessary(Object o, ObjectInspector oi) {
+      return convertIfNecessary(o, oi, true);
+    }
+
     /**
      * Convert the return Object if necessary (when the ObjectInspectors of
-     * different possibilities are not all the same).
+     * different possibilities are not all the same). If reuse is true, 
+     * the result Object will be the same object as the last invocation 
+     * (as long as the oi is the same)
      */
-    public Object convertIfNecessary(Object o, ObjectInspector oi) {
+    public Object convertIfNecessary(Object o, ObjectInspector oi, boolean reuse) {
       Object converted = null;
       if (oi == returnObjectInspector) {
         converted = o;
@@ -212,15 +218,20 @@ public final class GenericUDFUtils {
           return null;
         }
 
-        if (converters == null) {
-          converters = new HashMap<ObjectInspector, Converter>();
+        Converter converter = null;
+        if (reuse) {
+	  if (converters == null) {
+	    converters = new HashMap<ObjectInspector, Converter>();
+	  }
+	  converter = converters.get(oi);
         }
 
-        Converter converter = converters.get(oi);
         if (converter == null) {
           converter = ObjectInspectorConverters.getConverter(oi,
               returnObjectInspector);
-          converters.put(oi, converter);
+          if (reuse) {
+            converters.put(oi, converter);
+          }
         }
         converted = converter.convert(o);
       }

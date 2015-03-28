@@ -26,12 +26,15 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -80,8 +83,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 public class RecordReaderImpl implements RecordReader {
-
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
+
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private final Path path;
@@ -109,8 +112,6 @@ public class RecordReaderImpl implements RecordReader {
   private final OrcProto.RowIndex[] indexes;
   private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
   private final SargApplier sargApp;
-  // same as the above array, but indices are set to true
-  private final boolean[] sargColumns;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
@@ -189,7 +190,7 @@ public class RecordReaderImpl implements RecordReader {
                    int bufferSize,
                    long strideRate,
                    Configuration conf
-                  ) throws IOException {
+                   ) throws IOException {
     this.fileSystem = fileSystem;
     this.path = path;
     this.file = fileSystem.open(path);
@@ -202,18 +203,10 @@ public class RecordReaderImpl implements RecordReader {
     this.metadata = new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
     SearchArgument sarg = options.getSearchArgument();
     if (sarg != null && strideRate != 0) {
-      sargApp = new SargApplier(sarg, options.getColumnNames(), strideRate, types);
-      // included will not be null, row options will fill the array with trues if null
-      sargColumns = new boolean[included.length];
-      for (int i : sargApp.filterColumns) {
-        // filter columns may have -1 as index which could be partition column in SARG.
-        if (i > 0) {
-          sargColumns[i] = true;
-        }
-      }
+      sargApp = new SargApplier(
+          sarg, options.getColumnNames(), strideRate, types, included.length);
     } else {
       sargApp = null;
-      sargColumns = null;
     }
     long rows = 0;
     long skippedRows = 0;
@@ -295,24 +288,23 @@ public class RecordReaderImpl implements RecordReader {
 
     IntegerReader createIntegerReader(OrcProto.ColumnEncoding.Kind kind,
         InStream in,
-        boolean signed,
-        boolean skipCorrupt) throws IOException {
+        boolean signed, boolean skipCorrupt) throws IOException {
       switch (kind) {
-        case DIRECT_V2:
-        case DICTIONARY_V2:
-          return new RunLengthIntegerReaderV2(in, signed, skipCorrupt);
-        case DIRECT:
-        case DICTIONARY:
-          return new RunLengthIntegerReader(in, signed);
-        default:
-          throw new IllegalArgumentException("Unknown encoding " + kind);
+      case DIRECT_V2:
+      case DICTIONARY_V2:
+        return new RunLengthIntegerReaderV2(in, signed, skipCorrupt);
+      case DIRECT:
+      case DICTIONARY:
+        return new RunLengthIntegerReader(in, signed);
+      default:
+        throw new IllegalArgumentException("Unknown encoding " + kind);
       }
     }
 
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encoding
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      checkEncoding(encoding.get(columnId));
+      checkEncoding(stripeFooter.getColumnsList().get(columnId));
       InStream in = streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.PRESENT));
       if (in == null) {
@@ -409,9 +401,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                      ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       reader = new BitFieldReader(streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA)), 1);
     }
@@ -479,9 +471,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       reader = new RunLengthByteReader(streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA)));
     }
@@ -563,13 +555,13 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true,
-          false);
+      reader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+        streams.get(name), true, false);
     }
 
     @Override
@@ -655,13 +647,14 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true,
-          false);
+      // TODO: stripeFooter.getColumnsList()?
+      reader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+        streams.get(name), true, false);
     }
 
     @Override
@@ -742,13 +735,13 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true,
-          false);
+      reader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+        streams.get(name), true, false);
     }
 
     @Override
@@ -816,9 +809,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
@@ -908,9 +901,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name =
         new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
@@ -1014,14 +1007,14 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
-      lengths = createIntegerReader(encodings.get(columnId).getKind(), streams.get(new
-          StreamName(columnId, OrcProto.Stream.Kind.LENGTH)), false, false);
+      lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+        streams.get(new StreamName(columnId, OrcProto.Stream.Kind.LENGTH)), false, false);
     }
 
     @Override
@@ -1088,10 +1081,15 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  public static class TimestampTreeReader extends TreeReader {
+  public static class TimestampTreeReader extends TreeReader{
     protected IntegerReader data = null;
     protected IntegerReader nanos = null;
-    private final boolean skipCorrupt;
+    protected final boolean skipCorrupt;
+    protected Map<String, Long> baseTimestampMap;
+    protected long base_timestamp;
+    protected final TimeZone readerTimeZone;
+    protected TimeZone writerTimeZone;
+    protected boolean hasSameTZRules;
 
     TimestampTreeReader(int columnId, boolean skipCorrupt) throws IOException {
       this(columnId, null, null, null, null, skipCorrupt);
@@ -1102,6 +1100,11 @@ public class RecordReaderImpl implements RecordReader {
         throws IOException {
       super(columnId, presentStream);
       this.skipCorrupt = skipCorrupt;
+      this.baseTimestampMap = new HashMap<>();
+      this.readerTimeZone = TimeZone.getDefault();
+      this.writerTimeZone = readerTimeZone;
+      this.hasSameTZRules = writerTimeZone.hasSameRules(readerTimeZone);
+      this.base_timestamp = getBaseTimestamp(readerTimeZone.getID());
       if (encoding != null) {
         checkEncoding(encoding);
 
@@ -1126,15 +1129,42 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
-      data = createIntegerReader(encodings.get(columnId).getKind(),
+      super.startStripe(streams, stripeFooter);
+      data = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId,
               OrcProto.Stream.Kind.DATA)), true, skipCorrupt);
-      nanos = createIntegerReader(encodings.get(columnId).getKind(),
+      nanos = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId,
               OrcProto.Stream.Kind.SECONDARY)), false, skipCorrupt);
+      base_timestamp = getBaseTimestamp(stripeFooter.getWriterTimezone());
+    }
+
+    private long getBaseTimestamp(String timeZoneId) throws IOException {
+      // to make sure new readers read old files in the same way
+      if (timeZoneId == null || timeZoneId.isEmpty()) {
+        timeZoneId = readerTimeZone.getID();
+      }
+
+      if (!baseTimestampMap.containsKey(timeZoneId)) {
+        writerTimeZone = TimeZone.getTimeZone(timeZoneId);
+        hasSameTZRules = writerTimeZone.hasSameRules(readerTimeZone);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(writerTimeZone);
+        try {
+          long epoch =
+              sdf.parse(WriterImpl.BASE_TIMESTAMP_STRING).getTime() / WriterImpl.MILLIS_PER_SECOND;
+          baseTimestampMap.put(timeZoneId, epoch);
+          return epoch;
+        } catch (ParseException e) {
+          throw new IOException("Unable to create base timestamp", e);
+        } finally {
+          sdf.setTimeZone(readerTimeZone);
+        }
+      }
+
+      return baseTimestampMap.get(timeZoneId);
     }
 
     @Override
@@ -1159,9 +1189,7 @@ public class RecordReaderImpl implements RecordReader {
         } else {
           result = (TimestampWritable) previous;
         }
-        Timestamp ts = new Timestamp(0);
-        long millis = (data.next() + WriterImpl.BASE_TIMESTAMP) *
-            WriterImpl.MILLIS_PER_SECOND;
+        long millis = (data.next() + base_timestamp) * WriterImpl.MILLIS_PER_SECOND;
         int newNanos = parseNanos(nanos.next());
         // fix the rounding when we divided by 1000.
         if (millis >= 0) {
@@ -1169,7 +1197,24 @@ public class RecordReaderImpl implements RecordReader {
         } else {
           millis -= newNanos / 1000000;
         }
-        ts.setTime(millis);
+        long offset = 0;
+        // If reader and writer time zones have different rules, adjust the timezone difference
+        // between reader and writer taking day light savings into account.
+        if (!hasSameTZRules) {
+          offset = writerTimeZone.getOffset(millis) - readerTimeZone.getOffset(millis);
+        }
+        long adjustedMillis = millis + offset;
+        Timestamp ts = new Timestamp(adjustedMillis);
+        // Sometimes the reader timezone might have changed after adding the adjustedMillis.
+        // To account for that change, check for any difference in reader timezone after
+        // adding adjustedMillis. If so use the new offset (offset at adjustedMillis point of time).
+        if (!hasSameTZRules &&
+            (readerTimeZone.getOffset(millis) != readerTimeZone.getOffset(adjustedMillis))) {
+          long newOffset =
+              writerTimeZone.getOffset(millis) - readerTimeZone.getOffset(adjustedMillis);
+            adjustedMillis = millis + newOffset;
+            ts.setTime(adjustedMillis);
+        }
         ts.setNanos(newNanos);
         result.set(ts);
       }
@@ -1248,12 +1293,13 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true, false);
+      reader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+          streams.get(name), true, false);
     }
 
     @Override
@@ -1306,7 +1352,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class DecimalTreeReader extends TreeReader{
-    protected InStream value;
+    protected InStream valueStream;
     protected IntegerReader scaleReader = null;
     private LongColumnVector scratchScaleVector;
 
@@ -1324,7 +1370,7 @@ public class RecordReaderImpl implements RecordReader {
       this.precision = precision;
       this.scale = scale;
       this.scratchScaleVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-      this.value = valueStream;
+      this.valueStream = valueStream;
       if (scaleStream != null && encoding != null) {
         checkEncoding(encoding);
         this.scaleReader = createIntegerReader(encoding.getKind(), scaleStream, true, false);
@@ -1342,13 +1388,13 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
     ) throws IOException {
-      super.startStripe(streams, encodings);
-      value = streams.get(new StreamName(columnId,
+      super.startStripe(streams, stripeFooter);
+      valueStream = streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA));
-      scaleReader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(
-          new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true, false);
+      scaleReader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
+          streams.get(new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true, false);
     }
 
     @Override
@@ -1359,7 +1405,7 @@ public class RecordReaderImpl implements RecordReader {
     @Override
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
-      value.seek(index);
+      valueStream.seek(index);
       scaleReader.seek(index);
     }
 
@@ -1373,7 +1419,7 @@ public class RecordReaderImpl implements RecordReader {
         } else {
           result = (HiveDecimalWritable) previous;
         }
-        result.set(HiveDecimal.create(SerializationUtils.readBigInteger(value),
+        result.set(HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
             (int) scaleReader.next()));
         return HiveDecimalUtils.enforcePrecisionScale(result, precision, scale);
       }
@@ -1398,7 +1444,7 @@ public class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       if (result.isRepeating) {
         if (!result.isNull[0]) {
-          BigInteger bInt = SerializationUtils.readBigInteger(value);
+          BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
           short scaleInData = (short) scaleReader.next();
           HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
           dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
@@ -1410,7 +1456,7 @@ public class RecordReaderImpl implements RecordReader {
         scaleReader.nextVector(scratchScaleVector, batchSize);
         for (int i = 0; i < batchSize; i++) {
           if (!result.isNull[i]) {
-            BigInteger bInt = SerializationUtils.readBigInteger(value);
+            BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
             short scaleInData = (short) scratchScaleVector.vector[i];
             HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
             dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
@@ -1427,7 +1473,7 @@ public class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(int i=0; i < items; i++) {
-        SerializationUtils.readBigInteger(value);
+        SerializationUtils.readBigInteger(valueStream);
       }
       scaleReader.skip(items);
     }
@@ -1474,11 +1520,11 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
       // For each stripe, checks the encoding and initializes the appropriate
       // reader
-      switch (encodings.get(columnId).getKind()) {
+      switch (stripeFooter.getColumnsList().get(columnId).getKind()) {
         case DIRECT:
         case DIRECT_V2:
           reader = new StringDirectTreeReader(columnId);
@@ -1489,9 +1535,9 @@ public class RecordReaderImpl implements RecordReader {
           break;
         default:
           throw new IllegalArgumentException("Unsupported encoding " +
-              encodings.get(columnId).getKind());
+              stripeFooter.getColumnsList().get(columnId).getKind());
       }
-      reader.startStripe(streams, encodings);
+      reader.startStripe(streams, stripeFooter);
     }
 
     @Override
@@ -1625,13 +1671,13 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
-      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+      lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
           false, false);
     }
@@ -1746,9 +1792,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
 
       // read the dictionary blob
       StreamName name = new StreamName(columnId,
@@ -1759,11 +1805,11 @@ public class RecordReaderImpl implements RecordReader {
       // read the lengths
       name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
       in = streams.get(name);
-      readDictionaryLengthStream(in, encodings.get(columnId));
+      readDictionaryLengthStream(in, stripeFooter.getColumnsList().get(columnId));
 
       // set up the row reader
       name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
-      reader = createIntegerReader(encodings.get(columnId).getKind(),
+      reader = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(name), false, false);
     }
 
@@ -2149,12 +2195,12 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       for(TreeReader field: fields) {
         if (field != null) {
-          field.startStripe(streams, encodings);
+          field.startStripe(streams, stripeFooter);
         }
       }
     }
@@ -2225,14 +2271,14 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                      ) throws IOException {
-      super.startStripe(streams, encodings);
+      super.startStripe(streams, stripeFooter);
       tags = new RunLengthByteReader(streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA)));
       for(TreeReader field: fields) {
         if (field != null) {
-          field.startStripe(streams, encodings);
+          field.startStripe(streams, stripeFooter);
         }
       }
     }
@@ -2317,14 +2363,14 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
-      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+      super.startStripe(streams, stripeFooter);
+      lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId,
               OrcProto.Stream.Kind.LENGTH)), false, false);
       if (elementReader != null) {
-        elementReader.startStripe(streams, encodings);
+        elementReader.startStripe(streams, stripeFooter);
       }
     }
 
@@ -2411,17 +2457,17 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     void startStripe(Map<StreamName, InStream> streams,
-                     List<OrcProto.ColumnEncoding> encodings
+                     OrcProto.StripeFooter stripeFooter
                     ) throws IOException {
-      super.startStripe(streams, encodings);
-      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+      super.startStripe(streams, stripeFooter);
+      lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId,
               OrcProto.Stream.Kind.LENGTH)), false, false);
       if (keyReader != null) {
-        keyReader.startStripe(streams, encodings);
+        keyReader.startStripe(streams, stripeFooter);
       }
       if (valueReader != null) {
-        valueReader.startStripe(streams, encodings);
+        valueReader.startStripe(streams, stripeFooter);
       }
     }
 
@@ -2891,14 +2937,24 @@ public class RecordReaderImpl implements RecordReader {
     private final int[] filterColumns;
     private final long rowIndexStride;
     private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
+    // same as the above array, but indices are set to true
+    private final boolean[] sargColumns;
 
     public SargApplier(SearchArgument sarg, String[] columnNames, long rowIndexStride,
-        List<OrcProto.Type> types) {
+        List<OrcProto.Type> types, int includedCount) {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
       filterColumns = mapSargColumns(sargLeaves, columnNames, 0);
       bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
       this.rowIndexStride = rowIndexStride;
+      // included will not be null, row options will fill the array with trues if null
+      sargColumns = new boolean[includedCount];
+      for (int i : filterColumns) {
+        // filter columns may have -1 as index which could be partition column in SARG.
+        if (i > 0) {
+          sargColumns[i] = true;
+        }
+      }
     }
 
     /**
@@ -2963,7 +3019,7 @@ public class RecordReaderImpl implements RecordReader {
     if (sargApp == null) {
       return null;
     }
-    readRowIndex(currentStripe, included);
+    readRowIndex(currentStripe, included, sargApp.sargColumns);
     return sargApp.pickRowGroups(stripes.get(currentStripe), indexes);
   }
 
@@ -3008,7 +3064,7 @@ public class RecordReaderImpl implements RecordReader {
       } else {
         readPartialDataStreams(stripe);
       }
-      reader.startStripe(streams, stripeFooter.getColumnsList());
+      reader.startStripe(streams, stripeFooter);
       // if we skipped the first row group, move the pointers forward
       if (rowInStripe != 0) {
         seekToRowEntry(reader, (int) (rowInStripe / rowIndexStride));
@@ -3319,7 +3375,7 @@ public class RecordReaderImpl implements RecordReader {
         result = new VectorizedRowBatch(cols.length);
         result.cols = cols;
       } else {
-        result = previous;
+        result = (VectorizedRowBatch) previous;
         result.selectedInUse = false;
         reader.nextVector(result.cols, (int) batchSize);
       }
@@ -3353,11 +3409,12 @@ public class RecordReaderImpl implements RecordReader {
         endRowGroup += 1;
       }
 
-      final long markerPosition = (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
-          : rowCountInStripe;
+      final long markerPosition =
+          (endRowGroup * rowIndexStride) < rowCountInStripe ? (endRowGroup * rowIndexStride)
+              : rowCountInStripe;
       batchSize = Math.min(targetBatchSize, (markerPosition - rowInStripe));
 
-      if (LOG.isDebugEnabled() && batchSize < targetBatchSize) {
+      if (isLogDebugEnabled && batchSize < targetBatchSize) {
         LOG.debug("markerPosition: " + markerPosition + " batchSize: " + batchSize);
       }
     } else {
@@ -3399,8 +3456,9 @@ public class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  Index readRowIndex(int stripeIndex, boolean[] included) throws IOException {
-    return readRowIndex(stripeIndex, included, null, null, null);
+  Index readRowIndex(
+      int stripeIndex, boolean[] included, boolean[] sargColumns) throws IOException {
+    return readRowIndex(stripeIndex, included, null, null, sargColumns);
   }
 
   Index readRowIndex(int stripeIndex, boolean[] included, OrcProto.RowIndex[] indexes,
@@ -3412,6 +3470,8 @@ public class RecordReaderImpl implements RecordReader {
       stripeFooter = this.stripeFooter;
       indexes = indexes == null ? this.indexes : indexes;
       bloomFilterIndex = bloomFilterIndex == null ? this.bloomFilterIndices : bloomFilterIndex;
+      sargColumns = sargColumns == null ?
+          (sargApp == null ? null : sargApp.sargColumns) : sargColumns;
     }
     return metadata.readRowIndex(stripe, stripeFooter, included, indexes, sargColumns,
         bloomFilterIndex);
@@ -3445,7 +3505,7 @@ public class RecordReaderImpl implements RecordReader {
       currentStripe = rightStripe;
       readStripe();
     }
-    readRowIndex(currentStripe, included);
+    readRowIndex(currentStripe, included, sargApp == null ? null : sargApp.sargColumns);
 
     // if we aren't to the right row yet, advance in the stripe.
     advanceToNextRow(reader, rowNumber, true);

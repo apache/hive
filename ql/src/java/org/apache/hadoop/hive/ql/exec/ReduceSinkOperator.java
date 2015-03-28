@@ -152,6 +152,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  protected transient long logEveryNRows = 0;
   private final transient LongWritable recordCounter = new LongWritable();
 
   @Override
@@ -160,6 +161,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     try {
 
       numRows = 0;
+      cntr = 1;
+      logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
       if (context != null && !context.isEmpty()) {
@@ -531,7 +534,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       numRows++;
       if (isLogInfoEnabled) {
         if (numRows == cntr) {
-          cntr *= 10;
+          cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+          if (cntr < 0 || numRows < 0) {
+            cntr = 0;
+            numRows = 1;
+          }
           LOG.info(toString() + ": records written - " + numRows);
         }
       }

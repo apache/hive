@@ -101,7 +101,7 @@ public class GenericUDFCase extends GenericUDF {
       PrimitiveObjectInspector caseOI = (PrimitiveObjectInspector) caseOIResolver.get();
       if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
             caseOIResolver.convertIfNecessary(exprValue, argumentOIs[0]), caseOI,
-            caseOIResolver.convertIfNecessary(caseKey, argumentOIs[i]), caseOI)) {
+            caseOIResolver.convertIfNecessary(caseKey, argumentOIs[i], false), caseOI)) {
         Object caseValue = arguments[i + 1].get();
         return returnOIResolver.convertIfNecessary(caseValue, argumentOIs[i + 1]);
       }

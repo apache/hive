@@ -82,6 +82,8 @@ public abstract class MapJoinKey {
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.STRING);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.DATE);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.TIMESTAMP);
+    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.INTERVAL_YEAR_MONTH);
+    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.INTERVAL_DAY_TIME);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BINARY);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.VARCHAR);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.CHAR);
