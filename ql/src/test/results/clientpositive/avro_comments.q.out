@@ -1,0 +1,398 @@
+PREHOOK: query: -- verify Avro columns comments
+DROP TABLE IF EXISTS testAvroComments1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- verify Avro columns comments
+DROP TABLE IF EXISTS testAvroComments1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments1
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments1
+POSTHOOK: query: CREATE TABLE testAvroComments1
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments1
+PREHOOK: query: DESCRIBE testAvroComments1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments1
+POSTHOOK: query: DESCRIBE testAvroComments1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments1
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
+extra_field         	string              	an extra field not in the original file
+PREHOOK: query: DROP TABLE testAvroComments1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments1
+PREHOOK: Output: default@testavrocomments1
+POSTHOOK: query: DROP TABLE testAvroComments1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments1
+POSTHOOK: Output: default@testavrocomments1
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments2
+POSTHOOK: query: CREATE TABLE testAvroComments2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments2
+PREHOOK: query: DESCRIBE testAvroComments2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments2
+POSTHOOK: query: DESCRIBE testAvroComments2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments2
+number              	int                 	Order of playing the role
+first_name          	string              	                    
+last_name           	string              	last name of actor playing role
+extra_field         	string              	                    
+PREHOOK: query: DROP TABLE testAvroComments2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments2
+PREHOOK: Output: default@testavrocomments2
+POSTHOOK: query: DROP TABLE testAvroComments2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments2
+POSTHOOK: Output: default@testavrocomments2
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments3
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int"
+    },
+    {
+      "name":"first_name",
+      "type":"string"
+    },
+    {
+      "name":"last_name",
+      "type":"string"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments3
+POSTHOOK: query: CREATE TABLE testAvroComments3
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int"
+    },
+    {
+      "name":"first_name",
+      "type":"string"
+    },
+    {
+      "name":"last_name",
+      "type":"string"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments3
+PREHOOK: query: DESCRIBE testAvroComments3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments3
+POSTHOOK: query: DESCRIBE testAvroComments3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments3
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+extra_field         	string              	                    
+PREHOOK: query: DROP TABLE testAvroComments3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments3
+PREHOOK: Output: default@testavrocomments3
+POSTHOOK: query: DROP TABLE testAvroComments3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments3
+POSTHOOK: Output: default@testavrocomments3
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments4 (
+  number int COMMENT "Order of playing the role",
+  first_name string COMMENT "first name of actor playing role",
+  last_name string COMMENT "last name of actor playing role",
+  extra_field string COMMENT "an extra field not in the original file")
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments4
+POSTHOOK: query: CREATE TABLE testAvroComments4 (
+  number int COMMENT "Order of playing the role",
+  first_name string COMMENT "first name of actor playing role",
+  last_name string COMMENT "last name of actor playing role",
+  extra_field string COMMENT "an extra field not in the original file")
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments4
+PREHOOK: query: DESCRIBE testAvroComments4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments4
+POSTHOOK: query: DESCRIBE testAvroComments4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments4
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
+extra_field         	string              	an extra field not in the original file
+PREHOOK: query: DROP TABLE testAvroComments4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments4
+PREHOOK: Output: default@testavrocomments4
+POSTHOOK: query: DROP TABLE testAvroComments4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments4
+POSTHOOK: Output: default@testavrocomments4
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments5 (
+  number int COMMENT "Order of playing the role",
+  first_name string,
+  last_name string COMMENT "last name of actor playing role",
+  extra_field string)
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments5
+POSTHOOK: query: CREATE TABLE testAvroComments5 (
+  number int COMMENT "Order of playing the role",
+  first_name string,
+  last_name string COMMENT "last name of actor playing role",
+  extra_field string)
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments5
+PREHOOK: query: DESCRIBE testAvroComments5
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments5
+POSTHOOK: query: DESCRIBE testAvroComments5
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments5
+number              	int                 	Order of playing the role
+first_name          	string              	                    
+last_name           	string              	last name of actor playing role
+extra_field         	string              	                    
+PREHOOK: query: DROP TABLE testAvroComments5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments5
+PREHOOK: Output: default@testavrocomments5
+POSTHOOK: query: DROP TABLE testAvroComments5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments5
+POSTHOOK: Output: default@testavrocomments5
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments6
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments6
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE testAvroComments6 (
+  number int,
+  first_name string,
+  last_name string,
+  extra_field string)
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvroComments6
+POSTHOOK: query: CREATE TABLE testAvroComments6 (
+  number int,
+  first_name string,
+  last_name string,
+  extra_field string)
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvroComments6
+PREHOOK: query: DESCRIBE testAvroComments6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavrocomments6
+POSTHOOK: query: DESCRIBE testAvroComments6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavrocomments6
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+extra_field         	string              	                    
+PREHOOK: query: DROP TABLE testAvroComments6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testavrocomments6
+PREHOOK: Output: default@testavrocomments6
+POSTHOOK: query: DROP TABLE testAvroComments6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testavrocomments6
+POSTHOOK: Output: default@testavrocomments6
