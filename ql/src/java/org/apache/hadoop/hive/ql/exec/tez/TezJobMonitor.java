@@ -710,10 +710,11 @@ public class TezJobMonitor {
     String mode = "container";
     BaseWork work = workMap.get(name);
     if (work != null) {
-      if (work.getLlapMode()) {
-        mode = "llap";
-      } else if (work.getUberMode()) {
+      // uber > llap > container
+      if (work.getUberMode()) {
         mode = "uber";
+      } else if (work.getLlapMode()) {
+        mode = "llap";
       } else {
         mode = "container";
       }
