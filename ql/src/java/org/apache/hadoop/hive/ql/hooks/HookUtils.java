@@ -65,4 +65,19 @@ public class HookUtils {
     return hooks;
   }
 
+  public static String redactLogString(HiveConf conf, String logString)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+
+    String redactedString = logString;
+
+    if (conf != null && logString != null) {
+      List<Redactor> queryRedactors = getHooks(conf, ConfVars.QUERYREDACTORHOOKS, Redactor.class);
+      for (Redactor redactor : queryRedactors) {
+        redactor.setConf(conf);
+        redactedString = redactor.redactQuery(redactedString);
+      }
+    }
+
+    return redactedString;
+  }
 }

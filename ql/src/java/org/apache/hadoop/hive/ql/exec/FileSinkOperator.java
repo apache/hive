@@ -118,6 +118,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private IntObjectInspector bucketInspector; // OI for inspecting bucket id
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  protected transient long logEveryNRows = 0;
 
   /**
    * Counters.
@@ -420,6 +421,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       numRows = 0;
+      cntr = 1;
+      logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       String suffix = Integer.toString(conf.getDestTableId());
       String fullName = conf.getTableInfo().getTableName();
@@ -705,7 +708,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       if ((++numRows == cntr) && isLogInfoEnabled) {
-        cntr *= 10;
+        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+        if (cntr < 0 || numRows < 0) {
+          cntr = 0;
+          numRows = 1;
+        }
         LOG.info(toString() + ": records written - " + numRows);
       }
 

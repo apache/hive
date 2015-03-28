@@ -1521,12 +1521,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param holdDDLTime
    * @param listBucketingEnabled
    * @param isAcid true if this is an ACID operation
+   * @param txnId txnId, can be 0 unless isAcid == true
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid)
+      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid, long txnId)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1584,9 +1585,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
         partitionsMap.put(fullPartSpec, newPartition);
         LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
       }
+      if (isAcid) {
+        List<String> partNames = new ArrayList<>(partitionsMap.size());
+        for (Partition p : partitionsMap.values()) {
+          partNames.add(p.getName());
+        }
+        metaStoreClient.addDynamicPartitions(txnId, tbl.getDbName(), tbl.getTableName(), partNames);
+      }
       return partitionsMap;
     } catch (IOException e) {
       throw new HiveException(e);
+    } catch (TException te) {
+      throw new HiveException(te);
     }
   }
 

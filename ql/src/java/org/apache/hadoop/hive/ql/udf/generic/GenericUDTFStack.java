@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -60,13 +61,13 @@ public class GenericUDTFStack extends GenericUDTF {
     if (args.length < 2)  {
       throw new UDFArgumentException("STACK() expects at least two arguments.");
     }
-    if (!(args[0] instanceof WritableConstantIntObjectInspector)) {
+    if (!(args[0] instanceof ConstantObjectInspector)) {
       throw new UDFArgumentException(
           "The first argument to STACK() must be a constant integer (got " +
           args[0].getTypeName() + " instead).");
     }
-    numRows =
-        ((WritableConstantIntObjectInspector)args[0]).getWritableConstantValue();
+    numRows = (IntWritable)
+        ((ConstantObjectInspector)args[0]).getWritableConstantValue();
 
     if (numRows == null || numRows.get() < 1) {
       throw new UDFArgumentException(

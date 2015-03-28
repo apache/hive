@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
@@ -120,6 +122,14 @@ public final class ObjectInspectorConverters {
       return new PrimitiveObjectInspectorConverter.TimestampConverter(
           inputOI,
           (SettableTimestampObjectInspector) outputOI);
+    case INTERVAL_YEAR_MONTH:
+      return new PrimitiveObjectInspectorConverter.HiveIntervalYearMonthConverter(
+          inputOI,
+          (SettableHiveIntervalYearMonthObjectInspector) outputOI);
+    case INTERVAL_DAY_TIME:
+      return new PrimitiveObjectInspectorConverter.HiveIntervalDayTimeConverter(
+          inputOI,
+          (SettableHiveIntervalDayTimeObjectInspector) outputOI);
     case BINARY:
       return new PrimitiveObjectInspectorConverter.BinaryConverter(
           inputOI,

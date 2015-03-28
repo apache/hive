@@ -91,12 +91,12 @@ public class GenericUDAFEWAHBitmap extends AbstractGenericUDAFResolver {
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
       } else if (m == Mode.PARTIAL2 || m == Mode.FINAL) {
         internalMergeOI = (StandardListObjectInspector) parameters[0];
-        inputOI = PrimitiveObjectInspectorFactory.writableByteObjectInspector;
+        inputOI = (PrimitiveObjectInspector)internalMergeOI.getListElementObjectInspector();
         loi = (StandardListObjectInspector) ObjectInspectorFactory
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         return loi;
       } else { // Mode.COMPLETE, ie. no map-side aggregation, requires ordering
-        inputOI = PrimitiveObjectInspectorFactory.writableByteObjectInspector;
+        inputOI = (PrimitiveObjectInspector)parameters[0];
         loi = (StandardListObjectInspector) ObjectInspectorFactory
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         return loi;

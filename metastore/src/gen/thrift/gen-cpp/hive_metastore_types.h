@@ -5088,6 +5088,64 @@ class ShowCompactResponse {
 
 void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
+
+class AddDynamicPartitions {
+ public:
+
+  static const char* ascii_fingerprint; // = "A53A2B050DCCFE6A2158480A24E33898";
+  static const uint8_t binary_fingerprint[16]; // = {0xA5,0x3A,0x2B,0x05,0x0D,0xCC,0xFE,0x6A,0x21,0x58,0x48,0x0A,0x24,0xE3,0x38,0x98};
+
+  AddDynamicPartitions() : txnid(0), dbname(), tablename() {
+  }
+
+  virtual ~AddDynamicPartitions() throw() {}
+
+  int64_t txnid;
+  std::string dbname;
+  std::string tablename;
+  std::vector<std::string>  partitionnames;
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+  }
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+  }
+
+  void __set_partitionnames(const std::vector<std::string> & val) {
+    partitionnames = val;
+  }
+
+  bool operator == (const AddDynamicPartitions & rhs) const
+  {
+    if (!(txnid == rhs.txnid))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (!(partitionnames == rhs.partitionnames))
+      return false;
+    return true;
+  }
+  bool operator != (const AddDynamicPartitions &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddDynamicPartitions & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AddDynamicPartitions &a, AddDynamicPartitions &b);
+
 typedef struct _NotificationEventRequest__isset {
   _NotificationEventRequest__isset() : maxEvents(false) {}
   bool maxEvents;

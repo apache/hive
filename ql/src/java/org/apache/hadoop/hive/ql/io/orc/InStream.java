@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -59,9 +60,13 @@ public abstract class InStream extends InputStream {
     return name;
   }
 
+  public long getStreamLength() {
+    return length;
+  }
 
   public static class UncompressedStream extends InStream {
-    protected List<DiskRange> bytes;
+    private List<DiskRange> bytes;
+    private long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;
@@ -440,8 +445,8 @@ public abstract class InStream extends InputStream {
           if (desired != range.getOffset()) {
             throw new IOException("Cannot seek into the middle of uncompressed cached data");
           }
-          currentOffset = desired;
         }
+        currentOffset = desired;
         return;
       }
       throw new IOException("Seek outside of data in " + this + " to " + desired);

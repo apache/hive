@@ -651,6 +651,13 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct AddDynamicPartitions {
+    1: required i64 txnid,
+    2: required string dbname,
+    3: required string tablename,
+    4: required list<string> partitionnames,
+}
+
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
@@ -1164,6 +1171,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+  void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 

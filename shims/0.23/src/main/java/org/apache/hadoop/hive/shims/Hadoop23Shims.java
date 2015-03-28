@@ -40,7 +40,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.KeyProvider.Options;
 import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension;
-import org.apache.hadoop.crypto.key.KeyProviderFactory;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -1206,6 +1205,25 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return (0 == rc);
   }
 
+  private static Boolean hdfsEncryptionSupport;
+
+  public static boolean isHdfsEncryptionSupported() {
+    if (hdfsEncryptionSupport == null) {
+      Method m = null;
+
+      try {
+        m = HdfsAdmin.class.getMethod("getEncryptionZoneForPath", Path.class);
+      } catch (NoSuchMethodException e) {
+        // This version of Hadoop does not support HdfsAdmin.getEncryptionZoneForPath().
+        // Hadoop 2.6.0 introduces this new method.
+      }
+
+      hdfsEncryptionSupport = (m != null);
+    }
+
+    return hdfsEncryptionSupport;
+  }
+
   public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
     private final String HDFS_SECURITY_DEFAULT_CIPHER = "AES/CTR/NoPadding";
 
@@ -1350,15 +1368,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
-    URI uri = fs.getUri();
-    if ("hdfs".equals(uri.getScheme())) {
-      try {
+    if (isHdfsEncryptionSupported()) {
+      URI uri = fs.getUri();
+      if ("hdfs".equals(uri.getScheme())) {
         return new HdfsEncryptionShim(uri, conf);
-      } catch (NoSuchMethodError e) {
-        // ignore error as encryption is not supported.
-        // let this method return the unsupported encryption shim instead
       }
     }
+
     return new HadoopShims.NoopHdfsEncryptionShim();
   }
 

@@ -35,6 +35,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -61,6 +64,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * Context for Vectorized row batch. this calss does eager deserialization of row data using serde
@@ -300,6 +304,8 @@ public class VectorizedRowBatchCtx {
           case LONG:
           case TIMESTAMP:
           case DATE:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
             result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
           case FLOAT:
@@ -501,7 +507,31 @@ public class VectorizedRowBatchCtx {
           }
         }
         break;
-        
+
+        case INTERVAL_YEAR_MONTH: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else {
+            lcv.fill(((HiveIntervalYearMonth) value).getTotalMonths());
+            lcv.isNull[0] = false;
+          }
+        }
+
+        case INTERVAL_DAY_TIME: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else {
+            lcv.fill(DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) value));
+            lcv.isNull[0] = false;
+          }
+        }
+
         case FLOAT: {
           DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
           if (value == null) {
@@ -635,7 +665,9 @@ public class VectorizedRowBatchCtx {
       return new DecimalColumnVector(defaultSize, precisionScale[0], precisionScale[1]);
     } else if (type.equalsIgnoreCase("long") ||
                type.equalsIgnoreCase("date") ||
-               type.equalsIgnoreCase("timestamp")) {
+               type.equalsIgnoreCase("timestamp") ||
+               type.equalsIgnoreCase(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME) ||
+               type.equalsIgnoreCase(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
       return new LongColumnVector(defaultSize);
     } else {
       throw new Error("Cannot allocate vector column for " + type);

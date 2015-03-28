@@ -287,19 +287,14 @@ public class RecordReaderUtils {
       while (pos < endPos) {
         int count = file.read(directBuf);
         if (count < 0) throw new EOFException();
-        if (count == 0) {
-          throw new IOException(
-              "0-length read: " + (endPos - pos) + "@" + (pos - startPos) + " and " + pos);
-        }
+        assert count != 0 : "0-length read: " + (endPos - pos) + "@" + (pos - startPos);
         pos += count;
-        if (pos > endPos) {
-          throw new AssertionError(
-              "Position " + pos + " > " + endPos + "(" + len + ") after reading " + count);
-        }
+        assert pos <= endPos : "Position " + pos + " > " + endPos + " after reading " + count;
         directBuf.position(pos);
       }
     } catch (UnsupportedOperationException ex) {
       assert pos == startPos;
+      // Happens in q files and such.
       RecordReaderImpl.LOG.error("Stream does not support direct read; we will copy.");
       byte[] buffer = new byte[len];
       file.readFully(buffer, 0, buffer.length);

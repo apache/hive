@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Random;
+
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 
 
 /**
@@ -115,7 +117,7 @@ public class NumericHistogram {
    * @param other A serialized histogram created by the serialize() method
    * @see #merge
    */
-  public void merge(List<DoubleWritable> other) {
+  public void merge(List other, DoubleObjectInspector doi) {
     if(other == null) {
       return;
     }
@@ -123,13 +125,13 @@ public class NumericHistogram {
     if(nbins == 0 || nusedbins == 0)  {
       // Our aggregation buffer has nothing in it, so just copy over 'other'
       // by deserializing the ArrayList of (x,y) pairs into an array of Coord objects
-      nbins = (int) other.get(0).get();
+      nbins = (int) doi.get(other.get(0));
       nusedbins = (other.size()-1)/2;
       bins = new ArrayList<Coord>(nusedbins);
       for (int i = 1; i < other.size(); i+=2) {
         Coord bin = new Coord();
-        bin.x = other.get(i).get();
-        bin.y = other.get(i+1).get();
+        bin.x = doi.get(other.get(i));
+        bin.y = doi.get(other.get(i+1));
         bins.add(bin);
       }
     } else {
@@ -146,8 +148,8 @@ public class NumericHistogram {
       }
       for (int j = 1; j < other.size(); j += 2) {
         Coord bin = new Coord();
-        bin.x = other.get(j).get();
-        bin.y = other.get(j+1).get();
+        bin.x = doi.get(other.get(j));
+        bin.y = doi.get(other.get(j+1));
         tmp_bins.add(bin);
       }
       Collections.sort(tmp_bins);

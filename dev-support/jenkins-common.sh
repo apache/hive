@@ -91,3 +91,9 @@ process_jira() {
   fi
   export BUILD_OPTS=$build_opts
 }
+
+# Checks if a specified URL patch contains HMS upgrade changes
+# Returns 0 if there are changes; non-zero value otherwise.
+patch_contains_hms_upgrade() {
+	curl -s "$1" | grep "^diff.*metastore/scripts/upgrade/" >/dev/null
+}

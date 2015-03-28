@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
@@ -285,6 +287,46 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class HiveIntervalYearMonthConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    SettableHiveIntervalYearMonthObjectInspector outputOI;
+    Object r;
+
+    public HiveIntervalYearMonthConverter(PrimitiveObjectInspector inputOI,
+        SettableHiveIntervalYearMonthObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      r = outputOI.create(new HiveIntervalYearMonth());
+    }
+
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(input, inputOI));
+    }
+  }
+
+  public static class HiveIntervalDayTimeConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    SettableHiveIntervalDayTimeObjectInspector outputOI;
+    Object r;
+
+    public HiveIntervalDayTimeConverter(PrimitiveObjectInspector inputOI,
+        SettableHiveIntervalDayTimeObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      r = outputOI.create(new HiveIntervalDayTime());
+    }
+
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(input, inputOI));
+    }
+  }
+
   public static class HiveDecimalConverter implements Converter {
 
     PrimitiveObjectInspector inputOI;
@@ -417,6 +459,14 @@ public class PrimitiveObjectInspectorConverter {
         return t;
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
+            .getPrimitiveWritableObject(input).toString());
+        return t;
+      case INTERVAL_YEAR_MONTH:
+        t.set(((HiveIntervalYearMonthObjectInspector) inputOI)
+            .getPrimitiveWritableObject(input).toString());
+        return t;
+      case INTERVAL_DAY_TIME:
+        t.set(((HiveIntervalDayTimeObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
         return t;
       case BINARY:

@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.serde2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.util.hash.MurmurHash;
 
 
 /**
@@ -35,6 +37,8 @@ public final class WriteBuffers implements RandomAccessOutput {
   private final ArrayList<byte[]> writeBuffers = new ArrayList<byte[]>(1);
   /** Buffer size in writeBuffers */
   private final int wbSize;
+  private final int wbSizeLog2;
+  private final long offsetMask;
   private final long maxSize;
 
   private byte[] currentWriteBuffer;
@@ -47,7 +51,9 @@ public final class WriteBuffers implements RandomAccessOutput {
   private int currentReadOffset = 0;
 
   public WriteBuffers(int wbSize, long maxSize) {
-    this.wbSize = wbSize;
+    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : (Integer.highestOneBit(wbSize) << 1);
+    this.wbSizeLog2 = 31 - Integer.numberOfLeadingZeros(this.wbSize);
+    this.offsetMask = this.wbSize - 1;
     this.maxSize = maxSize;
     currentWriteBufferIndex = -1;
     nextBufferToWrite();
@@ -142,7 +148,7 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   @Override
   public void reserve(int byteCount) {
-    if (byteCount < 0) throw new AssertionError("byteCount must be positive");
+    if (byteCount < 0) throw new AssertionError("byteCount must be non-negative");
     int currentWriteOffset = this.currentWriteOffset + byteCount;
     while (currentWriteOffset > wbSize) {
       nextBufferToWrite();
@@ -190,11 +196,11 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   private int getOffset(long offset) {
-    return (int)(offset % wbSize);
+    return (int)(offset & offsetMask);
   }
 
   private int getBufferIndex(long offset) {
-    return (int)(offset / wbSize);
+    return (int)(offset >>> wbSizeLog2);
   }
 
   private void nextBufferToWrite() {
@@ -283,11 +289,11 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   public long getWritePoint() {
-    return (currentWriteBufferIndex * (long)wbSize) + currentWriteOffset;
+    return ((long)currentWriteBufferIndex << wbSizeLog2) + currentWriteOffset;
   }
 
   public long getReadPoint() {
-    return (currentReadBufferIndex * (long)wbSize) + currentReadOffset;
+    return ((long)currentReadBufferIndex << wbSizeLog2) + currentReadOffset;
   }
 
   public void writeVLong(long value) {
@@ -335,11 +341,16 @@ public final class WriteBuffers implements RandomAccessOutput {
    */
   public static class ByteSegmentRef {
     public ByteSegmentRef(long offset, int length) {
+      reset(offset, length);
+    }
+    public void reset(long offset, int length) {
       if (length < 0) {
         throw new AssertionError("Length is negative: " + length);
       }
       this.offset = offset;
       this.length = length;
+    }
+    public ByteSegmentRef() {
     }
     public byte[] getBytes() {
       return bytes;
@@ -367,27 +378,29 @@ public final class WriteBuffers implements RandomAccessOutput {
    * spanning multiple internal buffers.
    */
   public void populateValue(WriteBuffers.ByteSegmentRef value) {
-    // At this point, we are going to make a copy if need to avoid array boundaries.
+    // At this point, we are going to make a copy if needed to avoid array boundaries.
     int index = getBufferIndex(value.getOffset());
     byte[] buffer = writeBuffers.get(index);
     int bufferOffset = getOffset(value.getOffset());
     int length = value.getLength();
     if (bufferOffset + length <= wbSize) {
+      // Common case - the segment is in one buffer.
       value.bytes = buffer;
       value.offset = bufferOffset;
-    } else {
-      value.bytes = new byte[length];
-      value.offset = 0;
-      int destOffset = 0;
-      while (destOffset < length) {
-        if (destOffset > 0) {
-          buffer = writeBuffers.get(++index);
-          bufferOffset = 0;
-        }
-        int toCopy = Math.min(length - destOffset, wbSize - bufferOffset);
-        System.arraycopy(buffer, bufferOffset, value.bytes, destOffset, toCopy);
-        destOffset += toCopy;
+      return;
+    }
+    // Special case (rare) - the segment is on buffer boundary.
+    value.bytes = new byte[length];
+    value.offset = 0;
+    int destOffset = 0;
+    while (destOffset < length) {
+      if (destOffset > 0) {
+        buffer = writeBuffers.get(++index);
+        bufferOffset = 0;
       }
+      int toCopy = Math.min(length - destOffset, wbSize - bufferOffset);
+      System.arraycopy(buffer, bufferOffset, value.bytes, destOffset, toCopy);
+      destOffset += toCopy;
     }
   }
 
@@ -437,11 +450,12 @@ public final class WriteBuffers implements RandomAccessOutput {
     int prevIndex = currentWriteBufferIndex, prevOffset = currentWriteOffset;
     setWritePoint(offset);
     if (isAllInOneWriteBuffer(5)) {
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 32);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 24);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 16);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 8);
-      currentWriteBuffer[currentWriteOffset] = (byte)(v);
+      currentWriteBuffer[currentWriteOffset] = (byte)(v >>> 32);
+      currentWriteBuffer[currentWriteOffset + 1] = (byte)(v >>> 24);
+      currentWriteBuffer[currentWriteOffset + 2] = (byte)(v >>> 16);
+      currentWriteBuffer[currentWriteOffset + 3] = (byte)(v >>> 8);
+      currentWriteBuffer[currentWriteOffset + 4] = (byte)(v);
+      currentWriteOffset += 5;
     } else {
       setByte(offset++, (byte)(v >>> 32));
       setByte(offset++, (byte)(v >>> 24));
@@ -463,10 +477,11 @@ public final class WriteBuffers implements RandomAccessOutput {
     int prevIndex = currentWriteBufferIndex, prevOffset = currentWriteOffset;
     setWritePoint(offset);
     if (isAllInOneWriteBuffer(4)) {
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 24);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 16);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 8);
-      currentWriteBuffer[currentWriteOffset] = (byte)(v);
+      currentWriteBuffer[currentWriteOffset] = (byte)(v >> 24);
+      currentWriteBuffer[currentWriteOffset + 1] = (byte)(v >> 16);
+      currentWriteBuffer[currentWriteOffset + 2] = (byte)(v >> 8);
+      currentWriteBuffer[currentWriteOffset + 3] = (byte)(v);
+      currentWriteOffset += 4;
     } else {
       setByte(offset++, (byte)(v >>> 24));
       setByte(offset++, (byte)(v >>> 16));
@@ -479,7 +494,7 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   // Lifted from org.apache.hadoop.util.hash.MurmurHash... but supports offset.
-  private static int murmurHash(byte[] data, int offset, int length) {
+  public static int murmurHash(byte[] data, int offset, int length) {
     int m = 0x5bd1e995;
     int r = 24;
 
@@ -527,5 +542,13 @@ public final class WriteBuffers implements RandomAccessOutput {
     h ^= h >>> 15;
 
     return h;
+  }
+
+  /**
+   * Write buffer size
+   * @return write buffer size
+   */
+  public long size() {
+    return writeBuffers.size() * (long) wbSize;
   }
 }

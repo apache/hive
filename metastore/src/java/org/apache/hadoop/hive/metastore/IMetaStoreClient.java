@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -1349,6 +1350,18 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * Send a list of partitions to the metastore to indicate which partitions were loaded
+   * dynamically.
+   * @param txnId id of the transaction
+   * @param dbName database name
+   * @param tableName table name
+   * @param partNames partition name, as constructed by Warehouse.makePartName
+   * @throws TException
+   */
+  void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames)
+    throws TException;
 
   /**
    * A filter provided by the client that determines if a given notification event should be

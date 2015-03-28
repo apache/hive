@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -158,16 +159,16 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
    */
   public static class GenericUDAFContextNGramEvaluator extends GenericUDAFEvaluator {
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
-    private transient StandardListObjectInspector outerInputOI;
+    private transient ListObjectInspector outerInputOI;
     private transient StandardListObjectInspector innerInputOI;
-    private transient StandardListObjectInspector contextListOI;
+    private transient ListObjectInspector contextListOI;
     private PrimitiveObjectInspector contextOI;
     private PrimitiveObjectInspector inputOI;
     private transient PrimitiveObjectInspector kOI;
     private transient PrimitiveObjectInspector pOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations
-    private transient StandardListObjectInspector loi;
+    private transient ListObjectInspector loi;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -175,7 +176,7 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
 
       // Init input object inspectors
       if (m == Mode.PARTIAL1 || m == Mode.COMPLETE) {
-        outerInputOI = (StandardListObjectInspector) parameters[0];
+        outerInputOI = (ListObjectInspector) parameters[0];
         if(outerInputOI.getListElementObjectInspector().getCategory() ==
             ObjectInspector.Category.LIST) {
           // We're dealing with input that is an array of arrays of strings
@@ -186,7 +187,7 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
           inputOI = (PrimitiveObjectInspector) outerInputOI.getListElementObjectInspector();
           innerInputOI = null;
         }
-        contextListOI = (StandardListObjectInspector) parameters[1];
+        contextListOI = (ListObjectInspector) parameters[1];
         contextOI = (PrimitiveObjectInspector) contextListOI.getListElementObjectInspector();
         kOI = (PrimitiveObjectInspector) parameters[2];
         if(parameters.length == 4) {
@@ -196,7 +197,7 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
         }
       } else {
           // Init the list object inspector for handling partial aggregations
-          loi = (StandardListObjectInspector) parameters[0];
+          loi = (ListObjectInspector) parameters[0];
       }
 
       // Init output object inspectors.
@@ -229,10 +230,10 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
         return;
       }
       NGramAggBuf myagg = (NGramAggBuf) agg;
-      List<Text> partial = (List<Text>) loi.getList(obj);
+      List partial = (List) loi.getList(obj);
 
       // remove the context words from the end of the list
-      int contextSize = Integer.parseInt( ((Text)partial.get(partial.size()-1)).toString() );
+      int contextSize = Integer.parseInt( partial.get(partial.size()-1).toString() );
       partial.remove(partial.size()-1);
       if(myagg.context.size() > 0)  {
         if(contextSize != myagg.context.size()) {

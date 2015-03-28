@@ -450,7 +450,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       List<OrcProto.Type> types = fileMetadata.getTypes();
       String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
           columnNames, types, globalIncludes, fileMetadata.isOriginalFormat());
-      sargApp = new SargApplier(sarg, colNamesForSarg, rowIndexStride, types);
+      sargApp = new SargApplier(sarg, colNamesForSarg, rowIndexStride, types, globalIncludes.length);
     }
     // readState should have been initialized by this time with an empty array.
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {

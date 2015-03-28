@@ -267,6 +267,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     return result;
   }
+
   /**
    * Take the configuration and figure out which columns we need to include.
    * @param options the options to update

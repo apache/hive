@@ -65,7 +65,7 @@ public class DecimalStreamReader extends RecordReaderImpl.DecimalTreeReader {
       if (_isFileCompressed) {
         index.getNext();
       }
-      value.seek(index);
+      valueStream.seek(index);
     }
 
     if (_scaleStream.available() > 0) {

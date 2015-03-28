@@ -46,6 +46,11 @@ public class DiskRange {
   }
 
   @Override
+  public int hashCode() {
+    return (int)(offset ^ (offset >>> 32)) * 31 + (int)(end ^ (end >>> 32));
+  }
+
+  @Override
   public String toString() {
     return "range start: " + offset + " end: " + end;
   }

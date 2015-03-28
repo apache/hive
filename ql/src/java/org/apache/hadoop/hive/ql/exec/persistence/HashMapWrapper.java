@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -153,8 +154,9 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     }
 
     @Override
-    public void setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
-        VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException {
+    public JoinUtil.JoinResult setFromVector(VectorHashKeyWrapper kw,
+        VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch)
+        throws HiveException {
       if (currentKey == null) {
         currentKey = new Object[keyOutputWriters.length];
         vectorKeyOIs = new ArrayList<ObjectInspector>();
@@ -168,10 +170,16 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
       key =  MapJoinKey.readFromVector(output, key, currentKey, vectorKeyOIs, !isFirstKey);
       isFirstKey = false;
       this.currentValue = mHash.get(key);
+      if (this.currentValue == null) {
+        return JoinUtil.JoinResult.NOMATCH;
+      }
+      else {
+        return JoinUtil.JoinResult.MATCH;
+      }
     }
 
     @Override
-    public void setFromRow(Object row, List<ExprNodeEvaluator> fields,
+    public JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
       if (currentKey == null) {
         currentKey = new Object[fields.size()];
@@ -182,15 +190,27 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
       key = MapJoinKey.readFromRow(output, key, currentKey, ois, !isFirstKey);
       isFirstKey = false;
       this.currentValue = mHash.get(key);
+      if (this.currentValue == null) {
+        return JoinUtil.JoinResult.NOMATCH;
+      }
+      else {
+        return JoinUtil.JoinResult.MATCH;
+      }
     }
 
     @Override
-    public void setFromOther(ReusableGetAdaptor other) {
+    public JoinUtil.JoinResult setFromOther(ReusableGetAdaptor other) {
       assert other instanceof GetAdaptor;
       GetAdaptor other2 = (GetAdaptor)other;
       this.key = other2.key;
       this.isFirstKey = other2.isFirstKey;
       this.currentValue = mHash.get(key);
+      if (this.currentValue == null) {
+        return JoinUtil.JoinResult.NOMATCH;
+      }
+      else {
+        return JoinUtil.JoinResult.MATCH;
+      }
     }
 
     @Override
@@ -222,5 +242,10 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   @Override
   public void dumpMetrics() {
     // Nothing to do.
+  }
+
+  @Override
+  public boolean hasSpill() {
+    return false;
   }
 }

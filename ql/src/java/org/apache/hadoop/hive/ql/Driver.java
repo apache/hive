@@ -440,15 +440,13 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getCommandType());
+      // Command should be redacted before passing it to the QueryPlan in order
+      // to avoid returning sensitive data
+      String queryStr = HookUtils.redactLogString(conf, command);
 
-      String queryStr = plan.getQueryStr();
-      List<Redactor> queryRedactors = getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
-      for (Redactor redactor : queryRedactors) {
-        redactor.setConf(conf);
-        queryStr = redactor.redactQuery(queryStr);
-      }
+      plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
+          SessionState.get().getCommandType());
+
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
@@ -973,6 +971,7 @@ public class Driver implements CommandProcessor {
         if (txnId == SessionState.NO_CURRENT_TXN) {
           txnId = txnMgr.openTxn(userFromUGI);
           ss.setCurrentTxn(txnId);
+          LOG.debug("Setting current transaction to " + txnId);
         }
         // Set the transaction id in all of the acid file sinks
         if (acidSinks != null) {

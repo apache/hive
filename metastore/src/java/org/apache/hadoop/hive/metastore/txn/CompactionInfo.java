@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 /**
  * Information on a possible or running compaction.
  */
-public class CompactionInfo {
+public class CompactionInfo implements Comparable<CompactionInfo> {
   public long id;
   public String dbname;
   public String tableName;
@@ -67,5 +67,10 @@ public class CompactionInfo {
   }
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
+  }
+
+  @Override
+  public int compareTo(CompactionInfo o) {
+    return getFullPartitionName().compareTo(o.getFullPartitionName());
   }
 }
