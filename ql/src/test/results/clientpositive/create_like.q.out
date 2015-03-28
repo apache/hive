@@ -331,9 +331,9 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors
 # col_name            	data_type           	comment             
 	 	 
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -380,9 +380,9 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors2
 # col_name            	data_type           	comment             
 	 	 
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
