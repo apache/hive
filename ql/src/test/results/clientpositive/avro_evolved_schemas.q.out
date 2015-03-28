@@ -30,7 +30,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
     {
       "name":"extra_field",
       "type":"string",
-      "doc:":"an extra field not in the original file",
+      "doc":"an extra field not in the original file",
       "default":"fishfingers and custard"
     }
   ]
@@ -70,7 +70,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
     {
       "name":"extra_field",
       "type":"string",
-      "doc:":"an extra field not in the original file",
+      "doc":"an extra field not in the original file",
       "default":"fishfingers and custard"
     }
   ]
@@ -84,10 +84,10 @@ PREHOOK: Input: default@doctors_with_new_field
 POSTHOOK: query: DESCRIBE doctors_with_new_field
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors_with_new_field
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
-extra_field         	string              	from deserializer   
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
+extra_field         	string              	an extra field not in the original file
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_with_new_field
 PREHOOK: type: LOAD
 #### A masked pattern was here ####

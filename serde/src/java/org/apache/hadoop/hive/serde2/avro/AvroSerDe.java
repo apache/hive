@@ -55,12 +55,14 @@ public class AvroSerDe extends AbstractSerDe {
   public static final String CHAR_TYPE_NAME = "char";
   public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String DATE_TYPE_NAME = "date";
+  public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
   public static final String AVRO_PROP_MAX_LENGTH = "maxLength";
   public static final String AVRO_STRING_TYPE_NAME = "string";
   public static final String AVRO_INT_TYPE_NAME = "int";
+  public static final String AVRO_LONG_TYPE_NAME = "long";
 
   private ObjectInspector oi;
   private List<String> columnNames;
@@ -82,7 +84,7 @@ public class AvroSerDe extends AbstractSerDe {
   public void initialize(Configuration configuration, Properties properties) throws SerDeException {
     // Reset member variables so we don't get in a half-constructed state
     if (schema != null) {
-      LOG.debug("Resetting already initialized AvroSerDe");
+      LOG.info("Resetting already initialized AvroSerDe");
     }
 
     schema = null;
@@ -108,12 +110,10 @@ public class AvroSerDe extends AbstractSerDe {
       properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Avro schema is " + schema);
-    }
+    LOG.info("Avro schema is " + schema);
 
     if (configuration == null) {
-      LOG.debug("Configuration null, not inserting schema");
+      LOG.info("Configuration null, not inserting schema");
     } else {
       configuration.set(
           AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
@@ -133,11 +133,10 @@ public class AvroSerDe extends AbstractSerDe {
     if (columnCommentProperty == null || columnCommentProperty.isEmpty()) {
       columnComments = new ArrayList<String>();
     } else {
-      columnComments = Arrays.asList(columnCommentProperty.split(","));
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("columnComments is " + columnCommentProperty);
-      }
+      //Comments are separated by "\0" in columnCommentProperty, see method getSchema
+      //in MetaStoreUtils where this string columns.comments is generated
+      columnComments = Arrays.asList(columnCommentProperty.split("\0"));
+      LOG.info("columnComments is " + columnCommentProperty);
     }
     if (columnNames.size() != columnTypes.size()) {
       throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +

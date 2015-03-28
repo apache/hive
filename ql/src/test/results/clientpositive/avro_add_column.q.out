@@ -24,8 +24,8 @@ PREHOOK: Input: default@doctors
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
+number              	int                 	                    
+first_name          	string              	                    
 PREHOOK: query: ALTER TABLE doctors ADD COLUMNS (last_name string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@doctors
@@ -40,9 +40,9 @@ PREHOOK: Input: default@doctors
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
