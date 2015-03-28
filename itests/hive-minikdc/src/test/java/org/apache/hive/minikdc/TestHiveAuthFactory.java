@@ -41,26 +41,48 @@ public class TestHiveAuthFactory {
   }
 
   /**
-   * Verify that delegation token manager is started with no exception
+   * Verify that delegation token manager is started with no exception for MemoryTokenStore
    * @throws Exception
    */
   @Test
-  public void testStartTokenManager() throws Exception {
+  public void testStartTokenManagerForMemoryTokenStore() throws Exception {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
     String principalName = miniHiveKdc.getFullHiveServicePrincipal();
     System.out.println("Principal: " + principalName);
-    
+
     hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, principalName);
     String keyTabFile = miniHiveKdc.getKeyTabFile(miniHiveKdc.getHiveServicePrincipal());
     System.out.println("keyTabFile: " + keyTabFile);
     Assert.assertNotNull(keyTabFile);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, keyTabFile);
 
-    System.out.println("rawStoreClassName =" +  hiveConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL));
+    HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
+    Assert.assertNotNull(authFactory);
+    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
+        authFactory.getAuthTransFactory().getClass().getName());
+  }
+
+  /**
+   * Verify that delegation token manager is started with no exception for DBTokenStore
+   * @throws Exception
+   */
+  @Test
+  public void testStartTokenManagerForDBTokenStore() throws Exception {
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
+    String principalName = miniHiveKdc.getFullHiveServicePrincipal();
+    System.out.println("Principal: " + principalName);
+
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, principalName);
+    String keyTabFile = miniHiveKdc.getKeyTabFile(miniHiveKdc.getHiveServicePrincipal());
+    System.out.println("keyTabFile: " + keyTabFile);
+    Assert.assertNotNull(keyTabFile);
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, keyTabFile);
+
+    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
     Assert.assertNotNull(authFactory);
-    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory", 
+    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
         authFactory.getAuthTransFactory().getClass().getName());
   }
 }
