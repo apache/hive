@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -44,7 +45,7 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
   // of objs)
   private transient StandardListObjectInspector loi;
 
-  private transient StandardListObjectInspector internalMergeOI;
+  private transient ListObjectInspector internalMergeOI;
 
   private BufferType bufferType;
 
@@ -68,14 +69,14 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
           .getStandardListObjectInspector((PrimitiveObjectInspector) ObjectInspectorUtils
               .getStandardObjectInspector(inputOI));
     } else {
-      if (!(parameters[0] instanceof StandardListObjectInspector)) {
+      if (!(parameters[0] instanceof ListObjectInspector)) {
         //no map aggregation.
         inputOI = (PrimitiveObjectInspector)  ObjectInspectorUtils
         .getStandardObjectInspector(parameters[0]);
         return (StandardListObjectInspector) ObjectInspectorFactory
             .getStandardListObjectInspector(inputOI);
       } else {
-        internalMergeOI = (StandardListObjectInspector) parameters[0];
+        internalMergeOI = (ListObjectInspector) parameters[0];
         inputOI = (PrimitiveObjectInspector) internalMergeOI.getListElementObjectInspector();
         loi = (StandardListObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
         return loi;

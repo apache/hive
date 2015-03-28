@@ -43,7 +43,7 @@ public class RCFileMergeOperator
   int columnNumber = 0;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     Object[] keyValue = (Object[]) row;
     processKeyValuePairs(keyValue[0], keyValue[1]);
   }

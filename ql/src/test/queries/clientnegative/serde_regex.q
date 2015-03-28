@@ -3,7 +3,7 @@ USE default;
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time TIMESTAMP,
   request STRING,
   status INT,

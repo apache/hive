@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Future;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -27,11 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.mapred.JobConf;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Fast file merge operator for ORC and RCfile. This is an abstract class which
@@ -63,8 +65,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   protected transient DynamicPartitionCtx dpCtx;
 
   @Override
-  public void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     this.jc = new JobConf(hconf);
     incompatFileSet = new HashSet<Path>();
     autoDelete = false;
@@ -92,6 +94,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       throw new HiveException("Failed to initialize AbstractFileMergeOperator",
           e);
     }
+    return result;
   }
 
   // sets up temp and task temp path

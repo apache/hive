@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
@@ -38,8 +40,7 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * Join operator implementation.
  */
-public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
-    Serializable {
+public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private transient SkewJoinHandler skewJoinKeyContext = null;
@@ -55,19 +56,19 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   private final transient LongWritable skewjoin_followup_jobs = new LongWritable(0);
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
-    initializeChildren(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     if (handleSkewJoin) {
       skewJoinKeyContext = new SkewJoinHandler(this);
       skewJoinKeyContext.initiliaze(hconf);
       skewJoinKeyContext.setSkewJoinJobCounter(skewjoin_followup_jobs);
     }
     statsMap.put(SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS.toString(), skewjoin_followup_jobs);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
       reportProgress();
 

@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintStream;
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -203,7 +202,7 @@ public class TestFileDump {
         10000L,
         4.0f,
         20.0,
-        HiveDecimal.create(new BigDecimal(4.2222)),
+        HiveDecimal.create("4.2222"),
         new Timestamp(1416967764000L),
         new Date(1416967764000L),
         "string",
@@ -222,7 +221,7 @@ public class TestFileDump {
         20000L,
         8.0f,
         40.0,
-        HiveDecimal.create(new BigDecimal(2.2222)),
+        HiveDecimal.create("2.2222"),
         new Timestamp(1416967364000L),
         new Date(1411967764000L),
         "abcd",
@@ -234,7 +233,6 @@ public class TestFileDump {
 
     writer.close();
     PrintStream origOut = System.out;
-    String outputFilename = "orc-file-dump.out";
     ByteArrayOutputStream myOut = new ByteArrayOutputStream();
 
     // replace stdout and run command
@@ -245,9 +243,8 @@ public class TestFileDump {
 
     String[] lines = myOut.toString().split("\n");
     // Don't be fooled by the big space in the middle, this line is quite long
-    assertEquals("{\"b\":true,\"bt\":10,\"s\":100,\"i\":1000,\"l\":10000,\"f\":4,\"d\":20,\"de\":\"4.222199999999999953\",\"t\":\"2014-11-25 18:09:24\",\"dt\":\"2014-11-25\",\"str\":\"string\",\"c\":\"hello                                                                                                                                                                                                                                                          \",\"vc\":\"hello\",\"m\":[{\"_key\":\"k1\",\"_value\":\"v1\"}],\"a\":[100,200],\"st\":{\"i\":10,\"s\":\"foo\"}}", lines[0]);
-    assertEquals("{\"b\":false,\"bt\":20,\"s\":200,\"i\":2000,\"l\":20000,\"f\":8,\"d\":40,\"de\":\"2.222199999999999953\",\"t\":\"2014-11-25 18:02:44\",\"dt\":\"2014-09-28\",\"str\":\"abcd\",\"c\":\"world                                                                                                                                                                                                                                                          \",\"vc\":\"world\",\"m\":[{\"_key\":\"k3\",\"_value\":\"v3\"}],\"a\":[200,300],\"st\":{\"i\":20,\"s\":\"bar\"}}", lines[1]);
-
+    assertEquals("{\"b\":true,\"bt\":10,\"s\":100,\"i\":1000,\"l\":10000,\"f\":4,\"d\":20,\"de\":\"4.2222\",\"t\":\"2014-11-25 18:09:24\",\"dt\":\"2014-11-25\",\"str\":\"string\",\"c\":\"hello                                                                                                                                                                                                                                                          \",\"vc\":\"hello\",\"m\":[{\"_key\":\"k1\",\"_value\":\"v1\"}],\"a\":[100,200],\"st\":{\"i\":10,\"s\":\"foo\"}}", lines[0]);
+    assertEquals("{\"b\":false,\"bt\":20,\"s\":200,\"i\":2000,\"l\":20000,\"f\":8,\"d\":40,\"de\":\"2.2222\",\"t\":\"2014-11-25 18:02:44\",\"dt\":\"2014-09-28\",\"str\":\"abcd\",\"c\":\"world                                                                                                                                                                                                                                                          \",\"vc\":\"world\",\"m\":[{\"_key\":\"k3\",\"_value\":\"v3\"}],\"a\":[200,300],\"st\":{\"i\":20,\"s\":\"bar\"}}", lines[1]);
   }
 
   // Test that if the fraction of rows that have distinct strings is greater than the configured

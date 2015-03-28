@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Arrays;
-import java.util.Random;
 
 /**
  * A high-performance set implementation used to support fast set membership testing,

@@ -81,11 +81,11 @@ POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754000 WHERE (key % 17) = 0
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754 WHERE (key % 17) = 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754000 WHERE (key % 17) = 0
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 1329959754 WHERE (key % 17) = 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table
@@ -139,27 +139,27 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: insert overwrite table hbase_table select key,value,ts FROM
 (
-  select key, value, 100000000000 as ts from src WHERE (key % 33) = 0
+  select key, value, 100000000 as ts from src WHERE (key % 33) = 0
   UNION ALL
-  select key, value, 200000000000 as ts from src WHERE (key % 37) = 0
+  select key, value, 200000000 as ts from src WHERE (key % 37) = 0
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbase_table
 POSTHOOK: query: insert overwrite table hbase_table select key,value,ts FROM
 (
-  select key, value, 100000000000 as ts from src WHERE (key % 33) = 0
+  select key, value, 100000000 as ts from src WHERE (key % 33) = 0
   UNION ALL
-  select key, value, 200000000000 as ts from src WHERE (key % 37) = 0
+  select key, value, 200000000 as ts from src WHERE (key % 37) = 0
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -171,10 +171,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100.0) and (key < 400.0)) and (time < 200000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time < 200000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time < 200000000000))) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time < 200000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -194,21 +194,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 165	val_165	1973-03-03 01:46:40
 396	val_396	1973-03-03 01:46:40
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -220,10 +220,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100.0) and (key < 400.0)) and (time > 100000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time > 100000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time > 100000000000))) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time > 100000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -243,11 +243,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
@@ -256,10 +256,10 @@ POSTHOOK: Input: default@hbase_table
 296	val_296	1976-05-03 12:33:20
 333	val_333	1976-05-03 12:33:20
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -271,10 +271,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100.0) and (key < 400.0)) and (time <= 100000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time <= 100000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time <= 100000000000))) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time <= 100000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -294,21 +294,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 165	val_165	1973-03-03 01:46:40
 396	val_396	1973-03-03 01:46:40
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -320,10 +320,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100.0) and (key < 400.0)) and (time >= 200000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time >= 200000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time >= 200000000000))) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time >= 200000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -343,11 +343,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####

@@ -56,7 +56,7 @@ public class OrcFileMergeOperator extends
   private FSDataInputStream fdis;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     Object[] keyValue = (Object[]) row;
     processKeyValuePairs(keyValue[0], keyValue[1]);
   }

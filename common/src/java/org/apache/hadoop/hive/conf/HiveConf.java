@@ -710,6 +710,11 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
         "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
         "because memory-optimized hashtable cannot be serialized."),
+    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", false, "Whether to use hybrid" +
+        "grace hash join as the join method for mapjoin."),
+    HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +
+        "hybrid grace hash join, how often (how many rows apart) we check if memory is full. " +
+        "This number should be power of 2."),
     HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024,
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
@@ -766,6 +771,11 @@ public class HiveConf extends Configuration {
 
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE TABLE statement. Users can explicitly override it by CREATE TABLE ... STORED AS [FORMAT]"),
+    HIVEDEFAULTMANAGEDFILEFORMAT("hive.default.fileformat.managed", "none",
+	new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+	"Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
+	"created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
+	"for all tables."),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
@@ -1954,7 +1964,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-
+    HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS("hive.support.sql11.reserved.keywords", true,
+        "This flag should be set to true to enable support for SQL2011 reserved keywords.\n" +
+        "The default value is true."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
@@ -2027,7 +2039,11 @@ public class HiveConf extends Configuration {
     SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
-      "Name of the SASL mechanism to use for authentication.");
+      "Name of the SASL mechanism to use for authentication."),
+    NWAYJOINREORDER("hive.reorder.nway.joins", true,
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+    HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
+      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially.");
 
     public final String varname;
     private final String defaultExpr;

@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
@@ -37,14 +38,18 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
+import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -371,13 +376,15 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Double) value), calciteDataType);
       break;
     case CHAR:
-      if (value instanceof HiveChar)
+      if (value instanceof HiveChar) {
         value = ((HiveChar) value).getValue();
+      }
       calciteLiteral = rexBuilder.makeLiteral((String) value);
       break;
     case VARCHAR:
-      if (value instanceof HiveVarchar)
+      if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
+      }
       calciteLiteral = rexBuilder.makeLiteral((String) value);
       break;
     case STRING:
@@ -397,6 +404,21 @@ public class RexNodeConverter {
         c.setTimeInMillis(((Timestamp)value).getTime());
       }
       calciteLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
+      break;
+    case INTERVAL_YEAR_MONTH:
+      // Calcite year-month literal value is months as BigDecimal
+      BigDecimal totalMonths = BigDecimal.valueOf(((HiveIntervalYearMonth) value).getTotalMonths());
+      calciteLiteral = rexBuilder.makeIntervalLiteral(totalMonths,
+          new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
+      break;
+    case INTERVAL_DAY_TIME:
+      // Calcite day-time interval is millis value as BigDecimal
+      // Seconds converted to millis
+      BigDecimal secsValueBd = BigDecimal.valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
+      // Nanos converted to millis
+      BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime) value).getNanos(), 6);
+      calciteLiteral = rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
+          new SqlIntervalQualifier(TimeUnit.DAY, TimeUnit.SECOND, new SqlParserPos(1,1)));
       break;
     case VOID:
       calciteLiteral = cluster.getRexBuilder().makeLiteral(null,

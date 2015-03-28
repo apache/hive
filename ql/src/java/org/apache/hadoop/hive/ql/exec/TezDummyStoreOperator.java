@@ -33,8 +33,8 @@ public class TezDummyStoreOperator extends DummyStoreOperator {
    * the records.
    */
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
-    super.processOp(row, tag);
+  public void process(Object row, int tag) throws HiveException {
+    super.process(row, tag);
     forward(result.o, outputObjInspector);
   }
 }

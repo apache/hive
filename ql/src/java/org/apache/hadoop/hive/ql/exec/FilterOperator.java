@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,7 +30,6 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * Filter operator implementation.
@@ -49,7 +50,8 @@ public class FilterOperator extends Operator<FilterDesc> implements
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
@@ -63,11 +65,11 @@ public class FilterOperator extends Operator<FilterDesc> implements
     } catch (Throwable e) {
       throw new HiveException(e);
     }
-    initializeChildren(hconf);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (conditionInspector == null) {
       conditionInspector = (PrimitiveObjectInspector) conditionEvaluator

@@ -509,7 +509,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (colType == null)
       throw new SemanticException("column type not found");
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getTableName(),
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
         .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
@@ -1093,7 +1093,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    storageFormat.fillDefaultStorageFormat();
+    storageFormat.fillDefaultStorageFormat(false);
     if (indexTableName == null) {
       indexTableName = MetaStoreUtils.getIndexTableName(qTabName[0], qTabName[1], indexName);
       indexTableName = qTabName[0] + "." + indexTableName; // on same database with base table

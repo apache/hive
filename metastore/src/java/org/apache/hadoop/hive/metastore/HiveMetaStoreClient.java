@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -291,6 +292,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
     }
     return compatible;
+  }
+
+  @Override
+  public void setHiveAddedJars(String addedJars) {
+    HiveConf.setVar(conf, ConfVars.HIVEADDEDJARS, addedJars);
   }
 
   @Override
@@ -1480,7 +1486,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getSchema(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    return deepCopyFieldSchemas(client.get_schema(db, tableName));
+      EnvironmentContext envCxt = null;
+      String addedJars = conf.getVar(ConfVars.HIVEADDEDJARS);
+      if(org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+         Map<String, String> props = new HashMap<String, String>();
+         props.put("hive.added.jars.path", addedJars);
+         envCxt = new EnvironmentContext(props);
+       }
+
+    return deepCopyFieldSchemas(client.get_schema_with_environment_context(db, tableName, envCxt));
   }
 
   @Override
@@ -1899,6 +1913,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+                                   List<String> partNames) throws TException {
+    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
   }
 
   @Override

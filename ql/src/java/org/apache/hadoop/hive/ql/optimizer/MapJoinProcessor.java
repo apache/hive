@@ -251,10 +251,8 @@ public class MapJoinProcessor implements Transform {
     if (!op.opAllowedAfterMapJoin()) {
       throw new SemanticException(ErrorMsg.OPERATOR_NOT_ALLOWED_WITH_MAPJOIN.getMsg());
     }
-    if (op.getChildOperators() != null) {
-      for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
-        checkChildOperatorType(childOp);
-      }
+    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+      checkChildOperatorType(childOp);
     }
   }
 

@@ -50,7 +50,7 @@ import org.codehaus.jettison.json.JSONWriter;
  * A tool for printing out the file structure of ORC files.
  */
 public final class FileDump {
-  private static final String ROWINDEX_PREFIX = "--rowindex=";
+  private static final String UNKNOWN = "UNKNOWN";
 
   // not used
   private FileDump() {}
@@ -77,9 +77,13 @@ public final class FileDump {
       }
     }
 
+    boolean printTimeZone = false;
+    if (cli.hasOption('t')) {
+      printTimeZone = true;
+    }
     String[] files = cli.getArgs();
     if (dumpData) printData(Arrays.asList(files), conf);
-    else printMetaData(Arrays.asList(files), conf, rowIndexCols);
+    else printMetaData(Arrays.asList(files), conf, rowIndexCols, printTimeZone);
   }
 
   private static void printData(List<String> files, Configuration conf) throws IOException,
@@ -90,7 +94,7 @@ public final class FileDump {
   }
 
   private static void printMetaData(List<String> files, Configuration conf,
-                                    List<Integer> rowIndexCols) throws IOException {
+      List<Integer> rowIndexCols, boolean printTimeZone) throws IOException {
     for (String filename : files) {
       System.out.println("Structure for " + filename);
       Path path = new Path(filename);
@@ -125,11 +129,19 @@ public final class FileDump {
       for (StripeInformation stripe : reader.getStripes()) {
         ++stripeIx;
         long stripeStart = stripe.getOffset();
-        System.out.println("  Stripe: " + stripe.toString());
         OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
+        if (printTimeZone) {
+          String tz = footer.getWriterTimezone();
+          if (tz == null || tz.isEmpty()) {
+            tz = UNKNOWN;
+          }
+          System.out.println("  Stripe: " + stripe.toString() + " timezone: " + tz);
+        } else {
+          System.out.println("  Stripe: " + stripe.toString());
+        }
         long sectionStart = stripeStart;
         for(OrcProto.Stream section: footer.getStreamsList()) {
-          String kind = section.hasKind() ? section.getKind().name() : "UNKNOWN";
+          String kind = section.hasKind() ? section.getKind().name() : UNKNOWN;
           System.out.println("    Stream: column " + section.getColumn() +
               " section " + kind + " start: " + sectionStart +
               " length " + section.getLength());
@@ -157,7 +169,7 @@ public final class FileDump {
           for (int colIdx : rowIndexCols) {
             sargColumns[colIdx] = true;
           }
-          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, sargColumns);
+          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
           for (int col : rowIndexCols) {
             StringBuilder buf = new StringBuilder();
             String rowIdxString = getFormattedRowIndices(col, indices.getRowGroupIndex());
@@ -277,6 +289,13 @@ public final class FileDump {
         .withLongOpt("data")
         .withDescription("Should the data be printed")
         .create('d'));
+
+    // to avoid breaking unit tests (when run in different time zones) for file dump, printing
+    // of timezone is made optional
+    result.addOption(OptionBuilder
+        .withLongOpt("timezone")
+        .withDescription("Print writer's time zone")
+        .create('t'));
 
     result.addOption(OptionBuilder
         .withLongOpt("help")

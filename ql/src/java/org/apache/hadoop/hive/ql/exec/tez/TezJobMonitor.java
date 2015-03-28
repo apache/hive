@@ -785,7 +785,7 @@ public class TezJobMonitor {
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskAttemptCount();
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", s));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);

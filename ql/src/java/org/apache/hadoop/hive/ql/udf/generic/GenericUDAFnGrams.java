@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -160,7 +161,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
    */
   public static class GenericUDAFnGramEvaluator extends GenericUDAFEvaluator {
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
-    private transient StandardListObjectInspector outerInputOI;
+    private transient ListObjectInspector outerInputOI;
     private transient StandardListObjectInspector innerInputOI;
     private transient PrimitiveObjectInspector inputOI;
     private transient PrimitiveObjectInspector nOI;
@@ -168,7 +169,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     private transient PrimitiveObjectInspector pOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations
-    private transient StandardListObjectInspector loi;
+    private transient ListObjectInspector loi;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -176,7 +177,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
 
       // Init input object inspectors
       if (m == Mode.PARTIAL1 || m == Mode.COMPLETE) {
-        outerInputOI = (StandardListObjectInspector) parameters[0];
+        outerInputOI = (ListObjectInspector) parameters[0];
         if(outerInputOI.getListElementObjectInspector().getCategory() ==
             ObjectInspector.Category.LIST) {
           // We're dealing with input that is an array of arrays of strings
@@ -196,7 +197,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
         }
       } else {
           // Init the list object inspector for handling partial aggregations
-          loi = (StandardListObjectInspector) parameters[0];
+          loi = (ListObjectInspector) parameters[0];
       }
 
       // Init output object inspectors.
@@ -229,7 +230,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
         return;
       }
       NGramAggBuf myagg = (NGramAggBuf) agg;
-      List<Text> partialNGrams = (List<Text>) loi.getList(partial);
+      List partialNGrams = (List) loi.getList(partial);
       int n = Integer.parseInt(partialNGrams.get(partialNGrams.size()-1).toString());
 
       // A value of 0 for n indicates that the mapper processed data that does not meet

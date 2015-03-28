@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -84,7 +86,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    * operator will be enhanced to read the table.
    **/
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (rowLimit >= 0 && currCount++ >= rowLimit) {
       setDone(true);
       return;
@@ -153,9 +155,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
           values.add(o == null ? defaultPartitionName : o.toString());
         }
         partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
-	if (isLogInfoEnabled) {
-	  LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
+        }
       }
       // find which column contains the raw data size (both partitioned and non partitioned
       int uSizeColumn = -1;
@@ -191,16 +193,17 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    initializeChildren(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     inputFileChanged = false;
 
     if (conf == null) {
-      return;
+      return result;
     }
+
     rowLimit = conf.getRowLimit();
     if (!conf.isGatherStats()) {
-      return;
+      return result;
     }
 
     this.hconf = hconf;
@@ -216,9 +219,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     stats = new HashMap<String, Stat>();
     if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
       // NON PARTITIONED table
-      return;
+      return result;
     }
-
+    return result;
   }
 
   @Override
@@ -282,7 +285,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (!statsPublisher.connect(jc)) {
       // just return, stats gathering should not block the main query.
       if (isLogInfoEnabled) {
-	LOG.info("StatsPublishing error: cannot connect to database.");
+        LOG.info("StatsPublishing error: cannot connect to database.");
       }
       if (isStatsReliable) {
         throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());

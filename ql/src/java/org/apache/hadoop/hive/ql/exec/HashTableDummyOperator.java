@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -31,21 +33,22 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
   private static final long serialVersionUID = 1L;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     TableDesc tbl = this.getConf().getTbl();
     try {
       Deserializer serde = tbl.getDeserializerClass().newInstance();
       SerDeUtils.initializeSerDe(serde, hconf, tbl.getProperties(), null);
       this.outputObjInspector = serde.getObjectInspector();
-      initializeChildren(hconf);
     } catch (Exception e) {
       LOG.error("Generating output obj inspector from dummy object error", e);
       e.printStackTrace();
     }
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     throw new HiveException();
   }
 

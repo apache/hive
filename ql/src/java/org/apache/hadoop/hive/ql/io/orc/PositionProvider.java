@@ -21,6 +21,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 /**
  * An interface used for seeking to a row index.
  */
-interface PositionProvider {
+public interface PositionProvider {
   long getNext();
 }

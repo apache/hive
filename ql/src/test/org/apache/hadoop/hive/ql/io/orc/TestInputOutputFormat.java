@@ -1638,14 +1638,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(607, split.getLength());
+    assertEquals(625, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(629, split.getLength());
+    assertEquals(647, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -1653,7 +1653,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(241, combineSplit.getLength(bucket));
+      assertEquals(253, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -1687,7 +1687,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost").end().build();
-    conf.set(OrcInputFormat.SARG_PUSHDOWN, isNull.toKryo());
+    conf.set(SearchArgumentFactory.SARG_PUSHDOWN, isNull.toKryo());
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});

@@ -1,8 +1,8 @@
-PREHOOK: query: create table array_table (array array<string>, index int )
+PREHOOK: query: create table array_table (`array` array<string>, index int )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@array_table
-POSTHOOK: query: create table array_table (array array<string>, index int )
+POSTHOOK: query: create table array_table (`array` array<string>, index int )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@array_table
@@ -17,10 +17,10 @@ POSTHOOK: Output: default@array_table
 POSTHOOK: Lineage: array_table.array EXPRESSION []
 POSTHOOK: Lineage: array_table.index EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain
-select index, array[index] from array_table
+select index, `array`[index] from array_table
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select index, array[index] from array_table
+select index, `array`[index] from array_table
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -39,11 +39,11 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: select index, array[index] from array_table
+PREHOOK: query: select index, `array`[index] from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
 #### A masked pattern was here ####
-POSTHOOK: query: select index, array[index] from array_table
+POSTHOOK: query: select index, `array`[index] from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
 #### A masked pattern was here ####

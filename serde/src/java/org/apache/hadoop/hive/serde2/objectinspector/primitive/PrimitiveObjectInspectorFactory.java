@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -85,6 +87,10 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDateObjectInspector();
   public static final WritableTimestampObjectInspector writableTimestampObjectInspector =
       new WritableTimestampObjectInspector();
+  public static final WritableHiveIntervalYearMonthObjectInspector writableHiveIntervalYearMonthObjectInspector =
+      new WritableHiveIntervalYearMonthObjectInspector();
+  public static final WritableHiveIntervalDayTimeObjectInspector writableHiveIntervalDayTimeObjectInspector =
+      new WritableHiveIntervalDayTimeObjectInspector();
   public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
       new WritableBinaryObjectInspector();
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
@@ -118,6 +124,10 @@ public final class PrimitiveObjectInspectorFactory {
         writableDateObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         writableTimestampObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME),
+        writableHiveIntervalYearMonthObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME),
+        writableHiveIntervalDayTimeObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
@@ -139,6 +149,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.VOID, writableVoidObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DATE, writableDateObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP, writableTimestampObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_YEAR_MONTH, writableHiveIntervalYearMonthObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, writableHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
   }
@@ -169,6 +181,10 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDateObjectInspector();
   public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
       new JavaTimestampObjectInspector();
+  public static final JavaHiveIntervalYearMonthObjectInspector javaHiveIntervalYearMonthObjectInspector =
+      new JavaHiveIntervalYearMonthObjectInspector();
+  public static final JavaHiveIntervalDayTimeObjectInspector javaHiveIntervalDayTimeObjectInspector =
+      new JavaHiveIntervalDayTimeObjectInspector();
   public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
       new JavaBinaryObjectInspector();
   public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
@@ -202,6 +218,10 @@ public final class PrimitiveObjectInspectorFactory {
         javaDateObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         javaTimestampObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME),
+        javaHiveIntervalYearMonthObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME),
+        javaHiveIntervalDayTimeObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.decimalTypeInfo, javaHiveDecimalObjectInspector);
@@ -223,6 +243,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.VOID, javaVoidObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DATE, javaDateObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMP, javaTimestampObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.INTERVAL_YEAR_MONTH, javaHiveIntervalYearMonthObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, javaHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.BINARY, javaByteArrayObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DECIMAL, javaHiveDecimalObjectInspector);
   }
@@ -314,6 +336,10 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantDateObjectInspector((DateWritable)value);
     case TIMESTAMP:
       return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
+    case INTERVAL_YEAR_MONTH:
+      return new WritableConstantHiveIntervalYearMonthObjectInspector((HiveIntervalYearMonthWritable) value);
+    case INTERVAL_DAY_TIME:
+      return new WritableConstantHiveIntervalDayTimeObjectInspector((HiveIntervalDayTimeWritable) value);
     case DECIMAL:
       return new WritableConstantHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo, (HiveDecimalWritable)value);
     case BINARY:

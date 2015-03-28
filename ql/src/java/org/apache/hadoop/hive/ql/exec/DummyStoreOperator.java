@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -72,13 +74,14 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> ret = super.initializeOp(hconf);
     /*
-     * The conversion to standard object inspector was necessitated by HIVE-5973. The issue 
-     * happens when a select operator preceeds this operator as in the case of a subquery. The 
-     * select operator does not allocate a new object to hold the deserialized row. This affects 
+     * The conversion to standard object inspector was necessitated by HIVE-5973. The issue
+     * happens when a select operator preceeds this operator as in the case of a subquery. The
+     * select operator does not allocate a new object to hold the deserialized row. This affects
      * the operation of the SMB join which puts the object in a priority queue. Since all elements
-     * of the priority queue point to the same object, the join was resulting in incorrect 
+     * of the priority queue point to the same object, the join was resulting in incorrect
      * results.
      *
      * So the fix is to make a copy of the object as done in the processOp phase below. This
@@ -87,11 +90,11 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
      */
     outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(inputObjInspectors[0]);
     result = new InspectableObject(null, outputObjInspector);
-    initializeChildren(hconf);
+    return ret;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     // Store the row. See comments above for why we need a new copy of the row.
     result.o = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0],
         ObjectInspectorCopyOption.WRITABLE);

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -29,10 +30,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Future;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
@@ -62,6 +64,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Map operator. This triggers overall map side processing. This is a little
  * different from regular operators in that it starts off by processing a
@@ -85,6 +89,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   private final transient LongWritable recordCounter = new LongWritable();
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
   private final Map<String, Map<Operator<?>, MapOpCtx>> opCtxMap =
@@ -154,7 +159,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       if (op.getDone()) {
         return false;
       }
-      op.processOp(row, 0);
+      op.process(row, 0);
       return true;
     }
   }
@@ -172,8 +177,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   void initializeAsRoot(JobConf hconf, MapWork mapWork) throws Exception {
     setConf(mapWork);
     setChildren(hconf);
-    setExecContext(new ExecMapperContext(hconf));
-    initialize(hconf, null);
+    passExecContext(new ExecMapperContext(hconf));
+    initializeMapOperator(hconf);
   }
 
   private MapOpCtx initObjectInspector(Configuration hconf, MapOpCtx opCtx,
@@ -413,12 +418,18 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   @Override
-  public void initializeOp(Configuration hconf) throws HiveException {
+  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    return super.initializeOp(hconf);
+  }
+
+  public void initializeMapOperator(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
 
     numRows = 0;
+    cntr = 1;
+    logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
     String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     if (context != null && !context.isEmpty()) {
@@ -514,7 +525,11 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     numRows += rows;
     if (isLogInfoEnabled) {
       while (numRows >= cntr) {
-        cntr *= 10;
+        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+        if (cntr < 0 || numRows < 0) {
+          cntr = 1;
+          numRows = 0;
+        }
         LOG.info(toString() + ": records read - " + numRows);
       }
     }
@@ -604,7 +619,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }
 

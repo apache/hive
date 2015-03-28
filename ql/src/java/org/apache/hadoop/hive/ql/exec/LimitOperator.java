@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,16 +39,17 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   protected transient boolean isMap;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     limit = conf.getLimit();
     leastRow = conf.getLeastRows();
     currCount = 0;
     isMap = hconf.getBoolean("mapred.task.is.map", true);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (currCount < limit) {
       forward(row, inputObjInspectors[tag]);
       currCount++;

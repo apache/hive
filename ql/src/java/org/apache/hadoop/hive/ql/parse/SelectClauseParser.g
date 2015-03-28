@@ -35,6 +35,9 @@ k=3;
       RecognitionException e) {
     gParent.errors.add(new ParseError(gParent, e, tokenNames));
   }
+  protected boolean useSQL11ReservedKeywordsForIdentifier() {
+    return gParent.useSQL11ReservedKeywordsForIdentifier();
+  }
 }
 
 @rulecatch {
@@ -125,10 +128,11 @@ selectItem
 @init { gParent.pushMsg("selection target", state); }
 @after { gParent.popMsg(state); }
     :
+    (tableAllColumns) => tableAllColumns -> ^(TOK_SELEXPR tableAllColumns)
+    |
     ( expression
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
     ) -> ^(TOK_SELEXPR expression identifier*)
-    | tableAllColumns -> ^(TOK_SELEXPR tableAllColumns)
     ;
 
 trfmClause
@@ -148,7 +152,9 @@ selectExpression
 @init { gParent.pushMsg("select expression", state); }
 @after { gParent.popMsg(state); }
     :
-    expression | tableAllColumns
+    (tableAllColumns) => tableAllColumns
+    |
+    expression
     ;
 
 selectExpressionList

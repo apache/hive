@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Collection;
+import java.util.concurrent.Future;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -27,7 +30,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Filter operator implementation.
@@ -39,7 +41,7 @@ public class VectorFilterOperator extends FilterOperator {
   private VectorExpression conditionEvaluator = null;
 
   // Temporary selected vector
-  private int[] temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
+  private final int[] temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
 
   // filterMode is 1 if condition is always true, -1 if always false
   // and 0 if condition needs to be computed.
@@ -59,7 +61,8 @@ public class VectorFilterOperator extends FilterOperator {
 
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
@@ -74,7 +77,7 @@ public class VectorFilterOperator extends FilterOperator {
         filterMode = -1;
       }
     }
-    initializeChildren(hconf);
+    return result;
   }
 
   public void setFilterCondition(VectorExpression expr) {
@@ -82,7 +85,7 @@ public class VectorFilterOperator extends FilterOperator {
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
 
     VectorizedRowBatch vrg = (VectorizedRowBatch) row;
 

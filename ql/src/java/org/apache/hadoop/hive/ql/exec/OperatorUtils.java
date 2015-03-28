@@ -122,7 +122,7 @@ public class OperatorUtils {
       if(op.getName().equals(ReduceSinkOperator.getOperatorName())) {
         ReduceSinkOperator rs = ((ReduceSinkOperator)op);
         if (outMap.containsKey(rs.getConf().getOutputName())) {
-          LOG.info("Setting output collector: " + rs + " --> " 
+          LOG.info("Setting output collector: " + rs + " --> "
             + rs.getConf().getOutputName());
           rs.setOutputCollector(outMap.get(rs.getConf().getOutputName()));
         }
@@ -234,9 +234,7 @@ public class OperatorUtils {
             resultMap.put(clazz, op);
           }
         }
-        if (op.getChildOperators() != null) {
-          allChildren.addAll(op.getChildOperators());
-        }
+        allChildren.addAll(op.getChildOperators());
       }
       ops = allChildren;
     }

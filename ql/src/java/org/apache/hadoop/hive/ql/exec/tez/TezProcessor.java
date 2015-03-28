@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,7 +33,6 @@ import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
-import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
@@ -143,20 +142,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       throws Exception {
     Throwable originalThrowable = null;
     try {
-      // Outputs will be started later by the individual Processors.
-      TezCacheAccess cacheAccess = TezCacheAccess.createInstance(jobConf);
-      // Start the actual Inputs. After MRInput initialization.
-      for (Map.Entry<String, LogicalInput> inputEntry : inputs.entrySet()) {
-        if (!cacheAccess.isInputCached(inputEntry.getKey())) {
-          LOG.info("Starting input " + inputEntry.getKey());
-          inputEntry.getValue().start();
-          processorContext.waitForAnyInputReady(Collections.singletonList((Input) (inputEntry
-              .getValue())));
-        } else {
-          LOG.info("Input: " + inputEntry.getKey()
-              + " is already cached. Skipping start and wait for ready");
-        }
-      }
 
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
       rproc.init(jobConf, getContext(), mrReporter, inputs, outputs);

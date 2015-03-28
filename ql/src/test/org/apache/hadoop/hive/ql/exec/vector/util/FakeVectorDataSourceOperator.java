@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -60,11 +62,12 @@ public class FakeVectorDataSourceOperator extends Operator<FakeVectorDataSourceO
   }
 
   @Override
-  public void initializeOp(Configuration conf) throws HiveException {
+  public Collection<Future<?>> initializeOp(Configuration conf) throws HiveException {
+    return super.initializeOp(conf);
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     for (VectorizedRowBatch unit: source) {
       forward(unit, null);
     }

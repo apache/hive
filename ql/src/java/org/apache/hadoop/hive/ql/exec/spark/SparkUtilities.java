@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -97,8 +95,8 @@ public class SparkUtilities {
       return null;
     }
 
-    String[] splits = uri.getPath().split(File.separator);
-    return  splits[splits.length-1];
+    String name = FilenameUtils.getName(uri.getPath());
+    return name;
   }
 
   public static SparkSession getSparkSession(HiveConf conf,

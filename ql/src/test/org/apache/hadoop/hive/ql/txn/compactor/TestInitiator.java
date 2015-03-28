@@ -625,5 +625,32 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
   }
 
-  // TODO test compactions with legacy file types
+  @Test
+  public void noCompactTableDynamicPartitioning() throws Exception {
+    Table t = newTable("default", "nctdp", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions(23);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+    comp.setTablename("nctdp");
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(0, compacts.size());
+  }
+
 }

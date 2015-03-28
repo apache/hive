@@ -29,7 +29,9 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool drop_type(const std::string& type) = 0;
   virtual void get_type_all(std::map<std::string, Type> & _return, const std::string& name) = 0;
   virtual void get_fields(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) = 0;
+  virtual void get_fields_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) = 0;
   virtual void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) = 0;
+  virtual void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) = 0;
   virtual void create_table(const Table& tbl) = 0;
   virtual void create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
@@ -133,6 +135,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void heartbeat_txn_range(HeartbeatTxnRangeResponse& _return, const HeartbeatTxnRangeRequest& txns) = 0;
   virtual void compact(const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
+  virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
@@ -206,7 +209,13 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_fields(std::vector<FieldSchema> & /* _return */, const std::string& /* db_name */, const std::string& /* table_name */) {
     return;
   }
+  void get_fields_with_environment_context(std::vector<FieldSchema> & /* _return */, const std::string& /* db_name */, const std::string& /* table_name */, const EnvironmentContext& /* environment_context */) {
+    return;
+  }
   void get_schema(std::vector<FieldSchema> & /* _return */, const std::string& /* db_name */, const std::string& /* table_name */) {
+    return;
+  }
+  void get_schema_with_environment_context(std::vector<FieldSchema> & /* _return */, const std::string& /* db_name */, const std::string& /* table_name */, const EnvironmentContext& /* environment_context */) {
     return;
   }
   void create_table(const Table& /* tbl */) {
@@ -537,6 +546,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
+    return;
+  }
+  void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -2195,6 +2207,162 @@ class ThriftHiveMetastore_get_fields_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_fields_with_environment_context_args__isset {
+  _ThriftHiveMetastore_get_fields_with_environment_context_args__isset() : db_name(false), table_name(false), environment_context(false) {}
+  bool db_name;
+  bool table_name;
+  bool environment_context;
+} _ThriftHiveMetastore_get_fields_with_environment_context_args__isset;
+
+class ThriftHiveMetastore_get_fields_with_environment_context_args {
+ public:
+
+  ThriftHiveMetastore_get_fields_with_environment_context_args() : db_name(), table_name() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_fields_with_environment_context_args() throw() {}
+
+  std::string db_name;
+  std::string table_name;
+  EnvironmentContext environment_context;
+
+  _ThriftHiveMetastore_get_fields_with_environment_context_args__isset __isset;
+
+  void __set_db_name(const std::string& val) {
+    db_name = val;
+  }
+
+  void __set_table_name(const std::string& val) {
+    table_name = val;
+  }
+
+  void __set_environment_context(const EnvironmentContext& val) {
+    environment_context = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_fields_with_environment_context_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(environment_context == rhs.environment_context))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_fields_with_environment_context_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_fields_with_environment_context_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_fields_with_environment_context_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_fields_with_environment_context_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* table_name;
+  const EnvironmentContext* environment_context;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_fields_with_environment_context_result__isset {
+  _ThriftHiveMetastore_get_fields_with_environment_context_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_fields_with_environment_context_result__isset;
+
+class ThriftHiveMetastore_get_fields_with_environment_context_result {
+ public:
+
+  ThriftHiveMetastore_get_fields_with_environment_context_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_fields_with_environment_context_result() throw() {}
+
+  std::vector<FieldSchema>  success;
+  MetaException o1;
+  UnknownTableException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_fields_with_environment_context_result__isset __isset;
+
+  void __set_success(const std::vector<FieldSchema> & val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const UnknownTableException& val) {
+    o2 = val;
+  }
+
+  void __set_o3(const UnknownDBException& val) {
+    o3 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_fields_with_environment_context_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_fields_with_environment_context_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_fields_with_environment_context_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_fields_with_environment_context_presult__isset {
+  _ThriftHiveMetastore_get_fields_with_environment_context_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_fields_with_environment_context_presult__isset;
+
+class ThriftHiveMetastore_get_fields_with_environment_context_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_fields_with_environment_context_presult() throw() {}
+
+  std::vector<FieldSchema> * success;
+  MetaException o1;
+  UnknownTableException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_fields_with_environment_context_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_schema_args__isset {
   _ThriftHiveMetastore_get_schema_args__isset() : db_name(false), table_name(false) {}
   bool db_name;
@@ -2337,6 +2505,162 @@ class ThriftHiveMetastore_get_schema_presult {
   UnknownDBException o3;
 
   _ThriftHiveMetastore_get_schema_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_schema_with_environment_context_args__isset {
+  _ThriftHiveMetastore_get_schema_with_environment_context_args__isset() : db_name(false), table_name(false), environment_context(false) {}
+  bool db_name;
+  bool table_name;
+  bool environment_context;
+} _ThriftHiveMetastore_get_schema_with_environment_context_args__isset;
+
+class ThriftHiveMetastore_get_schema_with_environment_context_args {
+ public:
+
+  ThriftHiveMetastore_get_schema_with_environment_context_args() : db_name(), table_name() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_schema_with_environment_context_args() throw() {}
+
+  std::string db_name;
+  std::string table_name;
+  EnvironmentContext environment_context;
+
+  _ThriftHiveMetastore_get_schema_with_environment_context_args__isset __isset;
+
+  void __set_db_name(const std::string& val) {
+    db_name = val;
+  }
+
+  void __set_table_name(const std::string& val) {
+    table_name = val;
+  }
+
+  void __set_environment_context(const EnvironmentContext& val) {
+    environment_context = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_schema_with_environment_context_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(environment_context == rhs.environment_context))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_schema_with_environment_context_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_schema_with_environment_context_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_schema_with_environment_context_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_schema_with_environment_context_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* table_name;
+  const EnvironmentContext* environment_context;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_schema_with_environment_context_result__isset {
+  _ThriftHiveMetastore_get_schema_with_environment_context_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_schema_with_environment_context_result__isset;
+
+class ThriftHiveMetastore_get_schema_with_environment_context_result {
+ public:
+
+  ThriftHiveMetastore_get_schema_with_environment_context_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_schema_with_environment_context_result() throw() {}
+
+  std::vector<FieldSchema>  success;
+  MetaException o1;
+  UnknownTableException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_schema_with_environment_context_result__isset __isset;
+
+  void __set_success(const std::vector<FieldSchema> & val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const UnknownTableException& val) {
+    o2 = val;
+  }
+
+  void __set_o3(const UnknownDBException& val) {
+    o3 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_schema_with_environment_context_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_schema_with_environment_context_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_schema_with_environment_context_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_schema_with_environment_context_presult__isset {
+  _ThriftHiveMetastore_get_schema_with_environment_context_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_schema_with_environment_context_presult__isset;
+
+class ThriftHiveMetastore_get_schema_with_environment_context_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_schema_with_environment_context_presult() throw() {}
+
+  std::vector<FieldSchema> * success;
+  MetaException o1;
+  UnknownTableException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_schema_with_environment_context_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -16579,6 +16903,124 @@ class ThriftHiveMetastore_show_compact_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_args__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_args__isset() : rqst(false) {}
+  bool rqst;
+} _ThriftHiveMetastore_add_dynamic_partitions_args__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_args {
+ public:
+
+  ThriftHiveMetastore_add_dynamic_partitions_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_args() throw() {}
+
+  AddDynamicPartitions rqst;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_args__isset __isset;
+
+  void __set_rqst(const AddDynamicPartitions& val) {
+    rqst = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_add_dynamic_partitions_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_dynamic_partitions_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_dynamic_partitions_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_dynamic_partitions_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_pargs() throw() {}
+
+  const AddDynamicPartitions* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_result__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_add_dynamic_partitions_result__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_result {
+ public:
+
+  ThriftHiveMetastore_add_dynamic_partitions_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_result() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_result__isset __isset;
+
+  void __set_o1(const NoSuchTxnException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const TxnAbortedException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_add_dynamic_partitions_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_dynamic_partitions_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_dynamic_partitions_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_dynamic_partitions_presult__isset {
+  _ThriftHiveMetastore_add_dynamic_partitions_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_add_dynamic_partitions_presult__isset;
+
+class ThriftHiveMetastore_add_dynamic_partitions_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_dynamic_partitions_presult() throw() {}
+
+  NoSuchTxnException o1;
+  TxnAbortedException o2;
+
+  _ThriftHiveMetastore_add_dynamic_partitions_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
   _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
   bool rqst;
@@ -16940,9 +17382,15 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_fields(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name);
   void send_get_fields(const std::string& db_name, const std::string& table_name);
   void recv_get_fields(std::vector<FieldSchema> & _return);
+  void get_fields_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context);
+  void send_get_fields_with_environment_context(const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context);
+  void recv_get_fields_with_environment_context(std::vector<FieldSchema> & _return);
   void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name);
   void send_get_schema(const std::string& db_name, const std::string& table_name);
   void recv_get_schema(std::vector<FieldSchema> & _return);
+  void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context);
+  void send_get_schema_with_environment_context(const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context);
+  void recv_get_schema_with_environment_context(std::vector<FieldSchema> & _return);
   void create_table(const Table& tbl);
   void send_create_table(const Table& tbl);
   void recv_create_table();
@@ -17252,6 +17700,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
   void send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return);
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst);
+  void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
+  void recv_add_dynamic_partitions();
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -17284,7 +17735,9 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_type_all(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_fields(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_fields_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_schema(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_schema_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -17388,6 +17841,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_heartbeat_txn_range(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -17408,7 +17862,9 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_type"] = &ThriftHiveMetastoreProcessor::process_drop_type;
     processMap_["get_type_all"] = &ThriftHiveMetastoreProcessor::process_get_type_all;
     processMap_["get_fields"] = &ThriftHiveMetastoreProcessor::process_get_fields;
+    processMap_["get_fields_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_get_fields_with_environment_context;
     processMap_["get_schema"] = &ThriftHiveMetastoreProcessor::process_get_schema;
+    processMap_["get_schema_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_get_schema_with_environment_context;
     processMap_["create_table"] = &ThriftHiveMetastoreProcessor::process_create_table;
     processMap_["create_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_create_table_with_environment_context;
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
@@ -17512,6 +17968,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["heartbeat_txn_range"] = &ThriftHiveMetastoreProcessor::process_heartbeat_txn_range;
     processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
+    processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
@@ -17672,6 +18129,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_fields_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_fields_with_environment_context(_return, db_name, table_name, environment_context);
+    }
+    ifaces_[i]->get_fields_with_environment_context(_return, db_name, table_name, environment_context);
+    return;
+  }
+
   void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -17679,6 +18146,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_schema(_return, db_name, table_name);
     }
     ifaces_[i]->get_schema(_return, db_name, table_name);
+    return;
+  }
+
+  void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_schema_with_environment_context(_return, db_name, table_name, environment_context);
+    }
+    ifaces_[i]->get_schema_with_environment_context(_return, db_name, table_name, environment_context);
     return;
   }
 
@@ -18667,6 +19144,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
     ifaces_[i]->show_compact(_return, rqst);
     return;
+  }
+
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_dynamic_partitions(rqst);
+    }
+    ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {

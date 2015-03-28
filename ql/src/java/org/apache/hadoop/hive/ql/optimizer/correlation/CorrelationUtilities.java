@@ -446,14 +446,15 @@ public final class CorrelationUtilities {
     }
   }
 
-  /** throw a exception if the input operator is null
+  /**
+   * Throws an exception if the input operator is null
+   *
    * @param operator
-   * @throws HiveException
+   * @throws SemanticException if the input operator is null
    */
   protected static void isNullOperator(Operator<?> operator) throws SemanticException {
     if (operator == null) {
-      throw new SemanticException("Operator " + operator.getName() + " (ID: " +
-          operator.getIdentifier() + ") is null.");
+      throw new SemanticException("Operator is null.");
     }
   }
 

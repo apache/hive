@@ -34,11 +34,11 @@ create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key string, values bigint) stored as rcfile
+PREHOOK: query: create table outputTbl1(key string, `values` bigint) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key string, values bigint) stored as rcfile
+POSTHOOK: query: create table outputTbl1(key string, `values` bigint) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
@@ -54,9 +54,9 @@ PREHOOK: query: explain
 insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, 1 as values from inputTbl1
+select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as values
+select a.key as key, b.val as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 PREHOOK: type: QUERY
@@ -64,9 +64,9 @@ POSTHOOK: query: explain
 insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, 1 as values from inputTbl1
+select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as values
+select a.key as key, b.val as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
@@ -194,9 +194,9 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, 1 as values from inputTbl1
+select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as values
+select a.key as key, b.val as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 PREHOOK: type: QUERY
@@ -205,9 +205,9 @@ PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: insert overwrite table outputTbl1
 SELECT * FROM
 (
-select key, 1 as values from inputTbl1
+select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as values
+select a.key as key, b.val as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
@@ -251,11 +251,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from outputTbl1 order by key, values
+PREHOOK: query: select * from outputTbl1 order by key, `values`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 order by key, values
+POSTHOOK: query: select * from outputTbl1 order by key, `values`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####

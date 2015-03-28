@@ -204,6 +204,16 @@ public final class LazyBinaryUtils {
         recordInfo.elementOffset = 0;
         recordInfo.elementSize = TimestampWritable.getTotalLength(bytes, offset);
         break;
+      case INTERVAL_YEAR_MONTH:
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = WritableUtils.decodeVIntSize(bytes[offset]);
+        break;
+      case INTERVAL_DAY_TIME:
+        recordInfo.elementOffset = 0;
+        int secondsSize = WritableUtils.decodeVIntSize(bytes[offset]);
+        int nanosSize = WritableUtils.decodeVIntSize(bytes[offset + secondsSize]);
+        recordInfo.elementSize = secondsSize + nanosSize;
+        break;
       case DECIMAL:
         // using vint instead of 4 bytes
         LazyBinaryUtils.readVInt(bytes, offset, vInt);
