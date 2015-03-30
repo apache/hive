@@ -246,7 +246,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       final ReadContext readContext = new DataWritableReadSupport()
           .init(jobConf, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
       schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-          .get(DataWritableReadSupport.HIVE_SCHEMA_KEY)).getFieldCount();
+          .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
       final long splitStart = ((FileSplit) oldSplit).getStart();
       final long splitLength = ((FileSplit) oldSplit).getLength();
