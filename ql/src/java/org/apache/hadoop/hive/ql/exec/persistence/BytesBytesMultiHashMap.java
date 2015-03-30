@@ -184,6 +184,18 @@ public final class BytesBytesMultiHashMap {
     this(initialCapacity, loadFactor, wbSize, -1);
   }
 
+  public class ThreadSafeGetter {
+    private WriteBuffers.Position position = new WriteBuffers.Position();
+    public byte getValueRefs(byte[] key, int length, List<WriteBuffers.ByteSegmentRef> result) {
+      return BytesBytesMultiHashMap.this.getValueRefs(key, length, result, position);
+    }
+
+    public void populateValue(WriteBuffers.ByteSegmentRef valueRef) {
+      // Convenience method, populateValue is thread-safe.
+      BytesBytesMultiHashMap.this.populateValue(valueRef);
+    }
+  }
+
   /** The source of keys and values to put into hashtable; avoids byte copying. */
   public static interface KvSource {
     /** Write key into output. */
@@ -201,7 +213,7 @@ public final class BytesBytesMultiHashMap {
   }
 
   /**
-   * Adds new value to new or existing key in hashmap.
+   * Adds new value to new or existing key in hashmap. Not thread-safe.
    * @param kv Keyvalue writer. Each method will be called at most once.
    */
   private static final byte[] FOUR_ZEROES = new byte[] { 0, 0, 0, 0 };
@@ -247,6 +259,15 @@ public final class BytesBytesMultiHashMap {
     ++numValues;
   }
 
+  public ThreadSafeGetter createGetterForThread() {
+    return new ThreadSafeGetter();
+  }
+
+  /** Not thread-safe! Use createGetterForThread. */
+  public byte getValueRefs(byte[] key, int length, List<WriteBuffers.ByteSegmentRef> result) {
+    return getValueRefs(key, length, result, writeBuffers.getReadPosition());
+  }
+
   /**
    * Gets "lazy" values for a key (as a set of byte segments in underlying buffer).
    * @param key Key buffer.
@@ -254,21 +275,21 @@ public final class BytesBytesMultiHashMap {
    * @param result The list to use to store the results.
    * @return the state byte for the key (see class description).
    */
-  public byte getValueRefs(byte[] key, int length, List<WriteBuffers.ByteSegmentRef> result) {
+  private byte getValueRefs(byte[] key, int length,
+      List<WriteBuffers.ByteSegmentRef> result, WriteBuffers.Position readPos) {
     // First, find first record for the key.
     result.clear();
-    long ref = findKeyRefToRead(key, length);
+    long ref = findKeyRefToRead(key, length, readPos);
     if (ref == 0) {
       return 0;
     }
     boolean hasList = Ref.hasList(ref);
 
     // This relies on findKeyRefToRead doing key equality check and leaving read ptr where needed.
-    long lrPtrOffset = hasList ? writeBuffers.getReadPoint() : 0;
+    long lrPtrOffset = hasList ? writeBuffers.getReadPoint(readPos) : 0;
 
-    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref));
-    int valueLength = (int)writeBuffers.readVLong();
-    // LOG.info("Returning value at " + (Ref.getOffset(ref) - valueLength) +  " length " + valueLength);
+    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref, readPos), readPos);
+    int valueLength = (int)writeBuffers.readVLong(readPos);
     result.add(new WriteBuffers.ByteSegmentRef(Ref.getOffset(ref) - valueLength, valueLength));
     byte stateByte = Ref.getStateByte(ref);
     if (!hasList) {
@@ -276,19 +297,17 @@ public final class BytesBytesMultiHashMap {
     }
 
     // There're multiple records for the key; get the offset of the next one.
-    long nextTailOffset = writeBuffers.readFiveByteULong(lrPtrOffset);
+    long nextTailOffset = writeBuffers.readNByteLong(lrPtrOffset, 5, readPos);
     // LOG.info("Next tail offset " + nextTailOffset);
 
     while (nextTailOffset > 0) {
-      writeBuffers.setReadPoint(nextTailOffset);
-      valueLength = (int)writeBuffers.readVLong();
-      // LOG.info("Returning value at " + (nextTailOffset - valueLength) +  " length " + valueLength);
+      writeBuffers.setReadPoint(nextTailOffset, readPos);
+      valueLength = (int)writeBuffers.readVLong(readPos);
       result.add(new WriteBuffers.ByteSegmentRef(nextTailOffset - valueLength, valueLength));
       // Now read the relative offset to next record. Next record is always before the
       // previous record in the write buffers (see writeBuffers javadoc).
-      long delta = writeBuffers.readVLong();
+      long delta = writeBuffers.readVLong(readPos);
       nextTailOffset = delta == 0 ? 0 : (nextTailOffset - delta);
-      // LOG.info("Delta " + delta +  ", next tail offset " + nextTailOffset);
     }
     return stateByte;
   }
@@ -388,7 +407,7 @@ public final class BytesBytesMultiHashMap {
    * @param length Read key length.
    * @return The ref to use for reading.
    */
-  private long findKeyRefToRead(byte[] key, int length) {
+  private long findKeyRefToRead(byte[] key, int length, WriteBuffers.Position readPos) {
     final int bucketMask = (refs.length - 1);
     int hashCode = writeBuffers.hashCode(key, 0, length);
     int slot = hashCode & bucketMask;
@@ -402,7 +421,7 @@ public final class BytesBytesMultiHashMap {
       if (ref == 0) {
         return 0;
       }
-      if (isSameKey(key, length, ref, hashCode)) {
+      if (isSameKey(key, length, ref, hashCode, readPos)) {
         return ref;
       }
       probeSlot += (++i);
@@ -453,7 +472,7 @@ public final class BytesBytesMultiHashMap {
     if (!compareHashBits(ref, hashCode)) {
       return false; // Hash bits in ref don't match.
     }
-    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref));
+    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref, null));
     int valueLength = (int)writeBuffers.readVLong(), keyLength = (int)writeBuffers.readVLong();
     if (keyLength != cmpLength) {
       return false;
@@ -471,12 +490,14 @@ public final class BytesBytesMultiHashMap {
   /**
    * Same as {@link #isSameKey(long, int, long, int)} but for externally stored key.
    */
-  private boolean isSameKey(byte[] key, int length, long ref, int hashCode) {
+  private boolean isSameKey(byte[] key, int length, long ref, int hashCode,
+      WriteBuffers.Position readPos) {
     if (!compareHashBits(ref, hashCode)) {
       return false;  // Hash bits don't match.
     }
-    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref));
-    int valueLength = (int)writeBuffers.readVLong(), keyLength = (int)writeBuffers.readVLong();
+    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref, readPos), readPos);
+    int valueLength = (int)writeBuffers.readVLong(readPos),
+        keyLength = (int)writeBuffers.readVLong(readPos);
     long keyOffset = Ref.getOffset(ref) - (valueLength + keyLength);
     // See the comment in the other isSameKey
     return writeBuffers.isEqual(key, length, keyOffset, keyLength);
@@ -491,10 +512,11 @@ public final class BytesBytesMultiHashMap {
    * @param ref Reference.
    * @return The offset to value and key length vlongs of the first record referenced by ref.
    */
-  private long getFirstRecordLengthsOffset(long ref) {
+  private long getFirstRecordLengthsOffset(long ref, WriteBuffers.Position readPos) {
     long tailOffset = Ref.getOffset(ref);
     if (Ref.hasList(ref)) {
-      long relativeOffset = writeBuffers.readFiveByteULong(tailOffset);
+      long relativeOffset = (readPos == null) ? writeBuffers.readNByteLong(tailOffset, 5)
+          : writeBuffers.readNByteLong(tailOffset, 5, readPos);
       tailOffset += relativeOffset;
     }
     return tailOffset;
@@ -522,10 +544,10 @@ public final class BytesBytesMultiHashMap {
       // TODO: we could actually store a bit flag in ref indicating whether this is a hash
       //       match or a probe, and in the former case use hash bits (for a first few resizes).
       // int hashCodeOrPart = oldSlot | Ref.getNthHashBit(oldRef, startingHashBitCount, newHashBitCount);
-      writeBuffers.setReadPoint(getFirstRecordLengthsOffset(oldRef));
+      writeBuffers.setReadPoint(getFirstRecordLengthsOffset(oldRef, null));
       // Read the value and key length for the first record.
-      int hashCode = writeBuffers.readInt(Ref.getOffset(oldRef)
-          - writeBuffers.readVLong() - writeBuffers.readVLong() - 4);
+      int hashCode = (int)writeBuffers.readNByteLong(Ref.getOffset(oldRef)
+          - writeBuffers.readVLong() - writeBuffers.readVLong() - 4, 4);
       int probeSteps = relocateKeyRef(newRefs, oldRef, hashCode);
       maxSteps = Math.max(probeSteps, maxSteps);
     }
@@ -576,7 +598,7 @@ public final class BytesBytesMultiHashMap {
    */
   private void addRecordToList(long lrPtrOffset, long tailOffset) {
     // Now, insert this record into the list.
-    long prevHeadOffset = writeBuffers.readFiveByteULong(lrPtrOffset);
+    long prevHeadOffset = writeBuffers.readNByteLong(lrPtrOffset, 5);
     // LOG.info("Reading offset " + prevHeadOffset + " at " + lrPtrOffset);
     assert prevHeadOffset < tailOffset; // We replace an earlier element, must have lower offset.
     writeBuffers.writeFiveByteULong(lrPtrOffset, tailOffset);
@@ -632,7 +654,7 @@ public final class BytesBytesMultiHashMap {
     return tailOffset;
   }
 
-  /** Writes the debug dump of the table into logs. */
+  /** Writes the debug dump of the table into logs. Not thread-safe. */
   public void debugDumpTable() {
     StringBuilder dump = new StringBuilder(keysAssigned + " keys\n");
     TreeMap<Long, Integer> byteIntervals = new TreeMap<Long, Integer>();
@@ -644,10 +666,11 @@ public final class BytesBytesMultiHashMap {
         continue;
       }
       ++examined;
-      long recOffset = getFirstRecordLengthsOffset(ref);
+      long recOffset = getFirstRecordLengthsOffset(ref, null);
       long tailOffset = Ref.getOffset(ref);
       writeBuffers.setReadPoint(recOffset);
-      int valueLength = (int)writeBuffers.readVLong(), keyLength = (int)writeBuffers.readVLong();
+      int valueLength = (int)writeBuffers.readVLong(),
+          keyLength = (int)writeBuffers.readVLong();
       long ptrOffset = writeBuffers.getReadPoint();
       if (Ref.hasList(ref)) {
         byteIntervals.put(recOffset, (int)(ptrOffset + 5 - recOffset));
