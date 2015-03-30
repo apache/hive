@@ -154,6 +154,11 @@ public class AppConfig extends Configuration {
   public static final String HADOOP_MR_AM_JAVA_OPTS = "yarn.app.mapreduce.am.command-opts";
   public static final String HADOOP_MR_AM_MEMORY_MB = "yarn.app.mapreduce.am.resource.mb";
   public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
+  /**
+   * comma-separated list of artifacts to add to HADOOP_CLASSPATH evn var in
+   * LaunchMapper before launching Hive command
+   */
+  public static final String HIVE_EXTRA_FILES = "templeton.hive.extra.files";
 
 
   private static final Log LOG = LogFactory.getLog(AppConfig.class);
