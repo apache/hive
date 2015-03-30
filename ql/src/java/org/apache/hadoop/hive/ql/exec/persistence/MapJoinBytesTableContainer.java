@@ -430,6 +430,8 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
+    /** Hash table wrapper; not really thread-local, just specific to the container. */
+    private final BytesBytesMultiHashMap.ThreadSafeGetter threadLocalHashMap;
     private List<WriteBuffers.ByteSegmentRef> refs;
     private int currentRow;
     /**
@@ -449,22 +451,20 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
+      threadLocalHashMap = hashMap.createGetterForThread();
       clearRows();
     }
 
     public JoinUtil.JoinResult setFromOutput(Output output) {
-      synchronized (hashMap) {
-        if (refs == null) {
-          refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
-        }
-        byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
-        this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
-        this.dummyRow = null;
+      if (refs == null) {
+        refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
       }
+      byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
+      this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
+      this.dummyRow = null;
       if (refs.isEmpty()) {
         return JoinUtil.JoinResult.NOMATCH;
-      }
-      else {
+      } else {
         return JoinUtil.JoinResult.MATCH;
       }
     }
@@ -524,22 +524,20 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         dummyRow = null;
         return result;
       }
-      synchronized (hashMap) {
-        if (currentRow < 0 || refs.size() < currentRow)
-          throw new HiveException("No rows");
-        if (refs.size() == currentRow)
-          return null;
-        WriteBuffers.ByteSegmentRef ref = refs.get(currentRow++);
-        if (ref.getLength() == 0) {
-          return EMPTY_LIST; // shortcut, 0 length means no fields
-        }
-        if (ref.getBytes() == null) {
-          hashMap.populateValue(ref);
-        }
-        uselessIndirection.setData(ref.getBytes());
-        valueStruct.init(uselessIndirection, (int) ref.getOffset(), ref.getLength());
-        return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
+      if (currentRow < 0 || refs.size() < currentRow)
+        throw new HiveException("No rows");
+      if (refs.size() == currentRow)
+        return null;
+      WriteBuffers.ByteSegmentRef ref = refs.get(currentRow++);
+      if (ref.getLength() == 0) {
+        return EMPTY_LIST; // shortcut, 0 length means no fields
       }
+      if (ref.getBytes() == null) {
+        hashMap.populateValue(ref);
+      }
+      uselessIndirection.setData(ref.getBytes());
+      valueStruct.init(uselessIndirection, (int) ref.getOffset(), ref.getLength());
+      return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
     }
 
     @Override
