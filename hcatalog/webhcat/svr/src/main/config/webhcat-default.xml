@@ -197,6 +197,32 @@
     </description>
   </property>
 
+  <!--
+  <property>
+    <name>templeton.controller.mr.am.java.opts</name>
+    <value></value>
+    <description>Java options to be set for the templeton controller job's
+        MapReduce application master. When submitting the controller job,
+        Templeton will override yarn.app.mapreduce.am.command-opts with
+        this value.  If this is not specified, Templeton will not set the
+        property and therefore the value will be picked up from
+        mapred-site.xml.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.mr.am.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Application Master's memory
+        limit in MB. When submitting controller job, Templeton will
+        overwrite yarn.app.mapreduce.am.resource.mb with this value. If
+        empty, Templeton will not set yarn.app.mapreduce.am.resource.mb
+        when submitting the controller job, therefore the configuration
+        in mapred-site.xml will be used.
+    </description>
+  </property>
+  -->
+
   <property>
     <name>templeton.exec.envs</name>
     <value>HADOOP_PREFIX,HADOOP_HOME,JAVA_HOME,HIVE_HOME</value>
