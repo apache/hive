@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -79,7 +78,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public DiskRangeList getFileData(long fileId, DiskRangeList ranges, long baseOffset) {
+  public DiskRangeList getFileData(
+      long fileId, DiskRangeList ranges, long baseOffset, CacheChunkFactory factory) {
     if (ranges == null) return null;
     FileCache subCache = cache.get(fileId);
     if (subCache == null || !subCache.incRef()) {
@@ -96,7 +96,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         metrics.incrCacheRequestedBytes(current.getLength());
         // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
         DiskRangeList next = current.next;
-        getOverlappingRanges(baseOffset, current, subCache.cache);
+        getOverlappingRanges(baseOffset, current, subCache.cache, factory);
         current = next;
       }
       return prev.next;
@@ -106,7 +106,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
-      ConcurrentSkipListMap<Long, LlapDataBuffer> cache) {
+      ConcurrentSkipListMap<Long, LlapDataBuffer> cache, CacheChunkFactory factory) {
     long absOffset = currentNotCached.getOffset() + baseOffset;
     if (!doAssumeGranularBlocks) {
       // This currently only happens in tests. See getFileData comment on the interface.
@@ -140,7 +140,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
             + cacheOffset + ", " + (cacheOffset + buffer.declaredLength) + ")");
       }
       cacheEnd = cacheOffset + buffer.declaredLength;
-      CacheChunk currentCached = new CacheChunk(buffer,
+      DiskRangeList currentCached = factory.createCacheChunk(buffer,
           cacheOffset - baseOffset, cacheEnd - baseOffset);
       currentNotCached = addCachedBufferToIter(currentNotCached, currentCached);
       metrics.incrCacheHitBytes(Math.min(requestedLength, currentCached.getLength()));
@@ -154,7 +154,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
    * @return The new currentNotCached pointer, following the cached buffer insertion.
    */
   private DiskRangeList addCachedBufferToIter(
-      DiskRangeList currentNotCached, CacheChunk currentCached) {
+      DiskRangeList currentNotCached, DiskRangeList currentCached) {
     if (currentNotCached.getOffset() >= currentCached.getOffset()) {
       if (currentNotCached.getEnd() <= currentCached.getEnd()) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
@@ -454,10 +454,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public void notifyReused(LlapMemoryBuffer buffer) {
+  public boolean notifyReused(LlapMemoryBuffer buffer) {
     // notifyReused implies that buffer is already locked; it's also called once for new
     // buffers that are not cached yet. Don't notify cache policy.
-    lockBuffer(((LlapDataBuffer)buffer), false);
+    return lockBuffer(((LlapDataBuffer)buffer), false);
   }
 
   @Override

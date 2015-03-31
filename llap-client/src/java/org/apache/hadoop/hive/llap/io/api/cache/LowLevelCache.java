@@ -49,7 +49,8 @@ public interface LowLevelCache {
    *    Some sort of InvalidCacheChunk could be placed to avoid them. TODO
    * @param base base offset for the ranges (stripe/stream offset in case of ORC).
    */
-  DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset);
+  DiskRangeList getFileData(
+      long fileId, DiskRangeList range, long baseOffset, CacheChunkFactory factory);
 
   /**
    * Puts file data into cache.
@@ -73,7 +74,11 @@ public interface LowLevelCache {
 
   LlapMemoryBuffer createUnallocated();
 
-  void notifyReused(LlapMemoryBuffer buffer);
+  boolean notifyReused(LlapMemoryBuffer buffer);
 
   boolean isDirectAlloc();
+
+  public interface CacheChunkFactory {
+    DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long startOffset, long endOffset);
+  }
 }
