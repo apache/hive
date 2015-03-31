@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_add AS 'UDFExampleAdd'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_add
+FAILED: Class UDFExampleAdd not found
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
