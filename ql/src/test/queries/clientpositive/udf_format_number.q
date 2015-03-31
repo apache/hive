@@ -71,3 +71,9 @@ SELECT format_number(12332.123456BD, 4),
     format_number(-12332.2BD, 0),
     format_number(CAST(12332.567 AS DECIMAL(8, 1)), 4)
 FROM src tablesample (1 rows);
+
+-- nulls
+SELECT
+  format_number(cast(null as int), 0),
+  format_number(12332.123456BD, cast(null as int)),
+  format_number(cast(null as int), cast(null as int));
