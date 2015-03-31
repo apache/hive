@@ -22,7 +22,7 @@ SELECT key, count(1) FROM T1 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
@@ -35,7 +35,7 @@ PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key,val
 
@@ -50,7 +50,7 @@ SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
@@ -63,7 +63,7 @@ PREHOOK: query: SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
@@ -77,7 +77,7 @@ SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
@@ -90,7 +90,7 @@ PREHOOK: query: SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key,val
 
@@ -104,7 +104,7 @@ PREHOOK: query: SELECT key, 1, val, 2, count(1) FROM T1 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key,val
 
@@ -130,7 +130,7 @@ group by key + key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
@@ -148,11 +148,11 @@ SELECT key, count(1) as c FROM T1 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_4
+Operator:GBY_3
 Table:default@t1
 Keys:key
 
-Operator:GBY_12
+Operator:GBY_10
 Table:default@t1
 Keys:key
 
@@ -218,7 +218,7 @@ group by key, constant, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_5
+Operator:GBY_3
 Table:default@t1
 Keys:key,val
 
@@ -242,7 +242,7 @@ GROUP BY key, constant3, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_5
+Operator:GBY_3
 Table:default@t1
 Keys:key,val
 

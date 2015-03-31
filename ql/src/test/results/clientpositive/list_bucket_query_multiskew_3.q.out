@@ -489,7 +489,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=1 [$hdt$_0:$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=1 [$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

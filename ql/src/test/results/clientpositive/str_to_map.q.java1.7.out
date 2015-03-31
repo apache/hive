@@ -31,10 +31,10 @@ STAGE PLANS:
           Select Operator
             expressions: str_to_map('a=1,b=2,c=3',',','=')['a'] (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -66,10 +66,10 @@ STAGE PLANS:
           Select Operator
             expressions: str_to_map('a:1,b:2,c:3') (type: map<string,string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 460000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 377000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 3 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 2262 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
@@ -101,10 +101,10 @@ STAGE PLANS:
           Select Operator
             expressions: str_to_map('a:1,b:2,c:3',',',':') (type: map<string,string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 460000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 377000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 3
-              Statistics: Num rows: 3 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 2262 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3

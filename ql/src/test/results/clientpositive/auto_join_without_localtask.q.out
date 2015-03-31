@@ -270,11 +270,11 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:a 
+        $hdt$_1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:a 
+        $hdt$_1:a 
           TableScan
             alias: a
             Filter Operator
@@ -319,11 +319,11 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_2:a 
+        $hdt$_2:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_2:a 
+        $hdt$_2:a 
           TableScan
             alias: a
             Filter Operator
@@ -406,11 +406,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            $hdt$_0:$INTNAME 
+            $INTNAME 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            $hdt$_0:$INTNAME 
+            $INTNAME 
               TableScan
 
   Stage: Stage-2
@@ -457,11 +457,11 @@ STAGE PLANS:
   Stage: Stage-15
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Filter Operator
@@ -639,11 +639,11 @@ STAGE PLANS:
   Stage: Stage-13
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_2:a 
+        $hdt$_1:$hdt$_2:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_2:a 
+        $hdt$_1:$hdt$_2:a 
           TableScan
             alias: a
             Filter Operator
@@ -714,11 +714,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            $hdt$_0:$INTNAME 
+            $INTNAME 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            $hdt$_0:$INTNAME 
+            $INTNAME 
               TableScan
 
   Stage: Stage-2
@@ -748,11 +748,11 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Filter Operator
@@ -836,11 +836,11 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:a 
+        $hdt$_1:$hdt$_1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:a 
+        $hdt$_1:$hdt$_1:a 
           TableScan
             alias: a
             Filter Operator

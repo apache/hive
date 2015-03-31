@@ -568,7 +568,7 @@ STAGE PLANS:
               name: default.alter_coltype
             name: default.alter_coltype
       Truncated Path -> Alias:
-        /alter_coltype/dt=100/ts=3.0 [$hdt$_0:$hdt$_0:alter_coltype]
+        /alter_coltype/dt=100/ts=3.0 [$hdt$_0:alter_coltype]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
