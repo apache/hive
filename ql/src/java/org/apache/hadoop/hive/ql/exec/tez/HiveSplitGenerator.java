@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
@@ -26,10 +28,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -105,6 +109,8 @@ public class HiveSplitGenerator extends InputInitializer {
     pruner.prune();
 
     InputSplitInfoMem inputSplitInfo = null;
+    boolean generateConsistentSplits = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS);
+    LOG.info("GenerateConsistentSplitsInHive=" + generateConsistentSplits);
     String realInputFormatName = conf.get("mapred.input.format.class");
     boolean groupingEnabled = userPayloadProto.getGroupingEnabled();
     if (groupingEnabled) {
@@ -123,6 +129,8 @@ public class HiveSplitGenerator extends InputInitializer {
               TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
       InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+      // Sort the splits, so that subsequent grouping is consistent.
+      Arrays.sort(splits, new InputSplitComparator());
       LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
           + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
 
@@ -132,7 +140,8 @@ public class HiveSplitGenerator extends InputInitializer {
       InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
       LOG.info("Number of grouped splits: " + flatSplits.length);
 
-      List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits);
+      List<TaskLocationHint> locationHints =
+          splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
 
       Utilities.clearWork(jobConf);
 
@@ -193,6 +202,49 @@ public class HiveSplitGenerator extends InputInitializer {
   public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
     for (InputInitializerEvent e : events) {
       pruner.addEvent(e);
+    }
+  }
+
+  // Descending sort based on split size| Followed by file name. Followed by startPosition.
+  private static class InputSplitComparator implements Comparator<InputSplit> {
+    @Override
+    public int compare(InputSplit o1, InputSplit o2) {
+      try {
+        long len1 = o1.getLength();
+        long len2 = o2.getLength();
+        if (len1 < len2) {
+          return 1;
+        } else if (len1 == len2) {
+          // If the same size. Sort on file name followed by startPosition.
+          if (o1 instanceof FileSplit && o2 instanceof FileSplit) {
+            FileSplit fs1 = (FileSplit) o1;
+            FileSplit fs2 = (FileSplit) o2;
+            if (fs1.getPath() != null && fs2.getPath() != null) {
+              int pathComp = (fs1.getPath().compareTo(fs2.getPath()));
+              if (pathComp == 0) {
+                // Compare start Position
+                long startPos1 = fs1.getStart();
+                long startPos2 = fs2.getStart();
+                if (startPos1 > startPos1) {
+                  return 1;
+                } else if (startPos1 < startPos2) {
+                  return -1;
+                } else {
+                  return 0;
+                }
+              } else {
+                return pathComp;
+              }
+            }
+          }
+          // No further checks if not a file split. Return equality.
+          return 0;
+        } else {
+          return -1;
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Problem getting input split size", e);
+      }
     }
   }
 }

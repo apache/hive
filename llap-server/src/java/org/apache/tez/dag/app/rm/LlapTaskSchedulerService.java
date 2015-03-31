@@ -484,7 +484,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       String host = null;
       if (requestedHosts != null && requestedHosts.length > 0) {
         // Pick the first host always. Weak attempt at cache affinity.
-        Arrays.sort(requestedHosts);
         host = requestedHosts[0];
         if (activeHosts.get(host) != null) {
           LOG.info("Selected host: " + host + " from requested hosts: " +
