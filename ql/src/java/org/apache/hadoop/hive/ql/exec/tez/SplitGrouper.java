@@ -24,8 +24,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -105,19 +107,39 @@ public class SplitGrouper {
   /**
    * Create task location hints from a set of input splits
    * @param splits the actual splits
+   * @param consistentLocations whether to re-order locations for each split, if it's a file split
    * @return taskLocationHints - 1 per input split specified
    * @throws IOException
    */
-  public List<TaskLocationHint> createTaskLocationHints(InputSplit[] splits) throws IOException {
+  public List<TaskLocationHint> createTaskLocationHints(InputSplit[] splits, boolean consistentLocations) throws IOException {
 
     List<TaskLocationHint> locationHints = Lists.newArrayListWithCapacity(splits.length);
 
     for (InputSplit split : splits) {
       String rack = (split instanceof TezGroupedSplit) ? ((TezGroupedSplit) split).getRack() : null;
       if (rack == null) {
-        if (split.getLocations() != null) {
-          locationHints.add(TaskLocationHint.createTaskLocationHint(new HashSet<String>(Arrays.asList(split
-              .getLocations())), null));
+        String [] locations = split.getLocations();
+        if (locations != null && locations.length > 0) {
+          // Worthwhile only if more than 1 split, consistentGroupingEnabled and is a FileSplit
+          if (consistentLocations && locations.length > 1 && split instanceof FileSplit) {
+            Arrays.sort(locations);
+            FileSplit fileSplit = (FileSplit) split;
+            Path path = fileSplit.getPath();
+            long startLocation = fileSplit.getStart();
+            int hashCode = Objects.hash(path, startLocation);
+            int startIndex = hashCode % locations.length;
+            LinkedHashSet<String> locationSet = new LinkedHashSet<>(locations.length);
+            // Set up the locations starting from startIndex, and wrapping around the sorted array.
+            for (int i = 0 ; i < locations.length ; i++) {
+              int index = (startIndex + i) % locations.length;
+              locationSet.add(locations[index]);
+            }
+            locationHints.add(TaskLocationHint.createTaskLocationHint(locationSet, null));
+          } else {
+            locationHints.add(TaskLocationHint
+                .createTaskLocationHint(new LinkedHashSet<String>(Arrays.asList(split
+                    .getLocations())), null));
+          }
         } else {
           locationHints.add(TaskLocationHint.createTaskLocationHint(null, null));
         }

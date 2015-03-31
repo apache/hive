@@ -474,8 +474,12 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     LOG.info("Setting vertex parallelism since we have seen all inputs.");
 
+    boolean generateConsistentSplits =  HiveConf.getBoolVar(
+        conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS);
+    LOG.info("GenerateConsistenSplitsInHive=" + generateConsistentSplits);
     context.setVertexParallelism(taskCount, VertexLocationHint.create(grouper
-        .createTaskLocationHints(finalSplits.toArray(new InputSplit[finalSplits.size()]))), emMap,
+            .createTaskLocationHints(finalSplits.toArray(new InputSplit[finalSplits.size()]),
+                generateConsistentSplits)), emMap,
         rootInputSpecUpdate);
     finalSplits.clear();
   }
