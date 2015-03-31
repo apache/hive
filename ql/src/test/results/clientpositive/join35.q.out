@@ -232,7 +232,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:$hdt$_0:x]
+        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -569,7 +569,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:$hdt$_0:x]
+        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

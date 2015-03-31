@@ -783,6 +783,48 @@ public class TxnHandler {
     }
   }
 
+  public void addDynamicPartitions(AddDynamicPartitions rqst)
+      throws NoSuchTxnException,  TxnAbortedException, MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        // Heartbeat this first to make sure the transaction is still valid.
+        heartbeatTxn(dbConn, rqst.getTxnid());
+        for (String partName : rqst.getPartitionnames()) {
+          StringBuilder buff = new StringBuilder();
+          buff.append("insert into TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition) values (");
+          buff.append(rqst.getTxnid());
+          buff.append(", '");
+          buff.append(rqst.getDbname());
+          buff.append("', '");
+          buff.append(rqst.getTablename());
+          buff.append("', '");
+          buff.append(partName);
+          buff.append("')");
+          String s = buff.toString();
+          LOG.debug("Going to execute update <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "addDynamicPartitions");
+        throw new MetaException("Unable to insert into from transaction database " +
+          StringUtils.stringifyException(e));
+      } finally {
+        closeStmt(stmt);
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      addDynamicPartitions(rqst);
+    }
+  }
+
   /**
    * For testing only, do not use.
    */

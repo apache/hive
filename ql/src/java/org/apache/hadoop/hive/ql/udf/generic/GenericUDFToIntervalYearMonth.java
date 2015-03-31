@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToIntervalYearMonth;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 */
 @Description(name = "interval_year_month",
   value = "CAST(<string> AS INTERVAL YEAR TO MONTH) - Returns the year-month interval represented by the string")
+@VectorizedExpressions({CastStringToIntervalYearMonth.class})
 public class GenericUDFToIntervalYearMonth extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;

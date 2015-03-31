@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.common.util.AnnotationUtils;
 
 /**
@@ -66,9 +67,13 @@ public class VectorExpressionDescriptor {
     STRING_FAMILY           (STRING.value | CHAR.value | VARCHAR.value),
     DATE                    (0x040),
     TIMESTAMP               (0x080),
+    INTERVAL_YEAR_MONTH     (0x100),
+    INTERVAL_DAY_TIME       (0x200),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
+    INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_TIMESTAMP_FAMILY    (INT_FAMILY.value | TIMESTAMP.value),
-    INT_DATETIME_FAMILY     (INT_FAMILY.value | DATETIME_FAMILY.value),
+    INT_INTERVAL_FAMILY     (INT_FAMILY.value | INTERVAL_FAMILY.value),
+    INT_DATETIME_INTERVAL_FAMILY  (INT_FAMILY.value | DATETIME_FAMILY.value | INTERVAL_FAMILY.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
     ALL_FAMILY              (0xFFF);
 
@@ -105,6 +110,10 @@ public class VectorExpressionDescriptor {
         return TIMESTAMP;
       } else if (lower.equals("date")) {
         return DATE;
+      } else if (lower.equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)) {
+        return INTERVAL_YEAR_MONTH;
+      } else if (lower.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
+        return INTERVAL_DAY_TIME;
       } else if (lower.equals("void")) {
         // The old code let void through...
         return INT_FAMILY;
@@ -137,7 +146,9 @@ public class VectorExpressionDescriptor {
     public static String getVectorColumnSimpleName(ArgumentType argType) {
       if (argType == INT_FAMILY ||
           argType == DATE ||
-          argType == TIMESTAMP) {
+          argType == TIMESTAMP ||
+          argType == INTERVAL_YEAR_MONTH ||
+          argType == INTERVAL_DAY_TIME) {
         return "Long";
       } else if (argType == FLOAT_FAMILY) {
         return "Double";

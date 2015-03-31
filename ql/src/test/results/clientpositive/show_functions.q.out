@@ -166,6 +166,9 @@ rpad
 rtrim
 second
 sentences
+shiftleft
+shiftright
+shiftrightunsigned
 sign
 sin
 size

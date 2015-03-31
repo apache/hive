@@ -208,7 +208,7 @@ public class NGramEstimator {
    *
    * @param other A serialized n-gram object created by the serialize() method
    */
-  public void merge(List<Text> other) throws HiveException {
+  public void merge(List other) throws HiveException {
     if(other == null) {
       return;
     }
@@ -240,8 +240,7 @@ public class NGramEstimator {
     for(int i = 3; i < other.size(); i++) {
       ArrayList<String> key = new ArrayList<String>();
       for(int j = 0; j < n; j++) {
-        Text word = other.get(i+j);
-        key.add(word.toString());
+        key.add(other.get(i+j).toString());
       }
       i += n;
       double val = Double.parseDouble( other.get(i).toString() );

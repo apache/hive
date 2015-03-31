@@ -130,7 +130,7 @@ public class <ClassName> extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("<OperandType>"))
+            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType>"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }

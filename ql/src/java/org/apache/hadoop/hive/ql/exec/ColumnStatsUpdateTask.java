@@ -238,8 +238,8 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     } else {
       throw new SemanticException("Unsupported type");
     }
-
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName,
+    String [] names = Utilities.getDbTableName(dbName, tableName);
+    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1],
         partName, partName == null);
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);

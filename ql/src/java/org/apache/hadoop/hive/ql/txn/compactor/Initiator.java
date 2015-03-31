@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -87,9 +88,25 @@ public class Initiator extends CompactorThread {
             LOG.debug("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
               Table t = resolveTable(ci);
+              if (t == null) {
+                // Most likely this means it's a temp table
+                LOG.debug("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
+                    "table and moving on.");
+                continue;
+              }
+
               // check if no compaction set for this table
               if (noAutoCompactSet(t)) {
                 LOG.info("Table " + tableName(t) + " marked true so we will not compact it.");
+                continue;
+              }
+
+              // Check to see if this is a table level request on a partitioned table.  If so,
+              // then it's a dynamic partitioning case and we shouldn't check the table itself.
+              if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
+                  ci.partName  == null) {
+                LOG.debug("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
+                    " partitioning");
                 continue;
               }
 

@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -148,6 +149,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     patternBuilder.append("|long");
     patternBuilder.append("|short");
     patternBuilder.append("|timestamp");
+    patternBuilder.append("|" + serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    patternBuilder.append("|" + serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     patternBuilder.append("|boolean");
     patternBuilder.append("|binary");
     patternBuilder.append("|string");
@@ -261,6 +264,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFToDate.class);
     supportedGenericUDFs.add(GenericUDFToChar.class);
     supportedGenericUDFs.add(GenericUDFToVarchar.class);
+    supportedGenericUDFs.add(GenericUDFToIntervalYearMonth.class);
+    supportedGenericUDFs.add(GenericUDFToIntervalDayTime.class);
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
@@ -1296,9 +1301,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     switch (op.getType()) {
       case MAPJOIN:
-        // Disable Hybrid Grace Hash Join when vectorization is in effect, for now
-        HiveConf.setBoolVar(physicalContext.getConf(),
-            HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
       case GROUPBY:
       case FILTER:
       case SELECT:

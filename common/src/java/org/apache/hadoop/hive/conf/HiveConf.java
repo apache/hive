@@ -2042,7 +2042,9 @@ public class HiveConf extends Configuration {
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
-      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)");
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+    HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
+      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially.");
 
     public final String varname;
     private final String defaultExpr;

@@ -75,11 +75,11 @@ public class MathExpr {
     return v == 0.0D ? 0L : 1L;
   }
 
-  /* Convert an integer value in miliseconds since the epoch to a timestamp value
+  /* Convert an integer value in seconds since the epoch to a timestamp value
    * for use in a long column vector, which is represented in nanoseconds since the epoch.
    */
   public static long longToTimestamp(long v) {
-    return v * 1000000;
+    return v * 1000000000;
   }
 
   // Convert seconds since the epoch (with fraction) to nanoseconds, as a long integer.

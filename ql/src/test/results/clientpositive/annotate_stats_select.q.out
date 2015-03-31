@@ -531,7 +531,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: CAST( '58.174' AS decimal(10,0)) (type: decimal(10,0))
+            expressions: 58 (type: decimal(10,0))
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -556,10 +556,10 @@ STAGE PLANS:
             Select Operator
               expressions: array(1,2,3) (type: array<int>)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -591,10 +591,10 @@ STAGE PLANS:
             Select Operator
               expressions: str_to_map('a=1 b=2 c=3',' ','=') (type: map<string,string>)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 1840 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 1840 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

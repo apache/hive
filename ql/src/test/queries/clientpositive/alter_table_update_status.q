@@ -28,3 +28,21 @@ describe formatted src_stat_int.key;
 ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22');
 
 describe formatted src_stat_int.key; 
+
+
+
+create database if not exists dummydb;
+
+use dummydb;
+
+ALTER TABLE default.src_stat UPDATE STATISTICS for column key SET ('numDVs'='3333','avgColLen'='2.222');
+
+describe formatted default.src_stat key;
+
+ALTER TABLE default.src_stat UPDATE STATISTICS for column value SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235');
+
+describe formatted default.src_stat value;
+
+use default;
+
+drop database dummydb;

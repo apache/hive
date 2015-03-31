@@ -199,8 +199,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-0
     Move Operator
@@ -463,7 +463,7 @@ STAGE PLANS:
               name: default.list_bucketing_static_part
             name: default.list_bucketing_static_part
       Truncated Path -> Alias:
-        /list_bucketing_static_part/ds=2008-04-08/hr=11/key=484 [$hdt$_0:list_bucketing_static_part]
+        /list_bucketing_static_part/ds=2008-04-08/hr=11/key=484 [list_bucketing_static_part]
 
   Stage: Stage-0
     Fetch Operator

@@ -262,7 +262,7 @@ STAGE PLANS:
               name: default.src5
             name: default.src5
       Truncated Path -> Alias:
-        /src5 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:$hdt$_0:src5]
+        /src5 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:src5]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

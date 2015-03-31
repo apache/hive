@@ -948,7 +948,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	1400                
+	totalSize           	1424                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -992,7 +992,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1102                
+	totalSize           	1128                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1036,7 +1036,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	14                  
 	rawDataSize         	280                 
-	totalSize           	1216                
+	totalSize           	1240                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1080,7 +1080,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1102                
+	totalSize           	1128                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1123,7 +1123,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4548                
+	totalSize           	4644                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1166,7 +1166,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2262                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1209,7 +1209,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4534                
+	totalSize           	4630                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1252,7 +1252,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2262                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

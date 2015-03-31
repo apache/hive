@@ -76,32 +76,31 @@ final class TrivialExecService {
     }
   }
   /**
-   * Print files and directories in current directory. Will list files in the sub-directory (only 1 level deep)
-   * time honored tradition in WebHCat of borrowing from Oozie
+   * Print files and directories in current {@code dir}.
    */
-  private static void printContentsOfDir(String dir) {
+  private static StringBuilder printContentsOfDir(String dir, int depth, StringBuilder sb) {
+    StringBuilder indent = new StringBuilder();
+    for(int i = 0; i < depth; i++) {
+      indent.append("--");
+    }
     File folder = new File(dir);
-    StringBuilder sb = new StringBuilder("Files in '").append(dir).append("' dir:").append(folder.getAbsolutePath()).append('\n');
+    sb.append(indent).append("Files in '").append(dir).append("' dir:").append(folder.getAbsolutePath()).append('\n');
 
     File[] listOfFiles = folder.listFiles();
+    if(listOfFiles == null) {
+      return sb;
+    }
     for (File fileName : listOfFiles) {
       if (fileName.isFile()) {
-        sb.append("File: ").append(fileName.getName()).append('\n');
+        sb.append(indent).append("File: ").append(fileName.getName()).append('\n');
       }
       else if (fileName.isDirectory()) {
-        sb.append("Dir: ").append(fileName.getName()).append('\n');
-        File subDir = new File(fileName.getName());
-        File[] moreFiles = subDir.listFiles();
-        for (File subFileName : moreFiles) {
-          if (subFileName.isFile()) {
-            sb.append("--File: ").append(subFileName.getName()).append('\n');
-          }
-          else if (subFileName.isDirectory()) {
-            sb.append("--Dir: ").append(subFileName.getName()).append('\n');
-          }
-        }
+        printContentsOfDir(fileName.getName(), depth+1, sb);
       }
     }
-    LOG.info(sb.toString());
+    return sb;
+  }
+  private static void printContentsOfDir(String dir) {
+    LOG.info(printContentsOfDir(dir, 0, new StringBuilder()).toString());    
   }
 }

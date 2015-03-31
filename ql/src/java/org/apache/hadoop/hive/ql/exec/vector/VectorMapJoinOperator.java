@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,8 +32,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
+import org.apache.hadoop.hive.ql.exec.persistence.ObjectContainer;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -42,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.DataOutputBuffer;
 
 /**
  * The vectorized version of the MapJoinOperator.
@@ -68,6 +72,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   //---------------------------------------------------------------------------
 
   private transient VectorizedRowBatch outputBatch;
+  private transient VectorizedRowBatch scratchBatch;  // holds restored (from disk) big table rows
   private transient VectorExpressionWriter[] valueWriters;
   private transient Map<ObjectInspector, VectorColumnAssign[]> outputVectorAssigners;
 
@@ -80,6 +85,10 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   private transient VectorExpressionWriter[] keyOutputWriters;
 
   private transient VectorizedRowBatchCtx vrbCtx = null;
+
+  private transient int tag;  // big table alias
+  private VectorExpressionWriter[] rowWriters;  // Writer for producing row from input batch
+  protected transient Object[] singleRow;
 
   public VectorMapJoinOperator() {
     super();
@@ -117,6 +126,19 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
   @Override
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    // Code borrowed from VectorReduceSinkOperator.initializeOp
+    VectorExpressionWriterFactory.processVectorInspector(
+        (StructObjectInspector) inputObjInspectors[0],
+        new VectorExpressionWriterFactory.SingleOIDClosure() {
+          @Override
+          public void assign(VectorExpressionWriter[] writers,
+                             ObjectInspector objectInspector) {
+            rowWriters = writers;
+            inputObjInspectors[0] = objectInspector;
+          }
+        });
+    singleRow = new Object[rowWriters.length];
+
     Collection<Future<?>> result = super.initializeOp(hconf);
 
     List<ExprNodeDesc> keyDesc = conf.getKeys().get(posBigTable);
@@ -213,6 +235,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
   @Override
   public void closeOp(boolean aborted) throws HiveException {
+    super.closeOp(aborted);
     for (MapJoinTableContainer tableContainer : mapJoinTables) {
       if (tableContainer != null) {
         tableContainer.dumpMetrics();
@@ -221,7 +244,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     if (!aborted && 0 < outputBatch.size) {
       flushOutput();
     }
-    super.closeOp(aborted);
   }
 
   @Override
@@ -234,6 +256,12 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   public void process(Object row, int tag) throws HiveException {
     byte alias = (byte) tag;
     VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
+
+    // Preparation for hybrid grace hash join
+    this.tag = tag;
+    if (scratchBatch == null) {
+      scratchBatch = makeLike(inBatch);
+    }
 
     if (null != bigTableFilterExpressions) {
       for(VectorExpression ve:bigTableFilterExpressions) {
@@ -269,5 +297,95 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   @Override
   public VectorizationContext getOuputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  protected void spillBigTableRow(MapJoinTableContainer hybridHtContainer, Object row)
+      throws HiveException {
+    // Extract the actual row from row batch
+    VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
+    Object[] actualRow = getRowObject(inBatch, batchIndex);
+    super.spillBigTableRow(hybridHtContainer, actualRow);
+  }
+
+  @Override
+  protected void reProcessBigTable(HybridHashTableContainer.HashPartition partition)
+      throws HiveException {
+    ObjectContainer bigTable = partition.getMatchfileObjContainer();
+
+    DataOutputBuffer dataOutputBuffer = new DataOutputBuffer();
+    while (bigTable.hasNext()) {
+      Object row = bigTable.next();
+      VectorizedBatchUtil.addProjectedRowToBatchFrom(row,
+          (StructObjectInspector) inputObjInspectors[posBigTable],
+          scratchBatch.size, scratchBatch, dataOutputBuffer);
+      scratchBatch.size++;
+
+      if (scratchBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
+        process(scratchBatch, tag); // call process once we have a full batch
+        scratchBatch.reset();
+        dataOutputBuffer.reset();
+      }
+    }
+    // Process the row batch that has less than DEFAULT_SIZE rows
+    if (scratchBatch.size > 0) {
+      process(scratchBatch, tag);
+      scratchBatch.reset();
+      dataOutputBuffer.reset();
+    }
+    bigTable.clear();
+  }
+
+  // Code borrowed from VectorReduceSinkOperator
+  private Object[] getRowObject(VectorizedRowBatch vrb, int rowIndex) throws HiveException {
+    int batchIndex = rowIndex;
+    if (vrb.selectedInUse) {
+      batchIndex = vrb.selected[rowIndex];
+    }
+    for (int i = 0; i < vrb.projectionSize; i++) {
+      ColumnVector vectorColumn = vrb.cols[vrb.projectedColumns[i]];
+      if (vectorColumn != null) {
+        singleRow[i] = rowWriters[i].writeValue(vectorColumn, batchIndex);
+      } else {
+        // Some columns from tables are not used.
+        singleRow[i] = null;
+      }
+    }
+    return singleRow;
+  }
+
+  /**
+   * Make a new (scratch) batch, which is exactly "like" the batch provided, except that it's empty
+   * @param batch the batch to imitate
+   * @return the new batch
+   * @throws HiveException
+   */
+  VectorizedRowBatch makeLike(VectorizedRowBatch batch) throws HiveException {
+    VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
+    for (int i = 0; i < batch.numCols; i++) {
+      ColumnVector colVector = batch.cols[i];
+      if (colVector != null) {
+        ColumnVector newColVector;
+        if (colVector instanceof LongColumnVector) {
+          newColVector = new LongColumnVector();
+        } else if (colVector instanceof DoubleColumnVector) {
+          newColVector = new DoubleColumnVector();
+        } else if (colVector instanceof BytesColumnVector) {
+          newColVector = new BytesColumnVector();
+        } else if (colVector instanceof DecimalColumnVector) {
+          DecimalColumnVector decColVector = (DecimalColumnVector) colVector;
+          newColVector = new DecimalColumnVector(decColVector.precision, decColVector.scale);
+        } else {
+          throw new HiveException("Column vector class " + colVector.getClass().getName() +
+          " is not supported!");
+        }
+        newBatch.cols[i] = newColVector;
+        newBatch.cols[i].init();
+      }
+    }
+    newBatch.projectedColumns = Arrays.copyOf(batch.projectedColumns, batch.projectedColumns.length);
+    newBatch.projectionSize = batch.projectionSize;
+    newBatch.reset();
+    return newBatch;
   }
 }

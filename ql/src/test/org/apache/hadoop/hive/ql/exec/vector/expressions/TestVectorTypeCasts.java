@@ -46,9 +46,6 @@ public class TestVectorTypeCasts {
   // Number of nanoseconds in one second
   private static final long NANOS_PER_SECOND = 1000000000;
 
-  // Number of microseconds in one second
-  private static final long MICROS_PER_SECOND = 1000000;
-
   @Test
   public void testVectorCastLongToDouble() {
     VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInDoubleOut();
@@ -111,8 +108,8 @@ public class TestVectorTypeCasts {
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastLongToTimestampViaLongToLong(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(-2 * MICROS_PER_SECOND, resultV.vector[0]);
-    Assert.assertEquals(2 * MICROS_PER_SECOND, resultV.vector[1]);
+    Assert.assertEquals(-2 * NANOS_PER_SECOND, resultV.vector[0]);
+    Assert.assertEquals(2 * NANOS_PER_SECOND, resultV.vector[1]);
   }
 
   @Test

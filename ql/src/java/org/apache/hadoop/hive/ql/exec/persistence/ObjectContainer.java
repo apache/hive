@@ -49,7 +49,7 @@ public class ObjectContainer<ROW> {
   private boolean readBufferUsed = false; // indicates if read buffer has data
   private int rowsInReadBuffer = 0;       // number of rows in the temporary read buffer
   private int readCursor = 0;             // cursor during reading
-  private int rowsOnDisk = 0;             // total number of pairs in output
+  private int rowsOnDisk = 0;             // total number of objects in output
 
   private File parentFile;
   private File tmpFile;

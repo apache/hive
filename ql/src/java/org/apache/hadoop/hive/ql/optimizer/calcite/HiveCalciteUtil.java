@@ -34,8 +34,16 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexCorrelVariable;
+import org.apache.calcite.rex.RexDynamicParam;
+import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -552,6 +560,7 @@ public class HiveCalciteUtil {
     boolean deterministic = true;
 
     RexVisitor<Void> visitor = new RexVisitorImpl<Void>(true) {
+      @Override
       public Void visitCall(org.apache.calcite.rex.RexCall call) {
         if (!call.getOperator().isDeterministic()) {
           throw new Util.FoundOne(call);
@@ -669,4 +678,59 @@ public class HiveCalciteUtil {
     
     return fieldNames;
   }  
+
+  /**
+   * Walks over an expression and determines whether it is constant.
+   */
+  public static class ConstantFinder implements RexVisitor<Boolean> {
+
+    @Override
+    public Boolean visitLiteral(RexLiteral literal) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitInputRef(RexInputRef inputRef) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitLocalRef(RexLocalRef localRef) {
+      throw new RuntimeException("Not expected to be called.");
+    }
+
+    @Override
+    public Boolean visitOver(RexOver over) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitCorrelVariable(RexCorrelVariable correlVariable) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitDynamicParam(RexDynamicParam dynamicParam) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitCall(RexCall call) {
+      // Constant if operator is deterministic and all operands are
+      // constant.
+      return call.getOperator().isDeterministic()
+          && RexVisitorImpl.visitArrayAnd(this, call.getOperands());
+    }
+
+    @Override
+    public Boolean visitRangeRef(RexRangeRef rangeRef) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitFieldAccess(RexFieldAccess fieldAccess) {
+      // "<expr>.FIELD" is constant iff "<expr>" is constant.
+      return fieldAccess.getReferenceExpr().accept(this);
+    }
+  }
 }

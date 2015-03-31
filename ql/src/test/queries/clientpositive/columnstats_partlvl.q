@@ -39,3 +39,20 @@ analyze table Employee_Part  compute statistics for columns;
 analyze table Employee_Part  compute statistics for columns;
 
 describe formatted Employee_Part.employeeID;
+
+set hive.analyze.stmt.collect.partlevel.stats=true;
+
+create database if not exists dummydb;
+
+use dummydb;
+
+analyze table default.Employee_Part partition (employeeSalary=2000.0) compute statistics for columns;
+
+describe formatted default.Employee_Part employeeID   partition (employeeSalary=2000.0);
+
+analyze table default.Employee_Part  compute statistics for columns;
+
+use default;
+
+drop database dummydb;
+

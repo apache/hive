@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLClassLoader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -269,6 +271,9 @@ public class SessionState {
    */
   private Timestamp queryCurrentTimestamp;
 
+  private ResourceMaps resourceMaps;
+
+  private DependencyResolver dependencyResolver;
   /**
    * Get the lineage state stored in this session.
    *
@@ -334,6 +339,8 @@ public class SessionState {
     this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+    resourceMaps = new ResourceMaps();
+    dependencyResolver = new DependencyResolver();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
@@ -1119,8 +1126,7 @@ public class SessionState {
     return null;
   }
 
-  private final HashMap<ResourceType, Set<String>> resource_map =
-      new HashMap<ResourceType, Set<String>>();
+
 
   public String add_resource(ResourceType t, String value) throws RuntimeException {
     return add_resource(t, value, false);
@@ -1143,36 +1149,87 @@ public class SessionState {
 
   public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
       throws RuntimeException {
-    Set<String> resourceMap = getResourceMap(t);
-
+    Set<String> resourceSet = resourceMaps.getResourceSet(t);
+    Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
+    Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
     List<String> localized = new ArrayList<String>();
     try {
       for (String value : values) {
-        localized.add(downloadResource(value, convertToUnix));
-      }
+        String key;
 
-      t.preHook(resourceMap, localized);
+        //get the local path of downloaded jars.
+        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+
+        if (getURLType(value).equals("ivy")) {
+          // get the key to store in map
+          key = new URI(value).getAuthority();
+        } else {
+          // for local file and hdfs, key and value are same.
+          key = downloadedURLs.get(0).toString();
+        }
+        Set<String> downloadedValues = new HashSet<String>();
+
+        for (URI uri : downloadedURLs) {
+          String resourceValue = uri.toString();
+          downloadedValues.add(resourceValue);
+          localized.add(resourceValue);
+          if (reverseResourcePathMap.containsKey(resourceValue)) {
+            if (!reverseResourcePathMap.get(resourceValue).contains(key)) {
+              reverseResourcePathMap.get(resourceValue).add(key);
+            }
+          } else {
+            Set<String> addSet = new HashSet<String>();
+            addSet.add(key);
+            reverseResourcePathMap.put(resourceValue, addSet);
+
+          }
+        }
+        resourcePathMap.put(key, downloadedValues);
+      }
+      t.preHook(resourceSet, localized);
 
     } catch (RuntimeException e) {
-      getConsole().printError(e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      getConsole().printError(e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw e;
+    } catch (URISyntaxException e) {
+      getConsole().printError(e.getMessage());
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      getConsole().printError(e.getMessage());
+      throw new RuntimeException(e);
     }
-
     getConsole().printInfo("Added resources: " + values);
-    resourceMap.addAll(localized);
-
+    resourceSet.addAll(localized);
     return localized;
   }
 
-  private Set<String> getResourceMap(ResourceType t) {
-    Set<String> result = resource_map.get(t);
-    if (result == null) {
-      result = new HashSet<String>();
-      resource_map.put(t, result);
+  private static String getURLType(String value) throws URISyntaxException {
+    URI uri = new URI(value);
+    String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
+    if (scheme == null || scheme.equals("file")) {
+      return "file";
+    } else if (scheme.equals("hdfs") || scheme.equals("ivy")) {
+      return scheme;
+    } else {
+      throw new RuntimeException("invalid url: " + uri + ", expecting ( file | hdfs | ivy)  as url scheme. ");
     }
-    return result;
   }
+
+  List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
+      IOException {
+    URI uri = new URI(value);
+    if (getURLType(value).equals("file")) {
+      return Arrays.asList(uri);
+    } else if (getURLType(value).equals("ivy")) {
+      return dependencyResolver.downloadDependencies(uri);
+    } else if (getURLType(value).equals("hdfs")) {
+      return Arrays.asList(new URI(downloadResource(value, convertToUnix)));
+    } else {
+      throw new RuntimeException("Invalid url " + uri);
+    }
+  }
+
+
 
   /**
    * Returns  true if it is from any external File Systems except local
@@ -1218,16 +1275,49 @@ public class SessionState {
     return value;
   }
 
-  public void delete_resources(ResourceType t, List<String> value) {
-    Set<String> resources = resource_map.get(t);
-    if (resources != null && !resources.isEmpty()) {
-      t.postHook(resources, value);
-      resources.removeAll(value);
+  public void delete_resources(ResourceType t, List<String> values) {
+    Set<String> resources = resourceMaps.getResourceSet(t);
+    if (resources == null || resources.isEmpty()) {
+      return;
     }
+
+    Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
+    Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
+    List<String> deleteList = new LinkedList<String>();
+    for (String value : values) {
+      String key = value;
+      try {
+        if (getURLType(value).equals("ivy")) {
+          key = new URI(value).getAuthority();
+        }
+      } catch (URISyntaxException e) {
+        throw new RuntimeException("Invalid uri string " + value + ", " + e.getMessage());
+      }
+
+      // get all the dependencies to delete
+
+      Set<String> resourcePaths = resourcePathMap.get(key);
+      if (resourcePaths == null) {
+        return;
+      }
+      for (String resourceValue : resourcePaths) {
+        reverseResourcePathMap.get(resourceValue).remove(key);
+
+        // delete a dependency only if no other resource depends on it.
+        if (reverseResourcePathMap.get(resourceValue).isEmpty()) {
+          deleteList.add(resourceValue);
+          reverseResourcePathMap.remove(resourceValue);
+        }
+      }
+      resourcePathMap.remove(key);
+    }
+    t.postHook(resources, deleteList);
+    resources.removeAll(deleteList);
   }
 
+
   public Set<String> list_resource(ResourceType t, List<String> filter) {
-    Set<String> orig = resource_map.get(t);
+    Set<String> orig = resourceMaps.getResourceSet(t);
     if (orig == null) {
       return null;
     }
@@ -1245,10 +1335,10 @@ public class SessionState {
   }
 
   public void delete_resources(ResourceType t) {
-    Set<String> resources = resource_map.get(t);
+    Set<String> resources = resourceMaps.getResourceSet(t);
     if (resources != null && !resources.isEmpty()) {
       delete_resources(t, new ArrayList<String>(resources));
-      resource_map.remove(t);
+      resourceMaps.getResourceMap().remove(t);
     }
   }
 
@@ -1511,4 +1601,52 @@ public class SessionState {
   public Timestamp getQueryCurrentTimestamp() {
     return queryCurrentTimestamp;
   }
+}
+
+class ResourceMaps {
+
+  private final Map<SessionState.ResourceType, Set<String>> resource_map;
+  //Given jar to add is stored as key  and all its transitive dependencies as value. Used for deleting transitive dependencies.
+  private final Map<SessionState.ResourceType, Map<String, Set<String>>> resource_path_map;
+  // stores all the downloaded resources as key and the jars which depend on these resources as values in form of a list. Used for deleting transitive dependencies.
+  private final Map<SessionState.ResourceType, Map<String, Set<String>>> reverse_resource_path_map;
+
+  public ResourceMaps() {
+    resource_map = new HashMap<SessionState.ResourceType, Set<String>>();
+    resource_path_map = new HashMap<SessionState.ResourceType, Map<String, Set<String>>>();
+    reverse_resource_path_map = new HashMap<SessionState.ResourceType, Map<String, Set<String>>>();
+
+  }
+
+  public Map<SessionState.ResourceType, Set<String>> getResourceMap() {
+    return resource_map;
+  }
+
+  public Set<String> getResourceSet(SessionState.ResourceType t) {
+    Set<String> result = resource_map.get(t);
+    if (result == null) {
+      result = new HashSet<String>();
+      resource_map.put(t, result);
+    }
+    return result;
+  }
+
+  public Map<String, Set<String>> getResourcePathMap(SessionState.ResourceType t) {
+    Map<String, Set<String>> result = resource_path_map.get(t);
+    if (result == null) {
+      result = new HashMap<String, Set<String>>();
+      resource_path_map.put(t, result);
+    }
+    return result;
+  }
+
+  public Map<String, Set<String>> getReverseResourcePathMap(SessionState.ResourceType t) {
+    Map<String, Set<String>> result = reverse_resource_path_map.get(t);
+    if (result == null) {
+      result = new HashMap<String, Set<String>>();
+      reverse_resource_path_map.put(t, result);
+    }
+    return result;
+  }
+
 }

@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public abstract class VectorExpression implements Serializable {
   public enum Type {
-    STRING, CHAR, VARCHAR, TIMESTAMP, DATE, LONG, DOUBLE, DECIMAL, OTHER;
+    STRING, CHAR, VARCHAR, TIMESTAMP, DATE, LONG, DOUBLE, DECIMAL,
+    INTERVAL_YEAR_MONTH, INTERVAL_DAY_TIME, OTHER;
     private static Map<String, Type> types = ImmutableMap.<String, Type>builder()
         .put("string", STRING)
         .put("char", CHAR)
@@ -40,6 +41,8 @@ public abstract class VectorExpression implements Serializable {
         .put("long", LONG)
         .put("double", DOUBLE)
         .put("decimal", DECIMAL)
+        .put("interval_year_month", INTERVAL_YEAR_MONTH)
+        .put("interval_day_time", INTERVAL_DAY_TIME)
         .build();
 
     public static Type getValue(String name) {

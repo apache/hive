@@ -31,6 +31,12 @@ public interface JobSubmissionConstants {
   public static final String EXIT_FNAME = "exit";
   public static final int WATCHER_TIMEOUT_SECS = 10;
   public static final int KEEP_ALIVE_MSEC = 60 * 1000;
+  /**
+   * A comma-separated list of files to be added to HADOOP_CLASSPATH in 
+   * {@link org.apache.hive.hcatalog.templeton.tool.LaunchMapper}.  Used to localize additional
+   * artifacts for job submission requests.
+   */
+  public static final String HADOOP_CLASSPATH_EXTRAS = "templeton.hadoop.classpath.extras";
   /*
    * The = sign in the string for TOKEN_FILE_ARG_PLACEHOLDER is required because
    * org.apache.hadoop.util.GenericOptionsParser.preProcessForWindows() prepares

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.common.util;
+package org.apache.hadoop.hive.ql.util;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hive.common.util.DateUtils;
 
 
 public class DateTimeMath {
@@ -76,6 +78,23 @@ public class DateTimeMath {
     calLocal.setTimeInMillis(millis);
     calLocal.add(Calendar.MONTH, months);
     return calLocal.getTimeInMillis();
+  }
+
+  public long addMonthsToNanosUtc(long nanos, int months) {
+    long result = addMonthsToMillisUtc(nanos / 1000000, months) * 1000000 + (nanos % 1000000);
+    return result;
+  }
+
+  public long addMonthsToNanosLocal(long nanos, int months) {
+    long result = addMonthsToMillisLocal(nanos / 1000000, months) * 1000000 + (nanos % 1000000);
+    return result;
+  }
+
+  public long addMonthsToDays(long days, int months) {
+    long millis = DateWritable.daysToMillis((int) days);
+    millis = addMonthsToMillisLocal(millis, months);
+    // Convert millis result back to days
+    return DateWritable.millisToDays(millis);
   }
 
   public Timestamp add(Timestamp ts, HiveIntervalYearMonth interval) {
