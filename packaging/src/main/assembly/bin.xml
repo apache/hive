@@ -146,6 +146,7 @@
       <directory>${project.parent.basedir}/conf</directory>
       <includes>
         <include>*.template</include>
+        <include>ivysettings.xml</include>
       </includes>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
