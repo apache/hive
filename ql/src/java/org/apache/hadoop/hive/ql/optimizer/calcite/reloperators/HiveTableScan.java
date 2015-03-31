@@ -51,9 +51,10 @@ import com.google.common.collect.ImmutableList.Builder;
  * </p>
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
-  private final RelDataType rowtype;
+
+  private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
-  
+
   /**
    * Creates a HiveTableScan.
    *
@@ -74,7 +75,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       RelDataType newRowtype) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
-    this.rowtype = newRowtype;
+    this.hiveTableScanRowType = newRowtype;
     this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
   }
 
@@ -88,16 +89,17 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * Copy TableScan operator with a new Row Schema. The new Row Schema can only
    * be a subset of this TS schema.
    * 
-   * @param rowtype
+   * @param newRowtype
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table));
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table),
+            newRowtype);
   }
 
   @Override
   public RelDataType deriveRowType() {
-    return rowtype;
+    return hiveTableScanRowType;
   }
 
   @Override
