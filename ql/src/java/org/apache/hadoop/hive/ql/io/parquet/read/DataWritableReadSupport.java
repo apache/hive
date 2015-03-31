@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
+import parquet.hadoop.api.InitContext;
 import parquet.hadoop.api.ReadSupport;
 import parquet.io.api.RecordMaterializer;
 import parquet.schema.GroupType;
@@ -190,13 +191,13 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   /**
    * It creates the readContext for Parquet side with the requested schema during the init phase.
    *
-   * @param configuration    needed to get the wanted columns
-   * @param keyValueMetaData // unused
-   * @param fileSchema       parquet file schema
+   * @param context
    * @return the parquet ReadContext
    */
   @Override
-  public ReadContext init(final Configuration configuration, final Map<String, String> keyValueMetaData, final MessageType fileSchema) {
+  public parquet.hadoop.api.ReadSupport.ReadContext init(InitContext context) {
+    Configuration configuration = context.getConfiguration();
+    MessageType fileSchema = context.getFileSchema();
     String columnNames = configuration.get(IOConstants.COLUMNS);
     Map<String, String> contextMetadata = new HashMap<String, String>();
     boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
