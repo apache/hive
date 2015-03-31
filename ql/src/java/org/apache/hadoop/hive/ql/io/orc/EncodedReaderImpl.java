@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.InStream.TrackedCacheChunk;
+import org.apache.hadoop.hive.ql.io.orc.InStream.TrackedCacheChunkFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
@@ -44,6 +46,34 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPoo
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 
 
+/**
+ * Encoded reader implementation.
+ *
+ * Note about refcounts on cache blocks.
+ * When we get or put blocks into cache, they are "locked" (refcount++). After that, we send the
+ * blocks out to processor as part of RG data; one block can be used for multiple RGs. In some
+ * cases, one block is sent for ALL rgs (e.g. a dictionary for string column). This is how we deal
+ * with this:
+ * For non-dictionary case:
+ * 1) At all times, every buffer has +1 refcount for each time we sent this block to processing.
+ * 2) When processor is done with an RG, it decrefs for all the blocks involved.
+ * 3) Additionally, we keep an extra +1 refcount "for the fetching thread". That way, if we send
+ *    the block to processor, and the latter decrefs it, the block won't be evicted when we want
+ *    to reuse it for some other RG, forcing us to do an extra disk read or cache lookup.
+ * 4) As we read (we always read RGs in order, and assume they are stored in physical order in the
+ *    file, plus that RGs are not shared between streams, AND that we read each stream from the
+ *    beginning), we note which blocks cannot possibly be reused anymore (next RG starts in the
+ *    next CB). We decref for the refcount from (3) in such case.
+ * 5) Given that RG end boundary in ORC is an estimate, so we can request data from cache and then
+ *    not use it, at the end we go thru all the blocks, and release those not released by (4).
+ * For dictionary case:
+ * 1) We have a separate refcount on the ColumnBuffer object we send to the processor. In the above
+ *    case, it's always 1, so when processor is done it goes directly to decrefing cache buffers.
+ * 2) In the dictionary case, it's increased per RG, and processors don't touch cache buffers if
+ *    they do not happen to decref this counter to 0.
+ * 3) This is done because dictionary can have many buffers; decrefing all of them for all RGs
+ *    is more expensive; plus, decrefing in cache may be more expensive due to cache policy/etc.
+ */
 public class EncodedReaderImpl implements EncodedReader {
   public static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
 
@@ -58,6 +88,8 @@ public class EncodedReaderImpl implements EncodedReader {
   private final ByteBufferAllocatorPool pool;
   // For now, one consumer for all calls.
   private final Consumer<EncodedColumnBatch<OrcBatchKey>> consumer;
+  // TODO: if used as a pool, pass in externally
+  private final TrackedCacheChunkFactory cacheChunkFactory = new TrackedCacheChunkFactory();
 
   public EncodedReaderImpl(FileSystem fileSystem, Path path, long fileId, boolean useZeroCopy,
       List<OrcProto.Type> types, CompressionCodec codec, int bufferSize, long strideRate,
@@ -228,7 +260,7 @@ public class EncodedReaderImpl implements EncodedReader {
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     if (cache != null) {
-      cache.getFileData(fileId, toRead.next, stripeOffset);
+      cache.getFileData(fileId, toRead.next, stripeOffset, cacheChunkFactory);
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
@@ -279,9 +311,11 @@ public class EncodedReaderImpl implements EncodedReader {
               // it when building the last RG, so each RG processing will decref once, and the
               // last one will unlock the buffers.
               sctx.stripeLevelStream.incRef();
+              // For stripe-level streams we don't need the extra refcount on the block. See class comment about refcounts.
+              long unlockUntilCOffset = sctx.offset + sctx.length;
               DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, iter,
-                  sctx.offset,sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
-                  sctx.stripeLevelStream);
+                  sctx.offset, sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
+                  sctx.stripeLevelStream, unlockUntilCOffset);
               if (lastCached != null) {
                 iter = lastCached;
               }
@@ -296,6 +330,8 @@ public class EncodedReaderImpl implements EncodedReader {
                 nextCOffset = isLastRg ? sctx.length : nextIndex.getPositions(sctx.streamIndexOffset),
                 endCOffset = RecordReaderUtils.estimateRgEndOffset(
                     isCompressed, isLastRg, nextCOffset, sctx.length, bufferSize) + sctx.offset;
+            // See class comment about refcounts. 
+            long unlockUntilCOffset = nextCOffset;
             cb = new StreamBuffer(sctx.kind.getNumber());
             cb.incRef();
             if (DebugUtils.isTraceOrcEnabled()) {
@@ -307,7 +343,7 @@ public class EncodedReaderImpl implements EncodedReader {
             boolean isStartOfStream = sctx.bufferIter == null;
             DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
             DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, range,
-                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb);
+                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb, unlockUntilCOffset);
             if (lastCached != null) {
               sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid
             }
@@ -324,18 +360,20 @@ public class EncodedReaderImpl implements EncodedReader {
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
-    // TODO: this is not good; we hold all the blocks until we send them all.
-    //       Hard to avoid due to sharing by RGs... perhaps we can still do better.
-    DiskRangeList toFree = toRead.next;
-    while (toFree != null) {
-      if (toFree instanceof CacheChunk) {
-        LlapMemoryBuffer buffer = ((CacheChunk)toFree).buffer;
-        if (DebugUtils.isTraceLockingEnabled()) {
-          LOG.info("Unlocking " + buffer + " at the end of readEncodedColumns");
-        }
-        cache.releaseBuffer(buffer);
+    // Release the unreleased buffers. See class comment about refcounts.
+    DiskRangeList current = toRead.next;
+    while (current != null) {
+      DiskRangeList toFree = current;
+      current = current.next;
+      if (!(toFree instanceof TrackedCacheChunk)) continue;
+      TrackedCacheChunk cc = (TrackedCacheChunk)toFree;
+      if (cc.isReleased) continue;
+      LlapMemoryBuffer buffer = ((CacheChunk)toFree).buffer;
+      if (DebugUtils.isTraceLockingEnabled()) {
+        LOG.info("Unlocking " + buffer + " for the fetching thread at the end");
       }
-      toFree = toFree.next;
+      cache.releaseBuffer(buffer);
+      cc.isReleased = true;
     }
   }
 

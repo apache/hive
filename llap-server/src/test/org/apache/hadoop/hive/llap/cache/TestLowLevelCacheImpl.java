@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.CacheChunkFactory;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
@@ -44,6 +46,12 @@ import org.junit.Test;
 
 public class TestLowLevelCacheImpl {
   private static final Log LOG = LogFactory.getLog(TestLowLevelCacheImpl.class);
+
+  private static final CacheChunkFactory testFactory = new CacheChunkFactory() {
+    public DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
+      return new CacheChunk(buffer, offset, end);
+    }
+  };
 
   private static class DummyAllocator implements Allocator {
     @Override
@@ -131,7 +139,7 @@ public class TestLowLevelCacheImpl {
       } else if (intCount >= 0) {
         assertTrue(intCount == 0);
         intCount = -1;
-        iter = cache.getFileData(fileId, list.get(), 0);
+        iter = cache.getFileData(fileId, list.get(), 0, testFactory);
         assertEquals(resultCount, iter.listSize());
       }
       assertTrue(iter != null);
@@ -255,13 +263,13 @@ public class TestLowLevelCacheImpl {
     assertEquals(0, metrics.getCacheHitBytes());
     list = new DiskRangeListCreateHelper();
     list.addOrMerge(0, 1000, true, false);
-    cache.getFileData(fn, list.get(), 0);
+    cache.getFileData(fn, list.get(), 0, testFactory);
     assertEquals(1000, metrics.getCacheRequestedBytes());
     assertEquals(500, metrics.getCacheHitBytes());
 
     list = new DiskRangeListCreateHelper();
     list.addOrMerge(0, 100, true, false);
-    cache.getFileData(fn, list.get(), 0);
+    cache.getFileData(fn, list.get(), 0, testFactory);
     assertEquals(1100, metrics.getCacheRequestedBytes());
     assertEquals(600, metrics.getCacheHitBytes());
 
@@ -269,14 +277,14 @@ public class TestLowLevelCacheImpl {
     list.addOrMerge(0, 100, true, false);
     list.addOrMerge(300, 500, true, false);
     list.addOrMerge(800, 1000, true, false);
-    cache.getFileData(fn, list.get(), 0);
+    cache.getFileData(fn, list.get(), 0, testFactory);
     assertEquals(1600, metrics.getCacheRequestedBytes());
     assertEquals(1100, metrics.getCacheHitBytes());
 
     list = new DiskRangeListCreateHelper();
     list.addOrMerge(300, 500, true, false);
     list.addOrMerge(1000, 2000, true, false);
-    cache.getFileData(fn, list.get(), 0);
+    cache.getFileData(fn, list.get(), 0, testFactory);
     assertEquals(2800, metrics.getCacheRequestedBytes());
     assertEquals(1300, metrics.getCacheHitBytes());
   }
@@ -308,7 +316,7 @@ public class TestLowLevelCacheImpl {
                 list.addOrMerge(offsets[j], offsets[j] + 1, true, false);
               }
 
-              DiskRangeList iter = cache.getFileData(fileName, list.get(), 0);
+              DiskRangeList iter = cache.getFileData(fileName, list.get(), 0, testFactory);
               int j = -1;
               while (iter != null) {
                 ++j;
@@ -374,7 +382,7 @@ public class TestLowLevelCacheImpl {
           DiskRangeList head = new DiskRangeList(0, offsetsToUse + 1);
           isFirstFile = !isFirstFile;
           long fileId = isFirstFile ? fn1 : fn2;
-          head = cache.getFileData(fileId, head, 0);
+          head = cache.getFileData(fileId, head, 0, testFactory);
           DiskRange[] results = head.listToArray();
           int startIndex = rdm.nextInt(results.length), index = startIndex;
           LlapDataBuffer victim = null;

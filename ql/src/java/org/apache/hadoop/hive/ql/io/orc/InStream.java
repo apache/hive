@@ -540,13 +540,30 @@ public abstract class InStream extends InputStream {
     }
   }
 
+  public static class TrackedCacheChunkFactory implements LowLevelCache.CacheChunkFactory {
+    // TODO: in future, this can also be used as a pool
+    @Override
+    public DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
+      return new TrackedCacheChunk(buffer, offset, end);
+    }
+  }
+
+  /** Cache chunk which tracks whether it has been fully read. See
+      EncodedReaderImpl class comment about refcounts. */
+  public static class TrackedCacheChunk extends CacheChunk {
+    public boolean isReleased = false;
+    public TrackedCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
+      super(buffer, offset, end);
+    }
+  }
+
   /**
    * CacheChunk that is pre-created for new cache data; initially, it contains an original disk
    * buffer and an unallocated LlapMemoryBuffer object. Before we expose it, the LMB is allocated,
    * the data is decompressed, and original compressed data is discarded. The chunk lives on in
    * the DiskRange list created for the request, and everyone treats it like regular CacheChunk.
    */
-  private static class ProcCacheChunk extends CacheChunk {
+  private static class ProcCacheChunk extends TrackedCacheChunk {
     public ProcCacheChunk(long cbStartOffset, long cbEndOffset, boolean isCompressed,
         ByteBuffer originalData, LlapMemoryBuffer targetBuffer, int originalCbIndex) {
       super(targetBuffer, cbStartOffset, cbEndOffset);
@@ -573,12 +590,16 @@ public abstract class InStream extends InputStream {
    * @param bufferSize Compressed buffer (CB) size.
    * @param cache Low-level cache to cache new data.
    * @param streamBuffer Stream buffer, to add the results.
+   * @param unlockUntilCOffset The offset until which the buffers can be unlocked in cache, as
+   *                           they will not be used in future calls (see the class comment in
+   *                           EncodedReaderImpl about refcounts).
    * @return Last buffer cached during decomrpession. Cache buffers are never removed from
    *         the master list, so they are safe to keep as iterators for various streams.
    */
-  public static DiskRangeList uncompressStream(long fileId, long baseOffset,
-      DiskRangeList start, long cOffset, long endCOffset, ZeroCopyReaderShim zcr,
-      CompressionCodec codec, int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer)
+  // TODO#: move to EncodedReaderImpl
+  public static DiskRangeList uncompressStream(long fileId, long baseOffset, DiskRangeList start,
+      long cOffset, long endCOffset, ZeroCopyReaderShim zcr, CompressionCodec codec,
+      int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset)
           throws IOException {
     streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     if (cOffset == endCOffset) return null;
@@ -599,22 +620,24 @@ public abstract class InStream extends InputStream {
       current = current.split(cOffset).next;
     }
     long currentCOffset = cOffset;
-    DiskRangeList lastCached = null;
+    TrackedCacheChunk lastCached = null;
     while (true) {
       DiskRangeList next = null;
-      if (current instanceof CacheChunk) {
+      if (current instanceof TrackedCacheChunk) {
         // 2a. This is a cached compression buffer, add as is.
-        CacheChunk cc = (CacheChunk)current;
+        TrackedCacheChunk cc = (TrackedCacheChunk)current;
         if (DebugUtils.isTraceLockingEnabled()) {
           LOG.info("Locking " + cc.buffer + " due to reuse");
         }
-        cache.notifyReused(cc.buffer);
+        boolean canReuse = cache.notifyReused(cc.buffer);
+        assert canReuse;
         streamBuffer.cacheBuffers.add(cc.buffer);
         currentCOffset = cc.getEnd();
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
         }
-        lastCached = current;
+        ponderReleaseInitialRefcount(cache, unlockUntilCOffset, cc);
+        lastCached = cc;
         next = current.next;
       } else {
         // 2b. This is a compressed buffer. We need to uncompress it; the buffer can comprise
@@ -630,6 +653,7 @@ public abstract class InStream extends InputStream {
         next = (lastCached != null) ? lastCached.next : null;
         currentCOffset = (next != null) ? next.getOffset() : originalOffset;
       }
+
       if ((endCOffset >= 0 && currentCOffset >= endCOffset) || next == null) {
         break;
       }
@@ -698,7 +722,24 @@ public abstract class InStream extends InputStream {
         fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
     processCacheCollisions(
         cache, collisionMask, toDecompress, targetBuffers, streamBuffer.cacheBuffers);
+
+    // 7. It may happen that we only use new compression buffers once. Release initial refcounts.
+    for (ProcCacheChunk chunk : toDecompress) {
+      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, chunk);
+    }
+
     return lastCached;
+  }
+
+  private static void ponderReleaseInitialRefcount(LowLevelCache cache,
+      long unlockUntilCOffset, TrackedCacheChunk cc) {
+    if (cc.getEnd() > unlockUntilCOffset) return;
+    // This is the last RG for which this buffer will be used. Remove the initial refcount
+    if (DebugUtils.isTraceLockingEnabled()) {
+      LOG.info("Unlocking " + cc.buffer + " for the fetching thread");
+    }
+    cache.releaseBuffer(cc.buffer);
+    cc.isReleased = true;
   }
 
   private static void processCacheCollisions(LowLevelCache cache, long[] collisionMask,

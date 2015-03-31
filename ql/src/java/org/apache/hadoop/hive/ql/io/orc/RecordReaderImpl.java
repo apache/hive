@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -89,7 +88,6 @@ public class RecordReaderImpl implements RecordReader {
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private final Path path;
   private final FileSystem fileSystem;
-  private long fileId;
   private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
@@ -116,7 +114,6 @@ public class RecordReaderImpl implements RecordReader {
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
   private final MetadataReader metadata;
-  private LowLevelCache cache = null;
 
   private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
   private final ZeroCopyReaderShim zcr;
@@ -3095,13 +3092,9 @@ public class RecordReaderImpl implements RecordReader {
     long end = start + stripe.getDataLength();
     // explicitly trigger 1 big read
     DiskRangeList toRead = new DiskRangeList(start, end);
-    if (this.cache != null) {
-      toRead = cache.getFileData(fileId, toRead, stripe.getOffset());
-    }
     bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
-    createStreams(
-        streamDescriptions, bufferChunks, null, codec, bufferSize, streams, cache);
+    createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
     // TODO: decompressed data from streams should be put in cache
   }
 
@@ -3235,8 +3228,7 @@ public class RecordReaderImpl implements RecordReader {
                             boolean[] includeColumn,
                             CompressionCodec codec,
                             int bufferSize,
-                            Map<StreamName, InStream> streams,
-                            LowLevelCache cache) throws IOException {
+                            Map<StreamName, InStream> streams) throws IOException {
     long streamOffset = 0;
     for (OrcProto.Stream streamDesc: streamDescriptions) {
       int column = streamDesc.getColumn();
@@ -3249,16 +3241,10 @@ public class RecordReaderImpl implements RecordReader {
       List<DiskRange> buffers = RecordReaderUtils.getStreamBuffers(
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
-      streams.put(name, InStream.create(fileId, name.toString(), buffers,
-          streamDesc.getLength(), codec, bufferSize, cache));
+      streams.put(name, InStream.create(null, name.toString(), buffers,
+          streamDesc.getLength(), codec, bufferSize, null));
       streamOffset += streamDesc.getLength();
     }
-  }
-
-  public void setCache(LowLevelCache cache) throws IOException {
-    this.cache = cache;
-    // TODO: if this is actually used, get fileId from split, like main LLAP path.
-    this.fileId = RecordReaderUtils.getFileId(fileSystem, path);
   }
 
   private void readPartialDataStreams(StripeInformation stripe) throws IOException {
@@ -3269,15 +3255,12 @@ public class RecordReaderImpl implements RecordReader {
     if (LOG.isDebugEnabled()) {
       LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
-    if (this.cache != null) {
-      toRead = cache.getFileData(fileId, toRead, stripe.getOffset());
-    }
     bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + RecordReaderUtils.stringifyDiskRanges(bufferChunks));
     }
 
-    createStreams(streamList, bufferChunks, included, codec, bufferSize, streams, cache);
+    createStreams(streamList, bufferChunks, included, codec, bufferSize, streams);
   }
 
   @Override
