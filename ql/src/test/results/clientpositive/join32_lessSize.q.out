@@ -119,11 +119,11 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -279,16 +279,16 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:$hdt$_1:$hdt$_1:z]
+        /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:$hdt$_1:z]
 
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:y 
+        $hdt$_0:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:y 
+        $hdt$_0:y 
           TableScan
             alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -666,11 +666,11 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_2:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:$hdt$_2:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_2:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:$hdt$_2:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -780,16 +780,16 @@ STAGE PLANS:
               name: default.src1
             name: default.src1
       Truncated Path -> Alias:
-        /src1 [$hdt$_0:$hdt$_1:$hdt$_2:$hdt$_3:x]
+        /src1 [$hdt$_1:$hdt$_2:$hdt$_3:x]
 
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:w 
+        $hdt$_1:$hdt$_1:w 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:w 
+        $hdt$_1:$hdt$_1:w 
           TableScan
             alias: w
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -914,11 +914,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:w 
+        $hdt$_0:w 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:w 
+        $hdt$_0:w 
           TableScan
             alias: w
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1319,11 +1319,11 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -1481,12 +1481,12 @@ STAGE PLANS:
               name: default.src1
             name: default.src1
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:y]
+        /src [$hdt$_1:$hdt$_1:y]
 
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:z 
+        $hdt$_0:z 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -1536,7 +1536,7 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:z 
+        $hdt$_0:z 
           TableScan
             alias: z
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1931,11 +1931,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_0:y 
+        $hdt$_0:$hdt$_0:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_0:y 
+        $hdt$_0:$hdt$_0:y 
           TableScan
             alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2089,7 +2089,7 @@ STAGE PLANS:
               name: default.src1
             name: default.src1
       Truncated Path -> Alias:
-        /src1 [$hdt$_0:$hdt$_0:$hdt$_1:x]
+        /src1 [$hdt$_0:$hdt$_1:x]
 
   Stage: Stage-8
     Map Reduce Local Work
@@ -2469,11 +2469,11 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -2526,11 +2526,11 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           TableScan
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2726,11 +2726,11 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:$hdt$_2:x 
+        $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -2783,11 +2783,11 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:y 
+        $hdt$_0:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:y 
+        $hdt$_0:y 
           TableScan
             alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

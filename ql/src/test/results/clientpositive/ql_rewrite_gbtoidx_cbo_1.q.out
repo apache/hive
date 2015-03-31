@@ -572,7 +572,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: year(l_shipdate) (type: int), month(l_shipdate) (type: int), l_shipdate (type: string), _count_of_l_shipdate (type: bigint)
@@ -2260,7 +2260,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:$hdt$_0:default.default__tblpart_tbl_part_index__
+            alias: $hdt$_0:default.default__tblpart_tbl_part_index__
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
