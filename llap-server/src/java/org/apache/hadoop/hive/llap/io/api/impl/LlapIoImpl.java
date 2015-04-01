@@ -105,7 +105,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       cachePolicy.setEvictionListener(metadataCache);
     }
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
-    executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+    int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
+    executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads));
 
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
