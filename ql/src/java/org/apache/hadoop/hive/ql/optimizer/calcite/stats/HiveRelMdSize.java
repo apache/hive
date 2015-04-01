@@ -98,6 +98,8 @@ public class HiveRelMdSize extends RelMdSize {
     return ImmutableNullableList.copyOf(sizes);
   }
 
+  // TODO: remove when averageTypeValueSize method RelMdSize
+  //       supports all types
   public Double averageTypeValueSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case BOOLEAN:
@@ -108,6 +110,7 @@ public class HiveRelMdSize extends RelMdSize {
     case INTEGER:
     case FLOAT:
     case REAL:
+    case DECIMAL:
     case DATE:
     case TIME:
       return 4d;
