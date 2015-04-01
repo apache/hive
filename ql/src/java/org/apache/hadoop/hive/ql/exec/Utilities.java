@@ -1087,7 +1087,7 @@ public final class Utilities {
   // Also new Kryo() is expensive, so we want to do it just once.
   public static ThreadLocal<Kryo> runtimeSerializationKryo = new ThreadLocal<Kryo>() {
     @Override
-    protected synchronized Kryo initialValue() {
+    protected Kryo initialValue() {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -1130,7 +1130,7 @@ public final class Utilities {
 
   private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
     @Override
-    protected synchronized Kryo initialValue() {
+    protected Kryo initialValue() {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(CommonToken.class, new CommonTokenSerializer());

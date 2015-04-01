@@ -111,7 +111,7 @@ public final class TaskFactory {
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {
     @Override
-    protected synchronized Integer initialValue() {
+    protected Integer initialValue() {
       return Integer.valueOf(0);
     }
   };

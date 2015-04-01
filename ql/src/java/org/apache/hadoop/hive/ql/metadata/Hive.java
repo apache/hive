@@ -148,7 +148,7 @@ public class Hive {
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
-    protected synchronized Hive initialValue() {
+    protected Hive initialValue() {
       return null;
     }
 

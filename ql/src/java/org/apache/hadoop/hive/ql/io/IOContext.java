@@ -41,7 +41,7 @@ public class IOContext {
    */
   private static final ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
     @Override
-    protected synchronized IOContext initialValue() { return new IOContext(); }
+    protected IOContext initialValue() { return new IOContext(); }
  };
 
   private static IOContext get() {

@@ -294,14 +294,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static final ThreadLocal<RawStore> threadLocalMS =
         new ThreadLocal<RawStore>() {
           @Override
-          protected synchronized RawStore initialValue() {
+          protected RawStore initialValue() {
             return null;
           }
         };
 
     private static final ThreadLocal<TxnHandler> threadLocalTxn = new ThreadLocal<TxnHandler>() {
       @Override
-      protected synchronized TxnHandler initialValue() {
+      protected TxnHandler initialValue() {
         return null;
       }
     };
@@ -319,7 +319,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static final ThreadLocal<Configuration> threadLocalConf =
         new ThreadLocal<Configuration>() {
           @Override
-          protected synchronized Configuration initialValue() {
+          protected Configuration initialValue() {
             return null;
           }
         };
@@ -371,7 +371,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static int nextSerialNum = 0;
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
-      protected synchronized Integer initialValue() {
+      protected Integer initialValue() {
         return new Integer(nextSerialNum++);
       }
     };
@@ -381,7 +381,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // instance of TSocket.
     private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
       @Override
-      protected synchronized String initialValue() {
+      protected String initialValue() {
         return null;
       }
     };
