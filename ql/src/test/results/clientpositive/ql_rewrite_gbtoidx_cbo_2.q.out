@@ -3192,7 +3192,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_orderkey (type: int), (l_orderkey + 1) (type: int), _count_of_l_orderkey (type: bigint)
@@ -3282,7 +3282,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (l_orderkey + 2) (type: int), l_orderkey (type: int), _count_of_l_orderkey (type: bigint)

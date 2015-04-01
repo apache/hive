@@ -1,0 +1,47 @@
+PREHOOK: query: -- Sometimes, the user wants to create a table from just a portion of the file schema;
+-- This test makes sure that this scenario works;
+
+DROP TABLE test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Sometimes, the user wants to create a table from just a portion of the file schema;
+-- This test makes sure that this scenario works;
+
+DROP TABLE test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- Current file schema is: (id int, name string, address struct<number:int,street:string,zip:string>);
+-- Creates a table from just a portion of the file schema, including struct elements (test lower/upper case as well)
+CREATE TABLE test (Name string, address struct<Zip:string,Street:string>) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: -- Current file schema is: (id int, name string, address struct<number:int,street:string,zip:string>);
+-- Creates a table from just a portion of the file schema, including struct elements (test lower/upper case as well)
+CREATE TABLE test (Name string, address struct<Zip:string,Street:string>) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/HiveGroup.parquet' OVERWRITE INTO TABLE test
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/HiveGroup.parquet' OVERWRITE INTO TABLE test
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test
+PREHOOK: query: SELECT * FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+Roger	{"Zip":"87366","Street":"Congress Ave."}
+PREHOOK: query: DROP TABLE test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: DROP TABLE test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test

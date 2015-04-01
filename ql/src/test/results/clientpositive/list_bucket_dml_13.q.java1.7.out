@@ -166,7 +166,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:src]
+        /src [src]
 
   Stage: Stage-0
     Move Operator

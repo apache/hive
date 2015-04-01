@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
+import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
@@ -117,7 +118,7 @@ public class HiveDelegator extends LauncherDelegator {
   private List<String> makeBasicArgs(String execute, String srcFile, String otherFiles,
                                          String statusdir, String completedUrl,
                                          boolean enablelog)
-    throws URISyntaxException, FileNotFoundException, IOException,
+    throws URISyntaxException, IOException,
     InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
@@ -142,6 +143,30 @@ public class HiveDelegator extends LauncherDelegator {
       args.add(appConf.hiveArchive());
     }
 
+    //ship additional artifacts, for example for Tez
+    String extras = appConf.get(AppConfig.HIVE_EXTRA_FILES); 
+    if(extras != null && extras.length() > 0) {
+      boolean foundFiles = false;
+      for(int i = 0; i < args.size(); i++) {
+        if(FILES.equals(args.get(i))) {
+          String value = args.get(i + 1);
+          args.set(i + 1, value + "," + extras);
+          foundFiles = true;
+        }
+      }
+      if(!foundFiles) {
+        args.add(FILES);
+        args.add(extras);
+      }
+      String[] extraFiles = appConf.getStrings(AppConfig.HIVE_EXTRA_FILES);
+      StringBuilder extraFileNames = new StringBuilder();
+      //now tell LaunchMapper which files it should add to HADOOP_CLASSPATH
+      for(String file : extraFiles) {
+        Path p = new Path(file);
+        extraFileNames.append(p.getName()).append(",");
+      }
+      addDef(args, JobSubmissionConstants.HADOOP_CLASSPATH_EXTRAS, extraFileNames.toString());
+    }
     return args;
   }
 }

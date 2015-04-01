@@ -65,8 +65,8 @@ PREHOOK: Input: default@avro_dec
 POSTHOOK: query: DESC avro_dec
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@avro_dec
-name                	string              	from deserializer   
-value               	decimal(5,2)        	from deserializer   
+name                	string              	                    
+value               	decimal(5,2)        	                    
 PREHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
@@ -121,8 +121,8 @@ PREHOOK: Input: default@avro_dec1
 POSTHOOK: query: DESC avro_dec1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@avro_dec1
-name                	string              	from deserializer   
-value               	decimal(4,1)        	from deserializer   
+name                	string              	                    
+value               	decimal(4,1)        	                    
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.avro' INTO TABLE avro_dec1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
