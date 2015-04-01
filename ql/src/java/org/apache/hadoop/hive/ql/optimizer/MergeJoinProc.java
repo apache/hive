@@ -70,12 +70,11 @@ public class MergeJoinProc implements NodeProcessor {
       context.opMergeJoinWorkMap.put(mergeJoinOp, mergeWork);
     }
 
+    mergeWork.addMergedWork(null, parentWork, context.leafOperatorToFollowingWork);
     mergeWork.setMergeJoinOperator(mergeJoinOp);
-    mergeWork.addMergedWork(null, parentWork);
     tezWork.setVertexType(mergeWork, VertexType.MULTI_INPUT_UNINITIALIZED_EDGES);
 
     for (BaseWork grandParentWork : tezWork.getParents(parentWork)) {
-      parentWork.setName(grandParentWork.getName());
       TezEdgeProperty edgeProp = tezWork.getEdgeProperty(grandParentWork, parentWork);
       tezWork.disconnect(grandParentWork, parentWork);
       tezWork.connect(grandParentWork, mergeWork, edgeProp);
