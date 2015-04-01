@@ -2056,6 +2056,8 @@ public class HiveConf extends Configuration {
         "Comma-delimited set of integers denoting the desired rollover intervals (in seconds) for" +
             "percentile latency metrics on the LLAP daemon producer-consumer queue. By default," +
             "percentile latency metrics are disabled."),
+    LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
+        "Specify the number of threads to use for low-level IO thread pool."),
 
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
