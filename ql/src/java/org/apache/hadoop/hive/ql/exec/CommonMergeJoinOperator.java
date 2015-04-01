@@ -501,12 +501,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (parent == null) {
       throw new HiveException("No valid parents.");
     }
-    Map<Integer, DummyStoreOperator> dummyOps = parent.getTagToOperatorTree();
+    Map<Integer, DummyStoreOperator> dummyOps =
+        ((TezContext) (MapredContext.get())).getDummyOpsMap();
     for (Entry<Integer, DummyStoreOperator> connectOp : dummyOps.entrySet()) {
       if (connectOp.getValue().getChildOperators() == null
-	  || connectOp.getValue().getChildOperators().isEmpty()) {
-	parentOperators.add(connectOp.getKey(), connectOp.getValue());
-	connectOp.getValue().getChildOperators().add(this);
+          || connectOp.getValue().getChildOperators().isEmpty()) {
+        parentOperators.add(connectOp.getKey(), connectOp.getValue());
+        connectOp.getValue().getChildOperators().add(this);
       }
     }
     super.initializeLocalWork(hconf);
