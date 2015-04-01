@@ -50,9 +50,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import com.google.common.collect.ImmutableList;
@@ -95,6 +97,23 @@ public class PlanModifierForASTConv {
     return newTopNode;
   }
 
+  private static String getTblAlias(RelNode rel) {
+
+    if (null == rel) {
+      return null;
+    }
+    if (rel instanceof HiveTableScan) {
+      return ((RelOptHiveTable)((HiveTableScan)rel).getTable()).getTableAlias();
+    }
+    if (rel instanceof Project) {
+      return null;
+    }
+    if (rel.getInputs().size() == 1) {
+      return getTblAlias(rel.getInput(0));
+    }
+    return null;
+  }
+
   private static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof HepRelVertex) {
@@ -102,6 +121,12 @@ public class PlanModifierForASTConv {
     } else if (rel instanceof Join) {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
+      }
+      String leftChild = getTblAlias(((Join)rel).getLeft());
+      if (null != leftChild && leftChild.equalsIgnoreCase(getTblAlias(((Join)rel).getRight()))) {
+        // introduce derived table above one child, if this is self-join
+        // since user provided aliases are lost at this point.
+        introduceDerivedTable(((Join)rel).getLeft(), rel);
       }
     } else if (rel instanceof MultiJoin) {
       throw new RuntimeException("Found MultiJoin");
