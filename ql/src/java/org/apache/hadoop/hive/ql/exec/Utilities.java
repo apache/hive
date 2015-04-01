@@ -3668,7 +3668,7 @@ public final class Utilities {
   public static boolean isVectorMode(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
         Utilities.getPlanPath(conf) != null && Utilities
-        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+        .getMapWork(conf).getVectorMode()) {
       return true;
     }
     return false;
