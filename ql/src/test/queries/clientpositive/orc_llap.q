@@ -5,7 +5,7 @@ SET hive.llap.io.enabled=false;
 SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
 SET hive.optimize.index.filter=true;
-set hive.auto.convert.join=true;
+set hive.auto.convert.join=false;
 
 CREATE TABLE orc_llap(
     ctinyint TINYINT,
@@ -33,6 +33,7 @@ select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble +
 from alltypesorc cross join cross_numbers;
 
 SET hive.llap.io.enabled=true;
+set hive.auto.convert.join=true;
 
 
 -- Hash cannot be vectorized, so run hash as the last step on a temp table

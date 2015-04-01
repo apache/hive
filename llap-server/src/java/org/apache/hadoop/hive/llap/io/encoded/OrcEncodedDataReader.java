@@ -65,6 +65,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private OrcFileMetadata fileMetadata;
   private Reader orcReader;
   private MetadataReader metadataReader;
+  private EncodedReader stripeReader;
   private long fileId;
   private FileSystem fs;
   /**
@@ -72,7 +73,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * read. Contains only stripes that are read, and only columns included. null => read all RGs.
    */
   private boolean[][][] readState;
-  private boolean isStopped = false, isPaused = false;
+  private volatile boolean isStopped = false, isPaused = false;
 
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
       OrcMetadataCache metadataCache, Configuration conf, InputSplit split,
@@ -95,8 +96,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void stop() {
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Encoded reader is being stopped");
+    }
     isStopped = true;
-    // TODO: stop fetching if still in progress
   }
 
   @Override
@@ -116,7 +119,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Processing split for " + split.getPath());
     }
-    if (isStopped) return null;
+    if (processStop()) return null;
     orcReader = null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Disable filesystem caching for now; Tez closes it and FS cache will fix all that
@@ -175,19 +178,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       // Now, apply SARG if any; w/o sarg, this will just initialize readState.
       determineRgsToRead(globalIncludes, stride, stripeMetadatas);
     } catch (Throwable t) {
-      cleanupReaders(null);
+      cleanupReaders();
       consumer.setError(t);
       return null;
     }
 
-    if (isStopped) {
-      cleanupReaders(null);
-      return null;
-    }
+    if (processStop()) return null;
 
     // 4. Get data from high-level cache.
-    //    If some cols are fully in cache, this will also give us the modified list of
-    //    columns to read for every stripe (null means read all of them - the usual path).
+    //    If some cols are fully in cache, this will also give us the modified list of columns to
+    //    read for every stripe (null means read all of them - the usual path). In any case,
+    //    readState will be modified for column x rgs that were fetched from high-level cache.
     List<Integer>[] stripeColsToRead = null;
     if (cache != null) {
       try {
@@ -195,24 +196,22 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       } catch (Throwable t) {
         // produceDataFromCache handles its own cleanup.
         consumer.setError(t);
-        cleanupReaders(null);
+        cleanupReaders();
         return null;
       }
     }
-    // readState has been modified for column x rgs that were fetched from cache.
 
     // 5. Create encoded data reader.
     // In case if we have high-level cache, we will intercept the data and add it there;
     // otherwise just pass the data directly to the consumer.
     Consumer<EncodedColumnBatch<OrcBatchKey>> dataConsumer =
         (cache == null) ? this.consumer : this;
-    EncodedReader stripeReader = null;
     try {
       ensureOrcReader();
       stripeReader = orcReader.encodedReader(fileId, lowLevelCache, dataConsumer);
     } catch (Throwable t) {
       consumer.setError(t);
-      cleanupReaders(null);
+      cleanupReaders();
       return null;
     }
 
@@ -220,18 +219,22 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
     OrcBatchKey stripeKey = new OrcBatchKey(fileId, -1, 0);
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
+      if (processStop()) return null;
+      int stripeIx = stripeIxFrom + stripeIxMod;
+      boolean[][] colRgs = null;
+      boolean[] stripeIncludes = null;
+      OrcStripeMetadata stripeMetadata = null;
+      StripeInformation stripe;
       try {
         List<Integer> cols = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
         if (cols != null && cols.isEmpty()) continue; // No need to read this stripe.
-        int stripeIx = stripeIxFrom + stripeIxMod;
-        StripeInformation si = fileMetadata.getStripes().get(stripeIx);
+        stripe = fileMetadata.getStripes().get(stripeIx);
 
         if (DebugUtils.isTraceOrcEnabled()) {
           LlapIoImpl.LOG.info("Reading stripe " + stripeIx + ": "
-              + si.getOffset() + ", " + si.getLength());
+              + stripe.getOffset() + ", " + stripe.getLength());
         }
-        boolean[] stripeIncludes = null;
-        boolean[][] colRgs = readState[stripeIxMod];
+        colRgs = readState[stripeIxMod];
 
         // 6.1. Determine the columns to read (usually the same as requested).
         if (cols == null || cols.size() == colRgs.length) {
@@ -245,7 +248,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
 
         // 6.2. Ensure we have stripe metadata. We might have read it before for RG filtering.
-        OrcStripeMetadata stripeMetadata;
         if (stripeMetadatas != null) {
           stripeMetadata = stripeMetadatas.get(stripeIxMod);
         } else {
@@ -254,7 +256,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           if (stripeMetadata == null) {
             ensureMetadataReader();
             stripeMetadata = metadataCache.putStripeMetadata(new OrcStripeMetadata(
-                stripeKey, metadataReader, si, stripeIncludes, sargColumns));
+                stripeKey, metadataReader, stripe, stripeIncludes, sargColumns));
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                   + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
@@ -269,17 +271,27 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                 + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
           }
           ensureMetadataReader();
-          updateLoadedIndexes(stripeMetadata, si, stripeIncludes, sargColumns);
+          updateLoadedIndexes(stripeMetadata, stripe, stripeIncludes, sargColumns);
         }
-        // 6.3. Finally, hand off to the stripe reader to produce the data.
-        //      This is a sync call that will feed data to the consumer.
+      } catch (Throwable t) {
+        consumer.setError(t);
+        cleanupReaders();
+        return null;
+      }
+      if (processStop()) return null;
+
+      // 6.3. Finally, hand off to the stripe reader to produce the data.
+      //      This is a sync call that will feed data to the consumer.
+      try {
         // TODO: readEncodedColumns is not supposed to throw; errors should be propagated thru
         // consumer. It is potentially holding locked buffers, and must perform its own cleanup.
-        stripeReader.readEncodedColumns(stripeIx, si, stripeMetadata.getRowIndexes(),
+        // Also, currently readEncodedColumns is not stoppable. The consumer will discard the
+        // data it receives for one stripe. We could probably interrupt it, if it checked that.
+        stripeReader.readEncodedColumns(stripeIx, stripe, stripeMetadata.getRowIndexes(),
             stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes, colRgs);
       } catch (Throwable t) {
         consumer.setError(t);
-        cleanupReaders(stripeReader);
+        cleanupReaders();
         return null;
       }
     }
@@ -291,8 +303,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
 
     // Close the stripe reader, we are done reading.
-    stripeReader.close();
+    cleanupReaders();
     return null;
+  }
+
+  private boolean processStop() {
+    if (!isStopped) return false;
+    LOG.info("Encoded data reader is stopping");
+    cleanupReaders();
+    return true;
   }
 
   private static long determineFileId(FileSystem fs, FileSplit split) throws IOException {
@@ -344,7 +363,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   /**
    * Closes the stripe readers (on error).
    */
-  private void cleanupReaders(EncodedReader er) {
+  private void cleanupReaders() {
     if (metadataReader != null) {
       try {
         metadataReader.close();
@@ -352,9 +371,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Ignore.
       }
     }
-    if (er != null) {
+    if (stripeReader != null) {
       try {
-        er.close();
+        stripeReader.close();
       } catch (IOException ex) {
         // Ignore.
       }
