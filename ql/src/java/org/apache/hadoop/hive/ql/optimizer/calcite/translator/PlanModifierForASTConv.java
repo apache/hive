@@ -38,6 +38,9 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
@@ -168,7 +171,27 @@ public class PlanModifierForASTConv {
     ImmutableMap.Builder<Integer, RexNode> inputRefToCallMapBldr = ImmutableMap.builder();
     for (int i = resultSchema.size(); i < rt.getFieldCount(); i++) {
       if (collationInputRefs.contains(i)) {
-        inputRefToCallMapBldr.put(i, obChild.getChildExps().get(i));
+        RexNode obyExpr = obChild.getChildExps().get(i);
+        if (obyExpr instanceof RexCall) {
+          int a = -1;
+          List<RexNode> operands = new ArrayList<>();
+          for (int k = 0; k< ((RexCall) obyExpr).operands.size(); k++) {
+            RexNode rn = ((RexCall) obyExpr).operands.get(k);
+            for (int j = 0; j < resultSchema.size(); j++) {
+              if( obChild.getChildExps().get(j).toString().equals(rn.toString())) {
+                a = j;
+                break;
+              }
+            } if (a != -1) {
+              operands.add(new RexInputRef(a, rn.getType()));
+            } else {
+              operands.add(rn);
+            }
+            a = -1;
+          }
+          obyExpr = obChild.getCluster().getRexBuilder().makeCall(((RexCall)obyExpr).getOperator(), operands);
+        }
+        inputRefToCallMapBldr.put(i, obyExpr);
       }
     }
     ImmutableMap<Integer, RexNode> inputRefToCallMap = inputRefToCallMapBldr.build();
@@ -266,7 +289,7 @@ public class PlanModifierForASTConv {
     RelNode select = introduceDerivedTable(rel);
 
     parent.replaceInput(pos, select);
-    
+
     return select;
   }
 
@@ -352,7 +375,7 @@ public class PlanModifierForASTConv {
 
     return validChild;
   }
-  
+
   private static boolean isEmptyGrpAggr(RelNode gbNode) {
     // Verify if both groupset and aggrfunction are empty)
     Aggregate aggrnode = (Aggregate) gbNode;
@@ -361,12 +384,12 @@ public class PlanModifierForASTConv {
     }
     return false;
   }
-  
+
   private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
     // If this function is called, the parent should only include constant
     List<RexNode> exps = parent.getChildExps();
     for (RexNode rexNode : exps) {
-      if (rexNode.getKind() != SqlKind.LITERAL) {
+      if (!rexNode.accept(new HiveCalciteUtil.ConstantFinder())) {
         throw new RuntimeException("We expect " + parent.toString()
             + " to contain only constants. However, " + rexNode.toString() + " is "
             + rexNode.getKind());
@@ -377,7 +400,7 @@ public class PlanModifierForASTConv {
     RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
     RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
     // Create the dummy aggregation.
-    SqlAggFunction countFn = (SqlAggFunction) SqlFunctionConverter.getCalciteAggFn("count",
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count",
         ImmutableList.of(intType), longType);
     // TODO: Using 0 might be wrong; might need to walk down to find the
     // proper index of a dummy.

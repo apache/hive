@@ -43,13 +43,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 public class AvroObjectInspectorGenerator {
   final private List<String> columnNames;
   final private List<TypeInfo> columnTypes;
+  final private List<String> columnComments;
   final private ObjectInspector oi;
 
   public AvroObjectInspectorGenerator(Schema schema) throws SerDeException {
     verifySchemaIsARecord(schema);
 
-    this.columnNames = generateColumnNames(schema);
+    this.columnNames = AvroObjectInspectorGenerator.generateColumnNames(schema);
     this.columnTypes = SchemaToTypeInfo.generateColumnTypes(schema);
+    this.columnComments = AvroObjectInspectorGenerator.generateColumnComments(schema);
     assert columnNames.size() == columnTypes.size();
     this.oi = createObjectInspector();
   }
@@ -80,7 +82,7 @@ public class AvroObjectInspectorGenerator {
     for(int i = 0; i < columnNames.size(); i++) {
       columnOIs.add(i, createObjectInspectorWorker(columnTypes.get(i)));
     }
-    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs);
+    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs, columnComments);
   }
 
   private ObjectInspector createObjectInspectorWorker(TypeInfo ti) throws SerDeException {
@@ -145,7 +147,7 @@ public class AvroObjectInspectorGenerator {
            c.equals(ObjectInspector.Category.UNION);
   }
 
-  private List<String> generateColumnNames(Schema schema) {
+  public static List<String> generateColumnNames(Schema schema) {
     List<Schema.Field> fields = schema.getFields();
     List<String> fieldsList = new ArrayList<String>(fields.size());
 
@@ -156,4 +158,15 @@ public class AvroObjectInspectorGenerator {
     return fieldsList;
   }
 
+  public static List<String> generateColumnComments(Schema schema) {
+    List<Schema.Field> fields = schema.getFields();
+    List<String> fieldComments = new ArrayList<String>(fields.size());
+
+    for (Schema.Field field : fields) {
+      String fieldComment = field.doc() == null ? "" : field.doc();
+      fieldComments.add(fieldComment);
+    }
+
+    return fieldComments;
+  }
 }

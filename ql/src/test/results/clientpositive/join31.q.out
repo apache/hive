@@ -84,11 +84,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$INTNAME1 
+        $hdt$_0:$INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$INTNAME1 
+        $hdt$_0:$INTNAME1 
           TableScan
             HashTable Sink Operator
               keys:
@@ -169,11 +169,11 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$INTNAME 
+        $hdt$_0:$INTNAME 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$INTNAME 
+        $hdt$_0:$INTNAME 
           TableScan
             HashTable Sink Operator
               keys:

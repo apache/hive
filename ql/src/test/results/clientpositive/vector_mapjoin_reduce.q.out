@@ -77,11 +77,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME1 
+        $INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME1 
+        $INTNAME1 
           TableScan
             HashTable Sink Operator
               keys:
@@ -114,11 +114,11 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME 
+        $INTNAME 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME 
+        $INTNAME 
           TableScan
             HashTable Sink Operator
               keys:
@@ -188,11 +188,11 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:lineitem 
+        $hdt$_1:lineitem 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:lineitem 
+        $hdt$_1:lineitem 
           TableScan
             alias: lineitem
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
@@ -342,11 +342,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME1 
+        $INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME1 
+        $INTNAME1 
           TableScan
             HashTable Sink Operator
               keys:
@@ -379,11 +379,11 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME 
+        $INTNAME 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME 
+        $INTNAME 
           TableScan
             HashTable Sink Operator
               keys:
@@ -453,11 +453,11 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:$hdt$_1:lineitem 
+        $hdt$_1:lineitem 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:$hdt$_1:lineitem 
+        $hdt$_1:lineitem 
           TableScan
             alias: lineitem
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE

@@ -475,9 +475,9 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-10 [$hdt$_0:pcr_t1]
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1798,8 +1798,8 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2003,8 +2003,8 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2293,9 +2293,9 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
-        /pcr_t1/ds=2000-04-10 [$hdt$_0:pcr_t1]
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -5325,7 +5325,7 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

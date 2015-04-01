@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.templeton.tool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -33,7 +34,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -115,6 +115,32 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       }
     }
   }
+  private static void handleHadoopClasspathExtras(Configuration conf, Map<String, String> env)
+    throws IOException {
+    if(!TempletonUtils.isset(conf.get(JobSubmissionConstants.HADOOP_CLASSPATH_EXTRAS))) {
+      return;
+    }
+    LOG.debug(HADOOP_CLASSPATH_EXTRAS + "=" + conf.get(HADOOP_CLASSPATH_EXTRAS));
+    String[] files = conf.getStrings(HADOOP_CLASSPATH_EXTRAS);
+    StringBuilder paths = new StringBuilder();
+    FileSystem fs = FileSystem.getLocal(conf);//these have been localized already
+    for(String f : files) {
+      Path p = new Path(f);
+      FileStatus fileStatus = fs.getFileStatus(p);
+      paths.append(f);
+      if(fileStatus.isDirectory()) {
+        paths.append(File.separator).append("*");
+      }
+      paths.append(File.pathSeparator);
+    }
+    paths.setLength(paths.length() - 1);
+    if(TempletonUtils.isset(System.getenv("HADOOP_CLASSPATH"))) {
+      env.put("HADOOP_CLASSPATH", System.getenv("HADOOP_CLASSPATH") + File.pathSeparator + paths);
+    }
+    else {
+      env.put("HADOOP_CLASSPATH", paths.toString());
+    }
+  }
   protected Process startJob(Context context, String user, String overrideClasspath)
     throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -135,6 +161,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
     handleSqoop(conf, env);
+    handleHadoopClasspathExtras(conf, env);    
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");

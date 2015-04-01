@@ -35,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
@@ -104,6 +103,8 @@ public class AppConfig extends Configuration {
   public static final String HIVE_ARCHIVE_NAME   = "templeton.hive.archive";
   public static final String HIVE_PATH_NAME      = "templeton.hive.path";
   public static final String MAPPER_MEMORY_MB    = "templeton.mapper.memory.mb";
+  public static final String MR_AM_MEMORY_MB     = "templeton.mr.am.memory.mb";
+
   /**
    * see webhcat-default.xml
    */
@@ -130,6 +131,8 @@ public class AppConfig extends Configuration {
   public static final String OVERRIDE_JARS_ENABLED = "templeton.override.enabled";
   public static final String TEMPLETON_CONTROLLER_MR_CHILD_OPTS 
     = "templeton.controller.mr.child.opts";
+  public static final String TEMPLETON_CONTROLLER_MR_AM_JAVA_OPTS
+    = "templeton.controller.mr.am.java.opts";
 
   public static final String KERBEROS_SECRET     = "templeton.kerberos.secret";
   public static final String KERBEROS_PRINCIPAL  = "templeton.kerberos.principal";
@@ -148,7 +151,14 @@ public class AppConfig extends Configuration {
     = "mapred.map.tasks.speculative.execution";
   public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
   public static final String HADOOP_MAP_MEMORY_MB = "mapreduce.map.memory.mb";
+  public static final String HADOOP_MR_AM_JAVA_OPTS = "yarn.app.mapreduce.am.command-opts";
+  public static final String HADOOP_MR_AM_MEMORY_MB = "yarn.app.mapreduce.am.resource.mb";
   public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
+  /**
+   * comma-separated list of artifacts to add to HADOOP_CLASSPATH evn var in
+   * LaunchMapper before launching Hive command
+   */
+  public static final String HIVE_EXTRA_FILES = "templeton.hive.extra.files";
 
 
   private static final Log LOG = LogFactory.getLog(AppConfig.class);
@@ -313,7 +323,13 @@ public class AppConfig extends Configuration {
   public String controllerMRChildOpts() { 
     return get(TEMPLETON_CONTROLLER_MR_CHILD_OPTS); 
   }
+  public String controllerAMChildOpts() {
+    return get(TEMPLETON_CONTROLLER_MR_AM_JAVA_OPTS);
+  }
   public String mapperMemoryMb()   { return get(MAPPER_MEMORY_MB); }
+  public String amMemoryMb() {
+    return get(MR_AM_MEMORY_MB);
+  }
 
   /**
    * @see  #HIVE_PROPS_NAME

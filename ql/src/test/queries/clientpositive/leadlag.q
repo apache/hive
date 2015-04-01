@@ -36,7 +36,10 @@ sum(p_size - lag(p_size,1)) over w1 as deltaSum
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following) ;
 
+set hive.cbo.enable=false;
 -- 6. testRankInLead
+-- disable cbo because of CALCITE-653
+
 select p_mfgr, p_name, p_size, r1,
 lead(r1,1,r1) over (distribute by p_mfgr sort by p_name) as deltaRank
 from (
@@ -45,6 +48,7 @@ rank() over(distribute by p_mfgr  sort by p_name) as r1
 from part 
 ) a;
 
+set hive.cbo.enable=true;
 -- 7. testLeadWithPTF
 select p_mfgr, p_name, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
