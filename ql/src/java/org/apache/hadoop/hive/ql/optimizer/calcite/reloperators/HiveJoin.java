@@ -155,13 +155,15 @@ public class HiveJoin extends Join implements HiveRelNode {
     Set<JoinAlgorithm> possibleAlgorithms = obtainJoinAlgorithms();
     // 4. For each possible algorithm, calculate cost, and select best
     RelOptCost selfCost = null;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Join algorithm selection for: " + this);
+    }
     for (JoinAlgorithm possibleAlgorithm : possibleAlgorithms) {
       switch (possibleAlgorithm) {
         case COMMON_JOIN:
           RelOptCost commonJoinCost = computeSelfCostCommonJoin();
           if (LOG.isDebugEnabled()) {
-            LOG.debug("COMMONJOIN possible");
-            LOG.debug("COMMONJOIN cost: " + commonJoinCost);
+            LOG.debug(JoinAlgorithm.COMMON_JOIN + " cost: " + commonJoinCost);
           }
           if (selfCost == null || commonJoinCost.isLt(selfCost) ) {
             this.joinAlgorithm = JoinAlgorithm.COMMON_JOIN;
@@ -171,8 +173,7 @@ public class HiveJoin extends Join implements HiveRelNode {
         case MAP_JOIN:
           RelOptCost mapJoinCost = computeSelfCostMapJoin();
           if (LOG.isDebugEnabled()) {
-            LOG.debug("MAPJOIN possible");
-            LOG.debug("MAPJOIN cost: " + mapJoinCost);
+            LOG.debug(JoinAlgorithm.MAP_JOIN + " cost: " + mapJoinCost);
           }
           if (selfCost == null || mapJoinCost.isLt(selfCost) ) {
             this.joinAlgorithm = JoinAlgorithm.MAP_JOIN;
@@ -182,8 +183,7 @@ public class HiveJoin extends Join implements HiveRelNode {
         case BUCKET_JOIN:
           RelOptCost bucketJoinCost = computeSelfCostBucketJoin();
           if (LOG.isDebugEnabled()) {
-            LOG.debug("BUCKETJOIN possible");
-            LOG.debug("BUCKETJOIN cost: " + bucketJoinCost);
+            LOG.debug(JoinAlgorithm.BUCKET_JOIN + " cost: " + bucketJoinCost);
           }
           if (selfCost == null || bucketJoinCost.isLt(selfCost) ) {
             this.joinAlgorithm = JoinAlgorithm.BUCKET_JOIN;
@@ -193,8 +193,7 @@ public class HiveJoin extends Join implements HiveRelNode {
         case SMB_JOIN:
           RelOptCost smbJoinCost = computeSelfCostSMBJoin();
           if (LOG.isDebugEnabled()) {
-            LOG.debug("SMBJOIN possible");
-            LOG.debug("SMBJOIN cost: " + smbJoinCost);
+            LOG.debug(JoinAlgorithm.SMB_JOIN + " cost: " + smbJoinCost);
           }
           if (selfCost == null || smbJoinCost.isLt(selfCost) ) {
             this.joinAlgorithm = JoinAlgorithm.SMB_JOIN;
@@ -204,6 +203,9 @@ public class HiveJoin extends Join implements HiveRelNode {
         default:
           //TODO: Exception
       }
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(this.joinAlgorithm + " selected");
     }
     return selfCost;
   }
