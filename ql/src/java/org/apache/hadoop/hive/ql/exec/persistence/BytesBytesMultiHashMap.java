@@ -146,7 +146,7 @@ public final class BytesBytesMultiHashMap {
   private long[] refs;
   private int startingHashBitCount, hashBitCount;
 
-  private int metricPutConflict = 0, metricExpands = 0, metricExpandsUs = 0;
+  private int metricPutConflict = 0, metricGetConflict = 0, metricExpands = 0, metricExpandsMs = 0;
 
   /** We have 39 bits to store list pointer from the first record; this is size limit */
   final static long MAX_WB_SIZE = ((long)1) << 38;
@@ -360,6 +360,17 @@ public final class BytesBytesMultiHashMap {
     this.keysAssigned = 0;
   }
 
+  public void expandAndRehashToTarget(int estimateNewRowCount) {
+    int oldRefsCount = refs.length;
+    int newRefsCount = oldRefsCount + estimateNewRowCount;
+    if (resizeThreshold <= newRefsCount) {
+      newRefsCount =
+          (Long.bitCount(newRefsCount) == 1) ? estimateNewRowCount : nextHighestPowerOfTwo(newRefsCount);
+      expandAndRehashImpl(newRefsCount);
+      LOG.info("Expand and rehash to " + newRefsCount + " from " + oldRefsCount);
+    }
+  }
+
   private static void validateCapacity(long capacity) {
     if (Long.bitCount(capacity) != 1) {
       throw new AssertionError("Capacity must be a power of two");
@@ -424,6 +435,7 @@ public final class BytesBytesMultiHashMap {
       if (isSameKey(key, length, ref, hashCode, readPos)) {
         return ref;
       }
+      ++metricGetConflict;
       probeSlot += (++i);
       if (i > largestNumberOfSteps) {
         // We know we never went that far when we were inserting.
@@ -523,9 +535,13 @@ public final class BytesBytesMultiHashMap {
   }
 
   private void expandAndRehash() {
-    long expandTime = System.nanoTime();
-    final long[] oldRefs = refs;
     long capacity = refs.length << 1;
+    expandAndRehashImpl(capacity);
+  }
+  
+  private void expandAndRehashImpl(long capacity) {
+    long expandTime = System.currentTimeMillis();
+    final long[] oldRefs = refs;
     validateCapacity(capacity);
     long[] newRefs = new long[(int)capacity];
 
@@ -555,9 +571,8 @@ public final class BytesBytesMultiHashMap {
     this.largestNumberOfSteps = maxSteps;
     this.hashBitCount = newHashBitCount;
     this.resizeThreshold = (int)(capacity * loadFactor);
-    metricExpandsUs += (System.nanoTime() - expandTime);
+    metricExpandsMs += (System.currentTimeMillis() - expandTime);
     ++metricExpands;
-
   }
 
   /**
@@ -776,7 +791,8 @@ public final class BytesBytesMultiHashMap {
   public void debugDumpMetrics() {
     LOG.info("Map metrics: keys allocated " + this.refs.length +", keys assigned " + keysAssigned
         + ", write conflict " + metricPutConflict  + ", write max dist " + largestNumberOfSteps
-        + ", expanded " + metricExpands + " times in " + metricExpandsUs + "us");
+        + ", read conflict " + metricGetConflict
+        + ", expanded " + metricExpands + " times in " + metricExpandsMs + "ms");
   }
 
   private void debugDumpKeyProbe(long keyOffset, int keyLength, int hashCode, int finalSlot) {
