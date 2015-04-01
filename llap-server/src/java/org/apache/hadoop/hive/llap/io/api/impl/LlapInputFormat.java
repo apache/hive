@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -126,35 +127,40 @@ public class LlapInputFormat
 
     @Override
     public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
-      try {
-        assert value != null;
-        if (isClosed) {
-          throw new AssertionError("next called after close");
-        }
-        // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
-        if (isFirst) {
+      assert value != null;
+      if (isClosed) {
+        throw new AssertionError("next called after close");
+      }
+      // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
+      if (isFirst) {
+        try {
           rbCtx.addPartitionColsToBatch(value);
-          startRead();
-          isFirst = false;
+        } catch (HiveException e) {
+          throw new IOException(e);
         }
-        ColumnVectorBatch cvb = nextCvb();
-        if (cvb == null) return false;
-        int[] columnMap = rbCtx.getIncludedColumnIndexes();
-        if (columnMap.length != cvb.cols.length) {
-          throw new RuntimeException("Unexpected number of columns, VRB has " + columnMap.length
-              + " included, but the reader returned " + cvb.cols.length);
-        }
-        // VRB was created from VrbCtx, so we already have pre-allocated column vectors
-        for (int i = 0; i < cvb.cols.length; ++i) {
-          value.cols[columnMap[i]] = cvb.cols[i]; // TODO: reuse CV objects that are replaced
-        }
-        value.selectedInUse = false;
-        value.size = cvb.size;
+        startRead();
+        isFirst = false;
+      }
+      ColumnVectorBatch cvb = null;
+      try {
+        cvb = nextCvb();
       } catch (InterruptedException e) {
-        throw new IOException(e);
-      } catch (HiveException e) {
+        // Query might have been canceled. Stop the background processing.
+        feedback.stop();
         throw new IOException(e);
       }
+      if (cvb == null) return false;
+      int[] columnMap = rbCtx.getIncludedColumnIndexes();
+      if (columnMap.length != cvb.cols.length) {
+        throw new RuntimeException("Unexpected number of columns, VRB has " + columnMap.length
+            + " included, but the reader returned " + cvb.cols.length);
+      }
+      // VRB was created from VrbCtx, so we already have pre-allocated column vectors
+      for (int i = 0; i < cvb.cols.length; ++i) {
+        value.cols[columnMap[i]] = cvb.cols[i]; // TODO: reuse CV objects that are replaced
+      }
+      value.selectedInUse = false;
+      value.size = cvb.size;
       return true;
     }
 
