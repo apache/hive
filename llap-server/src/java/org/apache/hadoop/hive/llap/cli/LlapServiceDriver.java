@@ -32,7 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cli.LlapOptionsProcessor.LlapOptions;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -121,7 +121,7 @@ public class LlapServiceDriver {
     if (options.getName() != null) {
       // update service registry configs - caveat: this has nothing to do with the actual settings as read by the AM
       // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between instances
-      conf.set(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, "@" + options.getName());
+      conf.set(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS, "@" + options.getName());
     }
 
     URL logger = conf.getResource("llap-daemon-log4j.properties");
@@ -188,17 +188,17 @@ public class LlapServiceDriver {
     configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT.varname,
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT));
+    configs.put(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, conf.getInt(
+        LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
+        LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE,
-        LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT));
+    configs.put(LlapDaemonConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE, conf.getInt(
+        LlapDaemonConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE,
+        LlapDaemonConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT));
 
-    configs.put(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, conf.getInt(
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT));
+    configs.put(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS, conf.getInt(
+        LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+        LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT));
 
     configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,
         conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1));

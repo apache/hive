@@ -63,7 +63,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.tez.dag.api.TaskAttemptEndReason;
@@ -168,31 +168,31 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     this.clock = appContext.getClock();
     this.containerFactory = new ContainerFactory(appContext, customAppIdIdentifier);
     this.memoryPerInstance = conf
-        .getInt(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
-            LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT);
+        .getInt(LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
+            LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT);
     this.coresPerInstance = conf
-        .getInt(LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE,
-            LlapConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT);
-    this.executorsPerInstance = conf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
+        .getInt(LlapDaemonConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE,
+            LlapDaemonConfiguration.LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT);
+    this.executorsPerInstance = conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+        LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
     this.nodeReEnableTimeout = conf.getLong(
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS,
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT);
+        LlapDaemonConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS,
+        LlapDaemonConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT);
 
     int memoryPerExecutor = (int) (memoryPerInstance / (float) executorsPerInstance);
     int coresPerExecutor = (int) (coresPerInstance / (float) executorsPerInstance);
     this.resourcePerExecutor = Resource.newInstance(memoryPerExecutor, coresPerExecutor);
 
-    String instanceId = conf.getTrimmed(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+    String instanceId = conf.getTrimmed(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
 
     Preconditions.checkNotNull(instanceId,
-        LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS + " must be defined");
+        LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS + " must be defined");
 
     if (!instanceId.startsWith("@")) { // Manual setup. Not via the service registry
       initFromRegistry = false;
-      String[] hosts = conf.getTrimmedStrings(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+      String[] hosts = conf.getTrimmedStrings(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
       Preconditions.checkState(hosts != null && hosts.length != 0,
-          LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS + "must be defined");
+          LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS + "must be defined");
       for (String host : hosts) {
         NodeInfo nodeInfo = new NodeInfo(host, BACKOFF_FACTOR, clock);
         activeHosts.put(host, nodeInfo);
@@ -203,8 +203,8 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       initFromRegistry = true;
     }
 
-    this.containerPort = conf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-        LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+    this.containerPort = conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+        LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
     ExecutorService executorService = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapScheduler").build());
     executor = MoreExecutors.listeningDecorator(executorService);
