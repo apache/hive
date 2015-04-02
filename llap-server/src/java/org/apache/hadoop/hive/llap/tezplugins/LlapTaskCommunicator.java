@@ -26,7 +26,7 @@ import com.google.protobuf.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -72,8 +72,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   @Override
   public void serviceInit(Configuration conf) throws Exception {
     super.serviceInit(conf);
-    int numThreads = conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS,
-        LlapDaemonConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT);
+    int numThreads = conf.getInt(LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS,
+        LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT);
     this.communicator = new TaskCommunicator(numThreads);
     this.communicator.init(conf);
   }
