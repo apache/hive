@@ -673,35 +673,4 @@ public class VectorizedRowBatchCtx {
       throw new Error("Cannot allocate vector column for " + type);
     }
   }
-
-  public VectorColumnAssign[] buildObjectAssigners(VectorizedRowBatch outputBatch)
-        throws HiveException {
-    List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
-    assert outputBatch.numCols == fieldRefs.size();
-    VectorColumnAssign[] assigners = new VectorColumnAssign[fieldRefs.size()];
-    for(int i = 0; i < assigners.length; ++i) {
-        StructField fieldRef = fieldRefs.get(i);
-        ObjectInspector fieldOI = fieldRef.getFieldObjectInspector();
-        assigners[i] = VectorColumnAssignFactory.buildObjectAssign(
-                outputBatch, i, fieldOI);
-    }
-    return assigners;
-  }
-
-  public int[] getIncludedColumnIndexes() {
-    int colCount = (colsToInclude == null)
-        ? rowOI.getAllStructFieldRefs().size() : colsToInclude.size();
-    int[] result = new int[colCount];
-    if (colsToInclude == null) {
-      for (int i = 0; i < result.length; ++i) {
-        result[i] = i;
-      }
-    } else {
-      int i = -1;
-      for (int colIx : colsToInclude) {
-        result[++i] = colIx;
-      }
-    }
-    return result;
-  }
 }

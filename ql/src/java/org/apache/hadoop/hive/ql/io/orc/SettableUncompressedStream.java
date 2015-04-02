@@ -15,13 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode.orc.stream;
+package org.apache.hadoop.hive.ql.io.orc;
 
 import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.ql.io.orc.InStream;
 
+/**
+ * An uncompressed stream whose underlying byte buffer can be set.
+ */
 public class SettableUncompressedStream extends InStream.UncompressedStream {
 
   public SettableUncompressedStream(Long fileId, String name,

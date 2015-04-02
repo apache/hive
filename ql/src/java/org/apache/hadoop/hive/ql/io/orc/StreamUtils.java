@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode.orc.stream;
+package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,9 +24,6 @@ import java.util.List;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 import com.google.common.collect.Lists;
 
@@ -39,7 +36,7 @@ public class StreamUtils {
    * Create LlapInStream from stream buffer.
    *
    * @param streamName - stream name
-   * @param fileName - file name
+   * @param fileId - file id
    * @param streamBuffer - stream buffer
    * @return - LlapInStream
    * @throws IOException
@@ -53,17 +50,6 @@ public class StreamUtils {
     List<DiskRange> diskRanges = Lists.newArrayList();
     long totalLength = createDiskRanges(streamBuffer, diskRanges);
     return new SettableUncompressedStream(fileId, streamName, diskRanges, totalLength);
-  }
-
-  /**
-   * Converts row index entry to position provider.
-   *
-   * @param rowIndex - row index entry
-   * @return - position provider
-   */
-  public static PositionProvider getPositionProvider(OrcProto.RowIndexEntry rowIndex) {
-    PositionProvider positionProvider = new RecordReaderImpl.PositionProviderImpl(rowIndex);
-    return positionProvider;
   }
 
   /**

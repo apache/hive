@@ -21,7 +21,8 @@ CREATE TABLE orc_llap_part(
     cfloat FLOAT,
     cdouble DOUBLE,
     cstring1 STRING,
-    cstring2 STRING,
+    cchar1 CHAR(255),
+    cvchar1 VARCHAR(255),
     cboolean1 BOOLEAN,
     cboolean2 BOOLEAN
 ) PARTITIONED BY (ctinyint TINYINT) STORED AS ORC;
@@ -33,16 +34,17 @@ CREATE TABLE orc_llap_dim_part(
     cfloat FLOAT,
     cdouble DOUBLE,
     cstring1 STRING,
-    cstring2 STRING,
+    cchar1 CHAR(255),
+    cvchar1 VARCHAR(255),
     cboolean1 BOOLEAN,
     cboolean2 BOOLEAN
 ) PARTITIONED BY (ctinyint TINYINT) STORED AS ORC;
 
 INSERT OVERWRITE TABLE orc_llap_part PARTITION (ctinyint)
-SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, cboolean1, cboolean2, ctinyint FROM alltypesorc;
+SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring1, cstring1, cboolean1, cboolean2, ctinyint FROM alltypesorc;
 
 INSERT OVERWRITE TABLE orc_llap_dim_part PARTITION (ctinyint)
-SELECT null, null, sum(cbigint) as cbigint, null, null, null, null, null, null, ctinyint FROM alltypesorc WHERE ctinyint > 10 AND ctinyint < 21 GROUP BY ctinyint;
+SELECT null, null, sum(cbigint) as cbigint, null, null, null, null, null, null, null, ctinyint FROM alltypesorc WHERE ctinyint > 10 AND ctinyint < 21 GROUP BY ctinyint;
 
 drop table llap_temp_table;
 
@@ -51,10 +53,10 @@ SET hive.llap.io.enabled=true;
 SET hive.vectorized.execution.enabled=true;
 
 explain
-SELECT oft.ctinyint, oft.cint FROM orc_llap_part oft
+SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint;
 create table llap_temp_table as
-SELECT oft.ctinyint, oft.cint FROM orc_llap_part oft
+SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint;
 select sum(hash(*)) from llap_temp_table;
 drop table llap_temp_table;

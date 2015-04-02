@@ -64,7 +64,7 @@ public abstract class InStream extends InputStream {
     return length;
   }
 
-  public static class UncompressedStream extends InStream {
+  static class UncompressedStream extends InStream {
     private List<DiskRange> bytes;
     private long length;
     private long currentOffset;
