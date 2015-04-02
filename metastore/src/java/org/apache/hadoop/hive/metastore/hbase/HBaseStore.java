@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.hbase.AggregateStatsCache.AggrColStatsCached;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -1228,8 +1229,8 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics colStats) throws
-      NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     try {
       getHBase().updateStatistics(colStats.getStatsDesc().getDbName(),
           colStats.getStatsDesc().getTableName(), null, null, colStats);
@@ -1241,13 +1242,12 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-                                                 List<String> partVals) throws
-      NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     try {
       getHBase().updateStatistics(statsObj.getStatsDesc().getDbName(),
-          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName(),
-          partVals, statsObj);
+          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName(), partVals,
+          statsObj);
       return true;
     } catch (IOException e) {
       LOG.error("Unable to update column statistics", e);
@@ -1257,8 +1257,7 @@ public class HBaseStore implements RawStore {
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-                                                   List<String> colName) throws MetaException,
-      NoSuchObjectException {
+      List<String> colName) throws MetaException, NoSuchObjectException {
     try {
       return getHBase().getTableStatistics(dbName, tableName, colName);
     } catch (IOException e) {
@@ -1269,11 +1268,11 @@ public class HBaseStore implements RawStore {
 
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String dbName, String tblName,
-                                                             List<String> partNames,
-                                                             List<String> colNames) throws
-      MetaException, NoSuchObjectException {
+      List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException {
     List<List<String>> partVals = new ArrayList<List<String>>(partNames.size());
-    for (String partName : partNames) partVals.add(partNameToVals(partName));
+    for (String partName : partNames) {
+      partVals.add(partNameToVals(partName));
+    }
     try {
       return getHBase().getPartitionStatistics(dbName, tblName, partNames, partVals, colNames);
     } catch (IOException e) {
@@ -1284,8 +1283,8 @@ public class HBaseStore implements RawStore {
 
   @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-                                                 List<String> partVals, String colName) throws
-      NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      List<String> partVals, String colName) throws NoSuchObjectException, MetaException,
+      InvalidObjectException, InvalidInputException {
     // NOP, stats will be deleted along with the partition when it is dropped.
     return true;
   }
@@ -1295,6 +1294,26 @@ public class HBaseStore implements RawStore {
       NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     // NOP, stats will be deleted along with the table when it is dropped.
     return true;
+  }
+
+  /**
+   * Return aggregated statistics for each column in the colNames list aggregated over partitions in
+   * the partNames list
+   *
+   */
+  @Override
+  public AggrStats get_aggr_stats_for(String dbName, String tblName, List<String> partNames,
+      List<String> colNames) throws MetaException, NoSuchObjectException {
+    List<List<String>> partVals = new ArrayList<List<String>>(partNames.size());
+    for (String partName : partNames) {
+      partVals.add(partNameToVals(partName));
+    }
+    try {
+      return getHBase().getAggrStats(dbName, tblName, partNames, partVals, colNames);
+    } catch (IOException e) {
+      LOG.error("Unable to fetch aggregate column statistics", e);
+      throw new MetaException("Failed fetching aggregate column statistics, " + e.getMessage());
+    }
   }
 
   @Override
@@ -1626,13 +1645,6 @@ public class HBaseStore implements RawStore {
       LOG.error("Unable to get functions" + e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
     }
-  }
-
-  @Override
-  public AggrStats get_aggr_stats_for(String dbName, String tblName, List<String> partNames,
-                                      List<String> colNames) throws MetaException,
-      NoSuchObjectException {
-    throw new UnsupportedOperationException();
   }
 
   @Override

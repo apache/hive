@@ -4272,8 +4272,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public boolean delete_table_column_statistics(String dbName, String tableName, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException,
-      InvalidInputException
-   {
+      InvalidInputException {
       dbName = dbName.toLowerCase();
       tableName = tableName.toLowerCase();
 
@@ -4290,7 +4289,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("delete_column_statistics_by_table: ", ret != false, null, tableName);
       }
       return ret;
-   }
+    }
+
+    @Override
+    public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
+      AggrStats aggrStats = null;
+      try {
+        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
+            request.getTblName(), request.getPartNames(), request.getColNames()));
+        return aggrStats;
+      } finally {
+        endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
+      }
+
+    }
+
+    @Override
+    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
+        TException {
+      boolean ret = true;
+      for (ColumnStatistics colStats : request.getColStats()) {
+        ret = ret && update_partition_column_statistics(colStats);
+      }
+      return ret;
+    }
 
     @Override
     public List<Partition> get_partitions_by_filter(final String dbName,
@@ -5416,32 +5441,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return rolePrinGrantList;
-    }
-
-    @Override
-    public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
-        throws NoSuchObjectException, MetaException, TException {
-      startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
-      AggrStats aggrStats = null;
-      try {
-        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-          request.getTblName(), request.getPartNames(), request.getColNames()));
-        return aggrStats;
-      } finally {
-          endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
-      }
-
-    }
-
-    @Override
-    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
-        throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
-        TException {
-      boolean ret = true;
-      for (ColumnStatistics colStats : request.getColStats()) {
-        ret = ret && update_partition_column_statistics(colStats);
-      }
-      return ret;
     }
 
     @Override

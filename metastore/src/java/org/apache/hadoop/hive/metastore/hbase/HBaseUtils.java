@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.thrift.TFieldIdEnum;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -900,15 +902,15 @@ class HBaseUtils {
     return sdParts;
   }
 
-  static byte[] serializeStatsForOneColumn(ColumnStatistics stats, ColumnStatisticsObj obj)
+  static byte[] serializeStatsForOneColumn(ColumnStatistics partitionColumnStats, ColumnStatisticsObj colStats)
       throws IOException {
     HbaseMetastoreProto.ColumnStats.Builder builder = HbaseMetastoreProto.ColumnStats.newBuilder();
-    builder.setLastAnalyzed(stats.getStatsDesc().getLastAnalyzed());
-    if (obj.getColType() == null) {
+    builder.setLastAnalyzed(partitionColumnStats.getStatsDesc().getLastAnalyzed());
+    if (colStats.getColType() == null) {
       throw new RuntimeException("Column type must be set");
     }
-    builder.setColumnType(obj.getColType());
-    ColumnStatisticsData colData = obj.getStatsData();
+    builder.setColumnType(colStats.getColType());
+    ColumnStatisticsData colData = colStats.getStatsData();
     switch (colData.getSetField()) {
       case BOOLEAN_STATS:
         BooleanColumnStatsData boolData = colData.getBooleanStats();
@@ -988,14 +990,16 @@ class HBaseUtils {
     return builder.build().toByteArray();
   }
 
-  static ColumnStatisticsObj deserializeStatsForOneColumn(ColumnStatistics stats,
-                                                          byte[] bytes) throws IOException {
+  static ColumnStatisticsObj deserializeStatsForOneColumn(ColumnStatistics partitionColumnStats,
+      byte[] bytes) throws IOException {
     HbaseMetastoreProto.ColumnStats proto = HbaseMetastoreProto.ColumnStats.parseFrom(bytes);
-        ColumnStatisticsObj obj = new ColumnStatisticsObj();
+    ColumnStatisticsObj colStats = new ColumnStatisticsObj();
     long lastAnalyzed = proto.getLastAnalyzed();
-    stats.getStatsDesc().setLastAnalyzed(
-        Math.max(lastAnalyzed, stats.getStatsDesc().getLastAnalyzed()));
-    obj.setColType(proto.getColumnType());
+    if (partitionColumnStats != null) {
+      partitionColumnStats.getStatsDesc().setLastAnalyzed(
+          Math.max(lastAnalyzed, partitionColumnStats.getStatsDesc().getLastAnalyzed()));
+    }
+    colStats.setColType(proto.getColumnType());
 
     ColumnStatisticsData colData = new ColumnStatisticsData();
     if (proto.hasBoolStats()) {
@@ -1059,9 +1063,8 @@ class HBaseUtils {
     } else {
       throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
-
-    obj.setStatsData(colData);
-    return obj;
+    colStats.setStatsData(colData);
+    return colStats;
   }
 
   /**
@@ -1078,5 +1081,4 @@ class HBaseUtils {
     keyEnd[keyEnd.length - 1]++;
     return keyEnd;
   }
-
 }
