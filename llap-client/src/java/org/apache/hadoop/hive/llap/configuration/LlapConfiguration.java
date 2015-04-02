@@ -12,18 +12,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.daemon;
+package org.apache.hadoop.hive.llap.configuration;
 
 import org.apache.hadoop.conf.Configuration;
 
-public class LlapDaemonConfiguration extends Configuration {
+public class LlapConfiguration extends Configuration {
 
-  public LlapDaemonConfiguration(Configuration conf) {
+  public LlapConfiguration(Configuration conf) {
     super(conf);
     addResource(LLAP_DAEMON_SITE);
   }
 
-  public LlapDaemonConfiguration() {
+  public LlapConfiguration() {
     super(false);
     addResource(LLAP_DAEMON_SITE);
   }

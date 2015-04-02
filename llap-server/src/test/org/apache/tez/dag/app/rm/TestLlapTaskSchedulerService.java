@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -211,9 +211,9 @@ public class TestLlapTaskSchedulerService {
 
     TestTaskSchedulerServiceWrapper(long disableTimeoutMillis) {
       conf = new Configuration();
-      conf.setStrings(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS, HOST1, HOST2, HOST3);
-      conf.setInt(LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS, 4);
-      conf.setLong(LlapDaemonConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS, disableTimeoutMillis);
+      conf.setStrings(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, HOST1, HOST2, HOST3);
+      conf.setInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, 4);
+      conf.setLong(LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS, disableTimeoutMillis);
 
       doReturn(clock).when(mockAppContext).getClock();
       doReturn(appAttemptId).when(mockAppContext).getApplicationAttemptId();
