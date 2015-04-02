@@ -1433,6 +1433,12 @@ class HBaseReadWrite {
     String hbaseTable = getStatisticsTable(partVals);
     byte[][] colnames = new byte[stats.getStatsObjSize()][];
     byte[][] serialized = new byte[stats.getStatsObjSize()][];
+    for (int i = 0; i < stats.getStatsObjSize(); i++) {
+      ColumnStatisticsObj obj = stats.getStatsObj().get(i);
+      serialized[i] = HBaseUtils.serializeStatsForOneColumn(stats, obj);
+      String colname = obj.getColName();
+      colnames[i] = HBaseUtils.buildKey(colname);
+    }
     store(hbaseTable, key, STATS_CF, colnames, serialized);
   }
 
@@ -1440,7 +1446,7 @@ class HBaseReadWrite {
    * Get statistics for a table
    *
    * @param dbName name of database table is in
-   * @param tableName name of table
+   * @param tblName name of table
    * @param colNames list of column names to get statistics for
    * @return column statistics for indicated table
    * @throws IOException
@@ -1477,7 +1483,7 @@ class HBaseReadWrite {
    * Get statistics for a set of partitions
    *
    * @param dbName name of database table is in
-   * @param tableName table partitions are in
+   * @param tblName table partitions are in
    * @param partNames names of the partitions, used only to set values inside the return stats
    *          objects
    * @param partVals partition values for each partition, needed because this class doesn't know how
