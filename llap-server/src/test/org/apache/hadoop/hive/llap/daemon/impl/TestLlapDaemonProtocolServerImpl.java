@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
+import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.junit.Test;
@@ -32,11 +32,11 @@ public class TestLlapDaemonProtocolServerImpl {
 
   @Test(timeout = 10000)
   public void test() throws ServiceException {
-    LlapConfiguration daemonConf = new LlapConfiguration();
-    int rpcPort = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-        LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
-    int numHandlers = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
-        LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
+    LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+    int rpcPort = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+        LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+    int numHandlers = daemonConf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
+        LlapDaemonConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
     LlapDaemonProtocolServerImpl server =
         new LlapDaemonProtocolServerImpl(numHandlers, mock(ContainerRunner.class),
             new AtomicReference<InetSocketAddress>(), rpcPort);

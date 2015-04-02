@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.registry.client.api.RegistryOperationsFactory;
@@ -56,7 +56,7 @@ public class LlapRegistryService extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    String registryId = conf.getTrimmed(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
+    String registryId = conf.getTrimmed(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
     if (registryId.startsWith("@")) {
       LOG.info("Llap Registry is enabled with registryid: " + registryId);
       this.conf = new Configuration(conf);
@@ -86,16 +86,16 @@ public class LlapRegistryService extends AbstractService {
 
   public Endpoint getRpcEndpoint() {
     final int rpcPort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
-            LlapConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
+        conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+            LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT_DEFAULT);
 
     return RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(hostname, rpcPort));
   }
 
   public Endpoint getShuffleEndpoint() {
     final int shufflePort =
-        conf.getInt(LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
-            LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
+        conf.getInt(LlapDaemonConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
+            LlapDaemonConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
     // HTTP today, but might not be
     return RegistryTypeUtils.inetAddrEndpoint("shuffle", ProtocolTypes.PROTOCOL_TCP, hostname,
         shufflePort);
@@ -114,7 +114,7 @@ public class LlapRegistryService extends AbstractService {
       srv.addInternalEndpoint(getShuffleEndpoint());
 
       for (Map.Entry<String, String> kv : this.conf) {
-        if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)) {
+        if (kv.getKey().startsWith(LlapDaemonConfiguration.LLAP_DAEMON_PREFIX)) {
           // TODO: read this somewhere useful, like the allocator
           srv.set(kv.getKey(), kv.getValue());
         }
