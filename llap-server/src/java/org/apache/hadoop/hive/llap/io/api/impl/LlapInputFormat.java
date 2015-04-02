@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -150,14 +149,14 @@ public class LlapInputFormat
         throw new IOException(e);
       }
       if (cvb == null) return false;
-      int[] columnMap = rbCtx.getIncludedColumnIndexes();
-      if (columnMap.length != cvb.cols.length) {
-        throw new RuntimeException("Unexpected number of columns, VRB has " + columnMap.length
+      if (columnIds.size() != cvb.cols.length) {
+        throw new RuntimeException("Unexpected number of columns, VRB has " + columnIds.size()
             + " included, but the reader returned " + cvb.cols.length);
       }
       // VRB was created from VrbCtx, so we already have pre-allocated column vectors
       for (int i = 0; i < cvb.cols.length; ++i) {
-        value.cols[columnMap[i]] = cvb.cols[i]; // TODO: reuse CV objects that are replaced
+        int columnId = columnIds.get(i);
+        value.cols[columnId] = cvb.cols[i]; // TODO: reuse CV objects that are replaced
       }
       value.selectedInUse = false;
       value.size = cvb.size;
