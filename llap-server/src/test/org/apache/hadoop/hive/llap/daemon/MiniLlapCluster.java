@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.Service;
@@ -127,16 +128,16 @@ public class MiniLlapCluster extends AbstractService {
   public void serviceStart() {
     llapDaemon.start();
 
-    clusterSpecificConfiguration.set(LlapDaemonConfiguration.LLAP_DAEMON_SERVICE_HOSTS,
+    clusterSpecificConfiguration.set(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS,
         getServiceAddress().getHostName());
-    clusterSpecificConfiguration.setInt(LlapDaemonConfiguration.LLAP_DAEMON_RPC_PORT,
+    clusterSpecificConfiguration.setInt(LlapConfiguration.LLAP_DAEMON_RPC_PORT,
         getServiceAddress().getPort());
 
     clusterSpecificConfiguration.setInt(
-        LlapDaemonConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+        LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
         numExecutorsPerService);
     clusterSpecificConfiguration.setLong(
-        LlapDaemonConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, execBytesPerService);
+        LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, execBytesPerService);
   }
 
   @Override
