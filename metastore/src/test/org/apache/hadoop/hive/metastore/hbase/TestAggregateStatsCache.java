@@ -20,9 +20,7 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -153,7 +151,7 @@ public class TestAggregateStatsCache {
         new BloomFilter(MAX_PARTITIONS_PER_CACHE_NODE, FALSE_POSITIVE_PROBABILITY);
     // The paritions we'll eventually request from the cache
     List <String> partNames = new ArrayList<String>();
-    for (int i = minPart; i <= maxPart; i++) {
+    for (int i = minPart-1; i <= maxPart-1; i++) {
       String partName = tabParts.get(i);
       // Only add 50% partitions to partnames so that we can see if the request fails
       if (i < maxPart / 2) {
@@ -164,7 +162,6 @@ public class TestAggregateStatsCache {
     // Now add to cache
     cache.add(dbName, tblName, colName, maxPart-minPart+1, aggrColStats, bloomFilter);
     // Now get from cache
-    System.out.println(partNames);
     AggrColStatsCached aggrStatsCached = cache.get(dbName, tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
   }

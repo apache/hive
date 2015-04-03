@@ -207,12 +207,15 @@ class AggregateStatsCache {
       if ((float) Math.abs((candidate.getNumPartsCached() - numPartsRequested)
           / numPartsRequested) > maxVariance) {
         candidateMatchStats.put(candidate, new MatchStats(0, 0, true));
+        continue;
       }
       // TTL check
       if (isExpired(candidate)) {
         candidateMatchStats.put(candidate, new MatchStats(0, 0, true));
       }
-      candidateMatchStats.put(candidate, new MatchStats(0, 0, false));
+      else {
+        candidateMatchStats.put(candidate, new MatchStats(0, 0, false));
+      }
     }
     // We'll count misses as we iterate
     int maxMisses = (int) maxVariance * numPartsRequested;
