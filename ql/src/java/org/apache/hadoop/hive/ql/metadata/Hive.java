@@ -129,6 +129,7 @@ import com.google.common.collect.Sets;
  * get methods in this class.
  */
 
+@SuppressWarnings({"deprecation", "rawtypes"})
 public class Hive {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
@@ -731,6 +732,13 @@ public class Hive {
       throws HiveException {
 
     try {
+      String tdname = Utilities.getDatabaseName(tableName);
+      String idname = Utilities.getDatabaseName(indexTblName);
+      if (!idname.equals(tdname)) {
+        throw new HiveException("Index on different database (" + idname
+          + ") from base table (" + tdname + ") is not supported.");
+      }
+
       Index old_index = null;
       try {
         old_index = getIndex(tableName, indexName);
@@ -821,9 +829,8 @@ public class Hive {
       org.apache.hadoop.hive.metastore.api.Table tt = null;
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
+      String itname = Utilities.getTableName(indexTblName);
       if (indexHandler.usesIndexTable()) {
-        String idname = Utilities.getDatabaseName(indexTblName);
-        String itname = Utilities.getTableName(indexTblName);
         tt = new org.apache.hadoop.hive.ql.metadata.Table(idname, itname).getTTable();
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
@@ -848,9 +855,6 @@ public class Hive {
         throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
       }
 
-      String tdname = Utilities.getDatabaseName(tableName);
-      String ttname = Utilities.getTableName(tableName);
-
       StorageDescriptor indexSd = new StorageDescriptor(
           indexTblCols,
           location,
@@ -863,7 +867,8 @@ public class Hive {
           sortCols,
           null/*parameters*/);
 
-      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
+      String ttname = Utilities.getTableName(tableName);
+      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, itname,
           indexSd, new HashMap<String,String>(), deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
@@ -2675,7 +2680,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf,
           true);
 
-      HadoopShims shims = ShimLoader.getHadoopShims();
       if (oldPath != null) {
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);

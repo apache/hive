@@ -3121,10 +3121,6 @@ public class ObjectStore implements RawStore, Configurable {
     MTable origTable = mIndex.getOrigTable();
     MTable indexTable = mIndex.getIndexTable();
 
-    String[] qualified = MetaStoreUtils.getQualifiedName(
-        origTable.getDatabase().getName(), indexTable.getTableName());
-    String indexTableName = qualified[0] + "." + qualified[1];
-
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
@@ -3132,7 +3128,7 @@ public class ObjectStore implements RawStore, Configurable {
     origTable.getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
-    indexTableName,
+    indexTable.getTableName(),
     convertToStorageDescriptor(mIndex.getSd()),
     mIndex.getParameters(),
     mIndex.getDeferredRebuild());
