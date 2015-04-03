@@ -704,7 +704,7 @@ public class TestHive extends TestCase {
             index.getIndexName());
         assertEquals("Table names don't match for index: " + indexName, tableName,
             index.getOrigTableName());
-        assertEquals("Index table names didn't match for index: " + indexName, qIndexTableName,
+        assertEquals("Index table names didn't match for index: " + indexName, indexTableName,
             index.getIndexTableName());
         assertEquals("Index handler classes didn't match for index: " + indexName,
             indexHandlerClass, index.getIndexHandlerClass());
