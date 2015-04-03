@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.udf.UDFPI;
 import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
 import org.apache.hadoop.hive.ql.udf.UDFRepeat;
@@ -249,8 +248,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("initcap", GenericUDFInitCap.class);
 
     system.registerUDF("like", UDFLike.class, true);
-    system.registerUDF("rlike", UDFRegExp.class, true);
-    system.registerUDF("regexp", UDFRegExp.class, true);
+    system.registerGenericUDF("rlike", GenericUDFRegExp.class);
+    system.registerGenericUDF("regexp", GenericUDFRegExp.class);
     system.registerUDF("regexp_replace", UDFRegExpReplace.class, false);
     system.registerUDF("regexp_extract", UDFRegExpExtract.class, false);
     system.registerUDF("parse_url", UDFParseUrl.class, false);
