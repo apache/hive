@@ -92,7 +92,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__kv_kv_index__
+            alias: default__kv_kv_index__
             filterExpr: (value > '15') (type: boolean)
             Filter Operator
               predicate: (value > '15') (type: boolean)
