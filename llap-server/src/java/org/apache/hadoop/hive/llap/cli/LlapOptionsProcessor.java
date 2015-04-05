@@ -36,7 +36,6 @@ public class LlapOptionsProcessor {
     private int instances = 0;
     private String directory = null;
     private String name;
-    private String args;
 
     public LlapOptions(String name, int instances, String directory)
         throws ParseException {
@@ -83,13 +82,17 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("args").withLongOpt("args")
         .withDescription("java arguments to the llap instance").create('a'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName("loglevel").withLongOpt("loglevel")
+        .withDescription("log levels for the llap instance").create('l'));
+
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
   }
 
   public LlapOptions processOptions(String argv[]) throws ParseException {
     commandLine = new GnuParser().parse(options, argv);
-    if (commandLine.hasOption('H')) {
+    if (commandLine.hasOption('H') || false == commandLine.hasOption("instances")) {
+      // needs at least --instances
       printUsage();
       return null;
     }
@@ -98,6 +101,7 @@ public class LlapOptionsProcessor {
     String directory = commandLine.getOptionValue("directory");
 
     String name = commandLine.getOptionValue("name", null);
+    // loglevel & args are parsed by the python processor
 
     return new LlapOptions(name, instances, directory);
   }
