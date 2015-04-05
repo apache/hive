@@ -73,7 +73,7 @@ appConfig = """
     "java_home": "%(java_home)s",
     "site.global.app_user": "yarn",
     "site.global.app_root": "${AGENT_WORK_ROOT}/app/install/",
-    "site.global.app_log_level": "INFO,RFA",
+    "site.global.app_log_level": "%(daemon_loglevel)s,RFA",
     "site.global.additional_cp": "%(hadoop_home)s",
     "site.global.daemon_args": "%(daemon_args)s",
     "site.global.library_path": "%(hadoop_home)s/lib/native",
@@ -115,4 +115,5 @@ slider stop %(name)s
 slider destroy %(name)s 
 slider install-package --name LLAP --package  $BASEDIR/llap-%(version)s.zip --replacepkg
 slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json
+slider status %(name)s
 """

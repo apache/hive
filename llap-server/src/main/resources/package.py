@@ -47,7 +47,7 @@ def zipdir(path, zip, prefix="."):
 			zip.write(src, dst)
 	
 def main(args):
-	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name="])
+	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel="])
 	version = os.getenv("HIVE_VERSION")
 	if not version:
 		version = strftime("%d%b%Y", gmtime()) 
@@ -56,6 +56,7 @@ def main(args):
 	instances=1
 	name = "llap0"
 	d_args = ""
+	d_loglevel = "INFO"
 	input = None
 	for k,v in opts:
 		if k in ("--input"):
@@ -68,6 +69,8 @@ def main(args):
 			name = v 
 		elif k in ("--args"):
 			d_args = v
+		elif k in ("--loglevel"):
+			d_loglevel = v
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
@@ -84,7 +87,8 @@ def main(args):
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
 		"java_home" : os.getenv("JAVA_HOME"),
 		"name" : name,
-		"daemon_args" : d_args
+		"daemon_args" : d_args,
+		"daemon_loglevel" : d_loglevel
 	}
 	
 	if not exists(output):
