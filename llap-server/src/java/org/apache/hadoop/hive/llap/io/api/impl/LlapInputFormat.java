@@ -122,6 +122,7 @@ public class LlapInputFormat
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
+      startRead();
     }
 
     @Override
@@ -137,7 +138,6 @@ public class LlapInputFormat
         } catch (HiveException e) {
           throw new IOException(e);
         }
-        startRead();
         isFirst = false;
       }
       ColumnVectorBatch cvb = null;

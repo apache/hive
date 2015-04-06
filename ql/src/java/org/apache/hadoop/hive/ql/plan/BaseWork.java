@@ -63,7 +63,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   protected boolean llapMode = false;
   protected boolean uberMode = false;
-  protected boolean vectorMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
