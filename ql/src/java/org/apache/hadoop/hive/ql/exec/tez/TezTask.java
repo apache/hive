@@ -54,6 +54,7 @@ import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.common.security.DAGAccessControls;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
@@ -275,6 +276,7 @@ public class TezTask extends Task<TezWork> {
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
     dag.setCredentials(conf.getCredentials());
+    setAccessControlsForCurrentUser(dag);
 
     for (BaseWork w: ws) {
 
@@ -347,6 +349,17 @@ public class TezTask extends Task<TezWork> {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
+  }
+
+  private void setAccessControlsForCurrentUser(DAG dag) {
+    // get current user
+    String currentUser = SessionState.getUserFromAuthenticator();
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("Setting Tez DAG access for " + currentUser);
+    }
+    // set permissions for current user on DAG
+    DAGAccessControls ac = new DAGAccessControls(currentUser, currentUser);
+    dag.setAccessControls(ac);
   }
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,

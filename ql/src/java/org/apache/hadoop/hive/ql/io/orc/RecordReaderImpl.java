@@ -59,7 +59,6 @@ import org.apache.hadoop.io.Text;
 
 public class RecordReaderImpl implements RecordReader {
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
-
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private final Path path;
@@ -82,7 +81,7 @@ public class RecordReaderImpl implements RecordReader {
   private final Map<StreamName, InStream> streams =
       new HashMap<StreamName, InStream>();
   DiskRangeList bufferChunks = null;
-  private final RecordReaderImplFactory.TreeReader reader;
+  private final TreeReaderFactory.TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
   private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
   private final SargApplier sargApp;
@@ -125,9 +124,9 @@ public class RecordReaderImpl implements RecordReader {
    * @return the column number or -1 if the column wasn't found
    */
   static int findColumns(String[] columnNames,
-      String columnName,
-      int rootColumn) {
-    for (int i = 0; i < columnNames.length; ++i) {
+                         String columnName,
+                         int rootColumn) {
+    for(int i=0; i < columnNames.length; ++i) {
       if (columnName.equals(columnNames[i])) {
         return i + rootColumn;
       }
@@ -137,19 +136,18 @@ public class RecordReaderImpl implements RecordReader {
 
   /**
    * Find the mapping from predicate leaves to columns.
-   *
-   * @param sargLeaves  the search argument that we need to map
+   * @param sargLeaves the search argument that we need to map
    * @param columnNames the names of the columns
-   * @param rootColumn  the offset of the top level row, which offsets the
-   *                    result
+   * @param rootColumn the offset of the top level row, which offsets the
+   *                   result
    * @return an array mapping the sarg leaves to concrete column numbers
    */
   public static int[] mapSargColumns(List<PredicateLeaf> sargLeaves,
-      String[] columnNames,
-      int rootColumn) {
+                             String[] columnNames,
+                             int rootColumn) {
     int[] result = new int[sargLeaves.size()];
     Arrays.fill(result, -1);
-    for (int i = 0; i < result.length; ++i) {
+    for(int i=0; i < result.length; ++i) {
       String colName = sargLeaves.get(i).getColumnName();
       result[i] = findColumns(columnNames, colName, rootColumn);
     }
@@ -157,15 +155,15 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   protected RecordReaderImpl(List<StripeInformation> stripes,
-      FileSystem fileSystem,
-      Path path,
-      Reader.Options options,
-      List<OrcProto.Type> types,
-      CompressionCodec codec,
-      int bufferSize,
-      long strideRate,
-      Configuration conf
-  ) throws IOException {
+                   FileSystem fileSystem,
+                   Path path,
+                   Reader.Options options,
+                   List<OrcProto.Type> types,
+                   CompressionCodec codec,
+                   int bufferSize,
+                   long strideRate,
+                   Configuration conf
+                   ) throws IOException {
     this.fileSystem = fileSystem;
     this.path = path;
     this.file = fileSystem.open(path);
@@ -187,7 +185,7 @@ public class RecordReaderImpl implements RecordReader {
     long skippedRows = 0;
     long offset = options.getOffset();
     long maxOffset = options.getMaxOffset();
-    for (StripeInformation stripe : stripes) {
+    for(StripeInformation stripe: stripes) {
       long stripeStart = stripe.getOffset();
       if (offset > stripeStart) {
         skippedRows += stripe.getNumberOfRows();
@@ -204,7 +202,7 @@ public class RecordReaderImpl implements RecordReader {
     firstRow = skippedRows;
     totalRowCount = rows;
     boolean skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
-    reader = RecordReaderImplFactory.createTreeReader(0, types, included, skipCorrupt);
+    reader = TreeReaderFactory.createTreeReader(0, types, included, skipCorrupt);
     indexes = new OrcProto.RowIndex[types.size()];
     bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
     advanceToNextRow(reader, 0L, true);
@@ -240,11 +238,10 @@ public class RecordReaderImpl implements RecordReader {
   /**
    * Given a point and min and max, determine if the point is before, at the
    * min, in the middle, at the max, or after the range.
-   *
    * @param point the point to test
-   * @param min   the minimum point
-   * @param max   the maximum point
-   * @param <T>   the type of the comparision
+   * @param min the minimum point
+   * @param max the maximum point
+   * @param <T> the type of the comparision
    * @return the location of the point
    */
   static <T> Location compareToRange(Comparable<T> point, T min, T max) {
@@ -265,8 +262,8 @@ public class RecordReaderImpl implements RecordReader {
 
   /**
    * Get the maximum value out of an index entry.
-   *
-   * @param index the index entry
+   * @param index
+   *          the index entry
    * @return the object for the maximum value or null if there isn't one
    */
   static Object getMax(ColumnStatistics index) {
@@ -283,7 +280,7 @@ public class RecordReaderImpl implements RecordReader {
     } else if (index instanceof TimestampColumnStatistics) {
       return ((TimestampColumnStatistics) index).getMaximum();
     } else if (index instanceof BooleanColumnStatistics) {
-      if (((BooleanColumnStatistics) index).getTrueCount() != 0) {
+      if (((BooleanColumnStatistics)index).getTrueCount()!=0) {
         return "true";
       } else {
         return "false";
@@ -295,8 +292,8 @@ public class RecordReaderImpl implements RecordReader {
 
   /**
    * Get the minimum value out of an index entry.
-   *
-   * @param index the index entry
+   * @param index
+   *          the index entry
    * @return the object for the minimum value or null if there isn't one
    */
   static Object getMin(ColumnStatistics index) {
@@ -313,7 +310,7 @@ public class RecordReaderImpl implements RecordReader {
     } else if (index instanceof TimestampColumnStatistics) {
       return ((TimestampColumnStatistics) index).getMinimum();
     } else if (index instanceof BooleanColumnStatistics) {
-      if (((BooleanColumnStatistics) index).getFalseCount() != 0) {
+      if (((BooleanColumnStatistics)index).getFalseCount()!=0) {
         return "false";
       } else {
         return "true";
@@ -326,12 +323,11 @@ public class RecordReaderImpl implements RecordReader {
   /**
    * Evaluate a predicate with respect to the statistics from the column
    * that is referenced in the predicate.
-   *
-   * @param statsProto  the statistics for the column mentioned in the predicate
-   * @param predicate   the leaf predicate we need to evaluation
+   * @param statsProto the statistics for the column mentioned in the predicate
+   * @param predicate the leaf predicate we need to evaluation
    * @param bloomFilter
    * @return the set of truth values that may be returned for the given
-   * predicate.
+   *   predicate.
    */
   static TruthValue evaluatePredicateProto(OrcProto.ColumnStatistics statsProto,
       PredicateLeaf predicate, OrcProto.BloomFilter bloomFilter) {
@@ -348,11 +344,10 @@ public class RecordReaderImpl implements RecordReader {
   /**
    * Evaluate a predicate with respect to the statistics from the column
    * that is referenced in the predicate.
-   *
-   * @param stats     the statistics for the column mentioned in the predicate
+   * @param stats the statistics for the column mentioned in the predicate
    * @param predicate the leaf predicate we need to evaluation
    * @return the set of truth values that may be returned for the given
-   * predicate.
+   *   predicate.
    */
   static TruthValue evaluatePredicate(ColumnStatistics stats,
       PredicateLeaf predicate, BloomFilter bloomFilter) {
@@ -391,10 +386,10 @@ public class RecordReaderImpl implements RecordReader {
         result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
-    } catch (NumberFormatException nfe) {
+    } catch (Exception e) {
       if (LOG.isWarnEnabled()) {
-        LOG.warn("NumberFormatException when type matching predicate object" +
-            " and statistics object. Exception: " + ExceptionUtils.getStackTrace(nfe));
+        LOG.warn("Exception when evaluating predicate. Skipping ORC PPD." +
+            " Exception: " + ExceptionUtils.getStackTrace(e));
       }
       result = hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
     }
@@ -990,7 +985,7 @@ public class RecordReaderImpl implements RecordReader {
    * @throws IOException
    */
   private boolean advanceToNextRow(
-      RecordReaderImplFactory.TreeReader reader, long nextRow, boolean canAdvanceStripe)
+      TreeReaderFactory.TreeReader reader, long nextRow, boolean canAdvanceStripe)
       throws IOException {
     long nextRowInStripe = nextRow - rowBaseInStripe;
     // check for row skipping
@@ -1164,7 +1159,7 @@ public class RecordReaderImpl implements RecordReader {
         bloomFilterIndex);
   }
 
-  private void seekToRowEntry(RecordReaderImplFactory.TreeReader reader, int rowEntry)
+  private void seekToRowEntry(TreeReaderFactory.TreeReader reader, int rowEntry)
       throws IOException {
     PositionProvider[] index = new PositionProvider[indexes.length];
     for (int i = 0; i < indexes.length; ++i) {

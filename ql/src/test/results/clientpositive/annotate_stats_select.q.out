@@ -395,7 +395,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: CAST( 'hello' AS CHAR(5) (type: char(5))
+            expressions: 'hello' (type: char(5))
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -416,7 +416,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: CAST( 'hello' AS varchar(5)) (type: varchar(5))
+            expressions: 'hello' (type: varchar(5))
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

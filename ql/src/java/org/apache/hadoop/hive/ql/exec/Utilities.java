@@ -211,6 +211,8 @@ public final class Utilities {
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
+  public static String MAPNAME = "Map ";
+  public static String REDUCENAME = "Reducer ";
 
   /**
    * ReduceField:
@@ -427,7 +429,13 @@ public final class Utilities {
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
         } else if (name.contains(MERGE_PLAN_NAME)) {
-          gWork = deserializePlan(in, MapWork.class, conf);
+          if (name.startsWith(MAPNAME)) {
+            gWork = deserializePlan(in, MapWork.class, conf);
+          } else if (name.startsWith(REDUCENAME)) {
+            gWork = deserializePlan(in, ReduceWork.class, conf);
+          } else {
+            throw new RuntimeException("Unknown work type: " + name);
+          }
         }
         gWorkMap.get(conf).put(path, gWork);
       } else if (LOG.isDebugEnabled()) {

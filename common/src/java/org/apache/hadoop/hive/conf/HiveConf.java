@@ -1844,6 +1844,10 @@ public class HiveConf extends Configuration {
         "Operation will be closed when it's not accessed for this duration of time, which can be disabled by setting to zero value.\n" +
         "  With positive value, it's checked for operations in terminal state only (FINISHED, CANCELED, CLOSED, ERROR).\n" +
         "  With negative value, it's checked for all of the operations regardless of state."),
+    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", false,
+        "Session will be considered to be idle only if there is no activity, and there is no pending operation.\n" +
+        "This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
+        "(hive.server2.session.check.interval) are enabled."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
