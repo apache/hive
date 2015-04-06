@@ -189,7 +189,7 @@ class AvroDeserializer {
       String columnName = columnNames.get(i);
       Object datum = record.get(columnName);
       Schema datumSchema = record.getSchema().getField(columnName).schema();
-      Schema.Field field = fileSchema.getField(columnName);
+      Schema.Field field = AvroSerdeUtils.isNullableType(fileSchema)?AvroSerdeUtils.getOtherTypeFromNullableType(fileSchema).getField(columnName):fileSchema.getField(columnName);
       objectRow.add(worker(datum, field == null ? null : field.schema(), datumSchema, columnType));
     }
 
