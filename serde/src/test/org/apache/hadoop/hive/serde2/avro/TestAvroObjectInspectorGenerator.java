@@ -100,6 +100,7 @@ public class TestAvroObjectInspectorGenerator {
       "    }\n" +
       "  ]\n" +
       "}";
+  public static final String NULLABLE_RECORD_SCHEMA = "[\"null\", " + RECORD_SCHEMA + "]";
   public static final String UNION_SCHEMA = "{\n" +
       "  \"namespace\": \"test.a.rossa\",\n" +
       "  \"name\": \"oneUnion\",\n" +

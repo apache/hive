@@ -185,9 +185,7 @@ public class TestAvroDeserializer {
 
   }
 
-  @Test
-  public void canDeserializeRecords() throws SerDeException, IOException {
-    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+  public void canDeserializeRecordsInternal(Schema s, Schema fileSchema) throws SerDeException, IOException {
     GenericData.Record record = new GenericData.Record(s);
     GenericData.Record innerRecord = new GenericData.Record(s.getField("aRecord").schema());
     innerRecord.put("int1", 42);
@@ -196,7 +194,7 @@ public class TestAvroDeserializer {
     record.put("aRecord", innerRecord);
     assertTrue(GENERIC_DATA.validate(s, record));
 
-    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record, fileSchema);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
 
@@ -230,6 +228,19 @@ public class TestAvroDeserializer {
     assertEquals(42, innerRecord2OI.getStructFieldData(innerRecord2, allStructFieldRefs1.get(0)));
     assertEquals(true, innerRecord2OI.getStructFieldData(innerRecord2, allStructFieldRefs1.get(1)));
     assertEquals(42432234234l, innerRecord2OI.getStructFieldData(innerRecord2, allStructFieldRefs1.get(2)));
+  }
+
+  @Test
+  public void canDeserializeRecords() throws SerDeException, IOException {
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+    canDeserializeRecordsInternal(s, s);
+  }
+
+  @Test
+  public void canDeserializeNullableRecords() throws SerDeException, IOException {
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+    Schema fileSchema = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.NULLABLE_RECORD_SCHEMA);
+    canDeserializeRecordsInternal(s, fileSchema);
   }
 
   private class ResultPair { // Because Pairs give Java the vapors.
