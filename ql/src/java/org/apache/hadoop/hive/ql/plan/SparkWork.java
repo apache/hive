@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,8 +48,8 @@ public class SparkWork extends AbstractOperatorDesc {
   private static int counter;
   private final String name;
 
-  private final Set<BaseWork> roots = new HashSet<BaseWork>();
-  private final Set<BaseWork> leaves = new HashSet<BaseWork>();
+  private final Set<BaseWork> roots = new LinkedHashSet<BaseWork>();
+  private final Set<BaseWork> leaves = new LinkedHashSet<>();
 
   protected final Map<BaseWork, List<BaseWork>> workGraph =
       new HashMap<BaseWork, List<BaseWork>>();
@@ -182,14 +183,14 @@ public class SparkWork extends AbstractOperatorDesc {
    * getRoots returns all nodes that do not have a parent.
    */
   public Set<BaseWork> getRoots() {
-    return new HashSet<BaseWork>(roots);
+    return new LinkedHashSet<BaseWork>(roots);
   }
 
   /**
    * getLeaves returns all nodes that do not have a child
    */
   public Set<BaseWork> getLeaves() {
-    return new HashSet<BaseWork>(leaves);
+    return new LinkedHashSet<BaseWork>(leaves);
   }
 
   public void setRequiredCounterPrefix(Map<String, List<String>> requiredCounterPrefix) {

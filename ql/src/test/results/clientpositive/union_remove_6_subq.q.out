@@ -1,4 +1,6 @@
-PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (all of which are mapred queries)
 -- followed by select star and a file sink in 2 output tables.
 -- The optimiaztion does not take affect since it is a multi-table insert.
@@ -9,7 +11,9 @@ create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (all of which are mapred queries)
 -- followed by select star and a file sink in 2 output tables.
 -- The optimiaztion does not take affect since it is a multi-table insert.
