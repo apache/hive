@@ -30,14 +30,13 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.EncodedRecordReaderImplFactory;
+import org.apache.hadoop.hive.ql.io.orc.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImplFactory;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 
 public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
-  private RecordReaderImplFactory.TreeReader[] columnReaders;
+  private EncodedTreeReaderFactory.TreeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
@@ -83,7 +82,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       int numCols = batch.columnIxs.length;
       if (columnReaders == null || !sameStripe) {
-        this.columnReaders = EncodedRecordReaderImplFactory.createEncodedTreeReader(numCols,
+        this.columnReaders = EncodedTreeReaderFactory.createEncodedTreeReader(numCols,
             fileMetadata.getTypes(), stripeMetadata.getEncodings(), batch, codec, skipCorrupt);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, numCols, stripeMetadata);
@@ -116,7 +115,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
     }
   }
 
-  private void repositionInStreams(RecordReaderImplFactory.TreeReader[] columnReaders,
+  private void repositionInStreams(EncodedTreeReaderFactory.TreeReader[] columnReaders,
       EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe, int numCols,
       OrcStripeMetadata stripeMetadata) throws IOException {
     for (int i = 0; i < numCols; i++) {

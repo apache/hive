@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -60,10 +61,15 @@ import org.apache.hadoop.io.Text;
  */
 public class TreeReaderFactory {
 
-  protected abstract static class TreeReader {
+  public abstract static class TreeReader {
     protected final int columnId;
     protected BitFieldReader present = null;
     protected boolean valuePresent = false;
+    protected EncodedColumnBatch.StreamBuffer presentStreamBuffer = null;
+    protected EncodedColumnBatch.StreamBuffer dataStreamBuffer = null;
+    protected EncodedColumnBatch.StreamBuffer dictionaryStreamBuffer = null;
+    protected EncodedColumnBatch.StreamBuffer lengthsStreamBuffer = null;
+    protected EncodedColumnBatch.StreamBuffer secondaryStreamBuffer = null;
 
     TreeReader(int columnId) throws IOException {
       this(columnId, null);
@@ -128,6 +134,37 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       if (present != null) {
         present.seek(index);
+      }
+    }
+
+    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+        throws IOException {
+      // stream buffers are arranged in enum order of stream kind
+      for (EncodedColumnBatch.StreamBuffer streamBuffer : buffers) {
+        switch (streamBuffer.streamKind) {
+          case 0:
+            // PRESENT stream
+            presentStreamBuffer = streamBuffer;
+            break;
+          case 1:
+            // DATA stream
+            dataStreamBuffer = streamBuffer;
+            break;
+          case 2:
+            // LENGTH stream
+            lengthsStreamBuffer = streamBuffer;
+            break;
+          case 3:
+            // DICTIONARY_DATA stream
+            dictionaryStreamBuffer = streamBuffer;
+            break;
+          case 5:
+            // SECONDARY stream
+            secondaryStreamBuffer = streamBuffer;
+            break;
+          default:
+            throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
+        }
       }
     }
 

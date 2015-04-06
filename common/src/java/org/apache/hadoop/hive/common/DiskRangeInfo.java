@@ -15,24 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.common;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeInfo;
+import com.google.common.collect.Lists;
 
 /**
- * An uncompressed stream whose underlying byte buffer can be set.
+ * Disk range information class containing disk ranges and total length.
  */
-public class SettableUncompressedStream extends InStream.UncompressedStream {
+public class DiskRangeInfo {
+  List<DiskRange> diskRanges;
+  long totalLength;
 
-  public SettableUncompressedStream(Long fileId, String name,
-      List<DiskRange> input, long length) {
-    super(fileId, name, input, length);
+  public DiskRangeInfo() {
+    this.diskRanges = Lists.newArrayList();
+    this.totalLength = 0;
   }
 
-  public void setBuffers(DiskRangeInfo diskRangeInfo) {
-    reset(diskRangeInfo.getDiskRanges(), diskRangeInfo.getTotalLength());
+  public void addDiskRange(DiskRange diskRange) {
+    diskRanges.add(diskRange);
+    totalLength += diskRange.getLength();
+  }
+
+  public List<DiskRange> getDiskRanges() {
+    return diskRanges;
+  }
+
+  public long getTotalLength() {
+    return totalLength;
   }
 }
+

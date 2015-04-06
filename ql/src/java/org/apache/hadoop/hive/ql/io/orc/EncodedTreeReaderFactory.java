@@ -20,16 +20,13 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-
-import com.google.common.collect.Lists;
 
 /**
  *
  */
-public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
+public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   protected static class TimestampStreamReader extends TimestampTreeReader {
     private boolean isFileCompressed;
@@ -78,19 +75,13 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_secondsStream != null) {
-        List<DiskRange> secondsDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, secondsDiskRanges);
-        _secondsStream.setBuffers(secondsDiskRanges, length);
+        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (_nanosStream != null) {
-        List<DiskRange> nanosDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(secondaryStreamBuffer, nanosDiskRanges);
-        _nanosStream.setBuffers(nanosDiskRanges, length);
+        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(secondaryStreamBuffer));
       }
     }
 
@@ -146,15 +137,15 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public TimestampStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         SettableUncompressedStream nanos = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.SECONDARY.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.SECONDARY.name(),
                 fileId, nanosStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -235,34 +226,24 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
         if (_dictionaryStream != null) {
-          List<DiskRange> dictionaryDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(dictionaryStreamBuffer, dictionaryDiskRanges);
-          _dictionaryStream.setBuffers(dictionaryDiskRanges, length);
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
         }
       }
     }
@@ -319,18 +300,18 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public StringStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
                 lengthStream);
 
-        SettableUncompressedStream dictionary = StreamUtils.createLlapInStream(
+        SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -383,14 +364,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -434,11 +411,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public ShortStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -490,14 +467,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -547,11 +520,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public LongStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -603,14 +576,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -654,11 +623,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public IntStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -710,14 +679,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -755,11 +720,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public FloatStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -810,14 +775,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -855,11 +816,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public DoubleStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -921,19 +882,13 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_valueStream != null) {
-        List<DiskRange> valueDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, valueDiskRanges);
-        _valueStream.setBuffers(valueDiskRanges, length);
+        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (_scaleStream != null) {
-        List<DiskRange> scaleDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(secondaryStreamBuffer, scaleDiskRanges);
-        _scaleStream.setBuffers(scaleDiskRanges, length);
+        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(secondaryStreamBuffer));
       }
     }
 
@@ -994,13 +949,13 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
       }
 
       public DecimalStreamReader build() throws IOException {
-        SettableUncompressedStream presentInStream = StreamUtils.createLlapInStream(
+        SettableUncompressedStream presentInStream = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.PRESENT.name(), fileId, presentStream);
 
-        SettableUncompressedStream valueInStream = StreamUtils.createLlapInStream(
+        SettableUncompressedStream valueInStream = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.DATA.name(), fileId, valueStream);
 
-        SettableUncompressedStream scaleInStream = StreamUtils.createLlapInStream(
+        SettableUncompressedStream scaleInStream = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.SECONDARY.name(), fileId, scaleStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1053,14 +1008,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -1104,12 +1055,12 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public DateStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1191,34 +1142,24 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
         if (_dictionaryStream != null) {
-          List<DiskRange> dictionaryDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(dictionaryStreamBuffer, dictionaryDiskRanges);
-          _dictionaryStream.setBuffers(dictionaryDiskRanges, length);
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
         }
       }
     }
@@ -1281,18 +1222,18 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public CharStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
                 lengthStream);
 
-        SettableUncompressedStream dictionary = StreamUtils.createLlapInStream(
+        SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1375,34 +1316,24 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-          _lengthStream.setBuffers(lengthDiskRanges, length);
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
         }
         if (_dictionaryStream != null) {
-          List<DiskRange> dictionaryDiskRanges = Lists.newArrayList();
-          long length = StreamUtils.createDiskRanges(dictionaryStreamBuffer, dictionaryDiskRanges);
-          _dictionaryStream.setBuffers(dictionaryDiskRanges, length);
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
         }
       }
     }
@@ -1465,18 +1396,18 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public VarcharStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         SettableUncompressedStream length = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.LENGTH.name(), fileId,
                 lengthStream);
 
-        SettableUncompressedStream dictionary = StreamUtils.createLlapInStream(
+        SettableUncompressedStream dictionary = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.DICTIONARY_DATA.name(), fileId, dictionaryStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1528,14 +1459,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -1573,11 +1500,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public ByteStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1638,19 +1565,13 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
       if (_lengthsStream != null) {
-        List<DiskRange> lengthDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(lengthsStreamBuffer, lengthDiskRanges);
-        _lengthsStream.setBuffers(lengthDiskRanges, length);
+        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
       }
     }
 
@@ -1699,13 +1620,13 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
       }
 
       public BinaryStreamReader build() throws IOException {
-        SettableUncompressedStream present = StreamUtils.createLlapInStream(
+        SettableUncompressedStream present = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.PRESENT.name(), fileId, presentStream);
 
-        SettableUncompressedStream data = StreamUtils.createLlapInStream(
+        SettableUncompressedStream data = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.DATA.name(), fileId, dataStream);
 
-        SettableUncompressedStream length = StreamUtils.createLlapInStream(
+        SettableUncompressedStream length = StreamUtils.createSettableUncompressedStream(
             OrcProto.Stream.Kind.LENGTH.name(), fileId, lengthStream);
 
         boolean isFileCompressed = compressionCodec != null;
@@ -1756,14 +1677,10 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        List<DiskRange> presentDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(presentStreamBuffer, presentDiskRanges);
-        _presentStream.setBuffers(presentDiskRanges, length);
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
       }
       if (_dataStream != null) {
-        List<DiskRange> dataDiskRanges = Lists.newArrayList();
-        long length = StreamUtils.createDiskRanges(dataStreamBuffer, dataDiskRanges);
-        _dataStream.setBuffers(dataDiskRanges, length);
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
       }
     }
 
@@ -1801,11 +1718,11 @@ public class EncodedRecordReaderImplFactory extends RecordReaderImplFactory {
 
       public BooleanStreamReader build() throws IOException {
         SettableUncompressedStream present = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.PRESENT.name(),
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.PRESENT.name(),
                 fileId, presentStream);
 
         SettableUncompressedStream data = StreamUtils
-            .createLlapInStream(OrcProto.Stream.Kind.DATA.name(), fileId,
+            .createSettableUncompressedStream(OrcProto.Stream.Kind.DATA.name(), fileId,
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;

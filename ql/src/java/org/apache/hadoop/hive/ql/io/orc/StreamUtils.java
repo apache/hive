@@ -19,13 +19,10 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeInfo;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-
-import com.google.common.collect.Lists;
 
 /**
  * Stream utility.
@@ -33,42 +30,38 @@ import com.google.common.collect.Lists;
 public class StreamUtils {
 
   /**
-   * Create LlapInStream from stream buffer.
+   * Create SettableUncompressedStream from stream buffer.
    *
    * @param streamName - stream name
    * @param fileId - file id
    * @param streamBuffer - stream buffer
-   * @return - LlapInStream
+   * @return - SettableUncompressedStream
    * @throws IOException
    */
-  public static SettableUncompressedStream createLlapInStream(String streamName, Long fileId,
-      EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
+  public static SettableUncompressedStream createSettableUncompressedStream(String streamName,
+      Long fileId, EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
     if (streamBuffer == null) {
       return null;
     }
 
-    List<DiskRange> diskRanges = Lists.newArrayList();
-    long totalLength = createDiskRanges(streamBuffer, diskRanges);
-    return new SettableUncompressedStream(fileId, streamName, diskRanges, totalLength);
+    DiskRangeInfo diskRangeInfo = createDiskRangeInfo(streamBuffer);
+    return new SettableUncompressedStream(fileId, streamName, diskRangeInfo.getDiskRanges(),
+        diskRangeInfo.getTotalLength());
   }
 
   /**
    * Converts stream buffers to disk ranges.
    * @param streamBuffer - stream buffer
-   * @param diskRanges - initial empty list of disk ranges
    * @return - total length of disk ranges
    */
-  // TODO: unnecessary
-  public static long createDiskRanges(EncodedColumnBatch.StreamBuffer streamBuffer,
-      List<DiskRange> diskRanges) {
-    long totalLength = 0;
+  public static DiskRangeInfo createDiskRangeInfo(EncodedColumnBatch.StreamBuffer streamBuffer) {
+    DiskRangeInfo diskRangeInfo = new DiskRangeInfo();
+    long offset = 0;
     for (LlapMemoryBuffer memoryBuffer : streamBuffer.cacheBuffers) {
       ByteBuffer buffer = memoryBuffer.getByteBufferDup();
-      RecordReaderImpl.BufferChunk bufferChunk = new RecordReaderImpl.BufferChunk(buffer,
-          totalLength);
-      diskRanges.add(bufferChunk);
-      totalLength += buffer.remaining();
+      diskRangeInfo.addDiskRange(new RecordReaderImpl.BufferChunk(buffer, offset));
+      offset += buffer.remaining();
     }
-    return totalLength;
+    return diskRangeInfo;
   }
 }
