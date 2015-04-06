@@ -179,13 +179,44 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
 
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
-      Operator<?> rootOp = OperatorUtils.findSingleOperatorUpstream(mapJoinOp.getParentOperators()
-          .get(joinConf.getPosBigTable()), TableScanOperator.class);
-
-      if (rootOp instanceof TableScanOperator) { // we will run in mapper
-        edgeType = EdgeType.CUSTOM_EDGE;
-      } else { // we will run in reducer
-        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      /*
+       * Here, we can be in one of 4 states.
+       *
+       * 1. If map join work is null implies that we have not yet traversed the big table side. We
+       * just need to see if we can find a reduce sink operator in the big table side. This would
+       * imply a reduce side operation.
+       *
+       * 2. If we don't find a reducesink in 1 it has to be the case that it is a map side operation.
+       *
+       * 3. If we have already created a work item for the big table side, we need to see if we can
+       * find a table scan operator in the big table side. This would imply a map side operation.
+       *
+       * 4. If we don't find a table scan operator, it has to be a reduce side operation.
+       */
+      if (mapJoinWork == null) {
+        Operator<?> rootOp =
+          OperatorUtils.findSingleOperatorUpstream(
+              mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+              ReduceSinkOperator.class);
+        if (rootOp == null) {
+          // likely we found a table scan operator
+          edgeType = EdgeType.CUSTOM_EDGE;
+        } else {
+          // we have found a reduce sink
+          edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+        }
+      } else {
+        Operator<?> rootOp =
+            OperatorUtils.findSingleOperatorUpstream(
+                mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+                TableScanOperator.class);
+        if (rootOp != null) {
+          // likely we found a table scan operator
+          edgeType = EdgeType.CUSTOM_EDGE;
+        } else {
+          // we have found a reduce sink
+          edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+        }
       }
     }
     TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);

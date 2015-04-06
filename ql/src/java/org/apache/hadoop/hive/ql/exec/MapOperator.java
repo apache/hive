@@ -27,10 +27,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,7 +38,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -638,11 +637,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   @Override
   public OperatorType getType() {
     return null;
-  }
-
-  @Override
-  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
-    return connectedOperators;
   }
 
   public void initializeContexts() {

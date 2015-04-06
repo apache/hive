@@ -54,7 +54,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__srcpart_src_part_index__
+            alias: default__srcpart_src_part_index__
             filterExpr: ((UDFToDouble(key) = 86.0) and (ds = '2008-04-09')) (type: boolean)
             Filter Operator
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)

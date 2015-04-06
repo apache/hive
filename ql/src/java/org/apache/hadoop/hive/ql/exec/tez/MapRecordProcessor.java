@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -176,7 +176,8 @@ public class MapRecordProcessor extends RecordProcessor {
 
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
-        for (MapWork mergeMapWork : mergeWorkList) {
+        for (BaseWork mergeWork : mergeWorkList) {
+          MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
             mergeMapOp = new VectorMapOperator();
           } else {
@@ -193,7 +194,7 @@ public class MapRecordProcessor extends RecordProcessor {
             mergeMapOp.setChildren(jconf);
 
             DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-	    mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
+	          mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
 
             mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);

@@ -131,7 +131,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       if (isMap) {
         rproc = new MapRecordProcessor(jobConf);
       } else {
-        rproc = new ReduceRecordProcessor();
+        rproc = new ReduceRecordProcessor(jobConf);
       }
 
       initializeAndRunProcessor(inputs, outputs);

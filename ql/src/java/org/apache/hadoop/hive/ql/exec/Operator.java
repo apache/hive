@@ -1350,12 +1350,4 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return childOperators;
     }
   }
-
-  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
-    if ((parentOperators == null) || (parentOperators.size() == 0)) {
-      return null;
-    }
-    Map<Integer, DummyStoreOperator> dummyOps = parentOperators.get(0).getTagToOperatorTree();
-    return dummyOps;
-  }
 }

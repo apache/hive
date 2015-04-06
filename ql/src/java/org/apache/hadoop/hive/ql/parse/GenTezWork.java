@@ -166,7 +166,7 @@ public class GenTezWork implements NodeProcessor {
       }
       // connect the work correctly.
       work.addSortCols(root.getOpTraits().getSortCols().get(0));
-      mergeJoinWork.addMergedWork(work, null);
+      mergeJoinWork.addMergedWork(work, null, context.leafOperatorToFollowingWork);
       Operator<? extends OperatorDesc> parentOp =
           getParentFromStack(context.currentMergeJoinOperator, stack);
       int pos = context.currentMergeJoinOperator.getTagForOperator(parentOp);
@@ -268,6 +268,7 @@ public class GenTezWork implements NodeProcessor {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Removing " + parent + " as parent from " + root);
       }
+      context.leafOperatorToFollowingWork.remove(parent);
       context.leafOperatorToFollowingWork.put(parent, work);
       root.removeParent(parent);
     }
@@ -326,7 +327,7 @@ public class GenTezWork implements NodeProcessor {
         MergeJoinWork mergeJoinWork = (MergeJoinWork) followingWork;
         CommonMergeJoinOperator mergeJoinOp = mergeJoinWork.getMergeJoinOperator();
         work.setTag(mergeJoinOp.getTagForOperator(operator));
-        mergeJoinWork.addMergedWork(null, work);
+        mergeJoinWork.addMergedWork(null, work, context.leafOperatorToFollowingWork);
         tezWork.setVertexType(mergeJoinWork, VertexType.MULTI_INPUT_UNINITIALIZED_EDGES);
         for (BaseWork parentWork : tezWork.getParents(work)) {
           TezEdgeProperty edgeProp = tezWork.getEdgeProperty(parentWork, work);
@@ -399,7 +400,7 @@ public class GenTezWork implements NodeProcessor {
     return null;
   }
 
-  private int getFollowingWorkIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs) 
+  private int getFollowingWorkIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs)
       throws SemanticException {
     int index = 0;
     for (BaseWork baseWork : tezWork.getChildren(unionWork)) {
