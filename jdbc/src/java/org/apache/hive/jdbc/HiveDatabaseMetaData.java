@@ -339,7 +339,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getIdentifierQuoteString() throws SQLException {
-    return " ";
+    return "`";
   }
 
   public ResultSet getImportedKeys(String catalog, String schema, String table)
