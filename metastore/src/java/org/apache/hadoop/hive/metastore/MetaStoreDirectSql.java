@@ -852,6 +852,7 @@ class MetaStoreDirectSql {
         func.apply(entry.getValue(), fields);
         fields = null;
       }
+      Deadline.checkTimeout();
     }
     int rv = list.size();
     query.closeAll();
@@ -1152,6 +1153,7 @@ class MetaStoreDirectSql {
           list.size());
       for (Object[] row : list) {
         colStats.add(prepareCSObj(row, 0));
+        Deadline.checkTimeout();
       }
       query.closeAll();
       return colStats;
@@ -1193,6 +1195,7 @@ class MetaStoreDirectSql {
         } else {
           extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
         }
+        Deadline.checkTimeout();
       }
       query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
@@ -1212,6 +1215,7 @@ class MetaStoreDirectSql {
         list = ensureList(qResult);
         for (Object[] row : list) {
           colStats.add(prepareCSObj(row, 0));
+          Deadline.checkTimeout();
         }
         end = doTrace ? System.nanoTime() : 0;
         timingTrace(doTrace, queryText, start, end);
@@ -1251,6 +1255,7 @@ class MetaStoreDirectSql {
             indexToObject.put(sumIndex[ind - 1], row[ind]);
           }
           sumMap.put((String) row[0], indexToObject);
+          Deadline.checkTimeout();
         }
         end = doTrace ? System.nanoTime() : 0;
         timingTrace(doTrace, queryText, start, end);
@@ -1318,6 +1323,7 @@ class MetaStoreDirectSql {
             }
           }
           colStats.add(prepareCSObj(row, 0));
+          Deadline.checkTimeout();
         }
       }
       return colStats;
@@ -1389,6 +1395,7 @@ class MetaStoreDirectSql {
       }
       lastPartName = partName;
       from = i;
+      Deadline.checkTimeout();
     }
 
     timingTrace(doTrace, queryText, start, queryTime);
@@ -1416,6 +1423,7 @@ class MetaStoreDirectSql {
         csd.setLastAnalyzed(extractSqlLong(laObj));
       }
       csos.add(prepareCSObj(row, offset));
+      Deadline.checkTimeout();
     }
     result.setStatsObj(csos);
     return result;

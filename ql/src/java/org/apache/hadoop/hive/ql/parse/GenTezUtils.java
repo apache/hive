@@ -105,7 +105,7 @@ public class GenTezUtils {
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
     long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
 
-    ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
+    ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + (++sequenceNumber));
     LOG.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
     reduceWork.setReducer(root);
     reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
@@ -180,7 +180,7 @@ public class GenTezUtils {
   public MapWork createMapWork(GenTezProcContext context, Operator<?> root,
       TezWork tezWork, PrunedPartitionList partitions) throws SemanticException {
     assert root.getParentOperators().isEmpty();
-    MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
+    MapWork mapWork = new MapWork(Utilities.MAPNAME + (++sequenceNumber));
     LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
 
     // map work starts with table scan operators

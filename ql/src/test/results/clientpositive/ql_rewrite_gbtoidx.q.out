@@ -253,7 +253,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_shipdate (type: string), _count_of_l_shipdate (type: bigint)
@@ -572,7 +572,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_shipdate (type: string), _count_of_l_shipdate (type: bigint)
@@ -746,7 +746,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: lastyear:default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: lastyear:default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (year(l_shipdate) = 1997) (type: boolean)
@@ -830,7 +830,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: thisyear:default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: thisyear:default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (year(l_shipdate) = 1998) (type: boolean)
@@ -900,7 +900,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: null-subquery1:dummy-subquery1:default.default__lineitem_ix_lineitem_ix_lshipdate_idx__
+            alias: null-subquery1:dummy-subquery1:default__lineitem_ix_lineitem_ix_lshipdate_idx__
             Statistics: Num rows: 95 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_shipdate (type: string), _count_of_l_shipdate (type: bigint)
@@ -1063,7 +1063,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__tbl_tbl_key_idx__
+            alias: default__tbl_tbl_key_idx__
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: key (type: int), _count_of_key (type: bigint)
@@ -1161,7 +1161,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__tbl_tbl_key_idx__
+            alias: default__tbl_tbl_key_idx__
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: key (type: int), _count_of_key (type: bigint)
@@ -2252,7 +2252,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__tblpart_tbl_part_index__
+            alias: default__tblpart_tbl_part_index__
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -2445,7 +2445,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__tbl_tbl_key_idx__
+            alias: default__tbl_tbl_key_idx__
             Statistics: Num rows: 6 Data size: 430 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), _count_of_key (type: bigint)

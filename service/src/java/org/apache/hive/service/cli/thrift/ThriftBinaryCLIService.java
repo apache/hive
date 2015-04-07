@@ -92,10 +92,10 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
 
       // TCP Server
       server = new TThreadPoolServer(sargs);
-      server.serve();
-      String msg = "Started " + ThriftBinaryCLIService.class.getSimpleName() + " on port "
+      String msg = "Starting " + ThriftBinaryCLIService.class.getSimpleName() + " on port "
           + portNum + " with " + minWorkerThreads + "..." + maxWorkerThreads + " worker threads";
       LOG.info(msg);
+      server.serve();
     } catch (Throwable t) {
       LOG.fatal(
           "Error starting HiveServer2: could not start "

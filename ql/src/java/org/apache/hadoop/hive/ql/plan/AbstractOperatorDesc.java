@@ -33,7 +33,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   static {
     PTFUtils.makeTransient(AbstractOperatorDesc.class, "opProps");
   }
-  
+
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
   public Statistics getStatistics() {
@@ -50,14 +50,18 @@ public class AbstractOperatorDesc implements OperatorDesc {
     throw new CloneNotSupportedException("clone not supported");
   }
 
+  public boolean getVectorMode() {
+    return vectorMode;
+  }
+
   public void setVectorMode(boolean vm) {
     this.vectorMode = vm;
   }
-  
+
   public OpTraits getTraits() {
     return opTraits;
   }
-  
+
   public void setTraits(OpTraits opTraits) {
     this.opTraits = opTraits;
   }

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -82,14 +83,15 @@ public class MapRecordProcessor extends RecordProcessor {
   private boolean abort = false;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
-  List<MapWork> mergeWorkList = null;
+  List<BaseWork> mergeWorkList = null;
   List<String> cacheKeys;
   ObjectCache cache;
 
   private static Map<Integer, DummyStoreOperator> connectOps =
     new TreeMap<Integer, DummyStoreOperator>();
 
-  public MapRecordProcessor(final JobConf jconf) throws Exception {
+  public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
+    super(jconf, context);
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
@@ -108,35 +110,14 @@ public class MapRecordProcessor extends RecordProcessor {
       });
     Utilities.setMapWork(jconf, mapWork);
 
-    String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
-    if (prefixes != null) {
-      mergeWorkList = new ArrayList<MapWork>();
-
-      for (final String prefix : prefixes.split(",")) {
-        if (prefix == null || prefix.isEmpty()) {
-          continue;
-        }
-
-        key = queryId + prefix;
-        cacheKeys.add(key);
-
-	mergeWorkList.add(
-          (MapWork) cache.retrieve(key,
-              new Callable<Object>() {
-                @Override
-                public Object call() {
-                  return Utilities.getMergeWork(jconf, prefix);
-                }
-              }));
-      }
-    }
+    mergeWorkList = getMergeWorkList(jconf, key, queryId, cache, cacheKeys);
   }
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
 
     MapredContext.init(true, new JobConf(jconf));
     ((TezContext) MapredContext.get()).setInputs(inputs);
@@ -174,7 +155,8 @@ public class MapRecordProcessor extends RecordProcessor {
       connectOps.clear();
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
-        for (MapWork mergeMapWork : mergeWorkList) {
+        for (BaseWork mergeWork : mergeWorkList) {
+          MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
             mergeMapOp = new VectorMapOperator();
           } else {
@@ -198,6 +180,8 @@ public class MapRecordProcessor extends RecordProcessor {
           }
         }
       }
+
+      ((TezContext) (MapredContext.get())).setDummyOpsMap(connectOps);
 
       // initialize map operator
       mapOp.setConf(mapWork);
@@ -354,10 +338,6 @@ public class MapRecordProcessor extends RecordProcessor {
       Utilities.clearWorkMap();
       MapredContext.close();
     }
-  }
-
-  public static Map<Integer, DummyStoreOperator> getConnectOps() {
-    return connectOps;
   }
 
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {

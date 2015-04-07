@@ -1817,6 +1817,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     for (MPartition mp : src) {
       dest.add(convertToPart(mp));
+      Deadline.checkTimeout();
     }
     return dest;
   }
@@ -1826,6 +1827,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<Partition> parts = new ArrayList<Partition>(mparts.size());
     for (MPartition mp : mparts) {
       parts.add(convertToPart(dbName, tblName, mp));
+      Deadline.checkTimeout();
     }
     return parts;
   }
@@ -3121,10 +3123,6 @@ public class ObjectStore implements RawStore, Configurable {
     MTable origTable = mIndex.getOrigTable();
     MTable indexTable = mIndex.getIndexTable();
 
-    String[] qualified = MetaStoreUtils.getQualifiedName(
-        origTable.getDatabase().getName(), indexTable.getTableName());
-    String indexTableName = qualified[0] + "." + qualified[1];
-
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
@@ -3132,7 +3130,7 @@ public class ObjectStore implements RawStore, Configurable {
     origTable.getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
-    indexTableName,
+    indexTable.getTableName(),
     convertToStorageDescriptor(mIndex.getSd()),
     mIndex.getParameters(),
     mIndex.getDeferredRebuild());
@@ -6053,6 +6051,7 @@ public class ObjectStore implements RawStore, Configurable {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
           statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat));
+          Deadline.checkTimeout();
         }
         return new ColumnStatistics(desc, statObjs);
       }
@@ -6101,6 +6100,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
           curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj));
           lastPartName = partName;
+          Deadline.checkTimeout();
         }
         return result;
       }

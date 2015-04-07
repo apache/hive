@@ -637,11 +637,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     return null;
   }
 
-  @Override
-  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
-    return MapRecordProcessor.getConnectOps();
-  }
-
   public void initializeContexts() {
     Path fpath = getExecContext().getCurrentInputPath();
     String nominalPath = getNominalPath(fpath);

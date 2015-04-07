@@ -34,7 +34,7 @@ import org.apache.hadoop.mapred.JobConf;
  * BaseWork. Base class for any "work" that's being done on the cluster. Items like stats
  * gathering that are commonly used regardless of the type of work live here.
  */
-@SuppressWarnings({"serial", "deprecation"})
+@SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
 
   // dummyOps is a reference to all the HashTableDummy operators in the
@@ -60,7 +60,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // Vectorization.
   protected Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = null;
   protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
-  protected boolean vectorMode = false;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -173,15 +172,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    */
   public void setMapRedLocalWork(final MapredLocalWork mapLocalWork) {
     this.mrLocalWork = mapLocalWork;
-  }
-
-  @Override
-  public void setVectorMode(boolean vectorMode) {
-    this.vectorMode = vectorMode;
-  }
-
-  public boolean getVectorMode() {
-    return vectorMode;
   }
 
   public abstract void configureJobConf(JobConf job);

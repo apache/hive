@@ -64,12 +64,16 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private final Object[] row = new Object[2];
   ObjectCache cache;
 
+  public MergeFileRecordProcessor(final JobConf jconf, final ProcessorContext context) {
+    super(jconf, context);
+  }
+
   @Override
-  void init(final JobConf jconf, ProcessorContext processorContext,
+  void init(
       MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
     execContext = new ExecMapperContext(jconf);
 
     //Update JobConf using MRInput, info like filename comes via this

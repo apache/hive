@@ -91,6 +91,7 @@ public class HiveSessionImpl implements HiveSession {
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
   private volatile long lastAccessTime;
+  private volatile long lastIdleTime;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
       HiveConf serverhiveConf, String ipAddress) {
@@ -147,6 +148,7 @@ public class HiveSessionImpl implements HiveSession {
       configureSession(sessionConfMap);
     }
     lastAccessTime = System.currentTimeMillis();
+    lastIdleTime = lastAccessTime;
   }
 
   /**
@@ -294,6 +296,11 @@ public class HiveSessionImpl implements HiveSession {
     }
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
+    }
+    if (opHandleSet.isEmpty()) {
+      lastIdleTime = System.currentTimeMillis();
+    } else {
+      lastIdleTime = 0;
     }
   }
 
@@ -603,6 +610,11 @@ public class HiveSessionImpl implements HiveSession {
         closeTimedOutOperations(operations);
       }
     }
+  }
+
+  @Override
+  public long getNoOperationTime() {
+    return lastIdleTime > 0 ? System.currentTimeMillis() - lastIdleTime : 0;
   }
 
   private void closeTimedOutOperations(List<Operation> operations) {

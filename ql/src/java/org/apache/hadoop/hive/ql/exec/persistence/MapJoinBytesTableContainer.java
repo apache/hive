@@ -430,6 +430,8 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
+    /** Hash table wrapper specific to the container. */
+    private final BytesBytesMultiHashMap.ThreadSafeGetter threadSafeHashMapGetter;
     private List<WriteBuffers.ByteSegmentRef> refs;
     private int currentRow;
     /**
@@ -449,6 +451,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
+      threadSafeHashMapGetter = hashMap.createGetterForThread();
       clearRows();
     }
 
@@ -456,13 +459,13 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
       if (refs == null) {
         refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
       }
-      byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
+      byte aliasFilter = threadSafeHashMapGetter.getValueRefs(
+          output.getData(), output.getLength(), refs);
       this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
       this.dummyRow = null;
       if (refs.isEmpty()) {
         return JoinUtil.JoinResult.NOMATCH;
-      }
-      else {
+      } else {
         return JoinUtil.JoinResult.MATCH;
       }
     }
@@ -529,7 +532,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
       if (ref.getBytes() == null) {
-        hashMap.populateValue(ref);
+        threadSafeHashMapGetter.populateValue(ref);
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());

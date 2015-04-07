@@ -510,8 +510,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     }
 
     final Path finalOutputPath = getFinalPath(fs, file, srcDir, destDir, immutable);
+    FileStatus fileStatus = fs.getFileStatus(file);
 
-    if (fs.isFile(file)) {
+    if (fileStatus.isFile()) {
       if (dryRun){
         if (immutable){
           // Dryrun checks are meaningless for mutable table - we should always succeed
@@ -541,7 +542,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           }
         }
       }
-    } else if(fs.getFileStatus(file).isDir()) {
+    } else if (fileStatus.isDirectory()) {
 
       FileStatus[] children = fs.listStatus(file);
       FileStatus firstChild = null;

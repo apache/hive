@@ -1577,13 +1577,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // Disallow INSERT INTO on bucketized tables
         boolean isAcid = isAcidTable(tab);
-        if (qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName()) &&
+        boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName());
+        if (isTableWrittenTo &&
             tab.getNumBuckets() > 0 && !isAcid) {
           throw new SemanticException(ErrorMsg.INSERT_INTO_BUCKETIZED_TABLE.
               getMsg("Table: " + tab_name));
         }
         // Disallow update and delete on non-acid tables
-        if ((updating() || deleting()) && !isAcid) {
+        if ((updating() || deleting()) && !isAcid && isTableWrittenTo) {
+          //isTableWrittenTo: delete from acidTbl where a in (select id from nonAcidTable)
+          //so only assert this if we are actually writing to this table
           // isAcidTable above also checks for whether we are using an acid compliant
           // transaction manager.  But that has already been caught in
           // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid

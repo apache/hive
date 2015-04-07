@@ -176,7 +176,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
@@ -1223,7 +1223,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
@@ -1907,7 +1907,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:$hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (l_orderkey < 7) (type: boolean)
@@ -2072,7 +2072,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: taba:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: taba:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (l_orderkey < 7) (type: boolean)
@@ -2148,7 +2148,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tabb:default.default__src_src_key_idx__
+            alias: tabb:default__src_src_key_idx__
             Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), _count_of_key (type: bigint)
@@ -2814,7 +2814,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: taba:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: taba:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (l_orderkey < 7) (type: boolean)
@@ -2890,7 +2890,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tabb:default.default__src_src_key_idx__
+            alias: tabb:default__src_src_key_idx__
             Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < '2') (type: boolean)
@@ -3192,7 +3192,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: l_orderkey (type: int), (l_orderkey + 1) (type: int), _count_of_l_orderkey (type: bigint)
@@ -3282,7 +3282,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (l_orderkey + 2) (type: int), l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
@@ -3404,7 +3404,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            alias: $hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:default__lineitem_ix_lineitem_ix_l_orderkey_idx__
             Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (l_orderkey < 7) (type: boolean)
@@ -3495,7 +3495,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: $hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_partkey_idx__
+            alias: $hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:default__lineitem_ix_lineitem_ix_l_partkey_idx__
             Statistics: Num rows: 100 Data size: 8937 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (l_partkey < 10) (type: boolean)
