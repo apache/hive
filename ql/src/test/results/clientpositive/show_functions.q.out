@@ -126,6 +126,7 @@ md5
 min
 minute
 month
+months_between
 named_struct
 negative
 next_day
@@ -329,6 +330,7 @@ md5
 min
 minute
 month
+months_between
 xpath
 xpath_boolean
 xpath_double
