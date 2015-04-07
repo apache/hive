@@ -300,7 +300,7 @@ public class PropValueUnion extends org.apache.thrift.TUnion<PropValueUnion, Pro
               lString = new ArrayList<String>(_list0.size);
               for (int _i1 = 0; _i1 < _list0.size; ++_i1)
               {
-                String _elem2; // required
+                String _elem2; // optional
                 _elem2 = iprot.readString();
                 lString.add(_elem2);
               }
@@ -423,7 +423,7 @@ public class PropValueUnion extends org.apache.thrift.TUnion<PropValueUnion, Pro
             lString = new ArrayList<String>(_list9.size);
             for (int _i10 = 0; _i10 < _list9.size; ++_i10)
             {
-              String _elem11; // required
+              String _elem11; // optional
               _elem11 = iprot.readString();
               lString.add(_elem11);
             }
