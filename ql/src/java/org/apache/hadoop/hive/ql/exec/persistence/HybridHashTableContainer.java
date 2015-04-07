@@ -386,7 +386,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     LOG.info("Memory usage after spilling: " + (size - inMemSize));
 
     totalInMemRowCount -= inMemRowCount;
-    partition.hashMap.clear();
+    partition.hashMap.discardData();
   }
 
   /**
@@ -457,14 +457,9 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     return toSpillPartitionId;
   }
 
-  /* Clean up in memory hashtables */
   @Override
   public void clear() {
-    for (HashPartition hp : hashPartitions) {
-      if (hp.hashMap != null) {
-        hp.hashMap.clear();
-      }
-    }
+    // Don't clear in-memory hashtables - they might be cached.
   }
 
   @Override

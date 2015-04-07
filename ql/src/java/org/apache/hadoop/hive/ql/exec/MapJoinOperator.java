@@ -419,6 +419,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         tableContainer.dumpMetrics();
 
         if (tableContainer instanceof HybridHashTableContainer) {
+          // TODO: most of the below code should be moved inside HybridHashTableContainer.
+          //       Ideally, even the instanceof should not exist; instead, an API on MJTC.
           HybridHashTableContainer hybridHtContainer = (HybridHashTableContainer) tableContainer;
           hybridHtContainer.dumpStats();
 
@@ -429,7 +431,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
               hybridHtContainer.setTotalInMemRowCount(
                   hybridHtContainer.getTotalInMemRowCount() -
                       hashPartitions[i].getHashMapFromMemory().getNumValues());
-              hashPartitions[i].getHashMapFromMemory().clear();
+              hashPartitions[i].getHashMapFromMemory().discardData();
             }
           }
           assert hybridHtContainer.getTotalInMemRowCount() == 0;
@@ -464,6 +466,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     }
+    mapJoinTables = null;
     cache.release(cacheKey);
     super.closeOp(abort);
   }

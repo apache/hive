@@ -353,11 +353,11 @@ public final class BytesBytesMultiHashMap {
     writeBuffers.seal();
   }
 
-  public void clear() {
-    // This will make the object completely unusable. Semantics of clear are not defined...
-    this.writeBuffers.clear();
-    this.refs = new long[1];
-    this.keysAssigned = 0;
+  public void discardData() {
+    // This will make the object completely unusable. We could reset to default state instead...
+    writeBuffers.clear();
+    refs = new long[1];
+    keysAssigned = numValues = 0;
   }
 
   public void expandAndRehashToTarget(int estimateNewRowCount) {
