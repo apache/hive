@@ -90,7 +90,8 @@ public class MapRecordProcessor extends RecordProcessor {
   private static Map<Integer, DummyStoreOperator> connectOps =
     new TreeMap<Integer, DummyStoreOperator>();
 
-  public MapRecordProcessor(final JobConf jconf) throws Exception {
+  public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
+    super(jconf, context);
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
@@ -113,10 +114,10 @@ public class MapRecordProcessor extends RecordProcessor {
   }
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
 
     MapredContext.init(true, new JobConf(jconf));
     ((TezContext) MapredContext.get()).setInputs(inputs);

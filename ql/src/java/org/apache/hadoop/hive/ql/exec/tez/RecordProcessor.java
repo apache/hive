@@ -50,11 +50,11 @@ import java.util.concurrent.Callable;
  */
 public abstract class RecordProcessor  {
 
-  protected JobConf jconf;
+  protected final JobConf jconf;
   protected Map<String, LogicalInput> inputs;
   protected Map<String, LogicalOutput> outputs;
   protected Map<String, OutputCollector> outMap;
-  protected ProcessorContext processorContext;
+  protected final ProcessorContext processorContext;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
 
@@ -67,22 +67,23 @@ public abstract class RecordProcessor  {
   protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
+  public RecordProcessor(JobConf jConf, ProcessorContext processorContext) {
+    this.jconf = jConf;
+    this.processorContext = processorContext;
+  }
+
   /**
    * Common initialization code for RecordProcessors
-   * @param jconf
-   * @param processorContext the {@link ProcessorContext}
    * @param mrReporter
    * @param inputs map of Input names to {@link LogicalInput}s
    * @param outputs map of Output names to {@link LogicalOutput}s
    * @throws Exception
    */
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
-    this.jconf = jconf;
     this.reporter = mrReporter;
     this.inputs = inputs;
     this.outputs = outputs;
-    this.processorContext = processorContext;
 
     isLogInfoEnabled = l4j.isInfoEnabled();
     isLogTraceEnabled = l4j.isTraceEnabled();
