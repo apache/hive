@@ -33,14 +33,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.llap.tezplugins.Converters;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -56,7 +57,6 @@ import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.TezCommonUtils;
-import org.apache.tez.common.TezTaskUmbilicalProtocol;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -65,7 +65,7 @@ import org.apache.tez.dag.api.TezException;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
-import org.apache.tez.runtime.task.TaskReporter;
+import org.apache.tez.runtime.internals.api.TaskReporterInterface;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
 
 import com.google.common.base.Preconditions;
@@ -84,31 +84,27 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   public static final String THREAD_NAME_FORMAT = THREAD_NAME_FORMAT_PREFIX + "%d";
   private static final Logger LOG = Logger.getLogger(ContainerRunnerImpl.class);
 
+  private volatile AMReporter amReporter;
   private final ListeningExecutorService executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
   private final String[] localDirsBase;
-  private final Map<String, String> localEnv = new HashMap<String, String>();
-  private volatile FileSystem localFs;
+  private final Map<String, String> localEnv = new HashMap<>();
+  private final FileSystem localFs;
   private final long memoryPerExecutor;
   private final LlapDaemonExecutorMetrics metrics;
+  private final Configuration conf;
   private final ConfParams confParams;
   // TODO Support for removing queued containers, interrupting / killing specific containers
 
-  public ContainerRunnerImpl(int numExecutors, String[] localDirsBase, int localShufflePort,
+  public ContainerRunnerImpl(Configuration conf, int numExecutors, String[] localDirsBase, int localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics) {
     super("ContainerRunnerImpl");
+    this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
     this.localDirsBase = localDirsBase;
     this.localAddress = localAddress;
-    this.confParams = new ConfParams();
-    // Setup to defaults to start with
-    confParams.amMaxEventsPerHeartbeat = TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT_DEFAULT;
-    confParams.amHeartbeatIntervalMsMax =
-        TezConfiguration.TEZ_AM_RM_HEARTBEAT_INTERVAL_MS_MAX_DEFAULT;
-    confParams.amCounterHeartbeatInterval =
-        TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS_DEFAULT;
 
     ExecutorService raw = Executors.newFixedThreadPool(numExecutors,
         new ThreadFactoryBuilder().setNameFormat(THREAD_NAME_FORMAT).build());
@@ -121,36 +117,42 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     // TODO Tune this based on the available size.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes * 0.8 / (float) numExecutors);
     this.metrics = metrics;
+
+    try {
+      localFs = FileSystem.getLocal(conf);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to setup local filesystem instance", e);
+    }
+    confParams = new ConfParams(
+        conf.getInt(TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS,
+            TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS_DEFAULT),
+        conf.getLong(
+            TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS,
+            TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS_DEFAULT),
+        conf.getInt(TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT,
+            TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT_DEFAULT)
+    );
+
     LOG.info("ContainerRunnerImpl config: " +
         "memoryPerExecutorDerviced=" + memoryPerExecutor
     );
   }
 
   @Override
-  public void serviceInit(Configuration conf) {
-    try {
-      localFs = FileSystem.getLocal(conf);
-      // TODO Fix visibility of these parameters - which
-      confParams.amCounterHeartbeatInterval = conf.getLong(
-          TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS,
-          TezConfiguration.TEZ_TASK_AM_HEARTBEAT_COUNTER_INTERVAL_MS_DEFAULT);
-      confParams.amHeartbeatIntervalMsMax =
-          conf.getInt(TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS,
-              TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS_DEFAULT);
-      confParams.amMaxEventsPerHeartbeat =
-          conf.getInt(TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT,
-              TezConfiguration.TEZ_TASK_MAX_EVENTS_PER_HEARTBEAT_DEFAULT);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to setup local filesystem instance", e);
-    }
-  }
-
-  @Override
   public void serviceStart() {
+    // The node id will only be available at this point, since the server has been started in LlapDaemon
+    LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
+    this.amReporter = new AMReporter(llapNodeId, conf);
+    amReporter.init(conf);
+    amReporter.start();
   }
 
   @Override
   protected void serviceStop() throws Exception {
+    if (amReporter != null) {
+      amReporter.stop();
+      amReporter = null;
+    }
     super.serviceStop();
   }
 
@@ -198,11 +200,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       if (LOG.isDebugEnabled()) {
         LOG.debug("Dirs are: " + Arrays.toString(localDirs));
       }
-
-
-      // Setup workingDir. This is otherwise setup as Environment.PWD
+      // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
-      String workingDir = localDirs[0];
 
       Credentials credentials = new Credentials();
       DataInputBuffer dib = new DataInputBuffer();
@@ -218,7 +217,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
       TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          workingDir, credentials, memoryPerExecutor, confParams);
+          credentials, memoryPerExecutor, amReporter, confParams);
       ListenableFuture<ContainerExecutionResult> future = executorService.submit(callable);
       Futures.addCallback(future, new TaskRunnerCallback(request, callable));
       metrics.incrExecutorTotalRequestsHandled();
@@ -232,7 +231,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
     private final SubmitWorkRequestProto request;
     private final Configuration conf;
-    private final String workingDir;
     private final String[] localDirs;
     private final Map<String, String> envMap;
     private final String pid = null;
@@ -240,29 +238,46 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     private final ExecutionContext executionContext;
     private final Credentials credentials;
     private final long memoryAvailable;
-    private final ListeningExecutorService executor;
     private final ConfParams confParams;
+    private final Token<JobTokenIdentifier> jobToken;
+    private final AMReporter amReporter;
     private volatile TezTaskRunner taskRunner;
-    private volatile TaskReporter taskReporter;
-    private TezTaskUmbilicalProtocol umbilical;
+    private volatile TaskReporterInterface taskReporter;
+    private volatile ListeningExecutorService executor;
+    private LlapTaskUmbilicalProtocol umbilical;
     private volatile long startTime;
     private volatile String threadName;
+    private volatile boolean cancelled = false;
+
 
 
     TaskRunnerCallable(SubmitWorkRequestProto request, Configuration conf,
                             ExecutionContext executionContext, Map<String, String> envMap,
-                            String[] localDirs, String workingDir, Credentials credentials,
-                            long memoryAvailable, ConfParams confParams) {
+                            String[] localDirs, Credentials credentials,
+                            long memoryAvailable, AMReporter amReporter, ConfParams confParams) {
       this.request = request;
       this.conf = conf;
       this.executionContext = executionContext;
       this.envMap = envMap;
-      this.workingDir = workingDir;
       this.localDirs = localDirs;
       this.objectRegistry = new ObjectRegistryImpl();
       this.credentials = credentials;
       this.memoryAvailable = memoryAvailable;
       this.confParams = confParams;
+      jobToken = TokenCache.getSessionToken(credentials);
+      this.amReporter = amReporter;
+      // Register with the AMReporter when the callable is setup. Unregister once it starts running.
+      this.amReporter.registerTask(request.getAmHost(), request.getAmPort(), request.getUser(), jobToken);
+    }
+
+    @Override
+    protected ContainerExecutionResult callInternal() throws Exception {
+      this.startTime = System.currentTimeMillis();
+      this.threadName = Thread.currentThread().getName();
+
+      // Unregister from the AMReporter, since the task is now running.
+      this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
+
       // TODO This executor seems unnecessary. Here and TezChild
       ExecutorService executorReal = Executors.newFixedThreadPool(1,
           new ThreadFactoryBuilder()
@@ -271,51 +286,45 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
                   "TezTaskRunner_" + request.getFragmentSpec().getTaskAttemptIdString())
               .build());
       executor = MoreExecutors.listeningDecorator(executorReal);
-    }
 
-    @Override
-    protected ContainerExecutionResult callInternal() throws Exception {
-      this.startTime = System.currentTimeMillis();
-      this.threadName = Thread.currentThread().getName();
       // TODO Consolidate this code with TezChild.
       Stopwatch sw = new Stopwatch().start();
-       UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser(request.getUser());
-       taskUgi.addCredentials(credentials);
+      UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser(request.getUser());
+      taskUgi.addCredentials(credentials);
 
-       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
-       Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<String, ByteBuffer>();
-       serviceConsumerMetadata.put(TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
-           TezCommonUtils.convertJobTokenToBytes(jobToken));
-       Multimap<String, String> startedInputsMap = HashMultimap.create();
+      Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<>();
+      serviceConsumerMetadata.put(TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
+          TezCommonUtils.convertJobTokenToBytes(jobToken));
+      Multimap<String, String> startedInputsMap = HashMultimap.create();
 
-       UserGroupInformation taskOwner =
-           UserGroupInformation.createRemoteUser(request.getTokenIdentifier());
-       final InetSocketAddress address =
-           NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
-       SecurityUtil.setTokenService(jobToken, address);
-       taskOwner.addToken(jobToken);
-       umbilical = taskOwner.doAs(new PrivilegedExceptionAction<TezTaskUmbilicalProtocol>() {
-         @Override
-         public TezTaskUmbilicalProtocol run() throws Exception {
-           return RPC.getProxy(TezTaskUmbilicalProtocol.class,
-               TezTaskUmbilicalProtocol.versionID, address, conf);
-         }
-       });
+      UserGroupInformation taskOwner =
+          UserGroupInformation.createRemoteUser(request.getTokenIdentifier());
+      final InetSocketAddress address =
+          NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
+      SecurityUtil.setTokenService(jobToken, address);
+      taskOwner.addToken(jobToken);
+      umbilical = taskOwner.doAs(new PrivilegedExceptionAction<LlapTaskUmbilicalProtocol>() {
+        @Override
+        public LlapTaskUmbilicalProtocol run() throws Exception {
+          return RPC.getProxy(LlapTaskUmbilicalProtocol.class,
+              LlapTaskUmbilicalProtocol.versionID, address, conf);
+        }
+      });
 
-       taskReporter = new TaskReporter(
-           umbilical,
-           confParams.amHeartbeatIntervalMsMax,
-           confParams.amCounterHeartbeatInterval,
-           confParams.amMaxEventsPerHeartbeat,
-           new AtomicLong(0),
-           request.getContainerIdString());
+      taskReporter = new LlapTaskReporter(
+          umbilical,
+          confParams.amHeartbeatIntervalMsMax,
+          confParams.amCounterHeartbeatInterval,
+          confParams.amMaxEventsPerHeartbeat,
+          new AtomicLong(0),
+          request.getContainerIdString());
 
-       taskRunner = new TezTaskRunner(conf, taskUgi, localDirs,
-           Converters.getTaskSpecfromProto(request.getFragmentSpec()), umbilical,
-           request.getAppAttemptNumber(),
-           serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor, objectRegistry,
-           pid,
-           executionContext, memoryAvailable);
+      taskRunner = new TezTaskRunner(conf, taskUgi, localDirs,
+          Converters.getTaskSpecfromProto(request.getFragmentSpec()),
+          request.getAppAttemptNumber(),
+          serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor, objectRegistry,
+          pid,
+          executionContext, memoryAvailable);
 
        boolean shouldDie;
        try {
@@ -398,6 +407,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     @Override
     public void onFailure(Throwable t) {
       LOG.error("TezTaskRunner execution failed for : " + getTaskIdentifierString(request), t);
+      // TODO HIVE-10236 Report a fatal error over the umbilical
       taskRunnerCallable.shutdown();
       HistoryLogger
           .logFragmentEnd(request.getApplicationIdString(), request.getContainerIdString(),
@@ -422,9 +432,16 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   }
 
   private static class ConfParams {
-    int amHeartbeatIntervalMsMax;
-    long amCounterHeartbeatInterval;
-    int amMaxEventsPerHeartbeat;
+    final int amHeartbeatIntervalMsMax;
+    final long amCounterHeartbeatInterval;
+    final int amMaxEventsPerHeartbeat;
+
+    public ConfParams(int amHeartbeatIntervalMsMax, long amCounterHeartbeatInterval,
+                      int amMaxEventsPerHeartbeat) {
+      this.amHeartbeatIntervalMsMax = amHeartbeatIntervalMsMax;
+      this.amCounterHeartbeatInterval = amCounterHeartbeatInterval;
+      this.amMaxEventsPerHeartbeat = amMaxEventsPerHeartbeat;
+    }
   }
 
   private String stringifyRequest(SubmitWorkRequestProto request) {

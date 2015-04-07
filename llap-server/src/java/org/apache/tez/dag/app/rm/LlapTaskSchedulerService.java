@@ -15,6 +15,9 @@
 package org.apache.tez.dag.app.rm;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -52,6 +55,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
 import org.apache.hadoop.registry.client.types.Endpoint;
@@ -194,6 +198,20 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       Preconditions.checkState(hosts != null && hosts.length != 0,
           LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS + "must be defined");
       for (String host : hosts) {
+        // If reading addresses from conf, try resolving local addresses so that
+        // this matches with the address reported by daemons.
+        InetAddress inetAddress = null;
+        try {
+          inetAddress = InetAddress.getByName(host);
+          if (NetUtils.isLocalAddress(inetAddress)) {
+            InetSocketAddress socketAddress = new InetSocketAddress(0);
+            socketAddress = NetUtils.getConnectAddress(socketAddress);
+            LOG.info("Adding host identified as local: " + host + " as " + socketAddress.getHostName());
+            host = socketAddress.getHostName();
+          }
+        } catch (UnknownHostException e) {
+          LOG.warn("Ignoring resolution issues for host: " + host, e);
+        }
         NodeInfo nodeInfo = new NodeInfo(host, BACKOFF_FACTOR, clock);
         activeHosts.put(host, nodeInfo);
         allHosts.put(host, nodeInfo);
@@ -780,7 +798,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
           numLocalAllocations++;
           _registerAllocationInHostMap(allocatedHost, localityBasedNumAllocationsPerHost);
         } else {
-          // KKK TODO Log all non-local allocations
           numNonLocalAllocations++;
         }
       } else {
