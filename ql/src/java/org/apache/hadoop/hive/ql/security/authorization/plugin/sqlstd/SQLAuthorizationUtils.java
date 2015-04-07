@@ -385,8 +385,7 @@ public class SQLAuthorizationUtils {
     FileSystem fs;
     try {
       fs = FileSystem.get(filePath.toUri(), conf);
-      Path path = FileUtils.getPathOrParentThatExists(fs, filePath);
-      FileStatus fileStatus = fs.getFileStatus(path);
+      FileStatus fileStatus = FileUtils.getPathOrParentThatExists(fs, filePath);
       if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName)) {
         availPrivs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
       }
