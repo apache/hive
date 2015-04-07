@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDayOfMonthString;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -38,9 +39,12 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "day,dayofmonth",
-    value = "_FUNC_(date) - Returns the date of the month of date",
-    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
-    + "'yyyy-MM-dd'.\n"
+    value = "_FUNC_(param) - Returns the day of the month of date/timestamp, or day component of interval",
+    extended = "param can be one of:\n"
+    + "1. A string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.\n"
+    + "2. A date value\n"
+    + "3. A timestamp value\n"
+    + "4. A day-time interval value"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  30")
 @VectorizedExpressions({VectorUDFDayOfMonthLong.class, VectorUDFDayOfMonthString.class})
@@ -98,4 +102,12 @@ public class UDFDayOfMonth extends UDF {
     return result;
   }
 
+  public IntWritable evaluate(HiveIntervalDayTimeWritable i) {
+    if (i == null) {
+      return null;
+    }
+
+    result.set(i.getHiveIntervalDayTime().getDays());
+    return result;
+  }
 }
