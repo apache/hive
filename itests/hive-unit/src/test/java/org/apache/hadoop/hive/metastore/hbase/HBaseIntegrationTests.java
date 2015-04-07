@@ -18,69 +18,61 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import co.cask.tephra.hbase98.coprocessor.TransactionProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Integration tests with HBase Mini-cluster for HBaseStore
  */
-public class IMockUtils {
+public class HBaseIntegrationTests {
 
-  private static final Log LOG = LogFactory.getLog(IMockUtils.class.getName());
+  private static final Log LOG = LogFactory.getLog(HBaseIntegrationTests.class.getName());
 
   protected static HBaseTestingUtility utility;
-  protected static HTableInterface tblTable;
-  protected static HTableInterface sdTable;
-  protected static HTableInterface partTable;
-  protected static HTableInterface dbTable;
-  protected static HTableInterface funcTable;
-  protected static HTableInterface roleTable;
-  protected static HTableInterface globalPrivsTable;
-  protected static HTableInterface principalRoleMapTable;
+  protected static HBaseAdmin admin;
   protected static Map<String, String> emptyParameters = new HashMap<String, String>();
+  protected static HiveConf conf;
 
-  @Mock
-  private HBaseConnection hconn;
   protected HBaseStore store;
-  protected HiveConf conf;
   protected Driver driver;
 
   protected static void startMiniCluster() throws Exception {
+    String connectionClassName =
+        System.getProperty(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS.varname);
+    boolean testingTephra =
+        connectionClassName != null && connectionClassName.equals(TephraHBaseConnection.class.getName());
     utility = new HBaseTestingUtility();
     utility.startMiniCluster();
-    byte[][] families = new byte[][]{HBaseReadWrite.CATALOG_CF, HBaseReadWrite.STATS_CF};
-    tblTable = utility.createTable(HBaseReadWrite.TABLE_TABLE.getBytes(HBaseUtils.ENCODING),
-        families);
-    sdTable = utility.createTable(HBaseReadWrite.SD_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    partTable = utility.createTable(HBaseReadWrite.PART_TABLE.getBytes(HBaseUtils.ENCODING),
-        families);
-    dbTable = utility.createTable(HBaseReadWrite.DB_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    funcTable = utility.createTable(HBaseReadWrite.FUNC_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    roleTable = utility.createTable(HBaseReadWrite.ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
-        HBaseReadWrite.CATALOG_CF);
-    globalPrivsTable =
-        utility.createTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE.getBytes(HBaseUtils.ENCODING),
-            HBaseReadWrite.CATALOG_CF);
-    principalRoleMapTable =
-        utility.createTable(HBaseReadWrite.USER_TO_ROLE_TABLE.getBytes(HBaseUtils.ENCODING),
-            HBaseReadWrite.CATALOG_CF);
+    conf = new HiveConf(utility.getConfiguration(), HBaseIntegrationTests.class);
+    admin = utility.getHBaseAdmin();
+    for (String tableName : HBaseReadWrite.tableNames) {
+      List<byte[]> families = HBaseReadWrite.columnFamilies.get(tableName);
+      HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
+      for (byte[] family : families) {
+        HColumnDescriptor columnDesc = new HColumnDescriptor(family);
+        if (testingTephra) columnDesc.setMaxVersions(Integer.MAX_VALUE);
+        desc.addFamily(columnDesc);
+      }
+      if (testingTephra) desc.addCoprocessor(TransactionProcessor.class.getName());
+      admin.createTable(desc);
+    }
+    admin.close();
   }
 
   protected static void shutdownMiniCluster() throws Exception {
@@ -88,22 +80,15 @@ public class IMockUtils {
   }
 
   protected void setupConnection() throws IOException {
-    MockitoAnnotations.initMocks(this);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.SD_TABLE)).thenReturn(sdTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.TABLE_TABLE)).thenReturn(tblTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.PART_TABLE)).thenReturn(partTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.DB_TABLE)).thenReturn(dbTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.FUNC_TABLE)).thenReturn(funcTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.ROLE_TABLE)).thenReturn(roleTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.GLOBAL_PRIVS_TABLE)).thenReturn(
-        globalPrivsTable);
-    Mockito.when(hconn.getHBaseTable(HBaseReadWrite.USER_TO_ROLE_TABLE)).thenReturn(
-        principalRoleMapTable);
-    conf = new HiveConf();
+
   }
 
   protected void setupDriver() {
-    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
+    // This chicanery is necessary to make the driver work.  Hive tests need the pfile file
+    // system, while the hbase one uses something else.  So first make sure we've configured our
+    // hbase connection, then get a new config file and populate it as desired.
+    HBaseReadWrite.getInstance(conf);
+    conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
         "org.apache.hadoop.hive.metastore.hbase.HBaseStore");
@@ -117,7 +102,7 @@ public class IMockUtils {
         SessionStateConfigUserAuthenticator.class.getName());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
-    HBaseReadWrite.setTestConnection(hconn);
+    //HBaseReadWrite.setTestConnection(hconn);
 
     SessionState.start(new CliSessionState(conf));
     driver = new Driver(conf);
@@ -126,9 +111,6 @@ public class IMockUtils {
   protected void setupHBaseStore() {
     // Turn off caching, as we want to test actual interaction with HBase
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
-    conf.setVar(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
-    HBaseReadWrite.setTestConnection(hconn);
-    // HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
     store = new HBaseStore();
     store.setConf(conf);
   }

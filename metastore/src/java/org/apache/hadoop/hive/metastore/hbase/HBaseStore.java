@@ -102,56 +102,80 @@ public class HBaseStore implements RawStore {
 
   @Override
   public boolean openTransaction() {
-    if (txnNestLevel++ == 0) getHBase().begin();
+    if (txnNestLevel++ <= 0) {
+      LOG.debug("Opening HBase transaction");
+      getHBase().begin();
+      txnNestLevel = 1;
+    }
     return true;
   }
 
   @Override
   public boolean commitTransaction() {
-    if (txnNestLevel-- < 1) getHBase().commit();
+    if (--txnNestLevel == 0) {
+      LOG.debug("Committing HBase transaction");
+      getHBase().commit();
+    }
     return true;
   }
 
   @Override
   public void rollbackTransaction() {
     txnNestLevel = 0;
+    LOG.debug("Rolling back HBase transaction");
     getHBase().rollback();
   }
 
   @Override
   public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
+
       // HiveMetaStore already checks for existence of the database, don't recheck
       getHBase().putDb(db);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create database ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
 
   }
 
   @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       Database db = getHBase().getDb(name);
       if (db == null) {
         throw new NoSuchObjectException("Unable to find db " + name);
       }
+      commit = true;
       return db;
     } catch (IOException e) {
       LOG.error("Unable to get db", e);
       throw new NoSuchObjectException("Error reading db " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().deleteDb(dbname);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
       throw new MetaException("Unable to drop database " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -160,25 +184,35 @@ public class HBaseStore implements RawStore {
       MetaException {
     // ObjectStore fetches the old db before updating it, but I can't see the possible value of
     // that since the caller will have needed to call getDatabase to have the db object.
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().putDb(db);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to alter database ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<String> getDatabases(String pattern) throws MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Database> dbs = getHBase().scanDatabases(likeToRegex(pattern));
       List<String> dbNames = new ArrayList<String>(dbs.size());
       for (Database db : dbs) dbNames.add(db.getName());
+      commit = true;
       return dbNames;
     } catch (IOException e) {
       LOG.error("Unable to get databases ", e);
       throw new MetaException("Unable to get databases, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -204,61 +238,86 @@ public class HBaseStore implements RawStore {
 
   @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     // HiveMetaStore above us checks if the table already exists, so we can blindly store it here.
     try {
       getHBase().putTable(tbl);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create table ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().deleteTable(dbName, tableName);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
       throw new MetaException("Unable to drop table " + tableNameForErrorMsg(dbName, tableName));
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       Table table = getHBase().getTable(dbName, tableName);
       if (table == null) {
         LOG.debug("Unable to find table " + tableNameForErrorMsg(dbName, tableName));
       }
+      commit = true;
       return table;
     } catch (IOException e) {
       LOG.error("Unable to get table", e);
       throw new MetaException("Error reading table " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean addPartition(Partition part) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().putPartition(part);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean addPartitions(String dbName, String tblName, List<Partition> parts)
       throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().putPartitions(parts);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to add partitions", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -271,87 +330,125 @@ public class HBaseStore implements RawStore {
   @Override
   public Partition getPartition(String dbName, String tableName, List<String> part_vals) throws
       MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       Partition part = getHBase().getPartition(dbName, tableName, part_vals);
       if (part == null) {
         throw new NoSuchObjectException("Unable to find partition " +
             partNameForErrorMsg(dbName, tableName, part_vals));
       }
+      commit = true;
       return part;
     } catch (IOException e) {
       LOG.error("Unable to get partition", e);
       throw new MetaException("Error reading partition " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean doesPartitionExist(String dbName, String tableName, List<String> part_vals) throws
       MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getPartition(dbName, tableName, part_vals) != null;
+      boolean exists = getHBase().getPartition(dbName, tableName, part_vals) != null;
+      commit = true;
+      return exists;
     } catch (IOException e) {
       LOG.error("Unable to get partition", e);
       throw new MetaException("Error reading partition " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean dropPartition(String dbName, String tableName, List<String> part_vals) throws
       MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().deletePartition(dbName, tableName, part_vals);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete db" + e);
       throw new MetaException("Unable to drop partition " + partNameForErrorMsg(dbName, tableName,
           part_vals));
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<Partition> getPartitions(String dbName, String tableName, int max) throws
       MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().scanPartitionsInTable(dbName, tableName, max);
+      List<Partition> parts = getHBase().scanPartitionsInTable(dbName, tableName, max);
+      commit = true;
+      return parts;
     } catch (IOException e) {
       LOG.error("Unable to get partitions", e);
       throw new MetaException("Error scanning partitions");
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public void alterTable(String dbname, String name, Table newTable) throws InvalidObjectException,
       MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       Table oldTable = getHBase().getTable(dbname, name);
       getHBase().replaceTable(oldTable, newTable);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to alter table " + tableNameForErrorMsg(dbname, name), e);
       throw new MetaException("Unable to alter table " + tableNameForErrorMsg(dbname, name));
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Table> tables = getHBase().scanTables(dbName, likeToRegex(pattern));
       List<String> tableNames = new ArrayList<String>(tables.size());
       for (Table table : tables) tableNames.add(table.getTableName());
+      commit = true;
       return tableNames;
     } catch (IOException e) {
       LOG.error("Unable to get tables ", e);
       throw new MetaException("Unable to get tables, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<Table> getTableObjectsByName(String dbname, List<String> tableNames) throws
       MetaException, UnknownDBException {
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getTables(dbname, tableNames);
+      List<Table> tables = getHBase().getTables(dbname, tableNames);
+      commit = true;
+      return tables;
     } catch (IOException e) {
       LOG.error("Unable to get tables ", e);
       throw new MetaException("Unable to get tables, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -370,6 +467,8 @@ public class HBaseStore implements RawStore {
   @Override
   public List<String> listPartitionNames(String db_name, String tbl_name, short max_parts) throws
       MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Partition> parts = getHBase().scanPartitionsInTable(db_name, tbl_name, max_parts);
       if (parts == null) return null;
@@ -378,10 +477,13 @@ public class HBaseStore implements RawStore {
       for (Partition p : parts) {
         names.add(buildExternalPartName(table, p));
       }
+      commit = true;
       return names;
     } catch (IOException e) {
       LOG.error("Unable to get partitions", e);
       throw new MetaException("Error scanning partitions");
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -395,12 +497,17 @@ public class HBaseStore implements RawStore {
   @Override
   public void alterPartition(String db_name, String tbl_name, List<String> part_vals,
                              Partition new_part) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       Partition oldPart = getHBase().getPartition(db_name, tbl_name, part_vals);
       getHBase().replacePartition(oldPart, new_part);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -408,12 +515,17 @@ public class HBaseStore implements RawStore {
   public void alterPartitions(String db_name, String tbl_name, List<List<String>> part_vals_list,
                               List<Partition> new_parts) throws InvalidObjectException,
       MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name, part_vals_list);
       getHBase().replacePartitions(oldParts, new_parts);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -460,8 +572,14 @@ public class HBaseStore implements RawStore {
     final ExpressionTree exprTree = (filter != null && !filter.isEmpty()) ? PartFilterExprUtil
         .getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     List<Partition> result = new ArrayList<Partition>();
-    getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
-    return result;
+    boolean commit = false;
+    openTransaction();
+    try {
+      getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+      return result;
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
@@ -472,7 +590,13 @@ public class HBaseStore implements RawStore {
     // TODO: investigate if there should be any role for defaultPartitionName in this
     // implementation. direct sql code path in ObjectStore does not use it.
 
-    return getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+    boolean commit = false;
+    openTransaction();
+    try {
+      return getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   private boolean getPartitionsByExprInternal(String dbName, String tblName,
@@ -592,20 +716,27 @@ public class HBaseStore implements RawStore {
       MetaException, NoSuchObjectException {
     int now = (int)(System.currentTimeMillis()/1000);
     Role role = new Role(roleName, now, ownerName);
+    boolean commit = false;
+    openTransaction();
     try {
       if (getHBase().getRole(roleName) != null) {
         throw new InvalidObjectException("Role " + roleName + " already exists");
       }
       getHBase().putRole(role);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to create role ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean removeRole(String roleName) throws MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       Set<String> usersInRole = getHBase().findAllUsersInRole(roleName);
       getHBase().deleteRole(roleName);
@@ -613,10 +744,13 @@ public class HBaseStore implements RawStore {
       for (String user : usersInRole) {
         getHBase().buildRoleMapForUser(user);
       }
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to delete role" + e);
       throw new MetaException("Unable to drop role " + roleName);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -624,6 +758,8 @@ public class HBaseStore implements RawStore {
   public boolean grantRole(Role role, String userName, PrincipalType principalType, String grantor,
                            PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       Set<String> usersToRemap = findUsersToRemapRolesFor(role, userName, principalType);
       HbaseMetastoreProto.RoleGrantInfo.Builder builder =
@@ -643,16 +779,21 @@ public class HBaseStore implements RawStore {
       for (String user : usersToRemap) {
         getHBase().buildRoleMapForUser(user);
       }
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to grant role", e);
       throw new MetaException("Unable to grant role " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public boolean revokeRole(Role role, String userName, PrincipalType principalType,
                             boolean grantOption) throws MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     // This can have a couple of different meanings.  If grantOption is true, then this is only
     // revoking the grant option, the role itself doesn't need to be removed.  If it is false
     // then we need to remove the userName from the role altogether.
@@ -667,16 +808,21 @@ public class HBaseStore implements RawStore {
           getHBase().buildRoleMapForUser(user);
         }
       }
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to revoke role " + role.getRoleName() + " from " + userName, e);
       throw new MetaException("Unable to revoke role " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public PrincipalPrivilegeSet getUserPrivilegeSet(String userName, List<String> groupNames)
       throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       PrincipalPrivilegeSet global = getHBase().getGlobalPrivs();
@@ -700,10 +846,13 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return pps;
     } catch (IOException e) {
       LOG.error("Unable to get db privileges for user", e);
       throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -711,6 +860,8 @@ public class HBaseStore implements RawStore {
   public PrincipalPrivilegeSet getDBPrivilegeSet(String dbName, String userName,
                                                  List<String> groupNames)
       throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       Database db = getHBase().getDb(dbName);
@@ -736,10 +887,13 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return pps;
     } catch (IOException e) {
       LOG.error("Unable to get db privileges for user", e);
       throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -747,6 +901,8 @@ public class HBaseStore implements RawStore {
   public PrincipalPrivilegeSet getTablePrivilegeSet(String dbName, String tableName,
                                                     String userName, List<String> groupNames)
       throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
       Table table = getHBase().getTable(dbName, tableName);
@@ -771,10 +927,13 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return pps;
     } catch (IOException e) {
       LOG.error("Unable to get db privileges for user", e);
       throw new MetaException("Unable to get db privileges for user, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -802,6 +961,8 @@ public class HBaseStore implements RawStore {
                                                              PrincipalType principalType) {
     List<PrivilegeGrantInfo> grants;
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       PrincipalPrivilegeSet pps = getHBase().getGlobalPrivs();
       if (pps == null) return privileges;
@@ -827,9 +988,12 @@ public class HBaseStore implements RawStore {
         privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.GLOBAL, null,
             null, null, null), principalName, principalType, pgi));
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -839,6 +1003,8 @@ public class HBaseStore implements RawStore {
                                                          String dbName) {
     List<PrivilegeGrantInfo> grants;
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       Database db = getHBase().getDb(dbName);
       if (db == null) return privileges;
@@ -866,9 +1032,12 @@ public class HBaseStore implements RawStore {
         privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName,
          null, null, null), principalName, principalType, pgi));
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -879,6 +1048,8 @@ public class HBaseStore implements RawStore {
                                                       String tableName) {
     List<PrivilegeGrantInfo> grants;
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       Table table = getHBase().getTable(dbName, tableName);
       if (table == null) return privileges;
@@ -906,9 +1077,12 @@ public class HBaseStore implements RawStore {
         privileges.add(new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName,
             tableName, null, null), principalName, principalType, pgi));
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -947,40 +1121,55 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean grantPrivileges(PrivilegeBag privileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
-    for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
-      // Locate the right object to deal with
-     PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
+    boolean commit = false;
+    openTransaction();
+    try {
+      for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
+        // Locate the right object to deal with
+        PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
 
-      // Now, let's see if we've already got this privilege
-      for (PrivilegeGrantInfo info : privilegeInfo.grants) {
-        if (info.getPrivilege().equals(priv.getGrantInfo().getPrivilege())) {
-          throw new InvalidObjectException(priv.getPrincipalName() + " already has " +
-              priv.getGrantInfo().getPrivilege() + " on " + privilegeInfo.typeErrMsg);
+        // Now, let's see if we've already got this privilege
+        for (PrivilegeGrantInfo info : privilegeInfo.grants) {
+          if (info.getPrivilege().equals(priv.getGrantInfo().getPrivilege())) {
+            throw new InvalidObjectException(priv.getPrincipalName() + " already has " +
+                priv.getGrantInfo().getPrivilege() + " on " + privilegeInfo.typeErrMsg);
+          }
         }
-      }
-      privilegeInfo.grants.add(priv.getGrantInfo());
+        privilegeInfo.grants.add(priv.getGrantInfo());
 
-      writeBackGrantOrRevoke(priv, privilegeInfo);
+        writeBackGrantOrRevoke(priv, privilegeInfo);
+      }
+      commit = true;
+      return true;
+    } finally {
+      commitOrRoleBack(commit);
     }
-    return true;
   }
 
   @Override
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption) throws
       InvalidObjectException, MetaException, NoSuchObjectException {
-    for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
-      PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
+    boolean commit = false;
+    openTransaction();
+    try {
+      for (HiveObjectPrivilege priv : privileges.getPrivileges()) {
+        PrivilegeInfo privilegeInfo = findPrivilegeToGrantOrRevoke(priv);
 
-      for (int i = 0; i < privilegeInfo.grants.size(); i++) {
-        if (privilegeInfo.grants.get(i).getPrivilege().equals(priv.getGrantInfo().getPrivilege())) {
-          if (grantOption) privilegeInfo.grants.get(i).setGrantOption(false);
-          else privilegeInfo.grants.remove(i);
-          break;
+        for (int i = 0; i < privilegeInfo.grants.size(); i++) {
+          if (privilegeInfo.grants.get(i).getPrivilege().equals(
+              priv.getGrantInfo().getPrivilege())) {
+            if (grantOption) privilegeInfo.grants.get(i).setGrantOption(false);
+            else privilegeInfo.grants.remove(i);
+            break;
+          }
         }
+        writeBackGrantOrRevoke(priv, privilegeInfo);
       }
-      writeBackGrantOrRevoke(priv, privilegeInfo);
+      commit = true;
+      return true;
+    } finally {
+      commitOrRoleBack(commit);
     }
-    return true;
   }
 
   private static class PrivilegeInfo {
@@ -1103,48 +1292,67 @@ public class HBaseStore implements RawStore {
 
   @Override
   public Role getRole(String roleName) throws NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       Role role = getHBase().getRole(roleName);
       if (role == null) {
         throw new NoSuchObjectException("Unable to find role " + roleName);
       }
+      commit = true;
       return role;
     } catch (IOException e) {
       LOG.error("Unable to get role", e);
       throw new NoSuchObjectException("Error reading table " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<String> listRoleNames() {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Role> roles = getHBase().scanRoles();
       List<String> roleNames = new ArrayList<String>(roles.size());
       for (Role role : roles) roleNames.add(role.getRoleName());
+      commit = true;
       return roleNames;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<Role> listRoles(String principalName, PrincipalType principalType) {
     List<Role> roles = new ArrayList<Role>();
+    boolean commit = false;
+    openTransaction();
     try {
-      roles.addAll(getHBase().getPrincipalDirectRoles(principalName, principalType));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      try {
+        roles.addAll(getHBase().getPrincipalDirectRoles(principalName, principalType));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      // Add the public role if this is a user
+      if (principalType == PrincipalType.USER) {
+        roles.add(new Role(HiveMetaStore.PUBLIC, 0, null));
+      }
+      commit = true;
+      return roles;
+    } finally {
+      commitOrRoleBack(commit);
     }
-    // Add the public role if this is a user
-    if (principalType == PrincipalType.USER) {
-      roles.add(new Role(HiveMetaStore.PUBLIC, 0, null));
-    }
-    return roles;
   }
 
   @Override
   public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
                                                       PrincipalType principalType) {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Role> roles = listRoles(principalName, principalType);
       List<RolePrincipalGrant> rpgs = new ArrayList<RolePrincipalGrant>(roles.size());
@@ -1161,14 +1369,19 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return rpgs;
     } catch (Exception e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<RolePrincipalGrant> listRoleMembers(String roleName) {
+    boolean commit = false;
+    openTransaction();
     try {
       HbaseMetastoreProto.RoleGrantInfoList gil = getHBase().getRolePrincipals(roleName);
       List<RolePrincipalGrant> roleMaps = new ArrayList<RolePrincipalGrant>(gil.getGrantInfoList().size());
@@ -1178,9 +1391,12 @@ public class HBaseStore implements RawStore {
             giw.getGrantOption(), (int)giw.getAddTime(), giw.getGrantor(),
             HBaseUtils.convertPrincipalTypes(giw.getGrantorType())));
       }
+      commit = true;
       return roleMaps;
     } catch (Exception e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1220,49 +1436,73 @@ public class HBaseStore implements RawStore {
                                                   String userName, List<String> groupNames)
       throws MetaException, NoSuchObjectException {
     // We don't handle auth info with partitions
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().scanPartitions(db_name, tbl_name, part_vals, max_parts);
+      List<Partition> parts = getHBase().scanPartitions(db_name, tbl_name, part_vals, max_parts);
+      commit = true;
+      return parts;
     } catch (IOException e) {
       LOG.error("Unable to list partition names", e);
       throw new MetaException("Failed to list part names, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats) throws
+      NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().updateStatistics(colStats.getStatsDesc().getDbName(),
           colStats.getStatsDesc().getTableName(), null, null, colStats);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to update column statistics", e);
       throw new MetaException("Failed to update column statistics, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
+                                                 List<String> partVals) throws
+      NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().updateStatistics(statsObj.getStatsDesc().getDbName(),
-          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName(), partVals,
-          statsObj);
+          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName(),
+          partVals, statsObj);
+      commit = true;
       return true;
     } catch (IOException e) {
       LOG.error("Unable to update column statistics", e);
       throw new MetaException("Failed to update column statistics, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
-      List<String> colName) throws MetaException, NoSuchObjectException {
+                                                   List<String> colName) throws MetaException,
+      NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getTableStatistics(dbName, tableName, colName);
+      ColumnStatistics cs = getHBase().getTableStatistics(dbName, tableName, colName);
+      commit = true;
+      return cs;
     } catch (IOException e) {
       LOG.error("Unable to fetch column statistics", e);
       throw new MetaException("Failed to fetch column statistics, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1273,11 +1513,19 @@ public class HBaseStore implements RawStore {
     for (String partName : partNames) {
       partVals.add(partNameToVals(partName));
     }
+    for (String partName : partNames) partVals.add(partNameToVals(partName));
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getPartitionStatistics(dbName, tblName, partNames, partVals, colNames);
+      List<ColumnStatistics> cs =
+          getHBase().getPartitionStatistics(dbName, tblName, partNames,  partVals, colNames);
+      commit = true;
+      return cs;
     } catch (IOException e) {
       LOG.error("Unable to fetch column statistics", e);
       throw new MetaException("Failed fetching column statistics, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1308,11 +1556,17 @@ public class HBaseStore implements RawStore {
     for (String partName : partNames) {
       partVals.add(partNameToVals(partName));
     }
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getAggrStats(dbName, tblName, partNames, partVals, colNames);
+      AggrStats stats = getHBase().getAggrStats(dbName, tblName, partNames, partVals, colNames);
+      commit = true;
+      return stats;
     } catch (IOException e) {
       LOG.error("Unable to fetch aggregate column statistics", e);
       throw new MetaException("Failed fetching aggregate column statistics, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1364,14 +1618,7 @@ public class HBaseStore implements RawStore {
 
   @Override
   public void verifySchema() throws MetaException {
-    try {
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
-        getHBase().createTablesIfNotExist();
-      }
-    } catch (IOException e) {
-      LOG.fatal("Unable to verify schema ", e);
-      throw new MetaException("Unable to verify schema");
-    }
+
   }
 
   @Override
@@ -1387,13 +1634,18 @@ public class HBaseStore implements RawStore {
   @Override
   public void dropPartitions(String dbName, String tblName, List<String> partNames) throws
       MetaException, NoSuchObjectException {
+    boolean commit = false;
+    openTransaction();
     try {
       for (String partName : partNames) {
         dropPartition(dbName, tblName, partNameToVals(partName));
       }
+      commit = true;
     } catch (Exception e) {
       LOG.error("Unable to drop partitions", e);
       throw new NoSuchObjectException("Failure dropping partitions, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1401,6 +1653,8 @@ public class HBaseStore implements RawStore {
   public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(String principalName,
                                                             PrincipalType principalType) {
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       List<Database> dbs = getHBase().scanDatabases(null);
       for (Database db : dbs) {
@@ -1431,9 +1685,12 @@ public class HBaseStore implements RawStore {
               db.getName(), null, null, null), principalName, principalType, pgi));
         }
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1441,6 +1698,8 @@ public class HBaseStore implements RawStore {
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(String principalName,
                                                                PrincipalType principalType) {
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       List<Table> tables = getHBase().scanTables(null, null);
       for (Table table : tables) {
@@ -1472,9 +1731,12 @@ public class HBaseStore implements RawStore {
               pgi));
         }
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1499,6 +1761,8 @@ public class HBaseStore implements RawStore {
   @Override
   public List<HiveObjectPrivilege> listGlobalGrantsAll() {
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       PrincipalPrivilegeSet pps = getHBase().getGlobalPrivs();
       if (pps != null) {
@@ -1515,15 +1779,20 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String dbName) {
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       Database db = getHBase().getDb(dbName);
       PrincipalPrivilegeSet pps = db.getPrivileges();
@@ -1541,9 +1810,12 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1557,6 +1829,8 @@ public class HBaseStore implements RawStore {
   @Override
   public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
     List<HiveObjectPrivilege> privileges = new ArrayList<HiveObjectPrivilege>();
+    boolean commit = false;
+    openTransaction();
     try {
       Table table = getHBase().getTable(dbName, tableName);
       PrincipalPrivilegeSet pps = table.getPrivileges();
@@ -1574,9 +1848,12 @@ public class HBaseStore implements RawStore {
           }
         }
       }
+      commit = true;
       return privileges;
     } catch (IOException e) {
       throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1594,56 +1871,82 @@ public class HBaseStore implements RawStore {
 
   @Override
   public void createFunction(Function func) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().putFunction(func);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create function", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public void alterFunction(String dbName, String funcName, Function newFunction) throws
       InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().putFunction(newFunction);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to alter function ", e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public void dropFunction(String dbName, String funcName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean commit = false;
+    openTransaction();
     try {
       getHBase().deleteFunction(dbName, funcName);
+      commit = true;
     } catch (IOException e) {
       LOG.error("Unable to delete function" + e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public Function getFunction(String dbName, String funcName) throws MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
-      return getHBase().getFunction(dbName, funcName);
+      Function func = getHBase().getFunction(dbName, funcName);
+      commit = true;
+      return func;
     } catch (IOException e) {
       LOG.error("Unable to get function" + e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
   @Override
   public List<String> getFunctions(String dbName, String pattern) throws MetaException {
+    boolean commit = false;
+    openTransaction();
     try {
       List<Function> funcs = getHBase().scanFunctions(dbName, likeToRegex(pattern));
       List<String> funcNames = new ArrayList<String>(funcs.size());
       for (Function func : funcs) funcNames.add(func.getFunctionName());
+      commit = true;
       return funcNames;
     } catch (IOException e) {
       LOG.error("Unable to get functions" + e);
       throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
     }
   }
 
@@ -1768,5 +2071,15 @@ public class HBaseStore implements RawStore {
     // This implementation leaves other regular expression syntax alone, which means people can
     // use it, even though it wouldn't work on RDBMS backed metastores.
     return like.replace("*", ".*");
+  }
+
+  private void commitOrRoleBack(boolean commit) {
+    if (commit) {
+      LOG.debug("Committing transaction");
+      commitTransaction();
+    } else {
+      LOG.debug("Rolling back transaction");
+      rollbackTransaction();
+    }
   }
 }

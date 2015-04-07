@@ -61,6 +61,13 @@ public interface HBaseConnection extends Configurable {
   void rollbackTransaction() throws IOException;
 
   /**
+   * Flush commits.  A no-op for transaction implementations since they will write at commit time.
+   * @param htab Table to flush
+   * @throws IOException
+   */
+  void flush(HTableInterface htab) throws IOException;
+
+  /**
    * Create a new table
    * @param tableName name of the table
    * @param columnFamilies name of the column families in the table

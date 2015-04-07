@@ -72,7 +72,7 @@ import java.util.TreeSet;
 /**
  * Integration tests with HBase Mini-cluster for HBaseStore
  */
-public class TestHBaseStoreIntegration extends IMockUtils {
+public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
@@ -80,12 +80,12 @@ public class TestHBaseStoreIntegration extends IMockUtils {
 
   @BeforeClass
   public static void startup() throws Exception {
-    IMockUtils.startMiniCluster();
+    HBaseIntegrationTests.startMiniCluster();
   }
 
   @AfterClass
   public static void shutdown() throws Exception {
-    IMockUtils.shutdownMiniCluster();
+    HBaseIntegrationTests.shutdownMiniCluster();
   }
 
   @Before
@@ -828,7 +828,7 @@ public class TestHBaseStoreIntegration extends IMockUtils {
     store.grantRole(role1, user1, PrincipalType.USER, "bob", PrincipalType.USER, false);
     store.grantRole(role1, roleName2, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
 
-    List<String> roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    List<String> roles = HBaseReadWrite.getInstance().getUserRoles(user1);
     Assert.assertEquals(2, roles.size());
     String[] roleNames = roles.toArray(new String[roles.size()]);
     Arrays.sort(roleNames);
@@ -874,7 +874,7 @@ public class TestHBaseStoreIntegration extends IMockUtils {
     store.grantRole(role1, roleName2, PrincipalType.ROLE, "admin", PrincipalType.ROLE, true);
     store.grantRole(role1, user2, PrincipalType.USER, "bob", PrincipalType.USER, false);
 
-    List<String> roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    List<String> roles = HBaseReadWrite.getInstance().getUserRoles(user2);
     Assert.assertEquals(2, roles.size());
     String[] roleNames = roles.toArray(new String[roles.size()]);
     Arrays.sort(roleNames);
@@ -1112,7 +1112,7 @@ public class TestHBaseStoreIntegration extends IMockUtils {
     List<PrivilegeGrantInfo> pgi = null;
     switch (objectType) {
       case GLOBAL:
-        pgi = HBaseReadWrite.getInstance(conf).getGlobalPrivs().getRolePrivileges().get(roleName);
+        pgi = HBaseReadWrite.getInstance().getGlobalPrivs().getRolePrivileges().get(roleName);
         break;
 
       case DATABASE:

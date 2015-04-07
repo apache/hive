@@ -48,18 +48,18 @@ import java.util.List;
 /**
  * Test that import from an RDBMS based metastore works
  */
-public class TestHBaseImport extends IMockUtils {
+public class TestHBaseImport extends HBaseIntegrationTests {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
   @BeforeClass
   public static void startup() throws Exception {
-    IMockUtils.startMiniCluster();
+    HBaseIntegrationTests.startMiniCluster();
   }
 
   @AfterClass
   public static void shutdown() throws Exception {
-    IMockUtils.shutdownMiniCluster();
+    HBaseIntegrationTests.shutdownMiniCluster();
   }
 
   @Before

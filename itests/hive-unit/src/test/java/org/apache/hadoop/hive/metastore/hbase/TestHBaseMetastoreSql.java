@@ -25,26 +25,27 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.File;
 import java.io.IOException;
 
 /**
  * Integration tests with HBase Mini-cluster using actual SQL
  */
-public class TestHBaseMetastoreSql extends IMockUtils {
+public class TestHBaseMetastoreSql extends HBaseIntegrationTests {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
   @BeforeClass
   public static void startup() throws Exception {
-    IMockUtils.startMiniCluster();
+    HBaseIntegrationTests.startMiniCluster();
 
   }
 
   @AfterClass
   public static void shutdown() throws Exception {
-    IMockUtils.shutdownMiniCluster();
+    HBaseIntegrationTests.shutdownMiniCluster();
   }
 
   @Before

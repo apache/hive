@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.logging.Log;
@@ -24,17 +42,16 @@ import java.util.Map;
 public class VanillaHBaseConnection implements HBaseConnection {
   static final private Log LOG = LogFactory.getLog(VanillaHBaseConnection.class.getName());
 
-
-  private HConnection conn;
-  private Map<String, HTableInterface> tables;
-  Configuration conf;
+  protected HConnection conn;
+  protected Map<String, HTableInterface> tables;
+  protected Configuration conf;
 
   VanillaHBaseConnection() {
+    tables = new HashMap<String, HTableInterface>();
   }
 
   @Override
   public void connect() throws IOException {
-    tables = new HashMap<String, HTableInterface>();
     if (conf == null) throw new RuntimeException("Must call getConf before connect");
     conn = HConnectionManager.createConnection(conf);
   }
@@ -60,16 +77,26 @@ public class VanillaHBaseConnection implements HBaseConnection {
   }
 
   @Override
-  public void createHBaseTable(String tableName, List<byte[]> columnFamilies) throws
-      IOException {
+  public void flush(HTableInterface htab) throws IOException {
+    htab.flushCommits();
+  }
+
+  @Override
+  public void createHBaseTable(String tableName, List<byte[]> columnFamilies)
+      throws IOException {
     HBaseAdmin admin = new HBaseAdmin(conn);
     LOG.info("Creating HBase table " + tableName);
+    admin.createTable(buildDescriptor(tableName, columnFamilies));
+    admin.close();
+  }
+
+  protected HTableDescriptor buildDescriptor(String tableName, List<byte[]> columnFamilies)
+      throws IOException {
     HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(tableName));
     for (byte[] cf : columnFamilies) {
       tableDesc.addFamily(new HColumnDescriptor(cf));
     }
-    admin.createTable(tableDesc);
-    admin.close();
+    return tableDesc;
   }
 
   @Override

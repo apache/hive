@@ -87,6 +87,25 @@ class HBaseReadWrite {
   @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
+  /**
+   * List of tables in HBase
+   */
+  final static String[] tableNames = { DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
+                                       USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
+  final static Map<String, List<byte[]>> columnFamilies =
+      new HashMap<String, List<byte[]>> (tableNames.length);
+
+  static {
+    columnFamilies.put(DB_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(FUNC_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(GLOBAL_PRIVS_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(PART_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
+    columnFamilies.put(USER_TO_ROLE_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(ROLE_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(SD_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(TABLE_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
+  }
+
   private final static byte[] CATALOG_COL = "cat".getBytes(HBaseUtils.ENCODING);
   private final static byte[] ROLES_COL = "roles".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
@@ -96,8 +115,6 @@ class HBaseReadWrite {
   @VisibleForTesting final static String TEST_CONN = "test_connection";
   private static HBaseConnection testConn;
 
-  private final static String[] tableNames = { DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
-      USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
   static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
 
   private static ThreadLocal<HBaseReadWrite> self = new ThreadLocal<HBaseReadWrite>() {
@@ -234,12 +251,16 @@ class HBaseReadWrite {
     if (!tablesCreated) {
       for (String name : tableNames) {
         if (self.get().conn.getHBaseTable(name, true) == null) {
+          List<byte[]> families = columnFamilies.get(name);
+          self.get().conn.createHBaseTable(name, families);
+          /*
           List<byte[]> columnFamilies = new ArrayList<byte[]>();
           columnFamilies.add(CATALOG_CF);
           if (TABLE_TABLE.equals(name) || PART_TABLE.equals(name)) {
             columnFamilies.add(STATS_CF);
           }
           self.get().conn.createHBaseTable(name, columnFamilies);
+          */
         }
       }
       tablesCreated = true;
@@ -541,7 +562,7 @@ class HBaseReadWrite {
     }
     HTableInterface htab = conn.getHBaseTable(PART_TABLE);
     htab.put(puts);
-    htab.flushCommits();
+    conn.flush(htab);
   }
 
   void replacePartitions(List<Partition> oldParts, List<Partition> newParts) throws IOException {
@@ -567,7 +588,7 @@ class HBaseReadWrite {
     }
     HTableInterface htab = conn.getHBaseTable(PART_TABLE);
     htab.put(puts);
-    htab.flushCommits();
+    conn.flush(htab);
   }
 
   /**
@@ -1014,7 +1035,7 @@ class HBaseReadWrite {
     if (puts.size() > 0) {
       HTableInterface htab = conn.getHBaseTable(ROLE_TABLE);
       htab.put(puts);
-      htab.flushCommits();
+      conn.flush(htab);
     }
 
     // Remove any global privileges held by this role
@@ -1043,7 +1064,7 @@ class HBaseReadWrite {
     if (puts.size() > 0) {
       HTableInterface htab = conn.getHBaseTable(DB_TABLE);
       htab.put(puts);
-      htab.flushCommits();
+      conn.flush(htab);
     }
 
     // Finally, walk the table table
@@ -1068,7 +1089,7 @@ class HBaseReadWrite {
     if (puts.size() > 0) {
       HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
       htab.put(puts);
-      htab.flushCommits();
+      conn.flush(htab);
     }
   }
 
@@ -1354,7 +1375,7 @@ class HBaseReadWrite {
       Put p = new Put(key);
       p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
       htab.put(p);
-      htab.flushCommits();
+      conn.flush(htab);
     }
   }
 
@@ -1386,7 +1407,7 @@ class HBaseReadWrite {
       p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
       htab.put(p);
     }
-    htab.flushCommits();
+    conn.flush(htab);
     return key;
   }
 
@@ -1699,7 +1720,7 @@ class HBaseReadWrite {
     Put p = new Put(key);
     p.add(colFam, colName, obj);
     htab.put(p);
-    htab.flushCommits();
+    conn.flush(htab);
   }
 
   private void store(String table, byte[] key, byte[] colFam, byte[][] colName, byte[][] obj)
@@ -1710,7 +1731,7 @@ class HBaseReadWrite {
       p.add(colFam, colName[i], obj[i]);
     }
     htab.put(p);
-    htab.flushCommits();
+    conn.flush(htab);
   }
 
   private byte[] read(String table, byte[] key, byte[] colFam, byte[] colName) throws IOException {

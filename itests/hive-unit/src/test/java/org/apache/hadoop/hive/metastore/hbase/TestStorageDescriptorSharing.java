@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Integration tests with HBase Mini-cluster for HBaseStore
  */
-public class TestStorageDescriptorSharing extends IMockUtils {
+public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
 
   private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
 
@@ -48,12 +48,12 @@ public class TestStorageDescriptorSharing extends IMockUtils {
 
   @BeforeClass
   public static void startup() throws Exception {
-    IMockUtils.startMiniCluster();
+    HBaseIntegrationTests.startMiniCluster();
   }
 
   @AfterClass
   public static void shutdown() throws Exception {
-    IMockUtils.shutdownMiniCluster();
+    HBaseIntegrationTests.shutdownMiniCluster();
   }
 
   @Before
