@@ -29,6 +29,7 @@ import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -40,7 +41,6 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 
 import com.google.common.collect.ImmutableList;
 
@@ -171,7 +171,7 @@ public class HiveProject extends Project implements HiveRelNode {
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return HiveCost.FACTORY.makeZeroCost();
+    return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
   @Override

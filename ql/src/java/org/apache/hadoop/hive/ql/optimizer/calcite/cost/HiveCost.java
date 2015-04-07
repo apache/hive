@@ -123,8 +123,8 @@ public class HiveCost implements RelOptCost {
       return this;
     }
 
-    return new HiveCost(this.rowCount - other.getRows(), this.cpu - other.getCpu(), this.io
-        - other.getIo());
+    return new HiveCost(this.rowCount - other.getRows(), this.cpu - other.getCpu(),
+        this.io - other.getIo());
   }
 
   public RelOptCost multiplyBy(double factor) {

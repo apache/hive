@@ -30,10 +30,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,7 +46,7 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
       List<AggregateCall> aggCalls) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, indicator, groupSet,
             groupSets, aggCalls);
-    this.bucketedInput = false;
+    this.bucketedInput = checkInputCorrectBucketing(child, groupSet);
   }
 
   @Override
@@ -72,40 +69,22 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    // Check whether input is in correct order
-    checkInputCorrectBucketing();
-    if (this.bucketedInput) {
-      return HiveCost.FACTORY.makeZeroCost();
-    } else {
-      // 1. Sum of input cardinalities
-      final Double rCount = RelMetadataQuery.getRowCount(this.getInput());
-      if (rCount == null) {
-        return null;
-      }
-      // 2. CPU cost = sorting cost
-      final double cpuCost = HiveCostUtil.computeSortCPUCost(rCount);
-      // 3. IO cost = cost of writing intermediary results to local FS +
-      //              cost of reading from local FS for transferring to GBy +
-      //              cost of transferring map outputs to GBy operator
-      final Double rAverageSize = RelMetadataQuery.getAverageRowSize(this.getInput());
-      if (rAverageSize == null) {
-        return null;
-      }
-      final double ioCost = HiveCostUtil.computeSortIOCost(new Pair<Double,Double>(rCount,rAverageSize));
-      // 4. Result
-      return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
-    }
+    return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
-  private void checkInputCorrectBucketing() {
-    this.bucketedInput = RelMetadataQuery.distribution(this.getInput()).getKeys().
-            containsAll(this.getGroupSet().asList());
+  private static boolean checkInputCorrectBucketing(RelNode child, ImmutableBitSet groupSet) {
+    return RelMetadataQuery.distribution(child).getKeys().
+            containsAll(groupSet.asList());
   }
 
   @Override
   public double getRows() {
     return RelMetadataQuery.getDistinctRowCount(this, groupSet, getCluster().getRexBuilder()
         .makeLiteral(true));
+  }
+
+  public boolean isBucketedInput() {
+    return this.bucketedInput;
   }
 
   private static class HiveAggRelFactory implements AggregateFactory {
