@@ -321,7 +321,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
 
   @Override
   public void clear() {
-    hashMap.clear();
+    // Don't clear the hash table - reuse is possible. GC will take care of it.
   }
 
   @Override
