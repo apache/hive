@@ -638,22 +638,28 @@ public abstract class InStream extends InputStream {
         ponderReleaseInitialRefcount(cache, unlockUntilCOffset, cc);
         lastCached = cc;
         next = current.next;
+      } else if (current instanceof IncompleteCb)  {
+        // 2b. This is a known incomplete CB caused by ORC CB end boundaries being estimates.
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Cannot read " + current);
+        }
+        next = null;
+        currentCOffset = -1;
       } else {
-        // 2b. This is a compressed buffer. We need to uncompress it; the buffer can comprise
+        // 2c. This is a compressed buffer. We need to uncompress it; the buffer can comprise
         // several disk ranges, so we might need to combine them.
         BufferChunk bc = (BufferChunk)current;
         if (toDecompress == null) {
           toDecompress = new ArrayList<ProcCacheChunk>();
           toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
         }
-        long originalOffset = bc.getOffset();
         lastCached = addOneCompressionBuffer(bc, zcr, bufferSize,
             cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
         next = (lastCached != null) ? lastCached.next : null;
-        currentCOffset = (next != null) ? next.getOffset() : originalOffset;
+        currentCOffset = (next != null) ? next.getOffset() : -1;
       }
 
-      if ((endCOffset >= 0 && currentCOffset >= endCOffset) || next == null) {
+      if (next == null || (endCOffset >= 0 && currentCOffset >= endCOffset)) {
         break;
       }
       current = next;
@@ -793,6 +799,16 @@ public abstract class InStream extends InputStream {
     return ranges;
   }
 
+  private static class IncompleteCb extends DiskRangeList {
+    public IncompleteCb(long offset, long end) {
+      super(offset, end);
+    }
+
+    @Override
+    public String toString() {
+      return "incomplete CB start: " + offset + " end: " + end;
+    }
+  }
 
   /**
    * Reads one compression block from the source; handles compression blocks read from
@@ -839,6 +855,7 @@ public abstract class InStream extends InputStream {
       return cc;
     }
     if (current.getEnd() < cbEndOffset && !current.hasContiguousNext()) {
+      addIncompleteCompressionBuffer(cbStartOffset, current, 0);
       return null; // This is impossible to read from this chunk.
     }
 
@@ -849,7 +866,7 @@ public abstract class InStream extends InputStream {
     int originalPos = compressed.position();
     copy.put(compressed);
     if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Removing " + current + " from ranges");
+      LOG.info("Removing partial CB " + current + " from ranges after copying its contents");
     }
     DiskRangeList next = current.next;
     current.removeSelf();
@@ -861,11 +878,13 @@ public abstract class InStream extends InputStream {
       }
     }
 
-    while (next != null) {
+    int extraChunkCount = 0;
+    while (true) {
       if (!(next instanceof BufferChunk)) {
-        throw new IOException("Trying to extend compressed block into uncompressed block");
+        throw new IOException("Trying to extend compressed block into uncompressed block " + next);
       }
       compressed = next.getData();
+      ++extraChunkCount;
       if (compressed.remaining() >= remaining) {
         // This is the last range for this compression block. Yay!
         slice = compressed.slice();
@@ -885,13 +904,27 @@ public abstract class InStream extends InputStream {
         zcr.releaseBuffer(compressed); // We copied the entire buffer.
       }
       DiskRangeList tmp = next;
-      if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Removing " + tmp + " from ranges");
-      }
       next = next.hasContiguousNext() ? next.next : null;
-      tmp.removeSelf();
+      if (next != null) {
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Removing partial CB " + tmp + " from ranges after copying its contents");
+        }
+        tmp.removeSelf();
+      } else {
+        addIncompleteCompressionBuffer(cbStartOffset, tmp, extraChunkCount);
+        return null; // This is impossible to read from this chunk.
+      }
     }
-    return null; // This is impossible to read from this chunk.
+  }
+
+  private static void addIncompleteCompressionBuffer(
+      long cbStartOffset, DiskRangeList target, int extraChunkCount) {
+    IncompleteCb icb = new IncompleteCb(cbStartOffset, target.getEnd());
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Replacing " + target + " (and " + extraChunkCount + " previous chunks) with "
+          + icb + " in the buffers");
+    }
+    target.replaceSelfWith(icb);
   }
 
   /**
