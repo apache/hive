@@ -364,6 +364,7 @@ TOK_SERVER_TYPE;
 @header {
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import org.apache.hadoop.conf.Configuration;
@@ -630,8 +631,20 @@ import org.apache.hadoop.hive.conf.HiveConf;
   private String generateUnionAlias() {
     return "_u" + (++aliasCounter);
   }
+  private char [] excludedCharForColumnName = {'.', ':'};
+  private boolean containExcludedCharForCreateTableColumnName(String input) {
+    for(char c : excludedCharForColumnName) {
+      if(input.indexOf(c)>-1) {
+        return true;
+      }
+    }
+    return false;
+  }
   private CommonTree throwSetOpException() throws RecognitionException {
     throw new FailedPredicateException(input, "orderByClause clusterByClause distributeByClause sortByClause limitClause can only be applied to the whole union.", "");
+  }
+  private CommonTree throwColumnNameException() throws RecognitionException {
+    throw new FailedPredicateException(input, Arrays.toString(excludedCharForColumnName) + " can not be used in column name in create table statement.", "");
   }
   private Configuration hiveConf;
   public void setHiveConf(Configuration hiveConf) {
@@ -2016,6 +2029,7 @@ columnNameType
 @init { pushMsg("column specification", state); }
 @after { popMsg(state); }
     : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
+    -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
