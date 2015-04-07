@@ -326,12 +326,13 @@ public class EncodedReaderImpl implements EncodedReader {
             cb = sctx.stripeLevelStream;
           } else {
             // This stream can be separated by RG using index. Let's do that.
-            long cOffset = index.getPositions(sctx.streamIndexOffset) + sctx.offset,
-                nextCOffset = isLastRg ? sctx.length : nextIndex.getPositions(sctx.streamIndexOffset),
-                endCOffset = RecordReaderUtils.estimateRgEndOffset(
-                    isCompressed, isLastRg, nextCOffset, sctx.length, bufferSize) + sctx.offset;
-            // See class comment about refcounts. 
-            long unlockUntilCOffset = nextCOffset;
+            long cOffset = sctx.offset + index.getPositions(sctx.streamIndexOffset);
+            long nextCOffsetRel = isLastRg ? sctx.length
+                : nextIndex.getPositions(sctx.streamIndexOffset);
+            long endCOffset = sctx.offset + RecordReaderUtils.estimateRgEndOffset(
+                    isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
+            // See class comment about refcounts.
+            long unlockUntilCOffset = sctx.offset + nextCOffsetRel;
             cb = new StreamBuffer(sctx.kind.getNumber());
             cb.incRef();
             if (DebugUtils.isTraceOrcEnabled()) {
