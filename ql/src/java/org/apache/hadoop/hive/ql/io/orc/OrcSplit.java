@@ -48,6 +48,7 @@ public class OrcSplit extends FileSplit {
   private final List<Long> deltas = new ArrayList<Long>();
   private OrcFile.WriterVersion writerVersion;
   private transient Long fileId;
+  private long projColsUncompressedSize;
 
   static final int HAS_FILEID_FLAG = 8;
   static final int BASE_FLAG = 4;
@@ -63,7 +64,7 @@ public class OrcSplit extends FileSplit {
 
   public OrcSplit(Path path, Long fileId, long offset, long length, String[] hosts,
       FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
-      List<Long> deltas) {
+      List<Long> deltas, long projectedDataSize) {
     super(path, offset, length, hosts);
     // We could avoid serializing file ID and just replace the path with inode-based path.
     // However, that breaks bunch of stuff because Hive later looks up things by split path.
@@ -73,6 +74,7 @@ public class OrcSplit extends FileSplit {
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.deltas.addAll(deltas);
+    this.projColsUncompressedSize = projectedDataSize;
   }
 
   @Override
@@ -170,4 +172,9 @@ public class OrcSplit extends FileSplit {
   public Long getFileId() {
     return fileId;
   }
+
+  public long getProjectedColumnsUncompressedSize() {
+    return projColsUncompressedSize;
+  }
+
 }
