@@ -1,0 +1,19 @@
+PREHOOK: query: select
+  year(iym), month(iym), day(idt), hour(idt), minute(idt), second(idt)
+from (
+  select interval '1-2' year to month iym, interval '3 4:5:6.789' day to second idt
+  from src limit 1
+) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  year(iym), month(iym), day(idt), hour(idt), minute(idt), second(idt)
+from (
+  select interval '1-2' year to month iym, interval '3 4:5:6.789' day to second idt
+  from src limit 1
+) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	2	3	4	5	6
