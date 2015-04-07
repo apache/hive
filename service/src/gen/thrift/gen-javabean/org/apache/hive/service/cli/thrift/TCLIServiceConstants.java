@@ -50,6 +50,8 @@ public class TCLIServiceConstants {
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.DATE_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.VARCHAR_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.CHAR_TYPE);
+    PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE);
+    PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE);
   }
 
   public static final Set<TTypeId> COMPLEX_TYPES = new HashSet<TTypeId>();
@@ -88,6 +90,8 @@ public class TCLIServiceConstants {
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.DATE_TYPE, "DATE");
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.VARCHAR_TYPE, "VARCHAR");
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.CHAR_TYPE, "CHAR");
+    TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE, "INTERVAL_YEAR_MONTH");
+    TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE, "INTERVAL_DAY_TIME");
   }
 
   public static final String CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";

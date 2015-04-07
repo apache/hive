@@ -24,7 +24,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V4 = 3,
     HIVE_CLI_SERVICE_PROTOCOL_V5 = 4,
     HIVE_CLI_SERVICE_PROTOCOL_V6 = 5,
-    HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
+    HIVE_CLI_SERVICE_PROTOCOL_V7 = 6,
+    HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
   };
 };
 
@@ -51,7 +52,9 @@ struct TTypeId {
     NULL_TYPE = 16,
     DATE_TYPE = 17,
     VARCHAR_TYPE = 18,
-    CHAR_TYPE = 19
+    CHAR_TYPE = 19,
+    INTERVAL_YEAR_MONTH_TYPE = 20,
+    INTERVAL_DAY_TIME_TYPE = 21
   };
 };
 
@@ -1946,8 +1949,8 @@ class TOpenSessionReq {
   static const char* ascii_fingerprint; // = "C8FD0F306A16C16BDA7B57F58BFAE5B2";
   static const uint8_t binary_fingerprint[16]; // = {0xC8,0xFD,0x0F,0x30,0x6A,0x16,0xC1,0x6B,0xDA,0x7B,0x57,0xF5,0x8B,0xFA,0xE5,0xB2};
 
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)6), username(), password() {
-    client_protocol = (TProtocolVersion::type)6;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)7), username(), password() {
+    client_protocol = (TProtocolVersion::type)7;
 
   }
 
@@ -2022,8 +2025,8 @@ class TOpenSessionResp {
   static const char* ascii_fingerprint; // = "CFE7D7F4E9EC671F2518ED74FEE9F163";
   static const uint8_t binary_fingerprint[16]; // = {0xCF,0xE7,0xD7,0xF4,0xE9,0xEC,0x67,0x1F,0x25,0x18,0xED,0x74,0xFE,0xE9,0xF1,0x63};
 
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)6) {
-    serverProtocolVersion = (TProtocolVersion::type)6;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)7) {
+    serverProtocolVersion = (TProtocolVersion::type)7;
 
   }
 

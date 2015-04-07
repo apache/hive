@@ -449,7 +449,7 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
                 struct.values = new ArrayList<Boolean>(_list54.size);
                 for (int _i55 = 0; _i55 < _list54.size; ++_i55)
                 {
-                  boolean _elem56; // required
+                  boolean _elem56; // optional
                   _elem56 = iprot.readBool();
                   struct.values.add(_elem56);
                 }
@@ -533,7 +533,7 @@ public class TBoolColumn implements org.apache.thrift.TBase<TBoolColumn, TBoolCo
         struct.values = new ArrayList<Boolean>(_list59.size);
         for (int _i60 = 0; _i60 < _list59.size; ++_i60)
         {
-          boolean _elem61; // required
+          boolean _elem61; // optional
           _elem61 = iprot.readBool();
           struct.values.add(_elem61);
         }
