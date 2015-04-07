@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
@@ -27,7 +29,6 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.util.BuiltInMethod;
-import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -52,23 +53,30 @@ public class HiveRelMdSize extends RelMdSize {
   //~ Methods ----------------------------------------------------------------
 
   public List<Double> averageColumnSizes(HiveTableScan scan) {
-    // Number of fields
-    final int numCols = scan.getRowType().getFieldList().size();
-    List<Integer> cols = ImmutableIntList.range(0, numCols);
-    // Get col stats
-    final RelOptHiveTable table = (RelOptHiveTable) scan.getTable();
-    List<ColStatistics> columnStatistics = table.getColStat(cols);
+    List<Integer> neededcolsLst = scan.getNeededColIndxsFrmReloptHT();
+    Set<Integer> needColsSet = new HashSet<Integer>(neededcolsLst);
+    List<ColStatistics> columnStatistics = ((RelOptHiveTable) scan.getTable())
+        .getColStat(neededcolsLst);
+
     // Obtain list of col stats, or use default if they are not available
     final ImmutableList.Builder<Double> list = ImmutableList.builder();
-    for (int i=0; i<columnStatistics.size(); i++) {
-      ColStatistics columnStatistic = columnStatistics.get(i);
-      if (columnStatistic == null) {
-        RelDataTypeField field = scan.getRowType().getFieldList().get(i);
-        list.add(averageTypeValueSize(field.getType()));
+    int indxRqdCol = 0;
+    int nFields = scan.getRowType().getFieldCount();
+    for (int i = 0; i < nFields; i++) {
+      if (needColsSet.contains(i)) {
+        ColStatistics columnStatistic = columnStatistics.get(indxRqdCol);
+        indxRqdCol++;
+        if (columnStatistic == null) {
+          RelDataTypeField field = scan.getPrunedRowType().getFieldList().get(i);
+          list.add(averageTypeValueSize(field.getType()));
+        } else {
+          list.add(columnStatistic.getAvgColLen());
+        }
       } else {
-        list.add(columnStatistic.getAvgColLen());
+        list.add(new Double(0));
       }
     }
+
     return list.build();
   }
 

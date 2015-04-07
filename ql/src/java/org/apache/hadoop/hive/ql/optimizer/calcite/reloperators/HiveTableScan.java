@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -98,11 +101,6 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   @Override
-  public RelDataType deriveRowType() {
-    return hiveTableScanRowType;
-  }
-
-  @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
     return HiveCost.FACTORY.makeZeroCost();
   }
@@ -145,21 +143,29 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     final List<RelDataTypeField> fields = getRowType().getFieldList();
     List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
     List<String> fieldNames = new LinkedList<String>();
+    List<RexNode> exprList = new ArrayList<RexNode>();
+    RexBuilder rexBuilder = getCluster().getRexBuilder();
     for (int i : fieldsUsed) {
       RelDataTypeField field = fields.get(i);
       fieldTypes.add(field.getType());
       fieldNames.add(field.getName());
+      exprList.add(rexBuilder.makeInputRef(this, i));
     }
 
     // 4. Build new TS
     HiveTableScan newHT = copy(getCluster().getTypeFactory().createStructType(fieldTypes,
         fieldNames));
 
-    return newHT;
+    // 5. Add Proj on top of TS
+    return projectFactory.createProject(newHT, exprList, new ArrayList<String>(fieldNames));
   }
 
   public List<Integer> getNeededColIndxsFrmReloptHT() {
     return neededColIndxsFrmReloptHT;
+  }
+  
+  public RelDataType getPrunedRowType() {
+    return hiveTableScanRowType;
   }
 
   private static ImmutableList<Integer> buildNeededColIndxsFrmReloptHT(RelDataType htRowtype,
