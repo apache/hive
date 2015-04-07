@@ -83,7 +83,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   private boolean abort;
 
-  public ReduceRecordProcessor(final JobConf jconf) throws Exception {
+  public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
+    super(jconf, context);
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
 
@@ -103,11 +104,11 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   }
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext,
+  void init(
       MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
 
     MapredContext.init(false, new JobConf(jconf));
     List<LogicalInput> shuffleInputs = getShuffleInputs(inputs);
