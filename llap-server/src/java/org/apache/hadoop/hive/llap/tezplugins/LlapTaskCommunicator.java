@@ -20,26 +20,42 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.ipc.ProtocolSignature;
+import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RemoteException;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.tez.common.TezTaskUmbilicalProtocol;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TaskAttemptEndReason;
 import org.apache.tez.dag.api.TaskCommunicatorContext;
+import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.TaskSpec;
+import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
+import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
 
 public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
@@ -48,12 +64,16 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final SubmitWorkRequestProto BASE_SUBMIT_WORK_REQUEST;
   private final ConcurrentMap<String, ByteBuffer> credentialMap;
 
+  private final EntityTracker entityTracker = new EntityTracker();
+
   private TaskCommunicator communicator;
+  private final LlapTaskUmbilicalProtocol umbilical;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
     super(taskCommunicatorContext);
 
+    umbilical = new LlapTaskUmbilicalProtocolImpl(getUmbilical());
     SubmitWorkRequestProto.Builder baseBuilder = SubmitWorkRequestProto.newBuilder();
 
     // TODO Avoid reading this from the environment
@@ -92,15 +112,45 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
   }
 
+  @Override
+  protected void startRpcServer() {
+    Configuration conf = getConfig();
+    try {
+      JobTokenSecretManager jobTokenSecretManager =
+          new JobTokenSecretManager();
+      jobTokenSecretManager.addTokenForJob(tokenIdentifier, sessionToken);
+
+      server = new RPC.Builder(conf)
+          .setProtocol(LlapTaskUmbilicalProtocol.class)
+          .setBindAddress("0.0.0.0")
+          .setPort(0)
+          .setInstance(umbilical)
+          .setNumHandlers(
+              conf.getInt(TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT,
+                  TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT_DEFAULT))
+          .setSecretManager(jobTokenSecretManager).build();
+
+      // Do serviceACLs need to be refreshed, like in Tez ?
+
+      server.start();
+      this.address = NetUtils.getConnectAddress(server);
+      LOG.info("Started LlapUmbilical: " + umbilical.getClass().getName() + " at address: " + address);
+    } catch (IOException e) {
+      throw new TezUncheckedException(e);
+    }
+  }
 
   @Override
   public void registerRunningContainer(ContainerId containerId, String hostname, int port) {
     super.registerRunningContainer(containerId, hostname, port);
+    entityTracker.registerContainer(containerId, hostname, port);
+
   }
 
   @Override
   public void registerContainerEnd(ContainerId containerId) {
     super.registerContainerEnd(containerId);
+    entityTracker.unregisterContainer(containerId);
   }
 
   @Override
@@ -111,6 +161,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                                          int priority)  {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
         credentialsChanged, priority);
+
     SubmitWorkRequestProto requestProto;
     try {
       requestProto = constructSubmitWorkRequest(containerId, taskSpec);
@@ -130,6 +181,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       throw new RuntimeException("ContainerInfo not found for container: " + containerId +
           ", while trying to launch task: " + taskSpec.getTaskAttemptID());
     }
+
+    entityTracker.registerTaskAttempt(containerId, taskSpec.getTaskAttemptID(), host, port);
+
     // Have to register this up front right now. Otherwise, it's possible for the task to start
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
     getTaskCommunicatorContext()
@@ -180,7 +234,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   @Override
   public void unregisterRunningTaskAttempt(TezTaskAttemptID taskAttemptID) {
     super.unregisterRunningTaskAttempt(taskAttemptID);
-    // Nothing else to do for now. The push API in the test does not support termination of a running task
+    entityTracker.unregisterTaskAttempt(taskAttemptID);
+    // TODO Inform the daemon that this task is no longer running.
+    // Currently, a task will end up moving into the RUNNING queue and will
+    // be told that it needs to die since it isn't recognized.
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequest(ContainerId containerId,
@@ -213,5 +270,145 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     DataOutputBuffer containerTokens_dob = new DataOutputBuffer();
     containerCredentials.writeTokenStorageToStream(containerTokens_dob);
     return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
+  }
+
+  protected class LlapTaskUmbilicalProtocolImpl implements LlapTaskUmbilicalProtocol {
+
+    private final TezTaskUmbilicalProtocol tezUmbilical;
+
+    public LlapTaskUmbilicalProtocolImpl(TezTaskUmbilicalProtocol tezUmbilical) {
+      this.tezUmbilical = tezUmbilical;
+    }
+
+    @Override
+    public boolean canCommit(TezTaskAttemptID taskid) throws IOException {
+      return tezUmbilical.canCommit(taskid);
+    }
+
+    @Override
+    public TezHeartbeatResponse heartbeat(TezHeartbeatRequest request) throws IOException,
+        TezException {
+      return tezUmbilical.heartbeat(request);
+    }
+
+    @Override
+    public void nodeHeartbeat(Text hostname, int port) {
+      entityTracker.nodePinged(hostname.toString(), port);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Received heartbeat from [" + hostname + ":" + port +"]");
+      }
+    }
+
+    @Override
+    public long getProtocolVersion(String protocol, long clientVersion) throws IOException {
+      return versionID;
+    }
+
+    @Override
+    public ProtocolSignature getProtocolSignature(String protocol, long clientVersion,
+                                                  int clientMethodsHash) throws IOException {
+      return ProtocolSignature.getProtocolSignature(this, protocol,
+          clientVersion, clientMethodsHash);
+    }
+  }
+
+  private final class EntityTracker {
+    private final ConcurrentMap<TezTaskAttemptID, LlapNodeId> attemptToNodeMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ContainerId, LlapNodeId> containerToNodeMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<LlapNodeId, BiMap<ContainerId, TezTaskAttemptID>> nodeMap = new ConcurrentHashMap<>();
+
+    void registerTaskAttempt(ContainerId containerId, TezTaskAttemptID taskAttemptId, String host, int port) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Registering " + containerId + ", " + taskAttemptId + " for node: " + host + ":" + port);
+      }
+      LlapNodeId llapNodeId = LlapNodeId.getInstance(host, port);
+      attemptToNodeMap.putIfAbsent(taskAttemptId, llapNodeId);
+      BiMap<ContainerId, TezTaskAttemptID> tmpMap = HashBiMap.create();
+      BiMap<ContainerId, TezTaskAttemptID> old = nodeMap.putIfAbsent(llapNodeId, tmpMap);
+      BiMap<ContainerId, TezTaskAttemptID> usedInstance;
+      usedInstance = old == null ? tmpMap : old;
+      synchronized(usedInstance) {
+        usedInstance.put(containerId, taskAttemptId);
+      }
+      // Make sure to put the instance back again, in case it was removed as part of a
+      // containerEnd/taskEnd invocation.
+      nodeMap.putIfAbsent(llapNodeId, usedInstance);
+    }
+
+    void unregisterTaskAttempt(TezTaskAttemptID attemptId) {
+      LlapNodeId llapNodeId = attemptToNodeMap.remove(attemptId);
+      if (llapNodeId == null) {
+        // Possible since either container / task can be unregistered.
+        return;
+      }
+
+      BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);
+      ContainerId matched = null;
+      if (bMap != null) {
+        synchronized(bMap) {
+          matched = bMap.inverse().remove(attemptId);
+        }
+      }
+      // Removing here. Registration into the map has to make sure to put
+      if (bMap.isEmpty()) {
+        nodeMap.remove(llapNodeId);
+      }
+
+      // Remove the container mapping
+      if (matched != null) {
+        containerToNodeMap.remove(matched);
+      }
+
+    }
+
+    void registerContainer(ContainerId containerId, String hostname, int port) {
+      containerToNodeMap.putIfAbsent(containerId, LlapNodeId.getInstance(hostname, port));
+    }
+
+    void unregisterContainer(ContainerId containerId) {
+      LlapNodeId llapNodeId = containerToNodeMap.remove(containerId);
+      if (llapNodeId == null) {
+        // Possible since either container / task can be unregistered.
+        return;
+      }
+
+      BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);
+      TezTaskAttemptID matched = null;
+      if (bMap != null) {
+        synchronized(bMap) {
+          matched = bMap.remove(containerId);
+        }
+      }
+      // Removing here. Registration into the map has to make sure to put
+      if (bMap.isEmpty()) {
+        nodeMap.remove(llapNodeId);
+      }
+
+      // Remove the container mapping
+      if (matched != null) {
+        attemptToNodeMap.remove(matched);
+      }
+    }
+
+    private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
+    void nodePinged(String hostname, int port) {
+      LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
+      BiMap<ContainerId, TezTaskAttemptID> biMap = nodeMap.get(nodeId);
+      if (biMap != null) {
+        synchronized(biMap) {
+          for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
+            getTaskCommunicatorContext().taskAlive(entry.getValue());
+            getTaskCommunicatorContext().containerAlive(entry.getKey());
+          }
+        }
+      } else {
+        if (System.currentTimeMillis() > nodeNotFoundLogTime.get() + 5000l) {
+          LOG.warn("Recevied ping from unknown node: " + hostname + ":" + port +
+              ". Could be caused by pre-emption by the AM," +
+              " or a mismatched hostname. Enable debug logging for mismatched host names");
+          nodeNotFoundLogTime.set(System.currentTimeMillis());
+        }
+      }
+    }
   }
 }

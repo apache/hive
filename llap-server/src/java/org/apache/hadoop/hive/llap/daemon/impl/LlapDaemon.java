@@ -131,7 +131,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
 
-    this.containerRunner = new ContainerRunnerImpl(numExecutors, localDirs, shufflePort, address,
+    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, localDirs, shufflePort, address,
         executorMemoryBytes, metrics);
     
     this.registry = new LlapRegistryService();
