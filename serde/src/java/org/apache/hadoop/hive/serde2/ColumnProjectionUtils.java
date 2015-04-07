@@ -152,9 +152,11 @@ public final class ColumnProjectionUtils {
   }
 
   public static String[] getReadColumnNames(Configuration conf) {
-    String names = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    if (names == null) return null;
-    return names.split(",");
+    String colNames = conf.get(READ_COLUMN_NAMES_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    if (colNames != null && !colNames.isEmpty()) {
+      return colNames.split(",");
+    }
+    return new String[] {};
   }
 
   private static void setReadColumnIDConf(Configuration conf, String id) {

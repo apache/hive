@@ -2416,7 +2416,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<List<Path[]>> result = new ArrayList<List<Path[]>>();
     try {
-      FileStatus destStatus = !replace && fs.exists(destf) ? fs.getFileStatus(destf) : null;
+      FileStatus destStatus = !replace ? FileUtils.getFileStatusOrNull(fs, destf) : null;
       if (destStatus != null && !destStatus.isDir()) {
         throw new HiveException("checkPaths: destination " + destf
             + " should be a directory");

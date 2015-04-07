@@ -45,6 +45,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -945,8 +946,9 @@ public class DagUtils {
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
     FileSystem sourceFS = src.getFileSystem(conf);
-    if (destFS.exists(dest)) {
-      return (sourceFS.getFileStatus(src).getLen() == destFS.getFileStatus(dest).getLen());
+    FileStatus destStatus = FileUtils.getFileStatusOrNull(destFS, dest);
+    if (destStatus != null) {
+      return (sourceFS.getFileStatus(src).getLen() == destStatus.getLen());
     }
     return false;
   }
