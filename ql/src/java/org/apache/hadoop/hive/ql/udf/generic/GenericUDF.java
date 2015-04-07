@@ -501,6 +501,10 @@ public abstract class GenericUDF implements Closeable {
       return null;
     }
     Object writableValue = converters[i].convert(obj);
+    // if string can not be parsed converter will return null
+    if (writableValue == null) {
+      return null;
+    }
     Timestamp ts = ((TimestampWritable) writableValue).getTimestamp();
     return ts;
   }
