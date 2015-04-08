@@ -84,6 +84,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
       if (columnReaders == null || !sameStripe) {
         this.columnReaders = EncodedTreeReaderFactory.createEncodedTreeReader(numCols,
             fileMetadata.getTypes(), stripeMetadata.getEncodings(), batch, codec, skipCorrupt);
+        positionInStreams(columnReaders, batch, numCols, stripeMetadata);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, numCols, stripeMetadata);
       }
@@ -112,6 +113,18 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
     } catch (IOException e) {
       // Caller will return the batch.
       downstreamConsumer.setError(e);
+    }
+  }
+
+  private void positionInStreams(EncodedTreeReaderFactory.TreeReader[] columnReaders,
+      EncodedColumnBatch<OrcBatchKey> batch, int numCols,
+      OrcStripeMetadata stripeMetadata) throws IOException {
+    for (int i = 0; i < numCols; i++) {
+      int columnIndex = batch.columnIxs[i];
+      int rowGroupIndex = batch.batchKey.rgIx;
+      OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
+      OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
+      columnReaders[i].seek(new RecordReaderImpl.PositionProviderImpl(rowIndexEntry));
     }
   }
 
