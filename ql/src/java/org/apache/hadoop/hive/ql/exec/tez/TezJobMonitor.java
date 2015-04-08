@@ -254,6 +254,7 @@ public class TezJobMonitor {
    */
   public int monitorExecution(final DAGClient dagClient, HiveTxnManager txnMgr, HiveConf conf,
       DAG dag) throws InterruptedException {
+    long monitorStartTime = System.currentTimeMillis();
     DAGStatus status = null;
     completed = new HashSet<String>();
     diagnostics = new StringBuffer();
@@ -293,7 +294,7 @@ public class TezJobMonitor {
     while (true) {
 
       try {
-        status = dagClient.getDAGStatus(opts);
+        status = dagClient.getDAGStatus(opts, checkInterval);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
         heartbeater.heartbeat();
@@ -326,6 +327,9 @@ public class TezJobMonitor {
             }
             break;
           case SUCCEEDED:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
@@ -351,6 +355,9 @@ public class TezJobMonitor {
             done = true;
             break;
           case KILLED:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
@@ -363,6 +370,9 @@ public class TezJobMonitor {
             break;
           case FAILED:
           case ERROR:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
@@ -374,9 +384,6 @@ public class TezJobMonitor {
             rc = 2;
             break;
           }
-        }
-        if (!done) {
-          Thread.sleep(checkInterval);
         }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
