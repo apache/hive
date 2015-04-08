@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFHourLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFHourString;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -37,9 +38,11 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "hour",
-    value = "_FUNC_(date) - Returns the hour of date",
-    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
-    + "'HH:mm:ss'.\n"
+    value = "_FUNC_(param) - Returns the hour componemnt of the string/timestamp/interval",
+    extended ="param can be one of:\n"
+    + "1. A string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.\n"
+    + "2. A timestamp value\n"
+    + "3. A day-time interval value"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n"
     + "  12\n"
@@ -95,4 +98,12 @@ public class UDFHour extends UDF {
     return result;
   }
 
+  public IntWritable evaluate(HiveIntervalDayTimeWritable i) {
+    if (i == null) {
+      return null;
+    }
+
+    result.set(i.getHiveIntervalDayTime().getHours());
+    return result;
+  }
 }

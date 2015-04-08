@@ -44,6 +44,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.Type;
 
@@ -443,6 +445,10 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return new BigDecimal((String)value);
       case DATE_TYPE:
         return Date.valueOf((String) value);
+      case INTERVAL_YEAR_MONTH_TYPE:
+        return HiveIntervalYearMonth.valueOf((String) value);
+      case INTERVAL_DAY_TIME_TYPE:
+        return HiveIntervalDayTime.valueOf((String) value);
       case ARRAY_TYPE:
       case MAP_TYPE:
       case STRUCT_TYPE:

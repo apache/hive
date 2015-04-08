@@ -297,7 +297,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     fs.create(tmp);
     fs.deleteOnExit(tmp);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false);
+        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(conf, plan, null);

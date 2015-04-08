@@ -17,13 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * ForwardDesc.
  *
  */
-@Explain(displayName = "Forward")
+@Explain(displayName = "Forward", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ForwardDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 

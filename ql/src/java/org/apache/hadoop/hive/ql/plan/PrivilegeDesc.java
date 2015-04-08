@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Privilege")
+
+@Explain(displayName = "Privilege", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PrivilegeDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   
@@ -44,7 +46,7 @@ public class PrivilegeDesc implements Serializable, Cloneable {
   /**
    * @return privilege definition
    */
-  @Explain(displayName = "privilege")
+  @Explain(displayName = "privilege", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Privilege getPrivilege() {
     return privilege;
   }
@@ -59,7 +61,7 @@ public class PrivilegeDesc implements Serializable, Cloneable {
   /**
    * @return columns on which the given privilege take affect.
    */
-  @Explain(displayName = "columns")
+  @Explain(displayName = "columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getColumns() {
     return columns;
   }

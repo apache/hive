@@ -21,12 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * DescFunctionDesc.
  *
  */
-@Explain(displayName = "Describe Function")
+@Explain(displayName = "Describe Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DescFunctionDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String name;
@@ -82,7 +83,7 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
   /**
    * @return the name
    */
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
   }
@@ -98,7 +99,7 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }

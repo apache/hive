@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -2995,7 +2996,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (ensureUniqueCols) {
           if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
-                + " => " + oColInfo + " due to duplication, see previous warnings");
+                + " => " + oColInfo + " due to duplication, see previous warnings",
+                UnsupportedFeature.Duplicates_in_RR);
           }
         } else {
           output.put(tmp[0], tmp[1], oColInfo);

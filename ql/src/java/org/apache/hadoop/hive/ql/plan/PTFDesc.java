@@ -32,8 +32,10 @@ import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "PTF Operator")
+
+@Explain(displayName = "PTF Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PTFDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   @SuppressWarnings("unused")
@@ -65,7 +67,7 @@ public class PTFDesc extends AbstractOperatorDesc {
     return funcDef == null ? null : funcDef.getStartOfChain();
   }
 
-  @Explain(displayName = "Function definitions")
+  @Explain(displayName = "Function definitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PTFInputDef> getFuncDefExplain() {
     if (funcDef == null) {
       return null;

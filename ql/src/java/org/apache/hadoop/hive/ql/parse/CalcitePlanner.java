@@ -124,6 +124,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -247,26 +248,42 @@ public class CalcitePlanner extends SemanticAnalyzer {
               setAST(newAST);
               newAST = reAnalyzeCtasAfterCbo(newAST);
             }
-            Phase1Ctx ctx_1 = initPhase1Ctx();
-            if (!doPhase1(newAST, getQB(), ctx_1, null)) {
-              throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
-            }
-            // unfortunately making prunedPartitions immutable is not possible
-            // here with SemiJoins not all tables are costed in CBO, so their
-            // PartitionList is not evaluated until the run phase.
-            getMetaData(getQB());
-
-            disableJoinMerge = false;
-            sinkOp = genPlan(getQB());
-            LOG.info("CBO Succeeded; optimized logical plan.");
-            LOG.debug(newAST.dump());
+          Phase1Ctx ctx_1 = initPhase1Ctx();
+          if (!doPhase1(newAST, getQB(), ctx_1, null)) {
+            throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
           }
+          // unfortunately making prunedPartitions immutable is not possible
+          // here with SemiJoins not all tables are costed in CBO, so their
+          // PartitionList is not evaluated until the run phase.
+          getMetaData(getQB());
+
+          disableJoinMerge = false;
+          sinkOp = genPlan(getQB());
+          LOG.info("CBO Succeeded; optimized logical plan.");
+          this.ctx.setCboInfo("Plan optimized by CBO.");
+          LOG.debug(newAST.dump());
+          } 
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
             LOG.error("CBO failed due to missing column stats (see previous errors), skipping CBO");
+            this.ctx
+                .setCboInfo("Plan not optimized by CBO due to missing statistics. Please check log for more details.");
           } else {
             LOG.error("CBO failed, skipping CBO. ", e);
+            if (e instanceof CalciteSemanticException) {
+              CalciteSemanticException calciteSemanticException = (CalciteSemanticException) e;
+              UnsupportedFeature unsupportedFeature = calciteSemanticException
+                  .getUnsupportedFeature();
+              if (unsupportedFeature != null) {
+                this.ctx.setCboInfo("Plan not optimized by CBO due to missing feature ["
+                    + unsupportedFeature + "].");
+              } else {
+                this.ctx.setCboInfo("Plan not optimized by CBO.");
+              }
+            } else {
+              this.ctx.setCboInfo("Plan not optimized by CBO.");
+            }
           }
           if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
               || e instanceof CalciteSemanticException) {
@@ -291,6 +308,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
       } else {
+        this.ctx.setCboInfo("Plan not optimized by CBO.");
         skipCalcitePlan = true;
       }
     }
@@ -1182,7 +1200,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         String msg = String.format("UNIQUE JOIN is currently not supported in CBO,"
             + " turn off cbo to use UNIQUE JOIN.");
         LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
+        throw new CalciteSemanticException(msg, UnsupportedFeature.Unique_join);
       }
 
       // 1. Determine Join Type
@@ -1265,7 +1283,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               + " Currently we don't support Table Sample clauses in CBO,"
               + " turn off cbo for queries on tableSamples.", tableAlias);
           LOG.debug(msg);
-          throw new CalciteSemanticException(msg);
+          throw new CalciteSemanticException(msg, UnsupportedFeature.Table_sample_clauses);
         }
 
         // 2. Get Table Metadata
@@ -1365,7 +1383,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // fail on compile time
         // for such queries, its an arcane corner case, not worth of adding that
         // complexity.
-        throw new CalciteSemanticException("Filter expression with non-boolean return type.");
+        throw new CalciteSemanticException("Filter expression with non-boolean return type.",
+            UnsupportedFeature.Filter_expression_with_non_boolean_return_type);
       }
       ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
           .get(srcRel);
@@ -1904,7 +1923,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 grpbyExpr, new TypeCheckCtx(groupByInputRowResolver));
             ExprNodeDesc grpbyExprNDesc = astToExprNDescMap.get(grpbyExpr);
             if (grpbyExprNDesc == null)
-              throw new CalciteSemanticException("Invalid Column Reference: " + grpbyExpr.dump());
+              throw new CalciteSemanticException("Invalid Column Reference: " + grpbyExpr.dump(),
+                  UnsupportedFeature.Invalid_column_reference);
 
             addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, grpbyExpr,
                 grpbyExprNDesc, gbExprNDescLst, outputColumnNames);
@@ -2090,7 +2110,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RowResolver obSyntheticProjectRR = new RowResolver();
           if (!RowResolver.add(obSyntheticProjectRR, inputRR)) {
             throw new CalciteSemanticException(
-                "Duplicates detected when adding columns to RR: see previous message");
+                "Duplicates detected when adding columns to RR: see previous message",
+                UnsupportedFeature.Duplicates_in_RR);
           }
           int vcolPos = inputRR.getRowSchema().getSignature().size();
           for (Pair<ASTNode, TypeInfo> astTypePair : vcASTTypePairs) {
@@ -2105,20 +2126,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
           if (outermostOB) {
             if (!RowResolver.add(outputRR, inputRR)) {
               throw new CalciteSemanticException(
-                  "Duplicates detected when adding columns to RR: see previous message");
+                  "Duplicates detected when adding columns to RR: see previous message",
+                  UnsupportedFeature.Duplicates_in_RR);
             }
 
           } else {
             if (!RowResolver.add(outputRR, obSyntheticProjectRR)) {
               throw new CalciteSemanticException(
-                  "Duplicates detected when adding columns to RR: see previous message");
+                  "Duplicates detected when adding columns to RR: see previous message",
+                  UnsupportedFeature.Duplicates_in_RR);
             }
             originalOBChild = srcRel;
           }
         } else {
           if (!RowResolver.add(outputRR, inputRR)) {
             throw new CalciteSemanticException(
-                "Duplicates detected when adding columns to RR: see previous message");
+                "Duplicates detected when adding columns to RR: see previous message",
+                UnsupportedFeature.Duplicates_in_RR);
           }
         }
 
@@ -2156,7 +2180,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RowResolver outputRR = new RowResolver();
         if (!RowResolver.add(outputRR, relToHiveRR.get(srcRel))) {
           throw new CalciteSemanticException(
-              "Duplicates detected when adding columns to RR: see previous message");
+              "Duplicates detected when adding columns to RR: see previous message",
+              UnsupportedFeature.Duplicates_in_RR);
         }
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = buildHiveToCalciteColumnMap(
             outputRR, sortRel);
@@ -2462,7 +2487,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         String msg = String.format("Hint specified for %s."
             + " Currently we don't support hints in CBO, turn off cbo to use hints.", hint);
         LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
+        throw new CalciteSemanticException(msg, UnsupportedFeature.Hint);
       }
 
       // 4. Bailout if select involves Transform
@@ -2471,7 +2496,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         String msg = String.format("SELECT TRANSFORM is currently not supported in CBO,"
             + " turn off cbo to use TRANSFORM.");
         LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
+        throw new CalciteSemanticException(msg, UnsupportedFeature.Select_transform);
       }
 
       // 5. Bailout if select involves UDTF
@@ -2484,7 +2509,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           String msg = String.format("UDTF " + funcName + " is currently not supported in CBO,"
               + " turn off cbo to use UDTF " + funcName);
           LOG.debug(msg);
-          throw new CalciteSemanticException(msg);
+          throw new CalciteSemanticException(msg, UnsupportedFeature.UDTF);
         }
       }
 
@@ -2553,7 +2578,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else if (expr.toStringTree().contains("TOK_FUNCTIONDI")
             && !(srcRel instanceof HiveAggregate)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
-          throw new CalciteSemanticException("Distinct without an aggreggation.");
+          throw new CalciteSemanticException("Distinct without an aggreggation.",
+              UnsupportedFeature.Distinct_without_an_aggreggation);
         } else {
           // Case when this is an expression
           TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
@@ -2572,7 +2598,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               .isSkewedCol() : false);
           if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tabAlias + "."
-                + colAlias + " => " + colInfo + " due to duplication, see previous warnings");
+                + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
+                UnsupportedFeature.Duplicates_in_RR);
           }
 
           if (exp instanceof ExprNodeColumnDesc) {
@@ -2636,7 +2663,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (LOG.isDebugEnabled()) {
           LOG.debug(msg + " because it: " + reason);
         }
-        throw new CalciteSemanticException(msg);
+        throw new CalciteSemanticException(msg, UnsupportedFeature.Subquery);
       }
 
       // 1. Build Rel For Src (SubQuery, TS, Join)
@@ -2665,7 +2692,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // table
         // So, for now lets just disable this. Anyway there is nothing much to
         // optimize in such cases.
-        throw new CalciteSemanticException("Unsupported");
+        throw new CalciteSemanticException("Unsupported", UnsupportedFeature.Others);
 
       }
       // 1.3 process join
@@ -2773,7 +2800,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (havingClause != null) {
         if (!(srcRel instanceof HiveAggregate)) {
           // ill-formed query like select * from t1 having c1 > 0;
-          throw new CalciteSemanticException("Having clause without any group-by.");
+          throw new CalciteSemanticException("Having clause without any group-by.",
+              UnsupportedFeature.Having_clause_without_any_groupby);
         }
         validateNoHavingReferenceToAlias(qb, (ASTNode) havingClause.getChild(0));
         gbFilter = genFilterRelNode(qb, (ASTNode) havingClause.getChild(0), srcRel, aliasToRel,
@@ -2835,7 +2863,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               + " This non standard behavior is not supported with cbo on."
               + " Turn off cbo for these queries.", aliasToCheck, havingClause);
           LOG.debug(msg);
-          throw new CalciteSemanticException(msg);
+          throw new CalciteSemanticException(msg, UnsupportedFeature.Select_alias_in_having_clause);
         }
       }
 
@@ -2871,7 +2899,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         String msg = String.format("Multi Insert is currently not supported in CBO,"
             + " turn off cbo to use Multi Insert.");
         LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
+        throw new CalciteSemanticException(msg, UnsupportedFeature.Multi_insert);
       }
       return qbp;
     }

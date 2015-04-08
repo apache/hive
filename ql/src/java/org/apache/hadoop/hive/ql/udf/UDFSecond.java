@@ -23,23 +23,29 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFSecondLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFSecondString;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * UDFSecond.
  *
  */
 @Description(name = "second",
-    value = "_FUNC_(date) - Returns the second of date",
-    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
-    + "'HH:mm:ss'.\n"
+    value = "_FUNC_(date) - Returns the second component of the string/timestamp/interval",
+    extended = "param can be one of:\n"
+    + "1. A string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.\n"
+    + "2. A timestamp value\n"
+    + "3. A day-time interval value"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n"
     + "  59\n"
@@ -96,4 +102,13 @@ public class UDFSecond extends UDF {
     return result;
   }
 
+  public IntWritable evaluate(HiveIntervalDayTimeWritable i) {
+    if (i == null) {
+      return null;
+    }
+
+    HiveIntervalDayTime idt = i.getHiveIntervalDayTime();
+    result.set(idt.getSeconds());
+    return result;
+  }
 }

@@ -449,7 +449,7 @@ public class TI32Column implements org.apache.thrift.TBase<TI32Column, TI32Colum
                 struct.values = new ArrayList<Integer>(_list78.size);
                 for (int _i79 = 0; _i79 < _list78.size; ++_i79)
                 {
-                  int _elem80; // required
+                  int _elem80; // optional
                   _elem80 = iprot.readI32();
                   struct.values.add(_elem80);
                 }
@@ -533,7 +533,7 @@ public class TI32Column implements org.apache.thrift.TBase<TI32Column, TI32Colum
         struct.values = new ArrayList<Integer>(_list83.size);
         for (int _i84 = 0; _i84 < _list83.size; ++_i84)
         {
-          int _elem85; // required
+          int _elem85; // optional
           _elem85 = iprot.readI32();
           struct.values.add(_elem85);
         }

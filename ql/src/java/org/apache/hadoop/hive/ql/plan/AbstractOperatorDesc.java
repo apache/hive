@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public class AbstractOperatorDesc implements OperatorDesc {
 
@@ -35,7 +36,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  @Explain(skipHeader = true, displayName = "Statistics")
+  @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Statistics getStatistics() {
     return statistics;
   }

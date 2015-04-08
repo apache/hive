@@ -449,7 +449,7 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
                 struct.values = new ArrayList<Double>(_list94.size);
                 for (int _i95 = 0; _i95 < _list94.size; ++_i95)
                 {
-                  double _elem96; // required
+                  double _elem96; // optional
                   _elem96 = iprot.readDouble();
                   struct.values.add(_elem96);
                 }
@@ -533,7 +533,7 @@ public class TDoubleColumn implements org.apache.thrift.TBase<TDoubleColumn, TDo
         struct.values = new ArrayList<Double>(_list99.size);
         for (int _i100 = 0; _i100 < _list99.size; ++_i100)
         {
-          double _elem101; // required
+          double _elem101; // optional
           _elem101 = iprot.readDouble();
           struct.values.add(_elem101);
         }

@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.HashMap;
 import java.util.List;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName="privilege subject")
+
+@Explain(displayName="privilege subject", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PrivilegeObjectDesc {
 
   //default type is table
@@ -53,7 +55,7 @@ public class PrivilegeObjectDesc {
     this.table = isTable;
   }
 
-  @Explain(displayName="object")
+  @Explain(displayName="object", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getObject() {
     return object;
   }
@@ -62,7 +64,7 @@ public class PrivilegeObjectDesc {
     this.object = object;
   }
 
-  @Explain(displayName="partition spec")
+  @Explain(displayName="partition spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public HashMap<String, String> getPartSpec() {
     return partSpec;
   }

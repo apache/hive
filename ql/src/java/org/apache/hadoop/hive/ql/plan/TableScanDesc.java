@@ -27,13 +27,15 @@ import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
  * of map-reduce framework. So, nothing is stored in the descriptor. But, more
  * things will be added here as table scan is invoked as part of local work.
  **/
-@Explain(displayName = "TableScan")
+@Explain(displayName = "TableScan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class TableScanDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -125,7 +127,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return new TableScanDesc(getAlias(), vcs, this.tableMetadata);
   }
 
-  @Explain(displayName = "alias")
+  @Explain(displayName = "alias", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getAlias() {
     return alias;
   }
@@ -193,7 +195,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.gatherStats = gatherStats;
   }
 
-  @Explain(displayName = "GatherStats", normalExplain = false)
+  @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -218,7 +220,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     statsAggKeyPrefix = k;
   }
 
-  @Explain(displayName = "Statistics Aggregation Key Prefix", normalExplain = false)
+  @Explain(displayName = "Statistics Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getStatsAggPrefix() {
     return statsAggKeyPrefix;
   }

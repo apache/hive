@@ -22,11 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Truncates managed table or partition
  */
-@Explain(displayName = "Truncate Table or Partition")
+@Explain(displayName = "Truncate Table or Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class TruncateTableDesc extends DDLDesc {
 
   private static final long serialVersionUID = 1L;
@@ -46,7 +48,7 @@ public class TruncateTableDesc extends DDLDesc {
     this.partSpec = partSpec;
   }
 
-  @Explain(displayName = "TableName")
+  @Explain(displayName = "TableName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
@@ -55,7 +57,7 @@ public class TruncateTableDesc extends DDLDesc {
     this.tableName = tableName;
   }
 
-  @Explain(displayName = "Partition Spec")
+  @Explain(displayName = "Partition Spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartSpec() {
     return partSpec;
   }
