@@ -573,33 +573,35 @@ public class HCatClientHMSImpl extends HCatClient {
         && "TRUE".equalsIgnoreCase(table.getParameters().get("EXTERNAL"));
   }
 
-  private void dropPartitionsUsingExpressions(Table table, Map<String, String> partitionSpec, boolean ifExists)
-    throws SemanticException, TException {
+  private void dropPartitionsUsingExpressions(Table table, Map<String, String> partitionSpec,
+                                              boolean ifExists, boolean deleteData)
+      throws SemanticException, TException {
     LOG.info("HCatClient: Dropping partitions using partition-predicate Expressions.");
     ExprNodeGenericFuncDesc partitionExpression = new ExpressionBuilder(table, partitionSpec).build();
     ObjectPair<Integer, byte[]> serializedPartitionExpression =
         new ObjectPair<Integer, byte[]>(partitionSpec.size(),
             Utilities.serializeExpressionToKryo(partitionExpression));
     hmsClient.dropPartitions(table.getDbName(), table.getTableName(), Arrays.asList(serializedPartitionExpression),
-        !isExternal(table),  // Delete data?
-        false,               // Ignore Protection?
-        ifExists,            // Fail if table doesn't exist?
-        false);              // Need results back?
+        deleteData && !isExternal(table),  // Delete data?
+        false,                             // Ignore Protection?
+        ifExists,                          // Fail if table doesn't exist?
+        false);                            // Need results back?
   }
 
   private void dropPartitionsIteratively(String dbName, String tableName,
-                                         Map<String, String> partitionSpec, boolean ifExists) throws HCatException, TException {
+                                         Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
+      throws HCatException, TException {
     LOG.info("HCatClient: Dropping partitions iteratively.");
     List<Partition> partitions = hmsClient.listPartitionsByFilter(dbName, tableName,
         getFilterString(partitionSpec), (short) -1);
     for (Partition partition : partitions) {
-      dropPartition(partition, ifExists);
+      dropPartition(partition, ifExists, deleteData);
     }
   }
 
   @Override
   public void dropPartitions(String dbName, String tableName,
-                 Map<String, String> partitionSpec, boolean ifExists)
+                 Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
     throws HCatException {
     LOG.info("HCatClient dropPartitions(db=" + dbName + ",table=" + tableName + ", partitionSpec: ["+ partitionSpec + "]).");
     try {
@@ -608,17 +610,17 @@ public class HCatClientHMSImpl extends HCatClient {
 
       if (hiveConfig.getBoolVar(HiveConf.ConfVars.METASTORE_CLIENT_DROP_PARTITIONS_WITH_EXPRESSIONS)) {
         try {
-          dropPartitionsUsingExpressions(table, partitionSpec, ifExists);
+          dropPartitionsUsingExpressions(table, partitionSpec, ifExists, deleteData);
         }
         catch (SemanticException parseFailure) {
           LOG.warn("Could not push down partition-specification to back-end, for dropPartitions(). Resorting to iteration.",
               parseFailure);
-          dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists);
+          dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists, deleteData);
         }
       }
       else {
         // Not using expressions.
-        dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists);
+        dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists, deleteData);
       }
     } catch (NoSuchObjectException e) {
       throw new ObjectNotFoundException(
@@ -633,10 +635,16 @@ public class HCatClientHMSImpl extends HCatClient {
     }
   }
 
-  private void dropPartition(Partition partition, boolean ifExists)
+  @Override
+  public void dropPartitions(String dbName, String tableName,
+                             Map<String, String> partitionSpec, boolean ifExists) throws HCatException {
+    dropPartitions(dbName, tableName, partitionSpec, ifExists, true);
+  }
+
+  private void dropPartition(Partition partition, boolean ifExists, boolean deleteData)
     throws HCatException, MetaException, TException {
     try {
-      hmsClient.dropPartition(partition.getDbName(), partition.getTableName(), partition.getValues());
+      hmsClient.dropPartition(partition.getDbName(), partition.getTableName(), partition.getValues(), deleteData);
     } catch (NoSuchObjectException e) {
       if (!ifExists) {
         throw new ObjectNotFoundException(
