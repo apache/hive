@@ -32,6 +32,8 @@ public class HCatNotificationEvent {
   private String tableName;
   private String message;
 
+  public enum Scope { DB, TABLE, UNKNOWN };
+
   HCatNotificationEvent(NotificationEvent event) {
     eventId = event.getEventId();
     eventTime = event.getEventTime();
@@ -43,6 +45,20 @@ public class HCatNotificationEvent {
 
   public long getEventId() {
     return eventId;
+  }
+
+  public Scope getEventScope() {
+    // Eventually, we want this to be a richer description of having
+    // a DB, TABLE, ROLE, etc scope. For now, we have a trivial impl
+    // of having only DB and TABLE scopes, as determined by whether
+    // or not the tableName is null.
+    if (dbName != null){
+      if (tableName != null){
+        return Scope.TABLE;
+      }
+      return Scope.DB;
+    }
+    return Scope.UNKNOWN;
   }
 
   public int getEventTime() {

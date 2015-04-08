@@ -45,6 +45,11 @@
       <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-server-extensions</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>

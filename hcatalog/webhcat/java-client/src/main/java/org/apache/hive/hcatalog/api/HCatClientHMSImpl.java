@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -48,12 +50,16 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hive.hcatalog.api.repl.HCatReplicationTaskIterator;
+import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.thrift.TException;
+
+import javax.annotation.Nullable;
 
 /**
  * The HCatClientHMSImpl is the Hive Metastore client based implementation of
@@ -844,18 +850,27 @@ public class HCatClientHMSImpl extends HCatClient {
   }
 
   @Override
+  public Iterator<ReplicationTask> getReplicationTasks(
+      long lastEventId, int maxEvents, String dbName, String tableName) throws HCatException {
+    return new HCatReplicationTaskIterator(this,lastEventId,maxEvents,dbName,tableName);
+  }
+
+  @Override
   public List<HCatNotificationEvent> getNextNotification(long lastEventId, int maxEvents,
                                                          IMetaStoreClient.NotificationFilter filter)
       throws HCatException {
     try {
-      List<HCatNotificationEvent> events = new ArrayList<HCatNotificationEvent>();
       NotificationEventResponse rsp = hmsClient.getNextNotification(lastEventId, maxEvents, filter);
       if (rsp != null && rsp.getEvents() != null) {
-        for (NotificationEvent event : rsp.getEvents()) {
-          events.add(new HCatNotificationEvent(event));
-        }
+        return Lists.transform(rsp.getEvents(), new Function<NotificationEvent, HCatNotificationEvent>() {
+          @Override
+          public HCatNotificationEvent apply(@Nullable NotificationEvent notificationEvent) {
+            return new HCatNotificationEvent(notificationEvent);
+          }
+        });
+      } else {
+        return new ArrayList<HCatNotificationEvent>();
       }
-      return events;
     } catch (TException e) {
       throw new ConnectionFailureException("TException while getting notifications", e);
     }
