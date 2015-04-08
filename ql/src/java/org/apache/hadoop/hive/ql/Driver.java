@@ -503,7 +503,6 @@ public class Driver implements CommandProcessor {
               + explainOutput);
         }
       }
-
       return 0;
     } catch (Exception e) {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
@@ -526,8 +525,18 @@ public class Driver implements CommandProcessor {
       return error.getErrorCode();
     } finally {
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE);
+      dumpMetaCallTimingWithoutEx("compilation");
       restoreSession(queryState);
       LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
+    }
+  }
+
+  private void dumpMetaCallTimingWithoutEx(String phase) {
+    try {
+      Hive.get().dumpAndClearMetaCallTiming(phase);
+    } catch (HiveException he) {
+      LOG.warn("Caught exception attempting to write metadata call information " + he, he);
     }
   }
 
@@ -1282,7 +1291,6 @@ public class Driver implements CommandProcessor {
         return createProcessorResponse(ret);
       }
     }
-
     ret = execute();
     if (ret != 0) {
       //if needRequireLock is false, the release here will do nothing because there is no lock
@@ -1406,7 +1414,6 @@ public class Driver implements CommandProcessor {
   public int execute() throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
-
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
@@ -1419,6 +1426,10 @@ public class Driver implements CommandProcessor {
 
     try {
       LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
+      // compile and execute can get called from different threads in case of HS2
+      // so clear timing in this thread's Hive object before proceeding.
+      Hive.get().clearMetaCallTiming();
+
       plan.setStarted();
 
       if (SessionState.get() != null) {
@@ -1647,6 +1658,8 @@ public class Driver implements CommandProcessor {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE)/1000.00;
+      dumpMetaCallTimingWithoutEx("execution");
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
       if (stats != null && !stats.isEmpty()) {
