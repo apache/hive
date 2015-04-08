@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * CreateTableLikeDesc.
  *
  */
-@Explain(displayName = "Create Table")
+@Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tableName;
@@ -71,7 +73,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
@@ -80,7 +82,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.tableName = tableName;
   }
 
-  @Explain(displayName = "default input format")
+  @Explain(displayName = "default input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDefaultInputFormat() {
     return defaultInputFormat;
   }
@@ -89,7 +91,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.defaultInputFormat = inputFormat;
   }
 
-  @Explain(displayName = "default output format")
+  @Explain(displayName = "default output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDefaultOutputFormat() {
     return defaultOutputFormat;
   }
@@ -148,7 +150,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.defaultSerdeProps = serdeProps;
   }
 
-  @Explain(displayName = "like")
+  @Explain(displayName = "like", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getLikeTableName() {
     return likeTableName;
   }

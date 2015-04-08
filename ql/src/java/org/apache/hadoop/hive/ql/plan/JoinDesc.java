@@ -29,12 +29,14 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Join operator Descriptor implementation.
  *
  */
-@Explain(displayName = "Join Operator")
+@Explain(displayName = "Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class JoinDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   public static final int INNER_JOIN = 0;
@@ -209,7 +211,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   /**
    * @return the keys in string form
    */
-  @Explain(displayName = "keys")
+  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
@@ -229,7 +231,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    *
    * @return Map from alias to filters on the alias.
    */
-  @Explain(displayName = "filter predicates")
+  @Explain(displayName = "filter predicates", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Byte, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
@@ -275,7 +277,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filters = filters;
   }
 
-  @Explain(displayName = "outputColumnNames")
+  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -293,7 +295,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.noOuterJoin = noOuterJoin;
   }
 
-  @Explain(displayName = "condition map")
+  @Explain(displayName = "condition map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<JoinCondDesc> getCondsList() {
     if (conds == null) {
       return null;
@@ -453,7 +455,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filterMap = filterMap;
   }
 
-  @Explain(displayName = "filter mappings", normalExplain = false)
+  @Explain(displayName = "filter mappings", explainLevels = { Level.EXTENDED })
   public Map<Integer, String> getFilterMapString() {
     return toCompactString(filterMap);
   }

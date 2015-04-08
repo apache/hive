@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName="grant or revoke roles")
+
+@Explain(displayName="grant or revoke roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class GrantRevokeRoleDDL {
 
   private boolean grant;
@@ -55,7 +57,7 @@ public class GrantRevokeRoleDDL {
   /**
    * @return grant or revoke privileges
    */
-  @Explain(displayName="grant (or revoke)")
+  @Explain(displayName="grant (or revoke)", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean getGrant() {
     return grant;
   }
@@ -67,7 +69,7 @@ public class GrantRevokeRoleDDL {
   /**
    * @return a list of principals
    */
-  @Explain(displayName="principals")
+  @Explain(displayName="principals", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PrincipalDesc> getPrincipalDesc() {
     return principalDesc;
   }
@@ -79,7 +81,7 @@ public class GrantRevokeRoleDDL {
   /**
    * @return a list of roles
    */
-  @Explain(displayName="roles")
+  @Explain(displayName="roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getRoles() {
     return roles;
   }

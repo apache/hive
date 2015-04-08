@@ -24,12 +24,14 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * FileSinkDesc.
  *
  */
-@Explain(displayName = "File Output Operator")
+@Explain(displayName = "File Output Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class FileSinkDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -151,7 +153,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     return (Object) ret;
   }
 
-  @Explain(displayName = "directory", normalExplain = false)
+  @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
   public Path getDirName() {
     return dirName;
   }
@@ -164,7 +166,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     return linkedFileSink ? parentDir : dirName;
   }
 
-  @Explain(displayName = "table")
+  @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TableDesc getTableInfo() {
     return tableInfo;
   }
@@ -173,7 +175,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.tableInfo = tableInfo;
   }
 
-  @Explain(displayName = "compressed")
+  @Explain(displayName = "compressed", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean getCompressed() {
     return compressed;
   }
@@ -182,7 +184,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.compressed = compressed;
   }
 
-  @Explain(displayName = "GlobalTableId", normalExplain = false)
+  @Explain(displayName = "GlobalTableId", explainLevels = { Level.EXTENDED })
   public int getDestTableId() {
     return destTableId;
   }
@@ -210,7 +212,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   /**
    * @return the multiFileSpray
    */
-  @Explain(displayName = "MultiFileSpray", normalExplain = false)
+  @Explain(displayName = "MultiFileSpray", explainLevels = { Level.EXTENDED })
   public boolean isMultiFileSpray() {
     return multiFileSpray;
   }
@@ -248,7 +250,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   /**
    * @return the totalFiles
    */
-  @Explain(displayName = "TotalFiles", normalExplain = false)
+  @Explain(displayName = "TotalFiles", explainLevels = { Level.EXTENDED })
   public int getTotalFiles() {
     return totalFiles;
   }
@@ -277,7 +279,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   /**
    * @return the numFiles
    */
-  @Explain(displayName = "NumFilesPerFileSink", normalExplain = false)
+  @Explain(displayName = "NumFilesPerFileSink", explainLevels = { Level.EXTENDED })
   public int getNumFiles() {
     return numFiles;
   }
@@ -301,7 +303,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.staticSpec = staticSpec;
   }
 
-  @Explain(displayName = "Static Partition Specification", normalExplain = false)
+  @Explain(displayName = "Static Partition Specification", explainLevels = { Level.EXTENDED })
   public String getStaticSpec() {
     return staticSpec;
   }
@@ -310,7 +312,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.gatherStats = gatherStats;
   }
 
-  @Explain(displayName = "GatherStats", normalExplain = false)
+  @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -326,7 +328,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
    * will be aggregated.
    * @return key prefix used for stats publishing and aggregation.
    */
-  @Explain(displayName = "Stats Publishing Key Prefix", normalExplain = false)
+  @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
   public String getStatsAggPrefix() {
     // dirName uniquely identifies destination directory of a FileSinkOperator.
     // If more than one FileSinkOperator write to the same partition, this dirName

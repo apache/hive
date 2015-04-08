@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * LoadTableDesc.
@@ -125,7 +126,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     return holdDDLTime;
   }
 
-  @Explain(displayName = "table")
+  @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TableDesc getTable() {
     return table;
   }
@@ -134,7 +135,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.table = table;
   }
 
-  @Explain(displayName = "partition")
+  @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpec() {
     return partitionSpec;
   }

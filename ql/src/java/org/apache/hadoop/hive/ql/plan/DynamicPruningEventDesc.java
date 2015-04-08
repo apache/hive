@@ -22,9 +22,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 @SuppressWarnings("serial")
-@Explain(displayName = "Dynamic Partitioning Event Operator")
+@Explain(displayName = "Dynamic Partitioning Event Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DynamicPruningEventDesc extends AppMasterEventDesc {
 
   // column in the target table that will be pruned against

@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.mapred.JobConf;
@@ -47,8 +49,8 @@ public class UnionWork extends BaseWork {
     super(name);
   }
 
-  @Explain(displayName = "Vertex")
   @Override
+  @Explain(displayName = "Vertex", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return super.getName();
   }

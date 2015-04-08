@@ -91,6 +91,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       pCtx = ((SemanticAnalyzer)sem).getParseContext();
     }
 
+    boolean userLevelExplain = !extended && !formatted && !dependency && !logical && !authorize
+        && HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER);
     ExplainWork work = new ExplainWork(ctx.getResFile(),
         pCtx,
         tasks,
@@ -101,7 +103,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         formatted,
         dependency,
         logical,
-        authorize);
+        authorize,
+        userLevelExplain,
+        ctx.getCboInfo());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));

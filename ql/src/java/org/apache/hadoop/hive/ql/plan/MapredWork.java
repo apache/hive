@@ -23,13 +23,15 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * MapredWork.
  *
  */
-@Explain(displayName = "Map Reduce")
+@Explain(displayName = "Map Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MapredWork extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -38,7 +40,7 @@ public class MapredWork extends AbstractOperatorDesc {
 
   private boolean finalMapRed;
 
-  @Explain(skipHeader = true, displayName = "Map")
+  @Explain(skipHeader = true, displayName = "Map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public MapWork getMapWork() {
     return mapWork;
   }
@@ -47,7 +49,7 @@ public class MapredWork extends AbstractOperatorDesc {
     this.mapWork = mapWork;
   }
 
-  @Explain(skipHeader = true, displayName = "Reduce")
+  @Explain(skipHeader = true, displayName = "Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ReduceWork getReduceWork() {
     return reduceWork;
   }

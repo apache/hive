@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.InputFormat;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-@Explain(displayName = "Merge File Operator")
+@Explain(displayName = "Merge File Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MergeFileWork extends MapWork {
 
   private static final Log LOG = LogFactory.getLog(MergeFileWork.class);

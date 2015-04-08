@@ -51,6 +51,8 @@ public class ExplainWork implements Serializable {
   boolean appendTaskType;
 
   boolean authorize;
+  boolean userLevelExplain;
+  String cboInfo;
 
   private transient BaseSemanticAnalyzer analyzer;
 
@@ -67,7 +69,9 @@ public class ExplainWork implements Serializable {
       boolean formatted,
       boolean dependency,
       boolean logical,
-      boolean authorize) {
+      boolean authorize,
+      boolean userLevelExplain,
+      String cboInfo) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.fetchTask = fetchTask;
@@ -80,6 +84,8 @@ public class ExplainWork implements Serializable {
     this.logical = logical;
     this.pCtx = pCtx;
     this.authorize = authorize;
+    this.userLevelExplain = userLevelExplain;
+    this.cboInfo = cboInfo;
   }
 
   public Path getResFile() {
@@ -181,4 +187,21 @@ public class ExplainWork implements Serializable {
   public BaseSemanticAnalyzer getAnalyzer() {
     return analyzer;
   }
+
+  public boolean isUserLevelExplain() {
+    return userLevelExplain;
+  }
+
+  public void setUserLevelExplain(boolean userLevelExplain) {
+    this.userLevelExplain = userLevelExplain;
+  }
+
+  public String getCboInfo() {
+    return cboInfo;
+  }
+
+  public void setCboInfo(String cboInfo) {
+    this.cboInfo = cboInfo;
+  }
+
 }

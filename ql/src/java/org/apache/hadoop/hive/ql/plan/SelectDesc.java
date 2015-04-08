@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
  * SelectDesc.
  *
  */
-@Explain(displayName = "Select Operator")
+@Explain(displayName = "Select Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class SelectDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList;
@@ -81,7 +82,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.colList = colList;
   }
 
-  @Explain(displayName = "outputColumnNames")
+  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }

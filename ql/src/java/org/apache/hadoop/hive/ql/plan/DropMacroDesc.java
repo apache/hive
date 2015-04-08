@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * DropMacroDesc.
  *
  */
-@Explain(displayName = "Drop Macro")
+@Explain(displayName = "Drop Macro", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropMacroDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -40,7 +42,7 @@ public class DropMacroDesc implements Serializable {
     this.macroName = macroName;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getMacroName() {
     return macroName;
   }

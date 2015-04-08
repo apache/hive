@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ShowIndexesDesc.
  * Returns table index information per SQL syntax.
  */
-@Explain(displayName = "Show Indexes")
+@Explain(displayName = "Show Indexes", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowIndexesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tableName;

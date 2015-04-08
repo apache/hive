@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ColumnStatsUpdateWork implementation. ColumnStatsUpdateWork will persist the
@@ -30,7 +32,7 @@ import java.util.Map;
  * PARTITION(partitionId=100) UPDATE STATISTICS for column value SET
  * ('maxColLen'='4444','avgColLen'='44.4');
  */
-@Explain(displayName = "Column Stats Update Work")
+@Explain(displayName = "Column Stats Update Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ColumnStatsUpdateWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private ColumnStatsDesc colStats;

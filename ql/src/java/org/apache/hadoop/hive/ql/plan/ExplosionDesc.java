@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ExplosionDesc.
  *
  */
-@Explain(displayName = "Explosion")
+@Explain(displayName = "Explosion", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ExplosionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String fieldName;

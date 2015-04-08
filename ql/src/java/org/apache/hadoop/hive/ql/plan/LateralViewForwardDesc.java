@@ -17,13 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * LateralViewForwardDesc.
  *
  */
-@Explain(displayName = "Lateral View Forward")
+@Explain(displayName = "Lateral View Forward", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class LateralViewForwardDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 

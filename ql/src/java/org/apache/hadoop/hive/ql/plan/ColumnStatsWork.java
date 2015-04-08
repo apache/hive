@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ColumnStats Work.
  *
  */
-@Explain(displayName = "Column Stats Work")
+@Explain(displayName = "Column Stats Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ColumnStatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchWork fWork;
