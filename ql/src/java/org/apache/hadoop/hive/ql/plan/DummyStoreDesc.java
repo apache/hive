@@ -17,13 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * Dummy Store Desc. This is only used by sort-merge joins to store the
  * result for the small table (sub-query) being scanned.
  */
-@Explain(displayName = "Dummy Store")
+@Explain(displayName = "Dummy Store", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DummyStoreDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 

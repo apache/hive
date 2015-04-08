@@ -20,13 +20,15 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * Demux operator descriptor implementation.
  *
  */
-@Explain(displayName = "Demux Operator")
+@Explain(displayName = "Demux Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DemuxDesc extends AbstractOperatorDesc {
 
   private static final long serialVersionUID = 1L;

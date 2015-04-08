@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.List;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName="Revoke")
+
+@Explain(displayName="Revoke", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class RevokeDesc extends DDLDesc implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;

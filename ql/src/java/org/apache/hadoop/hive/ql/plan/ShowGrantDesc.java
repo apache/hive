@@ -16,8 +16,10 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName="show grant desc")
+
+@Explain(displayName="show grant desc", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowGrantDesc {
   
   private PrincipalDesc principalDesc;
@@ -48,7 +50,7 @@ public class ShowGrantDesc {
     return tabularSchema;
   }
 
-  @Explain(displayName="principal desc")
+  @Explain(displayName="principal desc", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrincipalDesc getPrincipalDesc() {
     return principalDesc;
   }
@@ -57,7 +59,7 @@ public class ShowGrantDesc {
     this.principalDesc = principalDesc;
   }
 
-  @Explain(displayName="object")
+  @Explain(displayName="object", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrivilegeObjectDesc getHiveObj() {
     return hiveObj;
   }

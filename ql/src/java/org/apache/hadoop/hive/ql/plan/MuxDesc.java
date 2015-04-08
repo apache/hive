@@ -24,13 +24,15 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * Mux operator descriptor implementation..
  *
  */
-@Explain(displayName = "Mux Operator")
+@Explain(displayName = "Mux Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MuxDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 

@@ -22,12 +22,14 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ConditionalStats.
  *
  */
-@Explain(displayName = "Stats-Aggr Operator")
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -90,7 +92,7 @@ public class StatsWork implements Serializable {
     aggKey = aggK;
   }
 
-  @Explain(displayName = "Stats Aggregation Key Prefix", normalExplain = false)
+  @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getAggKey() {
     return aggKey;
   }

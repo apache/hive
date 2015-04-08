@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.collect.Interner;
@@ -134,7 +135,7 @@ public class MapWork extends BaseWork {
     super(name);
   }
 
-  @Explain(displayName = "Path -> Alias", normalExplain = false)
+  @Explain(displayName = "Path -> Alias", explainLevels = { Level.EXTENDED })
   public LinkedHashMap<String, ArrayList<String>> getPathToAliases() {
     return pathToAliases;
   }
@@ -155,7 +156,7 @@ public class MapWork extends BaseWork {
    *
    * @return
    */
-  @Explain(displayName = "Truncated Path -> Alias", normalExplain = false)
+  @Explain(displayName = "Truncated Path -> Alias", explainLevels = { Level.EXTENDED })
   public Map<String, ArrayList<String>> getTruncatedPathToAliases() {
     Map<String, ArrayList<String>> trunPathToAliases = new LinkedHashMap<String,
         ArrayList<String>>();
@@ -170,7 +171,7 @@ public class MapWork extends BaseWork {
     return trunPathToAliases;
   }
 
-  @Explain(displayName = "Path -> Partition", normalExplain = false)
+  @Explain(displayName = "Path -> Partition", explainLevels = { Level.EXTENDED })
   public LinkedHashMap<String, PartitionDesc> getPathToPartitionInfo() {
     return pathToPartitionInfo;
   }
@@ -240,7 +241,7 @@ public class MapWork extends BaseWork {
     this.aliasToWork = aliasToWork;
   }
 
-  @Explain(displayName = "Split Sample", normalExplain = false)
+  @Explain(displayName = "Split Sample", explainLevels = { Level.EXTENDED })
   public HashMap<String, SplitSample> getNameToSplitSample() {
     return nameToSplitSample;
   }
@@ -329,7 +330,7 @@ public class MapWork extends BaseWork {
   }
 
   @Override
-  @Explain(displayName = "Map Operator Tree")
+  @Explain(displayName = "Map Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Set<Operator<?>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
 
@@ -467,12 +468,12 @@ public class MapWork extends BaseWork {
     mapWork.useBucketizedHiveInputFormat |= useBucketizedHiveInputFormat;
   }
 
-  @Explain(displayName = "Path -> Bucketed Columns", normalExplain = false)
+  @Explain(displayName = "Path -> Bucketed Columns", explainLevels = { Level.EXTENDED })
   public Map<String, List<BucketCol>> getBucketedColsByDirectory() {
     return bucketedColsByDirectory;
   }
 
-  @Explain(displayName = "Path -> Sorted Columns", normalExplain = false)
+  @Explain(displayName = "Path -> Sorted Columns", explainLevels = { Level.EXTENDED })
   public Map<String, List<SortCol>> getSortedColsByDirectory() {
     return sortedColsByDirectory;
   }
@@ -493,7 +494,7 @@ public class MapWork extends BaseWork {
     this.samplingType = samplingType;
   }
 
-  @Explain(displayName = "Sampling", normalExplain = false)
+  @Explain(displayName = "Sampling", explainLevels = { Level.EXTENDED })
   public String getSamplingTypeString() {
     return samplingType == 1 ? "SAMPLING_ON_PREV_MR" :
         samplingType == 2 ? "SAMPLING_ON_START" : null;

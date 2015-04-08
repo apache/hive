@@ -29,12 +29,27 @@ public class CalciteSemanticException extends SemanticException {
 
   private static final long serialVersionUID = 1L;
 
+  public enum UnsupportedFeature {
+    Distinct_without_an_aggreggation, Duplicates_in_RR, Filter_expression_with_non_boolean_return_type, 
+    Having_clause_without_any_groupby, Hint, Invalid_column_reference, Invalid_decimal, 
+    Less_than_equal_greater_than, Multi_insert, Others, Same_name_in_multiple_expressions, 
+    Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery, 
+    Table_sample_clauses, UDTF, Union_type, Unique_join
+  };
+
+  private UnsupportedFeature unsupportedFeature;
+
   public CalciteSemanticException() {
     super();
   }
 
   public CalciteSemanticException(String message) {
     super(message);
+  }
+
+  public CalciteSemanticException(String message, UnsupportedFeature feature) {
+    super(message);
+    this.setUnsupportedFeature(feature);
   }
 
   public CalciteSemanticException(Throwable cause) {
@@ -48,4 +63,13 @@ public class CalciteSemanticException extends SemanticException {
   public CalciteSemanticException(ErrorMsg errorMsg, String... msgArgs) {
     super(errorMsg, msgArgs);
   }
+
+  public UnsupportedFeature getUnsupportedFeature() {
+    return unsupportedFeature;
+  }
+
+  public void setUnsupportedFeature(UnsupportedFeature unsupportedFeature) {
+    this.unsupportedFeature = unsupportedFeature;
+  }
+
 }

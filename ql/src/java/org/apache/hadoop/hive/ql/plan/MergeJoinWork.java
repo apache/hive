@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.JobConf;
 
 public class MergeJoinWork extends BaseWork {
@@ -115,7 +116,7 @@ public class MergeJoinWork extends BaseWork {
     }
   }
 
-  @Explain(skipHeader = true, displayName = "Join")
+  @Explain(skipHeader=true, displayName = "Join", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<BaseWork> getBaseWorkList() {
     return mergeWorkList;
   }
@@ -124,7 +125,7 @@ public class MergeJoinWork extends BaseWork {
     return ((MapWork) bigTableWork).getAliasToWork().keySet().iterator().next();
   }
 
-  @Explain(skipHeader = true, displayName = "Main")
+  @Explain(skipHeader=true, displayName = "Main", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public BaseWork getMainWork() {
     return bigTableWork;
   }

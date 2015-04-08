@@ -22,12 +22,14 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * Client-side stats aggregator task.
  */
-@Explain(displayName = "Stats-Aggr Operator")
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsNoJobWork implements Serializable {
   private static final long serialVersionUID = 1L;
 

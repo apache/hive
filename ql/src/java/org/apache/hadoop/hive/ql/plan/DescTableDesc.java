@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * DescTableDesc.
  *
  */
-@Explain(displayName = "Describe Table")
+@Explain(displayName = "Describe Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DescTableDesc extends DDLDesc implements Serializable {
   public void setPartSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;
@@ -131,7 +133,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the tableName
    */
-  @Explain(displayName = "table")
+  @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
@@ -162,7 +164,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the partSpec
    */
-  @Explain(displayName = "partition")
+  @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartSpec() {
     return partSpec;
   }
@@ -178,7 +180,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }

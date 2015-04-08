@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * DropTableDesc.
  * TODO: this is currently used for both drop table and drop partitions.
  */
-@Explain(displayName = "Drop Table")
+@Explain(displayName = "Drop Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -89,7 +91,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the tableName
    */
-  @Explain(displayName = "table")
+  @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }

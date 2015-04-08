@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Grant")
+
+@Explain(displayName = "Grant", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class GrantDesc extends DDLDesc implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
@@ -55,7 +57,7 @@ public class GrantDesc extends DDLDesc implements Serializable, Cloneable {
   /**
    * @return privileges
    */
-  @Explain(displayName = "Privileges")
+  @Explain(displayName = "Privileges", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PrivilegeDesc> getPrivileges() {
     return privileges;
   }
@@ -70,7 +72,7 @@ public class GrantDesc extends DDLDesc implements Serializable, Cloneable {
   /**
    * @return principals 
    */
-  @Explain(displayName = "Principals")
+  @Explain(displayName = "Principals", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PrincipalDesc> getPrincipals() {
     return principals;
   }
@@ -85,7 +87,7 @@ public class GrantDesc extends DDLDesc implements Serializable, Cloneable {
   /**
    * @return grant option
    */
-  @Explain(displayName = "grant option")
+  @Explain(displayName = "grant option", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isGrantOption() {
     return grantOption;
   }
@@ -100,7 +102,7 @@ public class GrantDesc extends DDLDesc implements Serializable, Cloneable {
   /**
    * @return privilege subject
    */
-  @Explain(displayName="privilege subject")
+  @Explain(displayName="privilege subject", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrivilegeObjectDesc getPrivilegeSubjectDesc() {
     return privilegeSubjectDesc;
   }

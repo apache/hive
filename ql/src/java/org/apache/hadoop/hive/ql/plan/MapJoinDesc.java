@@ -27,12 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * Map Join operator Descriptor implementation.
  *
  */
-@Explain(displayName = "Map Join Operator")
+@Explain(displayName = "Map Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MapJoinDesc extends JoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -121,7 +122,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
   }
 
-  @Explain(displayName = "input vertices")
+  @Explain(displayName = "input vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Integer, String> getParentToInput() {
     return parentToInput;
   }
@@ -138,7 +139,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     return parentDataSizes;
   }
 
-  @Explain(displayName = "Estimated key counts", normalExplain = false)
+  @Explain(displayName = "Estimated key counts", explainLevels = { Level.EXTENDED })
   public String getKeyCountsExplainDesc() {
     StringBuilder result = null;
     for (Map.Entry<Integer, Long> entry : parentKeyCounts.entrySet()) {
@@ -195,7 +196,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    * @return the keys in string form
    */
   @Override
-  @Explain(displayName = "keys")
+  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
@@ -222,7 +223,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   /**
    * @return the position of the big table not in memory
    */
-  @Explain(displayName = "Position of Big Table", normalExplain = false)
+  @Explain(displayName = "Position of Big Table", explainLevels = { Level.EXTENDED })
   public int getPosBigTable() {
     return posBigTable;
   }
@@ -312,7 +313,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTablePartSpecToFileMapping = partToFileMapping;
   }
 
-  @Explain(displayName = "BucketMapJoin", normalExplain = false, displayOnlyOnTrue = true)
+  @Explain(displayName = "BucketMapJoin", explainLevels = { Level.EXTENDED }, displayOnlyOnTrue = true)
   public boolean isBucketMapJoin() {
     return isBucketMapJoin;
   }

@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * UnlockTableDesc.
  *
  */
-@Explain(displayName = "Unlock Table")
+@Explain(displayName = "Unlock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UnlockTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
