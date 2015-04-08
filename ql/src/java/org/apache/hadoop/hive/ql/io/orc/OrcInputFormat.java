@@ -478,9 +478,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       this.covered = covered;
     }
 
-    private FileInfo verifyCachedFileInfo(HdfsFileStatusWithId fileId) {
+    private FileInfo verifyCachedFileInfo(FileStatus file) {
       context.numFilesCounter.incrementAndGet();
-      FileStatus file = fileId.getFileStatus();
       FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
       if (fileInfo != null) {
         if (LOG.isDebugEnabled()) {
@@ -517,7 +516,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       for (HdfsFileStatusWithId file : files) {
         FileInfo info = null;
         if (context.cacheStripeDetails) {
-          info = verifyCachedFileInfo(file);
+          info = verifyCachedFileInfo(file.getFileStatus());
         }
         // ignore files of 0 length
         if (file.getFileStatus().getLen() > 0) {
@@ -561,9 +560,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     public List<OrcSplit> getSplits() throws IOException {
       List<OrcSplit> splits = Lists.newArrayList();
       for (HdfsFileStatusWithId child : fileStatuses) {
-        String[] hosts = SHIMS.getLocationsWithOffset(fs, child.getFileStatus()).firstEntry().getValue()
+        String[] hosts = SHIMS.getLocationsWithOffset(fs, child.getFileStatus()).firstEntry()
+            .getValue()
             .getHosts();
-        OrcSplit orcSplit = new OrcSplit(child.getFileStatus().getPath(), null, 0, child.getFileStatus().getLen(), hosts,
+        OrcSplit orcSplit = new OrcSplit(child.getFileStatus().getPath(), child.getFileId(),
+            0, child.getFileStatus().getLen(), hosts,
             null, isOriginal, true, deltas, -1);
         splits.add(orcSplit);
       }
@@ -638,7 +639,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     public SplitStrategy call() throws IOException {
       final SplitStrategy splitStrategy;
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
-          context.conf, context.transactionList);
+          context.conf, context.transactionList, useFileIds);
       List<Long> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
       Path base = dirInfo.getBaseDirectory();
       List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
@@ -845,7 +846,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hosts = new String[hostList.size()];
         hostList.toArray(hosts);
       }
-      return new OrcSplit(fileWithId.getFileStatus().getPath(), null, offset, length, hosts, fileMetaInfo,
+      return new OrcSplit(fileWithId.getFileStatus().getPath(), fileWithId.getFileId(),
+          offset, length, hosts, fileMetaInfo,
           isOriginal, hasBase, deltas, projColsUncompressedSize);
     }
 
