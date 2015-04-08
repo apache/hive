@@ -9,7 +9,7 @@ EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status INT,
@@ -28,7 +28,7 @@ EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status INT,
@@ -61,7 +61,7 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status INT,

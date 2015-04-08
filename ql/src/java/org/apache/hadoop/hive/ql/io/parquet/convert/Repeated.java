@@ -1,7 +1,10 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import parquet.column.Dictionary;
@@ -21,11 +24,23 @@ public interface Repeated extends ConverterParent {
 
   public void parentEnd();
 
+  abstract class RepeatedConverterParent extends PrimitiveConverter implements Repeated {
+    private Map<String, String> metadata;
+
+    public void setMetadata(Map<String, String> metadata) {
+      this.metadata = metadata;
+    }
+
+    public Map<String, String> getMetadata() {
+      return metadata;
+    }
+  }
+
   /**
    * Stands in for a PrimitiveConverter and accumulates multiple values as an
    * ArrayWritable.
    */
-  class RepeatedPrimitiveConverter extends PrimitiveConverter implements Repeated {
+  class RepeatedPrimitiveConverter extends RepeatedConverterParent {
     private final PrimitiveType primitiveType;
     private final PrimitiveConverter wrapped;
     private final ConverterParent parent;
@@ -33,6 +48,7 @@ public interface Repeated extends ConverterParent {
     private final List<Writable> list = new ArrayList<Writable>();
 
     public RepeatedPrimitiveConverter(PrimitiveType primitiveType, ConverterParent parent, int index) {
+      setMetadata(parent.getMetadata());
       this.primitiveType = primitiveType;
       this.parent = parent;
       this.index = index;
@@ -112,8 +128,11 @@ public interface Repeated extends ConverterParent {
     private final ConverterParent parent;
     private final int index;
     private final List<Writable> list = new ArrayList<Writable>();
+    private final Map<String, String> metadata = new HashMap<String, String>();
+
 
     public RepeatedGroupConverter(GroupType groupType, ConverterParent parent, int index) {
+      setMetadata(parent.getMetadata());
       this.groupType = groupType;
       this.parent = parent;
       this.index = index;

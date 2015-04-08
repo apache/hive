@@ -54,7 +54,6 @@ public class RowResolver implements Serializable{
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
 
-  @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(RowResolver.class.getName());
 
   public RowResolver() {
@@ -97,6 +96,14 @@ public class RowResolver implements Serializable{
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+      //Make sure that the table alias and column alias are stored
+      //in the column info
+      if (tab_alias != null) {
+        colInfo.setTabAlias(tab_alias.toLowerCase());
+      }
+      if (col_alias != null) {
+        colInfo.setAlias(col_alias.toLowerCase());
+      }
       rowSchema.getSignature().add(colInfo);
     }
   }
@@ -457,5 +464,16 @@ public class RowResolver implements Serializable{
       LOG.warn("Duplicates detected when adding columns to RR: see previous message");
     }
     return combinedRR;
+  }
+
+  public RowResolver duplicate() {
+    RowResolver resolver = new RowResolver();
+    resolver.rowSchema = new RowSchema(rowSchema);
+    resolver.rslvMap.putAll(rslvMap);
+    resolver.invRslvMap.putAll(invRslvMap);
+    resolver.altInvRslvMap.putAll(altInvRslvMap);
+    resolver.expressionMap.putAll(expressionMap);
+    resolver.isExprResolver = isExprResolver;
+    return resolver;
   }
 }

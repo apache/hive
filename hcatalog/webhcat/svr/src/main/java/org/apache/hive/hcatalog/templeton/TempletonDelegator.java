@@ -28,6 +28,10 @@ public class TempletonDelegator {
    * http://hadoop.apache.org/docs/r1.0.4/commands_manual.html#Generic+Options
    */
   public static final String ARCHIVES = "-archives";
+  /**
+   * http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/CommandsManual.html#Generic_Options
+   */
+  public static final String FILES = "-files";
   
   protected AppConfig appConf;
 

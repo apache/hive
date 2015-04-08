@@ -42,12 +42,15 @@ DATETIME_TYPE_NAME = "datetime"
 TIMESTAMP_TYPE_NAME = "timestamp"
 DECIMAL_TYPE_NAME = "decimal"
 BINARY_TYPE_NAME = "binary"
+INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month"
+INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time"
 LIST_TYPE_NAME = "array"
 MAP_TYPE_NAME = "map"
 STRUCT_TYPE_NAME = "struct"
 UNION_TYPE_NAME = "uniontype"
 LIST_COLUMNS = "columns"
 LIST_COLUMN_TYPES = "columns.types"
+TIMESTAMP_FORMATS = "timestamp.formats"
 PrimitiveTypes = set([
   "void",
   "boolean",
@@ -63,6 +66,8 @@ PrimitiveTypes = set([
   "date",
   "datetime",
   "timestamp",
+  "interval_year_month",
+  "interval_day_time",
   "decimal",
   "binary",
 ])

@@ -17,6 +17,14 @@
 
 package org.apache.hive.spark.client;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -30,30 +38,22 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.Rpc;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 class SparkClientImpl implements SparkClient {
   private static final long serialVersionUID = 1L;
@@ -62,11 +62,16 @@ class SparkClientImpl implements SparkClient {
 
   private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
 
+  private static final String OSX_TEST_OPTS = "SPARK_OSX_TEST_OPTS";
+  private static final String SPARK_HOME_ENV = "SPARK_HOME";
+  private static final String SPARK_HOME_KEY = "spark.home";
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
   private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
+  private static final String EXECUTOR_EXTRA_CLASSPATH = "spark.executor.extraClassPath";
 
   private final Map<String, String> conf;
+  private final HiveConf hiveConf;
   private final AtomicInteger childIdGenerator;
   private final Thread driverThread;
   private final Map<String, JobHandleImpl<?>> jobs;
@@ -74,18 +79,20 @@ class SparkClientImpl implements SparkClient {
   private final ClientProtocol protocol;
   private volatile boolean isAlive;
 
-  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf) throws IOException, SparkException {
+  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf) throws IOException, SparkException {
     this.conf = conf;
+    this.hiveConf = hiveConf;
     this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
+    String clientId = UUID.randomUUID().toString();
     String secret = rpcServer.createSecret();
-    this.driverThread = startDriver(rpcServer, secret);
+    this.driverThread = startDriver(rpcServer, clientId, secret);
     this.protocol = new ClientProtocol();
 
     try {
       // The RPC server will take care of timeouts here.
-      this.driverRpc = rpcServer.registerClient(secret, protocol).get();
+      this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
     } catch (Exception e) {
       LOG.warn("Error while waiting for client to connect.", e);
       driverThread.interrupt();
@@ -116,13 +123,16 @@ class SparkClientImpl implements SparkClient {
   }
 
   @Override
+  public <T extends Serializable> Future<T> run(Job<T> job) {
+    return protocol.run(job);
+  }
+
+  @Override
   public void stop() {
     if (isAlive) {
       isAlive = false;
       try {
-        protocol.endSession().get(10, TimeUnit.SECONDS);
-      } catch (TimeoutException te) {
-        LOG.warn("Timed out waiting for driver to respond to stop request.");
+        protocol.endSession();
       } catch (Exception e) {
         LOG.warn("Exception while waiting for end session reply.", e);
       } finally {
@@ -137,36 +147,37 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Interrupted before driver thread was finished.");
     }
     if (endTime - System.currentTimeMillis() <= 0) {
-      LOG.debug("Shut down time out.");
+      LOG.warn("Timed out shutting down remote driver, interrupting...");
       driverThread.interrupt();
     }
   }
 
   @Override
-  public Future<?> addJar(URL url) {
-    return submit(new AddJarJob(url.toString()));
+  public Future<?> addJar(URI uri) {
+    return run(new AddJarJob(uri.toString()));
   }
 
   @Override
-  public Future<?> addFile(URL url) {
-    return submit(new AddFileJob(url.toString()));
+  public Future<?> addFile(URI uri) {
+    return run(new AddFileJob(uri.toString()));
   }
 
   @Override
   public Future<Integer> getExecutorCount() {
-    return submit(new GetExecutorCountJob());
+    return run(new GetExecutorCountJob());
   }
 
   @Override
   public Future<Integer> getDefaultParallelism() {
-    return submit(new GetDefaultParallelismJob());
+    return run(new GetDefaultParallelismJob());
   }
 
   void cancel(String jobId) {
     protocol.cancel(jobId);
   }
 
-  private Thread startDriver(RpcServer rpcServer, final String secret) throws IOException {
+  private Thread startDriver(RpcServer rpcServer, final String clientId, final String secret)
+      throws IOException {
     Runnable runnable;
     final String serverAddress = rpcServer.getAddress();
     final String serverPort = String.valueOf(rpcServer.getPort());
@@ -182,6 +193,8 @@ class SparkClientImpl implements SparkClient {
           args.add(serverAddress);
           args.add("--remote-port");
           args.add(serverPort);
+          args.add("--client-id");
+          args.add(clientId);
           args.add("--secret");
           args.add(secret);
 
@@ -200,9 +213,12 @@ class SparkClientImpl implements SparkClient {
       // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
       // SparkSubmit class directly, which has some caveats (like having to provide a proper
       // version of Guava on the classpath depending on the deploy mode).
-      String sparkHome = conf.get("spark.home");
+      String sparkHome = conf.get(SPARK_HOME_KEY);
       if (sparkHome == null) {
-        sparkHome = System.getProperty("spark.home");
+        sparkHome = System.getenv(SPARK_HOME_ENV);
+      }
+      if (sparkHome == null) {
+        sparkHome = System.getProperty(SPARK_HOME_KEY);
       }
       String sparkLogDir = conf.get("hive.spark.log.dir");
       if (sparkLogDir == null) {
@@ -212,10 +228,16 @@ class SparkClientImpl implements SparkClient {
           sparkLogDir = sparkHome + "/logs/";
         }
       }
+
+      String osxTestOpts = "";
+      if (Strings.nullToEmpty(System.getProperty("os.name")).toLowerCase().contains("mac")) {
+        osxTestOpts = Strings.nullToEmpty(System.getenv(OSX_TEST_OPTS));
+      }
+
       String driverJavaOpts = Joiner.on(" ").skipNulls().join(
-          "-Dhive.spark.log.dir=" + sparkLogDir, conf.get(DRIVER_OPTS_KEY));
+          "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(DRIVER_OPTS_KEY));
       String executorJavaOpts = Joiner.on(" ").skipNulls().join(
-          "-Dhive.spark.log.dir=" + sparkLogDir, conf.get(EXECUTOR_OPTS_KEY));
+          "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(EXECUTOR_OPTS_KEY));
 
       // Create a file with all the job properties to be read by spark-submit. Change the
       // file's permissions so that only the owner can read it. This avoid having the
@@ -229,18 +251,30 @@ class SparkClientImpl implements SparkClient {
       for (Map.Entry<String, String> e : conf.entrySet()) {
         allProps.put(e.getKey(), conf.get(e.getKey()));
       }
+      allProps.put(SparkClientFactory.CONF_CLIENT_ID, clientId);
       allProps.put(SparkClientFactory.CONF_KEY_SECRET, secret);
       allProps.put(DRIVER_OPTS_KEY, driverJavaOpts);
       allProps.put(EXECUTOR_OPTS_KEY, executorJavaOpts);
 
-      String hiveHadoopTestClasspath = Strings.nullToEmpty(System.getenv("HIVE_HADOOP_TEST_CLASSPATH"));
-      if (!hiveHadoopTestClasspath.isEmpty()) {
-        String extraClasspath = Strings.nullToEmpty((String)allProps.get(DRIVER_EXTRA_CLASSPATH));
-        if (extraClasspath.isEmpty()) {
-          allProps.put(DRIVER_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
-        } else {
-          extraClasspath = extraClasspath.endsWith(File.pathSeparator) ? extraClasspath : extraClasspath + File.pathSeparator;
-          allProps.put(DRIVER_EXTRA_CLASSPATH, extraClasspath + hiveHadoopTestClasspath);
+      String isTesting = conf.get("spark.testing");
+      if (isTesting != null && isTesting.equalsIgnoreCase("true")) {
+        String hiveHadoopTestClasspath = Strings.nullToEmpty(System.getenv("HIVE_HADOOP_TEST_CLASSPATH"));
+        if (!hiveHadoopTestClasspath.isEmpty()) {
+          String extraDriverClasspath = Strings.nullToEmpty((String)allProps.get(DRIVER_EXTRA_CLASSPATH));
+          if (extraDriverClasspath.isEmpty()) {
+            allProps.put(DRIVER_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
+          } else {
+            extraDriverClasspath = extraDriverClasspath.endsWith(File.pathSeparator) ? extraDriverClasspath : extraDriverClasspath + File.pathSeparator;
+            allProps.put(DRIVER_EXTRA_CLASSPATH, extraDriverClasspath + hiveHadoopTestClasspath);
+          }
+
+          String extraExecutorClasspath = Strings.nullToEmpty((String)allProps.get(EXECUTOR_EXTRA_CLASSPATH));
+          if (extraExecutorClasspath.isEmpty()) {
+            allProps.put(EXECUTOR_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
+          } else {
+            extraExecutorClasspath = extraExecutorClasspath.endsWith(File.pathSeparator) ? extraExecutorClasspath : extraExecutorClasspath + File.pathSeparator;
+            allProps.put(EXECUTOR_EXTRA_CLASSPATH, extraExecutorClasspath + hiveHadoopTestClasspath);
+          }
         }
       }
 
@@ -296,6 +330,25 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
+      if (master.equals("yarn-cluster")) {
+        String executorCores = conf.get("spark.executor.cores");
+        if (executorCores != null) {
+          argv.add("--executor-cores");
+          argv.add(executorCores);
+        }
+
+        String executorMemory = conf.get("spark.executor.memory");
+        if (executorMemory != null) {
+          argv.add("--executor-memory");
+          argv.add(executorMemory);
+        }
+
+        String numOfExecutors = conf.get("spark.executor.instances");
+        if (numOfExecutors != null) {
+          argv.add("--num-executors");
+          argv.add(numOfExecutors);
+        }
+      }
 
       argv.add("--properties-file");
       argv.add(properties.getAbsolutePath());
@@ -313,9 +366,20 @@ class SparkClientImpl implements SparkClient {
       argv.add("--remote-port");
       argv.add(serverPort);
 
+      //hive.spark.* keys are passed down to the RemoteDriver via --conf,
+      //as --properties-file contains the spark.* keys that are meant for SparkConf object.
+      for (String hiveSparkConfKey : RpcConfiguration.HIVE_SPARK_RSC_CONFIGS) {
+        String value = RpcConfiguration.getValue(hiveConf, hiveSparkConfKey);
+        argv.add("--conf");
+        argv.add(String.format("%s=%s", hiveSparkConfKey, value));
+      }
+
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
+      if (isTesting != null) {
+        pb.environment().put("SPARK_TESTING", isTesting);
+      }
       final Process child = pb.start();
 
       int childId = childIdGenerator.incrementAndGet();
@@ -360,7 +424,7 @@ class SparkClientImpl implements SparkClient {
     <T extends Serializable> JobHandleImpl<T> submit(Job<T> job) {
       final String jobId = UUID.randomUUID().toString();
       final Promise<T> promise = driverRpc.createPromise();
-      JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
+      final JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
       jobs.put(jobId, handle);
 
       final io.netty.util.concurrent.Future<Void> rpc = driverRpc.call(new JobRequest(jobId, job));
@@ -371,7 +435,9 @@ class SparkClientImpl implements SparkClient {
       rpc.addListener(new GenericFutureListener<io.netty.util.concurrent.Future<Void>>() {
         @Override
         public void operationComplete(io.netty.util.concurrent.Future<Void> f) {
-          if (!f.isSuccess() && !promise.isDone()) {
+          if (f.isSuccess()) {
+            handle.changeState(JobHandle.State.QUEUED);
+          } else if (!promise.isDone()) {
             promise.setFailure(f.cause());
           }
         }
@@ -379,14 +445,22 @@ class SparkClientImpl implements SparkClient {
       promise.addListener(new GenericFutureListener<Promise<T>>() {
         @Override
         public void operationComplete(Promise<T> p) {
-          jobs.remove(jobId);
+          if (jobId != null) {
+            jobs.remove(jobId);
+          }
           if (p.isCancelled() && !rpc.isDone()) {
             rpc.cancel(true);
           }
         }
       });
-
       return handle;
+    }
+
+    <T extends Serializable> Future<T> run(Job<T> job) {
+      @SuppressWarnings("unchecked")
+      final io.netty.util.concurrent.Future<T> rpc = (io.netty.util.concurrent.Future<T>)
+        driverRpc.call(new SyncJobRequest(job), Serializable.class);
+      return rpc;
     }
 
     void cancel(String jobId) {
@@ -426,11 +500,20 @@ class SparkClientImpl implements SparkClient {
       }
     }
 
+    private void handle(ChannelHandlerContext ctx, JobStarted msg) {
+      JobHandleImpl<?> handle = jobs.get(msg.id);
+      if (handle != null) {
+        handle.changeState(JobHandle.State.STARTED);
+      } else {
+        LOG.warn("Received event for unknown job {}", msg.id);
+      }
+    }
+
     private void handle(ChannelHandlerContext ctx, JobSubmitted msg) {
       JobHandleImpl<?> handle = jobs.get(msg.clientJobId);
       if (handle != null) {
         LOG.info("Received spark job ID: {} for {}", msg.sparkJobId, msg.clientJobId);
-        handle.getSparkJobIds().add(msg.sparkJobId);
+        handle.addSparkJobId(msg.sparkJobId);
       } else {
         LOG.warn("Received spark job ID: {} for unknown job {}", msg.sparkJobId, msg.clientJobId);
       }
@@ -476,6 +559,9 @@ class SparkClientImpl implements SparkClient {
     @Override
     public Serializable call(JobContext jc) throws Exception {
       jc.sc().addJar(path);
+      // Following remote job may refer to classes in this jar, and the remote job would be executed
+      // in a different thread, so we add this jar path to JobContext for further usage.
+      jc.getAddedJars().add(path);
       return null;
     }
 

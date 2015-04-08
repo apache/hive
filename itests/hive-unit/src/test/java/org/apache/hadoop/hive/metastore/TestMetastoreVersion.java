@@ -23,21 +23,24 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class TestMetastoreVersion extends TestCase {
-
+  private static final Log LOG = LogFactory.getLog(TestMetastoreVersion.class);
   protected HiveConf hiveConf;
   private Driver driver;
   private String metaStoreRoot;
   private String testMetastoreDB;
-  Random randomNum = new Random();
 
   @Override
   protected void setUp() throws Exception {
@@ -45,13 +48,19 @@ public class TestMetastoreVersion extends TestCase {
     Field defDb = HiveMetaStore.HMSHandler.class.getDeclaredField("currentUrl");
     defDb.setAccessible(true);
     defDb.set(null, null);
+    // reset defaults
+    ObjectStore.setSchemaVerified(false);
+    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
+    System.setProperty(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA.toString(), "true");
+    System.setProperty(HiveConf.ConfVars.METASTORE_FIXED_DATASTORE.toString(), "false");
     hiveConf = new HiveConf(this.getClass());
+    System.setProperty("hive.support.concurrency", "false");
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
-    File.separator + "test_metastore-" + randomNum.nextInt();
+      File.separator + "test_metastore-" + System.currentTimeMillis();
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     metaStoreRoot = System.getProperty("test.tmp.dir");
@@ -92,7 +101,10 @@ public class TestMetastoreVersion extends TestCase {
       SessionState.start(new CliSessionState(hiveConf));
       fail("Expected exception");
     } catch (RuntimeException re) {
-      assertTrue(re.getCause().getCause().getCause() instanceof MetaException);
+      LOG.info("Exception in testVersionRestriction: " + re, re);
+      String msg = HiveStringUtils.stringifyException(re);
+      assertTrue("Expected 'Version information not found in metastore' in: " + msg, msg
+        .contains("Version information not found in metastore"));
     }
   }
 
@@ -149,7 +161,7 @@ public class TestMetastoreVersion extends TestCase {
     SessionState.start(new CliSessionState(hiveConf));
     driver = new Driver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
-    assertFalse(proc.getResponseCode() == 0);
+    assertEquals(0, proc.getResponseCode());
   }
 
   //  write the given version to metastore

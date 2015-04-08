@@ -133,7 +133,9 @@ public class AvroSerDe extends AbstractSerDe {
     if (columnCommentProperty == null || columnCommentProperty.isEmpty()) {
       columnComments = new ArrayList<String>();
     } else {
-      columnComments = Arrays.asList(columnCommentProperty.split(","));
+      //Comments are separated by "\0" in columnCommentProperty, see method getSchema
+      //in MetaStoreUtils where this string columns.comments is generated
+      columnComments = Arrays.asList(columnCommentProperty.split("\0"));
       LOG.info("columnComments is " + columnCommentProperty);
     }
     if (columnNames.size() != columnTypes.size()) {

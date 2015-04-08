@@ -54,7 +54,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_1_src_union_1_key_idx__
+            alias: default__src_union_1_src_union_1_key_idx__
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -113,7 +113,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_2_src_union_2_key_idx__
+            alias: default__src_union_2_src_union_2_key_idx__
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -172,7 +172,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -236,7 +236,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_1_src_union_1_key_idx__
+            alias: default__src_union_1_src_union_1_key_idx__
             filterExpr: (ds = '1') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -278,17 +278,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -307,7 +303,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_2_src_union_2_key_idx__
+            alias: default__src_union_2_src_union_2_key_idx__
             filterExpr: (ds = '2') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -349,17 +345,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -378,7 +370,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '3') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -420,17 +412,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -452,7 +440,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_1_src_union_1_key_idx__
+            alias: default__src_union_1_src_union_1_key_idx__
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -517,7 +505,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_2_src_union_2_key_idx__
+            alias: default__src_union_2_src_union_2_key_idx__
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -582,7 +570,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -651,7 +639,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_1_src_union_1_key_idx__
+            alias: default__src_union_1_src_union_1_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -757,7 +745,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_2_src_union_2_key_idx__
+            alias: default__src_union_2_src_union_2_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -781,7 +769,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -828,7 +816,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_1_src_union_1_key_idx__
+            alias: default__src_union_1_src_union_1_key_idx__
             filterExpr: (ds = '1') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -874,17 +862,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -903,7 +887,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_2_src_union_2_key_idx__
+            alias: default__src_union_2_src_union_2_key_idx__
             filterExpr: (ds = '2') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -949,17 +933,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -978,7 +958,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '3') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -1024,17 +1004,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1056,7 +1032,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -1122,7 +1098,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_union_3_src_union_3_key_idx__
+            alias: default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '4') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -1168,17 +1144,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

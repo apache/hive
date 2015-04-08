@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import org.apache.avro.generic.GenericArray;
+import org.apache.avro.reflect.ReflectData;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -26,6 +28,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -129,7 +132,10 @@ public class TestAvroSerializer {
     Collections.addAll(intList, 1,2, 3);
     String field = "{ \"name\":\"list1\", \"type\":{\"type\":\"array\", \"items\":\"int\"} }";
     GenericRecord r = serializeAndDeserialize(field, "list1", intList);
-    assertEquals(intList, r.get("list1"));
+    final Object list1 = r.get("list1");
+    Assert.assertTrue(list1 instanceof GenericArray);
+    Assert.assertTrue(list1 instanceof List);
+    assertEquals(intList, list1);
   }
 
   @Test
@@ -486,4 +492,47 @@ public class TestAvroSerializer {
     assertArrayEquals(fixed.bytes(), ((GenericData.Fixed) r.get("fixed1")).bytes());
   }
 
+  @Test
+  public void canSerializeCyclesInSchema() throws SerDeException, IOException {
+    // Create parent-child avro-record and avro-schema
+    AvroCycleParent parent = new AvroCycleParent();
+    AvroCycleChild child = new AvroCycleChild();
+    parent.setChild (child);
+    Schema parentS = ReflectData.AllowNull.get().getSchema(AvroCycleParent.class);
+    GenericData.Record parentRec = new GenericData.Record(parentS);
+    Schema childS = ReflectData.AllowNull.get().getSchema(AvroCycleChild.class);
+    GenericData.Record childRec  = new GenericData.Record(childS);
+    parentRec.put("child", childRec);
+
+    // Initialize Avro SerDe
+    AvroSerializer as = new AvroSerializer();
+    AvroDeserializer ad = new AvroDeserializer();
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(parentS);
+    ObjectInspector oi = aoig.getObjectInspector();
+    List<String> columnNames = aoig.getColumnNames();
+    List<TypeInfo> columnTypes = aoig.getColumnTypes();
+
+    // Check serialization and deserialization
+    AvroGenericRecordWritable agrw = Utils.serializeAndDeserializeRecord(parentRec);
+    Object obj = ad.deserialize(columnNames, columnTypes, agrw, parentS);
+
+    Writable result = as.serialize(obj, oi, columnNames, columnTypes, parentS);
+    assertTrue(result instanceof AvroGenericRecordWritable);
+    GenericRecord r2 = ((AvroGenericRecordWritable) result).getRecord();
+    assertEquals(parentS, r2.getSchema());
+  }
+
+  private static class AvroCycleParent {
+    AvroCycleChild child;
+    public AvroCycleChild getChild () {return child;}
+    public void setChild (AvroCycleChild child) {this.child = child;}
+  }
+
+  private static class AvroCycleChild {
+    AvroCycleParent parent;
+    AvroCycleChild next;
+    Map <String, AvroCycleParent> map;
+    public AvroCycleParent getParent () {return parent;}
+    public void setParent (AvroCycleParent parent) {this.parent = parent;}
+  }
 }

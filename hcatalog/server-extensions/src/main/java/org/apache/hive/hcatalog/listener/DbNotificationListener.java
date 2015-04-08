@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -38,12 +39,12 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -118,8 +119,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
     event.setDbName(t.getDbName());
-    // Table name is not set in create table because this goes on the queue for the database the
-    // table is created in, not the (new) queue for the table itself.
+    event.setTableName(t.getTableName());
     enqueue(event);
   }
 
@@ -208,9 +208,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_CREATE_DATABASE_EVENT,
         msgFactory.buildCreateDatabaseMessage(db).toString());
-    // Database name is null for create database, because this doesn't belong to messages for
-    // that database.  Rather it belongs to system wide messages.  The db name is in the message,
-    // so listeners can determine it.
+    event.setDbName(db.getName());
     enqueue(event);
   }
 
@@ -224,6 +222,16 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_DATABASE_EVENT,
         msgFactory.buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
+    enqueue(event);
+  }
+
+  @Override
+  public void onInsert(InsertEvent insertEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), HCatConstants.HCAT_INSERT_EVENT,
+        msgFactory.buildInsertMessage(insertEvent.getDb(), insertEvent.getTable(),
+            insertEvent.getPartitions(), insertEvent.getFiles()).toString());
+    event.setDbName(insertEvent.getDb());
+    event.setTableName(insertEvent.getTable());
     enqueue(event);
   }
 

@@ -40,6 +40,11 @@ interface IntegerWriter {
   void write(long value) throws IOException;
 
   /**
+   * Suppress underlying stream.
+   */
+  void suppress();
+
+  /**
    * Flush the buffer
    * @throws IOException
    */

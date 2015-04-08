@@ -106,6 +106,15 @@ enum GrantRevokeType {
     REVOKE = 2,
 }
 
+// Types of events the client can request that the metastore fire.  For now just support DML operations, as the metastore knows
+// about DDL operations and there's no reason for the client to request such an event.
+enum EventRequestType {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3,
+}
+
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -642,6 +651,13 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct AddDynamicPartitions {
+    1: required i64 txnid,
+    2: required string dbname,
+    3: required string tablename,
+    4: required list<string> partitionnames,
+}
+
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
@@ -663,6 +679,29 @@ struct NotificationEventResponse {
 struct CurrentNotificationEventId {
     1: required i64 eventId,
 }
+
+struct InsertEventRequestData {
+    1: required list<string> filesAdded
+}
+
+union FireEventRequestData {
+    1: InsertEventRequestData insertData
+}
+
+struct FireEventRequest {
+    1: required bool successful,
+    2: required FireEventRequestData data
+    // dbname, tablename, and partition vals are included as optional in the top level event rather than placed in each type of
+    // subevent as I assume they'll be used across most event types.
+    3: optional string dbName,
+    4: optional string tableName,
+    5: optional list<string> partitionVals,
+}
+
+struct FireEventResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+    
 
 
 exception MetaException {
@@ -754,9 +793,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Gets a list of FieldSchemas describing the columns of a particular table
   list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
+  list<FieldSchema> get_fields_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
 
   // Gets a list of FieldSchemas describing both the columns and the partition keys of a particular table
   list<FieldSchema> get_schema(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
 
   // create a Hive table. Following fields must be set
   // tableName
@@ -1130,11 +1171,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+  void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-
+  FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 }
 

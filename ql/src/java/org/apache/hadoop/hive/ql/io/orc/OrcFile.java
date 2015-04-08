@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_PADDING;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BUFFER_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_COMPRESS;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -148,7 +155,9 @@ public final class OrcFile {
     ROW_INDEX_STRIDE("orc.row.index.stride"),
     ENABLE_INDEXES("orc.create.index"),
     BLOCK_PADDING("orc.block.padding"),
-    ENCODING_STRATEGY("orc.encoding.strategy");
+    ENCODING_STRATEGY("orc.encoding.strategy"),
+    BLOOM_FILTER_COLUMNS("orc.bloom.filter.columns"),
+    BLOOM_FILTER_FPP("orc.bloom.filter.fpp");
 
     private final String propName;
 
@@ -184,7 +193,7 @@ public final class OrcFile {
     private ReaderImpl.FileMetaInfo fileMetaInfo;
     private long maxLength = Long.MAX_VALUE;
 
-    ReaderOptions(Configuration conf) {
+    public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
     ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {
@@ -256,6 +265,8 @@ public final class OrcFile {
     private EncodingStrategy encodingStrategy;
     private CompressionStrategy compressionStrategy;
     private float paddingTolerance;
+    private String bloomFilterColumns;
+    private double bloomFilterFpp;
 
     WriterOptions(Configuration conf) {
       configuration = conf;
@@ -288,9 +299,9 @@ public final class OrcFile {
         compressionStrategy = CompressionStrategy.valueOf(compString);
       }
 
-      paddingTolerance =
-          conf.getFloat(HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.varname,
-              HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.defaultFloatVal);
+      paddingTolerance = conf.getFloat(HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.varname,
+          HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.defaultFloatVal);
+      bloomFilterFpp = BloomFilter.DEFAULT_FPP;
     }
 
     /**
@@ -367,6 +378,24 @@ public final class OrcFile {
     }
 
     /**
+     * Comma separated values of column names for which bloom filter is to be created.
+     */
+    public WriterOptions bloomFilterColumns(String columns) {
+      bloomFilterColumns = columns;
+      return this;
+    }
+
+    /**
+     * Specify the false positive probability for bloom filter.
+     * @param fpp - false positive probability
+     * @return
+     */
+    public WriterOptions bloomFilterFpp(double fpp) {
+      bloomFilterFpp = fpp;
+      return this;
+    }
+
+    /**
      * Sets the generic compression that is used to compress the data.
      */
     public WriterOptions compress(CompressionKind value) {
@@ -438,8 +467,8 @@ public final class OrcFile {
                           opts.memoryManagerValue, opts.blockPaddingValue,
                           opts.versionValue, opts.callback,
                           opts.encodingStrategy, opts.compressionStrategy,
-                          opts.paddingTolerance,
-                          opts.blockSizeValue);
+                          opts.paddingTolerance, opts.blockSizeValue,
+                          opts.bloomFilterColumns, opts.bloomFilterFpp);
   }
 
   /**

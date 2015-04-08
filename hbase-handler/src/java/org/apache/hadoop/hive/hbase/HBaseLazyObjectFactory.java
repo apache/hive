@@ -23,17 +23,21 @@ import java.util.List;
 
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.Text;
 
 // Does same thing with LazyFactory#createLazyObjectInspector except that this replaces
 // original keyOI with OI which is create by HBaseKeyFactory provided by serde property for hbase
 public class HBaseLazyObjectFactory {
 
   public static ObjectInspector createLazyHBaseStructInspector(
-      SerDeParameters serdeParams, int index, HBaseKeyFactory keyFactory, List<HBaseValueFactory> valueFactories) throws SerDeException {
+      LazySerDeParameters serdeParams, int index, HBaseKeyFactory keyFactory, List<HBaseValueFactory> valueFactories) throws SerDeException {
     List<TypeInfo> columnTypes = serdeParams.getColumnTypes();
     ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
         columnTypes.size());
@@ -46,8 +50,7 @@ public class HBaseLazyObjectFactory {
       }
     }
     return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
-        serdeParams.getColumnNames(), columnObjectInspectors, serdeParams.getSeparators()[0],
-        serdeParams.getNullSequence(), serdeParams.isLastColumnTakesRest(),
-        serdeParams.isEscaped(), serdeParams.getEscapeChar());
+        serdeParams.getColumnNames(), columnObjectInspectors, null, serdeParams.getSeparators()[0],
+        serdeParams, ObjectInspectorOptions.JAVA);
   }
 }

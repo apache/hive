@@ -29,13 +29,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -59,7 +58,9 @@ import org.apache.hadoop.io.Writable;
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,
-    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS})
+    LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS,
+    LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
+    })
 public class ColumnarSerDe extends ColumnarSerDeBase {
 
   @Override
@@ -81,7 +82,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   public ColumnarSerDe() throws SerDeException {
   }
 
-  protected SerDeParameters serdeParams = null;
+  protected LazySerDeParameters serdeParams = null;
 
   /**
    * Initialize the SerDe given the parameters.
@@ -91,14 +92,12 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
 
-    serdeParams = LazySimpleSerDe.initSerdeParams(conf, tbl, getClass().getName());
+    serdeParams = new LazySerDeParameters(conf, tbl, getClass().getName());
 
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
-        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence(), serdeParams
-            .isEscaped(), serdeParams.getEscapeChar());
+        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 
     int size = serdeParams.getColumnTypes().size();
     List<Integer> notSkipIDs = new ArrayList<Integer>();

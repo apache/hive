@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -149,8 +150,6 @@ import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 
 /**
  * This class is the interface between the application logic and the database
@@ -164,6 +163,10 @@ public class ObjectStore implements RawStore, Configurable {
   private static PersistenceManagerFactory pmf = null;
 
   private static Lock pmfPropLock = new ReentrantLock();
+  /**
+  * Verify the schema only once per JVM since the db connection info is static
+  */
+  private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Log LOG = LogFactory.getLog(ObjectStore.class.getName());
 
   private static enum TXN_STATUS {
@@ -171,6 +174,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private static final Map<String, Class> PINCLASSMAP;
+  private static final String HOSTNAME;
+  private static final String USER;
   static {
     Map<String, Class> map = new HashMap<String, Class>();
     map.put("table", MTable.class);
@@ -182,7 +187,21 @@ public class ObjectStore implements RawStore, Configurable {
     map.put("fieldschema", MFieldSchema.class);
     map.put("order", MOrder.class);
     PINCLASSMAP = Collections.unmodifiableMap(map);
+    String hostname = "UNKNOWN";
+    try {
+      InetAddress clientAddr = InetAddress.getLocalHost();
+      hostname = clientAddr.getHostAddress();
+    } catch (IOException e) {
+    }
+    HOSTNAME = hostname;
+    String user = System.getenv("USER");
+    if (user == null) {
+      USER = "UNKNOWN";
+    } else {
+      USER = user;
+    }
   }
+
 
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
@@ -192,7 +211,6 @@ public class ObjectStore implements RawStore, Configurable {
   int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
-  private final AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
 
   private Pattern partitionValidationPattern;
 
@@ -565,7 +583,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
-    db.setParameters(mdb.getParameters());
+    db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = mdb.getOwnerType();
     db.setOwnerType((null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
@@ -1012,9 +1030,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
-  private <K, V> Map<K, V> convertMap(Map<K, V> dnMap) {
-    // Must be deterministic order map - see HIVE-8707
-    return (dnMap == null) ? null : Maps.newLinkedHashMap(dnMap);
+  private Map<String, String> convertMap(Map<String, String> dnMap) {
+    return MetaStoreUtils.trimMapNulls(dnMap,
+        HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
   }
 
   private Table convertToTable(MTable mtbl) throws MetaException {
@@ -1781,6 +1799,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     for (MPartition mp : src) {
       dest.add(convertToPart(mp));
+      Deadline.checkTimeout();
     }
     return dest;
   }
@@ -1790,6 +1809,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<Partition> parts = new ArrayList<Partition>(mparts.size());
     for (MPartition mp : mparts) {
       parts.add(convertToPart(dbName, tblName, mp));
+      Deadline.checkTimeout();
     }
     return parts;
   }
@@ -3007,10 +3027,6 @@ public class ObjectStore implements RawStore, Configurable {
     MTable origTable = mIndex.getOrigTable();
     MTable indexTable = mIndex.getIndexTable();
 
-    String[] qualified = MetaStoreUtils.getQualifiedName(
-        origTable.getDatabase().getName(), indexTable.getTableName());
-    String indexTableName = qualified[0] + "." + qualified[1];
-
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
@@ -3018,7 +3034,7 @@ public class ObjectStore implements RawStore, Configurable {
     origTable.getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
-    indexTableName,
+    indexTable.getTableName(),
     convertToStorageDescriptor(mIndex.getSd()),
     mIndex.getParameters(),
     mIndex.getDeferredRebuild());
@@ -6152,6 +6168,7 @@ public class ObjectStore implements RawStore, Configurable {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
           statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat));
+          Deadline.checkTimeout();
         }
         return new ColumnStatistics(desc, statObjs);
       }
@@ -6200,6 +6217,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
           curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj));
           lastPartName = partName;
+          Deadline.checkTimeout();
         }
         return result;
       }
@@ -6705,6 +6723,10 @@ public class ObjectStore implements RawStore, Configurable {
     checkSchema();
   }
 
+  public static void setSchemaVerified(boolean val) {
+    isSchemaVerified.set(val);
+  }
+
   private synchronized void checkSchema() throws MetaException {
     // recheck if it got verified by another thread while we were waiting
     if (isSchemaVerified.get()) {
@@ -6716,32 +6738,33 @@ public class ObjectStore implements RawStore, Configurable {
     // read the schema version stored in metastore db
     String schemaVer = getMetaStoreSchemaVersion();
     if (schemaVer == null) {
-      // metastore has no schema version information
       if (strictValidation) {
-            throw new MetaException("Version information not found in metastore. ");
-          } else {
-            LOG.warn("Version information not found in metastore. "
-                + HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
-                " is not enabled so recording the schema version " +
-                MetaStoreSchemaInfo.getHiveSchemaVersion());
-            setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
-                "Set by MetaStore");
-        }
+        throw new MetaException("Version information not found in metastore. ");
+      } else {
+        LOG.warn("Version information not found in metastore. "
+            + HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
+            " is not enabled so recording the schema version " +
+            MetaStoreSchemaInfo.getHiveSchemaVersion());
+        setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
+          "Set by MetaStore " + USER + "@" + HOSTNAME);
+      }
     } else {
       // metastore schema version is different than Hive distribution needs
-      if (strictValidation) {
-        if (!schemaVer.equalsIgnoreCase(MetaStoreSchemaInfo.getHiveSchemaVersion())) {
+      if (schemaVer.equalsIgnoreCase(MetaStoreSchemaInfo.getHiveSchemaVersion())) {
+        LOG.debug("Found expected HMS version of " + schemaVer);
+      } else {
+        if (strictValidation) {
           throw new MetaException("Hive Schema version "
               + MetaStoreSchemaInfo.getHiveSchemaVersion() +
               " does not match metastore's schema version " + schemaVer +
               " Metastore is not upgraded or corrupt");
         } else {
-          LOG.warn("Metastore version was " + schemaVer + " " +
-              HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
-              " is not enabled so recording the new schema version " +
-              MetaStoreSchemaInfo.getHiveSchemaVersion());
+          LOG.error("Version information found in metastore differs " + schemaVer +
+              " from expected schema version " + MetaStoreSchemaInfo.getHiveSchemaVersion() +
+              ". Schema verififcation is disabled " +
+              HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION + " so setting version.");
           setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
-              "Set by MetaStore");
+            "Set by MetaStore " + USER + "@" + HOSTNAME);
         }
       }
     }
@@ -6793,7 +6816,11 @@ public class ObjectStore implements RawStore, Configurable {
       throw new NoSuchObjectException("No matching version found");
     }
     if (mVerTables.size() > 1) {
-      throw new MetaException("Metastore contains multiple versions");
+      String msg = "Metastore contains multiple versions (" + mVerTables.size() + ") ";
+      for (MVersionTable version : mVerTables) {
+        msg += "[ version = " + version.getSchemaVersion() + ", comment = " + version.getVersionComment() + " ] ";
+      }
+      throw new MetaException(msg.trim());
     }
     return mVerTables.get(0);
   }
@@ -6802,6 +6829,13 @@ public class ObjectStore implements RawStore, Configurable {
   public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
     MVersionTable mSchemaVer;
     boolean commited = false;
+    boolean recordVersion =
+      HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION);
+    if (!recordVersion) {
+      LOG.warn("setMetaStoreSchemaVersion called but recording version is disabled: " +
+        "version = " + schemaVersion + ", comment = " + comment);
+      return;
+    }
 
     try {
       mSchemaVer = getMSchemaVersion();
@@ -7107,6 +7141,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Iterator<MNotificationLog> i = events.iterator();
       NotificationEventResponse result = new NotificationEventResponse();
+      result.setEvents(new ArrayList<NotificationEvent>());
       int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       int numEvents = 0;
       while (i.hasNext() && numEvents++ < maxEvents) {

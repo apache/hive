@@ -26,8 +26,10 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -37,7 +39,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -69,9 +70,13 @@ public final class ExprWalkerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
       ExprNodeColumnDesc colref = (ExprNodeColumnDesc) nd;
-      RowResolver toRR = ctx.getToRR();
+      RowSchema toRS = ctx.getOp().getSchema();
       Operator<? extends OperatorDesc> op = ctx.getOp();
-      String[] colAlias = toRR.reverseLookup(colref.getColumn());
+      ColumnInfo ci = toRS.getColumnInfo(colref.getColumn());
+      String tabAlias = null;
+      if (ci != null) {
+        tabAlias = ci.getTabAlias();
+      }
 
       boolean isCandidate = true;
       if (op.getColumnExprMap() != null) {
@@ -87,19 +92,19 @@ public final class ExprWalkerProcFactory {
           if (exp instanceof ExprNodeGenericFuncDesc) {
             isCandidate = false;
           }
-          if (exp instanceof ExprNodeColumnDesc && colAlias == null) {
+          if (exp instanceof ExprNodeColumnDesc && ci == null) {
             ExprNodeColumnDesc column = (ExprNodeColumnDesc)exp;
-            colAlias = new String[]{column.getTabAlias(), column.getColumn()};
+            tabAlias = column.getTabAlias();
           }
         }
         ctx.addConvertedNode(colref, exp);
         ctx.setIsCandidate(exp, isCandidate);
-        ctx.addAlias(exp, colAlias[0]);
+        ctx.addAlias(exp, tabAlias);
       } else {
-        if (colAlias == null) {
+        if (ci == null) {
           return false;
         }
-        ctx.addAlias(colref, colAlias[0]);
+        ctx.addAlias(colref, tabAlias);
       }
       ctx.setIsCandidate(colref, isCandidate);
       return isCandidate;
@@ -256,8 +261,7 @@ public final class ExprWalkerProcFactory {
     Operator<? extends OperatorDesc> op, List<ExprNodeDesc> preds)
     throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
-    ExprWalkerInfo exprContext = new ExprWalkerInfo(op, opContext
-      .getRowResolver(op));
+    ExprWalkerInfo exprContext = new ExprWalkerInfo(op);
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher

@@ -20,15 +20,35 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.Date;
 
-import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * A Generic User-defined function (GenericUDF) for the use with Hive.
@@ -44,6 +64,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
  */
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
+
+  private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
+      "th", "th", "th", "th", "th" };
 
   /**
    * A Defered Object allows us to do lazy-evaluation and short-circuiting.
@@ -208,6 +231,342 @@ public abstract class GenericUDF implements Closeable {
     if (this.getClass() != newInstance.getClass()) {
       throw new UDFArgumentException("Invalid copy between " + this.getClass().getName()
           + " and " + newInstance.getClass().getName());
+    }
+  }
+
+  protected String getStandardDisplayString(String name, String[] children) {
+    return getStandardDisplayString(name, children, ", ");
+  }
+
+  protected String getStandardDisplayString(String name, String[] children, String delim) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(name);
+    sb.append("(");
+    if (children.length > 0) {
+      sb.append(children[0]);
+      for (int i = 1; i < children.length; i++) {
+        sb.append(delim);
+        sb.append(children[i]);
+      }
+    }
+    sb.append(")");
+    return sb.toString();
+  }
+
+  protected String getFuncName() {
+    return getClass().getSimpleName().substring(10).toLowerCase();
+  }
+
+  protected void checkArgsSize(ObjectInspector[] arguments, int min, int max)
+      throws UDFArgumentLengthException {
+    if (arguments.length < min || arguments.length > max) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(getFuncName());
+      sb.append(" requires ");
+      if (min == max) {
+        sb.append(min);
+      } else {
+        sb.append(min).append("..").append(max);
+      }
+      sb.append(" argument(s), got ");
+      sb.append(arguments.length);
+      throw new UDFArgumentLengthException(sb.toString());
+    }
+  }
+
+  protected void checkArgPrimitive(ObjectInspector[] arguments, int i)
+      throws UDFArgumentTypeException {
+    ObjectInspector.Category oiCat = arguments[i].getCategory();
+    if (oiCat != ObjectInspector.Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(i, getFuncName() + " only takes primitive types as "
+          + getArgOrder(i) + " argument, got " + oiCat);
+    }
+  }
+
+  protected void checkArgGroups(ObjectInspector[] arguments, int i, PrimitiveCategory[] inputTypes,
+      PrimitiveGrouping... grps) throws UDFArgumentTypeException {
+    PrimitiveCategory inputType = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
+    for (PrimitiveGrouping grp : grps) {
+      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputType) == grp) {
+        inputTypes[i] = inputType;
+        return;
+      }
+    }
+    // build error message
+    StringBuilder sb = new StringBuilder();
+    sb.append(getFuncName());
+    sb.append(" only takes ");
+    sb.append(grps[0]);
+    for (int j = 1; j < grps.length; j++) {
+      sb.append(", ");
+      sb.append(grps[j]);
+    }
+    sb.append(" types as ");
+    sb.append(getArgOrder(i));
+    sb.append(" argument, got ");
+    sb.append(inputType);
+    throw new UDFArgumentTypeException(i, sb.toString());
+  }
+
+  protected void obtainStringConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+
+    Converter converter = ObjectInspectorConverters.getConverter(
+        (PrimitiveObjectInspector) arguments[i],
+        PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+    converters[i] = converter;
+    inputTypes[i] = inputType;
+  }
+
+  protected void obtainIntConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    switch (inputType) {
+    case BYTE:
+    case SHORT:
+    case INT:
+      break;
+    default:
+      throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
+          + getArgOrder(i) + " argument, got " + inputType);
+    }
+
+    Converter converter = ObjectInspectorConverters.getConverter(
+        (PrimitiveObjectInspector) arguments[i],
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    converters[i] = converter;
+    inputTypes[i] = inputType;
+  }
+
+  protected void obtainLongConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    switch (inputType) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      break;
+    default:
+      throw new UDFArgumentTypeException(i, getFuncName()
+          + " only takes LONG/INT/SHORT/BYTE types as " + getArgOrder(i) + " argument, got "
+          + inputType);
+    }
+
+    Converter converter = ObjectInspectorConverters.getConverter(
+        (PrimitiveObjectInspector) arguments[i],
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    converters[i] = converter;
+    inputTypes[i] = inputType;
+  }
+
+  protected void obtainDoubleConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    Converter converter = ObjectInspectorConverters.getConverter(
+        (PrimitiveObjectInspector) arguments[i],
+        PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+    converters[i] = converter;
+    inputTypes[i] = inputType;
+  }
+
+  protected void obtainDateConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    ObjectInspector outOi;
+    switch (inputType) {
+    case STRING:
+    case VARCHAR:
+    case CHAR:
+      outOi = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      break;
+    case TIMESTAMP:
+    case DATE:
+      outOi = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+      break;
+    default:
+      throw new UDFArgumentTypeException(i, getFuncName()
+          + " only takes STRING_GROUP or DATE_GROUP types as " + getArgOrder(i) + " argument, got "
+          + inputType);
+    }
+    converters[i] = ObjectInspectorConverters.getConverter(inOi, outOi);
+    inputTypes[i] = inputType;
+  }
+
+  protected void obtainTimestampConverter(ObjectInspector[] arguments, int i,
+      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    PrimitiveCategory inputType = inOi.getPrimitiveCategory();
+    ObjectInspector outOi;
+    switch (inputType) {
+    case STRING:
+    case VARCHAR:
+    case CHAR:
+    case TIMESTAMP:
+    case DATE:
+      break;
+    default:
+      throw new UDFArgumentTypeException(i, getFuncName()
+          + " only takes STRING_GROUP or DATE_GROUP types as " + getArgOrder(i) + " argument, got "
+          + inputType);
+    }
+    outOi = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    converters[i] = ObjectInspectorConverters.getConverter(inOi, outOi);
+    inputTypes[i] = inputType;
+  }
+
+  protected String getStringValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    return converters[i].convert(obj).toString();
+  }
+
+  protected Integer getIntValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    Object writableValue = converters[i].convert(obj);
+    int v = ((IntWritable) writableValue).get();
+    return v;
+  }
+
+  protected Long getLongValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    Object writableValue = converters[i].convert(obj);
+    long v = ((LongWritable) writableValue).get();
+    return v;
+  }
+
+  protected Double getDoubleValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    Object writableValue = converters[i].convert(obj);
+    double v = ((DoubleWritable) writableValue).get();
+    return v;
+  }
+
+  protected Date getDateValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+
+    Date date;
+    switch (inputTypes[i]) {
+    case STRING:
+    case VARCHAR:
+    case CHAR:
+      String dateStr = converters[i].convert(obj).toString();
+      try {
+        date = DateUtils.getDateFormat().parse(dateStr);
+      } catch (ParseException e) {
+        return null;
+      }
+      break;
+    case TIMESTAMP:
+    case DATE:
+      Object writableValue = converters[i].convert(obj);
+      date = ((DateWritable) writableValue).get();
+      break;
+    default:
+      throw new UDFArgumentTypeException(0, getFuncName()
+          + " only takes STRING_GROUP and DATE_GROUP types, got " + inputTypes[i]);
+    }
+    return date;
+  }
+
+  protected Date getTimestampValue(DeferredObject[] arguments, int i, Converter[] converters)
+      throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+    Object writableValue = converters[i].convert(obj);
+    // if string can not be parsed converter will return null
+    if (writableValue == null) {
+      return null;
+    }
+    Timestamp ts = ((TimestampWritable) writableValue).getTimestamp();
+    return ts;
+  }
+
+  protected String getConstantStringValue(ObjectInspector[] arguments, int i) {
+    Object constValue = ((ConstantObjectInspector) arguments[i]).getWritableConstantValue();
+    String str = constValue == null ? null : constValue.toString();
+    return str;
+  }
+
+  protected Integer getConstantIntValue(ObjectInspector[] arguments, int i)
+      throws UDFArgumentTypeException {
+    Object constValue = ((ConstantObjectInspector) arguments[i]).getWritableConstantValue();
+    if (constValue == null) {
+      return null;
+    }
+    int v;
+    if (constValue instanceof IntWritable) {
+      v = ((IntWritable) constValue).get();
+    } else if (constValue instanceof ShortWritable) {
+      v = ((ShortWritable) constValue).get();
+    } else if (constValue instanceof ByteWritable) {
+      v = ((ByteWritable) constValue).get();
+    } else {
+      throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
+          + getArgOrder(i) + " argument, got " + constValue.getClass());
+    }
+    return v;
+  }
+
+  protected Long getConstantLongValue(ObjectInspector[] arguments, int i)
+      throws UDFArgumentTypeException {
+    Object constValue = ((ConstantObjectInspector) arguments[i]).getWritableConstantValue();
+    if (constValue == null) {
+      return null;
+    }
+    long v;
+    if (constValue instanceof IntWritable) {
+      v = ((LongWritable) constValue).get();
+    } else if (constValue instanceof IntWritable) {
+      v = ((IntWritable) constValue).get();
+    } else if (constValue instanceof ShortWritable) {
+      v = ((ShortWritable) constValue).get();
+    } else if (constValue instanceof ByteWritable) {
+      v = ((ByteWritable) constValue).get();
+    } else {
+      throw new UDFArgumentTypeException(i, getFuncName()
+          + " only takes LONG/INT/SHORT/BYTE types as " + getArgOrder(i) + " argument, got "
+          + constValue.getClass());
+    }
+    return v;
+  }
+
+  protected String getArgOrder(int i) {
+    i++;
+    switch (i % 100) {
+    case 11:
+    case 12:
+    case 13:
+      return i + "th";
+    default:
+      return i + ORDINAL_SUFFIXES[i % 10];
     }
   }
 }

@@ -19,16 +19,40 @@
 package org.apache.hive.beeline;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import junit.framework.Assert;
+import java.io.File;
+import java.io.FileOutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hive.common.util.HiveTestUtils;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Unit test for Beeline arg parser.
  */
+@RunWith(Parameterized.class)
 public class TestBeelineArgParsing {
+  private static final Log LOG = LogFactory.getLog(TestBeelineArgParsing.class.getName());
+  private String connectionString;
+  private String driverClazzName;
+  private String driverJarFileName;
+  private boolean defaultSupported;
+
+  public TestBeelineArgParsing(String connectionString, String driverClazzName, String driverJarFileName,
+                               boolean defaultSupported) {
+    this.connectionString = connectionString;
+    this.driverClazzName = driverClazzName;
+    this.driverJarFileName = driverJarFileName;
+    this.defaultSupported = defaultSupported;
+  }
 
   public class TestBeeline extends BeeLine {
 
@@ -49,6 +73,27 @@ public class TestBeelineArgParsing {
       }
       return true;
     }
+
+    public boolean addlocaldrivername(String driverName) {
+      String line = "addlocaldrivername " + driverName;
+      return getCommands().addlocaldrivername(line);
+    }
+
+    public boolean addLocalJar(String url){
+      String line = "addlocaldriverjar " + url;
+      return getCommands().addlocaldriverjar(line);
+    }
+  }
+
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+            {"jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", "postgresql-9.3.jdbc3.jar",
+                true},
+            {"jdbc:dummy://host:5432/testdb", "org.apache.dummy.DummyDriver",
+                "DummyDriver-1.0-SNAPSHOT.jar", false}
+        });
   }
 
   @Test
@@ -56,9 +101,28 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-u", "url", "-n", "name",
       "-p", "password", "-d", "driver", "-a", "authType"};
-    Assert.assertEquals(0, bl.initArgs(args));
+    org.junit.Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.getOpts().getAuthType().equals("authType"));
+  }
+
+  @Test
+  public void testPasswordFileArgs() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    File passFile = new File("file.password");
+    passFile.deleteOnExit();
+    FileOutputStream passFileOut = new FileOutputStream(passFile);
+    passFileOut.write("mypass\n".getBytes());
+    passFileOut.close();
+    String args[] = new String[] {"-u", "url", "-n", "name",
+      "-w", "file.password", "-p", "not-taken-if-w-is-present",
+      "-d", "driver", "-a", "authType"};
+    bl.initArgs(args);
+    System.out.println(bl.connectArgs);
+    // Password file contents are trimmed of trailing whitespaces and newlines
+    Assert.assertTrue(bl.connectArgs.equals("url name mypass driver"));
+    Assert.assertTrue(bl.getOpts().getAuthType().equals("authType"));
+    passFile.delete();
   }
 
   /**
@@ -147,4 +211,32 @@ public class TestBeelineArgParsing {
     Assert.assertEquals(-1, bl.initArgs(args));
   }
 
+  @Test
+  public void testAddLocalJar() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    Assert.assertNull(bl.findLocalDriver(connectionString));
+
+    LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
+    String mysqlDriverPath = HiveTestUtils.getFileFromClasspath(driverJarFileName);
+
+    bl.addLocalJar(mysqlDriverPath);
+    bl.addlocaldrivername(driverClazzName);
+    Assert.assertEquals(bl.findLocalDriver(connectionString).getClass().getName(), driverClazzName);
+  }
+
+  @Test
+  public void testAddLocalJarWithoutAddDriverClazz() throws Exception {
+    TestBeeline bl = new TestBeeline();
+
+    LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
+    String mysqlDriverPath = HiveTestUtils.getFileFromClasspath(driverJarFileName);
+
+    bl.addLocalJar(mysqlDriverPath);
+    if (!defaultSupported) {
+      Assert.assertNull(bl.findLocalDriver(connectionString));
+    } else {
+      // no need to add for the default supported local jar driver
+      Assert.assertEquals(bl.findLocalDriver(connectionString).getClass().getName(), driverClazzName);
+    }
+  }
 }

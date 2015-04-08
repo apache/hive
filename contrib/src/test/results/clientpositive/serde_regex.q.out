@@ -2,7 +2,7 @@ PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,
@@ -20,7 +20,7 @@ POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,
@@ -53,7 +53,7 @@ STAGE PLANS:
 PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,
@@ -72,7 +72,7 @@ PREHOOK: Output: default@serde_regex
 POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,

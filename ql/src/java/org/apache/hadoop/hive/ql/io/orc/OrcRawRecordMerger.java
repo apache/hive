@@ -460,7 +460,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         Path deltaFile = AcidUtils.createBucketFile(delta, bucket);
         FileSystem fs = deltaFile.getFileSystem(conf);
         long length = getLastFlushLength(fs, deltaFile);
-        if (fs.exists(deltaFile) && length != -1) {
+        if (length != -1 && fs.exists(deltaFile)) {
           Reader deltaReader = OrcFile.createReader(deltaFile,
               OrcFile.readerOptions(conf).maxLength(length));
           ReaderPair deltaPair = new ReaderPair(key, deltaReader, bucket, minKey,
@@ -575,7 +575,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
 
       // if this transaction isn't ok, skip over it
-      if (!validTxnList.isTxnCommitted(
+      if (!validTxnList.isTxnValid(
           ((ReaderKey) recordIdentifier).getCurrentTransactionId())) {
         continue;
       }

@@ -30,7 +30,8 @@ import java.util.Set;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 
 /**
  * Implementation of the parse information related to a query block.
@@ -43,7 +44,15 @@ public class QBParseInfo {
   private ASTNode joinExpr;
   private ASTNode hints;
   private final HashMap<String, ASTNode> aliasToSrc;
+  /**
+   * insclause-0 -> TOK_TAB ASTNode
+   */
   private final HashMap<String, ASTNode> nameToDest;
+  /**
+   * For 'insert into FOO(x,y) select ...' this stores the
+   * insclause-0 -> x,y mapping
+   */
+  private final Map<String, List<String>> nameToDestSchema;
   private final HashMap<String, TableSample> nameToSample;
   private final Map<ASTNode, String> exprToColumnAlias;
   private final Map<String, ASTNode> destToSelExpr;
@@ -61,12 +70,9 @@ public class QBParseInfo {
   private boolean isPartialScanAnalyzeCommand; // used for the analyze command (statistics)
                                                // (partialscan)
 
-  private final HashMap<String, tableSpec> tableSpecs; // used for statistics
+  private final HashMap<String, TableSpec> tableSpecs; // used for statistics
 
-  private String tableName;   // used for column statistics
-  private List<String> colName;     // used for column statistics
-  private List<String> colType;    // used for column statistics
-  private boolean isTblLvl; // used for column statistics
+  private AnalyzeRewriteContext analyzeRewrite;
 
 
   /**
@@ -111,6 +117,7 @@ public class QBParseInfo {
   public QBParseInfo(String alias, boolean isSubQ) {
     aliasToSrc = new HashMap<String, ASTNode>();
     nameToDest = new HashMap<String, ASTNode>();
+    nameToDestSchema = new HashMap<String, List<String>>();
     nameToSample = new HashMap<String, TableSample>();
     exprToColumnAlias = new HashMap<ASTNode, String>();
     destToLateralView = new HashMap<String, ASTNode>();
@@ -138,7 +145,7 @@ public class QBParseInfo {
 
     aliasToLateralViews = new HashMap<String, ArrayList<ASTNode>>();
 
-    tableSpecs = new HashMap<String, BaseSemanticAnalyzer.tableSpec>();
+    tableSpecs = new HashMap<String, BaseSemanticAnalyzer.TableSpec>();
 
   }
 
@@ -232,6 +239,13 @@ public class QBParseInfo {
 
   public void setDestForClause(String clause, ASTNode ast) {
     nameToDest.put(clause, ast);
+  }
+
+  List<String> setDestSchemaForClause(String clause, List<String> columnList) {
+    return nameToDestSchema.put(clause, columnList);
+  }
+  List<String> getDestSchemaForClause(String clause) {
+    return nameToDestSchema.get(clause);
   }
 
   /**
@@ -544,18 +558,18 @@ public class QBParseInfo {
     return isInsertToTable;
   }
 
-  public void addTableSpec(String tName, tableSpec tSpec) {
+  public void addTableSpec(String tName, TableSpec tSpec) {
     tableSpecs.put(tName, tSpec);
   }
 
-  public tableSpec getTableSpec(String tName) {
+  public TableSpec getTableSpec(String tName) {
     return tableSpecs.get(tName);
   }
 
   /**
    * This method is used only for the analyze command to get the partition specs
    */
-  public tableSpec getTableSpec() {
+  public TableSpec getTableSpec() {
 
     Iterator<String> tName = tableSpecs.keySet().iterator();
     return tableSpecs.get(tName.next());
@@ -588,36 +602,12 @@ public class QBParseInfo {
     SORT_BY_CLAUSE
   }
 
-  public String getTableName() {
-    return tableName;
+  public AnalyzeRewriteContext getAnalyzeRewrite() {
+    return analyzeRewrite;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  public List<String> getColName() {
-    return colName;
-  }
-
-  public void setColName(List<String> colName) {
-    this.colName = colName;
-  }
-
-  public boolean isTblLvl() {
-    return isTblLvl;
-  }
-
-  public void setTblLvl(boolean isTblLvl) {
-    this.isTblLvl = isTblLvl;
-  }
-
-  public List<String> getColType() {
-    return colType;
-  }
-
-  public void setColType(List<String> colType) {
-    this.colType = colType;
+  public void setAnalyzeRewrite(AnalyzeRewriteContext analyzeRewrite) {
+    this.analyzeRewrite = analyzeRewrite;
   }
 
   /**

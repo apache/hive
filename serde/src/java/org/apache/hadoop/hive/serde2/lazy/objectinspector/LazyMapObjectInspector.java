@@ -23,6 +23,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyMap;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -42,12 +44,11 @@ public class LazyMapObjectInspector implements MapObjectInspector {
   private ObjectInspector mapValueObjectInspector;
   private byte itemSeparator;
   private byte keyValueSeparator;
-  private Text nullSequence;
-  private boolean escaped;
-  private byte escapeChar;
+  private LazyObjectInspectorParameters lazyParams;
 
   protected LazyMapObjectInspector() {
     super();
+    lazyParams = new LazyObjectInspectorParametersImpl();
   }
   /**
    * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
@@ -61,9 +62,19 @@ public class LazyMapObjectInspector implements MapObjectInspector {
 
     this.itemSeparator = itemSeparator;
     this.keyValueSeparator = keyValueSeparator;
-    this.nullSequence = nullSequence;
-    this.escaped = escaped;
-    this.escapeChar = escapeChar;
+    this.lazyParams = new LazyObjectInspectorParametersImpl(
+        escaped, escapeChar, false, null, null, nullSequence);
+  }
+
+  protected LazyMapObjectInspector(ObjectInspector mapKeyObjectInspector,
+      ObjectInspector mapValueObjectInspector, byte itemSeparator,
+      byte keyValueSeparator, LazyObjectInspectorParameters lazyParams) {
+    this.mapKeyObjectInspector = mapKeyObjectInspector;
+    this.mapValueObjectInspector = mapValueObjectInspector;
+
+    this.itemSeparator = itemSeparator;
+    this.keyValueSeparator = keyValueSeparator;
+    this.lazyParams = lazyParams;
   }
 
   @Override
@@ -90,10 +101,7 @@ public class LazyMapObjectInspector implements MapObjectInspector {
 
   @Override
   public Object getMapValueElement(Object data, Object key) {
-    if (data == null) {
-      return null;
-    }
-    return ((LazyMap) data).getMapValueElement(key);
+    return ((data==null || key == null)? null : ((LazyMap) data).getMapValueElement(key));
   }
 
   @Override
@@ -122,14 +130,18 @@ public class LazyMapObjectInspector implements MapObjectInspector {
   }
 
   public Text getNullSequence() {
-    return nullSequence;
+    return lazyParams.getNullSequence();
   }
 
   public boolean isEscaped() {
-    return escaped;
+    return lazyParams.isEscaped();
   }
 
   public byte getEscapeChar() {
-    return escapeChar;
+    return lazyParams.getEscapeChar();
+  }
+
+  public LazyObjectInspectorParameters getLazyParams() {
+    return lazyParams;
   }
 }

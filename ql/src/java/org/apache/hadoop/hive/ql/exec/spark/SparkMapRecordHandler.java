@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -31,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -39,10 +40,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -63,24 +60,19 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   private boolean isLogInfoEnabled = false;
   private ExecMapperContext execContext;
 
+  @Override
   public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
 
     isLogInfoEnabled = LOG.isInfoEnabled();
-    ObjectCache cache = ObjectCacheFactory.getCache(job);
 
     try {
       jc = job;
       execContext = new ExecMapperContext(jc);
       // create map and fetch operators
-      MapWork mrwork = (MapWork) cache.retrieve(PLAN_KEY);
-      if (mrwork == null) {
-        mrwork = Utilities.getMapWork(job);
-        cache.cache(PLAN_KEY, mrwork);
-      } else {
-        Utilities.setMapWork(job, mrwork);
-      }
+      MapWork mrwork = Utilities.getMapWork(job);
+
       if (mrwork.getVectorMode()) {
         mo = new VectorMapOperator();
       } else {
@@ -89,6 +81,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       mo.setConf(mrwork);
 
       // initialize map operator
+      mo.initialize(jc, null);
       mo.setChildren(job);
       LOG.info(mo.dump(0));
       // initialize map local work
@@ -98,9 +91,9 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       MapredContext.init(true, new JobConf(jc));
       MapredContext.get().setReporter(reporter);
 
-      mo.setExecContext(execContext);
+      mo.passExecContext(execContext);
       mo.initializeLocalWork(jc);
-      mo.initialize(jc, null);
+      mo.initializeMapOperator(jc);
 
       OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
       mo.setReporter(rp);

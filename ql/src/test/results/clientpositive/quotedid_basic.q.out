@@ -120,17 +120,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-            outputColumnNames: _col0, _col1, _col2
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -202,6 +198,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           PTF Operator
+            Function definitions:
+                Input definition
+                  input alias: ptf_0
+                  output shape: _col0: string, _col1: string, _col2: string
+                  type: WINDOWING
+                Windowing table definition
+                  input alias: ptf_1
+                  name: windowingtablefunction
+                  order by: _col1
+                  partition by: _col2
+                  raw input shape:
+                  window functions:
+                      window function definition
+                        alias: _wcol0
+                        arguments: _col1
+                        name: rank
+                        window function: GenericUDAFRankEvaluator
+                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        isPivotResult: true
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _wcol0 (type: int)
@@ -287,6 +302,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           PTF Operator
+            Function definitions:
+                Input definition
+                  input alias: ptf_0
+                  output shape: _col0: string, _col1: string, _col2: string
+                  type: WINDOWING
+                Windowing table definition
+                  input alias: ptf_1
+                  name: windowingtablefunction
+                  order by: _col1
+                  partition by: _col2
+                  raw input shape:
+                  window functions:
+                      window function definition
+                        alias: _wcol0
+                        arguments: _col1
+                        name: rank
+                        window function: GenericUDAFRankEvaluator
+                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        isPivotResult: true
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _wcol0 (type: int)

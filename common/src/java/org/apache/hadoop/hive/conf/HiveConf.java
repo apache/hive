@@ -149,6 +149,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
+      HiveConf.ConfVars.METASTORE_FILTER_HOOK,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
       HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
@@ -159,6 +160,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
+      HiveConf.ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
       HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
       HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -172,7 +174,8 @@ public class HiveConf extends Configuration {
    */
   public static final HiveConf.ConfVars[] metaConfVars = {
       HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL
+      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
+      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT
   };
 
   static {
@@ -331,7 +334,7 @@ public class HiveConf extends Configuration {
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
-        "Do not report an error if DROP TABLE/VIEW/Index specifies a non-existent table/view/index"),
+        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/index/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 
@@ -499,6 +502,9 @@ public class HiveConf extends Configuration {
         "      schema migration attempt. Users are required to manually migrate schema after Hive upgrade which ensures\n" +
         "      proper metastore schema migration. (Default)\n" +
         "False: Warn if the version information stored in metastore doesn't match with one from in Hive jars."),
+    METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION("hive.metastore.schema.verification.record.version", true,
+      "When true the current MS version is recorded in the VERSION table. If this is disabled and verification is\n" +
+      " enabled the MS will be unusable."),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked",
         "throw exception if metadata tables are incorrect"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed",
@@ -574,6 +580,11 @@ public class HiveConf extends Configuration {
         "select query has incorrect syntax or something similar inside a transaction, the\n" +
         "entire transaction will fail and fall-back to DataNucleus will not be possible. You\n" +
         "should disable the usage of direct SQL inside transactions if that happens in your case."),
+    METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
+        "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
+        "either be pruned or converted to empty strings. Some backing dbs such as Oracle persist empty strings " +
+        "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
+        "pruning is the correct behaviour"),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
         "hive.metastore.disallow.incompatible.col.type.changes", false,
         "If true (default is false), ALTER TABLE operations which change the type of a\n" +
@@ -615,7 +626,13 @@ public class HiveConf extends Configuration {
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
         "* implies all the keys will get inherited."),
     METASTORE_FILTER_HOOK("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
-        "Metastore hook class for filtering the metadata read results"),
+        "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
+        + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
+    FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
+        " to fire events for DML operations"),
+    METASTORE_CLIENT_DROP_PARTITIONS_WITH_EXPRESSIONS("hive.metastore.client.drop.partitions.using.expressions", true,
+        "Choose whether dropping partitions with HCatClient pushes the partition-predicate to the metastore, " +
+            "or drops partitions iteratively"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
@@ -707,20 +724,6 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
-    HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS("hive.optimize.multigroupby.common.distincts", true,
-        "Whether to optimize a multi-groupby query with the same distinct.\n" +
-        "Consider a query like:\n" +
-        "\n" +
-        "  from src\n" +
-        "    insert overwrite table dest1 select col1, count(distinct colx) group by col1\n" +
-        "    insert overwrite table dest2 select col2, count(distinct colx) group by col2;\n" +
-        "\n" +
-        "With this parameter set to true, first we spray by the distinct value (colx), and then\n" +
-        "perform the 2 groups bys. This makes sense if map-side aggregation is turned off. However,\n" +
-        "with maps-side aggregation, it might be useful in some cases to treat the 2 inserts independently, \n" +
-        "thereby performing the query above in 2MR jobs instead of 3 (due to spraying by distinct key first).\n" +
-        "If this parameter is turned off, we don't consider the fact that the distinct key is the same across\n" +
-        "different MR jobs."),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000,
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
@@ -736,6 +739,11 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
         "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
         "because memory-optimized hashtable cannot be serialized."),
+    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", false, "Whether to use hybrid" +
+        "grace hash join as the join method for mapjoin."),
+    HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +
+        "hybrid grace hash join, how often (how many rows apart) we check if memory is full. " +
+        "This number should be power of 2."),
     HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024,
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
@@ -792,6 +800,11 @@ public class HiveConf extends Configuration {
 
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE TABLE statement. Users can explicitly override it by CREATE TABLE ... STORED AS [FORMAT]"),
+    HIVEDEFAULTMANAGEDFILEFORMAT("hive.default.fileformat.managed", "none",
+	new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+	"Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
+	"created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
+	"for all tables."),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
@@ -865,20 +878,22 @@ public class HiveConf extends Configuration {
 
     // test mode in hive mode
     HIVETESTMODE("hive.test.mode", false,
-        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename."),
+        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
+        false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
-        "In test mode, specfies prefixes for the output table"),
+        "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
         "In test mode, specfies sampling frequency for table, which is not bucketed,\n" +
         "For example, the following query:\n" +
         "  INSERT OVERWRITE TABLE dest SELECT col1 from src\n" +
         "would be converted to\n" +
         "  INSERT OVERWRITE TABLE test_dest\n" +
-        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))"),
+        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))", false),
     HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", "",
-        "In test mode, specifies comma separated table names which would not apply sampling"),
-    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test"),
-    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test"),
+        "In test mode, specifies comma separated table names which would not apply sampling", false),
+    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test", false),
+    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test", false),
+    HIVETESTCURRENTTIMESTAMP("hive.test.currenttimestamp", null, "current timestamp for test", false),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
@@ -914,7 +929,9 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
-
+    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
+      "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
+      "on reading parquet files from other tools"),
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
@@ -959,6 +976,13 @@ public class HiveConf extends Configuration {
     HIVE_ORC_COMPRESSION_STRATEGY("hive.exec.orc.compression.strategy", "SPEED", new StringSet("SPEED", "COMPRESSION"),
          "Define the compression strategy to use while writing data. \n" +
          "This changes the compression level of higher level compression codec (like ZLIB)."),
+
+    HIVE_ORC_SPLIT_STRATEGY("hive.exec.orc.split.strategy", "HYBRID", new StringSet("HYBRID", "BI", "ETL"),
+        "This is not a user level config. BI strategy is used when the requirement is to spend less time in split generation" +
+        " as opposed to query execution (split generation does not read or cache file footers)." +
+        " ETL strategy is used when spending little more time in split generation is acceptable" +
+        " (split generation reads and caches file footers). HYBRID chooses between the above strategies" +
+        " based on heuristics."),
 
     HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS("hive.orc.splits.include.file.footer", false,
         "If turned on splits generated by orc will include metadata about the stripes in the file. This\n" +
@@ -1625,6 +1649,9 @@ public class HiveConf extends Configuration {
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
         "Whether to log explain output for every query.\n" +
         "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
+    HIVE_EXPLAIN_USER("hive.explain.user", false,
+        "Whether to show explain result at user level.\n" +
+        "When enabled, will log EXPLAIN output for the query at user level."),
 
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
@@ -1854,6 +1881,10 @@ public class HiveConf extends Configuration {
         "Operation will be closed when it's not accessed for this duration of time, which can be disabled by setting to zero value.\n" +
         "  With positive value, it's checked for operations in terminal state only (FINISHED, CANCELED, CLOSED, ERROR).\n" +
         "  With negative value, it's checked for all of the operations regardless of state."),
+    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", false,
+        "Session will be considered to be idle only if there is no activity, and there is no pending operation.\n" +
+        "This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
+        "(hive.server2.session.check.interval) are enabled."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
@@ -1976,7 +2007,9 @@ public class HiveConf extends Configuration {
         "  none: default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.\n" +
         "  column: implies column names can contain any character."
     ),
-
+    HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS("hive.support.sql11.reserved.keywords", true,
+        "This flag should be set to true to enable support for SQL2011 reserved keywords.\n" +
+        "The default value is true."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
@@ -2027,12 +2060,33 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.inplace.progress",
         true,
         "Updates tez job execution progress in-place in the terminal."),
-    SPARK_CLIENT_FUTURE_TIMEOUT(
-        "hive.spark.client.future.timeout",
-        "60s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "remote spark client JobHandle future timeout value in seconds.")
-    ;
+    SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
+      "60s", new TimeValidator(TimeUnit.SECONDS),
+      "Timeout for requests from Hive client to remote Spark driver."),
+    SPARK_JOB_MONITOR_TIMEOUT("hive.spark.job.monitor.timeout",
+      "60s", new TimeValidator(TimeUnit.SECONDS),
+      "Timeout for job monitor to get Spark job state."),
+    SPARK_RPC_CLIENT_CONNECT_TIMEOUT("hive.spark.client.connect.timeout",
+      "1000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "Timeout for remote Spark driver in connecting back to Hive client."),
+    SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT("hive.spark.client.server.connect.timeout",
+      "90000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "Timeout for handshake between Hive client and remote Spark driver.  Checked by both processes."),
+    SPARK_RPC_SECRET_RANDOM_BITS("hive.spark.client.secret.bits", "256",
+      "Number of bits of randomness in the generated secret for communication between Hive client and remote Spark driver. " +
+      "Rounded down to the nearest multiple of 8."),
+    SPARK_RPC_MAX_THREADS("hive.spark.client.rpc.threads", 8,
+      "Maximum number of threads for remote Spark driver's RPC event loop."),
+    SPARK_RPC_MAX_MESSAGE_SIZE("hive.spark.client.rpc.max.size", 50 * 1024 * 1024,
+      "Maximum message size in bytes for communication between Hive client and remote Spark driver. Default is 50MB."),
+    SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
+      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
+    SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
+      "Name of the SASL mechanism to use for authentication."),
+    NWAYJOINREORDER("hive.reorder.nway.joins", true,
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+    HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
+      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially.");
 
     public final String varname;
     private final String defaultExpr;
@@ -2272,8 +2326,31 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
-    isSparkConfigUpdated = name.startsWith("spark");
+    isSparkConfigUpdated = isSparkRelatedConfig(name);
     set(name, value);
+  }
+
+  /**
+   * check whether spark related property is updated, which includes spark configurations,
+   * RSC configurations and yarn configuration in Spark on YARN mode.
+   * @param name
+   * @return
+   */
+  private boolean isSparkRelatedConfig(String name) {
+    boolean result = false;
+    if (name.startsWith("spark")) { // Spark property.
+      result = true;
+    } else if (name.startsWith("yarn")) { // YARN property in Spark on YARN mode.
+      String sparkMaster = get("spark.master");
+      if (sparkMaster != null &&
+        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+        result = true;
+      }
+    } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
+      result = true;
+    }
+
+    return result;
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {

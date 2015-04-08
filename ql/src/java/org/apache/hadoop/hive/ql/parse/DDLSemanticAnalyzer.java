@@ -45,6 +45,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -185,6 +186,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DATETIME, serdeConstants.DATETIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME);
+    TokenToTypeName.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    TokenToTypeName.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
   }
 
@@ -508,7 +511,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (colType == null)
       throw new SemanticException("column type not found");
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getTableName(),
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
         .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
@@ -997,7 +1000,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           StatsWork statDesc;
           if (oldTblPartLoc.equals(newTblPartLoc)) {
             // If we're merging to the same location, we can avoid some metastore calls
-            tableSpec tablepart = new tableSpec(this.db, conf, root);
+            TableSpec tablepart = new TableSpec(this.db, conf, root);
             statDesc = new StatsWork(tablepart);
           } else {
             statDesc = new StatsWork(ltd);
@@ -1036,7 +1039,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = indexType.getHandlerClsName();
     } else {
       try {
-        Class.forName(typeName);
+        JavaUtils.loadClass(typeName);
       } catch (Exception e) {
         throw new SemanticException("class name provided for index handler not found.", e);
       }
@@ -1092,7 +1095,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    storageFormat.fillDefaultStorageFormat();
+    storageFormat.fillDefaultStorageFormat(false);
     if (indexTableName == null) {
       indexTableName = MetaStoreUtils.getIndexTableName(qTabName[0], qTabName[1], indexName);
       indexTableName = qTabName[0] + "." + indexTableName; // on same database with base table
@@ -1618,7 +1621,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         StatsWork statDesc;
         if (oldTblPartLoc.equals(newTblPartLoc)) {
           // If we're merging to the same location, we can avoid some metastore calls
-          tableSpec tablepart = new tableSpec(db, conf, tableName, partSpec);
+          TableSpec tablepart = new TableSpec(db, conf, tableName, partSpec);
           statDesc = new StatsWork(tablepart);
         } else {
           statDesc = new StatsWork(ltd);
@@ -2626,6 +2629,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // popular case but that's kinda hacky. Let's not do it for now.
     boolean canGroupExprs = ifExists;
 
+    boolean mustPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
     Table tab = getTable(qualified);
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
         getFullPartitionSpecs(ast, tab, canGroupExprs);
@@ -2640,7 +2644,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
 
     DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView, ignoreProtection);
+        new DropTableDesc(getDotName(qualified), partSpecs, expectView, ignoreProtection, mustPurge);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 
@@ -3038,7 +3042,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Entry<String, String> e : partSpec.entrySet()) {
       for (String s : reservedPartitionValues) {
-        if (e.getValue().contains(s)) {
+        String value = e.getValue();
+        if (value != null && value.contains(s)) {
           throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
               "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
         }

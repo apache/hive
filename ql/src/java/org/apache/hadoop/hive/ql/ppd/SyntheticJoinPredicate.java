@@ -47,9 +47,7 @@ import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
@@ -96,11 +94,9 @@ public class SyntheticJoinPredicate implements Transform {
 
   // insert filter operator between target(child) and input(parent)
   private static Operator<FilterDesc> createFilter(Operator<?> target, Operator<?> parent,
-      RowResolver parentRR, ExprNodeDesc filterExpr) {
+      RowSchema parentRS, ExprNodeDesc filterExpr) {
     Operator<FilterDesc> filter = OperatorFactory.get(new FilterDesc(filterExpr, false),
-        new RowSchema(parentRR.getColumnInfos()));
-    filter.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
-    filter.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+        new RowSchema(parentRS.getSignature()));
     filter.getParentOperators().add(parent);
     filter.getChildOperators().add(target);
     parent.replaceChild(target, filter);
@@ -139,7 +135,7 @@ public class SyntheticJoinPredicate implements Transform {
       int[][] targets = getTargets(join);
 
       Operator<? extends OperatorDesc> parent = source.getParentOperators().get(0);
-      RowResolver parentRR = pCtx.getOpParseCtx().get(parent).getRowResolver();
+      RowSchema parentRS = parent.getSchema();
 
       // don't generate for null-safes.
       if (join.getConf().getNullSafes() != null) {
@@ -194,8 +190,7 @@ public class SyntheticJoinPredicate implements Transform {
           }
         }
 
-        Operator<FilterDesc> newFilter = createFilter(source, parent, parentRR, syntheticExpr);
-        pCtx.getOpParseCtx().put(newFilter, new OpParseContext(parentRR));
+        Operator<FilterDesc> newFilter = createFilter(source, parent, parentRS, syntheticExpr);
         parent = newFilter;
       }
 

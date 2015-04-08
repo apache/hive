@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.runtime.api.LogicalInput;
@@ -38,6 +39,8 @@ public class TezContext extends MapredContext {
   private ProcessorContext processorContext;
 
   private RecordSource[] sources;
+
+  private Map<Integer, DummyStoreOperator> dummyOpsMap;
 
   public TezContext(boolean isMap, JobConf jobConf) {
     super(isMap, jobConf);
@@ -79,5 +82,13 @@ public class TezContext extends MapredContext {
 
   public void setRecordSources(RecordSource[] sources) {
     this.sources = sources;
+  }
+
+  public void setDummyOpsMap(Map<Integer, DummyStoreOperator> dummyOpsMap) {
+    this.dummyOpsMap = dummyOpsMap;
+  }
+
+  public Map<Integer, DummyStoreOperator> getDummyOpsMap() {
+    return dummyOpsMap;
   }
 }

@@ -19,6 +19,7 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,7 +67,7 @@ public abstract class MessageFactory {
 
   private static MessageFactory getInstance(String className) {
     try {
-      return (MessageFactory)ReflectionUtils.newInstance(Class.forName(className), hiveConf);
+      return (MessageFactory)ReflectionUtils.newInstance(JavaUtils.loadClass(className), hiveConf);
     }
     catch (ClassNotFoundException classNotFound) {
       throw new IllegalStateException("Could not construct MessageFactory implementation: ", classNotFound);
@@ -170,4 +171,16 @@ public abstract class MessageFactory {
    * @return DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+
+  /**
+   * Factory method for building insert message
+   * @param db Name of the database the insert occurred in
+   * @param table Name of the table the insert occurred in
+   * @param partVals Partition values for the partition that the insert occurred in, may be null
+   *                 if the insert was done into a non-partitioned table
+   * @param files List of files created as a result of the insert, may be null.
+   * @return instance of InsertMessage
+   */
+  public abstract InsertMessage buildInsertMessage(String db, String table,
+                                                   List<String> partVals, List<String> files);
 }

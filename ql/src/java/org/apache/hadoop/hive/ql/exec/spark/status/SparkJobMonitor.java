@@ -15,7 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.exec.spark.status;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,141 +31,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.spark.JobExecutionStatus;
+abstract class SparkJobMonitor {
 
-/**
- * SparkJobMonitor monitor a single Spark job status in a loop until job finished/failed/killed.
- * It print current job status to console and sleep current thread between monitor interval.
- */
-public class SparkJobMonitor {
+  protected static final String CLASS_NAME = SparkJobMonitor.class.getName();
+  protected static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  protected static SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  protected final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  protected final int checkInterval = 1000;
+  protected final long monitorTimeoutInteval;
 
-  private static final String CLASS_NAME = SparkJobMonitor.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
-  private transient LogHelper console;
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private final int checkInterval = 1000;
+  private Set<String> completed = new HashSet<String>();
   private final int printInterval = 3000;
   private long lastPrintTime;
-  private Set<String> completed;
 
-  private SparkJobStatus sparkJobStatus;
-
-  public SparkJobMonitor(SparkJobStatus sparkJobStatus) {
-    this.sparkJobStatus = sparkJobStatus;
-    console = new LogHelper(LOG);
+  protected SparkJobMonitor(HiveConf hiveConf) {
+    monitorTimeoutInteval = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT, TimeUnit.SECONDS);
   }
 
-  public int startMonitor() {
-    completed = new HashSet<String>();
+  public abstract int startMonitor();
 
-    boolean running = false;
-    boolean done = false;
-    int rc = 0;
-    JobExecutionStatus lastState = null;
-    Map<String, SparkStageProgress> lastProgressMap = null;
-    long startTime = -1;
-
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
-
-    while (true) {
-      JobExecutionStatus state = sparkJobStatus.getState();
-      try {
-        if (LOG.isDebugEnabled()) {
-          console.printInfo("state = " + state);
-        }
-        if (state != null && state != JobExecutionStatus.UNKNOWN
-          && (state != lastState || state == JobExecutionStatus.RUNNING)) {
-          lastState = state;
-          Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
-
-          switch (state) {
-          case RUNNING:
-            if (!running) {
-              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
-              // print job stages.
-              console.printInfo("\nQuery Hive on Spark job["
-                + sparkJobStatus.getJobId() + "] stages:");
-              for (int stageId : sparkJobStatus.getStageIds()) {
-                console.printInfo(Integer.toString(stageId));
-              }
-
-              console.printInfo("\nStatus: Running (Hive on Spark job["
-                + sparkJobStatus.getJobId() + "])");
-              startTime = System.currentTimeMillis();
-              running = true;
-
-              console.printInfo("Job Progress Format\nCurrentTime StageId_StageAttemptId: "
-                + "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
-            }
-
-
-            printStatus(progressMap, lastProgressMap);
-            lastProgressMap = progressMap;
-            break;
-          case SUCCEEDED:
-            printStatus(progressMap, lastProgressMap);
-            lastProgressMap = progressMap;
-            if (startTime < 0) {
-              console.printInfo("Status: Finished successfully within a check interval.");
-            } else {
-              double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-              console.printInfo("Status: Finished successfully in "
-                + String.format("%.2f seconds", duration));
-            }
-            running = false;
-            done = true;
-            break;
-          case FAILED:
-            console.printError("Status: Failed");
-            running = false;
-            done = true;
-            rc = 2;
-            break;
-          case UNKNOWN:
-            console.printError("Status: Unknown");
-            running = false;
-            done = true;
-            rc = 2;
-            break;
-          }
-        }
-        if (!done) {
-          Thread.sleep(checkInterval);
-        }
-      } catch (Exception e) {
-        String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
-        if (state == null || state.equals(JobExecutionStatus.UNKNOWN)) {
-          msg = "Job Submission failed" + msg;
-        } else {
-          msg = "Ended Job = " + sparkJobStatus.getJobId() + msg;
-        }
-
-        // Has to use full name to make sure it does not conflict with
-        // org.apache.commons.lang.StringUtils
-        LOG.error(msg, e);
-        console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        rc = 1;
-      } finally {
-        if (done) {
-          break;
-        }
-      }
-    }
-
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
-    return rc;
-  }
-
-  private void printStatus(Map<String, SparkStageProgress> progressMap,
-                           Map<String, SparkStageProgress> lastProgressMap) {
+  protected void printStatus(Map<String, SparkStageProgress> progressMap,
+    Map<String, SparkStageProgress> lastProgressMap) {
 
     // do not print duplicate status while still in middle of print interval.
     boolean isDuplicateState = isSameAsPreviousProgress(progressMap, lastProgressMap);
@@ -181,7 +76,7 @@ public class SparkJobMonitor {
       final int failed = progress.getFailedTaskCount();
       String stageName = "Stage-" + s;
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", stageName, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", stageName));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);
@@ -209,13 +104,13 @@ public class SparkJobMonitor {
           if (failed > 0) {
             /* tasks finished but some failed */
             reportBuffer.append(
-                String.format(
-                    "%s: %d(-%d)/%d Finished with failed tasks\t",
-                    stageName, complete, failed, total));
+              String.format(
+                "%s: %d(-%d)/%d Finished with failed tasks\t",
+                stageName, complete, failed, total));
           } else {
             if (complete == total) {
               reportBuffer.append(
-                  String.format("%s: %d/%d Finished\t", stageName, complete, total));
+                String.format("%s: %d/%d Finished\t", stageName, complete, total));
             } else {
               reportBuffer.append(String.format("%s: %d/%d\t", stageName, complete, total));
             }

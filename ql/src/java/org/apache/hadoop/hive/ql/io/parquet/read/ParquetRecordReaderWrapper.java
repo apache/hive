@@ -15,11 +15,18 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
@@ -40,12 +47,15 @@ import parquet.filter2.predicate.FilterPredicate;
 import parquet.hadoop.ParquetFileReader;
 import parquet.hadoop.ParquetInputFormat;
 import parquet.hadoop.ParquetInputSplit;
+import parquet.hadoop.api.InitContext;
 import parquet.hadoop.api.ReadSupport.ReadContext;
 import parquet.hadoop.metadata.BlockMetaData;
 import parquet.hadoop.metadata.FileMetaData;
 import parquet.hadoop.metadata.ParquetMetadata;
 import parquet.hadoop.util.ContextUtil;
 import parquet.schema.MessageTypeParser;
+
+import com.google.common.base.Strings;
 
 public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWritable> {
   public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
@@ -59,7 +69,8 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private boolean firstRecord = false;
   private boolean eof = false;
   private int schemaSize;
-
+  private boolean skipTimestampConversion = false;
+  private JobConf jobConf;
   private final ProjectionPusher projectionPusher;
 
   public ParquetRecordReaderWrapper(
@@ -81,18 +92,26 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     this.splitLen = oldSplit.getLength();
     this.projectionPusher = pusher;
 
-    final ParquetInputSplit split = getSplit(oldSplit, oldJobConf);
+    jobConf = oldJobConf;
+    final ParquetInputSplit split = getSplit(oldSplit, jobConf);
 
-    TaskAttemptID taskAttemptID = TaskAttemptID.forName(oldJobConf.get(IOConstants.MAPRED_TASK_ID));
+    TaskAttemptID taskAttemptID = TaskAttemptID.forName(jobConf.get(IOConstants.MAPRED_TASK_ID));
     if (taskAttemptID == null) {
       taskAttemptID = new TaskAttemptID();
     }
 
-    setFilter(oldJobConf);
+    setFilter(jobConf);
 
     // create a TaskInputOutputContext
-    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(oldJobConf, taskAttemptID);
+    Configuration conf = jobConf;
+    if (skipTimestampConversion ^ HiveConf.getBoolVar(
+        conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+      conf = new JobConf(oldJobConf);
+      HiveConf.setBoolVar(conf,
+        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
+    }
 
+    final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
     if (split != null) {
       try {
         realReader = newInputFormat.createRecordReader(split, taskContext);
@@ -216,6 +235,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
    * @return a ParquetInputSplit corresponding to the oldSplit
    * @throws IOException if the config cannot be enhanced or if the footer cannot be read from the file
    */
+  @SuppressWarnings("deprecation")
   protected ParquetInputSplit getSplit(
       final InputSplit oldSplit,
       final JobConf conf
@@ -223,16 +243,16 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     ParquetInputSplit split;
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
-      final JobConf cloneJob = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
+      jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
 
-      final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(cloneJob, finalPath);
+      final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(jobConf, finalPath);
       final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
       final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
 
-      final ReadContext readContext = new DataWritableReadSupport()
-          .init(cloneJob, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
+      final ReadContext readContext = new DataWritableReadSupport().init(new InitContext(jobConf,
+          null, fileMetaData.getSchema()));
       schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-          .get(DataWritableReadSupport.HIVE_SCHEMA_KEY)).getFieldCount();
+          .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
       final long splitStart = ((FileSplit) oldSplit).getStart();
       final long splitLength = ((FileSplit) oldSplit).getLength();
@@ -246,6 +266,9 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
         LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
         split = null;
       } else {
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+          skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
+        }
         split = new ParquetInputSplit(finalPath,
                 splitStart,
                 splitLength,

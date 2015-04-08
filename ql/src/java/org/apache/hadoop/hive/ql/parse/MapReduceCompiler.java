@@ -152,10 +152,6 @@ public class MapReduceCompiler extends TaskCompiler {
       topOp.setChildOperators(null);
     }
 
-    if (topOp.getChildOperators() == null) {
-      return;
-    }
-
     for (Operator<? extends OperatorDesc> op : topOp.getChildOperators()) {
       breakOperatorTree(op);
     }
@@ -194,6 +190,7 @@ public class MapReduceCompiler extends TaskCompiler {
 
     final Context lCtx = ctx;
     PathFilter p = new PathFilter() {
+      @Override
       public boolean accept(Path file) {
         return !lCtx.isMRTmpFileURI(file.toUri().getPath());
       }

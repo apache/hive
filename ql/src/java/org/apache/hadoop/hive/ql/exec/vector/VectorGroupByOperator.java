@@ -22,18 +22,19 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -54,7 +56,8 @@ import org.apache.hadoop.io.DataOutputBuffer;
  * stores the aggregate operators' intermediate states. Emits row mode output.
  *
  */
-public class VectorGroupByOperator extends GroupByOperator implements VectorizationContextRegion {
+public class VectorGroupByOperator extends Operator<GroupByDesc> implements
+    VectorizationContextRegion {
 
   private static final Log LOG = LogFactory.getLog(
       VectorGroupByOperator.class.getName());
@@ -100,7 +103,15 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   private transient VectorizedRowBatchCtx vrbCtx;
 
   private transient VectorColumnAssign[] vectorColumnAssign;
-  
+
+  private transient int numEntriesHashTable;
+
+  private transient long maxHashTblMemory;
+
+  private transient long maxMemory;
+
+  private float memoryThreshold;
+
   /**
    * Interface for processing mode: global, hash, unsorted streaming, or group batch
    */
@@ -118,9 +129,11 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   private abstract class ProcessingModeBase implements IProcessingMode {
 
     // Overridden and used in sorted reduce group batch processing mode.
+    @Override
     public void startGroup() throws HiveException {
       // Do nothing.
     }
+    @Override
     public void endGroup() throws HiveException {
       // Do nothing.
     }
@@ -177,7 +190,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   private class ProcessingModeGlobalAggregate extends ProcessingModeBase {
 
     /**
-     * In global processing mode there is only one set of aggregation buffers 
+     * In global processing mode there is only one set of aggregation buffers
      */
     private VectorAggregationBufferRow aggregationBuffers;
 
@@ -233,7 +246,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     private long sumBatchSize;
 
     /**
-     * Max number of entries in the vector group by aggregation hashtables. 
+     * Max number of entries in the vector group by aggregation hashtables.
      * Exceeding this will trigger a flush irrelevant of memory pressure condition.
      */
     private int maxHtEntries = 1000000;
@@ -247,12 +260,12 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
      * Percent of entries to flush when memory threshold exceeded.
      */
     private float percentEntriesToFlush = 0.1f;
-  
+
     /**
      * A soft reference used to detect memory pressure
      */
     private SoftReference<Object> gcCanary = new SoftReference<Object>(new Object());
-    
+
     /**
      * Counts the number of time the gcCanary died and was resurrected
      */
@@ -289,7 +302,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
             HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
           this.numRowsCompareHashAggr = HiveConf.getIntVar(hconf,
             HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
-      } 
+      }
       else {
         this.percentEntriesToFlush =
             HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT.defaultFloatVal;
@@ -322,14 +335,14 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       processAggregators(batch);
 
       //Flush if memory limits were reached
-      // We keep flushing until the memory is under threshold 
+      // We keep flushing until the memory is under threshold
       int preFlushEntriesCount = numEntriesHashTable;
       while (shouldFlush(batch)) {
         flush(false);
 
         if(gcCanary.get() == null) {
           gcCanaryFlushes++;
-          gcCanary = new SoftReference<Object>(new Object()); 
+          gcCanary = new SoftReference<Object>(new Object());
         }
 
         //Validate that some progress is being made
@@ -468,7 +481,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
         mapKeysAggregationBuffers.clear();
         numEntriesHashTable = 0;
       }
-      
+
       if (all && LOG.isDebugEnabled()) {
         LOG.debug(String.format("GC canary caused %d flushes", gcCanaryFlushes));
       }
@@ -495,7 +508,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       if (gcCanary.get() == null) {
         return true;
       }
-      
+
       return false;
     }
 
@@ -515,14 +528,14 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     }
 
     /**
-     * Checks if the HT reduces the number of entries by at least minReductionHashAggr factor 
+     * Checks if the HT reduces the number of entries by at least minReductionHashAggr factor
      * @throws HiveException
      */
     private void checkHashModeEfficiency() throws HiveException {
       if (lastModeCheckRowCount > numRowsCompareHashAggr) {
         lastModeCheckRowCount = 0;
         if (LOG.isDebugEnabled()) {
-          LOG.debug(String.format("checkHashModeEfficiency: HT:%d RC:%d MIN:%d", 
+          LOG.debug(String.format("checkHashModeEfficiency: HT:%d RC:%d MIN:%d",
               numEntriesHashTable, sumBatchSize, (long)(sumBatchSize * minReductionHashAggr)));
         }
         if (numEntriesHashTable > sumBatchSize * minReductionHashAggr) {
@@ -541,7 +554,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    */
   private class ProcessingModeUnsortedStreaming extends ProcessingModeBase {
 
-    /** 
+    /**
      * The aggregation buffers used in streaming mode
      */
     private VectorAggregationBufferRow currentStreamingAggregators;
@@ -554,19 +567,19 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     /**
      * The keys that needs to be flushed at the end of the current batch
      */
-    private final VectorHashKeyWrapper[] keysToFlush = 
+    private final VectorHashKeyWrapper[] keysToFlush =
         new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
 
     /**
      * The aggregates that needs to be flushed at the end of the current batch
      */
-    private final VectorAggregationBufferRow[] rowsToFlush = 
+    private final VectorAggregationBufferRow[] rowsToFlush =
         new VectorAggregationBufferRow[VectorizedRowBatch.DEFAULT_SIZE];
 
     /**
      * A pool of VectorAggregationBufferRow to avoid repeated allocations
      */
-    private VectorUtilBatchObjectPool<VectorAggregationBufferRow> 
+    private VectorUtilBatchObjectPool<VectorAggregationBufferRow>
       streamAggregationBufferRowPool;
 
     @Override
@@ -658,7 +671,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    *      vectorized reduce-shuffle feeds the batches to us.
    *
    *   2) Later at endGroup after reduce-shuffle has fed us all the input batches for the group,
-   *      we fill in the aggregation columns in outputBatch at outputBatch.size.  Our method 
+   *      we fill in the aggregation columns in outputBatch at outputBatch.size.  Our method
    *      writeGroupRow does this and finally increments outputBatch.size.
    *
    */
@@ -672,7 +685,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
      */
     VectorGroupKeyHelper groupKeyHelper;
 
-    /** 
+    /**
      * The group vector aggregation buffers.
      */
     private VectorAggregationBufferRow groupAggregators;
@@ -750,7 +763,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       AggregationDesc aggDesc = aggrDesc.get(i);
       aggregators[i] = vContext.getAggregatorExpression(aggDesc, desc.getVectorDesc().isReduce());
     }
-    
+
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
     vOutContext = new VectorizationContext(desc.getOutputColumnNames());
@@ -762,7 +775,8 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -773,9 +787,9 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
 
       // grouping id should be pruned, which is the last of key columns
       // see ColumnPrunerGroupByProc
-      outputKeyLength = 
+      outputKeyLength =
           conf.pruneGroupingSetId() ? keyExpressions.length - 1 : keyExpressions.length;
-      
+
       keyOutputWriters = new VectorExpressionWriter[outputKeyLength];
 
       for(int i = 0; i < outputKeyLength; ++i) {
@@ -812,8 +826,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       throw new HiveException(e);
     }
 
-    initializeChildren(hconf);
-
     forwardCache = new Object[outputKeyLength + aggregators.length];
 
     if (outputKeyLength == 0) {
@@ -826,13 +838,14 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       processingMode = this.new ProcessingModeHashAggregate();
     }
     processingMode.initialize(hconf);
+    return result;
   }
 
   /**
    * changes the processing mode to unsorted streaming
-   * This is done at the request of the hash agg mode, if the number of keys 
+   * This is done at the request of the hash agg mode, if the number of keys
    * exceeds the minReductionHashAggr factor
-   * @throws HiveException 
+   * @throws HiveException
    */
   private void changeToUnsortedStreamingMode() throws HiveException {
     processingMode = this.new ProcessingModeUnsortedStreaming();
@@ -859,7 +872,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
     if (batch.size > 0) {
@@ -885,10 +898,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       }
       for (int i = 0; i < aggregators.length; ++i) {
         forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
-      }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(String.format("forwarding keys: %s: %s",
-            kw, Arrays.toString(forwardCache)));
       }
       forward(forwardCache, outputObjInspector);
     } else {
@@ -965,5 +974,10 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   @Override
   public VectorizationContext getOuputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  public OperatorType getType() {
+    return OperatorType.GROUPBY;
   }
 }

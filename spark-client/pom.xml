@@ -22,14 +22,14 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.hive</groupId>
   <artifactId>spark-client</artifactId>
   <packaging>jar</packaging>
   <name>Spark Remote Client</name>
-  <version>0.15.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -63,6 +63,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

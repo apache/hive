@@ -494,9 +494,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
   public ASTNode getSubQueryAST() {
     return subQueryAST;
   }
-  public ASTNode getOuterQueryExpression() {
-    return parentQueryExpression;
-  }
   public SubQueryTypeDef getOperator() {
     return operator;
   }
@@ -526,15 +523,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     /*
      * Restriction.16.s :: Correlated Expression in Outer Query must not contain
      * unqualified column references.
+     * disabled : if it's obvious, we allow unqualified refs
      */
-    if ( parentQueryExpression != null && !forHavingClause ) {
-        ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(parentQueryExpression);
-        if ( u != null ) {
-          subQueryAST.setOrigin(originalSQASTOrigin);
-          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              u, "Correlating expression cannot contain unqualified column references."));
-        }
-    }
 
     /*
      * Restriction 17.s :: SubQuery cannot use the same table alias as one used in
@@ -664,12 +654,30 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       try {
         outerQueryCol = outerQueryRR.getExpression(parentQueryExpression);
       } catch(SemanticException se) {
+        // ignore
       }
 
+      ASTNode parentExpr = parentQueryExpression;
+      if (!forHavingClause) {
+        Set<String> aliases = outerQueryRR.getRslvMap().keySet();
+        if (notInCheck != null) {
+          aliases.remove(notInCheck.getAlias());
+        }
+        String tableAlias = aliases.size() == 1 ? aliases.iterator().next() : null;
+        parentExpr =
+                SubQueryUtils.setQualifiedColumnReferences(parentExpr, tableAlias);
+        if (parentExpr == null) {
+          subQueryAST.setOrigin(originalSQASTOrigin);
+          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                  parentQueryExpression,
+                  "Correlating expression contains ambiguous column references."));
+        }
+      }
+      
       parentQueryJoinCond = SubQueryUtils.buildOuterQryToSQJoinCond(
-        getOuterQueryExpression(),
-        alias,
-        sqRR);
+         parentExpr,
+         alias,
+         sqRR);
 
       if ( outerQueryCol != null ) {
         rewriteCorrConjunctForHaving(parentQueryJoinCond, true,

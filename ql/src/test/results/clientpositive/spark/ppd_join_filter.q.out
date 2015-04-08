@@ -127,8 +127,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Map 4 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Map 4 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -324,7 +324,7 @@ STAGE PLANS:
                           columns _col0,_col1,_col2
                           columns.types string:double:double
                           escape.delim \
-                          hive.serialization.extend.nesting.levels true
+                          hive.serialization.extend.additional.nesting.levels true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -698,7 +698,7 @@ STAGE PLANS:
                           columns _col0,_col1,_col2
                           columns.types string:double:double
                           escape.delim \
-                          hive.serialization.extend.nesting.levels true
+                          hive.serialization.extend.additional.nesting.levels true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1072,7 +1072,7 @@ STAGE PLANS:
                           columns _col0,_col1,_col2
                           columns.types string:double:double
                           escape.delim \
-                          hive.serialization.extend.nesting.levels true
+                          hive.serialization.extend.additional.nesting.levels true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1446,7 +1446,7 @@ STAGE PLANS:
                           columns _col0,_col1,_col2
                           columns.types string:double:double
                           escape.delim \
-                          hive.serialization.extend.nesting.levels true
+                          hive.serialization.extend.additional.nesting.levels true
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

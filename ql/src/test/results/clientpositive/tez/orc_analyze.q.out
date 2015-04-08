@@ -71,6 +71,55 @@ POSTHOOK: Lineage: orc_create_people.last_name SIMPLE [(orc_create_people_stagin
 POSTHOOK: Lineage: orc_create_people.salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people.start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_create_people.state SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table orc_create_people compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: analyze table orc_create_people compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: desc formatted orc_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	52600               
+	totalSize           	3174                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people compute statistics partialscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
@@ -107,7 +156,56 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3158                
+	totalSize           	3174                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: analyze table orc_create_people compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: desc formatted orc_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	52600               
+	totalSize           	3174                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -197,7 +295,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3158                
+	totalSize           	3174                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -269,13 +367,13 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 PREHOOK: Output: default@orc_create_people@state=Ca
 PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
@@ -313,7 +411,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2055                
+	totalSize           	2073                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -358,7 +456,211 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2071                
+	totalSize           	2088                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2088                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2088                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -460,7 +762,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2055                
+	totalSize           	2073                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -505,7 +807,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2071                
+	totalSize           	2088                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -583,13 +885,13 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
 PREHOOK: Output: default@orc_create_people@state=Ca
 PREHOOK: Output: default@orc_create_people@state=Or
-POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
@@ -627,7 +929,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2055                
+	totalSize           	2073                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -672,7 +974,211 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2071                
+	totalSize           	2088                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2088                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[first_name]        	 
+Sort Columns:       	[Order(col:last_name, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="Or")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Or")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Or]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	22050               
+	totalSize           	2088                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -780,7 +1286,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2055                
+	totalSize           	2073                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -825,7 +1331,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2071                
+	totalSize           	2088                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -946,6 +1452,214 @@ POSTHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT ORC
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=OH
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=OH
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="OH")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="OH")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[OH]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+PREHOOK: Output: default@orc_create_people@state=Ca
+PREHOOK: Output: default@orc_create_people@state=OH
+PREHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: query: analyze table orc_create_people partition(state) compute statistics partialscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=OH
+POSTHOOK: Output: default@orc_create_people@state=Or
+PREHOOK: query: desc formatted orc_create_people partition(state="Ca")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="Ca")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[Ca]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	50                  
+	rawDataSize         	21950               
+	totalSize           	2073                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted orc_create_people partition(state="OH")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_create_people
+POSTHOOK: query: desc formatted orc_create_people partition(state="OH")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+state               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[OH]                	 
+Database:           	default             	 
+Table:              	orc_create_people   	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: analyze table orc_create_people partition(state) compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
@@ -992,7 +1706,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2055                
+	totalSize           	2073                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

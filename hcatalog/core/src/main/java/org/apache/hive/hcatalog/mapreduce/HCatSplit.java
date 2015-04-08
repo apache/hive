@@ -23,6 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
@@ -142,7 +143,7 @@ public class HCatSplit extends InputSplit
     org.apache.hadoop.mapred.InputSplit split;
     try {
       Class<? extends org.apache.hadoop.mapred.InputSplit> splitClass =
-        (Class<? extends org.apache.hadoop.mapred.InputSplit>) Class.forName(baseSplitClassName);
+        (Class<? extends org.apache.hadoop.mapred.InputSplit>) JavaUtils.loadClass(baseSplitClassName);
 
       //Class.forName().newInstance() does not work if the underlying
       //InputSplit has package visibility

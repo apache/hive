@@ -75,6 +75,7 @@ class StreamName implements Comparable<StreamName> {
     switch (kind) {
       case ROW_INDEX:
       case DICTIONARY_COUNT:
+      case BLOOM_FILTER:
         return Area.INDEX;
       default:
         return Area.DATA;

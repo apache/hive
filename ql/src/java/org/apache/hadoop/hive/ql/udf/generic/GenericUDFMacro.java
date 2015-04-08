@@ -128,17 +128,7 @@ public class GenericUDFMacro extends GenericUDF implements Serializable {
 
   @Override
   public String getDisplayString(String[] children) {
-      StringBuilder sb = new StringBuilder();
-      sb.append(macroName);
-      sb.append("(");
-      for (int i = 0; i < children.length; i++) {
-        sb.append(children[i]);
-        if (i + 1 < children.length) {
-          sb.append(", ");
-        }
-      }
-      sb.append(")");
-      return sb.toString();
+      return getStandardDisplayString(macroName, children);
   }
 
   public void setMacroName(String macroName) {

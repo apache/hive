@@ -41,6 +41,7 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.UnresolvedUnionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -188,7 +189,7 @@ class AvroDeserializer {
       String columnName = columnNames.get(i);
       Object datum = record.get(columnName);
       Schema datumSchema = record.getSchema().getField(columnName).schema();
-      Schema.Field field = fileSchema.getField(columnName);
+      Schema.Field field = AvroSerdeUtils.isNullableType(fileSchema)?AvroSerdeUtils.getOtherTypeFromNullableType(fileSchema).getField(columnName):fileSchema.getField(columnName);
       objectRow.add(worker(datum, field == null ? null : field.schema(), datumSchema, columnType));
     }
 
@@ -316,13 +317,33 @@ class AvroDeserializer {
       if (fileSchema.getType() == Type.UNION) {
         // The fileSchema may have the null value in a different position, so
         // we need to get the correct tag
-        tag = GenericData.get().resolveUnion(fileSchema, datum);
-        currentFileSchema = fileSchema.getTypes().get(tag);
+        try {
+          tag = GenericData.get().resolveUnion(fileSchema, datum);
+          currentFileSchema = fileSchema.getTypes().get(tag);
+        } catch (UnresolvedUnionException e) {
+          if (LOG.isDebugEnabled()) {
+            String datumClazz = null;
+            if (datum != null) {
+              datumClazz = datum.getClass().getName();
+            }
+            String msg = "File schema union could not resolve union. fileSchema = " + fileSchema +
+              ", recordSchema = " + recordSchema + ", datum class = " + datumClazz + ": " + e;
+            LOG.debug(msg, e);
+          }
+          // This occurs when the datum type is different between
+          // the file and record schema. For example if datum is long
+          // and the field in the file schema is int. See HIVE-9462.
+          // in this case we will re-use the record schema as the file
+          // schema, Ultimately we need to clean this code up and will
+          // do as a follow-on to HIVE-9462.
+          currentFileSchema = schema;
+        }
       } else {
         currentFileSchema = fileSchema;
       }
     }
-    return worker(datum, currentFileSchema, schema, SchemaToTypeInfo.generateTypeInfo(schema));
+    return worker(datum, currentFileSchema, schema,
+      SchemaToTypeInfo.generateTypeInfo(schema, null));
 
   }
 

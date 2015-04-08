@@ -82,7 +82,7 @@ public class GenericUDFSplit extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    return "split(" + children[0] + ", " + children[1] + ")";
+    return getStandardDisplayString("split", children);
   }
 
 }

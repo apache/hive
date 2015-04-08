@@ -18,11 +18,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Descriptor for Fast file merge RC file operator.
  */
-@Explain(displayName = "RCFile Merge Operator")
+@Explain(displayName = "RCFile Merge Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class RCFileMergeDesc extends FileMergeDesc {
 
   public RCFileMergeDesc() {

@@ -23,18 +23,19 @@ import static org.apache.hadoop.util.StringUtils.stringifyException;
 import java.io.IOException;
 import java.util.List;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.FunctionUtils.UDFClassType;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
@@ -54,8 +55,6 @@ public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
   private static transient final Log LOG = LogFactory.getLog(FunctionTask.class);
 
-  transient HiveConf conf;
-
   public FunctionTask() {
     super();
   }
@@ -63,7 +62,6 @@ public class FunctionTask extends Task<FunctionWork> {
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
-    this.conf = conf;
   }
 
   @Override
@@ -98,6 +96,16 @@ public class FunctionTask extends Task<FunctionWork> {
       }
     }
 
+    if (work.getReloadFunctionDesc() != null) {
+      try {
+        Hive.reloadFunctions();
+      } catch (Exception e) {
+        setException(e);
+        LOG.error(stringifyException(e));
+        return 1;
+      }
+    }
+
     CreateMacroDesc createMacroDesc = work.getCreateMacroDesc();
     if (createMacroDesc != null) {
       return createMacro(createMacroDesc);
@@ -110,6 +118,7 @@ public class FunctionTask extends Task<FunctionWork> {
     return 0;
   }
 
+  // todo authorization
   private int createPermanentFunction(Hive db, CreateFunctionDesc createFunctionDesc)
       throws HiveException, IOException {
     String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
@@ -118,64 +127,45 @@ public class FunctionTask extends Task<FunctionWork> {
     String funcName = qualifiedNameParts[1];
     String registeredName = FunctionUtils.qualifyFunctionName(funcName, dbName);
     String className = createFunctionDesc.getClassName();
-    boolean addedToRegistry = false;
 
-    try {
-      // For permanent functions, check for any resources from local filesystem.
-      checkLocalFunctionResources(db, createFunctionDesc.getResources());
+    List<ResourceUri> resources = createFunctionDesc.getResources();
 
-      // Add any required resources
-      addFunctionResources(createFunctionDesc.getResources());
+    // For permanent functions, check for any resources from local filesystem.
+    checkLocalFunctionResources(db, createFunctionDesc.getResources());
 
-      // UDF class should exist
-      Class<?> udfClass = getUdfClass(createFunctionDesc);
-      if (FunctionUtils.getUDFClassType(udfClass) == UDFClassType.UNKNOWN) {
-        console.printError("FAILED: Class " + createFunctionDesc.getClassName()
-            + " does not implement UDF, GenericUDF, or UDAF");
-        return 1;
-      }
-
-      // TODO: There should be a registerPermanentFunction()
-      addedToRegistry = FunctionRegistry.registerTemporaryFunction(registeredName, udfClass);
-      if (!addedToRegistry) {
-        console.printError("Failed to register " + registeredName
-            + " using class " + createFunctionDesc.getClassName());
-        return 1;
-      }
-
-      // Add to metastore
-      Function func = new Function(
-          funcName,
-          dbName,
-          className,
-          SessionState.get().getUserName(),
-          PrincipalType.USER,
-          (int) (System.currentTimeMillis() / 1000),
-          org.apache.hadoop.hive.metastore.api.FunctionType.JAVA,
-          createFunctionDesc.getResources()
-          );
-      db.createFunction(func);
-      return 0;
-    } catch (ClassNotFoundException e) {
-      console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
-      LOG.info("create function: " + StringUtils.stringifyException(e));
-      if (addedToRegistry) {
-        FunctionRegistry.unregisterTemporaryUDF(registeredName);
-      }
+    FunctionInfo registered = FunctionRegistry.registerPermanentFunction(
+        registeredName, className, true, toFunctionResource(resources));
+    if (registered == null) {
+      console.printError("Failed to register " + registeredName
+          + " using class " + createFunctionDesc.getClassName());
       return 1;
     }
+
+    // Add to metastore
+    Function func = new Function(
+        funcName,
+        dbName,
+        className,
+        SessionState.get().getUserName(),
+        PrincipalType.USER,
+        (int) (System.currentTimeMillis() / 1000),
+        org.apache.hadoop.hive.metastore.api.FunctionType.JAVA,
+        resources
+    );
+    db.createFunction(func);
+    return 0;
   }
 
   private int createTemporaryFunction(CreateFunctionDesc createFunctionDesc) {
     try {
       // Add any required resources
-      addFunctionResources(createFunctionDesc.getResources());
+      FunctionResource[] resources = toFunctionResource(createFunctionDesc.getResources());
+      addFunctionResources(resources);
 
       Class<?> udfClass = getUdfClass(createFunctionDesc);
-      boolean registered = FunctionRegistry.registerTemporaryFunction(
-        createFunctionDesc.getFunctionName(),
-        udfClass);
-      if (registered) {
+      FunctionInfo registered = FunctionRegistry.registerTemporaryUDF(
+          createFunctionDesc.getFunctionName(), udfClass, resources);
+      if (registered != null) {
         return 0;
       }
       console.printError("FAILED: Class " + createFunctionDesc.getClassName()
@@ -198,14 +188,14 @@ public class FunctionTask extends Task<FunctionWork> {
       createMacroDesc.getMacroName(),
       createMacroDesc.getBody(),
       createMacroDesc.getColNames(),
-      createMacroDesc.getColTypes());
+      createMacroDesc.getColTypes()
+    );
     return 0;
   }
 
   private int dropMacro(DropMacroDesc dropMacroDesc) {
     try {
-      FunctionRegistry.unregisterTemporaryUDF(dropMacroDesc
-          .getMacroName());
+      FunctionRegistry.unregisterTemporaryUDF(dropMacroDesc.getMacroName());
       return 0;
     } catch (HiveException e) {
       LOG.info("drop macro: " + StringUtils.stringifyException(e));
@@ -213,6 +203,7 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
+  // todo authorization
   private int dropPermanentFunction(Hive db, DropFunctionDesc dropFunctionDesc) {
     try {
       String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
@@ -221,8 +212,7 @@ public class FunctionTask extends Task<FunctionWork> {
       String funcName = qualifiedNameParts[1];
 
       String registeredName = FunctionUtils.qualifyFunctionName(funcName, dbName);
-      // TODO: there should be a unregisterPermanentUDF()
-      FunctionRegistry.unregisterTemporaryUDF(registeredName);
+      FunctionRegistry.unregisterPermanentFunction(registeredName);
       db.dropFunction(dbName, funcName);
 
       return 0;
@@ -235,8 +225,7 @@ public class FunctionTask extends Task<FunctionWork> {
 
   private int dropTemporaryFunction(DropFunctionDesc dropFunctionDesc) {
     try {
-      FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc
-          .getFunctionName());
+      FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc.getFunctionName());
       return 0;
     } catch (HiveException e) {
       LOG.info("drop function: " + StringUtils.stringifyException(e));
@@ -275,6 +264,19 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
+  public static FunctionResource[] toFunctionResource(List<ResourceUri> resources)
+      throws HiveException {
+    if (resources == null) {
+      return null;
+    }
+    FunctionResource[] converted = new FunctionResource[resources.size()];
+    for (int i = 0; i < converted.length; i++) {
+      ResourceUri resource = resources.get(i);
+      SessionState.ResourceType type = getResourceType(resource.getResourceType());
+      converted[i] = new FunctionResource(type, resource.getUri());
+    }
+    return converted;
+  }
 
   private static SessionState.ResourceType getResourceType(ResourceType rt) throws HiveException {
     switch (rt) {
@@ -289,14 +291,14 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
-  public static void addFunctionResources(List<ResourceUri> resources) throws HiveException {
+  public static void addFunctionResources(FunctionResource[] resources) throws HiveException {
     if (resources != null) {
-      for (ResourceUri res : resources) {
-        String addedResource =
-            SessionState.get().add_resource(getResourceType(res.getResourceType()), res.getUri());
-        if (addedResource == null) {
-          throw new HiveException("Unable to load " + res.getResourceType() + " " + res.getUri());
-        }
+      Multimap<SessionState.ResourceType, String> mappings = HashMultimap.create();
+      for (FunctionResource res : resources) {
+        mappings.put(res.getResourceType(), res.getResourceURI());
+      }
+      for (SessionState.ResourceType type : mappings.keys()) {
+        SessionState.get().add_resources(type, mappings.get(type));
       }
     }
   }

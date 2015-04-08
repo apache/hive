@@ -36,7 +36,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool drop_type(string type)'
   print '   get_type_all(string name)'
   print '   get_fields(string db_name, string table_name)'
+  print '   get_fields_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)'
   print '   get_schema(string db_name, string table_name)'
+  print '   get_schema_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)'
   print '  void create_table(Table tbl)'
   print '  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)'
   print '  void drop_table(string dbname, string name, bool deleteData)'
@@ -140,8 +142,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest txns)'
   print '  void compact(CompactionRequest rqst)'
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
+  print '  void add_dynamic_partitions(AddDynamicPartitions rqst)'
   print '  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)'
   print '  CurrentNotificationEventId get_current_notificationEventId()'
+  print '  FireEventResponse fire_listener_event(FireEventRequest rqst)'
   print '  void flushCache()'
   print ''
   sys.exit(0)
@@ -272,11 +276,23 @@ elif cmd == 'get_fields':
     sys.exit(1)
   pp.pprint(client.get_fields(args[0],args[1],))
 
+elif cmd == 'get_fields_with_environment_context':
+  if len(args) != 3:
+    print 'get_fields_with_environment_context requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_fields_with_environment_context(args[0],args[1],eval(args[2]),))
+
 elif cmd == 'get_schema':
   if len(args) != 2:
     print 'get_schema requires 2 args'
     sys.exit(1)
   pp.pprint(client.get_schema(args[0],args[1],))
+
+elif cmd == 'get_schema_with_environment_context':
+  if len(args) != 3:
+    print 'get_schema_with_environment_context requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_schema_with_environment_context(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'create_table':
   if len(args) != 1:
@@ -896,6 +912,12 @@ elif cmd == 'show_compact':
     sys.exit(1)
   pp.pprint(client.show_compact(eval(args[0]),))
 
+elif cmd == 'add_dynamic_partitions':
+  if len(args) != 1:
+    print 'add_dynamic_partitions requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
+
 elif cmd == 'get_next_notification':
   if len(args) != 1:
     print 'get_next_notification requires 1 args'
@@ -907,6 +929,12 @@ elif cmd == 'get_current_notificationEventId':
     print 'get_current_notificationEventId requires 0 args'
     sys.exit(1)
   pp.pprint(client.get_current_notificationEventId())
+
+elif cmd == 'fire_listener_event':
+  if len(args) != 1:
+    print 'fire_listener_event requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.fire_listener_event(eval(args[0]),))
 
 elif cmd == 'flushCache':
   if len(args) != 0:

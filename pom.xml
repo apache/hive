@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>0.15.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -53,7 +53,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>0.15.0</hive.version.shortname>
+    <hive.version.shortname>1.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -100,7 +100,7 @@
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.0.0-incubating-SNAPSHOT</calcite.version>
+    <calcite.version>1.1.0-incubating</calcite.version>
     <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.10</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
@@ -121,11 +121,12 @@
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.6.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
-    <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
+    <hbase.hadoop1.version>0.98.9-hadoop1</hbase.hadoop1.version>
+    <hbase.hadoop2.version>0.98.9-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
     <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
+    <ivy.version>2.4.0</ivy.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
@@ -134,6 +135,7 @@
     <jersey.version>1.14</jersey.version>
     <jline.version>2.12</jline.version>
     <jms.version>1.1</jms.version>
+    <joda.version>2.5</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>20090211</json.version>
     <junit.version>4.11</junit.version>
@@ -146,7 +148,7 @@
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.23.Final</netty.version>
-    <parquet.version>1.6.0rc3</parquet.version>
+    <parquet.version>1.6.0rc6</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
@@ -171,6 +173,7 @@
   </properties>
 
   <repositories>
+   <!-- This needs to be removed before checking in-->
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -486,7 +489,17 @@
       </dependency>
       <dependency>
         <groupId>org.apache.curator</groupId>
+        <artifactId>curator-client</artifactId>
+        <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
         <artifactId>curator-framework</artifactId>
+        <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-recipes</artifactId>
         <version>${curator.version}</version>
       </dependency>
       <dependency>
@@ -596,8 +609,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>
@@ -825,6 +838,7 @@
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
             <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
+            <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>

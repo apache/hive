@@ -95,9 +95,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_union1_vc1
 #### A masked pattern was here ####
 1	abc
-1	abc
-2	abc 
-3	 abc
 PREHOOK: query: -- union varchar with different length varchar
 select * from (
   select * from varchar_union1_vc1
@@ -119,9 +116,6 @@ POSTHOOK: Input: default@varchar_union1_vc1
 POSTHOOK: Input: default@varchar_union1_vc2
 #### A masked pattern was here ####
 1	abc
-1	abc
-2	abc 
-3	 abc
 PREHOOK: query: -- union varchar with string
 select * from (
   select * from varchar_union1_vc1
@@ -143,9 +137,6 @@ POSTHOOK: Input: default@varchar_union1_str
 POSTHOOK: Input: default@varchar_union1_vc1
 #### A masked pattern was here ####
 1	abc
-1	abc
-2	abc 
-3	 abc
 PREHOOK: query: drop table varchar_union1_vc1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_union1_vc1

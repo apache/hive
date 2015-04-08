@@ -58,26 +58,28 @@ public class HiveSchemaConverter {
     return convertType(name, typeInfo, Repetition.OPTIONAL);
   }
 
-  private static Type convertType(final String name, final TypeInfo typeInfo, final Repetition repetition) {
+  private static Type convertType(final String name, final TypeInfo typeInfo,
+                                  final Repetition repetition) {
     if (typeInfo.getCategory().equals(Category.PRIMITIVE)) {
       if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.BINARY, name, OriginalType.UTF8);
+        return Types.primitive(PrimitiveTypeName.BINARY, repetition).as(OriginalType.UTF8)
+          .named(name);
       } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo) ||
           typeInfo.equals(TypeInfoFactory.shortTypeInfo) ||
           typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.INT32, name);
+        return Types.primitive(PrimitiveTypeName.INT32, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.INT64, name);
+        return Types.primitive(PrimitiveTypeName.INT64, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.DOUBLE, name);
+        return Types.primitive(PrimitiveTypeName.DOUBLE, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.floatTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.FLOAT, name);
+        return Types.primitive(PrimitiveTypeName.FLOAT, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.BOOLEAN, name);
+        return Types.primitive(PrimitiveTypeName.BOOLEAN, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.BINARY, name);
+        return Types.primitive(PrimitiveTypeName.BINARY, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.INT96, name);
+        return Types.primitive(PrimitiveTypeName.INT96, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {
         throw new UnsupportedOperationException("Void type not implemented");
       } else if (typeInfo.getTypeName().toLowerCase().startsWith(
@@ -95,6 +97,9 @@ public class HiveSchemaConverter {
         int bytes = ParquetHiveSerDe.PRECISION_TO_BYTE_COUNT[prec - 1];
         return Types.optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(bytes).as(OriginalType.DECIMAL).
             scale(scale).precision(prec).named(name);
+      } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
+        return Types.primitive(PrimitiveTypeName.INT32, repetition).as(OriginalType.DATE).named
+            (name);
       } else if (typeInfo.equals(TypeInfoFactory.unknownTypeInfo)) {
         throw new UnsupportedOperationException("Unknown type not implemented");
       } else {

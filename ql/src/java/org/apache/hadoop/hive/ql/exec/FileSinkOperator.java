@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,8 +80,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
-
 /**
  * File Sink operator implementation.
  **/
@@ -116,6 +118,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private IntObjectInspector bucketInspector; // OI for inspecting bucket id
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  protected transient long logEveryNRows = 0;
 
   /**
    * Counters.
@@ -319,7 +322,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     try {
       this.hconf = hconf;
       filesCreated = false;
@@ -341,7 +345,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
       statsFromRecordWriter = new boolean[numFiles];
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      serializer.initialize(null, conf.getTableInfo().getProperties());
+      serializer.initialize(hconf, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
 
       if (isLogInfoEnabled) {
@@ -391,7 +395,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           valToPaths.put("", fsp); // special entry for non-DP case
         }
       }
-      
+
       final StoragePolicyValue tmpStorage = StoragePolicyValue.lookup(HiveConf
                                             .getVar(hconf, HIVE_TEMPORARY_TABLE_STORAGE));
       if (isTemporary && fsp != null
@@ -417,20 +421,23 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       numRows = 0;
+      cntr = 1;
+      logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
-      String context = jc.get(Operator.CONTEXT_NAME_KEY, "");
-      if (context != null && !context.isEmpty()) {
-        context = "_" + context.replace(" ","_");
+      String suffix = Integer.toString(conf.getDestTableId());
+      String fullName = conf.getTableInfo().getTableName();
+      if (fullName != null) {
+        suffix = suffix + "_" + fullName.toLowerCase();
       }
-      statsMap.put(Counter.RECORDS_OUT + context, row_count);
 
-      initializeChildren(hconf);
+      statsMap.put(Counter.RECORDS_OUT + "_" + suffix, row_count);
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
+    return result;
   }
 
   /**
@@ -628,7 +635,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected Writable recordValue;
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     /* Create list bucketing sub-directory only if stored-as-directories is on. */
     String lbDirName = null;
     lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
@@ -700,8 +707,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.stat.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
-      if (++numRows == cntr) {
-        cntr *= 10;
+      if ((++numRows == cntr) && isLogInfoEnabled) {
+        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+        if (cntr < 0 || numRows < 0) {
+          cntr = 0;
+          numRows = 1;
+        }
         LOG.info(toString() + ": records written - " + numRows);
       }
 
@@ -965,7 +976,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void closeOp(boolean abort) throws HiveException {
 
     row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);    
+    LOG.info(toString() + ": records written - " + numRows);
 
     if (!bDynParts && !filesCreated) {
       createBucketFiles(fsp);

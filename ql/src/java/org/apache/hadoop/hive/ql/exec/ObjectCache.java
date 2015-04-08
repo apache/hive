@@ -17,21 +17,40 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
 /**
  * ObjectCache. Interface for maintaining objects associated with a task.
  */
 public interface ObjectCache {
+
   /**
-   * Add an object to the cache
    * @param key
-   * @param value
    */
-  public void cache(String key, Object value);
+  public void release(String key);
 
   /**
    * Retrieve object from cache.
+   *
+   * @param <T>
    * @param key
+   * @param fn
+   *          function to generate the object if it's not there
    * @return the last cached object with the key, null if none.
    */
-  public Object retrieve(String key);
+  public <T> T retrieve(String key, Callable<T> fn) throws HiveException;
+
+  /**
+   * Retrieve object from cache asynchronously.
+   *
+   * @param <T>
+   * @param key
+   * @param fn
+   *          function to generate the object if it's not there
+   * @return the last cached object with the key, null if none.
+   */
+  public <T> Future<T> retrieveAsync(String key, Callable<T> fn) throws HiveException;
 }

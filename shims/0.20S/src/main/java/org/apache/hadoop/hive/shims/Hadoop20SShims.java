@@ -232,6 +232,12 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     throw new IOException("Cannot run tez on current hadoop, Version: " + VersionInfo.getVersion());
   }
 
+  @Override
+  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
+    String nameNode, int numDir) throws IOException {
+    throw new IOException("Cannot run Spark on YARN on current Hadoop, Version: " + VersionInfo.getVersion());
+  }
+
   /**
    * Shim for MiniMrCluster
    */
@@ -680,5 +686,10 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
     return new HadoopShims.NoopHdfsEncryptionShim();
+  }
+
+  @Override
+  public Path getPathWithoutSchemeAndAuthority(Path path) {
+    return path;
   }
 }

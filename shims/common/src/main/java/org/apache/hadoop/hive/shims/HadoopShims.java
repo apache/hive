@@ -93,7 +93,10 @@ public interface HadoopShims {
       String nameNode, int numDir) throws IOException;
 
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-                                     String nameNode, int numDir) throws IOException;
+      String nameNode, int numDir) throws IOException;
+
+  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
+      String nameNode, int numDir) throws IOException;
 
   /**
    * Shim for MiniMrCluster
@@ -701,4 +704,6 @@ public interface HadoopShims {
    * @throws IOException If an error occurred while creating the instance.
    */
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
+
+  public Path getPathWithoutSchemeAndAuthority(Path path);
 }

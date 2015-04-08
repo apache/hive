@@ -1,4 +1,1 @@
-PREHOOK: query: DROP TEMPORARY FUNCTION max
-PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: max
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+FAILED: SemanticException [Error 10301]: Cannot drop native function max

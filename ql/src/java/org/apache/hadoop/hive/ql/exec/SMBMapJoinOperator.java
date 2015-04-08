@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,7 +93,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
 
     // If there is a sort-merge join followed by a regular join, the SMBJoinOperator may not
     // get initialized at all. Consider the following query:
@@ -99,9 +101,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // For the mapper processing C, The SMJ is not initialized, no need to close it either.
     initDone = true;
 
-    super.initializeOp(hconf);
-
-    firstRow = true;
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     closeCalled = false;
 
@@ -156,6 +156,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       foundNextKeyGroup[pos] = false;
     }
+    return result;
   }
 
   @Override
@@ -197,7 +198,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       HiveInputFormat.pushFilters(jobClone, ts);
 
 
-      ts.setExecContext(getExecContext());
+      ts.passExecContext(getExecContext());
 
       FetchOperator fetchOp = new FetchOperator(fetchWork, jobClone);
       ts.initialize(jobClone, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
@@ -226,14 +227,14 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   public void cleanUpInputFileChangedOp() throws HiveException {
     inputFileChanged = true;
   }
-  
+
   protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
     return JoinUtil.computeKeys(row, joinKeys[alias],
           joinKeysObjectInspectors[alias]);
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
 
     if (tag == posBigTable) {
       if (inputFileChanged) {
@@ -265,8 +266,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     byte alias = (byte) tag;
 
     // compute keys and values as StandardObjects
-    List<Object> key = smbJoinComputeKeys(row, alias); 
-        
+    List<Object> key = smbJoinComputeKeys(row, alias);
+
     List<Object> value = getFilteredValue(alias, row);
 
 
@@ -527,7 +528,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     BucketMatcher bucketMatcher = ReflectionUtils.newInstance(bucketMatcherCls, null);
 
     getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
-    LOG.info("set task id: " + getExecContext().getFileId());
+    if (isLogInfoEnabled) {
+      LOG.info("set task id: " + getExecContext().getFileId());
+    }
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
@@ -555,7 +558,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         fetchDone[tag] = true;
         return;
       }
-      forwardOp.processOp(row.o, tag);
+      forwardOp.process(row.o, tag);
       // check if any operator had a fatal error or early exit during
       // execution
       if (forwardOp.getDone()) {
@@ -751,7 +754,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       Integer current = top();
       if (current == null) {
-        LOG.info("MergeQueue forwarded " + counter + " rows");
+	if (isLogInfoEnabled) {
+	  LOG.info("MergeQueue forwarded " + counter + " rows");
+	}
         return null;
       }
       counter++;
@@ -801,7 +806,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
         // Pass the row though the operator tree. It is guaranteed that not more than 1 row can
         // be produced from a input row.
-        forwardOp.processOp(nextRow.o, 0);
+        forwardOp.process(nextRow.o, 0);
         nextRow = sinkOp.getResult();
 
         // It is possible that the row got absorbed in the operator tree.

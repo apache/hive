@@ -67,7 +67,7 @@ public class HiveHistoryImpl implements HiveHistory{
 
   private static final String DELIMITER = " ";
 
-  private static final String ROW_COUNT_PATTERN = "TABLE_ID_(\\d+)_ROWCOUNT";
+  private static final String ROW_COUNT_PATTERN = "RECORDS_OUT_(\\d+)(_)*(\\S+)*";
 
   private static final Pattern rowCountPattern = Pattern.compile(ROW_COUNT_PATTERN);
 
@@ -343,6 +343,10 @@ public class HiveHistoryImpl implements HiveHistory{
 
     if (m.find()) {
       String tuple = m.group(1);
+      String tableName = m.group(3);
+      if (tableName != null)
+        return tableName;
+
       return idToTableMap.get(tuple);
     }
     return null;

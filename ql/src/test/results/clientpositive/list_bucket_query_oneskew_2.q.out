@@ -259,7 +259,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types int
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -316,7 +316,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -426,7 +426,7 @@ STAGE PLANS:
                         columns _col0,_col1
                         columns.types int:string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -483,7 +483,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -630,7 +630,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -639,31 +639,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types string:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -826,7 +822,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -835,31 +831,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types int:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types int:bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator

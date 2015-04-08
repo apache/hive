@@ -201,20 +201,16 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -293,20 +289,16 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -360,42 +352,38 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cdouble (type: double)
               outputColumnNames: _col0
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col0 (type: double)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: double)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: double)
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: double)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: double)
-            outputColumnNames: _col0
-            Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
-              Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -447,22 +435,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint), cdouble (type: double)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(DISTINCT _col1)
                 keys: _col0 (type: tinyint), _col1 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint), _col1 (type: double)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: tinyint)
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
       Reduce Operator Tree:
         Group By Operator
@@ -470,21 +458,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: tinyint), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
-              Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -538,22 +522,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(DISTINCT _col1), count(DISTINCT _col2)
                 keys: _col0 (type: tinyint), _col1 (type: string), _col2 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint), _col1 (type: string), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: tinyint)
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.3
       Reduce Operator Tree:
         Group By Operator
@@ -561,21 +545,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: tinyint), _col1 (type: bigint), _col2 (type: bigint)
-            outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
-              Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 20 Data size: 4300 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -965,20 +945,16 @@ STAGE PLANS:
           mode: complete
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 20
+          Limit
+            Number of rows: 20
+            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

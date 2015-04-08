@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
@@ -152,10 +154,12 @@ class AvroSerializer {
   final InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>> enums
       = new InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>>() {
           @Override
-          protected InstanceCache<Object, GenericEnumSymbol> makeInstance(final Schema schema) {
+          protected InstanceCache<Object, GenericEnumSymbol> makeInstance(final Schema schema,
+                     Set<Schema> seenSchemas) {
             return new InstanceCache<Object, GenericEnumSymbol>() {
               @Override
-              protected GenericEnumSymbol makeInstance(Object seed) {
+              protected GenericEnumSymbol makeInstance(Object seed,
+                             Set<Object> seenSchemas) {
                 return new GenericData.EnumSymbol(schema, seed.toString());
               }
             };
@@ -234,7 +238,7 @@ class AvroSerializer {
 
   private Object serializeList(ListTypeInfo typeInfo, ListObjectInspector fieldOI, Object structFieldData, Schema schema) throws AvroSerdeException {
     List<?> list = fieldOI.getList(structFieldData);
-    List<Object> deserialized = new ArrayList<Object>(list.size());
+    List<Object> deserialized = new GenericData.Array<Object>(list.size(), schema);
 
     TypeInfo listElementTypeInfo = typeInfo.getListElementTypeInfo();
     ObjectInspector listElementObjectInspector = fieldOI.getListElementObjectInspector();

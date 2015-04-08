@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -139,6 +139,11 @@
 
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/resources</directory>
+      </resource>
+    </resources>
    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -157,21 +162,13 @@
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-common</artifact>
                   <includes>
-                    <include>org/apache/hadoop/hive/shims/*</include>
-                    <include>org/apache/hadoop/hive/thrift/*</include>
-                  </includes>
-                </filter>
-                <filter>
-                  <artifact>org.apache.hive.shims:hive-shims-common</artifact>
-                  <includes>
-                    <include>org/apache/hadoop/hive/thrift/*</include>
-                    <include>org/apache/hadoop/hive/thrift/client/*</include>
+                    <include>**</include>
                   </includes>
                 </filter>
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
                   <includes>
-                    <include>org/apache/hadoop/hive/thrift/*</include>
+                    <include>**</include>
                   </includes>
                 </filter>
                 <filter>
@@ -209,8 +206,10 @@
                   <exclude>org.apache.avro:*</exclude>
                   <exclude>net.sf.opencsv:*</exclude>
                   <exclude>org.antlr:*</exclude>
+                  <exclude>org.slf4j:slf4j-log4j12</exclude>
+                  <exclude>log4j:*</exclude>
                 </excludes>
-              </artifactSet>       
+              </artifactSet>
             </configuration>
           </execution>
         </executions>

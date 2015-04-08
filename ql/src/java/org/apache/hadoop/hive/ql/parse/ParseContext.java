@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -44,8 +42,10 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -63,14 +63,12 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  **/
 
 public class ParseContext {
-  private QB qb;
-  private ASTNode ast;
+
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private Set<JoinOperator> joinOps;
   private Set<MapJoinOperator> mapJoinOps;
   private Set<SMBMapJoinOperator> smbMapJoinOps;
@@ -86,7 +84,6 @@ public class ParseContext {
   private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer; // list of map join
   // operators with no
   // reducer
-  private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
   private Map<String, ReadEntity> viewAliasToInput;
 
@@ -103,9 +100,13 @@ public class ParseContext {
   private FetchTask fetchTask;
   private QueryProperties queryProperties;
 
-  private TableDesc fetchTabledesc;
+  private TableDesc fetchTableDesc;
   private Operator<?> fetchSource;
   private ListSinkOperator fetchSink;
+
+  private AnalyzeRewriteContext analyzeRewrite;
+  private CreateTableDesc createTableDesc;
+
 
   public ParseContext() {
   }
@@ -147,44 +148,37 @@ public class ParseContext {
    */
   public ParseContext(
       HiveConf conf,
-      QB qb,
-      ASTNode ast,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends OperatorDesc>> topOps,
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx,
       Set<JoinOperator> joinOps,
       Set<SMBMapJoinOperator> smbMapJoinOps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
-      Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
-      HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
+      HashMap<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
       Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner,
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
+      AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
       QueryProperties queryProperties) {
     this.conf = conf;
-    this.qb = qb;
-    this.ast = ast;
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
     this.joinOps = joinOps;
     this.smbMapJoinOps = smbMapJoinOps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
-    this.opParseCtx = opParseCtx;
     this.topOps = topOps;
     this.ctx = ctx;
     this.idToTableNameMap = idToTableNameMap;
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
-    this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
     this.nameToSplitSample = nameToSplitSample;
@@ -195,22 +189,9 @@ public class ParseContext {
     this.viewAliasToInput = viewAliasToInput;
     this.reduceSinkOperatorsAddedByEnforceBucketingSorting =
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
+    this.analyzeRewrite = analyzeRewrite;
+    this.createTableDesc = createTableDesc;
     this.queryProperties = queryProperties;
-  }
-
-  /**
-   * @return the qb
-   */
-  public QB getQB() {
-    return qb;
-  }
-
-  /**
-   * @param qb
-   *          the qb to set
-   */
-  public void setQB(QB qb) {
-    this.qb = qb;
   }
 
   /**
@@ -241,21 +222,6 @@ public class ParseContext {
    */
   public void setConf(HiveConf conf) {
     this.conf = conf;
-  }
-
-  /**
-   * @return the ast
-   */
-  public ASTNode getParseTree() {
-    return ast;
-  }
-
-  /**
-   * @param ast
-   *          the parsetree to set
-   */
-  public void setParseTree(ASTNode ast) {
-    this.ast = ast;
   }
 
   /**
@@ -301,43 +267,6 @@ public class ParseContext {
    */
   public void setTopOps(HashMap<String, Operator<? extends OperatorDesc>> topOps) {
     this.topOps = topOps;
-  }
-
-  /**
-   * @return the opParseCtx
-   */
-  public LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtx() {
-    return opParseCtx;
-  }
-
-  /**
-   * Remove the OpParseContext of a specific operator op
-   * @param op
-   * @return
-   */
-  public OpParseContext removeOpParseCtx(Operator<? extends OperatorDesc> op) {
-    return opParseCtx.remove(op);
-  }
-
-  /**
-   * Update the OpParseContext of operator op to newOpParseContext.
-   * If op is not in opParseCtx, a new entry will be added into opParseCtx.
-   * The key is op, and the value is newOpParseContext.
-   * @param op
-   * @param newOpParseContext
-   */
-  public void updateOpParseCtx(Operator<? extends OperatorDesc> op,
-      OpParseContext newOpParseContext) {
-    opParseCtx.put(op, newOpParseContext);
-  }
-
-  /**
-   * @param opParseCtx
-   *          the opParseCtx to set
-   */
-  public void setOpParseCtx(
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
-    this.opParseCtx = opParseCtx;
   }
 
   public HashMap<String, SplitSample> getNameToSplitSample() {
@@ -436,7 +365,7 @@ public class ParseContext {
   /**
    * @return the opToSamplePruner
    */
-  public HashMap<TableScanOperator, sampleDesc> getOpToSamplePruner() {
+  public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
     return opToSamplePruner;
   }
 
@@ -445,23 +374,8 @@ public class ParseContext {
    *          the opToSamplePruner to set
    */
   public void setOpToSamplePruner(
-      HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+      HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
     this.opToSamplePruner = opToSamplePruner;
-  }
-
-  /**
-   * @return the groupOpToInputTables
-   */
-  public Map<GroupByOperator, Set<String>> getGroupOpToInputTables() {
-    return groupOpToInputTables;
-  }
-
-  /**
-   * @param groupOpToInputTables
-   */
-  public void setGroupOpToInputTables(
-      Map<GroupByOperator, Set<String>> groupOpToInputTables) {
-    this.groupOpToInputTables = groupOpToInputTables;
   }
 
   /**
@@ -577,12 +491,12 @@ public class ParseContext {
     this.queryProperties = queryProperties;
   }
 
-  public TableDesc getFetchTabledesc() {
-    return fetchTabledesc;
+  public TableDesc getFetchTableDesc() {
+    return fetchTableDesc;
   }
 
-  public void setFetchTabledesc(TableDesc fetchTabledesc) {
-    this.fetchTabledesc = fetchTabledesc;
+  public void setFetchTabledesc(TableDesc fetchTableDesc) {
+    this.fetchTableDesc = fetchTableDesc;
   }
 
   public Operator<?> getFetchSource() {
@@ -600,4 +514,21 @@ public class ParseContext {
   public void setFetchSink(ListSinkOperator fetchSink) {
     this.fetchSink = fetchSink;
   }
+
+  public AnalyzeRewriteContext getAnalyzeRewrite() {
+    return this.analyzeRewrite;
+  }
+
+  public void setAnalyzeRewrite(AnalyzeRewriteContext analyzeRewrite) {
+    this.analyzeRewrite = analyzeRewrite;
+  }
+
+  public CreateTableDesc getCreateTable() {
+    return this.createTableDesc;
+  }
+
+  public void setCreateTable(CreateTableDesc createTableDesc) {
+    this.createTableDesc = createTableDesc;
+  }
+
 }

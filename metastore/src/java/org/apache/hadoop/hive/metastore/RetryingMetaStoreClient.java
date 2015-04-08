@@ -24,13 +24,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -51,14 +51,17 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final IMetaStoreClient base;
   private final int retryLimit;
   private final long retryDelaySeconds;
+  private final Map<String, Long> metaCallTimeMap;
+
 
 
 
   protected RetryingMetaStoreClient(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
-      Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
+      Map<String, Long> metaCallTimeMap, Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
     this.retryLimit = hiveConf.getIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES);
     this.retryDelaySeconds = hiveConf.getTimeVar(
         HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
+    this.metaCallTimeMap = metaCallTimeMap;
 
     reloginExpiringKeytabUser();
     this.base = MetaStoreUtils.newInstance(msClientClass, new Class[] {
@@ -67,14 +70,20 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       String mscClassName) throws MetaException {
+    return getProxy(hiveConf, hookLoader, null, mscClassName);
+  }
 
-    Class<? extends IMetaStoreClient> baseClass = (Class<? extends IMetaStoreClient>)
-        MetaStoreUtils.getClass(mscClassName);
+  public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
+      Map<String, Long> metaCallTimeMap, String mscClassName) throws MetaException {
 
-    RetryingMetaStoreClient handler = new RetryingMetaStoreClient(hiveConf, hookLoader, baseClass);
+    Class<? extends IMetaStoreClient> baseClass = (Class<? extends IMetaStoreClient>) MetaStoreUtils
+        .getClass(mscClassName);
 
-    return (IMetaStoreClient) Proxy.newProxyInstance(RetryingMetaStoreClient.class.getClassLoader(),
-        baseClass.getInterfaces(), handler);
+    RetryingMetaStoreClient handler = new RetryingMetaStoreClient(hiveConf, hookLoader,
+        metaCallTimeMap, baseClass);
+
+    return (IMetaStoreClient) Proxy.newProxyInstance(
+        RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
   }
 
   @Override
@@ -88,7 +97,15 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         if(retriesMade > 0){
           base.reconnect();
         }
-        ret = method.invoke(base, args);
+        if (metaCallTimeMap == null) {
+          ret = method.invoke(base, args);
+        } else {
+          // need to capture the timing
+          long startTime = System.currentTimeMillis();
+          ret = method.invoke(base, args);
+          long timeTaken = System.currentTimeMillis() - startTime;
+          addMethodTime(method, timeTaken);
+        }
         break;
       } catch (UndeclaredThrowableException e) {
         throw e.getCause();
@@ -98,7 +115,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             (e.getCause() instanceof TTransportException)) {
           caughtException = (TException) e.getCause();
         } else if ((e.getCause() instanceof MetaException) &&
-            e.getCause().getMessage().matches("JDO[a-zA-Z]*Exception")) {
+            e.getCause().getMessage().matches("(?s).*JDO[a-zA-Z]*Exception.*")) {
           caughtException = (MetaException) e.getCause();
         } else {
           throw e.getCause();
@@ -114,6 +131,30 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;
+  }
+
+  private void addMethodTime(Method method, long timeTaken) {
+    String methodStr = getMethodString(method);
+    Long curTime = metaCallTimeMap.get(methodStr);
+    if (curTime != null) {
+      timeTaken += curTime;
+    }
+    metaCallTimeMap.put(methodStr, timeTaken);
+  }
+
+  /**
+   * @param method
+   * @return String representation with arg types. eg getDatabase_(String, )
+   */
+  private String getMethodString(Method method) {
+    StringBuilder methodSb = new StringBuilder(method.getName());
+    methodSb.append("_(");
+    for (Class<?> paramClass : method.getParameterTypes()) {
+      methodSb.append(paramClass.getSimpleName());
+      methodSb.append(", ");
+    }
+    methodSb.append(")");
+    return methodSb.toString();
   }
 
   /**

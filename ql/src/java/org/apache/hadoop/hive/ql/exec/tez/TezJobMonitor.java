@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -97,7 +98,7 @@ public class TezJobMonitor {
 
   // in-place progress update related variables
   private int lines;
-  private PrintStream out;
+  private final PrintStream out;
   private String separator;
 
   private transient LogHelper console;
@@ -113,6 +114,8 @@ public class TezJobMonitor {
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
   private static final List<DAGClient> shutdownList;
+
+  private StringBuffer diagnostics;
 
   static {
     shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
@@ -165,6 +168,9 @@ public class TezJobMonitor {
     try {
       // isatty system call will return 1 if the file descriptor is terminal else 0
       if (isatty(STDOUT_FILENO) == 0) {
+        return false;
+      }
+      if (isatty(STDERR_FILENO) == 0) {
         return false;
       }
     } catch (NoClassDefFoundError ignore) {
@@ -247,6 +253,7 @@ public class TezJobMonitor {
       DAG dag) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
+    diagnostics = new StringBuffer();
 
     boolean running = false;
     boolean done = false;
@@ -392,6 +399,7 @@ public class TezJobMonitor {
           if (rc != 0 && status != null) {
             for (String diag : status.getDiagnostics()) {
               console.printError(diag);
+              diagnostics.append(diag);
             }
           }
           shutdownList.remove(dagClient);
@@ -699,22 +707,25 @@ public class TezJobMonitor {
 
   // Map 1 ..........
   private String getNameWithProgress(String s, int complete, int total) {
-    float percent = total == 0 ? 0.0f : (float) complete / (float) total;
-    // lets use the remaining space in column 1 as progress bar
-    int spaceRemaining = COLUMN_1_WIDTH - s.length() - 1;
-    String trimmedVName = s;
+    String result = "";
+    if (s != null) {
+      float percent = total == 0 ? 0.0f : (float) complete / (float) total;
+      // lets use the remaining space in column 1 as progress bar
+      int spaceRemaining = COLUMN_1_WIDTH - s.length() - 1;
+      String trimmedVName = s;
 
-    // if the vertex name is longer than column 1 width, trim it down
-    // "Tez Merge File Work" will become "Tez Merge File.."
-    if (s != null && s.length() > COLUMN_1_WIDTH) {
-      trimmedVName = s.substring(0, COLUMN_1_WIDTH - 1);
-      trimmedVName = trimmedVName + "..";
-    }
+      // if the vertex name is longer than column 1 width, trim it down
+      // "Tez Merge File Work" will become "Tez Merge File.."
+      if (s.length() > COLUMN_1_WIDTH) {
+        trimmedVName = s.substring(0, COLUMN_1_WIDTH - 1);
+        trimmedVName = trimmedVName + "..";
+      }
 
-    String result = trimmedVName + " ";
-    int toFill = (int) (spaceRemaining * percent);
-    for (int i = 0; i < toFill; i++) {
-      result += ".";
+      result = trimmedVName + " ";
+      int toFill = (int) (spaceRemaining * percent);
+      for (int i = 0; i < toFill; i++) {
+        result += ".";
+      }
     }
     return result;
   }
@@ -778,7 +789,7 @@ public class TezJobMonitor {
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskAttemptCount();
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", s));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);
@@ -793,11 +804,11 @@ public class TezJobMonitor {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
         }
         if(complete < total && (complete > 0 || running > 0 || failed > 0)) {
-          
+
           if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
             perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
           }
-          
+
           /* vertex is started, but not complete */
           if (failed > 0) {
             reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
@@ -817,5 +828,9 @@ public class TezJobMonitor {
     }
 
     return reportBuffer.toString();
+  }
+
+  public String getDiagnostics() {
+    return diagnostics.toString();
   }
 }

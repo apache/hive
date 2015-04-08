@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,14 +33,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -51,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -90,6 +89,9 @@ public class Table implements Serializable {
   private Path path;
 
   private transient HiveStorageHandler storageHandler;
+
+  private transient TableSpec tableSpec;
+
 
   /**
    * Used only for serialization.
@@ -259,7 +261,7 @@ public class Table implements Serializable {
   }
 
   final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
-    return MetaStoreUtils.getDeserializerClass(Hive.get().getConf(), tTable);
+    return MetaStoreUtils.getDeserializerClass(SessionState.getSessionConf(), tTable);
   }
 
   final public Deserializer getDeserializer(boolean skipConfError) {
@@ -271,10 +273,8 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
-      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable, skipConfError);
+      return MetaStoreUtils.getDeserializer(SessionState.getSessionConf(), tTable, skipConfError);
     } catch (MetaException e) {
-      throw new RuntimeException(e);
-    } catch (HiveException e) {
       throw new RuntimeException(e);
     }
   }
@@ -285,7 +285,7 @@ public class Table implements Serializable {
     }
     try {
       storageHandler = HiveUtils.getStorageHandler(
-        Hive.get().getConf(),
+          SessionState.getSessionConf(),
         getProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
     } catch (Exception e) {
@@ -589,12 +589,12 @@ public class Table implements Serializable {
 
     String serializationLib = getSerializationLib();
     try {
-      if (hasMetastoreBasedSchema(Hive.get().getConf(), serializationLib)) {
+      if (hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tTable.getSd().getCols();
       } else {
-        return Hive.getFieldsFromDeserializer(getTableName(), getDeserializer());
+        return MetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
       }
-    } catch (HiveException e) {
+    } catch (Exception e) {
       LOG.error("Unable to get field from serde: " + serializationLib, e);
     }
     return new ArrayList<FieldSchema>();
@@ -623,42 +623,6 @@ public class Table implements Serializable {
 
   public int getNumBuckets() {
     return tTable.getSd().getNumBuckets();
-  }
-
-  /**
-   * Replaces the directory corresponding to the table by srcf. Works by
-   * deleting the table directory and renaming the source directory.
-   *
-   * @param srcf
-   *          Source directory
-   * @param isSrcLocal
-   *          If the source directory is LOCAL
-   */
-  protected void replaceFiles(Path srcf, boolean isSrcLocal)
-      throws HiveException {
-    Path tableDest = getPath();
-    Hive.replaceFiles(tableDest, srcf, tableDest, tableDest, Hive.get().getConf(),
-        isSrcLocal);
-  }
-
-  /**
-   * Inserts files specified into the partition. Works by moving files
-   *
-   * @param srcf
-   *          Files to be moved. Leaf directories or globbed file paths
-   * @param isSrcLocal
-   *          If the source directory is LOCAL
-   * @param isAcid
-   *          True if this is an ACID based insert, update, or delete
-   */
-  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid) throws HiveException {
-    FileSystem fs;
-    try {
-      fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid);
-    } catch (IOException e) {
-      throw new HiveException("addFiles: filesystem error in check phase", e);
-    }
   }
 
   public void setInputFormatClass(String name) throws HiveException {
@@ -931,22 +895,12 @@ public class Table implements Serializable {
     return dbName + "@" + tabName;
   }
 
-  /**
-   * @return List containing Indexes names if there are indexes on this table
-   * @throws HiveException
-   **/
-  public List<Index> getAllIndexes(short max) throws HiveException {
-    Hive hive = Hive.get();
-    return hive.getIndexes(getTTable().getDbName(), getTTable().getTableName(), max);
-  }
-
   @SuppressWarnings("nls")
   public FileStatus[] getSortedPaths() {
     try {
       // Previously, this got the filesystem of the Table, which could be
       // different from the filesystem of the partition.
-      FileSystem fs = FileSystem.get(getPath().toUri(), Hive.get()
-          .getConf());
+      FileSystem fs = FileSystem.get(getPath().toUri(), SessionState.getSessionConf());
       String pathPattern = getPath().toString();
       if (getNumBuckets() > 0) {
         pathPattern = pathPattern + "/*";
@@ -1009,4 +963,13 @@ public class Table implements Serializable {
     }
     return colName.toLowerCase();
   }
+
+  public TableSpec getTableSpec() {
+    return tableSpec;
+  }
+
+  public void setTableSpec(TableSpec tableSpec) {
+    this.tableSpec = tableSpec;
+  }
+
 };

@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -53,6 +55,10 @@ public abstract class GenericUDFBaseUnary extends GenericUDF {
   protected FloatWritable floatWritable = new FloatWritable();
   protected DoubleWritable doubleWritable = new DoubleWritable();
   protected HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+  protected HiveIntervalYearMonthWritable intervalYearMonthWritable =
+      new HiveIntervalYearMonthWritable();
+  protected HiveIntervalDayTimeWritable intervalDayTimeWritable =
+      new HiveIntervalDayTimeWritable();
 
   public GenericUDFBaseUnary() {
     opName = getClass().getSimpleName();
@@ -74,11 +80,13 @@ public abstract class GenericUDFBaseUnary extends GenericUDF {
     }
 
     inputOI = (PrimitiveObjectInspector) arguments[0];
-    if (!FunctionRegistry.isNumericType(inputOI.getTypeInfo())) {
+    if (!FunctionRegistry.isNumericType(inputOI.getTypeInfo())
+        && (inputOI.getTypeInfo() != TypeInfoFactory.intervalDayTimeTypeInfo)
+        && (inputOI.getTypeInfo() != TypeInfoFactory.intervalYearMonthTypeInfo)) {
       throw new UDFArgumentTypeException(0, "The "
           + GenericUDFUtils.getOrdinal(1)
-          + " argument of " + opName + "  is expected to a "
-          + "numeric type, but "
+          + " argument of " + opName + "  is expected to be a "
+          + "numeric or interval type, but "
           + inputOI.getTypeName() + " is found");
     }
 

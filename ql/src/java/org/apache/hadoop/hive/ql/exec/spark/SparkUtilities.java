@@ -18,11 +18,13 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
@@ -50,25 +52,50 @@ public class SparkUtilities {
     return copy;
   }
 
-  public static URL getURL(String path) throws MalformedURLException {
+  public static URI getURI(String path) throws URISyntaxException {
     if (path == null) {
       return null;
     }
 
-    URL url = null;
-    try {
       URI uri = new URI(path);
-      if (uri.getScheme() != null) {
-        url = uri.toURL();
-      } else {
+      if (uri.getScheme() == null) {
         // if no file schema in path, we assume it's file on local fs.
-        url = new File(path).toURI().toURL();
+        uri = new File(path).toURI();
       }
-    } catch (URISyntaxException e) {
-      // do nothing here, just return null if input path is not a valid URI.
+
+    return uri;
+  }
+
+  /**
+   * Copies local file to HDFS in yarn-cluster mode.
+   *
+   * @param source
+   * @param conf
+   * @return
+   * @throws IOException
+   */
+  public static URI uploadToHDFS(URI source, HiveConf conf) throws IOException {
+    URI result = source;
+    if (conf.get("spark.master").equals("yarn-cluster")) {
+      if (!source.getScheme().equals("hdfs")) {
+        Path tmpDir = SessionState.getHDFSSessionPath(conf);
+        FileSystem fileSystem = FileSystem.get(conf);
+        fileSystem.copyFromLocalFile(new Path(source.getPath()), tmpDir);
+        String filePath = tmpDir + File.separator + getFileName(source);
+        Path fullPath = fileSystem.getFileStatus(new Path(filePath)).getPath();
+        result = fullPath.toUri();
+      }
+    }
+    return result;
+  }
+
+  private static String getFileName(URI uri) {
+    if (uri == null) {
+      return null;
     }
 
-    return url;
+    String name = FilenameUtils.getName(uri.getPath());
+    return name;
   }
 
   public static SparkSession getSparkSession(HiveConf conf,

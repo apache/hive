@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -55,17 +57,23 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   protected Operator<? extends OperatorDesc> mergeOp;
   private ExecMapperContext execContext = null;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
+  private String cacheKey;
   private MergeFileWork mfWork;
   MRInputLegacy mrInput = null;
   private boolean abort = false;
   private final Object[] row = new Object[2];
+  ObjectCache cache;
+
+  public MergeFileRecordProcessor(final JobConf jconf, final ProcessorContext context) {
+    super(jconf, context);
+  }
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext,
+  void init(
       MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
     execContext = new ExecMapperContext(jconf);
 
     //Update JobConf using MRInput, info like filename comes via this
@@ -85,17 +93,21 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     }
 
     org.apache.hadoop.hive.ql.exec.ObjectCache cache = ObjectCacheFactory
-        .getCache(jconf);
+      .getCache(jconf);
+
     try {
       execContext.setJc(jconf);
-      // create map and fetch operators
-      MapWork mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
-      if (mapWork == null) {
-        mapWork = Utilities.getMapWork(jconf);
-        cache.cache(MAP_PLAN_KEY, mapWork);
-      } else {
-        Utilities.setMapWork(jconf, mapWork);
-      }
+
+      String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+      cacheKey = queryId + MAP_PLAN_KEY;
+
+      MapWork mapWork = (MapWork) cache.retrieve(cacheKey, new Callable<Object>() {
+        @Override
+        public Object call() {
+          return Utilities.getMapWork(jconf);
+        }
+      });
+      Utilities.setMapWork(jconf, mapWork);
 
       if (mapWork instanceof MergeFileWork) {
         mfWork = (MergeFileWork) mapWork;
@@ -109,7 +121,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
 
       MapredContext.init(true, new JobConf(jconf));
       ((TezContext) MapredContext.get()).setInputs(inputs);
-      mergeOp.setExecContext(execContext);
+      mergeOp.passExecContext(execContext);
       mergeOp.initializeLocalWork(jconf);
       mergeOp.initialize(jconf, null);
 
@@ -144,6 +156,11 @@ public class MergeFileRecordProcessor extends RecordProcessor {
 
   @Override
   void close() {
+
+    if (cache != null && cacheKey != null) {
+      cache.release(cacheKey);
+    }
+
     // check if there are IOExceptions
     if (!abort) {
       abort = execContext.getIoCxt().getIOExceptions();
@@ -186,7 +203,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       } else {
         row[0] = key;
         row[1] = value;
-        mergeOp.processOp(row, 0);
+        mergeOp.process(row, 0);
       }
     } catch (Throwable e) {
       abort = true;

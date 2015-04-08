@@ -32,4 +32,10 @@ public abstract class BoundaryDef {
   }
 
   public abstract int getAmt();
+
+  @Override
+  public String toString() {
+    return direction == null ? "" :
+        direction + "(" + (getAmt() == Integer.MAX_VALUE ? "MAX" : getAmt()) + ")";
+  }
 }

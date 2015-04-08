@@ -18,10 +18,15 @@
 
 package org.apache.hadoop.hive.metastore;
 
+
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -29,10 +34,8 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -44,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -78,9 +83,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
 /**
- * TODO Unnecessary when the server sides for both dbstore and filestore are
- * merged
+ * Wrapper around hive metastore thrift api
  */
+@Public
+@Evolving
 public interface IMetaStoreClient {
 
   /**
@@ -88,6 +94,12 @@ public interface IMetaStoreClient {
    * @return
    */
   boolean isCompatibleWith(HiveConf conf);
+
+  /**
+   * Set added jars path info to MetaStoreClient.
+   * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
+   */
+  void setHiveAddedJars(String addedJars);
 
   /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
@@ -656,9 +668,38 @@ public interface IMetaStoreClient {
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
 
+  /**
+   * Method to dropPartitions() with the option to purge the partition data directly,
+   * rather than to move data to trash.
+   * @param db_name Name of the database.
+   * @param tbl_name Name of the table.
+   * @param part_vals Specification of the partitions being dropped.
+   * @param options PartitionDropOptions for the operation.
+   * @return True (if partitions are dropped), else false.
+   * @throws TException
+   */
+  boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
+                        PartitionDropOptions options) throws TException;
+
   List<Partition> dropPartitions(String dbName, String tblName,
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException;
+
+  List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Generalization of dropPartitions(),
+   * @param dbName Name of the database
+   * @param tblName Name of the table
+   * @param partExprs Partition-specification
+   * @param options Boolean options for dropping partitions
+   * @return List of Partitions dropped
+   * @throws TException On failure
+   */
+  List<Partition> dropPartitions(String dbName, String tblName,
+                                 List<ObjectPair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException;
 
   boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
@@ -1311,6 +1352,18 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
+   * Send a list of partitions to the metastore to indicate which partitions were loaded
+   * dynamically.
+   * @param txnId id of the transaction
+   * @param dbName database name
+   * @param tableName table name
+   * @param partNames partition name, as constructed by Warehouse.makePartName
+   * @throws TException
+   */
+  void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames)
+    throws TException;
+
+  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -1344,6 +1397,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+
+  /**
+   * Request that the metastore fire an event.  Currently this is only supported for DML
+   * operations, since the metastore knows when DDL operations happen.
+   * @param request
+   * @return response, type depends on type of request
+   * @throws TException
+   */
+  FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

@@ -106,6 +106,16 @@ struct GrantRevokeType {
 
 extern const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES;
 
+struct EventRequestType {
+  enum type {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3
+  };
+};
+
+extern const std::map<int, const char*> _EventRequestType_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -5078,6 +5088,64 @@ class ShowCompactResponse {
 
 void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
+
+class AddDynamicPartitions {
+ public:
+
+  static const char* ascii_fingerprint; // = "A53A2B050DCCFE6A2158480A24E33898";
+  static const uint8_t binary_fingerprint[16]; // = {0xA5,0x3A,0x2B,0x05,0x0D,0xCC,0xFE,0x6A,0x21,0x58,0x48,0x0A,0x24,0xE3,0x38,0x98};
+
+  AddDynamicPartitions() : txnid(0), dbname(), tablename() {
+  }
+
+  virtual ~AddDynamicPartitions() throw() {}
+
+  int64_t txnid;
+  std::string dbname;
+  std::string tablename;
+  std::vector<std::string>  partitionnames;
+
+  void __set_txnid(const int64_t val) {
+    txnid = val;
+  }
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tablename(const std::string& val) {
+    tablename = val;
+  }
+
+  void __set_partitionnames(const std::vector<std::string> & val) {
+    partitionnames = val;
+  }
+
+  bool operator == (const AddDynamicPartitions & rhs) const
+  {
+    if (!(txnid == rhs.txnid))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (!(partitionnames == rhs.partitionnames))
+      return false;
+    return true;
+  }
+  bool operator != (const AddDynamicPartitions &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddDynamicPartitions & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(AddDynamicPartitions &a, AddDynamicPartitions &b);
+
 typedef struct _NotificationEventRequest__isset {
   _NotificationEventRequest__isset() : maxEvents(false) {}
   bool maxEvents;
@@ -5289,6 +5357,198 @@ class CurrentNotificationEventId {
 };
 
 void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
+
+
+class InsertEventRequestData {
+ public:
+
+  static const char* ascii_fingerprint; // = "ACE4F644F0FDD289DDC4EE5B83BC13C0";
+  static const uint8_t binary_fingerprint[16]; // = {0xAC,0xE4,0xF6,0x44,0xF0,0xFD,0xD2,0x89,0xDD,0xC4,0xEE,0x5B,0x83,0xBC,0x13,0xC0};
+
+  InsertEventRequestData() {
+  }
+
+  virtual ~InsertEventRequestData() throw() {}
+
+  std::vector<std::string>  filesAdded;
+
+  void __set_filesAdded(const std::vector<std::string> & val) {
+    filesAdded = val;
+  }
+
+  bool operator == (const InsertEventRequestData & rhs) const
+  {
+    if (!(filesAdded == rhs.filesAdded))
+      return false;
+    return true;
+  }
+  bool operator != (const InsertEventRequestData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const InsertEventRequestData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(InsertEventRequestData &a, InsertEventRequestData &b);
+
+typedef struct _FireEventRequestData__isset {
+  _FireEventRequestData__isset() : insertData(false) {}
+  bool insertData;
+} _FireEventRequestData__isset;
+
+class FireEventRequestData {
+ public:
+
+  static const char* ascii_fingerprint; // = "187E754B26707EE32451E6A27FB672CE";
+  static const uint8_t binary_fingerprint[16]; // = {0x18,0x7E,0x75,0x4B,0x26,0x70,0x7E,0xE3,0x24,0x51,0xE6,0xA2,0x7F,0xB6,0x72,0xCE};
+
+  FireEventRequestData() {
+  }
+
+  virtual ~FireEventRequestData() throw() {}
+
+  InsertEventRequestData insertData;
+
+  _FireEventRequestData__isset __isset;
+
+  void __set_insertData(const InsertEventRequestData& val) {
+    insertData = val;
+  }
+
+  bool operator == (const FireEventRequestData & rhs) const
+  {
+    if (!(insertData == rhs.insertData))
+      return false;
+    return true;
+  }
+  bool operator != (const FireEventRequestData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FireEventRequestData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(FireEventRequestData &a, FireEventRequestData &b);
+
+typedef struct _FireEventRequest__isset {
+  _FireEventRequest__isset() : dbName(false), tableName(false), partitionVals(false) {}
+  bool dbName;
+  bool tableName;
+  bool partitionVals;
+} _FireEventRequest__isset;
+
+class FireEventRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "1BA3A7F00159254072C3979B1429B50B";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0xA3,0xA7,0xF0,0x01,0x59,0x25,0x40,0x72,0xC3,0x97,0x9B,0x14,0x29,0xB5,0x0B};
+
+  FireEventRequest() : successful(0), dbName(), tableName() {
+  }
+
+  virtual ~FireEventRequest() throw() {}
+
+  bool successful;
+  FireEventRequestData data;
+  std::string dbName;
+  std::string tableName;
+  std::vector<std::string>  partitionVals;
+
+  _FireEventRequest__isset __isset;
+
+  void __set_successful(const bool val) {
+    successful = val;
+  }
+
+  void __set_data(const FireEventRequestData& val) {
+    data = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+    __isset.dbName = true;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+    __isset.tableName = true;
+  }
+
+  void __set_partitionVals(const std::vector<std::string> & val) {
+    partitionVals = val;
+    __isset.partitionVals = true;
+  }
+
+  bool operator == (const FireEventRequest & rhs) const
+  {
+    if (!(successful == rhs.successful))
+      return false;
+    if (!(data == rhs.data))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.partitionVals != rhs.__isset.partitionVals)
+      return false;
+    else if (__isset.partitionVals && !(partitionVals == rhs.partitionVals))
+      return false;
+    return true;
+  }
+  bool operator != (const FireEventRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FireEventRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(FireEventRequest &a, FireEventRequest &b);
+
+
+class FireEventResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  FireEventResponse() {
+  }
+
+  virtual ~FireEventResponse() throw() {}
+
+
+  bool operator == (const FireEventResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const FireEventResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FireEventResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(FireEventResponse &a, FireEventResponse &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

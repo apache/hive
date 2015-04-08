@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.KeyProvider.Options;
-import org.apache.hadoop.crypto.key.KeyProviderFactory;
+import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -415,6 +415,73 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  /**
+   * Returns a shim to wrap MiniSparkOnYARNCluster
+   */
+  @Override
+  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
+    String nameNode, int numDir) throws IOException {
+    return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  /**
+   * Shim for MiniSparkOnYARNCluster
+   */
+  public class MiniSparkShim extends Hadoop23Shims.MiniMrShim {
+
+    private final MiniSparkOnYARNCluster mr;
+    private final Configuration conf;
+
+    public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
+      String nameNode, int numDir) throws IOException {
+
+      mr = new MiniSparkOnYARNCluster("sparkOnYarn");
+      conf.set("fs.defaultFS", nameNode);
+      mr.init(conf);
+      mr.start();
+      this.conf = mr.getConfig();
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      String address = conf.get("yarn.resourcemanager.address");
+      address = StringUtils.substringAfterLast(address, ":");
+
+      if (StringUtils.isBlank(address)) {
+        throw new IllegalArgumentException("Invalid YARN resource manager port.");
+      }
+
+      return Integer.parseInt(address);
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      mr.stop();
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      Configuration config = mr.getConfig();
+      for (Map.Entry<String, String> pair : config) {
+        conf.set(pair.getKey(), pair.getValue());
+      }
+
+      Path jarPath = new Path("hdfs:///user/hive");
+      Path hdfsPath = new Path("hdfs:///user/");
+      try {
+        FileSystem fs = cluster.getFileSystem();
+        jarPath = fs.makeQualified(jarPath);
+        conf.set("hive.jar.directory", jarPath.toString());
+        fs.mkdirs(jarPath);
+        hdfsPath = fs.makeQualified(hdfsPath);
+        conf.set("hive.user.install.directory", hdfsPath.toString());
+        fs.mkdirs(hdfsPath);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   // Don't move this code to the parent class. There's a binary
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
@@ -428,8 +495,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     // Need to set the client's KeyProvider to the NN's for JKS,
     // else the updates do not get flushed properly
-    miniDFSCluster.getFileSystem().getClient().setKeyProvider(
-        miniDFSCluster.getNameNode().getNamesystem().getProvider());
+    KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode().getNamesystem().getProvider();
+    if (keyProvider != null) {
+      miniDFSCluster.getFileSystem().getClient().setKeyProvider(keyProvider);
+    }
 
     cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
@@ -634,18 +703,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
         try {
           AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-          List<AclEntry> aclEntries = aclStatus.getEntries();
-          removeBaseAclEntries(aclEntries);
+          if (aclStatus != null) {
+            List<AclEntry> aclEntries = aclStatus.getEntries();
+            removeBaseAclEntries(aclEntries);
 
-          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-          FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+            //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+            FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
 
-          //construct the -setfacl command
-          String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
-          run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+            //construct the -setfacl command
+            String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+            run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+          }
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
                   "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
@@ -1063,6 +1134,25 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return (0 == rc);
   }
 
+  private static Boolean hdfsEncryptionSupport;
+
+  public static boolean isHdfsEncryptionSupported() {
+    if (hdfsEncryptionSupport == null) {
+      Method m = null;
+
+      try {
+        m = HdfsAdmin.class.getMethod("getEncryptionZoneForPath", Path.class);
+      } catch (NoSuchMethodException e) {
+        // This version of Hadoop does not support HdfsAdmin.getEncryptionZoneForPath().
+        // Hadoop 2.6.0 introduces this new method.
+      }
+
+      hdfsEncryptionSupport = (m != null);
+    }
+
+    return hdfsEncryptionSupport;
+  }
+
   public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
     private final String HDFS_SECURITY_DEFAULT_CIPHER = "AES/CTR/NoPadding";
 
@@ -1207,10 +1297,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
-    URI uri = fs.getUri();
-    if ("hdfs".equals(uri.getScheme())) {
-      return new HdfsEncryptionShim(uri, conf);
+    if (isHdfsEncryptionSupported()) {
+      URI uri = fs.getUri();
+      if ("hdfs".equals(uri.getScheme())) {
+        return new HdfsEncryptionShim(uri, conf);
+      }
     }
+
     return new HadoopShims.NoopHdfsEncryptionShim();
+  }
+
+  @Override
+  public Path getPathWithoutSchemeAndAuthority(Path path) {
+    return Path.getPathWithoutSchemeAndAuthority(path);
   }
 }

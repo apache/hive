@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 /**
@@ -53,9 +52,13 @@ public class HookContext {
   final private Map<String, ContentSummary> inputPathToContentSummary;
   private final String ipAddress;
   private final String userName;
+  // unique id set for operation when run from HS2, base64 encoded value of
+  // TExecuteStatementResp.TOperationHandle.THandleIdentifier.guid
+  private final String operationId;
 
   public HookContext(QueryPlan queryPlan, HiveConf conf,
-      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress) throws Exception {
+      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress,
+      String operationId) throws Exception {
     this.queryPlan = queryPlan;
     this.conf = conf;
     this.inputPathToContentSummary = inputPathToContentSummary;
@@ -67,8 +70,9 @@ public class HookContext {
     if(SessionState.get() != null){
       linfo = SessionState.get().getLineageState().getLineageInfo();
     }
-    this.ipAddress = ipAddress;
     this.userName = userName;
+    this.ipAddress = ipAddress;
+    this.operationId = operationId;
   }
 
   public QueryPlan getQueryPlan() {
@@ -153,5 +157,9 @@ public class HookContext {
 
   public String getUserName() {
     return this.userName;
+  }
+
+  public String getOperationId() {
+    return operationId;
   }
 }

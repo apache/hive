@@ -347,7 +347,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   private String getDelegationToken(String userName)
       throws HiveSQLException, LoginException, IOException {
     if (userName == null || !cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
-        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
+        .equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString())) {
       return null;
     }
     try {

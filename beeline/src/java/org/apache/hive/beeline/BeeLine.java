@@ -28,17 +28,18 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
@@ -50,6 +51,7 @@ import java.sql.Statement;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -79,14 +81,12 @@ import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.FileHistory;
 
-import jline.internal.Log;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.io.IOUtils;
-
 
 /**
  * A console SQL shell with command completion.
@@ -155,6 +155,8 @@ public class BeeLine implements Closeable {
       "xmlelements", new XMLElementOutputFormat(this),
   });
 
+  private List<String> supportedLocalDriver =
+    new ArrayList<String>(Arrays.asList("com.mysql.jdbc.Driver", "org.postgresql.Driver"));
 
   final CommandHandler[] commandHandlers = new CommandHandler[] {
       new ReflectiveCommandHandler(this, new String[] {"quit", "done", "exit"},
@@ -247,6 +249,10 @@ public class BeeLine implements Closeable {
           null),
       new ReflectiveCommandHandler(this, new String[] {"nullemptystring"},
           new Completer[] {new BooleanCompleter()}),
+      new ReflectiveCommandHandler(this, new String[]{"addlocaldriverjar"},
+          null),
+      new ReflectiveCommandHandler(this, new String[]{"addlocaldrivername"},
+          null)
   };
 
 
@@ -293,6 +299,14 @@ public class BeeLine implements Closeable {
         .withArgName("password")
         .withDescription("the password to connect as")
         .create('p'));
+
+    // -w (or) --password-file <file>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("password-file")
+        .withDescription("the password file to read password from")
+        .withLongOpt("password-file")
+        .create('w'));
 
     // -a <authType>
     options.addOption(OptionBuilder
@@ -660,7 +674,11 @@ public class BeeLine implements Closeable {
     auth = cl.getOptionValue("a");
     user = cl.getOptionValue("n");
     getOpts().setAuthType(auth);
-    pass = cl.getOptionValue("p");
+    if (cl.hasOption("w")) {
+      pass = obtainPasswordFromFile(cl.getOptionValue("w"));
+    } else {
+      pass = cl.getOptionValue("p");
+    }
     url = cl.getOptionValue("u");
     getOpts().setInitFile(cl.getOptionValue("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
@@ -708,6 +726,19 @@ public class BeeLine implements Closeable {
     return code;
   }
 
+  /**
+   * Obtains a password from the passed file path.
+   */
+  private String obtainPasswordFromFile(String passwordFilePath) {
+    try {
+      Path path = Paths.get(passwordFilePath);
+      byte[] passwordFileContents = Files.readAllBytes(path);
+      return new String(passwordFileContents, "UTF-8").trim();
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to read user password from the password file: "
+          + passwordFilePath, e);
+    }
+  }
 
   /**
    * Start accepting input from stdin, and dispatch it
@@ -772,10 +803,14 @@ public class BeeLine implements Closeable {
   }
 
   private int execute(ConsoleReader reader, boolean exitOnError) {
+    String line;
     while (!exit) {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
-        if (!dispatch(reader.readLine(getPrompt())) && exitOnError) {
+        // in silent mode, prevent the query and prompt being echoed back to terminal
+        line = getOpts().isSilent() ? reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+
+        if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
         }
       } catch (Throwable t) {
@@ -1552,6 +1587,11 @@ public class BeeLine implements Closeable {
         return true;
       }
 
+      // find whether exists a local driver to accept the url
+      if (findLocalDriver(url) != null) {
+        return true;
+      }
+
       return false;
     } catch (Exception e) {
       debug(e.toString());
@@ -1574,6 +1614,40 @@ public class BeeLine implements Closeable {
     return null;
   }
 
+  public Driver findLocalDriver(String url) throws Exception {
+    if(drivers == null){
+      return null;
+    }
+
+    for (Driver d : drivers) {
+      try {
+        String clazzName = d.getClass().getName();
+        Driver driver = (Driver) Class.forName(clazzName, true,
+          Thread.currentThread().getContextClassLoader()).newInstance();
+        if (driver.acceptsURL(url) && isSupportedLocalDriver(driver)) {
+          return driver;
+        }
+      } catch (SQLException e) {
+        error(e);
+        throw new Exception(e);
+      }
+    }
+    return null;
+  }
+
+  public boolean isSupportedLocalDriver(Driver driver) {
+    String driverName = driver.getClass().getName();
+    for (String name : supportedLocalDriver) {
+      if (name.equals(driverName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public void addLocalDriverClazz(String driverClazz) {
+    supportedLocalDriver.add(driverClazz);
+  }
 
   Driver[] scanDrivers(String line) throws IOException {
     return scanDrivers(false);

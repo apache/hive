@@ -44,7 +44,7 @@ import org.apache.hadoop.io.BooleanWritable;
  * GenericUDF Base Class for operations.
  */
 @Description(name = "op", value = "a op b - Returns the result of operation")
-public abstract class GenericUDFBaseCompare extends GenericUDF {
+public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
   public enum CompareType {
     // Now only string, text, int, long, byte and boolean comparisons are
     // treated as special cases.
@@ -52,9 +52,6 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
     COMPARE_STRING, COMPARE_TEXT, COMPARE_INT, COMPARE_LONG, COMPARE_BYTE,
     COMPARE_BOOL, SAME_TYPE, NEED_CONVERT
   }
-
-  protected String opName;
-  protected String opDisplayName;
 
   protected transient ObjectInspector[] argumentOIs;
 
@@ -182,12 +179,4 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
           o0, argumentOIs[0], o1, argumentOIs[1]);
     }
   }
-
-  @Override
-  public String getDisplayString(String[] children) {
-    assert (children.length == 2);
-    return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
-
-  }
-
 }

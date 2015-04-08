@@ -131,7 +131,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_src_index__
+            alias: default__src_src_index__
             filterExpr: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
               predicate: (((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
@@ -154,15 +154,12 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: array<bigint>)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Move Operator
@@ -232,7 +229,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_src_index__
+            alias: default__src_src_index__
             filterExpr: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
               predicate: (((UDFToDouble(key) > 70.0) and (UDFToDouble(key) < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
@@ -255,15 +252,12 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: array<bigint>)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Move Operator

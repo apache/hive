@@ -3,6 +3,8 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import parquet.io.api.Converter;
@@ -27,12 +29,13 @@ public class HiveCollectionConverter extends HiveGroupConverter {
                                            ConverterParent parent,
                                            int index) {
     return new HiveCollectionConverter(
-        listType, parent, index, false /* not a map */ );
+      listType, parent, index, false /* not a map */);
   }
 
   private HiveCollectionConverter(GroupType collectionType,
                                   ConverterParent parent,
                                   int index, boolean isMap) {
+    setMetadata(parent.getMetadata());
     this.collectionType = collectionType;
     this.parent = parent;
     this.index = index;
@@ -78,6 +81,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     private Writable[] keyValue = null;
 
     public KeyValueConverter(GroupType keyValueType, HiveGroupConverter parent) {
+      setMetadata(parent.getMetadata());
       this.parent = parent;
       this.keyConverter = getConverterFromDescription(
           keyValueType.getType(0), 0, this);
@@ -120,6 +124,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     private Writable element = null;
 
     public ElementConverter(GroupType repeatedType, HiveGroupConverter parent) {
+      setMetadata(parent.getMetadata());
       this.parent = parent;
       this.elementConverter = getConverterFromDescription(
           repeatedType.getType(0), 0, this);

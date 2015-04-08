@@ -27,12 +27,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -152,7 +154,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         if (bl != null && bl.length() > 0) {
           String[] bls = bl.split(",");
           for (String b : bls) {
-            b.replaceAll(".", "_");
             blackListedConfEntries.add(b);
           }
         }
@@ -260,7 +261,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     firstRow = true;
 
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
@@ -281,11 +283,10 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
       outputObjInspector = scriptOutputDeserializer.getObjectInspector();
 
-      // initialize all children before starting the script
-      initializeChildren(hconf);
     } catch (Exception e) {
       throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
     }
+    return result;
   }
 
   boolean isBrokenPipeException(IOException e) {
@@ -303,10 +304,11 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   void displayBrokenPipeInfo() {
-    LOG
-        .info("The script did not consume all input data. This is considered as an error.");
-    LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString()
-        + "=true; to ignore it.");
+    if (isLogInfoEnabled) {
+      LOG.info("The script did not consume all input data. This is considered as an error.");
+      LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString()
+	  + "=true; to ignore it.");
+    }
     return;
   }
 
@@ -321,7 +323,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     // initialize the user's process only when you receive the first row
     if (firstRow) {
       firstRow = false;
@@ -347,10 +349,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         }
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
-        LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-        LOG.info("tablename=" + tableName);
-        LOG.info("partname=" + partitionName);
-        LOG.info("alias=" + alias);
+	if (isLogInfoEnabled) {
+	  LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
+	  LOG.info("tablename=" + tableName);
+	  LOG.info("partname=" + partitionName);
+	  LOG.info("alias=" + alias);
+	}
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
         Map<String, String> env = pb.environment();
@@ -442,8 +446,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
               + StringUtils.stringifyException(e2));
         }
         setDone(true);
-        LOG
-            .warn("Got broken pipe during write: ignoring exception and setting operator to done");
+        LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
       } else {
         LOG.error("Error in writing to script: " + e.getMessage());
         if (isBrokenPipeException(e)) {
@@ -572,6 +575,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       this.rowInspector = rowInspector;
     }
 
+    @Override
     public void processLine(Writable line) throws HiveException {
       try {
         row = scriptOutputDeserializer.deserialize(line);
@@ -582,6 +586,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       forward(row, rowInspector);
     }
 
+    @Override
     public void close() {
     }
   }
@@ -650,6 +655,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       }
     }
 
+    @Override
     public void processLine(Writable line) throws HiveException {
 
       String stringLine = line.toString();
@@ -666,7 +672,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
-        LOG.info("ErrorStreamProcessor calling reporter.progress()");
+	if (isLogInfoEnabled) {
+	  LOG.info("ErrorStreamProcessor calling reporter.progress()");
+	}
         lastReportTime = now;
         reporter.progress();
       }
@@ -690,6 +698,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       bytesCopied += len;
     }
 
+    @Override
     public void close() {
     }
 
@@ -721,7 +730,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           }
           proc.processLine(row);
         }
-        LOG.info("StreamThread " + name + " done");
+	if (isLogInfoEnabled) {
+	  LOG.info("StreamThread " + name + " done");
+	}
 
       } catch (Throwable th) {
         scriptError = th;

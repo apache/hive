@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -121,7 +122,8 @@ public class Worker extends CompactorThread {
 
         final boolean isMajor = ci.isMajorCompaction();
         final ValidTxnList txns =
-            TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
+            CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
+        LOG.debug("ValidCompactTxnList: " + txns.writeToString());
         final StringBuffer jobName = new StringBuffer(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());

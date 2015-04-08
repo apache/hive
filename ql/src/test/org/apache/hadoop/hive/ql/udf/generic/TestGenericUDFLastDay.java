@@ -17,15 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.sql.Timestamp;
+
+import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
-
-import junit.framework.TestCase;
 
 public class TestGenericUDFLastDay extends TestCase {
 
@@ -35,6 +37,8 @@ public class TestGenericUDFLastDay extends TestCase {
     ObjectInspector[] arguments = { valueOI0 };
 
     udf.initialize(arguments);
+
+    // date str
     runAndVerify("2014-01-01", "2014-01-31", udf);
     runAndVerify("2014-01-14", "2014-01-31", udf);
     runAndVerify("2014-01-31", "2014-01-31", udf);
@@ -43,22 +47,66 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerify("2016-02-03", "2016-02-29", udf);
     runAndVerify("2016-02-28", "2016-02-29", udf);
     runAndVerify("2016-02-29", "2016-02-29", udf);
+    //wrong date str
+    runAndVerify("2016-02-30", "2016-03-31", udf);
+    runAndVerify("2014-01-32", "2014-02-28", udf);
+    runAndVerify("01/14/2014", null, udf);
+    runAndVerify(null, null, udf);
 
+    // ts str
     runAndVerify("2014-01-01 10:30:45", "2014-01-31", udf);
     runAndVerify("2014-01-14 10:30:45", "2014-01-31", udf);
-    runAndVerify("2014-01-31 10:30:45", "2014-01-31", udf);
-    runAndVerify("2014-02-02 10:30:45", "2014-02-28", udf);
-    runAndVerify("2014-02-28 10:30:45", "2014-02-28", udf);
-    runAndVerify("2016-02-03 10:30:45", "2016-02-29", udf);
+    runAndVerify("2014-01-31 10:30:45.1", "2014-01-31", udf);
+    runAndVerify("2014-02-02 10:30:45.100", "2014-02-28", udf);
+    runAndVerify("2014-02-28 10:30:45.001", "2014-02-28", udf);
+    runAndVerify("2016-02-03 10:30:45.000000001", "2016-02-29", udf);
     runAndVerify("2016-02-28 10:30:45", "2016-02-29", udf);
     runAndVerify("2016-02-29 10:30:45", "2016-02-29", udf);
+    // wrong ts str
+    runAndVerify("2016-02-30 10:30:45", "2016-03-31", udf);
+    runAndVerify("2014-01-32 10:30:45", "2014-02-28", udf);
+    runAndVerify("01/14/2014 10:30:45", null, udf);
+    runAndVerify("2016-02-28T10:30:45", "2016-02-29", udf);
+    // negative Unix time
+    runAndVerifyTs("1966-01-31 00:00:01", "1966-01-31", udf);
+    runAndVerifyTs("1966-01-31 10:00:01", "1966-01-31", udf);
+    runAndVerifyTs("1966-01-31 23:59:59", "1966-01-31", udf);
+  }
+
+  public void testLastDayTs() throws HiveException {
+    GenericUDFLastDay udf = new GenericUDFLastDay();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    ObjectInspector[] arguments = { valueOI0 };
+
+    udf.initialize(arguments);
+    // positive Unix time
+    runAndVerifyTs("2014-01-01 10:30:45", "2014-01-31", udf);
+    runAndVerifyTs("2014-01-14 10:30:45", "2014-01-31", udf);
+    runAndVerifyTs("2014-01-31 10:30:45.1", "2014-01-31", udf);
+    runAndVerifyTs("2014-02-02 10:30:45.100", "2014-02-28", udf);
+    runAndVerifyTs("2014-02-28 10:30:45.001", "2014-02-28", udf);
+    runAndVerifyTs("2016-02-03 10:30:45.000000001", "2016-02-29", udf);
+    runAndVerifyTs("2016-02-28 10:30:45", "2016-02-29", udf);
+    runAndVerifyTs("2016-02-29 10:30:45", "2016-02-29", udf);
+    // negative Unix time
+    runAndVerifyTs("1966-01-31 00:00:01", "1966-01-31", udf);
+    runAndVerifyTs("1966-01-31 10:00:01", "1966-01-31", udf);
+    runAndVerifyTs("1966-01-31 23:59:59", "1966-01-31", udf);
   }
 
   private void runAndVerify(String str, String expResult, GenericUDF udf)
       throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(new Text(str));
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new Text(str) : null);
     DeferredObject[] args = { valueObj0 };
     Text output = (Text) udf.evaluate(args);
-    assertEquals("last_day() test ", expResult, output.toString());
+    assertEquals("last_day() test ", expResult, output != null ? output.toString() : null);
+  }
+
+  private void runAndVerifyTs(String str, String expResult, GenericUDF udf) throws HiveException {
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new TimestampWritable(
+        Timestamp.valueOf(str)) : null);
+    DeferredObject[] args = { valueObj0 };
+    Text output = (Text) udf.evaluate(args);
+    assertEquals("last_day() test ", expResult, output != null ? output.toString() : null);
   }
 }

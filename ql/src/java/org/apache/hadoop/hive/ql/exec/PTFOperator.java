@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -66,9 +67,9 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
    * 4. Create input partition to store rows coming from previous operator
    */
   @Override
-  protected void initializeOp(Configuration jobConf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration jobConf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(jobConf);
     hiveConf = jobConf;
-    // if the parent is ExtractOperator, this invocation is from reduce-side
     isMapOperator = conf.isMapSide();
 
     reconstructQueryDef(hiveConf);
@@ -85,8 +86,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     ptfInvocation = setupChain();
     ptfInvocation.initializeStreaming(jobConf, isMapOperator);
     firstMapRow = true;
-
-    super.initializeOp(jobConf);
+    return result;
   }
 
   @Override
@@ -97,7 +97,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (!isMapOperator ) {
       /*
        * checkif current row belongs to the current accumulated Partition:
@@ -157,7 +157,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       /*
        * Why cannot we just use the ExprNodeEvaluator on the column?
        * - because on the reduce-side it is initialized based on the rowOI of the HiveTable
-       *   and not the OI of the ExtractOp ( the parent of this Operator on the reduce-side)
+       *   and not the OI of the parent of this Operator on the reduce-side
        */
       keyFields[i] = ExprNodeEvaluatorFactory.get(exprDef.getExprNode());
       keyOIs[i] = keyFields[i].initialize(inputOI);

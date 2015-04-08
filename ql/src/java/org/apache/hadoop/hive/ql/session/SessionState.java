@@ -24,8 +24,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +53,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
@@ -251,6 +264,16 @@ public class SessionState {
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
 
+  private final Registry registry = new Registry();
+
+  /**
+   * CURRENT_TIMESTAMP value for query
+   */
+  private Timestamp queryCurrentTimestamp;
+
+  private ResourceMaps resourceMaps;
+
+  private DependencyResolver dependencyResolver;
   /**
    * Get the lineage state stored in this session.
    *
@@ -316,6 +339,8 @@ public class SessionState {
     this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+    resourceMaps = new ResourceMaps();
+    dependencyResolver = new DependencyResolver();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
@@ -401,11 +426,33 @@ public class SessionState {
     return hdfsEncryptionShim;
   }
 
+  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
+  private static class SessionStates {
+    private SessionState state;
+    private HiveConf conf;
+    private void attach(SessionState state) {
+      this.state = state;
+      attach(state.getConf());
+    }
+    private void attach(HiveConf conf) {
+      this.conf = conf;
+      ClassLoader classLoader = conf.getClassLoader();
+      if (classLoader != null) {
+        Thread.currentThread().setContextClassLoader(classLoader);
+      }
+    }
+  }
+
   /**
    * Singleton Session object per thread.
    *
    **/
-  private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState>();
+  private static ThreadLocal<SessionStates> tss = new ThreadLocal<SessionStates>() {
+    @Override
+    protected SessionStates initialValue() {
+      return new SessionStates();
+    }
+  };
 
   /**
    * start a new session and set it to current session.
@@ -419,8 +466,7 @@ public class SessionState {
    * Sets the given session state in the thread local var for sessions.
    */
   public static void setCurrentSessionState(SessionState startSs) {
-    tss.set(startSs);
-    Thread.currentThread().setContextClassLoader(startSs.getConf().getClassLoader());
+    tss.get().attach(startSs);
   }
 
   public static void detachSession() {
@@ -549,8 +595,15 @@ public class SessionState {
       Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    LOG.debug("HDFS root scratch dir: " + rootHDFSDirPath + ", permission: "
-        + currentHDFSDirPermission);
+    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+      String schema = rootHDFSDirPath.toUri().getScheme();
+      LOG.debug(
+        "HDFS root scratch dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
+          currentHDFSDirPermission);
+    } else {
+      LOG.debug(
+        "HDFS root scratch dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
+    }
     // If the root HDFS scratch dir already exists, make sure it is writeable.
     if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
         .toShort()) == writableHDFSDirPermission.toShort())) {
@@ -666,7 +719,7 @@ public class SessionState {
           clsStr, authenticator, true);
 
       if (authorizer == null) {
-        // if it was null, the new authorization plugin must be specified in
+        // if it was null, the new (V2) authorization plugin must be specified in
         // config
         HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(conf,
             HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
@@ -678,13 +731,14 @@ public class SessionState {
 
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
+        setAuthorizerV2Config();
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf);
       }
       // create the create table grants with new config
       createTableGrants = CreateTableAutomaticGrant.create(conf);
 
     } catch (HiveException e) {
+      LOG.error("Error setting up authorization: " + e.getMessage(), e);
       throw new RuntimeException(e);
     }
 
@@ -693,6 +747,28 @@ public class SessionState {
       LOG.debug("Session is using authorization class " + authorizationClass.getClass());
     }
     return;
+  }
+
+  private void setAuthorizerV2Config() throws HiveException {
+    // avoid processing the same config multiple times, check marker
+    if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
+      return;
+    }
+    conf.setVar(ConfVars.METASTORE_FILTER_HOOK,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook");
+
+    authorizerV2.applyAuthorizationConfigPolicy(conf);
+    // update config in Hive thread local as well and init the metastore client
+    try {
+      Hive.get(conf).getMSC();
+    } catch (Exception e) {
+      // catch-all due to some exec time dependencies on session state
+      // that would cause ClassNoFoundException otherwise
+      throw new HiveException(e.getMessage(), e);
+    }
+
+    // set a marker that this conf has been processed.
+    conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
   }
 
   public Object getActiveAuthorizer() {
@@ -746,11 +822,32 @@ public class SessionState {
    * get the current session.
    */
   public static SessionState get() {
-    return tss.get();
+    return tss.get().state;
+  }
+
+  public static HiveConf getSessionConf() {
+    SessionStates state = tss.get();
+    if (state.conf == null) {
+      state.attach(new HiveConf());
+    }
+    return state.conf;
+  }
+
+  public static Registry getRegistry() {
+    SessionState session = get();
+    return session != null ? session.registry : null;
+  }
+
+  public static Registry getRegistryForWrite() {
+    Registry registry = getRegistry();
+    if (registry == null) {
+      throw new RuntimeException("Function registery for session is not initialized");
+    }
+    return registry;
   }
 
   /**
-   * get hiveHitsory object which does structured logging.
+   * get hiveHistory object which does structured logging.
    *
    * @return The hive history object
    */
@@ -1029,8 +1126,7 @@ public class SessionState {
     return null;
   }
 
-  private final HashMap<ResourceType, Set<String>> resource_map =
-      new HashMap<ResourceType, Set<String>>();
+
 
   public String add_resource(ResourceType t, String value) throws RuntimeException {
     return add_resource(t, value, false);
@@ -1045,44 +1141,95 @@ public class SessionState {
     return added.get(0);
   }
 
-  public List<String> add_resources(ResourceType t, List<String> values)
+  public List<String> add_resources(ResourceType t, Collection<String> values)
       throws RuntimeException {
     // By default don't convert to unix
     return add_resources(t, values, false);
   }
 
-  public List<String> add_resources(ResourceType t, List<String> values, boolean convertToUnix)
+  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
       throws RuntimeException {
-    Set<String> resourceMap = getResourceMap(t);
-
+    Set<String> resourceSet = resourceMaps.getResourceSet(t);
+    Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
+    Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
     List<String> localized = new ArrayList<String>();
     try {
       for (String value : values) {
-        localized.add(downloadResource(value, convertToUnix));
-      }
+        String key;
 
-      t.preHook(resourceMap, localized);
+        //get the local path of downloaded jars.
+        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+
+        if (getURLType(value).equals("ivy")) {
+          // get the key to store in map
+          key = new URI(value).getAuthority();
+        } else {
+          // for local file and hdfs, key and value are same.
+          key = downloadedURLs.get(0).toString();
+        }
+        Set<String> downloadedValues = new HashSet<String>();
+
+        for (URI uri : downloadedURLs) {
+          String resourceValue = uri.toString();
+          downloadedValues.add(resourceValue);
+          localized.add(resourceValue);
+          if (reverseResourcePathMap.containsKey(resourceValue)) {
+            if (!reverseResourcePathMap.get(resourceValue).contains(key)) {
+              reverseResourcePathMap.get(resourceValue).add(key);
+            }
+          } else {
+            Set<String> addSet = new HashSet<String>();
+            addSet.add(key);
+            reverseResourcePathMap.put(resourceValue, addSet);
+
+          }
+        }
+        resourcePathMap.put(key, downloadedValues);
+      }
+      t.preHook(resourceSet, localized);
 
     } catch (RuntimeException e) {
-      getConsole().printError(e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      getConsole().printError(e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw e;
+    } catch (URISyntaxException e) {
+      getConsole().printError(e.getMessage());
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      getConsole().printError(e.getMessage());
+      throw new RuntimeException(e);
     }
-
     getConsole().printInfo("Added resources: " + values);
-    resourceMap.addAll(localized);
-
+    resourceSet.addAll(localized);
     return localized;
   }
 
-  private Set<String> getResourceMap(ResourceType t) {
-    Set<String> result = resource_map.get(t);
-    if (result == null) {
-      result = new HashSet<String>();
-      resource_map.put(t, result);
+  private static String getURLType(String value) throws URISyntaxException {
+    URI uri = new URI(value);
+    String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
+    if (scheme == null || scheme.equals("file")) {
+      return "file";
+    } else if (scheme.equals("hdfs") || scheme.equals("ivy")) {
+      return scheme;
+    } else {
+      throw new RuntimeException("invalid url: " + uri + ", expecting ( file | hdfs | ivy)  as url scheme. ");
     }
-    return result;
   }
+
+  List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
+      IOException {
+    URI uri = new URI(value);
+    if (getURLType(value).equals("file")) {
+      return Arrays.asList(uri);
+    } else if (getURLType(value).equals("ivy")) {
+      return dependencyResolver.downloadDependencies(uri);
+    } else if (getURLType(value).equals("hdfs")) {
+      return Arrays.asList(new URI(downloadResource(value, convertToUnix)));
+    } else {
+      throw new RuntimeException("Invalid url " + uri);
+    }
+  }
+
+
 
   /**
    * Returns  true if it is from any external File Systems except local
@@ -1128,16 +1275,49 @@ public class SessionState {
     return value;
   }
 
-  public void delete_resources(ResourceType t, List<String> value) {
-    Set<String> resources = resource_map.get(t);
-    if (resources != null && !resources.isEmpty()) {
-      t.postHook(resources, value);
-      resources.removeAll(value);
+  public void delete_resources(ResourceType t, List<String> values) {
+    Set<String> resources = resourceMaps.getResourceSet(t);
+    if (resources == null || resources.isEmpty()) {
+      return;
     }
+
+    Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
+    Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
+    List<String> deleteList = new LinkedList<String>();
+    for (String value : values) {
+      String key = value;
+      try {
+        if (getURLType(value).equals("ivy")) {
+          key = new URI(value).getAuthority();
+        }
+      } catch (URISyntaxException e) {
+        throw new RuntimeException("Invalid uri string " + value + ", " + e.getMessage());
+      }
+
+      // get all the dependencies to delete
+
+      Set<String> resourcePaths = resourcePathMap.get(key);
+      if (resourcePaths == null) {
+        return;
+      }
+      for (String resourceValue : resourcePaths) {
+        reverseResourcePathMap.get(resourceValue).remove(key);
+
+        // delete a dependency only if no other resource depends on it.
+        if (reverseResourcePathMap.get(resourceValue).isEmpty()) {
+          deleteList.add(resourceValue);
+          reverseResourcePathMap.remove(resourceValue);
+        }
+      }
+      resourcePathMap.remove(key);
+    }
+    t.postHook(resources, deleteList);
+    resources.removeAll(deleteList);
   }
 
+
   public Set<String> list_resource(ResourceType t, List<String> filter) {
-    Set<String> orig = resource_map.get(t);
+    Set<String> orig = resourceMaps.getResourceSet(t);
     if (orig == null) {
       return null;
     }
@@ -1155,10 +1335,10 @@ public class SessionState {
   }
 
   public void delete_resources(ResourceType t) {
-    Set<String> resources = resource_map.get(t);
+    Set<String> resources = resourceMaps.getResourceSet(t);
     if (resources != null && !resources.isEmpty()) {
       delete_resources(t, new ArrayList<String>(resources));
-      resource_map.remove(t);
+      resourceMaps.getResourceMap().remove(t);
     }
   }
 
@@ -1265,6 +1445,7 @@ public class SessionState {
   }
 
   public void close() throws IOException {
+    registry.clear();;
     if (txnMgr != null) txnMgr.closeTxnManager();
     JavaUtils.closeClassLoadersTo(conf.getClassLoader(), parentLoader);
     File resourceDir =
@@ -1355,20 +1536,7 @@ public class SessionState {
    * any security configuration changes.
    */
   public void applyAuthorizationPolicy() throws HiveException {
-    if(!isAuthorizationModeV2()){
-      // auth v1 interface does not have this functionality
-      return;
-    }
-
-    // avoid processing the same config multiple times, check marker
-    if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
-      return;
-    }
-
-    authorizerV2.applyAuthorizationConfigPolicy(conf);
-    // set a marker that this conf has been processed.
-    conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
-
+    setupAuth();
   }
 
   public Map<String, Map<String, Table>> getTempTables() {
@@ -1408,6 +1576,77 @@ public class SessionState {
    */
   public String getNextValuesTempTableSuffix() {
     return Integer.toString(nextValueTempTableSuffix++);
+  }
+
+  /**
+   * Initialize current timestamp, other necessary query initialization.
+   */
+  public void setupQueryCurrentTimestamp() {
+    queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+
+    // Provide a facility to set current timestamp during tests
+    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      String overrideTimestampString =
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, null);
+      if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
+        queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
+      }
+    }
+  }
+
+  /**
+   * Get query current timestamp
+   * @return
+   */
+  public Timestamp getQueryCurrentTimestamp() {
+    return queryCurrentTimestamp;
+  }
+}
+
+class ResourceMaps {
+
+  private final Map<SessionState.ResourceType, Set<String>> resource_map;
+  //Given jar to add is stored as key  and all its transitive dependencies as value. Used for deleting transitive dependencies.
+  private final Map<SessionState.ResourceType, Map<String, Set<String>>> resource_path_map;
+  // stores all the downloaded resources as key and the jars which depend on these resources as values in form of a list. Used for deleting transitive dependencies.
+  private final Map<SessionState.ResourceType, Map<String, Set<String>>> reverse_resource_path_map;
+
+  public ResourceMaps() {
+    resource_map = new HashMap<SessionState.ResourceType, Set<String>>();
+    resource_path_map = new HashMap<SessionState.ResourceType, Map<String, Set<String>>>();
+    reverse_resource_path_map = new HashMap<SessionState.ResourceType, Map<String, Set<String>>>();
+
+  }
+
+  public Map<SessionState.ResourceType, Set<String>> getResourceMap() {
+    return resource_map;
+  }
+
+  public Set<String> getResourceSet(SessionState.ResourceType t) {
+    Set<String> result = resource_map.get(t);
+    if (result == null) {
+      result = new HashSet<String>();
+      resource_map.put(t, result);
+    }
+    return result;
+  }
+
+  public Map<String, Set<String>> getResourcePathMap(SessionState.ResourceType t) {
+    Map<String, Set<String>> result = resource_path_map.get(t);
+    if (result == null) {
+      result = new HashMap<String, Set<String>>();
+      resource_path_map.put(t, result);
+    }
+    return result;
+  }
+
+  public Map<String, Set<String>> getReverseResourcePathMap(SessionState.ResourceType t) {
+    Map<String, Set<String>> result = reverse_resource_path_map.get(t);
+    if (result == null) {
+      result = new HashMap<String, Set<String>>();
+      reverse_resource_path_map.put(t, result);
+    }
+    return result;
   }
 
 }

@@ -455,7 +455,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         }
       }
 
-      currWork.setOpParseCtxMap(parseCtx.getOpParseCtx());
       currWork.setLeftInputJoin(joinOp.getConf().isLeftInputJoin());
       currWork.setBaseSrc(joinOp.getConf().getBaseSrc());
       currWork.setMapAliases(joinOp.getConf().getMapAliases());
@@ -521,7 +520,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     listWorks.add(currTask.getWork());
     listTasks.add(currTask);
     // clear JoinTree and OP Parse Context
-    currWork.setOpParseCtxMap(null);
     currWork.setLeftInputJoin(false);
     currWork.setBaseSrc(null);
     currWork.setMapAliases(null);
@@ -554,10 +552,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   private boolean checkOperatorOKMapJoinConversion(Operator<? extends OperatorDesc> op) {
     if (!op.opAllowedConvertMapJoin()) {
       return false;
-    }
-
-    if (op.getChildOperators() == null) {
-      return true;
     }
 
     for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {

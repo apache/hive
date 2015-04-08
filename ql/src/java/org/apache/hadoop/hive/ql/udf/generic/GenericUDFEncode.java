@@ -35,13 +35,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 
 @Description(name = "encode",
 value = "_FUNC_(str, str) - Encode the first argument using the second argument character set",
@@ -116,10 +113,6 @@ public class GenericUDFEncode extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    StringBuilder sb = new StringBuilder();
-    sb.append("encode(");
-    sb.append(children[0]).append(",");
-    sb.append(children[1]).append(")");
-    return sb.toString();
+    return getStandardDisplayString("encode", children, ",");
   }
 }

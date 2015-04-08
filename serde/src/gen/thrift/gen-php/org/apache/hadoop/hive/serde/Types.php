@@ -82,6 +82,10 @@ $GLOBALS['serde_CONSTANTS']['DECIMAL_TYPE_NAME'] = "decimal";
 
 $GLOBALS['serde_CONSTANTS']['BINARY_TYPE_NAME'] = "binary";
 
+$GLOBALS['serde_CONSTANTS']['INTERVAL_YEAR_MONTH_TYPE_NAME'] = "interval_year_month";
+
+$GLOBALS['serde_CONSTANTS']['INTERVAL_DAY_TIME_TYPE_NAME'] = "interval_day_time";
+
 $GLOBALS['serde_CONSTANTS']['LIST_TYPE_NAME'] = "array";
 
 $GLOBALS['serde_CONSTANTS']['MAP_TYPE_NAME'] = "map";
@@ -93,6 +97,8 @@ $GLOBALS['serde_CONSTANTS']['UNION_TYPE_NAME'] = "uniontype";
 $GLOBALS['serde_CONSTANTS']['LIST_COLUMNS'] = "columns";
 
 $GLOBALS['serde_CONSTANTS']['LIST_COLUMN_TYPES'] = "columns.types";
+
+$GLOBALS['serde_CONSTANTS']['TIMESTAMP_FORMATS'] = "timestamp.formats";
 
 $GLOBALS['serde_CONSTANTS']['PrimitiveTypes'] = array(
   "void" => true,
@@ -109,6 +115,8 @@ $GLOBALS['serde_CONSTANTS']['PrimitiveTypes'] = array(
   "date" => true,
   "datetime" => true,
   "timestamp" => true,
+  "interval_year_month" => true,
+  "interval_day_time" => true,
   "decimal" => true,
   "binary" => true,
 );

@@ -49,7 +49,7 @@ import org.junit.Test;
 
 public class TestUpdateDeleteSemanticAnalyzer {
 
-  static final private Log LOG = LogFactory.getLog(TestSemanticAnalyzer.class.getName());
+  static final private Log LOG = LogFactory.getLog(TestUpdateDeleteSemanticAnalyzer.class.getName());
 
   private HiveConf conf;
   private Hive db;
@@ -297,7 +297,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     fs.create(tmp);
     fs.deleteOnExit(tmp);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false);
+        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(conf, plan, null);

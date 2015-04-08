@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.util.Iterator;
+
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.io.BytesWritable;
 
 import scala.Tuple2;
-
-import java.util.Iterator;
 
 public class HiveMapFunction extends HivePairFlatMapFunction<
   Iterator<Tuple2<BytesWritable, BytesWritable>>, HiveKey, BytesWritable> {
@@ -51,7 +51,7 @@ public class HiveMapFunction extends HivePairFlatMapFunction<
       mapRecordHandler = new SparkMapRecordHandler();
     }
 
-    HiveMapFunctionResultList result = new HiveMapFunctionResultList(jobConf, it, mapRecordHandler);
+    HiveMapFunctionResultList result = new HiveMapFunctionResultList(it, mapRecordHandler);
     mapRecordHandler.init(jobConf, result, sparkReporter);
 
     return result;

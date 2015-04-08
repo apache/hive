@@ -21,17 +21,19 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ConditionalStats.
  *
  */
-@Explain(displayName = "Stats-Aggr Operator")
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private tableSpec tableSpecs;         // source table spec -- for TableScanOperator
+  private TableSpec tableSpecs;         // source table spec -- for TableScanOperator
   private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
   private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
   private String aggKey;                // aggregation key prefix
@@ -58,7 +60,7 @@ public class StatsWork implements Serializable {
   public StatsWork() {
   }
 
-  public StatsWork(tableSpec tableSpecs) {
+  public StatsWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
 
@@ -74,7 +76,7 @@ public class StatsWork implements Serializable {
     this.statsReliable = statsReliable;
   }
 
-  public tableSpec getTableSpecs() {
+  public TableSpec getTableSpecs() {
     return tableSpecs;
   }
 
@@ -90,7 +92,7 @@ public class StatsWork implements Serializable {
     aggKey = aggK;
   }
 
-  @Explain(displayName = "Stats Aggregation Key Prefix", normalExplain = false)
+  @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getAggKey() {
     return aggKey;
   }

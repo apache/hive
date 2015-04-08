@@ -117,24 +117,19 @@ STAGE PLANS:
                     Lateral View Forward
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        SELECT * : (no compute)
                         expressions: _col0 (type: string), _col1 (type: array<string>)
-                        outputColumnNames: org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc, org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: array<string>), _col2 (type: string)
-                            outputColumnNames: _col0, _col1, _col2
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
                         expressions: _col1 (type: array<string>)
                         outputColumnNames: _col0
@@ -145,17 +140,13 @@ STAGE PLANS:
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col0 (type: string), _col1 (type: array<string>), _col2 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
                               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -179,24 +170,19 @@ STAGE PLANS:
                     Lateral View Forward
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        SELECT * : (no compute)
                         expressions: _col0 (type: string), _col1 (type: array<string>)
-                        outputColumnNames: org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc, org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: array<string>), _col2 (type: string)
-                            outputColumnNames: _col0, _col1, _col2
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
                         expressions: _col1 (type: array<string>)
                         outputColumnNames: _col0
@@ -207,17 +193,13 @@ STAGE PLANS:
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col0 (type: string), _col1 (type: array<string>), _col2 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
                               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
 

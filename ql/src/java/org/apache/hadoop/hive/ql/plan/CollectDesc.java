@@ -17,13 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * CollectDesc.
  *
  */
-@Explain(displayName = "Collect")
+@Explain(displayName = "Collect", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CollectDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   Integer bufferSize;

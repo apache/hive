@@ -20,25 +20,25 @@ set mapred.input.dir.recursive=true;
 -- SORT_QUERY_RESULTS
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, values bigint) stored as textfile;
+create table outputTbl1(key string, `values` bigint) stored as textfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
 explain
 insert overwrite table outputTbl1
-SELECT a.key, a.values
+SELECT a.key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1
-SELECT a.key, a.values
+SELECT a.key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1;
@@ -48,19 +48,19 @@ select * from outputTbl1;
 -- filter should be fine
 explain
 insert overwrite table outputTbl1
-SELECT a.key, a.values
+SELECT a.key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a where a.key = 7;
 
 insert overwrite table outputTbl1
-SELECT a.key, a.values
+SELECT a.key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a where a.key = 7;
 
 select * from outputTbl1;
@@ -68,26 +68,26 @@ select * from outputTbl1;
 -- filters and sub-queries should be fine
 explain
 insert overwrite table outputTbl1
-select key, values from
+select key, `values` from
 (
-SELECT a.key + a.key as key, a.values
+SELECT a.key + a.key as key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 ) b where b.key >= 7;
 
 insert overwrite table outputTbl1
-select key, values from
+select key, `values` from
 (
-SELECT a.key + a.key as key, a.values
+SELECT a.key + a.key as key, a.`values`
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 ) b where b.key >= 7;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, values;
+select * from outputTbl1 order by key, `values`;

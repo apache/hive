@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -65,7 +64,6 @@ import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.hooks.Redactor;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -152,6 +150,9 @@ public class Driver implements CommandProcessor {
   private boolean destroyed;
 
   private String userName;
+
+  // HS2 operation handle guid string
+  private String operationId;
 
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -381,6 +382,8 @@ public class Driver implements CommandProcessor {
     String queryId = QueryPlan.makeQueryId();
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
+    SessionState.get().setupQueryCurrentTimestamp();
+
     try {
       command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);
@@ -442,15 +445,13 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getCommandType());
+      // Command should be redacted before passing it to the QueryPlan in order
+      // to avoid returning sensitive data
+      String queryStr = HookUtils.redactLogString(conf, command);
 
-      String queryStr = plan.getQueryStr();
-      List<Redactor> queryRedactors = getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
-      for (Redactor redactor : queryRedactors) {
-        redactor.setConf(conf);
-        queryStr = redactor.redactQuery(queryStr);
-      }
+      plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
+          SessionState.get().getCommandType());
+
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
@@ -489,7 +490,6 @@ public class Driver implements CommandProcessor {
               + explainOutput);
         }
       }
-
       return 0;
     } catch (Exception e) {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
@@ -512,7 +512,16 @@ public class Driver implements CommandProcessor {
       return error.getErrorCode();
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE);
+      dumpMetaCallTimingWithoutEx("compilation");
       restoreSession(queryState);
+    }
+  }
+
+  private void dumpMetaCallTimingWithoutEx(String phase) {
+    try {
+      Hive.get().dumpAndClearMetaCallTiming(phase);
+    } catch (HiveException he) {
+      LOG.warn("Caught exception attempting to write metadata call information " + he, he);
     }
   }
 
@@ -975,6 +984,7 @@ public class Driver implements CommandProcessor {
         if (txnId == SessionState.NO_CURRENT_TXN) {
           txnId = txnMgr.openTxn(userFromUGI);
           ss.setCurrentTxn(txnId);
+          LOG.debug("Setting current transaction to " + txnId);
         }
         // Set the transaction id in all of the acid file sinks
         if (acidSinks != null) {
@@ -1185,7 +1195,6 @@ public class Driver implements CommandProcessor {
         return createProcessorResponse(ret);
       }
     }
-
     ret = execute();
     if (ret != 0) {
       //if needRequireLock is false, the release here will do nothing because there is no lock
@@ -1310,7 +1319,6 @@ public class Driver implements CommandProcessor {
   public int execute() throws CommandNeedRetryException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
-
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
@@ -1321,6 +1329,9 @@ public class Driver implements CommandProcessor {
 
     try {
       LOG.info("Starting command: " + queryStr);
+      // compile and execute can get called from different threads in case of HS2
+      // so clear timing in this thread's Hive object before proceeding.
+      Hive.get().clearMetaCallTiming();
 
       plan.setStarted();
 
@@ -1332,7 +1343,8 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       SessionState ss = SessionState.get();
-      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
+      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(),
+          ss.getUserIpAddress(), operationId);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
@@ -1550,6 +1562,7 @@ public class Driver implements CommandProcessor {
       if (noName) {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
+      dumpMetaCallTimingWithoutEx("execution");
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
@@ -1629,8 +1642,7 @@ public class Driver implements CommandProcessor {
 
     cxt.launching(tskRun);
     // Launch Task
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL)
-        && (tsk.isMapRedTask() || (tsk instanceof MoveTask))) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.isMapRedTask()) {
       // Launch it in the parallel mode, as a separate thread only for MR tasks
       if (LOG.isInfoEnabled()){
         LOG.info("Starting task [" + tsk + "] in parallel");
@@ -1786,6 +1798,14 @@ public class Driver implements CommandProcessor {
 
   public String getErrorMsg() {
     return errorMessage;
+  }
+
+  /**
+   * Set the HS2 operation handle's guid string
+   * @param opId base64 encoded guid string
+   */
+  public void setOperationId(String opId) {
+    this.operationId = opId;
   }
 
 }

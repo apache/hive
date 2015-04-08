@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -114,7 +113,7 @@ public class TestFileSinkOperator {
         "testFileSinkOperator");
     tmpdir.mkdir();
     tmpdir.deleteOnExit();
-    txnList = new ValidTxnListImpl(new long[]{}, 2);
+    txnList = new ValidReadTxnList(new long[]{}, 2);
   }
 
   @Test
@@ -320,7 +319,7 @@ public class TestFileSinkOperator {
   }
 
   private void processRows(FileSinkOperator op) throws HiveException {
-    for (TFSORow r : rows) op.processOp(r, 0);
+    for (TFSORow r : rows) op.process(r, 0);
     op.jobCloseOp(jc, true);
     op.close(false);
   }

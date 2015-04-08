@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -64,7 +65,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
-  private static final Log                 LOG = LogFactory.getLog(SqlFunctionConverter.class);
+  private static final Log LOG = LogFactory.getLog(SqlFunctionConverter.class);
 
   static final Map<String, SqlOperator>    hiveToCalcite;
   static final Map<SqlOperator, HiveToken> calciteToHiveToken;
@@ -79,7 +80,7 @@ public class SqlFunctionConverter {
 
   public static SqlOperator getCalciteOperator(String funcTextName, GenericUDF hiveUDF,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType retType)
-      throws CalciteSemanticException {
+      throws SemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
       return SqlStdOperatorTable.UNARY_MINUS;
@@ -182,7 +183,8 @@ public class SqlFunctionConverter {
     } catch (UDFArgumentException e) {
       throw new RuntimeException(e);
     }
-    return new FunctionInfo(fi.isNative(), fi.getDisplayName(), (GenericUDF) udf);
+    return new FunctionInfo(
+        fi.isNative(), fi.getDisplayName(), (GenericUDF) udf, fi.getResources());
   }
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func
@@ -381,7 +383,7 @@ public class SqlFunctionConverter {
       // We can create Calcite IS_DISTINCT_FROM operator for this. But since our
       // join reordering algo cant handle this anyway there is no advantage of
       // this.So, bail out for now.
-      throw new CalciteSemanticException("<=> is not yet supported for cbo.");
+      throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
     }
     SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
     if (calciteOp == null) {

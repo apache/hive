@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -169,7 +171,9 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   private transient long[] nextCntrs;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
+
     // A MuxOperator should only have a single child
     if (childOperatorsArray.length != 1) {
       throw new HiveException(
@@ -204,7 +208,7 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       cntrs[i] = 0;
       nextCntrs[i] = 1;
     }
-    initializeChildren(hconf);
+    return result;
   }
 
   /**
@@ -214,11 +218,15 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   @Override
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (isLogInfoEnabled) {
+      LOG.info("Operator " + id + " " + getName() + " initialized");
+    }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    LOG.info("Initializing children of " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing children of " + id + " " + getName());
+    }
     childOperatorsArray[0].initialize(hconf, outputObjectInspectors);
     if (reporter != null) {
       childOperatorsArray[0].setReporter(reporter);
@@ -226,7 +234,7 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (isLogInfoEnabled) {
       cntrs[tag]++;
       if (cntrs[tag] == nextCntrs[tag]) {
@@ -243,11 +251,11 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       } else {
         if (forward[tag]) {
           // No need to evaluate, just forward it.
-          child.processOp(row, tag);
+          child.process(row, tag);
         } else {
           // Call the corresponding handler to evaluate this row and
           // forward the result
-          child.processOp(handlers[tag].process(row), handlers[tag].getTag());
+          child.process(handlers[tag].process(row), handlers[tag].getTag());
         }
       }
     }
@@ -265,7 +273,7 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
     // we cannot pass new tag to this method which is used to get
     // the old tag from the mapping of newTagToOldTag, we bypass
     // this method in MuxOperator and directly call process on children
-    // in processOp() method..
+    // in process() method..
   }
 
   @Override
@@ -302,8 +310,10 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    for (int i = 0; i < numParents; i++) {
-      LOG.info(id + ", tag=" + i + ", forwarded " + cntrs[i] + " rows");
+    if (isLogInfoEnabled) {
+      for (int i = 0; i < numParents; i++) {
+        LOG.info(id + ", tag=" + i + ", forwarded " + cntrs[i] + " rows");
+      }
     }
   }
 

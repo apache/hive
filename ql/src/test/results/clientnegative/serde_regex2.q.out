@@ -8,7 +8,7 @@ PREHOOK: query: -- Mismatch between the number of matching groups and columns, t
  CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,
@@ -27,7 +27,7 @@ POSTHOOK: query: -- Mismatch between the number of matching groups and columns, 
  CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
-  user STRING,
+  `user` STRING,
   time STRING,
   request STRING,
   status STRING,

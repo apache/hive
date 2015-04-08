@@ -20,22 +20,27 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+
 
 /**
  * Client-side stats aggregator task.
  */
-@Explain(displayName = "Stats-Aggr Operator")
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsNoJobWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private tableSpec tableSpecs;
+  private TableSpec tableSpecs;
   private boolean statsReliable;
+  private PrunedPartitionList prunedPartitionList;
 
   public StatsNoJobWork() {
   }
 
-  public StatsNoJobWork(tableSpec tableSpecs) {
+  public StatsNoJobWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
 
@@ -43,7 +48,7 @@ public class StatsNoJobWork implements Serializable {
     this.statsReliable = statsReliable;
   }
 
-  public tableSpec getTableSpecs() {
+  public TableSpec getTableSpecs() {
     return tableSpecs;
   }
 
@@ -53,5 +58,13 @@ public class StatsNoJobWork implements Serializable {
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
+  }
+
+  public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
+    this.prunedPartitionList = prunedPartitionList;
+  }
+
+  public PrunedPartitionList getPrunedPartitionList() {
+    return prunedPartitionList;
   }
 }

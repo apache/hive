@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
@@ -39,7 +42,6 @@ import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
@@ -66,16 +68,13 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * OperatorFactory.
  *
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class OperatorFactory {
+  protected static transient final Log LOG = LogFactory.getLog(OperatorFactory.class);
   private static final List<OpTuple> opvec;
   private static final List<OpTuple> vectorOpvec;
 
@@ -89,7 +88,6 @@ public final class OperatorFactory {
     opvec.add(new OpTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
     opvec.add(new OpTuple<PTFDesc>(PTFDesc.class, PTFOperator.class));
     opvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class, ReduceSinkOperator.class));
-    opvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
     opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
     opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
     opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
@@ -143,7 +141,6 @@ public final class OperatorFactory {
     vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
     vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
     vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
-    vectorOpvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, VectorExtractOperator.class));
   }
 
   private static final class OpTuple<T extends OperatorDesc> {
@@ -233,9 +230,6 @@ public final class OperatorFactory {
     // Add this parent to the children
     for (Operator<? extends OperatorDesc> op : oplist) {
       List<Operator<? extends OperatorDesc>> parents = op.getParentOperators();
-      if (parents == null) {
-        parents = new ArrayList<Operator<? extends OperatorDesc>>();
-      }
       parents.add(ret);
       op.setParentOperators(parents);
     }
@@ -265,9 +259,6 @@ public final class OperatorFactory {
     // Add the new operator as child of each of the passed in operators
     for (Operator op : oplist) {
       List<Operator> children = op.getChildOperators();
-      if (children == null) {
-        children = new ArrayList<Operator>();
-      }
       children.add(ret);
       op.setChildOperators(children);
     }
@@ -292,17 +283,13 @@ public final class OperatorFactory {
     Operator<T> ret = get((Class<T>) conf.getClass());
     ret.setConf(conf);
     if (oplist.size() == 0) {
-      return (ret);
+      return ret;
     }
 
     // Add the new operator as child of each of the passed in operators
     for (Operator op : oplist) {
       List<Operator> children = op.getChildOperators();
-      if (children == null) {
-        children = new ArrayList<Operator>();
-      }
       children.add(ret);
-      op.setChildOperators(children);
     }
 
     // add parents for the newly created operator
@@ -314,7 +301,7 @@ public final class OperatorFactory {
 
     ret.setParentOperators(parent);
 
-    return (ret);
+    return ret;
   }
 
   /**
@@ -324,7 +311,7 @@ public final class OperatorFactory {
       RowSchema rwsch, Operator... oplist) {
     Operator<T> ret = getAndMakeChild(conf, oplist);
     ret.setSchema(rwsch);
-    return (ret);
+    return ret;
   }
 
   /**

@@ -50,19 +50,19 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * 1. Bucketing columns.
  * 2. Table
  * 3. Pruned partitions
- * 
+ *
  * Bucketing columns refer to not to the bucketing columns from the table object but instead
  * to the dynamic 'bucketing' done by operators such as reduce sinks and group-bys.
  * All the operators have a translation from their input names to the output names corresponding
  * to the bucketing column. The colExprMap that is a part of every operator is used in this
  * transformation.
- * 
+ *
  * The table object is used for the base-case in map-reduce when deciding to perform a bucket
  * map join. This object is used in the BucketMapJoinProc to find if number of files for the
  * table correspond to the number of buckets specified in the meta data.
- * 
+ *
  * The pruned partition information has the same purpose as the table object at the moment.
- * 
+ *
  * The traits of sorted-ness etc. can be populated as well for future optimizations to make use of.
  */
 
@@ -82,7 +82,7 @@ public class OpTraitsRulesProcFactory {
   }
 
   /*
-   * Reduce sink operator is the de-facto operator 
+   * Reduce sink operator is the de-facto operator
    * for determining keyCols (emit keys of a map phase)
    */
   public static class ReduceSinkRule implements NodeProcessor {
@@ -106,7 +106,7 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(bucketCols);
       int numBuckets = -1;
-      OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getOpTraits();
+      OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
       }
@@ -117,13 +117,12 @@ public class OpTraitsRulesProcFactory {
   }
 
   /*
-   * Table scan has the table object and pruned partitions that has information such as
-   * bucketing, sorting, etc. that is used later for optimization.
+   * Table scan has the table object and pruned partitions that has information
+   * such as bucketing, sorting, etc. that is used later for optimization.
    */
   public static class TableScanRule implements NodeProcessor {
 
-    public boolean checkBucketedTable(Table tbl, 
-        ParseContext pGraphContext,
+    public boolean checkBucketedTable(Table tbl, ParseContext pGraphContext,
         PrunedPartitionList prunedParts) throws SemanticException {
 
       if (tbl.isPartitioned()) {
@@ -132,8 +131,10 @@ public class OpTraitsRulesProcFactory {
         if (!partitions.isEmpty()) {
           for (Partition p : partitions) {
             List<String> fileNames =
-                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(), pGraphContext);
-            // The number of files for the table should be same as number of buckets.
+                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(),
+                    pGraphContext);
+            // The number of files for the table should be same as number of
+            // buckets.
             int bucketCount = p.getBucketCount();
 
             if (fileNames.size() != 0 && fileNames.size() != bucketCount) {
@@ -144,7 +145,8 @@ public class OpTraitsRulesProcFactory {
       } else {
 
         List<String> fileNames =
-            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(), pGraphContext);
+            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(),
+                pGraphContext);
         Integer num = new Integer(tbl.getNumBuckets());
 
         // The number of files for the table should be same as number of buckets.
@@ -183,6 +185,7 @@ public class OpTraitsRulesProcFactory {
         }
         sortedColsList.add(sortCols);
       }
+      // num reduce sinks hardcoded to 0 because TS has no parents
       OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList);
       ts.setOpTraits(opTraits);
       return null;
@@ -217,8 +220,8 @@ public class OpTraitsRulesProcFactory {
 
   public static class SelectRule implements NodeProcessor {
 
-    public List<List<String>> getConvertedColNames(List<List<String>> parentColNames,
-        SelectOperator selOp) {
+    public List<List<String>> getConvertedColNames(
+        List<List<String>> parentColNames, SelectOperator selOp) {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       if (selOp.getColumnExprMap() != null) {
         if (parentColNames != null) {
@@ -244,7 +247,7 @@ public class OpTraitsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      SelectOperator selOp = (SelectOperator)nd;
+      SelectOperator selOp = (SelectOperator) nd;
       List<List<String>> parentBucketColNames =
           selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
 
@@ -254,16 +257,17 @@ public class OpTraitsRulesProcFactory {
         if (parentBucketColNames != null) {
           listBucketCols = getConvertedColNames(parentBucketColNames, selOp);
         }
-        List<List<String>> parentSortColNames = selOp.getParentOperators().get(0).getOpTraits()
-            .getSortCols();
+        List<List<String>> parentSortColNames =
+            selOp.getParentOperators().get(0).getOpTraits().getSortCols();
         if (parentSortColNames != null) {
           listSortCols = getConvertedColNames(parentSortColNames, selOp);
         }
       }
 
       int numBuckets = -1;
-      if (selOp.getParentOperators().get(0).getOpTraits() != null) {
-        numBuckets = selOp.getParentOperators().get(0).getOpTraits().getNumBuckets();
+      OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
+      if (parentOpTraits != null) {
+        numBuckets = parentOpTraits.getNumBuckets();
       }
       OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols);
       selOp.setOpTraits(opTraits);
@@ -276,22 +280,24 @@ public class OpTraitsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      JoinOperator joinOp = (JoinOperator)nd;
+      JoinOperator joinOp = (JoinOperator) nd;
       List<List<String>> bucketColsList = new ArrayList<List<String>>();
       List<List<String>> sortColsList = new ArrayList<List<String>>();
       byte pos = 0;
+      int numReduceSinks = 0; // will be set to the larger of the parents
       for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
         if (!(parentOp instanceof ReduceSinkOperator)) {
           // can be mux operator
           break;
         }
-        ReduceSinkOperator rsOp = (ReduceSinkOperator)parentOp;
+        ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
         if (rsOp.getOpTraits() == null) {
           ReduceSinkRule rsRule = new ReduceSinkRule();
           rsRule.process(rsOp, stack, procCtx, nodeOutputs);
         }
-        bucketColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getBucketColNames(), pos));
-        sortColsList.add(getOutputColNames(joinOp, rsOp.getOpTraits().getSortCols(), pos));
+        OpTraits parentOpTraits = rsOp.getOpTraits();
+        bucketColsList.add(getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos));
+        sortColsList.add(getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos));
         pos++;
       }
 
@@ -311,7 +317,7 @@ public class OpTraitsRulesProcFactory {
         for (String colName : colNames) {
           for (ExprNodeDesc exprNode : joinOp.getConf().getExprs().get(pos)) {
             if (exprNode instanceof ExprNodeColumnDesc) {
-              if(((ExprNodeColumnDesc)(exprNode)).getColumn().equals(colName)) {
+              if (((ExprNodeColumnDesc) (exprNode)).getColumn().equals(colName)) {
                 for (Entry<String, ExprNodeDesc> entry : joinOp.getColumnExprMap().entrySet()) {
                   if (entry.getValue().isSame(exprNode)) {
                     bucketColNames.add(entry.getKey());
@@ -338,20 +344,20 @@ public class OpTraitsRulesProcFactory {
   }
 
   /*
-   *  When we have operators that have multiple parents, it is not
-   *  clear which parent's traits we need to propagate forward.
+   * When we have operators that have multiple parents, it is not clear which
+   * parent's traits we need to propagate forward.
    */
   public static class MultiParentRule implements NodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      OpTraits opTraits = new OpTraits(null, -1, null);
       @SuppressWarnings("unchecked")
-      Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>)nd;
+      Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
+      OpTraits opTraits = new OpTraits(null, -1, null);
       operator.setOpTraits(opTraits);
       return null;
-    } 
+    }
   }
 
   public static NodeProcessor getTableScanRule() {
@@ -361,7 +367,7 @@ public class OpTraitsRulesProcFactory {
   public static NodeProcessor getReduceSinkRule() {
     return new ReduceSinkRule();
   }
-  
+
   public static NodeProcessor getSelectRule() {
     return new SelectRule();
   }

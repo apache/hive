@@ -55,8 +55,8 @@ public class SimpleFetchAggregation implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    if (pctx.getFetchTask() != null || !pctx.getQB().getIsQuery() ||
-        pctx.getQB().isAnalyzeRewrite() || pctx.getQB().isCTAS() ||
+    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().isQuery() ||
+        pctx.getQueryProperties().isAnalyzeRewrite() || pctx.getQueryProperties().isCTAS() ||
         pctx.getLoadFileWork().size() > 1 || !pctx.getLoadTableWork().isEmpty()) {
       return pctx;
     }
@@ -67,6 +67,7 @@ public class SimpleFetchAggregation implements Transform {
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", GBY + RS + GBY + SEL + FS), new SingleGBYProcessor(pctx));
+    opRules.put(new RuleRegExp("R2", GBY + RS + GBY + FS), new SingleGBYProcessor(pctx));
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
@@ -88,12 +89,13 @@ public class SimpleFetchAggregation implements Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FileSinkOperator FS = (FileSinkOperator) nd;
-      GroupByOperator cGBY = (GroupByOperator) stack.get(stack.size() - 3);
-      ReduceSinkOperator RS = (ReduceSinkOperator) stack.get(stack.size() - 4);
+      int shift = stack.get(stack.size() - 2) instanceof SelectOperator ? 0 : 1;
+      GroupByOperator cGBY = (GroupByOperator) stack.get(stack.size() - 3 + shift);
+      ReduceSinkOperator RS = (ReduceSinkOperator) stack.get(stack.size() - 4 + shift);
       if (RS.getConf().getNumReducers() != 1 || !RS.getConf().getKeyCols().isEmpty()) {
         return null;
       }
-      GroupByOperator pGBY = (GroupByOperator) stack.get(stack.size() - 5);
+      GroupByOperator pGBY = (GroupByOperator) stack.get(stack.size() - 5 + shift);
 
       Path fileName = FS.getConf().getFinalDirName();
       TableDesc tsDesc = createIntermediateFS(pGBY, fileName);

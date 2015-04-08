@@ -27,9 +27,20 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Explain {
+  public enum Level {
+    USER, DEFAULT, EXTENDED;
+    public boolean in(Level[] levels) {
+      for (Level level : levels) {
+        if (level.equals(this)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  };
   String displayName() default "";
 
-  boolean normalExplain() default true;
+  Level[] explainLevels() default { Level.DEFAULT, Level.EXTENDED };
 
   boolean displayOnlyOnTrue() default false;
 

@@ -17,19 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -203,7 +204,7 @@ public class TestWorker extends CompactorTest {
     List<Order> sortCols = new ArrayList<Order>(1);
     sortCols.add(new Order("b", 1));
 
-    Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols);
+    Table t = newTable("default", "st", false, new HashMap<String, String>(), sortCols, false);
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
@@ -228,7 +229,7 @@ public class TestWorker extends CompactorTest {
     List<Order> sortCols = new ArrayList<Order>(1);
     sortCols.add(new Order("b", 1));
 
-    Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols);
+    Table t = newTable("default", "sp", true, new HashMap<String, String>(), sortCols, false);
     Partition p = newPartition(t, "today", sortCols);
 
     addBaseFile(t, p, 20L, 20);
@@ -274,7 +275,6 @@ public class TestWorker extends CompactorTest {
     // There should still now be 5 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    for (int i = 0; i < stat.length; i++) System.out.println("HERE: " + stat[i].getPath().toString());
     Assert.assertEquals(4, stat.length);
 
     // Find the new delta file and make sure it has the right contents
@@ -293,6 +293,78 @@ public class TestWorker extends CompactorTest {
       }
     }
     Assert.assertTrue(sawNewDelta);
+  }
+
+  @Test
+  public void minorWithOpenInMiddle() throws Exception {
+    LOG.debug("Starting minorWithOpenInMiddle");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 25L, 3);
+    addLengthFile(t, null, 23L, 25L, 3);
+    addDeltaFile(t, null, 26L, 27L, 2);
+    burnThroughTransactions(27, new HashSet<Long>(Arrays.asList(23L)), null);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    // There should still now be 5 directories in the location
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
+    Assert.assertEquals(5, stat.length);
+
+    // Find the new delta file and make sure it has the right contents
+    Arrays.sort(stat);
+    Assert.assertEquals("base_20", stat[0].getPath().getName());
+    Assert.assertEquals("delta_0000021_0000022", stat[1].getPath().getName());
+    Assert.assertEquals("delta_21_22", stat[2].getPath().getName());
+    Assert.assertEquals("delta_23_25", stat[3].getPath().getName());
+    Assert.assertEquals("delta_26_27", stat[4].getPath().getName());
+  }
+
+  @Test
+  public void minorWithAborted() throws Exception {
+    LOG.debug("Starting minorWithAborted");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 25L, 3);
+    addLengthFile(t, null, 23L, 25L, 3);
+    addDeltaFile(t, null, 26L, 27L, 2);
+    burnThroughTransactions(27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    // There should still now be 5 directories in the location
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
+    Assert.assertEquals(5, stat.length);
+
+    // Find the new delta file and make sure it has the right contents
+    Arrays.sort(stat);
+    Assert.assertEquals("base_20", stat[0].getPath().getName());
+    Assert.assertEquals("delta_0000021_0000027", stat[1].getPath().getName());
+    Assert.assertEquals("delta_21_22", stat[2].getPath().getName());
+    Assert.assertEquals("delta_23_25", stat[3].getPath().getName());
+    Assert.assertEquals("delta_26_27", stat[4].getPath().getName());
   }
 
   @Test
@@ -481,7 +553,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 1L, 2L, 2);
     addDeltaFile(t, null, 3L, 4L, 2);
 
-    burnThroughTransactions(5);
+    burnThroughTransactions(4);
 
     CompactionRequest rqst = new CompactionRequest("default", "matnb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -603,6 +675,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void majorPartitionWithBaseMissingBuckets() throws Exception {
+    LOG.debug("Starting majorPartitionWithBaseMissingBuckets");
     Table t = newTable("default", "mapwbmb", true);
     Partition p = newPartition(t, "today");
 
@@ -611,7 +684,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2, 2, false);
     addDeltaFile(t, p, 23L, 26L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions(27);
 
     CompactionRequest rqst = new CompactionRequest("default", "mapwbmb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -653,5 +726,77 @@ public class TestWorker extends CompactorTest {
       }
     }
     Assert.assertTrue(sawNewBase);
+  }
+
+  @Test
+  public void majorWithOpenInMiddle() throws Exception {
+    LOG.debug("Starting majorWithOpenInMiddle");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 25L, 3);
+    addLengthFile(t, null, 23L, 25L, 3);
+    addDeltaFile(t, null, 26L, 27L, 2);
+    burnThroughTransactions(27, new HashSet<Long>(Arrays.asList(23L)), null);
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    // There should still now be 5 directories in the location
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
+    Assert.assertEquals(5, stat.length);
+
+    // Find the new delta file and make sure it has the right contents
+    Arrays.sort(stat);
+    Assert.assertEquals("base_0000022", stat[0].getPath().getName());
+    Assert.assertEquals("base_20", stat[1].getPath().getName());
+    Assert.assertEquals("delta_21_22", stat[2].getPath().getName());
+    Assert.assertEquals("delta_23_25", stat[3].getPath().getName());
+    Assert.assertEquals("delta_26_27", stat[4].getPath().getName());
+  }
+
+  @Test
+  public void majorWithAborted() throws Exception {
+    LOG.debug("Starting majorWithAborted");
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 25L, 3);
+    addLengthFile(t, null, 23L, 25L, 3);
+    addDeltaFile(t, null, 26L, 27L, 2);
+    burnThroughTransactions(27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
+
+    CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+
+    // There should still now be 5 directories in the location
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
+    Assert.assertEquals(5, stat.length);
+
+    // Find the new delta file and make sure it has the right contents
+    Arrays.sort(stat);
+    Assert.assertEquals("base_0000027", stat[0].getPath().getName());
+    Assert.assertEquals("base_20", stat[1].getPath().getName());
+    Assert.assertEquals("delta_21_22", stat[2].getPath().getName());
+    Assert.assertEquals("delta_23_25", stat[3].getPath().getName());
+    Assert.assertEquals("delta_26_27", stat[4].getPath().getName());
   }
 }

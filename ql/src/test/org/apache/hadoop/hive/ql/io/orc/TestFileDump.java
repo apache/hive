@@ -21,6 +21,20 @@ package org.apache.hadoop.hive.ql.io.orc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.PrintStream;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,21 +47,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.PrintStream;
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 public class TestFileDump {
 
@@ -203,7 +202,7 @@ public class TestFileDump {
         10000L,
         4.0f,
         20.0,
-        HiveDecimal.create(new BigDecimal(4.2222)),
+        HiveDecimal.create("4.2222"),
         new Timestamp(1416967764000L),
         new Date(1416967764000L),
         "string",
@@ -222,7 +221,7 @@ public class TestFileDump {
         20000L,
         8.0f,
         40.0,
-        HiveDecimal.create(new BigDecimal(2.2222)),
+        HiveDecimal.create("2.2222"),
         new Timestamp(1416967364000L),
         new Date(1411967764000L),
         "abcd",
@@ -234,7 +233,6 @@ public class TestFileDump {
 
     writer.close();
     PrintStream origOut = System.out;
-    String outputFilename = "orc-file-dump.out";
     ByteArrayOutputStream myOut = new ByteArrayOutputStream();
 
     // replace stdout and run command
@@ -245,9 +243,8 @@ public class TestFileDump {
 
     String[] lines = myOut.toString().split("\n");
     // Don't be fooled by the big space in the middle, this line is quite long
-    assertEquals("{\"b\":true,\"bt\":10,\"s\":100,\"i\":1000,\"l\":10000,\"f\":4,\"d\":20,\"de\":\"4.222199999999999953\",\"t\":\"2014-11-25 18:09:24\",\"dt\":\"2014-11-25\",\"str\":\"string\",\"c\":\"hello                                                                                                                                                                                                                                                          \",\"vc\":\"hello\",\"m\":[{\"_key\":\"k1\",\"_value\":\"v1\"}],\"a\":[100,200],\"st\":{\"i\":10,\"s\":\"foo\"}}", lines[0]);
-    assertEquals("{\"b\":false,\"bt\":20,\"s\":200,\"i\":2000,\"l\":20000,\"f\":8,\"d\":40,\"de\":\"2.222199999999999953\",\"t\":\"2014-11-25 18:02:44\",\"dt\":\"2014-09-28\",\"str\":\"abcd\",\"c\":\"world                                                                                                                                                                                                                                                          \",\"vc\":\"world\",\"m\":[{\"_key\":\"k3\",\"_value\":\"v3\"}],\"a\":[200,300],\"st\":{\"i\":20,\"s\":\"bar\"}}", lines[1]);
-
+    assertEquals("{\"b\":true,\"bt\":10,\"s\":100,\"i\":1000,\"l\":10000,\"f\":4,\"d\":20,\"de\":\"4.2222\",\"t\":\"2014-11-25 18:09:24\",\"dt\":\"2014-11-25\",\"str\":\"string\",\"c\":\"hello                                                                                                                                                                                                                                                          \",\"vc\":\"hello\",\"m\":[{\"_key\":\"k1\",\"_value\":\"v1\"}],\"a\":[100,200],\"st\":{\"i\":10,\"s\":\"foo\"}}", lines[0]);
+    assertEquals("{\"b\":false,\"bt\":20,\"s\":200,\"i\":2000,\"l\":20000,\"f\":8,\"d\":40,\"de\":\"2.2222\",\"t\":\"2014-11-25 18:02:44\",\"dt\":\"2014-09-28\",\"str\":\"abcd\",\"c\":\"world                                                                                                                                                                                                                                                          \",\"vc\":\"world\",\"m\":[{\"_key\":\"k3\",\"_value\":\"v3\"}],\"a\":[200,300],\"st\":{\"i\":20,\"s\":\"bar\"}}", lines[1]);
   }
 
   // Test that if the fraction of rows that have distinct strings is greater than the configured
@@ -300,6 +297,103 @@ public class TestFileDump {
     FileDump.main(new String[]{testFilePath.toString(), "--rowindex=1,2,3"});
     System.out.flush();
     System.setOut(origOut);
+
+    checkOutput(outputFilename, workDir + File.separator + outputFilename);
+  }
+
+  @Test
+  public void testBloomFilter() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    conf.set(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname, "COMPRESSION");
+    OrcFile.WriterOptions options = OrcFile.writerOptions(conf)
+        .fileSystem(fs)
+        .inspector(inspector)
+        .stripeSize(100000)
+        .compress(CompressionKind.ZLIB)
+        .bufferSize(10000)
+        .rowIndexStride(1000)
+        .bloomFilterColumns("s");
+    Writer writer = OrcFile.createWriter(testFilePath, options);
+    Random r1 = new Random(1);
+    String[] words = new String[]{"It", "was", "the", "best", "of", "times,",
+        "it", "was", "the", "worst", "of", "times,", "it", "was", "the", "age",
+        "of", "wisdom,", "it", "was", "the", "age", "of", "foolishness,", "it",
+        "was", "the", "epoch", "of", "belief,", "it", "was", "the", "epoch",
+        "of", "incredulity,", "it", "was", "the", "season", "of", "Light,",
+        "it", "was", "the", "season", "of", "Darkness,", "it", "was", "the",
+        "spring", "of", "hope,", "it", "was", "the", "winter", "of", "despair,",
+        "we", "had", "everything", "before", "us,", "we", "had", "nothing",
+        "before", "us,", "we", "were", "all", "going", "direct", "to",
+        "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
+        "way"};
+    for(int i=0; i < 21000; ++i) {
+      writer.addRow(new MyRecord(r1.nextInt(), r1.nextLong(),
+          words[r1.nextInt(words.length)]));
+    }
+    writer.close();
+    PrintStream origOut = System.out;
+    String outputFilename = "orc-file-dump-bloomfilter.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + File.separator + outputFilename);
+
+    // replace stdout and run command
+    System.setOut(new PrintStream(myOut));
+    FileDump.main(new String[]{testFilePath.toString(), "--rowindex=3"});
+    System.out.flush();
+    System.setOut(origOut);
+
+
+    checkOutput(outputFilename, workDir + File.separator + outputFilename);
+  }
+
+  @Test
+  public void testBloomFilter2() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    conf.set(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname, "COMPRESSION");
+    OrcFile.WriterOptions options = OrcFile.writerOptions(conf)
+        .fileSystem(fs)
+        .inspector(inspector)
+        .stripeSize(100000)
+        .compress(CompressionKind.ZLIB)
+        .bufferSize(10000)
+        .rowIndexStride(1000)
+        .bloomFilterColumns("l")
+        .bloomFilterFpp(0.01);
+    Writer writer = OrcFile.createWriter(testFilePath, options);
+    Random r1 = new Random(1);
+    String[] words = new String[]{"It", "was", "the", "best", "of", "times,",
+        "it", "was", "the", "worst", "of", "times,", "it", "was", "the", "age",
+        "of", "wisdom,", "it", "was", "the", "age", "of", "foolishness,", "it",
+        "was", "the", "epoch", "of", "belief,", "it", "was", "the", "epoch",
+        "of", "incredulity,", "it", "was", "the", "season", "of", "Light,",
+        "it", "was", "the", "season", "of", "Darkness,", "it", "was", "the",
+        "spring", "of", "hope,", "it", "was", "the", "winter", "of", "despair,",
+        "we", "had", "everything", "before", "us,", "we", "had", "nothing",
+        "before", "us,", "we", "were", "all", "going", "direct", "to",
+        "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
+        "way"};
+    for(int i=0; i < 21000; ++i) {
+      writer.addRow(new MyRecord(r1.nextInt(), r1.nextLong(),
+          words[r1.nextInt(words.length)]));
+    }
+    writer.close();
+    PrintStream origOut = System.out;
+    String outputFilename = "orc-file-dump-bloomfilter2.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + File.separator + outputFilename);
+
+    // replace stdout and run command
+    System.setOut(new PrintStream(myOut));
+    FileDump.main(new String[]{testFilePath.toString(), "--rowindex=2"});
+    System.out.flush();
+    System.setOut(origOut);
+
 
     checkOutput(outputFilename, workDir + File.separator + outputFilename);
   }

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * All member variables should have a setters and getters of the form get<member
@@ -26,7 +28,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
  * time.
  *
  */
-@Explain(displayName = "UDTF Operator")
+@Explain(displayName = "UDTF Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UDTFDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -49,7 +51,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
     this.genericUDTF = genericUDTF;
   }
 
-  @Explain(displayName = "function name")
+  @Explain(displayName = "function name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getUDTFName() {
     return genericUDTF.toString();
   }

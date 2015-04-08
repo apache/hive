@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -58,9 +57,6 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 //try to replace a bucket map join with a sorted merge map join
 abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc implements NodeProcessor {
-
-  private static final Log LOG = LogFactory
-    .getLog(SortedMergeBucketMapJoinOptimizer.class.getName());
 
   public AbstractSMBJoinProc(ParseContext pctx) {
     super(pctx);
@@ -222,7 +218,6 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     //
     pGraphContext.getSmbMapJoinOps().add(smbJop);
     pGraphContext.getMapJoinOps().remove(mapJoinOp);
-    pGraphContext.getOpParseCtx().put(smbJop, pGraphContext.getOpParseCtx().get(mapJoinOp));
 
     return smbJop;
   }
@@ -430,6 +425,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   }
 
   // Can the join operator be converted to a bucket map-merge join operator ?
+  @SuppressWarnings("unchecked")
   protected boolean canConvertJoinToBucketMapJoin(
     JoinOperator joinOp,
     SortBucketJoinProcCtx context) throws SemanticException {
@@ -445,10 +441,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
     try {
+      String selector = HiveConf.getVar(pGraphContext.getConf(),
+          HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR);
       bigTableMatcherClass =
-        (Class<? extends BigTableSelectorForAutoSMJ>)
-          (Class.forName(HiveConf.getVar(pGraphContext.getConf(),
-            HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR)));
+        (Class<? extends BigTableSelectorForAutoSMJ>) JavaUtils.loadClass(selector);
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e.getMessage());
     }
@@ -512,7 +508,6 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     SortBucketJoinProcCtx joinContext) throws SemanticException {
     MapJoinOperator mapJoinOp = new MapJoinProcessor().convertMapJoin(
       pGraphContext.getConf(),
-      pGraphContext.getOpParseCtx(),
       joinOp,
       joinOp.getConf().isLeftInputJoin(),
       joinOp.getConf().getBaseSrc(),

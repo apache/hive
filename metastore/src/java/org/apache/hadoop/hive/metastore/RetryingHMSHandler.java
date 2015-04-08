@@ -86,6 +86,10 @@ public class RetryingHMSHandler implements InvocationHandler {
         HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
     int retryLimit = HiveConf.getIntVar(origConf,
         HiveConf.ConfVars.HMSHANDLERATTEMPTS);
+    long timeout = HiveConf.getTimeVar(origConf,
+        HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+
+    Deadline.registerIfNot(timeout);
 
     if (reloadConf) {
       MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
@@ -99,7 +103,10 @@ public class RetryingHMSHandler implements InvocationHandler {
         if (reloadConf || gotNewConnectUrl) {
           baseHandler.setConf(getActiveConf());
         }
-        return method.invoke(baseHandler, args);
+        Deadline.startTimer(method.getName());
+        Object object = method.invoke(baseHandler, args);
+        Deadline.stopTimer();
+        return object;
 
       } catch (javax.jdo.JDOException e) {
         caughtException = e;
@@ -128,15 +135,26 @@ public class RetryingHMSHandler implements InvocationHandler {
           caughtException = e.getCause();
         } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
-          if (!methodName.startsWith("get_table") && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
+          if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
+              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
             LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           }
           throw e.getCause();
-        } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-            && (e.getCause().getCause() instanceof javax.jdo.JDOException || 
-            	e.getCause().getCause() instanceof NucleusException)) {
-          // The JDOException or the Nucleus Exception may be wrapped further in a MetaException
-          caughtException = e.getCause().getCause();
+        } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null) {
+          if (e.getCause().getCause() instanceof javax.jdo.JDOException ||
+              e.getCause().getCause() instanceof NucleusException) {
+            // The JDOException or the Nucleus Exception may be wrapped further in a MetaException
+            caughtException = e.getCause().getCause();
+          } else if (e.getCause().getCause() instanceof DeadlineException) {
+            // The Deadline Exception needs no retry and be thrown immediately.
+            Deadline.clear();
+            LOG.error("Error happens in method " + method.getName() + ": " +
+                ExceptionUtils.getStackTrace(e.getCause()));
+            throw e.getCause();
+          } else {
+            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+            throw e.getCause();
+          }
         } else {
           LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           throw e.getCause();

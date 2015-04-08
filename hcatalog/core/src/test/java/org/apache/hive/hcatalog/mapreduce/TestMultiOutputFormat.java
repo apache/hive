@@ -139,13 +139,19 @@ public class TestMultiOutputFormat {
     // Verify if the configs are merged
     Path[] fileClassPaths = DistributedCache.getFileClassPaths(job.getConfiguration());
     List<Path> fileClassPathsList = Arrays.asList(fileClassPaths);
-    Assert.assertTrue(fileClassPathsList.contains(new Path(inputFile)));
-    Assert.assertTrue(fileClassPathsList.contains(new Path(dummyFile)));
+    Assert.assertTrue("Cannot find " + (new Path(inputFile)) + " in " + fileClassPathsList,
+      fileClassPathsList.contains(new Path(inputFile)));
+    Assert.assertTrue("Cannot find " + (new Path(dummyFile)) + " in " + fileClassPathsList,
+      fileClassPathsList.contains(new Path(dummyFile)));
 
     URI[] cacheFiles = DistributedCache.getCacheFiles(job.getConfiguration());
     List<URI> cacheFilesList = Arrays.asList(cacheFiles);
-    Assert.assertTrue(cacheFilesList.contains(new Path(inputFile).makeQualified(fs).toUri()));
-    Assert.assertTrue(cacheFilesList.contains(new Path(dummyFile).makeQualified(fs).toUri()));
+    URI inputFileURI = new Path(inputFile).makeQualified(fs).toUri();
+    Assert.assertTrue("Cannot find " + inputFileURI + " in " + cacheFilesList,
+      cacheFilesList.contains(inputFileURI));
+    URI dummyFileURI = new Path(dummyFile).makeQualified(fs).toUri();
+    Assert.assertTrue("Cannot find " + dummyFileURI + " in " + cacheFilesList,
+      cacheFilesList.contains(dummyFileURI));
 
     Assert.assertTrue(job.waitForCompletion(true));
 

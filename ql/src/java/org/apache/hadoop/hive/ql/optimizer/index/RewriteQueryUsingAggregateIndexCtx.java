@@ -21,29 +21,26 @@ package org.apache.hadoop.hive.ql.optimizer.index;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcFactory;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -76,7 +73,6 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     this.indexTableName = canApplyCtx.getIndexTableName();
     this.alias = canApplyCtx.getAlias();
     this.aggregateFunction = canApplyCtx.getAggFunction();
-    this.opc = parseContext.getOpParseCtx();
     this.indexKey = canApplyCtx.getIndexKey();
   }
 
@@ -86,8 +82,6 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
         parseContext, hiveDb, canApplyCtx);
   }
 
-  private Map<Operator<? extends OperatorDesc>, OpParseContext> opc =
-    new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
   private final Hive hiveDb;
   private final ParseContext parseContext;
   private RewriteCanApplyCtx canApplyCtx;
@@ -98,10 +92,6 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
   private final String aggregateFunction;
   private ExprNodeColumnDesc aggrExprNode = null;
   private String indexKey;
-
-  public Map<Operator<? extends OperatorDesc>, OpParseContext> getOpc() {
-    return opc;
-  }
 
   public  ParseContext getParseContext() {
     return parseContext;
@@ -172,15 +162,9 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     // and add new ones
     Map<String, Operator<? extends OperatorDesc>> topOps = rewriteQueryCtx.getParseContext()
         .getTopOps();
-    Map<Operator<? extends OperatorDesc>, OpParseContext> opParseContext = rewriteQueryCtx
-        .getParseContext().getOpParseCtx();
-
-    // need this to set rowResolver for new scanOperator
-    OpParseContext operatorContext = opParseContext.get(scanOperator);
 
     // remove original TableScanOperator
     topOps.remove(alias);
-    opParseContext.remove(scanOperator);
 
     String indexTableName = rewriteQueryCtx.getIndexName();
     Table indexTableHandle = null;
@@ -201,23 +185,21 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     scanOperator.setConf(indexTableScanDesc);
 
     // Construct the new RowResolver for the new TableScanOperator
-    RowResolver rr = new RowResolver();
+    ArrayList<ColumnInfo> sigRS = new ArrayList<ColumnInfo>();
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector) indexTableHandle
           .getDeserializer().getObjectInspector();
       StructField field = rowObjectInspector.getStructFieldRef(rewriteQueryCtx.getIndexKey());
-      rr.put(indexTableName, field.getFieldName(), new ColumnInfo(field.getFieldName(),
-          TypeInfoUtils.getTypeInfoFromObjectInspector(field.getFieldObjectInspector()),
-          indexTableName, false));
+      sigRS.add(new ColumnInfo(field.getFieldName(), TypeInfoUtils.getTypeInfoFromObjectInspector(
+              field.getFieldObjectInspector()), indexTableName, false));
     } catch (SerDeException e) {
       LOG.error("Error while creating the RowResolver for new TableScanOperator.");
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
+    RowSchema rs = new RowSchema(sigRS);
 
     // Set row resolver for new table
-    operatorContext.setRowResolver(rr);
-
     String newAlias = indexTableName;
     int index = alias.lastIndexOf(":");
     if (index >= 0) {
@@ -228,13 +210,10 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     scanOperator.getConf().setAlias(newAlias);
     scanOperator.setAlias(indexTableName);
     topOps.put(newAlias, scanOperator);
-    opParseContext.put(scanOperator, operatorContext);
     rewriteQueryCtx.getParseContext().setTopOps(
         (HashMap<String, Operator<? extends OperatorDesc>>) topOps);
-    rewriteQueryCtx.getParseContext().setOpParseCtx(
-        (LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>) opParseContext);
 
-    ColumnPrunerProcFactory.setupNeededColumns(scanOperator, rr,
+    ColumnPrunerProcFactory.setupNeededColumns(scanOperator, rs,
         Arrays.asList(rewriteQueryCtx.getIndexKey()));
   }
 
@@ -288,15 +267,17 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
       String selReplacementCommand = "select sum(`" + rewriteQueryCtx.getAggregateFunction() + "`)"
           + " from " + rewriteQueryCtx.getIndexName() + " group by "
           + rewriteQueryCtx.getIndexKey() + " ";
-      // create a new ParseContext for the query to retrieve its operator tree,
-      // and the required GroupByOperator from it
-      ParseContext newDAGContext = RewriteParseContextGenerator.generateOperatorTree(
-          rewriteQueryCtx.getParseContext().getConf(), selReplacementCommand);
+      // retrieve the operator tree for the query, and the required GroupByOperator from it
+      Operator<?> newOperatorTree = RewriteParseContextGenerator.generateOperatorTree(
+              rewriteQueryCtx.getParseContext().getConf(),
+              selReplacementCommand);
 
       // we get our new GroupByOperator here
-      Map<GroupByOperator, Set<String>> newGbyOpMap = newDAGContext.getGroupOpToInputTables();
-      GroupByOperator newGbyOperator = newGbyOpMap.keySet().iterator().next();
-      GroupByDesc oldConf = operator.getConf();
+      GroupByOperator newGbyOperator = OperatorUtils.findLastOperatorUpstream(
+            newOperatorTree, GroupByOperator.class);
+      if (newGbyOperator == null) {
+        throw new SemanticException("Error replacing GroupBy operator.");
+      }
 
       // we need this information to set the correct colList, outputColumnNames
       // in SelectOperator
@@ -318,11 +299,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
       // Now the GroupByOperator has the new AggregationList;
       // sum(`_count_of_indexed_key`)
       // instead of count(indexed_key)
-      OpParseContext gbyOPC = rewriteQueryCtx.getOpc().get(operator);
-      RowResolver gbyRR = newDAGContext.getOpParseCtx().get(newGbyOperator).getRowResolver();
-      gbyOPC.setRowResolver(gbyRR);
-      rewriteQueryCtx.getOpc().put(operator, gbyOPC);
-
+      GroupByDesc oldConf = operator.getConf();
       oldConf.setAggregators((ArrayList<AggregationDesc>) newAggrList);
       operator.setConf(oldConf);
 

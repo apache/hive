@@ -17,27 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFLastDay.
@@ -52,101 +46,46 @@ import org.apache.hadoop.io.Text;
         + " The time part of date is ignored.\n"
         + "Example:\n " + " > SELECT _FUNC_('2009-01-12') FROM src LIMIT 1;\n" + " '2009-01-31'")
 public class GenericUDFLastDay extends GenericUDF {
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient TimestampConverter timestampConverter;
-  private transient Converter textConverter;
-  private transient Converter dateWritableConverter;
-  private transient PrimitiveCategory inputType1;
+  private transient Converter[] converters = new Converter[1];
+  private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[1];
   private final Calendar calendar = Calendar.getInstance();
   private final Text output = new Text();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 1) {
-      throw new UDFArgumentLengthException("last_day() requires 1 argument, got "
-          + arguments.length);
-    }
-    if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + arguments[0].getTypeName() + " is passed. as first arguments");
-    }
-    inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
+    checkArgsSize(arguments, 1, 1);
+
+    checkArgPrimitive(arguments, 0);
+
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP);
+
+    obtainDateConverter(arguments, 0, inputTypes, converters);
+
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    switch (inputType1) {
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      inputType1 = PrimitiveCategory.STRING;
-      textConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      break;
-    case TIMESTAMP:
-      timestampConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
-      break;
-    case DATE:
-      dateWritableConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
-          PrimitiveObjectInspectorFactory.writableDateObjectInspector);
-      break;
-    default:
-      throw new UDFArgumentException(
-          " LAST_DAY() only takes STRING/TIMESTAMP/DATEWRITABLE types as first argument, got "
-              + inputType1);
-    }
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if (arguments[0].get() == null) {
+    Date date = getDateValue(arguments, 0, inputTypes, converters);
+    if (date == null) {
       return null;
     }
-    Date date;
-    switch (inputType1) {
-    case STRING:
-      String dateString = textConverter.convert(arguments[0].get()).toString();
-      try {
-        date = formatter.parse(dateString.toString());
-      } catch (ParseException e) {
-        return null;
-      }
-      lastDay(date);
-      break;
-    case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
-          .getTimestamp();
-      date = ts;
-      lastDay(date);
-      break;
-    case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      date = dw.get();
-      lastDay(date);
-      break;
-    default:
-      throw new UDFArgumentException(
-          "LAST_DAY() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
-    }
+
+    lastDay(date);
     Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    output.set(DateUtils.getDateFormat().format(newDate));
     return output;
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("last_day(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString(getFuncName(), children);
+  }
+
+  @Override
+  protected String getFuncName() {
+    return "last_day";
   }
 
   protected Calendar lastDay(Date d) {

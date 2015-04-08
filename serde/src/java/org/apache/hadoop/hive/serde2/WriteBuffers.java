@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.serde2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.util.hash.MurmurHash;
 
 
 /**
@@ -35,72 +37,97 @@ public final class WriteBuffers implements RandomAccessOutput {
   private final ArrayList<byte[]> writeBuffers = new ArrayList<byte[]>(1);
   /** Buffer size in writeBuffers */
   private final int wbSize;
+  private final int wbSizeLog2;
+  private final long offsetMask;
   private final long maxSize;
 
-  private byte[] currentWriteBuffer;
-  private int currentWriteBufferIndex;
-  /** The offset in the last writeBuffer where the values are added */
-  private int currentWriteOffset = 0;
+  public static class Position {
+    private byte[] buffer = null;
+    private int bufferIndex = 0;
+    private int offset = 0;
+    public void clear() {
+      buffer = null;
+      bufferIndex = offset = -1;
+    }
+  }
 
-  private byte[] currentReadBuffer = null;
-  private int currentReadBufferIndex = 0;
-  private int currentReadOffset = 0;
+  Position writePos = new Position(); // Position where we'd write
+  Position defaultReadPos = new Position(); // Position where we'd read (by default).
+
 
   public WriteBuffers(int wbSize, long maxSize) {
-    this.wbSize = wbSize;
+    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : (Integer.highestOneBit(wbSize) << 1);
+    this.wbSizeLog2 = 31 - Integer.numberOfLeadingZeros(this.wbSize);
+    this.offsetMask = this.wbSize - 1;
     this.maxSize = maxSize;
-    currentWriteBufferIndex = -1;
+    writePos.bufferIndex = -1;
     nextBufferToWrite();
   }
 
   public long readVLong() {
-    ponderNextBufferToRead();
-    byte firstByte = currentReadBuffer[currentReadOffset++];
+    return readVLong(defaultReadPos);
+  }
+
+  public long readVLong(Position readPos) {
+    ponderNextBufferToRead(readPos);
+    byte firstByte = readPos.buffer[readPos.offset++];
     int length = (byte) WritableUtils.decodeVIntSize(firstByte) - 1;
     if (length == 0) {
       return firstByte;
     }
     long i = 0;
-    if (isAllInOneReadBuffer(length)) {
+    if (isAllInOneReadBuffer(length, readPos)) {
       for (int idx = 0; idx < length; idx++) {
-        i = (i << 8) | (currentReadBuffer[currentReadOffset + idx] & 0xFF);
+        i = (i << 8) | (readPos.buffer[readPos.offset + idx] & 0xFF);
       }
-      currentReadOffset += length;
+      readPos.offset += length;
     } else {
       for (int idx = 0; idx < length; idx++) {
-        i = (i << 8) | (readNextByte() & 0xFF);
+        i = (i << 8) | (readNextByte(readPos) & 0xFF);
       }
     }
     return (WritableUtils.isNegativeVInt(firstByte) ? (i ^ -1L) : i);
   }
 
   public void skipVLong() {
-    ponderNextBufferToRead();
-    byte firstByte = currentReadBuffer[currentReadOffset++];
+    skipVLong(defaultReadPos);
+  }
+
+  public void skipVLong(Position readPos) {
+    ponderNextBufferToRead(readPos);
+    byte firstByte = readPos.buffer[readPos.offset++];
     int length = (byte) WritableUtils.decodeVIntSize(firstByte);
     if (length > 1) {
-      currentReadOffset += (length - 1);
+      readPos.offset += (length - 1);
     }
-    int diff = currentReadOffset - wbSize;
+    int diff = readPos.offset - wbSize;
     while (diff >= 0) {
-      ++currentReadBufferIndex;
-      currentReadBuffer = writeBuffers.get(currentReadBufferIndex);
-      currentReadOffset = diff;
-      diff = currentReadOffset - wbSize;
+      ++readPos.bufferIndex;
+      readPos.buffer = writeBuffers.get(readPos.bufferIndex);
+      readPos.offset = diff;
+      diff = readPos.offset - wbSize;
     }
   }
 
   public void setReadPoint(long offset) {
-    currentReadBufferIndex = getBufferIndex(offset);
-    currentReadBuffer = writeBuffers.get(currentReadBufferIndex);
-    currentReadOffset = getOffset(offset);
+    setReadPoint(offset, defaultReadPos);
+  }
+
+  public void setReadPoint(long offset, Position readPos) {
+    readPos.bufferIndex = getBufferIndex(offset);
+    readPos.buffer = writeBuffers.get(readPos.bufferIndex);
+    readPos.offset = getOffset(offset);
   }
 
   public int hashCode(long offset, int length) {
-    setReadPoint(offset);
-    if (isAllInOneReadBuffer(length)) {
-      int result = murmurHash(currentReadBuffer, currentReadOffset, length);
-      currentReadOffset += length;
+    return hashCode(offset, length, defaultReadPos);
+  }
+
+  public int hashCode(long offset, int length, Position readPos) {
+    setReadPoint(offset, readPos);
+    if (isAllInOneReadBuffer(length, readPos)) {
+      int result = murmurHash(readPos.buffer, readPos.offset, length);
+      readPos.offset += length;
       return result;
     }
 
@@ -108,26 +135,26 @@ public final class WriteBuffers implements RandomAccessOutput {
     byte[] bytes = new byte[length];
     int destOffset = 0;
     while (destOffset < length) {
-      ponderNextBufferToRead();
-      int toRead = Math.min(length - destOffset, wbSize - currentReadOffset);
-      System.arraycopy(currentReadBuffer, currentReadOffset, bytes, destOffset, toRead);
-      currentReadOffset += toRead;
+      ponderNextBufferToRead(readPos);
+      int toRead = Math.min(length - destOffset, wbSize - readPos.offset);
+      System.arraycopy(readPos.buffer, readPos.offset, bytes, destOffset, toRead);
+      readPos.offset += toRead;
       destOffset += toRead;
     }
     return murmurHash(bytes, 0, bytes.length);
   }
 
-  private byte readNextByte() {
+  private byte readNextByte(Position readPos) {
     // This method is inefficient. It's only used when something crosses buffer boundaries.
-    ponderNextBufferToRead();
-    return currentReadBuffer[currentReadOffset++];
+    ponderNextBufferToRead(readPos);
+    return readPos.buffer[readPos.offset++];
   }
 
-  private void ponderNextBufferToRead() {
-    if (currentReadOffset >= wbSize) {
-      ++currentReadBufferIndex;
-      currentReadBuffer = writeBuffers.get(currentReadBufferIndex);
-      currentReadOffset = 0;
+  private void ponderNextBufferToRead(Position readPos) {
+    if (readPos.offset >= wbSize) {
+      ++readPos.bufferIndex;
+      readPos.buffer = writeBuffers.get(readPos.bufferIndex);
+      readPos.offset = 0;
     }
   }
 
@@ -142,27 +169,27 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   @Override
   public void reserve(int byteCount) {
-    if (byteCount < 0) throw new AssertionError("byteCount must be positive");
-    int currentWriteOffset = this.currentWriteOffset + byteCount;
+    if (byteCount < 0) throw new AssertionError("byteCount must be non-negative");
+    int currentWriteOffset = writePos.offset + byteCount;
     while (currentWriteOffset > wbSize) {
       nextBufferToWrite();
       currentWriteOffset -= wbSize;
     }
-    this.currentWriteOffset = currentWriteOffset;
+    writePos.offset = currentWriteOffset;
   }
 
   public void setWritePoint(long offset) {
-    currentWriteBufferIndex = getBufferIndex(offset);
-    currentWriteBuffer = writeBuffers.get(currentWriteBufferIndex);
-    currentWriteOffset = getOffset(offset);
+    writePos.bufferIndex = getBufferIndex(offset);
+    writePos.buffer = writeBuffers.get(writePos.bufferIndex);
+    writePos.offset = getOffset(offset);
   }
 
   @Override
   public void write(int b) {
-    if (currentWriteOffset == wbSize) {
+    if (writePos.offset == wbSize) {
       nextBufferToWrite();
     }
-    currentWriteBuffer[currentWriteOffset++] = (byte)b;
+    writePos.buffer[writePos.offset++] = (byte)b;
   }
 
   @Override
@@ -174,11 +201,11 @@ public final class WriteBuffers implements RandomAccessOutput {
   public void write(byte[] b, int off, int len) {
     int srcOffset = 0;
     while (srcOffset < len) {
-      int toWrite = Math.min(len - srcOffset, wbSize - currentWriteOffset);
-      System.arraycopy(b, srcOffset + off, currentWriteBuffer, currentWriteOffset, toWrite);
-      currentWriteOffset += toWrite;
+      int toWrite = Math.min(len - srcOffset, wbSize - writePos.offset);
+      System.arraycopy(b, srcOffset + off, writePos.buffer, writePos.offset, toWrite);
+      writePos.offset += toWrite;
       srcOffset += toWrite;
-      if (currentWriteOffset == wbSize) {
+      if (writePos.offset == wbSize) {
         nextBufferToWrite();
       }
     }
@@ -190,24 +217,24 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   private int getOffset(long offset) {
-    return (int)(offset % wbSize);
+    return (int)(offset & offsetMask);
   }
 
   private int getBufferIndex(long offset) {
-    return (int)(offset / wbSize);
+    return (int)(offset >>> wbSizeLog2);
   }
 
   private void nextBufferToWrite() {
-    if (currentWriteBufferIndex == (writeBuffers.size() - 1)) {
+    if (writePos.bufferIndex == (writeBuffers.size() - 1)) {
       if ((1 + writeBuffers.size()) * ((long)wbSize) > maxSize) {
         // We could verify precisely at write time, but just do approximate at allocation time.
         throw new RuntimeException("Too much memory used by write buffers");
       }
       writeBuffers.add(new byte[wbSize]);
     }
-    ++currentWriteBufferIndex;
-    currentWriteBuffer = writeBuffers.get(currentWriteBufferIndex);
-    currentWriteOffset = 0;
+    ++writePos.bufferIndex;
+    writePos.buffer = writeBuffers.get(writePos.bufferIndex);
+    writePos.offset = 0;
   }
 
   /** Compares two parts of the buffer with each other. Does not modify readPoint. */
@@ -278,16 +305,25 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   public void clear() {
     writeBuffers.clear();
-    currentWriteBuffer = currentReadBuffer = null;
-    currentWriteOffset = currentReadOffset = currentWriteBufferIndex = currentReadBufferIndex = 0;
+    clearState();
   }
 
+  private void clearState() {
+    writePos.clear();
+    defaultReadPos.clear();
+  }
+
+
   public long getWritePoint() {
-    return (currentWriteBufferIndex * (long)wbSize) + currentWriteOffset;
+    return ((long)writePos.bufferIndex << wbSizeLog2) + writePos.offset;
   }
 
   public long getReadPoint() {
-    return (currentReadBufferIndex * (long)wbSize) + currentReadOffset;
+    return getReadPoint(defaultReadPos);
+  }
+
+  public long getReadPoint(Position readPos) {
+    return (readPos.bufferIndex * (long)wbSize) + readPos.offset;
   }
 
   public void writeVLong(long value) {
@@ -306,22 +342,22 @@ public final class WriteBuffers implements RandomAccessOutput {
         readBuffer = writeBuffers.get(readBufIndex);
         readBufOffset = 0;
       }
-      if (currentWriteOffset == wbSize) {
+      if (writePos.offset == wbSize) {
         nextBufferToWrite();
       }
       // How much we can read from current read buffer, out of what we need.
       int toRead = Math.min(length - srcOffset, wbSize - readBufOffset);
       // How much we can write to current write buffer, out of what we need.
-      int toWrite = Math.min(toRead, wbSize - currentWriteOffset);
-      System.arraycopy(readBuffer, readBufOffset, currentWriteBuffer, currentWriteOffset, toWrite);
-      currentWriteOffset += toWrite;
+      int toWrite = Math.min(toRead, wbSize - writePos.offset);
+      System.arraycopy(readBuffer, readBufOffset, writePos.buffer, writePos.offset, toWrite);
+      writePos.offset += toWrite;
       readBufOffset += toWrite;
       srcOffset += toWrite;
       if (toRead > toWrite) {
         nextBufferToWrite();
         toRead -= toWrite; // Remains to copy from current read buffer. Less than wbSize by def.
-        System.arraycopy(readBuffer, readBufOffset, currentWriteBuffer, currentWriteOffset, toRead);
-        currentWriteOffset += toRead;
+        System.arraycopy(readBuffer, readBufOffset, writePos.buffer, writePos.offset, toRead);
+        writePos.offset += toRead;
         readBufOffset += toRead;
         srcOffset += toRead;
       }
@@ -335,11 +371,16 @@ public final class WriteBuffers implements RandomAccessOutput {
    */
   public static class ByteSegmentRef {
     public ByteSegmentRef(long offset, int length) {
+      reset(offset, length);
+    }
+    public void reset(long offset, int length) {
       if (length < 0) {
         throw new AssertionError("Length is negative: " + length);
       }
       this.offset = offset;
       this.length = length;
+    }
+    public ByteSegmentRef() {
     }
     public byte[] getBytes() {
       return bytes;
@@ -367,81 +408,83 @@ public final class WriteBuffers implements RandomAccessOutput {
    * spanning multiple internal buffers.
    */
   public void populateValue(WriteBuffers.ByteSegmentRef value) {
-    // At this point, we are going to make a copy if need to avoid array boundaries.
+    // At this point, we are going to make a copy if needed to avoid array boundaries.
     int index = getBufferIndex(value.getOffset());
     byte[] buffer = writeBuffers.get(index);
     int bufferOffset = getOffset(value.getOffset());
     int length = value.getLength();
     if (bufferOffset + length <= wbSize) {
+      // Common case - the segment is in one buffer.
       value.bytes = buffer;
       value.offset = bufferOffset;
-    } else {
-      value.bytes = new byte[length];
-      value.offset = 0;
-      int destOffset = 0;
-      while (destOffset < length) {
-        if (destOffset > 0) {
-          buffer = writeBuffers.get(++index);
-          bufferOffset = 0;
-        }
-        int toCopy = Math.min(length - destOffset, wbSize - bufferOffset);
-        System.arraycopy(buffer, bufferOffset, value.bytes, destOffset, toCopy);
-        destOffset += toCopy;
+      return;
+    }
+    // Special case (rare) - the segment is on buffer boundary.
+    value.bytes = new byte[length];
+    value.offset = 0;
+    int destOffset = 0;
+    while (destOffset < length) {
+      if (destOffset > 0) {
+        buffer = writeBuffers.get(++index);
+        bufferOffset = 0;
       }
+      int toCopy = Math.min(length - destOffset, wbSize - bufferOffset);
+      System.arraycopy(buffer, bufferOffset, value.bytes, destOffset, toCopy);
+      destOffset += toCopy;
     }
   }
 
-  private boolean isAllInOneReadBuffer(int length) {
-    return currentReadOffset + length <= wbSize;
+  private boolean isAllInOneReadBuffer(int length, Position readPos) {
+    return readPos.offset + length <= wbSize;
   }
 
   private boolean isAllInOneWriteBuffer(int length) {
-    return currentWriteOffset + length <= wbSize;
+    return writePos.offset + length <= wbSize;
   }
 
   public void seal() {
-    if (currentWriteOffset < (wbSize * 0.8)) { // arbitrary
-      byte[] smallerBuffer = new byte[currentWriteOffset];
-      System.arraycopy(currentWriteBuffer, 0, smallerBuffer, 0, currentWriteOffset);
-      writeBuffers.set(currentWriteBufferIndex, smallerBuffer);
+    if (writePos.offset < (wbSize * 0.8)) { // arbitrary
+      byte[] smallerBuffer = new byte[writePos.offset];
+      System.arraycopy(writePos.buffer, 0, smallerBuffer, 0, writePos.offset);
+      writeBuffers.set(writePos.bufferIndex, smallerBuffer);
     }
-    if (currentWriteBufferIndex + 1 < writeBuffers.size()) {
-      writeBuffers.subList(currentWriteBufferIndex + 1, writeBuffers.size()).clear();
+    if (writePos.bufferIndex + 1 < writeBuffers.size()) {
+      writeBuffers.subList(writePos.bufferIndex + 1, writeBuffers.size()).clear();
     }
-    currentWriteBuffer = currentReadBuffer = null; // Make sure we don't reference any old buffer.
-    currentWriteBufferIndex = currentReadBufferIndex = -1;
-    currentReadOffset = currentWriteOffset = -1;
+    // Make sure we don't reference any old buffer.
+    clearState();
   }
 
-  public long readFiveByteULong(long offset) {
-    return readNByteLong(offset, 5);
+  public long readNByteLong(long offset, int bytes) {
+    return readNByteLong(offset, bytes, defaultReadPos);
   }
 
-  private long readNByteLong(long offset, int bytes) {
-    setReadPoint(offset);
+  public long readNByteLong(long offset, int bytes, Position readPos) {
+    setReadPoint(offset, readPos);
     long v = 0;
-    if (isAllInOneReadBuffer(bytes)) {
+    if (isAllInOneReadBuffer(bytes, readPos)) {
       for (int i = 0; i < bytes; ++i) {
-        v = (v << 8) + (currentReadBuffer[currentReadOffset + i] & 0xff);
+        v = (v << 8) + (readPos.buffer[readPos.offset + i] & 0xff);
       }
-      currentReadOffset += bytes;
+      readPos.offset += bytes;
     } else {
       for (int i = 0; i < bytes; ++i) {
-        v = (v << 8) + (readNextByte() & 0xff);
+        v = (v << 8) + (readNextByte(readPos) & 0xff);
       }
     }
     return v;
   }
 
   public void writeFiveByteULong(long offset, long v) {
-    int prevIndex = currentWriteBufferIndex, prevOffset = currentWriteOffset;
+    int prevIndex = writePos.bufferIndex, prevOffset = writePos.offset;
     setWritePoint(offset);
     if (isAllInOneWriteBuffer(5)) {
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 32);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 24);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 16);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >>> 8);
-      currentWriteBuffer[currentWriteOffset] = (byte)(v);
+      writePos.buffer[writePos.offset] = (byte)(v >>> 32);
+      writePos.buffer[writePos.offset + 1] = (byte)(v >>> 24);
+      writePos.buffer[writePos.offset + 2] = (byte)(v >>> 16);
+      writePos.buffer[writePos.offset + 3] = (byte)(v >>> 8);
+      writePos.buffer[writePos.offset + 4] = (byte)(v);
+      writePos.offset += 5;
     } else {
       setByte(offset++, (byte)(v >>> 32));
       setByte(offset++, (byte)(v >>> 24));
@@ -449,9 +492,9 @@ public final class WriteBuffers implements RandomAccessOutput {
       setByte(offset++, (byte)(v >>> 8));
       setByte(offset, (byte)(v));
     }
-    currentWriteBufferIndex = prevIndex;
-    currentWriteBuffer = writeBuffers.get(currentWriteBufferIndex);
-    currentWriteOffset = prevOffset;
+    writePos.bufferIndex = prevIndex;
+    writePos.buffer = writeBuffers.get(writePos.bufferIndex);
+    writePos.offset = prevOffset;
   }
 
   public int readInt(long offset) {
@@ -460,26 +503,27 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   @Override
   public void writeInt(long offset, int v) {
-    int prevIndex = currentWriteBufferIndex, prevOffset = currentWriteOffset;
+    int prevIndex = writePos.bufferIndex, prevOffset = writePos.offset;
     setWritePoint(offset);
     if (isAllInOneWriteBuffer(4)) {
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 24);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 16);
-      currentWriteBuffer[currentWriteOffset++] = (byte)(v >> 8);
-      currentWriteBuffer[currentWriteOffset] = (byte)(v);
+      writePos.buffer[writePos.offset] = (byte)(v >> 24);
+      writePos.buffer[writePos.offset + 1] = (byte)(v >> 16);
+      writePos.buffer[writePos.offset + 2] = (byte)(v >> 8);
+      writePos.buffer[writePos.offset + 3] = (byte)(v);
+      writePos.offset += 4;
     } else {
       setByte(offset++, (byte)(v >>> 24));
       setByte(offset++, (byte)(v >>> 16));
       setByte(offset++, (byte)(v >>> 8));
       setByte(offset, (byte)(v));
     }
-    currentWriteBufferIndex = prevIndex;
-    currentWriteBuffer = writeBuffers.get(currentWriteBufferIndex);
-    currentWriteOffset = prevOffset;
+    writePos.bufferIndex = prevIndex;
+    writePos.buffer = writeBuffers.get(writePos.bufferIndex);
+    writePos.offset = prevOffset;
   }
 
   // Lifted from org.apache.hadoop.util.hash.MurmurHash... but supports offset.
-  private static int murmurHash(byte[] data, int offset, int length) {
+  public static int murmurHash(byte[] data, int offset, int length) {
     int m = 0x5bd1e995;
     int r = 24;
 
@@ -527,5 +571,17 @@ public final class WriteBuffers implements RandomAccessOutput {
     h ^= h >>> 15;
 
     return h;
+  }
+
+  /**
+   * Write buffer size
+   * @return write buffer size
+   */
+  public long size() {
+    return writeBuffers.size() * (long) wbSize;
+  }
+
+  public Position getReadPosition() {
+    return defaultReadPos;
   }
 }

@@ -1,41 +1,39 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
 FROM (
   SELECT 1 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 2 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 3 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
   UNION ALL
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
+  CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 explain
 SELECT *
 FROM (
   SELECT 1 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 2 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 3 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
   UNION ALL
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
+  CLUSTER BY id
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -46,12 +44,11 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP, 1)
         Reducer 2 <- Map 1 (GROUP, 1)
         Reducer 5 <- Map 4 (GROUP, 1)
-        Reducer 8 <- Map 7 (GROUP, 1)
-        Reducer 3 <- Reducer 2 (SORT, 1)
-        Reducer 6 <- Reducer 5 (SORT, 1)
+        Reducer 7 <- Map 6 (GROUP, 1)
+        Reducer 9 <- Map 8 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (SORT, 2), Reducer 5 (SORT, 2), Reducer 7 (SORT, 2), Reducer 9 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -80,7 +77,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -93,7 +90,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 9 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -106,86 +103,63 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Reducer 10 
-            Reduce Operator Tree:
-              Limit
-                Number of rows: 1
-                Select Operator
-                  expressions: 4 (type: int)
-                  outputColumnNames: _col0
-                  Select Operator
-                    expressions: _col0 (type: int)
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 2 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: 1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 1 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: 2 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: 2 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Reducer 6 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0
                 Select Operator
-                  expressions: _col0 (type: int)
+                  expressions: 2 (type: int)
                   outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 8 
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+        Reducer 7 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
                 Select Operator
                   expressions: 3 (type: int)
                   outputColumnNames: _col0
-                  Select Operator
-                    expressions: _col0 (type: int)
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+        Reducer 9 
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Select Operator
+                  expressions: 4 (type: int)
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -206,17 +180,16 @@ SELECT *
 FROM (
   SELECT 1 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 2 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 3 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
   UNION ALL
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
+  CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -226,27 +199,26 @@ SELECT *
 FROM (
   SELECT 1 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 2 AS id
   FROM (SELECT * FROM src LIMIT 1) s1
-  CLUSTER BY id
   UNION ALL
   SELECT 3 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
   UNION ALL
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
+  CLUSTER BY id
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_out
 POSTHOOK: Lineage: union_out.id EXPRESSION []
-PREHOOK: query: select * from union_out cluster by id
+PREHOOK: query: select * from union_out
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
 #### A masked pattern was here ####
-POSTHOOK: query: select * from union_out cluster by id
+POSTHOOK: query: select * from union_out
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
 #### A masked pattern was here ####

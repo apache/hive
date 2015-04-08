@@ -31,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,6 +207,9 @@ public final class Utilities {
   public static final String INPUT_NAME = "iocontext.input.name";
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
+  public static final String HIVE_ADDED_JARS = "hive.added.jars";
+  public static String MAPNAME = "Map ";
+  public static String REDUCENAME = "Reducer ";
 
   /**
    * ReduceField:
@@ -237,8 +239,14 @@ public final class Utilities {
     // prevent instantiation
   }
 
-  private static Map<Path, BaseWork> gWorkMap = Collections
-      .synchronizedMap(new HashMap<Path, BaseWork>());
+  private static ThreadLocal<Map<Path, BaseWork>> gWorkMap =
+      new ThreadLocal<Map<Path, BaseWork>>() {
+    @Override
+    protected Map<Path, BaseWork> initialValue() {
+      return new HashMap<Path, BaseWork>();
+    }
+  };
+
   private static final String CLASS_NAME = Utilities.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
@@ -299,12 +307,13 @@ public final class Utilities {
   public static Path setMergeWork(JobConf conf, MergeJoinWork mergeJoinWork, Path mrScratchDir,
       boolean useCache) {
     for (BaseWork baseWork : mergeJoinWork.getBaseWorkList()) {
-      setBaseWork(conf, baseWork, mrScratchDir, baseWork.getName() + MERGE_PLAN_NAME, useCache);
+      String prefix = baseWork.getName();
+      setBaseWork(conf, baseWork, mrScratchDir, prefix + MERGE_PLAN_NAME, useCache);
       String prefixes = conf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
       if (prefixes == null) {
-        prefixes = baseWork.getName();
+        prefixes = prefix;
       } else {
-        prefixes = prefixes + "," + baseWork.getName();
+        prefixes = prefixes + "," + prefix;
       }
       conf.set(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES, prefixes);
     }
@@ -345,7 +354,7 @@ public final class Utilities {
    */
   public static void setBaseWork(Configuration conf, String name, BaseWork work) {
     Path path = getPlanPath(conf, name);
-    gWorkMap.put(path, work);
+    gWorkMap.get().put(path, work);
   }
 
   /**
@@ -357,15 +366,26 @@ public final class Utilities {
    * @throws RuntimeException if the configuration files are not proper or if plan can not be loaded
    */
   private static BaseWork getBaseWork(Configuration conf, String name) {
-    BaseWork gWork = null;
     Path path = null;
     InputStream in = null;
     try {
+      String engine = HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE);
+      if (engine.equals("spark")) {
+        // TODO Add jar into current thread context classloader as it may be invoked by Spark driver inside
+        // threads, should be unnecessary while SPARK-5377 is resolved.
+        String addedJars = conf.get(HIVE_ADDED_JARS);
+        if (addedJars != null && !addedJars.isEmpty()) {
+          ClassLoader loader = Thread.currentThread().getContextClassLoader();
+          ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
+          Thread.currentThread().setContextClassLoader(newLoader);
+        }
+      }
+
       path = getPlanPath(conf, name);
       LOG.info("PLAN PATH = " + path);
       assert path != null;
-      if (!gWorkMap.containsKey(path)
-        || HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      BaseWork gWork = gWorkMap.get().get(path);
+      if (gWork == null) {
         Path localPath;
         if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
           localPath = new Path(name);
@@ -413,12 +433,17 @@ public final class Utilities {
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
         } else if (name.contains(MERGE_PLAN_NAME)) {
-          gWork = deserializePlan(in, MapWork.class, conf);
+          if (name.startsWith(MAPNAME)) {
+            gWork = deserializePlan(in, MapWork.class, conf);
+          } else if (name.startsWith(REDUCENAME)) {
+            gWork = deserializePlan(in, ReduceWork.class, conf);
+          } else {
+            throw new RuntimeException("Unknown work type: " + name);
+          }
         }
-        gWorkMap.put(path, gWork);
-      } else {
+        gWorkMap.get().put(path, gWork);
+      } else if (LOG.isDebugEnabled()) {
         LOG.debug("Found plan in cache for name: " + name);
-        gWork = gWorkMap.get(path);
       }
       return gWork;
     } catch (FileNotFoundException fnf) {
@@ -710,7 +735,7 @@ public final class Utilities {
       }
 
       // Cache the plan in this process
-      gWorkMap.put(planPath, w);
+      gWorkMap.get().put(planPath, w);
       return planPath;
     } catch (Exception e) {
       String msg = "Error caching " + name + ": " + e;
@@ -1066,7 +1091,6 @@ public final class Utilities {
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
-      removeField(kryo, MapWork.class, "opParseCtxMap");
       return kryo;
     };
   };
@@ -2086,8 +2110,8 @@ public final class Utilities {
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
     if (sessionCL != null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Use session specified class loader");
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Use session specified class loader");  //it's normal case
       }
       return sessionCL;
     }
@@ -2095,6 +2119,17 @@ public final class Utilities {
       LOG.debug("Session specified class loader not found, use thread based class loader");
     }
     return JavaUtils.getClassLoader();
+  }
+
+  public static void restoreSessionSpecifiedClassLoader(ClassLoader prev) {
+    SessionState state = SessionState.get();
+    if (state != null && state.getConf() != null) {
+      ClassLoader current = state.getConf().getClassLoader();
+      if (current != prev && JavaUtils.closeClassLoadersTo(current, prev)) {
+        Thread.currentThread().setContextClassLoader(prev);
+        state.getConf().setClassLoader(prev);
+      }
+    }
   }
 
   /**
@@ -2871,7 +2906,7 @@ public final class Utilities {
 
   public static String now() {
     Calendar cal = Calendar.getInstance();
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     return sdf.format(cal.getTime());
   }
 
@@ -3629,15 +3664,15 @@ public final class Utilities {
     Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
     Path reducePath = getPlanPath(conf, REDUCE_PLAN_NAME);
     if (mapPath != null) {
-      gWorkMap.remove(mapPath);
+      gWorkMap.get().remove(mapPath);
     }
     if (reducePath != null) {
-      gWorkMap.remove(reducePath);
+      gWorkMap.get().remove(reducePath);
     }
   }
 
   public static void clearWorkMap() {
-    gWorkMap.clear();
+    gWorkMap.get().clear();
   }
 
   /**

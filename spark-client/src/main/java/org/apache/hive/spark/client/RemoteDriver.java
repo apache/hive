@@ -77,9 +77,9 @@ public class RemoteDriver {
   private static final Logger LOG = LoggerFactory.getLogger(RemoteDriver.class);
 
   private final Map<String, JobWrapper<?>> activeJobs;
+  private final Object jcLock;
   private final Object shutdownLock;
   private final ExecutorService executor;
-  private final JobContextImpl jc;
   private final NioEventLoopGroup egroup;
   private final Rpc clientRpc;
   private final DriverProtocol protocol;
@@ -87,10 +87,14 @@ public class RemoteDriver {
   // Used to queue up requests while the SparkContext is being created.
   private final List<JobWrapper<?>> jobQueue = Lists.newLinkedList();
 
-  private boolean running;
+  // jc is effectively final, but it has to be volatile since it's accessed by different
+  // threads while the constructor is running.
+  private volatile JobContextImpl jc;
+  private volatile boolean running;
 
   private RemoteDriver(String[] args) throws Exception {
     this.activeJobs = Maps.newConcurrentMap();
+    this.jcLock = new Object();
     this.shutdownLock = new Object();
 
     SparkConf conf = new SparkConf();
@@ -102,6 +106,8 @@ public class RemoteDriver {
         serverAddress = getArg(args, idx);
       } else if (key.equals("--remote-port")) {
         serverPort = Integer.parseInt(getArg(args, idx));
+      } else if (key.equals("--client-id")) {
+        conf.set(SparkClientFactory.CONF_CLIENT_ID, getArg(args, idx));
       } else if (key.equals("--secret")) {
         conf.set(SparkClientFactory.CONF_KEY_SECRET, getArg(args, idx));
       } else if (key.equals("--conf")) {
@@ -120,8 +126,11 @@ public class RemoteDriver {
     Map<String, String> mapConf = Maps.newHashMap();
     for (Tuple2<String, String> e : conf.getAll()) {
       mapConf.put(e._1(), e._2());
+      LOG.debug("Remote Driver configured with: " + e._1() + "=" + e._2());
     }
 
+    String clientId = mapConf.get(SparkClientFactory.CONF_CLIENT_ID);
+    Preconditions.checkArgument(clientId != null, "No client ID provided.");
     String secret = mapConf.get(SparkClientFactory.CONF_KEY_SECRET);
     Preconditions.checkArgument(secret != null, "No secret provided.");
 
@@ -135,8 +144,8 @@ public class RemoteDriver {
     this.protocol = new DriverProtocol();
 
     // The RPC library takes care of timing out this.
-    this.clientRpc = Rpc.createClient(mapConf, egroup, serverAddress, serverPort, secret, protocol)
-      .get();
+    this.clientRpc = Rpc.createClient(mapConf, egroup, serverAddress, serverPort,
+      clientId, secret, protocol).get();
     this.running = true;
 
     this.clientRpc.addListener(new Rpc.Listener() {
@@ -150,14 +159,20 @@ public class RemoteDriver {
     try {
       JavaSparkContext sc = new JavaSparkContext(conf);
       sc.sc().addSparkListener(new ClientListener());
-      jc = new JobContextImpl(sc);
+      synchronized (jcLock) {
+        jc = new JobContextImpl(sc);
+        jcLock.notifyAll();
+      }
     } catch (Exception e) {
       LOG.error("Failed to start SparkContext.", e);
       shutdown(e);
+      synchronized (jcLock) {
+        jcLock.notifyAll();
+      }
       throw e;
     }
 
-    synchronized (jobQueue) {
+    synchronized (jcLock) {
       for (Iterator<JobWrapper<?>> it = jobQueue.iterator(); it.hasNext();) {
         it.next().submit();
       }
@@ -174,7 +189,7 @@ public class RemoteDriver {
   }
 
   private void submit(JobWrapper<?> job) {
-    synchronized (jobQueue) {
+    synchronized (jcLock) {
       if (jc != null) {
         job.submit();
       } else {
@@ -235,6 +250,10 @@ public class RemoteDriver {
       clientRpc.call(new JobResult(jobId, result, error, counters));
     }
 
+    void jobStarted(String jobId) {
+      clientRpc.call(new JobStarted(jobId));
+    }
+
     void jobSubmitted(String jobId, int sparkJobId) {
       LOG.debug("Send job({}/{}) submitted to Client.", jobId, sparkJobId);
       clientRpc.call(new JobSubmitted(jobId, sparkJobId));
@@ -264,6 +283,35 @@ public class RemoteDriver {
       submit(wrapper);
     }
 
+    private Object handle(ChannelHandlerContext ctx, SyncJobRequest msg) throws Exception {
+      // In case the job context is not up yet, let's wait, since this is supposed to be a
+      // "synchronous" RPC.
+      if (jc == null) {
+        synchronized (jcLock) {
+          while (jc == null) {
+            jcLock.wait();
+            if (!running) {
+              throw new IllegalStateException("Remote context is shutting down.");
+            }
+          }
+        }
+      }
+
+      jc.setMonitorCb(new MonitorCallback() {
+        @Override
+        public void call(JavaFutureAction<?> future,
+            SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
+          throw new IllegalStateException(
+            "JobContext.monitor() is not available for synchronous jobs.");
+        }
+      });
+      try {
+        return msg.job.call(jc);
+      } finally {
+        jc.setMonitorCb(null);
+      }
+    }
+
   }
 
   private class JobWrapper<T extends Serializable> implements Callable<Void> {
@@ -286,6 +334,8 @@ public class RemoteDriver {
 
     @Override
     public Void call() throws Exception {
+      protocol.jobStarted(req.id);
+
       try {
         jc.setMonitorCb(new MonitorCallback() {
           @Override
@@ -307,6 +357,11 @@ public class RemoteDriver {
         SparkCounters counters = null;
         if (sparkCounters != null) {
           counters = sparkCounters.snapshot();
+        }
+        // make sure job has really succeeded
+        // at this point, future.get shall not block us
+        for (JavaFutureAction<?> future : jobs) {
+          future.get();
         }
         protocol.jobFinished(req.id, result, null, counters);
       } catch (Throwable t) {

@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -98,7 +99,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -394,22 +394,9 @@ public class TestInputOutputFormat {
         OrcInputFormat.getInputPaths(conf));
   }
 
-  static class TestContext extends OrcInputFormat.Context {
-    List<Runnable> queue = new ArrayList<Runnable>();
-
-    TestContext(Configuration conf) {
-      super(conf);
-    }
-
-    @Override
-    public void schedule(Runnable runnable) {
-      queue.add(runnable);
-    }
-  }
-
   @Test
   public void testFileGenerator() throws Exception {
-    TestContext context = new TestContext(conf);
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/b/part-00", 1000, new byte[0]),
         new MockFile("mock:/a/b/part-01", 1000, new byte[0]),
@@ -419,21 +406,22 @@ public class TestInputOutputFormat {
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
           new MockPath(fs, "mock:/a/b"));
-    gen.run();
-    if (context.getErrors().size() > 0) {
-      for(Throwable th: context.getErrors()) {
-        System.out.println(StringUtils.stringifyException(th));
-      }
-      throw new IOException("Errors during file generation");
-    }
-    assertEquals(-1, context.getSchedulers());
-    assertEquals(3, context.queue.size());
-    assertEquals(new Path("mock:/a/b/part-00"),
-        ((OrcInputFormat.SplitGenerator) context.queue.get(0)).getPath());
-    assertEquals(new Path("mock:/a/b/part-01"),
-        ((OrcInputFormat.SplitGenerator) context.queue.get(1)).getPath());
-    assertEquals(new Path("mock:/a/b/part-04"),
-        ((OrcInputFormat.SplitGenerator) context.queue.get(2)).getPath());
+    SplitStrategy splitStrategy = gen.call();
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
+
+    conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
+    context = new OrcInputFormat.Context(conf);
+    fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1000]),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1000]),
+        new MockFile("mock:/a/b/_part-02", 1000, new byte[1000]),
+        new MockFile("mock:/a/b/.part-03", 1000, new byte[1000]),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1000]));
+    gen = new OrcInputFormat.FileGenerator(context, fs,
+            new MockPath(fs, "mock:/a/b"));
+    splitStrategy = gen.call();
+    assertEquals(true, splitStrategy instanceof OrcInputFormat.ETLSplitStrategy);
+
   }
 
   public static class MockBlock {
@@ -848,11 +836,10 @@ public class TestInputOutputFormat {
           new MockBlock("host5-1", "host5-2", "host5-3")));
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
-        new OrcInputFormat.SplitGenerator(context, fs,
+        new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, true,
-            new ArrayList<Long>(), true);
-    splitter.createSplit(0, 200, null);
-    OrcSplit result = context.getResult(-1);
+            new ArrayList<Long>(), true, null, null));
+    OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
     assertEquals("mock:/a/file", result.getPath().toString());
@@ -861,15 +848,13 @@ public class TestInputOutputFormat {
     assertEquals("host1-1", locs[0]);
     assertEquals("host1-2", locs[1]);
     assertEquals("host1-3", locs[2]);
-    splitter.createSplit(500, 600, null);
-    result = context.getResult(-1);
+    result = splitter.createSplit(500, 600, null);
     locs = result.getLocations();
     assertEquals(3, locs.length);
     assertEquals("host2-1", locs[0]);
     assertEquals("host0", locs[1]);
     assertEquals("host2-3", locs[2]);
-    splitter.createSplit(0, 2500, null);
-    result = context.getResult(-1);
+    result = splitter.createSplit(0, 2500, null);
     locs = result.getLocations();
     assertEquals(1, locs.length);
     assertEquals("host0", locs[0]);
@@ -892,48 +877,36 @@ public class TestInputOutputFormat {
     conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 200);
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
-        new OrcInputFormat.SplitGenerator(context, fs,
+        new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, true,
-            new ArrayList<Long>(), true);
-    splitter.run();
-    if (context.getErrors().size() > 0) {
-      for(Throwable th: context.getErrors()) {
-        System.out.println(StringUtils.stringifyException(th));
-      }
-      throw new IOException("Errors during splitting");
-    }
-    OrcSplit result = context.getResult(0);
+            new ArrayList<Long>(), true, null, null));
+    List<OrcSplit> results = splitter.call();
+    OrcSplit result = results.get(0);
     assertEquals(3, result.getStart());
     assertEquals(497, result.getLength());
-    result = context.getResult(1);
+    result = results.get(1);
     assertEquals(500, result.getStart());
     assertEquals(600, result.getLength());
-    result = context.getResult(2);
+    result = results.get(2);
     assertEquals(1100, result.getStart());
     assertEquals(400, result.getLength());
-    result = context.getResult(3);
+    result = results.get(3);
     assertEquals(1500, result.getStart());
     assertEquals(300, result.getLength());
-    result = context.getResult(4);
+    result = results.get(4);
     assertEquals(1800, result.getStart());
     assertEquals(200, result.getLength());
     // test min = 0, max = 0 generates each stripe
     conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 0);
     conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
     context = new OrcInputFormat.Context(conf);
-    splitter = new OrcInputFormat.SplitGenerator(context, fs,
+    splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
       fs.getFileStatus(new Path("/a/file")), null, true, new ArrayList<Long>(),
-        true);
-    splitter.run();
-    if (context.getErrors().size() > 0) {
-      for(Throwable th: context.getErrors()) {
-        System.out.println(StringUtils.stringifyException(th));
-      }
-      throw new IOException("Errors during splitting");
-    }
+        true, null, null));
+    results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
       assertEquals("checking stripe " + i + " size",
-          stripeSizes[i], context.getResult(i).getLength());
+          stripeSizes[i], results.get(i).getLength());
     }
   }
 
@@ -1638,14 +1611,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(607, split.getLength());
+    assertEquals(625, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(629, split.getLength());
+    assertEquals(647, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -1653,7 +1626,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(241, combineSplit.getLength(bucket));
+      assertEquals(253, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -1687,7 +1660,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost").end().build();
-    conf.set(OrcInputFormat.SARG_PUSHDOWN, isNull.toKryo());
+    conf.set(SearchArgumentFactory.SARG_PUSHDOWN, isNull.toKryo());
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});

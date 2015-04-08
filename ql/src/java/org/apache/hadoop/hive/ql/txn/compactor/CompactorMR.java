@@ -24,8 +24,9 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -159,7 +160,7 @@ public class CompactorMR {
 
     if (parsedDeltas == null || parsedDeltas.size() == 0) {
       // Seriously, no deltas?  Can't compact that.
-      LOG.error("No delta files found to compact in " + sd.getLocation());
+      LOG.error(  "No delta files found to compact in " + sd.getLocation());
       return;
     }
 
@@ -505,7 +506,7 @@ public class CompactorMR {
       AcidInputFormat<WritableComparable, V> aif =
           instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
       ValidTxnList txnList =
-          new ValidTxnListImpl(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
+          new ValidReadTxnList(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
 
       boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
@@ -647,7 +648,7 @@ public class CompactorMR {
   private static <T> T instantiate(Class<T> classType, String classname) throws IOException {
     T t = null;
     try {
-      Class c = Class.forName(classname);
+      Class c = JavaUtils.loadClass(classname);
       Object o = c.newInstance();
       if (classType.isAssignableFrom(o.getClass())) {
         t = (T)o;

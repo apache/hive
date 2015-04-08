@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,10 +35,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
@@ -73,7 +75,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   /**
    * The filters for join
    */
-  private transient List<ExprNodeEvaluator>[] joinFilters;  
+  private transient List<ExprNodeEvaluator>[] joinFilters;
 
   private transient int[][] filterMaps;
 
@@ -103,7 +105,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected transient LogHelper console;
   private long hashTableScale;
   private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
-  
+
   public HashTableSinkOperator() {
   }
 
@@ -114,7 +116,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
   @Override
   @SuppressWarnings("unchecked")
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
     memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
@@ -189,6 +192,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
+    return result;
   }
 
   public MapJoinTableContainer[] getMapJoinTables() {
@@ -219,7 +223,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    * This operator only process small tables Read the key/value pairs Load them into hashtable
    */
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     byte alias = (byte)tag;
     // compute keys and values as StandardObjects. Use non-optimized key (MR).
     Object[] currentKey = new Object[joinKeys[alias].size()];
@@ -265,7 +269,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables == null) {
-        LOG.debug("mapJoinTables is null");
+	if (isLogDebugEnabled) {
+	  LOG.debug("mapJoinTables is null");
+	}
       } else {
         flushToFile();
       }
@@ -280,7 +286,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void flushToFile() throws IOException, HiveException {
     // get tmp file URI
     Path tmpURI = getExecContext().getLocalWork().getTmpPath();
-    LOG.info("Temp URI for side table: " + tmpURI);
+    if (isLogInfoEnabled) {
+      LOG.info("Temp URI for side table: " + tmpURI);
+    }
     for (byte tag = 0; tag < mapJoinTables.length; tag++) {
       // get the key and value
       MapJoinPersistableTableContainer tableContainer = mapJoinTables[tag];

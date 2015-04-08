@@ -17,12 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Properties;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -40,11 +45,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Properties;
 
 /**
  * A Hive OutputFormat for ORC files.
@@ -168,6 +168,16 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     if ((propVal = getSettingFromPropsFallingBackToConf(
         OrcFile.OrcTableProperties.ENCODING_STRATEGY.getPropName(),props,conf)) != null){
       options.encodingStrategy(EncodingStrategy.valueOf(propVal));
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.BLOOM_FILTER_COLUMNS.getPropName(), props, conf)) != null) {
+      options.bloomFilterColumns(propVal);
+    }
+
+    if ((propVal = getSettingFromPropsFallingBackToConf(
+        OrcFile.OrcTableProperties.BLOOM_FILTER_FPP.getPropName(), props, conf)) != null) {
+      options.bloomFilterFpp(Double.parseDouble(propVal));
     }
 
     return options;

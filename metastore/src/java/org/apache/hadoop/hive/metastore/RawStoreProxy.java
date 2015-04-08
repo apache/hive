@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
@@ -97,10 +98,27 @@ public class RawStoreProxy implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Object ret = null;
+    boolean isTimerStarted = false;
 
     try {
-      LOG.info("Invoking " + method.toGenericString());
+      try {
+        if (!Deadline.isStarted()) {
+          Deadline.startTimer(method.getName());
+          isTimerStarted = true;
+        }
+      } catch (MetaException e) {
+        // Deadline was not registered yet.
+        long timeout = HiveConf.getTimeVar(hiveConf,
+            HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+        Deadline.registerIfNot(timeout);
+        Deadline.startTimer(method.getName());
+        isTimerStarted = true;
+      }
       ret = method.invoke(base, args);
+
+      if (isTimerStarted) {
+        Deadline.stopTimer();
+      }
     } catch (UndeclaredThrowableException e) {
       throw e.getCause();
     } catch (InvocationTargetException e) {

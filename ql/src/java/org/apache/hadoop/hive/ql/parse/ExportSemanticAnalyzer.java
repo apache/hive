@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.List;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileStatus;
@@ -37,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 
 /**
@@ -59,7 +57,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     URI toURI = EximUtil.getValidatedURI(conf, tmpPath);
 
     // initialize source table/partition
-    tableSpec ts = new tableSpec(db, conf, (ASTNode) tableTree, false, true);
+    TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree, false, true);
     EximUtil.validateTable(ts.tableHandle);
     try {
       FileSystem fs = FileSystem.get(toURI, conf);

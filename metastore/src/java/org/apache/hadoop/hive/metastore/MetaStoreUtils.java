@@ -25,7 +25,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +39,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -75,6 +81,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import javax.annotation.Nullable;
 
 public class MetaStoreUtils {
 
@@ -555,23 +563,26 @@ public class MetaStoreUtils {
   }
 
   static boolean isCascadeNeededInAlterTable(Table oldTable, Table newTable) {
-    List<FieldSchema> oldCols = oldTable.getSd().getCols();
-    List<FieldSchema> newCols = newTable.getSd().getCols();
-
     //currently cascade only supports add/replace columns and
     //changing column type/position/name/comments
+    List<FieldSchema> oldCols = oldTable.getSd().getCols();
+    List<FieldSchema> newCols = newTable.getSd().getCols();
+    return !areSameColumns(oldCols, newCols);
+  }
+
+  static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols.size() != newCols.size()) {
-      return true;
+      return false;
     } else {
       for (int i = 0; i < oldCols.size(); i++) {
         FieldSchema oldCol = oldCols.get(i);
         FieldSchema newCol = newCols.get(i);
         if(!oldCol.equals(newCol)) {
-          return true;
+          return false;
         }
       }
     }
-    return false;
+    return true;
   }
 
   /**
@@ -609,10 +620,10 @@ public class MetaStoreUtils {
    */
   static public boolean validateColumnType(String type) {
     int last = 0;
-    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
       if (i == type.length()
-          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+          || isValidTypeChar(type.charAt(i)) != lastAlphaDigit) {
         String token = type.substring(last, i);
         last = i;
         if (!hiveThriftTypeMap.contains(token)) {
@@ -622,6 +633,10 @@ public class MetaStoreUtils {
       }
     }
     return true;
+  }
+
+  private static boolean isValidTypeChar(char c) {
+    return Character.isLetterOrDigit(c) || c == '_';
   }
 
   public static String validateSkewedColNames(List<String> cols) {
@@ -709,6 +724,12 @@ public class MetaStoreUtils {
             "timestamp");
     typeToThriftTypeMap.put(
         org.apache.hadoop.hive.serde.serdeConstants.DECIMAL_TYPE_NAME, "decimal");
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME,
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME,
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   }
 
   static Set<String> hiveThriftTypeMap; //for validation
@@ -1609,4 +1630,92 @@ public class MetaStoreUtils {
     }
     return new String[] {names[0], names[1]};
   }
+
+  /**
+   * Helper function to transform Nulls to empty strings.
+   */
+  private static final com.google.common.base.Function<String,String> transFormNullsToEmptyString
+      = new com.google.common.base.Function<String, String>() {
+    @Override
+    public java.lang.String apply(@Nullable java.lang.String string) {
+      if (string == null){
+        return "";
+      } else {
+        return string;
+      }
+    }
+  };
+
+  /**
+   * We have aneed to sanity-check the map before conversion from persisted objects to
+   * metadata thrift objects because null values in maps will cause a NPE if we send
+   * across thrift. Pruning is appropriate for most cases except for databases such as
+   * Oracle where Empty strings are stored as nulls, in which case we need to handle that.
+   * See HIVE-8485 for motivations for this.
+   */
+  public static Map<String,String> trimMapNulls(
+      Map<String,String> dnMap, boolean retrieveMapNullsAsEmptyStrings){
+    if (dnMap == null){
+      return null;
+    }
+    // Must be deterministic order map - see HIVE-8707
+    //   => we use Maps.newLinkedHashMap instead of Maps.newHashMap
+    if (retrieveMapNullsAsEmptyStrings) {
+      // convert any nulls present in map values to empty strings - this is done in the case
+      // of backing dbs like oracle which persist empty strings as nulls.
+      return Maps.newLinkedHashMap(Maps.transformValues(dnMap, transFormNullsToEmptyString));
+    } else {
+      // prune any nulls present in map values - this is the typical case.
+      return Maps.newLinkedHashMap(Maps.filterValues(dnMap, Predicates.notNull()));
+    }
+  }
+
+
+  /**
+   * Create a URL from a string representing a path to a local file.
+   * The path string can be just a path, or can start with file:/, file:///
+   * @param onestr  path string
+   * @return
+   */
+  private static URL urlFromPathString(String onestr) {
+    URL oneurl = null;
+    try {
+      if (StringUtils.indexOf(onestr, "file:/") == 0) {
+        oneurl = new URL(onestr);
+      } else {
+        oneurl = new File(onestr).toURL();
+      }
+    } catch (Exception err) {
+      LOG.error("Bad URL " + onestr + ", ignoring path");
+    }
+    return oneurl;
+  }
+
+  /**
+   * Add new elements to the classpath.
+   *
+   * @param newPaths
+   *          Array of classpath elements
+   */
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+    URLClassLoader loader = (URLClassLoader) cloader;
+    List<URL> curPath = Arrays.asList(loader.getURLs());
+    ArrayList<URL> newPath = new ArrayList<URL>();
+
+    // get a list with the current classpath components
+    for (URL onePath : curPath) {
+      newPath.add(onePath);
+    }
+    curPath = newPath;
+
+    for (String onestr : newPaths) {
+      URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null && !curPath.contains(oneurl)) {
+        curPath.add(oneurl);
+      }
+    }
+
+    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+  }
+
 }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.RpcServer;
 import org.apache.spark.SparkException;
 
@@ -35,6 +36,9 @@ public final class SparkClientFactory {
 
   /** Used to run the driver in-process, mostly for testing. */
   static final String CONF_KEY_IN_PROCESS = "spark.client.do_not_use.run_driver_in_process";
+
+  /** Used by client and driver to share a client ID for establishing an RPC session. */
+  static final String CONF_CLIENT_ID = "spark.client.authentication.client_id";
 
   /** Used by client and driver to share a secret for establishing an RPC session. */
   static final String CONF_KEY_SECRET = "spark.client.authentication.secret";
@@ -67,12 +71,13 @@ public final class SparkClientFactory {
   /**
    * Instantiates a new Spark client.
    *
-   * @param conf Configuration for the remote Spark application.
+   * @param sparkConf Configuration for the remote Spark application, contains spark.* properties.
+   * @param hiveConf Configuration for Hive, contains hive.* properties.
    */
-  public static synchronized SparkClient createClient(Map<String, String> conf)
+  public static synchronized SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf)
       throws IOException, SparkException {
     Preconditions.checkState(server != null, "initialize() not called.");
-    return new SparkClientImpl(server, conf);
+    return new SparkClientImpl(server, sparkConf, hiveConf);
   }
 
 }

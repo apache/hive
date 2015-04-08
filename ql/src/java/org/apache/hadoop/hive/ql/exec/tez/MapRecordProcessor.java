@@ -22,14 +22,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -45,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -53,6 +58,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
@@ -71,64 +77,51 @@ public class MapRecordProcessor extends RecordProcessor {
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
   private int position = 0;
-  private boolean foundCachedMergeWork = false;
   MRInputLegacy legacyMRInput = null;
   MultiMRInput mainWorkMultiMRInput = null;
   private ExecMapperContext execContext = null;
   private boolean abort = false;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
-  List<MapWork> mergeWorkList = null;
-  private static Map<Integer, DummyStoreOperator> connectOps =
-      new TreeMap<Integer, DummyStoreOperator>();
+  List<BaseWork> mergeWorkList = null;
+  List<String> cacheKeys;
+  ObjectCache cache;
 
-  public MapRecordProcessor(JobConf jconf) throws Exception {
+  private static Map<Integer, DummyStoreOperator> connectOps =
+    new TreeMap<Integer, DummyStoreOperator>();
+
+  public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
+    super(jconf, context);
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
+    cacheKeys = new ArrayList<String>();
+
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    String key = queryId + MAP_PLAN_KEY;
+    cacheKeys.add(key);
+
     // create map and fetch operators
-    mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
-    if (mapWork == null) {
-      mapWork = Utilities.getMapWork(jconf);
-      cache.cache(MAP_PLAN_KEY, mapWork);
-      l4j.debug("Plan: " + mapWork);
-      for (String s: mapWork.getAliases()) {
-        l4j.debug("Alias: " + s);
-      }
-    } else {
-      Utilities.setMapWork(jconf, mapWork);
-    }
+    mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
+        @Override
+        public Object call() {
+          return Utilities.getMapWork(jconf);
+        }
+      });
+    Utilities.setMapWork(jconf, mapWork);
 
-    String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
-    if (prefixes != null) {
-      mergeWorkList = new ArrayList<MapWork>();
-      for (String prefix : prefixes.split(",")) {
-        MapWork mergeMapWork = (MapWork) cache.retrieve(prefix);
-        if (mergeMapWork != null) {
-          l4j.info("Found merge work in cache");
-          foundCachedMergeWork = true;
-          mergeWorkList.add(mergeMapWork);
-          continue;
-        }
-        if (foundCachedMergeWork) {
-          throw new Exception(
-              "Should find all work in cache else operator pipeline will be in non-deterministic state");
-        }
-
-        if ((prefix != null) && (prefix.isEmpty() == false)) {
-          mergeMapWork = (MapWork) Utilities.getMergeWork(jconf, prefix);
-          mergeWorkList.add(mergeMapWork);
-          cache.cache(prefix, mergeMapWork);
-        }
-      }
-    }
+    mergeWorkList = getMergeWorkList(jconf, key, queryId, cache, cacheKeys);
   }
 
   @Override
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, processorContext, mrReporter, inputs, outputs);
+    super.init(mrReporter, inputs, outputs);
+
+    MapredContext.init(true, new JobConf(jconf));
+    ((TezContext) MapredContext.get()).setInputs(inputs);
+    ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
 
     // Update JobConf using MRInput, info like filename comes via this
     legacyMRInput = getMRInput(inputs);
@@ -157,10 +150,13 @@ public class MapRecordProcessor extends RecordProcessor {
         mapOp = new MapOperator();
       }
 
+      mapOp.setExecContext(execContext);
+
       connectOps.clear();
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
-        for (MapWork mergeMapWork : mergeWorkList) {
+        for (BaseWork mergeWork : mergeWorkList) {
+          MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
             mergeMapOp = new VectorMapOperator();
           } else {
@@ -173,36 +169,37 @@ public class MapRecordProcessor extends RecordProcessor {
             mergeMapOp.setConf(mergeMapWork);
             l4j.info("Input name is " + mergeMapWork.getName());
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
+            mergeMapOp.initialize(jconf, null);
             mergeMapOp.setChildren(jconf);
-            if (foundCachedMergeWork == false) {
-              DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-              connectOps.put(mergeMapWork.getTag(), dummyOp);
-            }
-            mergeMapOp.setExecContext(new ExecMapperContext(jconf));
+
+            DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
+            connectOps.put(mergeMapWork.getTag(), dummyOp);
+
+            mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
           }
         }
       }
 
+      ((TezContext) (MapredContext.get())).setDummyOpsMap(connectOps);
+
       // initialize map operator
       mapOp.setConf(mapWork);
       l4j.info("Main input name is " + mapWork.getName());
       jconf.set(Utilities.INPUT_NAME, mapWork.getName());
+      mapOp.initialize(jconf, null);
       mapOp.setChildren(jconf);
+      mapOp.passExecContext(execContext);
       l4j.info(mapOp.dump(0));
 
-      MapredContext.init(true, new JobConf(jconf));
-      ((TezContext) MapredContext.get()).setInputs(inputs);
-      ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
-      mapOp.setExecContext(execContext);
       mapOp.initializeLocalWork(jconf);
 
       initializeMapRecordSources();
-      mapOp.initialize(jconf, null);
+      mapOp.initializeMapOperator(jconf);
       if ((mergeMapOpList != null) && mergeMapOpList.isEmpty() == false) {
         for (MapOperator mergeMapOp : mergeMapOpList) {
           jconf.set(Utilities.INPUT_NAME, mergeMapOp.getConf().getName());
-          mergeMapOp.initialize(jconf, null);
+          mergeMapOp.initializeMapOperator(jconf);
         }
       }
 
@@ -264,16 +261,16 @@ public class MapRecordProcessor extends RecordProcessor {
   @SuppressWarnings("deprecation")
   private KeyValueReader getKeyValueReader(Collection<KeyValueReader> keyValueReaders,
       MapOperator mapOp)
-      throws Exception {
+    throws Exception {
     List<KeyValueReader> kvReaderList = new ArrayList<KeyValueReader>(keyValueReaders);
     // this sets up the map operator contexts correctly
     mapOp.initializeContexts();
     Deserializer deserializer = mapOp.getCurrentDeserializer();
     KeyValueReader reader =
-        new KeyValueInputMerger(kvReaderList, deserializer,
-            new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
-                .getConf()
-                .getSortCols());
+      new KeyValueInputMerger(kvReaderList, deserializer,
+          new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
+          .getConf()
+          .getSortCols());
     return reader;
   }
 
@@ -290,7 +287,6 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
-
     while (sources[position].pushRecord()) {}
   }
 
@@ -299,6 +295,12 @@ public class MapRecordProcessor extends RecordProcessor {
     // check if there are IOExceptions
     if (!abort) {
       abort = execContext.getIoCxt().getIOExceptions();
+    }
+
+    if (cache != null && cacheKeys != null) {
+      for (String k: cacheKeys) {
+        cache.release(k);
+      }
     }
 
     // detecting failed executions by exceptions thrown by the operator tree
@@ -338,13 +340,20 @@ public class MapRecordProcessor extends RecordProcessor {
     }
   }
 
-  public static Map<Integer, DummyStoreOperator> getConnectOps() {
-    return connectOps;
-  }
-
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
     // there should be only one MRInput
     MRInputLegacy theMRInput = null;
+
+    // start all mr/multi-mr inputs
+    Set<Input> li = new HashSet<Input>();
+    for (LogicalInput inp: inputs.values()) {
+      if (inp instanceof MRInputLegacy || inp instanceof MultiMRInput) {
+        inp.start();
+        li.add(inp);
+      }
+    }
+    processorContext.waitForAllInputsReady(li);
+
     l4j.info("The input names are: " + Arrays.toString(inputs.keySet().toArray()));
     for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
       if (inp.getValue() instanceof MRInputLegacy) {

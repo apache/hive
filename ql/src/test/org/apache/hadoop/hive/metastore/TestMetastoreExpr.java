@@ -26,12 +26,9 @@ import java.util.Stack;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -90,14 +87,14 @@ public class TestMetastoreExpr extends TestCase {
     }
   }
 
-  private static void silentDropDatabase(String dbName) throws MetaException, TException {
+  private static void silentDropDatabase(String dbName) throws TException {
     try {
       for (String tableName : client.getTables(dbName, "*")) {
         client.dropTable(dbName, tableName);
       }
       client.dropDatabase(dbName);
-    } catch (NoSuchObjectException e) {
-    } catch (InvalidOperationException e) {
+    } catch (NoSuchObjectException ignore) {
+    } catch (InvalidOperationException ignore) {
     }
   }
 
@@ -153,16 +150,16 @@ public class TestMetastoreExpr extends TestCase {
       client.listPartitionsByExpr(dbName, tblName,
           new byte[] { 'f', 'o', 'o' }, null, (short)-1, new ArrayList<Partition>());
       fail("Should have thrown IncompatibleMetastoreException");
-    } catch (IMetaStoreClient.IncompatibleMetastoreException ex) {
+    } catch (IMetaStoreClient.IncompatibleMetastoreException ignore) {
     }
 
     // Invalid expression => throw some exception, but not incompatible metastore.
     try {
       checkExpr(-1, dbName, tblName, e.val(31).intCol("p3").pred(">", 2).build());
       fail("Should have thrown");
-    } catch (IMetaStoreClient.IncompatibleMetastoreException ex) {
+    } catch (IMetaStoreClient.IncompatibleMetastoreException ignore) {
       fail("Should not have thrown IncompatibleMetastoreException");
-    } catch (Exception ex) {
+    } catch (Exception ignore) {
     }
   }
 
@@ -198,7 +195,7 @@ public class TestMetastoreExpr extends TestCase {
       for (int i = 0; i < args; ++i) {
         children.add(stack.pop());
       }
-      stack.push(new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+      stack.push(new ExprNodeGenericFuncDesc(ti,
           FunctionRegistry.getFunctionInfo(name).getGenericUDF(), children));
       return this;
     }
@@ -249,8 +246,7 @@ public class TestMetastoreExpr extends TestCase {
   }
 
   private void addPartition(HiveMetaStoreClient client, Table table,
-      List<String> vals, String location) throws InvalidObjectException,
-        AlreadyExistsException, MetaException, TException {
+      List<String> vals, String location) throws TException {
 
     Partition part = new Partition();
     part.setDbName(table.getDbName());

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -71,6 +72,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyDateObjectInspector();
   public static final LazyTimestampObjectInspector LAZY_TIMESTAMP_OBJECT_INSPECTOR =
       new LazyTimestampObjectInspector();
+  public static final LazyHiveIntervalYearMonthObjectInspector LAZY_INTERVAL_YEAR_MONTH_OBJECT_INSPECTOR =
+      new LazyHiveIntervalYearMonthObjectInspector();
+  public static final LazyHiveIntervalDayTimeObjectInspector LAZY_INTERVAL_DAY_TIME_OBJECT_INSPECTOR =
+      new LazyHiveIntervalDayTimeObjectInspector();
   public static final LazyBinaryObjectInspector LAZY_BINARY_OBJECT_INSPECTOR =
       new LazyBinaryObjectInspector();
 
@@ -107,6 +112,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
         LAZY_DATE_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         LAZY_TIMESTAMP_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME),
+        LAZY_INTERVAL_YEAR_MONTH_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME),
+        LAZY_INTERVAL_DAY_TIME_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         LAZY_BINARY_OBJECT_INSPECTOR);
   }
@@ -118,17 +127,28 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
   public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
       PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar, boolean extBoolean) {
+    LazyObjectInspectorParameters lazyParams = new LazyObjectInspectorParametersImpl(
+        escaped, escapeChar, extBoolean, null, null, null);
+    return getLazyObjectInspector(typeInfo, lazyParams);
+  }
+
+  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
+      PrimitiveTypeInfo typeInfo, LazyObjectInspectorParameters lazyParams) {
     PrimitiveCategory primitiveCategory = typeInfo.getPrimitiveCategory();
 
     switch(primitiveCategory) {
     case STRING:
-      return getLazyStringObjectInspector(escaped, escapeChar);
+      return getLazyStringObjectInspector(lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case CHAR:
-      return getLazyHiveCharObjectInspector((CharTypeInfo)typeInfo, escaped, escapeChar);
+      return getLazyHiveCharObjectInspector((CharTypeInfo)typeInfo,
+          lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case VARCHAR:
-      return getLazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo, escaped, escapeChar);
+      return getLazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
+          lazyParams.isEscaped(), lazyParams.getEscapeChar());
     case BOOLEAN:
-      return getLazyBooleanObjectInspector(extBoolean);
+      return getLazyBooleanObjectInspector(lazyParams.isExtendedBooleanLiteral());
+    case TIMESTAMP:
+      return getLazyTimestampObjectInspector(lazyParams.getTimestampFormats());
     default:
      return getLazyObjectInspector(typeInfo);
     }
@@ -200,6 +220,25 @@ public final class LazyPrimitiveObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyHiveVarcharObjectInspector(typeInfo, escaped, escapeChar);
+      cachedLazyStringTypeOIs.put(signature, result);
+    }
+    return result;
+  }
+
+  public static LazyTimestampObjectInspector getLazyTimestampObjectInspector(
+      List<String> tsFormats) {
+    if (tsFormats == null) {
+      // No timestamp format specified, just use default lazy inspector
+      return (LazyTimestampObjectInspector) getLazyObjectInspector(TypeInfoFactory.timestampTypeInfo);
+    }
+
+    ArrayList<Object> signature = new ArrayList<Object>();
+    signature.add(TypeInfoFactory.timestampTypeInfo);
+    signature.add(tsFormats);
+    LazyTimestampObjectInspector result = (LazyTimestampObjectInspector) cachedLazyStringTypeOIs
+        .get(signature);
+    if (result == null) {
+      result = new LazyTimestampObjectInspector(tsFormats);
       cachedLazyStringTypeOIs.put(signature, result);
     }
     return result;

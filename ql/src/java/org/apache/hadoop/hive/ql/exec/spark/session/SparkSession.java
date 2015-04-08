@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-
-import scala.Tuple2;
 
 public interface SparkSession {
   /**
@@ -44,10 +43,10 @@ public interface SparkSession {
    * Get Spark shuffle memory per task, and total number of cores. This
    * information can be used to estimate how many reducers a task can have.
    *
-   * @return a tuple, the first element is the shuffle memory per task in bytes,
+   * @return an object pair, the first element is the shuffle memory per task in bytes,
    *  the second element is the number of total cores usable by the client
    */
-  Tuple2<Long, Integer> getMemoryAndCores() throws Exception;
+  ObjectPair<Long, Integer> getMemoryAndCores() throws Exception;
 
   /**
    * @return true if the session is open and ready to submit jobs.

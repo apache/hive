@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.math.DoubleMath;
 import com.google.common.math.LongMath;
 
 import org.apache.commons.logging.Log;
@@ -1020,8 +1019,6 @@ public class StatsUtils {
         if (colStat != null) {
           colStat.setColumnName(outColName);
           colStat.setTableAlias(outTabAlias);
-        }
-        if (colStat != null) {
           cs.add(colStat);
         }
       }
@@ -1037,6 +1034,39 @@ public class StatsUtils {
         cs.addAll(parentStats.getColumnStats());
       }
     }
+    return cs;
+  }
+
+  /**
+   * Get column statistics from parent statistics given the
+   * row schema of its child.
+   * @param parentStats
+   *          - parent statistics
+   * @param rowSchema
+   *          - row schema
+   * @return column statistics
+   */
+  public static List<ColStatistics> getColStatisticsUpdatingTableAlias(
+          Statistics parentStats, RowSchema rowSchema) {
+
+    List<ColStatistics> cs = Lists.newArrayList();
+
+    for (ColStatistics parentColStat : parentStats.getColumnStats()) {
+      ColStatistics colStat;
+      try {
+        colStat = parentColStat.clone();
+      } catch (CloneNotSupportedException e) {
+        colStat = null;
+      }
+      if (colStat != null) {
+        ColumnInfo ci = rowSchema.getColumnInfo(colStat.getColumnName());
+        if (ci != null) {
+          colStat.setTableAlias(ci.getTabAlias());
+        }
+        cs.add(colStat);
+      }
+    }
+
     return cs;
   }
 
@@ -1418,9 +1448,13 @@ public class StatsUtils {
   }
 
   public static long getAvailableMemory(Configuration conf) {
-    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
-        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
-        conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
+    if (memory <= 0) {
+      memory = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+      if (memory <= 0) {
+        memory = 1024;
+      }
+    }
     return memory;
   }
 

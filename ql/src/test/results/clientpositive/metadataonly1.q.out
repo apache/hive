@@ -43,31 +43,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types string
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types string
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -142,7 +138,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -184,7 +180,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -192,31 +188,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types string
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types string
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -287,7 +279,7 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -329,7 +321,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -337,31 +329,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -474,7 +462,7 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        /test1/ds=1 [$hdt$_0:$hdt$_0:test1]
+        /test1/ds=1 [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -482,31 +470,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -614,8 +598,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
-        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
+        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
+        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
       Path -> Partition:
         -mr-10005default.test1{ds=1} 
           Partition
@@ -696,8 +680,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
-        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a2]
+        -mr-10005default.test1{ds=1} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
+        -mr-10006default.test1{ds=2} [$hdt$_0:$hdt$_1:$hdt$_1:a2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -936,31 +920,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1069,9 +1049,9 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Path -> Partition:
         -mr-10003default.test2{ds=1, hr=1} 
           Partition
@@ -1194,9 +1174,9 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1205,31 +1185,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types string:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1438,9 +1414,9 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        /test2/ds=1/hr=1 [$hdt$_0:$hdt$_0:test2]
-        /test2/ds=1/hr=2 [$hdt$_0:$hdt$_0:test2]
-        /test2/ds=1/hr=3 [$hdt$_0:$hdt$_0:test2]
+        /test2/ds=1/hr=1 [$hdt$_0:test2]
+        /test2/ds=1/hr=2 [$hdt$_0:test2]
+        /test2/ds=1/hr=3 [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1449,31 +1425,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types string:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1546,8 +1518,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
-        -mr-10004default.test1{ds=2} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
+        -mr-10004default.test1{ds=2} [$hdt$_0:test1]
       Path -> Partition:
         -mr-10003default.test1{ds=1} 
           Partition
@@ -1628,8 +1600,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        -mr-10003default.test1{ds=1} [$hdt$_0:$hdt$_0:test1]
-        -mr-10004default.test1{ds=2} [$hdt$_0:$hdt$_0:test1]
+        -mr-10003default.test1{ds=1} [$hdt$_0:test1]
+        -mr-10004default.test1{ds=2} [$hdt$_0:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1637,31 +1609,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0
-                    columns.types string
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types string
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1792,11 +1760,11 @@ STAGE PLANS:
                   tag: -1
                   auto parallelism: false
       Path -> Alias:
-        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Path -> Partition:
         -mr-10003default.test2{ds=01_10_10, hr=01} 
           Partition
@@ -1999,11 +1967,11 @@ STAGE PLANS:
               name: default.test2
             name: default.test2
       Truncated Path -> Alias:
-        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:$hdt$_0:test2]
-        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:$hdt$_0:test2]
-        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:$hdt$_0:test2]
-        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:$hdt$_0:test2]
-        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:$hdt$_0:test2]
+        -mr-10003default.test2{ds=01_10_10, hr=01} [$hdt$_0:test2]
+        -mr-10004default.test2{ds=01_10_20, hr=02} [$hdt$_0:test2]
+        -mr-10005default.test2{ds=1, hr=1} [$hdt$_0:test2]
+        -mr-10006default.test2{ds=1, hr=2} [$hdt$_0:test2]
+        -mr-10007default.test2{ds=1, hr=3} [$hdt$_0:test2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -2012,31 +1980,27 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-#### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    columns _col0,_col1
-                    columns.types string:bigint
-                    escape.delim \
-                    hive.serialization.extend.nesting.levels true
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator

@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -91,7 +92,11 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
           throws SerDeException {
     int newThreshold = HashMapWrapper.calculateTableSize(
         keyCountAdj, threshold, loadFactor, keyCount);
-    hashMap = new BytesBytesMultiHashMap(newThreshold, loadFactor, wbSize, memUsage, threshold);
+    hashMap = new BytesBytesMultiHashMap(newThreshold, loadFactor, wbSize, memUsage);
+  }
+
+  public MapJoinBytesTableContainer(BytesBytesMultiHashMap hashMap) {
+    this.hashMap = hashMap;
   }
 
   private LazyBinaryStructObjectInspector createInternalOi(
@@ -114,8 +119,18 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         .getLazyBinaryStructObjectInspector(colNames, colOis);
   }
 
-  private static interface KeyValueHelper extends BytesBytesMultiHashMap.KvSource {
+  public void setInternalValueOi(LazyBinaryStructObjectInspector internalValueOi) {
+    this.internalValueOi = internalValueOi;
+  }
+
+  public void setSortableSortOrders(boolean[] sortableSortOrders) {
+    this.sortableSortOrders = sortableSortOrders;
+  }
+
+  public static interface KeyValueHelper extends BytesBytesMultiHashMap.KvSource {
     void setKeyValue(Writable key, Writable val) throws SerDeException;
+    /** Get hash value from the key. */
+    int getHashFromKey() throws SerDeException;
   }
 
   private static class KeyValueWriter implements KeyValueHelper {
@@ -176,9 +191,14 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
       aliasFilter &= ((ShortWritable)valObjs[valObjs.length - 1]).get();
       return aliasFilter;
     }
+
+    @Override
+    public int getHashFromKey() throws SerDeException {
+      throw new UnsupportedOperationException("Not supported for MapJoinBytesTableContainer");
+    }
   }
 
-  private static class LazyBinaryKvWriter implements KeyValueHelper {
+  static class LazyBinaryKvWriter implements KeyValueHelper {
     private final LazyBinaryStruct.SingleFieldGetter filterGetter;
     private Writable key, value;
     private final SerDe keySerDe;
@@ -208,6 +228,16 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
       sanityCheckKeyForTag();
       BinaryComparable b = (BinaryComparable)key;
       dest.write(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
+    }
+
+    @Override
+    public int getHashFromKey() throws SerDeException {
+      if (!(key instanceof BinaryComparable)) {
+        throw new SerDeException("Unexpected type " + key.getClass().getCanonicalName());
+      }
+      sanityCheckKeyForTag();
+      BinaryComparable b = (BinaryComparable)key;
+      return WriteBuffers.murmurHash(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
     }
 
     /**
@@ -285,7 +315,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
       }
     }
     writeHelper.setKeyValue(currentKey, currentValue);
-    hashMap.put(writeHelper);
+    hashMap.put(writeHelper, -1);
     return null; // there's no key to return
   }
 
@@ -329,9 +359,9 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     }
 
     @Override
-    public void setFromVector(VectorHashKeyWrapper kw,
-        VectorExpressionWriter[] keyOutputWriters,
-        VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException {
+    public JoinUtil.JoinResult setFromVector(VectorHashKeyWrapper kw,
+        VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch)
+        throws HiveException {
       if (nulls == null) {
         nulls = new boolean[keyOutputWriters.length];
         currentKey = new Object[keyOutputWriters.length];
@@ -346,12 +376,12 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         currentKey[i] = keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]);
         nulls[i] = currentKey[i] == null;
       }
-      currentValue.setFromOutput(
+      return currentValue.setFromOutput(
           MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs, sortableSortOrders));
     }
 
     @Override
-    public void setFromRow(Object row, List<ExprNodeEvaluator> fields,
+    public JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
       if (nulls == null) {
         nulls = new boolean[fields.size()];
@@ -361,17 +391,17 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         currentKey[keyIndex] = fields.get(keyIndex).evaluate(row);
         nulls[keyIndex] = currentKey[keyIndex] == null;
       }
-      currentValue.setFromOutput(
+      return currentValue.setFromOutput(
           MapJoinKey.serializeRow(output, currentKey, ois, sortableSortOrders));
     }
 
     @Override
-    public void setFromOther(ReusableGetAdaptor other) {
+    public JoinUtil.JoinResult setFromOther(ReusableGetAdaptor other) {
       assert other instanceof GetAdaptor;
       GetAdaptor other2 = (GetAdaptor)other;
       nulls = other2.nulls;
       currentKey = other2.currentKey;
-      currentValue.setFromOutput(other2.output);
+      return currentValue.setFromOutput(other2.output);
     }
 
     @Override
@@ -400,6 +430,8 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
+    /** Hash table wrapper specific to the container. */
+    private final BytesBytesMultiHashMap.ThreadSafeGetter threadSafeHashMapGetter;
     private List<WriteBuffers.ByteSegmentRef> refs;
     private int currentRow;
     /**
@@ -419,16 +451,23 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
+      threadSafeHashMapGetter = hashMap.createGetterForThread();
       clearRows();
     }
 
-    public void setFromOutput(Output output) {
+    public JoinUtil.JoinResult setFromOutput(Output output) {
       if (refs == null) {
-        refs = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
+        refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
       }
-      byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
+      byte aliasFilter = threadSafeHashMapGetter.getValueRefs(
+          output.getData(), output.getLength(), refs);
       this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
       this.dummyRow = null;
+      if (refs.isEmpty()) {
+        return JoinUtil.JoinResult.NOMATCH;
+      } else {
+        return JoinUtil.JoinResult.MATCH;
+      }
     }
 
     public boolean isEmpty() {
@@ -472,12 +511,15 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     @Override
     public List<Object> first() throws HiveException {
       currentRow = 0;
-      return next();
+      return nextInternal();
     }
-
 
     @Override
     public List<Object> next() throws HiveException {
+      return nextInternal();
+    }
+
+    private List<Object> nextInternal() throws HiveException {
       if (dummyRow != null) {
         List<Object> result = dummyRow;
         dummyRow = null;
@@ -490,7 +532,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
       if (ref.getBytes() == null) {
-        hashMap.populateValue(ref);
+        threadSafeHashMapGetter.populateValue(ref);
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
@@ -529,5 +571,10 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   @Override
   public void dumpMetrics() {
     hashMap.debugDumpMetrics();
+  }
+
+  @Override
+  public boolean hasSpill() {
+    return false;
   }
 }

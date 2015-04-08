@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -136,7 +137,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     int jobId = future.jobIds().get(0);
     LocalSparkJobStatus sparkJobStatus = new LocalSparkJobStatus(
       sc, jobId, jobMetricsListener, sparkCounters, plan.getCachedRDDIds(), future);
-    return new SparkJobRef(Integer.toString(jobId), sparkJobStatus);
+    return new LocalSparkJobRef(Integer.toString(jobId), hiveConf,  sparkJobStatus, sc);
   }
 
   /**

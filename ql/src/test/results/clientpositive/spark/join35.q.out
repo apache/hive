@@ -40,7 +40,7 @@ TOK_QUERY
    TOK_FROM
       TOK_JOIN
          TOK_SUBQUERY
-            TOK_UNION
+            TOK_UNIONALL
                TOK_QUERY
                   TOK_FROM
                      TOK_TABREF
@@ -155,9 +155,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 5 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Map 4 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -54,7 +56,14 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.junit.Assert;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * TestHive.
@@ -229,6 +238,46 @@ public class TestHive extends TestCase {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testThriftTable() failed");
       throw e;
+    }
+  }
+
+
+  /**
+   * Test logging of timing for metastore api calls
+   *
+   * @throws Throwable
+   */
+  public void testMetaStoreApiTiming() throws Throwable {
+    // set log level to DEBUG, as this is logged at debug level
+    Logger logger = Logger.getLogger("hive.ql.metadata.Hive");
+    Level origLevel = logger.getLevel();
+    logger.setLevel(Level.DEBUG);
+
+    // create an appender to capture the logs in a string
+    StringWriter writer = new StringWriter();
+    WriterAppender appender = new WriterAppender(new PatternLayout(), writer);
+
+    try {
+      logger.addAppender(appender);
+
+      hm.clearMetaCallTiming();
+      hm.getAllDatabases();
+      hm.dumpAndClearMetaCallTiming("test");
+      String logStr = writer.toString();
+      String expectedString = "getAllDatabases_()=";
+      Assert.assertTrue(logStr + " should contain <" + expectedString,
+          logStr.contains(expectedString));
+
+      // reset the log buffer, verify new dump without any api call does not contain func
+      writer.getBuffer().setLength(0);
+      hm.dumpAndClearMetaCallTiming("test");
+      logStr = writer.toString();
+      Assert.assertFalse(logStr + " should not contain <" + expectedString,
+          logStr.contains(expectedString));
+
+    } finally {
+      logger.setLevel(origLevel);
+      logger.removeAppender(appender);
     }
   }
 
@@ -426,6 +475,158 @@ public class TestHive extends TestCase {
     }
   }
 
+  private FileStatus[] getTrashContents() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(hiveConf, fs);
+    return fs.globStatus(trashDir.suffix("/*"));
+  }
+
+  private Table createPartitionedTable(String dbName, String tableName) throws Exception {
+    try {
+
+      hm.dropTable(dbName, tableName);
+      hm.createTable(tableName,
+                     Arrays.asList("key", "value"),   // Data columns.
+                     Arrays.asList("ds", "hr"),       // Partition columns.
+                     TextInputFormat.class,
+                     HiveIgnoreKeyTextOutputFormat.class);
+      return hm.getTable(dbName, tableName);
+    }
+    catch (Exception exception) {
+      fail("Unable to drop and create table " + dbName + "." + tableName
+          + " because " + StringUtils.stringifyException(exception));
+      throw exception;
+    }
+  }
+
+  private void cleanUpTableQuietly(String dbName, String tableName) {
+    try {
+      hm.dropTable(dbName, tableName, true, true, true);
+    }
+    catch(Exception exception) {
+      fail("Unexpected exception: " + StringUtils.stringifyException(exception));
+    }
+  }
+
+  /**
+   * Test for PURGE support for dropping partitions.
+   * 1. Drop partitions without PURGE, and check that the data isn't moved to Trash.
+   * 2. Drop partitions with PURGE, and check that the data is moved to Trash.
+   * @throws Exception on failure.
+   */
+  public void testDropPartitionsWithPurge() throws Exception {
+    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    String tableName = "table_for_testDropPartitionsWithPurge";
+
+    try {
+
+      Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
+                                                 .put("ds", "20141216")
+                                                 .put("hr", "12")
+                                                 .build();
+
+      int trashSizeBeforeDrop = getTrashContents().length;
+
+      Table table = createPartitionedTable(dbName, tableName);
+      hm.createPartition(table, partitionSpec);
+
+      Partition partition = hm.getPartition(table, partitionSpec, false);
+      assertNotNull("Newly created partition shouldn't be null!", partition);
+
+      hm.dropPartition(dbName, tableName,
+                       partition.getValues(),
+                       PartitionDropOptions.instance()
+                                           .deleteData(true)
+                                           .purgeData(true)
+                      );
+
+      int trashSizeAfterDropPurge = getTrashContents().length;
+
+      assertEquals("After dropPartitions(purge), trash should've remained unchanged!",
+                 trashSizeBeforeDrop, trashSizeAfterDropPurge);
+
+      // Repeat, and drop partition without purge.
+      hm.createPartition(table, partitionSpec);
+
+      partition = hm.getPartition(table, partitionSpec, false);
+      assertNotNull("Newly created partition shouldn't be null!", partition);
+
+      hm.dropPartition(dbName, tableName,
+                       partition.getValues(),
+                       PartitionDropOptions.instance()
+                                           .deleteData(true)
+                                           .purgeData(false)
+                      );
+
+      int trashSizeWithoutPurge = getTrashContents().length;
+
+      assertEquals("After dropPartitions(noPurge), data should've gone to trash!",
+                  trashSizeBeforeDrop, trashSizeWithoutPurge);
+
+    }
+    catch (Exception e) {
+      fail("Unexpected exception: " + StringUtils.stringifyException(e));
+    }
+    finally {
+      cleanUpTableQuietly(dbName, tableName);
+    }
+  }
+
+  /**
+   * Test that tables set up with auto-purge skip trash-directory when tables/partitions are dropped.
+   * @throws Throwable
+   */
+  public void testAutoPurgeTablesAndPartitions() throws Throwable {
+
+    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    String tableName = "table_for_testAutoPurgeTablesAndPartitions";
+    try {
+
+      Table table = createPartitionedTable(dbName, tableName);
+      table.getParameters().put("auto.purge", "true");
+      hm.alterTable(tableName, table);
+
+      Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
+          .put("ds", "20141216")
+          .put("hr", "12")
+          .build();
+
+      int trashSizeBeforeDrop = getTrashContents().length;
+
+      hm.createPartition(table, partitionSpec);
+
+      Partition partition = hm.getPartition(table, partitionSpec, false);
+      assertNotNull("Newly created partition shouldn't be null!", partition);
+
+      hm.dropPartition(dbName, tableName,
+          partition.getValues(),
+          PartitionDropOptions.instance()
+                              .deleteData(true)
+                              .purgeData(false)
+      );
+
+      int trashSizeAfterDrop = getTrashContents().length;
+
+      assertEquals("After dropPartition(noPurge), data should still have skipped trash.",
+                 trashSizeBeforeDrop, trashSizeAfterDrop);
+
+      // Repeat the same check for dropTable.
+
+      trashSizeBeforeDrop = trashSizeAfterDrop;
+      hm.dropTable(dbName, tableName);
+      trashSizeAfterDrop = getTrashContents().length;
+
+      assertEquals("After dropTable(noPurge), data should still have skipped trash.",
+                 trashSizeBeforeDrop, trashSizeAfterDrop);
+
+    }
+    catch(Exception e) {
+      fail("Unexpected failure: " + StringUtils.stringifyException(e));
+    }
+    finally {
+      cleanUpTableQuietly(dbName, tableName);
+    }
+  }
 
   public void testPartition() throws Throwable {
     try {
@@ -550,7 +751,7 @@ public class TestHive extends TestCase {
             index.getIndexName());
         assertEquals("Table names don't match for index: " + indexName, tableName,
             index.getOrigTableName());
-        assertEquals("Index table names didn't match for index: " + indexName, qIndexTableName,
+        assertEquals("Index table names didn't match for index: " + indexName, indexTableName,
             index.getIndexTableName());
         assertEquals("Index handler classes didn't match for index: " + indexName,
             indexHandlerClass, index.getIndexHandlerClass());

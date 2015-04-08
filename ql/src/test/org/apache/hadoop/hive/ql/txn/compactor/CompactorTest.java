@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -98,17 +99,22 @@ public abstract class CompactorTest {
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
-    return newTable(dbName, tableName, partitioned, new HashMap<String, String>(), null);
+    return newTable(dbName, tableName, partitioned, new HashMap<String, String>(), null, false);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
                            Map<String, String> parameters)  throws TException {
-    return newTable(dbName, tableName, partitioned, parameters, null);
+    return newTable(dbName, tableName, partitioned, parameters, null, false);
 
   }
 
+  protected Table newTempTable(String tableName) throws TException {
+    return newTable("default", tableName, false, null, null, true);
+  }
+
   protected Table newTable(String dbName, String tableName, boolean partitioned,
-                           Map<String, String> parameters, List<Order> sortCols)
+                           Map<String, String> parameters, List<Order> sortCols,
+                           boolean  isTemporary)
       throws  TException {
     Table table = new Table();
     table.setTableName(tableName);
@@ -122,6 +128,7 @@ public abstract class CompactorTest {
     }
 
     table.setParameters(parameters);
+    if (isTemporary) table.setTemporary(true);
 
     // drop the table first, in case some previous test created it
     ms.dropTable(dbName, tableName);
@@ -156,6 +163,11 @@ public abstract class CompactorTest {
     addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
   }
 
+  protected void addLengthFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
+    throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, FileType.LENGTH_FILE, 2, true);
+  }
+
   protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords) throws Exception {
     addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
   }
@@ -185,9 +197,21 @@ public abstract class CompactorTest {
     return paths;
   }
 
-  protected void burnThroughTransactions(int num) throws MetaException, NoSuchTxnException, TxnAbortedException {
+  protected void burnThroughTransactions(int num)
+      throws MetaException, NoSuchTxnException, TxnAbortedException {
+    burnThroughTransactions(num, null, null);
+  }
+
+  protected void burnThroughTransactions(int num, Set<Long> open, Set<Long> aborted)
+      throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
-    for (long tid : rsp.getTxn_ids()) txnHandler.commitTxn(new CommitTxnRequest(tid));
+    for (long tid : rsp.getTxn_ids()) {
+      if (aborted != null && aborted.contains(tid)) {
+        txnHandler.abortTxn(new AbortTxnRequest(tid));
+      } else if (open == null || (open != null && !open.contains(tid))) {
+        txnHandler.commitTxn(new CommitTxnRequest(tid));
+      }
+    }
   }
 
   protected void stopThread() {
@@ -249,7 +273,7 @@ public abstract class CompactorTest {
     return location;
   }
 
-  private enum FileType {BASE, DELTA, LEGACY};
+  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE};
 
   private void addFile(Table t, Partition p, long minTxn, long maxTxn,
                        int numRecords,  FileType type, int numBuckets,
@@ -259,6 +283,7 @@ public abstract class CompactorTest {
     String filename = null;
     switch (type) {
       case BASE: filename = "base_" + maxTxn; break;
+      case LENGTH_FILE: // Fall through to delta
       case DELTA: filename = "delta_" + minTxn + "_" + maxTxn; break;
       case LEGACY: break; // handled below
     }
@@ -273,12 +298,19 @@ public abstract class CompactorTest {
         Path dir = new Path(location, filename);
         fs.mkdirs(dir);
         partFile = AcidUtils.createBucketFile(dir, bucket);
+        if (type == FileType.LENGTH_FILE) {
+          partFile = new Path(partFile.toString() + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
+        }
       }
       FSDataOutputStream out = fs.create(partFile);
-      for (int i = 0; i < numRecords; i++) {
-        RecordIdentifier ri = new RecordIdentifier(maxTxn - 1, bucket, i);
-        ri.write(out);
-        out.writeBytes("mary had a little lamb its fleece was white as snow\n");
+      if (type == FileType.LENGTH_FILE) {
+        out.writeInt(numRecords);
+      } else {
+        for (int i = 0; i < numRecords; i++) {
+          RecordIdentifier ri = new RecordIdentifier(maxTxn - 1, bucket, i);
+          ri.write(out);
+          out.writeBytes("mary had a little lamb its fleece was white as snow\n");
+        }
       }
       out.close();
     }

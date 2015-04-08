@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FetchFormatter;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -89,6 +91,7 @@ public class HiveSessionImpl implements HiveSession {
   private boolean isOperationLogEnabled;
   private File sessionLogDir;
   private volatile long lastAccessTime;
+  private volatile long lastIdleTime;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
       HiveConf serverhiveConf, String ipAddress) {
@@ -145,6 +148,7 @@ public class HiveSessionImpl implements HiveSession {
       configureSession(sessionConfMap);
     }
     lastAccessTime = System.currentTimeMillis();
+    lastIdleTime = lastAccessTime;
   }
 
   /**
@@ -293,6 +297,11 @@ public class HiveSessionImpl implements HiveSession {
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
+    if (opHandleSet.isEmpty()) {
+      lastIdleTime = System.currentTimeMillis();
+    } else {
+      lastIdleTime = 0;
+    }
   }
 
   @Override
@@ -380,11 +389,10 @@ public class HiveSessionImpl implements HiveSession {
       opHandleSet.add(opHandle);
       return opHandle;
     } catch (HiveSQLException e) {
-      // Cleanup opHandle in case the query is synchronous
-      // Async query needs to retain and pass back the opHandle for error reporting
-      if (!runAsync) {
-        operationManager.closeOperation(opHandle);
-      }
+      // Refering to SQLOperation.java,there is no chance that a HiveSQLException throws and the asyn
+      // background operation submits to thread pool successfully at the same time. So, Cleanup
+      // opHandle directly when got HiveSQLException
+      operationManager.closeOperation(opHandle);
       throw e;
     } finally {
       release(true);
@@ -498,7 +506,11 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getColumns(String catalogName, String schemaName,
       String tableName, String columnName)  throws HiveSQLException {
     acquire(true);
-
+    String addedJars = Utilities.getResourceFiles(hiveConf, SessionState.ResourceType.JAR);
+    if (StringUtils.isNotBlank(addedJars)) {
+       IMetaStoreClient metastoreClient = getSession().getMetaStoreClient();
+       metastoreClient.setHiveAddedJars(addedJars);
+    }
     OperationManager operationManager = getOperationManager();
     GetColumnsOperation operation = operationManager.newGetColumnsOperation(getSession(),
         catalogName, schemaName, tableName, columnName);
@@ -598,6 +610,11 @@ public class HiveSessionImpl implements HiveSession {
         closeTimedOutOperations(operations);
       }
     }
+  }
+
+  @Override
+  public long getNoOperationTime() {
+    return lastIdleTime > 0 ? System.currentTimeMillis() - lastIdleTime : 0;
   }
 
   private void closeTimedOutOperations(List<Operation> operations) {

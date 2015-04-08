@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,12 +44,12 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
   private transient boolean isSelectStarNoCompute = false;
 
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      initializeChildren(hconf);
       isSelectStarNoCompute = true;
-      return;
+      return result;
     }
     List<ExprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
@@ -59,14 +61,16 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
       eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];
-    LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
+    if (isLogInfoEnabled) {
+      LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
+    }
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
         inputObjInspectors[0]);
-    initializeChildren(hconf);
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (isSelectStarNoCompute) {
       forward(row, inputObjInspectors[tag]);
       return;
@@ -171,7 +175,7 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
         return false;
       }
 
-      if(!origColumn.equals(destColumn)) {
+      if(!origColumn.internalEquals(destColumn)) {
         return false;
       }
 

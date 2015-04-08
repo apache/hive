@@ -25,12 +25,16 @@ package org.apache.hive.beeline;
 import org.apache.hadoop.io.IOUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -126,6 +130,46 @@ public class Commands {
     return true;
   }
 
+  public boolean addlocaldrivername(String line) {
+    String driverName = arg1(line, "driver class name");
+    try {
+      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+    } catch (IOException e) {
+      beeLine.error("Fail to scan drivers due to the exception:" + e);
+      beeLine.error(e);
+    }
+    for (Driver d : beeLine.getDrivers()) {
+      if (driverName.equals(d.getClass().getName())) {
+        beeLine.addLocalDriverClazz(driverName);
+        return true;
+      }
+    }
+    beeLine.error("Fail to find a driver which contains the driver class");
+    return false;
+  }
+
+  public boolean addlocaldriverjar(String line) {
+    // If jar file is in the hdfs, it should be downloaded first.
+    String jarPath = arg1(line, "jar path");
+    File p = new File(jarPath);
+    if (!p.exists()) {
+      beeLine.error("The jar file in the path " + jarPath + " can't be found!");
+      return false;
+    }
+
+    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    try {
+      beeLine.debug(jarPath + " is added to the local beeline.");
+      URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);
+
+      Thread.currentThread().setContextClassLoader(newClassLoader);
+      beeLine.setDrivers(Arrays.asList(beeLine.scanDrivers(false)));
+    } catch (Exception e) {
+      beeLine.error("Fail to add local jar due to the exception:" + e);
+      beeLine.error(e);
+    }
+    return true;
+  }
 
   public boolean history(String line) {
     Iterator hist = beeLine.getConsoleReader().getHistory().entries();
@@ -724,6 +768,9 @@ public class Commands {
         }
 
         String extra = beeLine.getConsoleReader().readLine(prompt.toString());
+        if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
+          break;
+        }
         if (!beeLine.isComment(extra)) {
           line += "\n" + extra;
         }
@@ -732,100 +779,104 @@ public class Commands {
       beeLine.handleException(e);
     }
 
-    line = line.trim();
-    if (line.endsWith(";")) {
-      line = line.substring(0, line.length() - 1);
-    }
-
     if (!(beeLine.assertConnection())) {
       return false;
     }
 
-    String sql = line;
-
-    if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
-      sql = sql.substring(1);
-    }
-
-    String prefix = call ? "call" : "sql";
-
-    if (sql.startsWith(prefix)) {
-      sql = sql.substring(prefix.length());
-    }
-
-    // batch statements?
-    if (beeLine.getBatch() != null) {
-      beeLine.getBatch().add(sql);
-      return true;
-    }
-
-    try {
-      Statement stmnt = null;
-      boolean hasResults;
-      Thread logThread = null;
-
-      try {
-        long start = System.currentTimeMillis();
-
-        if (call) {
-          stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
-          hasResults = ((CallableStatement) stmnt).execute();
-        } else {
-          stmnt = beeLine.createStatement();
-          if (beeLine.getOpts().isSilent()) {
-            hasResults = stmnt.execute(sql);
-          } else {
-            logThread = new Thread(createLogRunnable(stmnt));
-            logThread.setDaemon(true);
-            logThread.start();
-            hasResults = stmnt.execute(sql);
-            logThread.interrupt();
-            logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-          }
+    line = line.trim();
+    String[] cmds = line.split(";");
+    for (int i = 0; i < cmds.length; i++) {
+      String sql = cmds[i].trim();
+      if (sql.length() != 0) {
+        if (beeLine.isComment(sql)) {
+          //skip this and rest cmds in the line
+          break;
+        }
+        if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
+          sql = sql.substring(1);
         }
 
-        beeLine.showWarnings();
+        String prefix = call ? "call" : "sql";
 
-        if (hasResults) {
-          do {
-            ResultSet rs = stmnt.getResultSet();
-            try {
-              int count = beeLine.print(rs);
-              long end = System.currentTimeMillis();
+        if (sql.startsWith(prefix)) {
+          sql = sql.substring(prefix.length());
+        }
 
-              beeLine.info(beeLine.loc("rows-selected", count) + " "
-                  + beeLine.locElapsedTime(end - start));
-            } finally {
-              if (logThread != null) {
+        // batch statements?
+        if (beeLine.getBatch() != null) {
+          beeLine.getBatch().add(sql);
+          continue;
+        }
+
+        try {
+          Statement stmnt = null;
+          boolean hasResults;
+          Thread logThread = null;
+
+          try {
+            long start = System.currentTimeMillis();
+
+            if (call) {
+              stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
+              hasResults = ((CallableStatement) stmnt).execute();
+            } else {
+              stmnt = beeLine.createStatement();
+              if (beeLine.getOpts().isSilent()) {
+                hasResults = stmnt.execute(sql);
+              } else {
+                logThread = new Thread(createLogRunnable(stmnt));
+                logThread.setDaemon(true);
+                logThread.start();
+                hasResults = stmnt.execute(sql);
+                logThread.interrupt();
                 logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-                showRemainingLogsIfAny(stmnt);
-                logThread = null;
               }
-              rs.close();
             }
-          } while (BeeLine.getMoreResults(stmnt));
-        } else {
-          int count = stmnt.getUpdateCount();
-          long end = System.currentTimeMillis();
-          beeLine.info(beeLine.loc("rows-affected", count)
-              + " " + beeLine.locElapsedTime(end - start));
-        }
-      } finally {
-        if (logThread != null) {
-          if (!logThread.isInterrupted()) {
-            logThread.interrupt();
+
+            beeLine.showWarnings();
+
+            if (hasResults) {
+              do {
+                ResultSet rs = stmnt.getResultSet();
+                try {
+                  int count = beeLine.print(rs);
+                  long end = System.currentTimeMillis();
+
+                  beeLine.info(beeLine.loc("rows-selected", count) + " "
+                      + beeLine.locElapsedTime(end - start));
+                } finally {
+                  if (logThread != null) {
+                    logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+                    showRemainingLogsIfAny(stmnt);
+                    logThread = null;
+                  }
+                  rs.close();
+                }
+              } while (BeeLine.getMoreResults(stmnt));
+            } else {
+              int count = stmnt.getUpdateCount();
+              long end = System.currentTimeMillis();
+              beeLine.info(beeLine.loc("rows-affected", count)
+                  + " " + beeLine.locElapsedTime(end - start));
+            }
+          } finally {
+            if (logThread != null) {
+              if (!logThread.isInterrupted()) {
+                logThread.interrupt();
+              }
+              logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+              showRemainingLogsIfAny(stmnt);
+            }
+            if (stmnt != null) {
+              stmnt.close();
+            }
           }
-          logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-          showRemainingLogsIfAny(stmnt);
+        } catch (Exception e) {
+          return beeLine.error(e);
         }
-        if (stmnt != null) {
-          stmnt.close();
-        }
+        beeLine.showWarnings();
       }
-    } catch (Exception e) {
-      return beeLine.error(e);
     }
-    beeLine.showWarnings();
     return true;
   }
 

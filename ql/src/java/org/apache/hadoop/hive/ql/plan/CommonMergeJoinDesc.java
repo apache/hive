@@ -19,27 +19,23 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Merge Join Operator")
+
+@Explain(displayName = "Merge Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private int numBuckets;
-  private boolean isSubQuery;
   private int mapJoinConversionPos;
 
   CommonMergeJoinDesc() {
   }
 
-  public CommonMergeJoinDesc(int numBuckets, boolean isSubQuery, int mapJoinConversionPos,
+  public CommonMergeJoinDesc(int numBuckets, int mapJoinConversionPos,
       MapJoinDesc joinDesc) {
     super(joinDesc);
     this.numBuckets = numBuckets;
-    this.isSubQuery = isSubQuery;
     this.mapJoinConversionPos = mapJoinConversionPos;
-  }
-
-  public boolean getCustomMerge() {
-    return isSubQuery;
   }
 
   public int getNumBuckets() {

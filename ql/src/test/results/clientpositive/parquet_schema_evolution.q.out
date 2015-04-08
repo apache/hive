@@ -1,0 +1,141 @@
+PREHOOK: query: -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;
+-- This is called 'schema evolution' as the Parquet file is not ready yet for such new columns;
+-- Hive should support this schema, and return NULL values instead;
+
+DROP TABLE NewStructField
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;
+-- This is called 'schema evolution' as the Parquet file is not ready yet for such new columns;
+-- Hive should support this schema, and return NULL values instead;
+
+DROP TABLE NewStructField
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE NewStructFieldTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE NewStructFieldTable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE NewStructField(a struct<a1:map<string,string>, a2:struct<e1:int>>) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@NewStructField
+POSTHOOK: query: CREATE TABLE NewStructField(a struct<a1:map<string,string>, a2:struct<e1:int>>) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@NewStructField
+PREHOOK: query: INSERT OVERWRITE TABLE NewStructField SELECT named_struct('a1', map('k1','v1'), 'a2', named_struct('e1',5)) FROM srcpart LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@newstructfield
+POSTHOOK: query: INSERT OVERWRITE TABLE NewStructField SELECT named_struct('a1', map('k1','v1'), 'a2', named_struct('e1',5)) FROM srcpart LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@newstructfield
+POSTHOOK: Lineage: newstructfield.a EXPRESSION []
+PREHOOK: query: DESCRIBE NewStructField
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@newstructfield
+POSTHOOK: query: DESCRIBE NewStructField
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@newstructfield
+a                   	struct<a1:map<string,string>,a2:struct<e1:int>>	                    
+PREHOOK: query: SELECT * FROM NewStructField
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newstructfield
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM NewStructField
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newstructfield
+#### A masked pattern was here ####
+{"a1":{"k1":"v1"},"a2":{"e1":5}}
+{"a1":{"k1":"v1"},"a2":{"e1":5}}
+{"a1":{"k1":"v1"},"a2":{"e1":5}}
+{"a1":{"k1":"v1"},"a2":{"e1":5}}
+{"a1":{"k1":"v1"},"a2":{"e1":5}}
+PREHOOK: query: -- Adds new fields to the struct types
+ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@newstructfield
+PREHOOK: Output: default@newstructfield
+POSTHOOK: query: -- Adds new fields to the struct types
+ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@newstructfield
+POSTHOOK: Output: default@newstructfield
+PREHOOK: query: DESCRIBE NewStructField
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@newstructfield
+POSTHOOK: query: DESCRIBE NewStructField
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@newstructfield
+a                   	struct<a1:map<string,string>,a2:struct<e1:int,e2:string>,a3:int>	                    
+b                   	int                 	                    
+PREHOOK: query: SELECT * FROM NewStructField
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newstructfield
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM NewStructField
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newstructfield
+#### A masked pattern was here ####
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+PREHOOK: query: -- Makes sure that new parquet tables contain the new struct field
+CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@newstructfield
+PREHOOK: Output: database:default
+PREHOOK: Output: default@NewStructFieldTable
+POSTHOOK: query: -- Makes sure that new parquet tables contain the new struct field
+CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@newstructfield
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@NewStructFieldTable
+PREHOOK: query: DESCRIBE NewStructFieldTable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@newstructfieldtable
+POSTHOOK: query: DESCRIBE NewStructFieldTable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@newstructfieldtable
+a                   	struct<a1:map<string,string>,a2:struct<e1:int,e2:string>,a3:int>	                    
+b                   	int                 	                    
+PREHOOK: query: SELECT * FROM NewStructFieldTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newstructfieldtable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM NewStructFieldTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newstructfieldtable
+#### A masked pattern was here ####
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+{"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
+PREHOOK: query: DROP TABLE NewStructField
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@newstructfield
+PREHOOK: Output: default@newstructfield
+POSTHOOK: query: DROP TABLE NewStructField
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@newstructfield
+POSTHOOK: Output: default@newstructfield
+PREHOOK: query: DROP TABLE NewStructFieldTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@newstructfieldtable
+PREHOOK: Output: default@newstructfieldtable
+POSTHOOK: query: DROP TABLE NewStructFieldTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@newstructfieldtable
+POSTHOOK: Output: default@newstructfieldtable

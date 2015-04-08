@@ -1,25 +1,25 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import org.apache.calcite.sql.SqlInternalOperator;
+import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
-public class HiveGroupingID extends SqlInternalOperator {
+public class HiveGroupingID extends SqlAggFunction {
 
-  public static final SqlInternalOperator GROUPING__ID =
+  public static final SqlAggFunction INSTANCE =
           new HiveGroupingID();
 
   private HiveGroupingID() {
-    super("$GROUPING__ID",
+    super(VirtualColumn.GROUPINGID.getName(),
             SqlKind.OTHER,
-            0,
-            false,
-            ReturnTypes.BIGINT,
+            ReturnTypes.INTEGER,
             InferTypes.BOOLEAN,
-            OperandTypes.ONE_OR_MORE);
+            OperandTypes.NILADIC,
+            SqlFunctionCategory.USER_DEFINED_FUNCTION);
   }
 
 }
-

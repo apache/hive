@@ -21,8 +21,12 @@ package org.apache.hadoop.hive.ql.plan.ptf;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 
+@Explain(displayName = "Partition table definition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PartitionedTableFunctionDef extends PTFInputDef {
   private String name;
   private String resolverClassName;
@@ -34,7 +38,10 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
   private OrderDef order;
   private TableFunctionEvaluator tFunction;
   boolean transformsRawInput;
+  
+  private transient List<String> referencedColumns;
 
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
   }
@@ -44,6 +51,11 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
   }
 
   public ShapeDetails getRawInputShape() {
+    return rawInputShape;
+  }
+
+  @Explain(displayName = "raw input shape")
+  public ShapeDetails getRawInputShapeExplain() {
     return rawInputShape;
   }
 
@@ -72,6 +84,21 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     return partition;
   }
 
+  @Explain(displayName = "partition by", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPartitionExplain() {
+    if (partition == null || partition.getExpressions() == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (PTFExpressionDef expression : partition.getExpressions()) {
+      if (builder.length() > 0) {
+        builder.append(", ");
+      }
+      builder.append(expression.getExprNode().getExprString());
+    }
+    return builder.toString();
+  }
+
   public void setPartition(PartitionDef partition) {
     this.partition = partition;
   }
@@ -84,9 +111,28 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     this.order = order;
   }
 
+  @Explain(displayName = "order by", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getOrderExplain() {
+    if (order == null || order.getExpressions() == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (OrderExpressionDef expression : order.getExpressions()) {
+      if (builder.length() > 0) {
+        builder.append(", ");
+      }
+      builder.append(expression.getExprNode().getExprString());
+      if (expression.getOrder() == PTFInvocationSpec.Order.DESC) {
+        builder.append("(DESC)");
+      }
+    }
+    return builder.toString();
+  }
+
   public TableFunctionEvaluator getTFunction() {
     return tFunction;
   }
+
   public void setTFunction(TableFunctionEvaluator tFunction) {
     this.tFunction = tFunction;
   }
@@ -97,6 +143,21 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
 
   public void setArgs(List<PTFExpressionDef> args) {
     this.args = args;
+  }
+
+  @Explain(displayName = "arguments", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getArgsExplain() {
+    if (args == null) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (PTFExpressionDef expression : args) {
+      if (builder.length() > 0) {
+        builder.append(", ");
+      }
+      builder.append(expression.getExprNode().getExprString());
+    }
+    return builder.toString();
   }
 
   public void addArg(PTFExpressionDef arg) {
@@ -111,6 +172,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     return this;
   }
 
+  @Explain(displayName = "transforms raw input", displayOnlyOnTrue=true)
   public boolean isTransformsRawInput() {
     return transformsRawInput;
   }
@@ -125,5 +187,14 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
 
   public void setResolverClassName(String resolverClassName) {
     this.resolverClassName = resolverClassName;
+  }
+
+  @Explain(displayName = "referenced columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public List<String> getReferencedColumns() {
+    return referencedColumns;
+  }
+
+  public void setReferencedColumns(List<String> referencedColumns) {
+    this.referencedColumns = referencedColumns;
   }
 }

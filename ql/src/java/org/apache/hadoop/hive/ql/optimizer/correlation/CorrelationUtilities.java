@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -43,12 +42,12 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -239,7 +238,6 @@ public final class CorrelationUtilities {
       }
       if (!(cursor instanceof SelectOperator
           || cursor instanceof FilterOperator
-          || cursor instanceof ExtractOperator
           || cursor instanceof ForwardOperator
           || cursor instanceof ScriptOperator
           || cursor instanceof ReduceSinkOperator)) {
@@ -334,45 +332,62 @@ public final class CorrelationUtilities {
     return child.getParentOperators();
   }
 
+  // replace the cRS to SEL operator
   protected static SelectOperator replaceReduceSinkWithSelectOperator(ReduceSinkOperator childRS,
       ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
-    SelectOperator select = replaceOperatorWithSelect(childRS, context, procCtx);
-    select.getConf().setOutputColumnNames(childRS.getConf().getOutputValueColumnNames());
-    select.getConf().setColList(childRS.getConf().getValueCols());
-    return select;
-  }
+    RowSchema inputRS = childRS.getSchema();
+    SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
 
-  // replace the cRS to SEL operator
-  // If child if cRS is EXT, EXT also should be removed
-  protected static SelectOperator replaceOperatorWithSelect(Operator<?> operator,
-      ParseContext context, AbstractCorrelationProcCtx procCtx)
-      throws SemanticException {
-    RowResolver inputRR = context.getOpParseCtx().get(operator).getRowResolver();
-    SelectDesc select = new SelectDesc(null, null);
-
-    Operator<?> parent = getSingleParent(operator);
-    Operator<?> child = getSingleChild(operator);
-
+    Operator<?> parent = getSingleParent(childRS);
     parent.getChildOperators().clear();
 
-    SelectOperator sel = (SelectOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(select, new RowSchema(inputRR
-            .getColumnInfos()), parent), inputRR, context);
+    SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
+            select, new RowSchema(inputRS.getSignature()), parent);
 
-    sel.setColumnExprMap(operator.getColumnExprMap());
+    sel.setColumnExprMap(childRS.getColumnExprMap());
 
-    sel.setChildOperators(operator.getChildOperators());
-    for (Operator<? extends Serializable> ch : operator.getChildOperators()) {
-      ch.replaceParent(operator, sel);
+    sel.setChildOperators(childRS.getChildOperators());
+    for (Operator<? extends Serializable> ch : childRS.getChildOperators()) {
+      ch.replaceParent(childRS, sel);
     }
-    if (child instanceof ExtractOperator) {
-      removeOperator(child, getSingleChild(child), sel, context);
-      procCtx.addRemovedOperator(child);
-    }
-    operator.setChildOperators(null);
-    operator.setParentOperators(null);
-    procCtx.addRemovedOperator(operator);
+
+    removeChildSelIfApplicable(getSingleChild(childRS), sel, context, procCtx);
+    childRS.setChildOperators(null);
+    childRS.setParentOperators(null);
+    procCtx.addRemovedOperator(childRS);
     return sel;
+  }
+
+  //TODO: ideally this method should be removed in future, as in we need not to rely on removing
+  // this select operator which likely is introduced by SortedDynPartitionOptimizer.
+  // NonblockingdedupOptimizer should be able to merge this select Operator with its
+  // parent. But, that is not working at the moment. See: dynpart_sort_optimization2.q
+
+  private static void removeChildSelIfApplicable(Operator<?> child, SelectOperator sel,
+      ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
+
+    if (!(child instanceof SelectOperator)) {
+     return;
+   }
+   if (child.getColumnExprMap() != null) {
+     return;
+   }
+
+   SelectOperator selOp = (SelectOperator) child;
+
+   for (ExprNodeDesc desc : selOp.getConf().getColList()) {
+     if (!(desc instanceof ExprNodeColumnDesc)) {
+       return;
+     }
+     ExprNodeColumnDesc col = (ExprNodeColumnDesc) desc;
+     if(!col.getColumn().startsWith(ReduceField.VALUE.toString()+".") ||
+         col.getTabAlias() != null || col.getIsPartitionColOrVirtualCol()){
+       return;
+     }
+   }
+
+   removeOperator(child, getSingleChild(child), sel, context);
+   procCtx.addRemovedOperator(child);
   }
 
   protected static void removeReduceSinkForGroupBy(ReduceSinkOperator cRS, GroupByOperator cGBYr,
@@ -393,8 +408,6 @@ public final class CorrelationUtilities {
       }
       cGBYr.setColumnExprMap(cGBYm.getColumnExprMap());
       cGBYr.setSchema(cGBYm.getSchema());
-      RowResolver resolver = context.getOpParseCtx().get(cGBYm).getRowResolver();
-      context.getOpParseCtx().get(cGBYr).setRowResolver(resolver);
     } else {
       // pRS-cRS-cGBYr (no map aggregation) --> pRS-cGBYr(COMPLETE)
       // revert expressions of cGBYr to that of cRS
@@ -404,25 +417,23 @@ public final class CorrelationUtilities {
       }
 
       Map<String, ExprNodeDesc> oldMap = cGBYr.getColumnExprMap();
-      RowResolver oldRR = context.getOpParseCtx().get(cGBYr).getRowResolver();
+      RowSchema oldRS = cGBYr.getSchema();
 
       Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
-      RowResolver newRR = new RowResolver();
+      ArrayList<ColumnInfo> newRS = new ArrayList<ColumnInfo>();
 
       List<String> outputCols = cGBYr.getConf().getOutputColumnNames();
       for (int i = 0; i < outputCols.size(); i++) {
         String colName = outputCols.get(i);
-        String[] nm = oldRR.reverseLookup(colName);
-        ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
-        newRR.put(nm[0], nm[1], colInfo);
+        ColumnInfo colInfo = oldRS.getColumnInfo(colName);
+        newRS.add(colInfo);
         ExprNodeDesc colExpr = ExprNodeDescUtils.backtrack(oldMap.get(colName), cGBYr, cRS);
         if (colExpr != null) {
           newMap.put(colInfo.getInternalName(), colExpr);
         }
       }
       cGBYr.setColumnExprMap(newMap);
-      cGBYr.setSchema(new RowSchema(newRR.getColumnInfos()));
-      context.getOpParseCtx().get(cGBYr).setRowResolver(newRR);
+      cGBYr.setSchema(new RowSchema(newRS));
     }
     cGBYr.getConf().setMode(GroupByDesc.Mode.COMPLETE);
 
@@ -435,14 +446,15 @@ public final class CorrelationUtilities {
     }
   }
 
-  /** throw a exception if the input operator is null
+  /**
+   * Throws an exception if the input operator is null
+   *
    * @param operator
-   * @throws HiveException
+   * @throws SemanticException if the input operator is null
    */
   protected static void isNullOperator(Operator<?> operator) throws SemanticException {
     if (operator == null) {
-      throw new SemanticException("Operator " + operator.getName() + " (ID: " +
-          operator.getIdentifier() + ") is null.");
+      throw new SemanticException("Operator is null.");
     }
   }
 
@@ -494,13 +506,5 @@ public final class CorrelationUtilities {
     }
     target.setChildOperators(null);
     target.setParentOperators(null);
-    context.getOpParseCtx().remove(target);
-  }
-
-  protected static Operator<? extends Serializable> putOpInsertMap(Operator<?> op, RowResolver rr,
-      ParseContext context) {
-    OpParseContext ctx = new OpParseContext(rr);
-    context.getOpParseCtx().put(op, ctx);
-    return op;
   }
 }

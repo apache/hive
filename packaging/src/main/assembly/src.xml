@@ -39,9 +39,16 @@
         <exclude>**/.classpath</exclude>
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
+        <exclude>testutils/ptest2/velocity.log*</exclude>
       </excludes>
 
       <includes>
+        <include>.arcconfig</include>
+        <include>.checkstyle</include>
+        <include>.gitattributes</include>
+        <include>.gitignore</include>
+        <include>.reviewboardrc</include>
         <include>DEVNOTES</include>
         <include>README.txt</include>
         <include>LICENSE</include>
@@ -58,7 +65,9 @@
         <include>conf/**/*</include>
         <include>contrib/**/*</include>
         <include>data/**/*</include>
+        <include>dev-support/**/*</include>
         <include>docs/**/*</include>
+        <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
         <include>hwi/**/*</include>
@@ -66,6 +75,8 @@
         <include>jdbc/**/*</include>
         <include>contrib/**/*</include>
         <include>metastore/**/*</include>
+        <include>lib/**/*</include>
+        <include>findbugs/**/*</include>
         <include>odbc/**/*</include>
         <include>packaging/pom.xml</include>
         <include>packaging/src/**/*</include>
@@ -74,6 +85,7 @@
         <include>serde/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
+        <include>spark-client/**/*</include>
         <include>testutils/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>

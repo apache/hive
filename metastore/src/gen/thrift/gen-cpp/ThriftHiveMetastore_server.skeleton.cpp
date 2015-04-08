@@ -87,9 +87,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_fields\n");
   }
 
+  void get_fields_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("get_fields_with_environment_context\n");
+  }
+
   void get_schema(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name) {
     // Your implementation goes here
     printf("get_schema\n");
+  }
+
+  void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("get_schema_with_environment_context\n");
   }
 
   void create_table(const Table& tbl) {
@@ -607,6 +617,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("show_compact\n");
   }
 
+  void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
+    // Your implementation goes here
+    printf("add_dynamic_partitions\n");
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     // Your implementation goes here
     printf("get_next_notification\n");
@@ -615,6 +630,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_current_notificationEventId(CurrentNotificationEventId& _return) {
     // Your implementation goes here
     printf("get_current_notificationEventId\n");
+  }
+
+  void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
+    // Your implementation goes here
+    printf("fire_listener_event\n");
   }
 
   void flushCache() {

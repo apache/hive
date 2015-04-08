@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * LoadDesc.
@@ -37,7 +38,7 @@ public class LoadDesc implements Serializable {
     this.sourcePath = sourcePath;
   }
 
-  @Explain(displayName = "source", normalExplain = false)  
+  @Explain(displayName = "source", explainLevels = { Level.EXTENDED })
   public Path getSourcePath() {
     return sourcePath;
   }

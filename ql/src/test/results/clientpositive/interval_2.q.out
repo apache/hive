@@ -1,0 +1,231 @@
+PREHOOK: query: -- group-by/order-by/aggregation functions
+
+select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+order by iym asc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- group-by/order-by/aggregation functions
+
+select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+order by iym asc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0-1	3	0	0	0-1	0-1	0 01:01:01.000000000	0 01:01:01.000000000
+2-1	1	2	2	2-1	2-1	2 01:01:01.000000000	2 01:01:01.000000000
+4-1	1	4	4	4-1	4-1	4 01:01:01.000000000	4 01:01:01.000000000
+5-1	3	5	5	5-1	5-1	5 01:01:01.000000000	5 01:01:01.000000000
+8-1	1	8	8	8-1	8-1	8 01:01:01.000000000	8 01:01:01.000000000
+PREHOOK: query: select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+order by iym desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+order by iym desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+498-1	3	498	498	498-1	498-1	498 01:01:01.000000000	498 01:01:01.000000000
+497-1	1	497	497	497-1	497-1	497 01:01:01.000000000	497 01:01:01.000000000
+496-1	1	496	496	496-1	496-1	496 01:01:01.000000000	496 01:01:01.000000000
+495-1	1	495	495	495-1	495-1	495 01:01:01.000000000	495 01:01:01.000000000
+494-1	1	494	494	494-1	494-1	494 01:01:01.000000000	494 01:01:01.000000000
+PREHOOK: query: -- same query as previous, with having clause
+select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+having max(idt) > interval '496 0:0:0' day to second
+order by iym desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- same query as previous, with having clause
+select
+  iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by iym 
+having max(idt) > interval '496 0:0:0' day to second
+order by iym desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+498-1	3	498	498	498-1	498-1	498 01:01:01.000000000	498 01:01:01.000000000
+497-1	1	497	497	497-1	497-1	497 01:01:01.000000000	497 01:01:01.000000000
+496-1	1	496	496	496-1	496-1	496 01:01:01.000000000	496 01:01:01.000000000
+PREHOOK: query: select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+order by idt asc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+order by idt asc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0 01:01:01.000000000	3	0	0	0-1	0-1	0 01:01:01.000000000	0 01:01:01.000000000
+2 01:01:01.000000000	1	2	2	2-1	2-1	2 01:01:01.000000000	2 01:01:01.000000000
+4 01:01:01.000000000	1	4	4	4-1	4-1	4 01:01:01.000000000	4 01:01:01.000000000
+5 01:01:01.000000000	3	5	5	5-1	5-1	5 01:01:01.000000000	5 01:01:01.000000000
+8 01:01:01.000000000	1	8	8	8-1	8-1	8 01:01:01.000000000	8 01:01:01.000000000
+PREHOOK: query: select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+order by idt desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+order by idt desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+498 01:01:01.000000000	3	498	498	498-1	498-1	498 01:01:01.000000000	498 01:01:01.000000000
+497 01:01:01.000000000	1	497	497	497-1	497-1	497 01:01:01.000000000	497 01:01:01.000000000
+496 01:01:01.000000000	1	496	496	496-1	496-1	496 01:01:01.000000000	496 01:01:01.000000000
+495 01:01:01.000000000	1	495	495	495-1	495-1	495 01:01:01.000000000	495 01:01:01.000000000
+494 01:01:01.000000000	1	494	494	494-1	494-1	494 01:01:01.000000000	494 01:01:01.000000000
+PREHOOK: query: -- same query as previous, with having clause
+select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+having max(iym) < interval '496-0' year to month
+order by idt desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- same query as previous, with having clause
+select
+  idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+group by idt 
+having max(iym) < interval '496-0' year to month
+order by idt desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+495 01:01:01.000000000	1	495	495	495-1	495-1	495 01:01:01.000000000	495 01:01:01.000000000
+494 01:01:01.000000000	1	494	494	494-1	494-1	494 01:01:01.000000000	494 01:01:01.000000000
+493 01:01:01.000000000	1	493	493	493-1	493-1	493 01:01:01.000000000	493 01:01:01.000000000
+492 01:01:01.000000000	2	492	492	492-1	492-1	492 01:01:01.000000000	492 01:01:01.000000000
+491 01:01:01.000000000	1	491	491	491-1	491-1	491 01:01:01.000000000	491 01:01:01.000000000
+PREHOOK: query: select
+  count(iym), count(idt), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  count(iym), count(idt), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
+from (
+  select
+    key,
+    interval_year_month(concat(key, '-1')) as iym,
+    interval_day_time(concat(key, ' 1:1:1')) as idt
+  from src) q1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500	500	0	98	0-1	498-1	0 01:01:01.000000000	498 01:01:01.000000000

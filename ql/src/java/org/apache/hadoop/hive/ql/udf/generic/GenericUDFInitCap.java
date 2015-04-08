@@ -18,24 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+
 import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringInitCap;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.Text;
 
 /**
  * UDFInitCap.
@@ -48,76 +43,43 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
     extended = "Example:\n" + " > SELECT _FUNC_('tHe soap') FROM src LIMIT 1;\n" + " 'The Soap'")
 @VectorizedExpressions({ StringInitCap.class })
 public class GenericUDFInitCap extends GenericUDF {
-  private transient PrimitiveObjectInspector argumentOI;
-  private transient StringConverter stringConverter;
-  private transient PrimitiveCategory returnType = PrimitiveCategory.STRING;
-  private transient GenericUDFUtils.StringHelper returnHelper;
+  private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[1];
+  private transient Converter[] converters = new Converter[1];
+  private final Text output = new Text();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 1) {
-      throw new UDFArgumentLengthException("INITCAP requires 1 argument, got " + arguments.length);
-    }
-    if (arguments[0].getCategory() != Category.PRIMITIVE) {
-      throw new UDFArgumentException("INITCAP only takes primitive types, got "
-          + argumentOI.getTypeName());
-    }
-    argumentOI = (PrimitiveObjectInspector) arguments[0];
-    stringConverter = new PrimitiveObjectInspectorConverter.StringConverter(argumentOI);
-    PrimitiveCategory inputType = argumentOI.getPrimitiveCategory();
-    ObjectInspector outputOI = null;
-    BaseCharTypeInfo typeInfo;
-    switch (inputType) {
-    case CHAR:
-      // return type should have same length as the input.
-      returnType = inputType;
-      typeInfo = TypeInfoFactory.getCharTypeInfo(GenericUDFUtils.StringHelper
-          .getFixedStringSizeForType(argumentOI));
-      outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
-      break;
-    case VARCHAR:
-      // return type should have same length as the input.
-      returnType = inputType;
-      typeInfo = TypeInfoFactory.getVarcharTypeInfo(GenericUDFUtils.StringHelper
-          .getFixedStringSizeForType(argumentOI));
-      outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
-      break;
-    default:
-      returnType = PrimitiveCategory.STRING;
-      outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      break;
-    }
-    returnHelper = new GenericUDFUtils.StringHelper(returnType);
+    checkArgsSize(arguments, 1, 1);
+
+    checkArgPrimitive(arguments, 0);
+
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP);
+
+    obtainStringConverter(arguments, 0, inputTypes, converters);
+
+    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    String val = null;
-    if (arguments[0] != null) {
-      val = (String) stringConverter.convert(arguments[0].get());
-    }
+    String val = getStringValue(arguments, 0, converters);
     if (val == null) {
       return null;
     }
 
-    val = WordUtils.capitalizeFully(val);
-
-    return returnHelper.setReturnValue(val);
+    String valCap = WordUtils.capitalizeFully(val);
+    output.set(valCap);
+    return output;
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("initcap(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(",");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString(getFuncName(), children);
+  }
+
+  @Override
+  protected String getFuncName() {
+    return "initcap";
   }
 }

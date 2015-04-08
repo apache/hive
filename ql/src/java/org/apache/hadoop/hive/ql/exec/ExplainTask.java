@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,6 +40,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
+import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -48,7 +49,9 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -289,9 +292,24 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           JSONObject jsonDependencies = getJSONDependencies(work);
           out.print(jsonDependencies);
         } else {
-          JSONObject jsonPlan = getJSONPlan(out, work);
-          if (work.isFormatted()) {
-            out.print(jsonPlan);
+          if (work.isUserLevelExplain()) {
+            JsonParser jsonParser = JsonParserFactory.getParser(conf);
+            if (jsonParser != null) {
+              work.setFormatted(true);
+              JSONObject jsonPlan = getJSONPlan(out, work);
+              if (work.getCboInfo() != null) {
+                jsonPlan.put("cboInfo", work.getCboInfo());
+              }
+              jsonParser.print(jsonPlan, out);
+            } else {
+              throw new SemanticException(
+                  "Hive UserLevelExplain only supports tez engine right now.");
+            }
+          } else {
+            JSONObject jsonPlan = getJSONPlan(out, work);
+            if (work.isFormatted()) {
+              out.print(jsonPlan);
+            }
           }
         }
       }
@@ -478,11 +496,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           json.put(ent.getKey().toString(), ent.getValue().toString());
         }
       }
-      else if (ent.getValue() instanceof Serializable) {
+      else if (ent.getValue() != null) {
         if (out != null) {
           out.println();
         }
-        JSONObject jsonOut = outputPlan((Serializable) ent.getValue(), out,
+        JSONObject jsonOut = outputPlan(ent.getValue(), out,
             extended, jsonOutput, jsonOutput ? 0 : indent + 2);
         if (jsonOutput) {
           json.put(ent.getKey().toString(), jsonOut);
@@ -518,11 +536,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
         nl = true;
       }
-      else if (o instanceof Serializable) {
+      else {
         if (first_el && (out != null) && hasHeader) {
           out.println();
         }
-        JSONObject jsonOut = outputPlan((Serializable) o, out, extended,
+        JSONObject jsonOut = outputPlan(o, out, extended,
             jsonOutput, jsonOutput ? 0 : (hasHeader ? indent + 2 : indent));
         if (jsonOutput) {
           outputArray.put(jsonOut);
@@ -553,12 +571,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return false;
   }
 
-  private JSONObject outputPlan(Serializable work,
+  private JSONObject outputPlan(Object work,
       PrintStream out, boolean extended, boolean jsonOutput, int indent) throws Exception {
     return outputPlan(work, out, extended, jsonOutput, indent, "");
   }
 
-  private JSONObject outputPlan(Serializable work, PrintStream out,
+  private JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     // Check if work has an explain annotation
     Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
@@ -567,7 +585,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (note instanceof Explain) {
       Explain xpl_note = (Explain) note;
-      if (extended || xpl_note.normalExplain()) {
+      boolean invokeFlag = false;
+      if (this.work.isUserLevelExplain()) {
+        invokeFlag = Level.USER.in(xpl_note.explainLevels());
+      } else {
+        if (extended) {
+          invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
+        } else {
+          invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+        }
+      }
+      if (invokeFlag) {
         keyJSONObject = xpl_note.displayName();
         if (out != null) {
           out.print(indentString(indent));
@@ -590,6 +618,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent, appender);
+        if (this.work.isUserLevelExplain()) {
+          if (jsonOut != null && jsonOut.length() > 0) {
+            ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
+                operator.getOperatorId());
+          }
+        }
         if (jsonOutput) {
             json = jsonOut;
         }
@@ -624,8 +658,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       if (note instanceof Explain) {
         Explain xpl_note = (Explain) note;
-
-        if (extended || xpl_note.normalExplain()) {
+        boolean invokeFlag = false;
+        if (this.work.isUserLevelExplain()) {
+          invokeFlag = Level.USER.in(xpl_note.explainLevels());
+        } else {
+          if (extended) {
+            invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
+          } else {
+            invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+          }
+        }
+        if (invokeFlag) {
 
           Object val = null;
           try {
@@ -678,7 +721,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           }
 
           // Try this as a map
-          try {
+          if (val instanceof Map) {
             // Go through the map and print out the stuff
             Map<?, ?> mp = (Map<?, ?>) val;
 
@@ -692,22 +735,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             }
             continue;
           }
-          catch (ClassCastException ce) {
-            // Ignore - all this means is that this is not a map
-          }
 
           // Try this as a list
-          try {
-            List l;
-
-            try {
-              l = (List) val;
-            } catch (ClassCastException e) {
-              Set s = (Set) val;
-              l = new LinkedList();
-              l.addAll(s);
-            }
-
+          if (val instanceof List || val instanceof Set) {
+            List l = val instanceof List ? (List)val : new ArrayList((Set)val);
             if (out != null && !skipHeader && l != null && !l.isEmpty()) {
               out.print(header);
             }
@@ -720,18 +751,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
             continue;
           }
-          catch (ClassCastException ce) {
-            // Ignore
-          }
 
           // Finally check if it is serializable
           try {
-            Serializable s = (Serializable) val;
-
             if (!skipHeader && out != null) {
               out.println(header);
             }
-            JSONObject jsonOut = outputPlan(s, out, extended, jsonOutput, ind);
+            JSONObject jsonOut = outputPlan(val, out, extended, jsonOutput, ind);
             if (jsonOutput) {
               if (!skipHeader) {
                 json.put(header, jsonOut);
@@ -779,7 +805,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return true;
   }
 
-  private JSONObject outputPlan(Task<? extends Serializable> task,
+  private JSONObject outputPlan(Task<?> task,
       PrintStream out, JSONObject parentJSON, boolean extended,
       boolean jsonOutput, int indent) throws Exception {
 
@@ -805,7 +831,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return null;
   }
 
-  private JSONObject outputDependencies(Task<? extends Serializable> task,
+  private JSONObject outputDependencies(Task<?> task,
       PrintStream out, JSONObject parentJson, boolean jsonOutput, boolean taskType, int indent)
       throws Exception {
 
@@ -830,7 +856,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     else {
       StringBuffer s = new StringBuffer();
       first = true;
-      for (Task<? extends Serializable> parent : task.getParentTasks()) {
+      for (Task<?> parent : task.getParentTasks()) {
         if (!first) {
           s.append(", ");
         }
@@ -847,7 +873,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     }
 
-    Task<? extends Serializable> currBackupTask = task.getBackupTask();
+    Task<?> currBackupTask = task.getBackupTask();
     if (currBackupTask != null) {
       if (out != null) {
         out.print(" has a backup stage: ");
@@ -862,7 +888,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         && ((ConditionalTask) task).getListTasks() != null) {
       StringBuffer s = new StringBuffer();
       first = true;
-      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
+      for (Task<?> con : ((ConditionalTask) task).getListTasks()) {
         if (!first) {
           s.append(", ");
         }

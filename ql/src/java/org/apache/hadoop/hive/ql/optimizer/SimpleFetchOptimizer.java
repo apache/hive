@@ -22,9 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -95,12 +94,12 @@ public class SimpleFetchOptimizer implements Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
-    if (pctx.getQB().getIsQuery() && !pctx.getQB().getParseInfo().isAnalyzeCommand()
+    if (pctx.getQueryProperties().isQuery() && !pctx.getQueryProperties().isAnalyzeCommand()
         && topOps.size() == 1) {
       // no join, no groupby, no distinct, no lateral view, no subq,
       // no CTAS or insert, not analyze command, and single sourced.
       String alias = (String) pctx.getTopOps().keySet().toArray()[0];
-      Operator topOp = (Operator) pctx.getTopOps().values().toArray()[0];
+      Operator<?> topOp = (Operator<?>) pctx.getTopOps().values().toArray()[0];
       if (topOp instanceof TableScanOperator) {
         try {
           FetchTask fetchTask = optimize(pctx, alias, (TableScanOperator) topOp);
@@ -129,7 +128,7 @@ public class SimpleFetchOptimizer implements Transform {
         pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION);
 
     boolean aggressive = "more".equals(mode);
-    final int limit = pctx.getQB().getParseInfo().getOuterQueryLimit();
+    final int limit = pctx.getQueryProperties().getOuterQueryLimit();
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
@@ -179,8 +178,7 @@ public class SimpleFetchOptimizer implements Transform {
     if (!aggressive && splitSample != null) {
       return null;
     }
-    QB qb = pctx.getQB();
-    if (!aggressive && qb.hasTableSample(alias)) {
+    if (!aggressive && ts.getConf().getTableSample() != null) {
       return null;
     }
     Table table = ts.getConf().getTableMetadata();

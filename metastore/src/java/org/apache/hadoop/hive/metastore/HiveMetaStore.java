@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -84,6 +85,8 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
@@ -165,6 +168,7 @@ import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
@@ -217,6 +221,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -233,6 +238,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
   // embedded metastore or a remote one
   private static boolean isMetaStoreRemote = false;
+
+  // Used for testing to simulate method timeout.
+  @VisibleForTesting
+  static boolean TEST_TIMEOUT_ENABLED = false;
+  @VisibleForTesting
+  static long TEST_TIMEOUT_VALUE = -1;
 
   /** A fixed date format to be used for hive partition column values. */
   public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
@@ -343,9 +354,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder) fmt.out()).setLength(0);
 
-      String address;
+      String address = null;
       if (useSasl) {
-        address = saslServer.getRemoteAddress().toString();
+        if (saslServer != null && saslServer.getRemoteAddress() != null) {
+          address = String.valueOf(saslServer.getRemoteAddress());
+        }
       } else {
         address = getIpAddress();
       }
@@ -465,6 +478,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS));
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS));
+      listeners.add(new SessionPropertiesListener(hiveConf));
       endFunctionListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreEndFunctionListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS));
@@ -889,6 +903,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         } catch (NoSuchObjectException e) {
           // expected
+        }
+
+        if (TEST_TIMEOUT_ENABLED) {
+          try {
+            Thread.sleep(TEST_TIMEOUT_VALUE);
+          } catch (InterruptedException e) {
+            // do nothing
+          }
+          Deadline.checkTimeout();
         }
 
         create_database_core(getMS(), db);
@@ -1526,8 +1549,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
-          boolean ifPurge = envContext != null &&
-              Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                            ||
+                             (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge);
           // Delete the data in the table
@@ -2569,15 +2600,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
           if (tbl != null && !isExternal(tbl)) {
+            // Data needs deletion. Check if trash may be skipped.
+            // Trash may be skipped iff:
+            //  1. deleteData == true, obviously.
+            //  2. tbl is external.
+            //  3. Either
+            //    3.1. User has specified PURGE from the commandline, and if not,
+            //    3.2. User has set the table to auto-purge.
+            boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                                ||
+                                 (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+            if (mustPurge) {
+              LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
+            }
+            else {
+              LOG.info("dropPartition() will move " + partPath + " to trash-directory.");
+            }
             // Archived partitions have har:/to_har_file as their location.
             // The original directory was saved in params
             if (isArchived) {
               assert (archiveParentDir != null);
-              wh.deleteDir(archiveParentDir, true);
+              wh.deleteDir(archiveParentDir, true, mustPurge);
             } else {
               assert (partPath != null);
-              wh.deleteDir(partPath, true);
-              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1);
+              wh.deleteDir(partPath, true, mustPurge);
+              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge);
             }
             // ok even if the data is not deleted
           }
@@ -2592,10 +2639,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return true;
     }
 
-    private void deleteParentRecursive(Path parent, int depth) throws IOException, MetaException {
+    private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
-        wh.deleteDir(parent, true);
-        deleteParentRecursive(parent.getParent(), depth - 1);
+        wh.deleteDir(parent, true, mustPurge);
+        deleteParentRecursive(parent.getParent(), depth - 1, mustPurge);
       }
     }
 
@@ -2722,15 +2769,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal(tbl)) {
+          // Data needs deletion. Check if trash may be skipped.
+          // Trash may be skipped iff:
+          //  1. deleteData == true, obviously.
+          //  2. tbl is external.
+          //  3. Either
+          //    3.1. User has specified PURGE from the commandline, and if not,
+          //    3.2. User has set the table to auto-purge.
+          boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+                              ||
+                              (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+          LOG.info( mustPurge?
+                      "dropPartition() will purge partition-directories directly, skipping trash."
+                    :  "dropPartition() will move partition-directories to trash-directory.");
           // Archived partitions have har:/to_har_file as their location.
           // The original directory was saved in params
           for (Path path : archToDelete) {
-            wh.deleteDir(path, true);
+            wh.deleteDir(path, true, mustPurge);
           }
           for (PathAndPartValSize p : dirsToDelete) {
-            wh.deleteDir(p.path, true);
+            wh.deleteDir(p.path, true, mustPurge);
             try {
-              deleteParentRecursive(p.path.getParent(), p.partValSize - 1);
+              deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge);
             } catch (IOException ex) {
               LOG.warn("Error from deleteParentRecursive", ex);
               throw new MetaException("Failed to delete parent: " + ex.getMessage());
@@ -3399,13 +3459,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<FieldSchema> get_fields(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
-      startFunction("get_fields", ": db=" + db + "tbl=" + tableName);
+      return get_fields_with_environment_context(db, tableName, null);
+    }
+
+    @Override
+    public List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
+        final EnvironmentContext envContext)
+        throws MetaException, UnknownTableException, UnknownDBException {
+      startFunction("get_fields_with_environment_context", ": db=" + db + "tbl=" + tableName);
       String[] names = tableName.split("\\.");
       String base_table_name = names[0];
 
       Table tbl;
       List<FieldSchema> ret = null;
       Exception ex = null;
+      ClassLoader orgHiveLoader = null;
+      Configuration curConf = hiveConf;
       try {
         try {
           tbl = get_table_core(db, base_table_name);
@@ -3418,7 +3487,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ret = tbl.getSd().getCols();
         } else {
           try {
-            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl, false);
+            if (envContext != null) {
+              String addedJars = envContext.getProperties().get("hive.added.jars.path");
+              if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+                //for thread safe
+                curConf = getConf();
+                orgHiveLoader = curConf.getClassLoader();
+                ClassLoader loader = MetaStoreUtils.addToClassPath(orgHiveLoader, org.apache.commons.lang.StringUtils.split(addedJars, ","));
+                curConf.setClassLoader(loader);
+              }
+            }
+
+            Deserializer s = MetaStoreUtils.getDeserializer(curConf, tbl, false);
             ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
           } catch (SerDeException e) {
             StringUtils.stringifyException(e);
@@ -3437,7 +3517,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        endFunction("get_fields", ret != null, ex, tableName);
+        if (orgHiveLoader != null) {
+          curConf.setClassLoader(orgHiveLoader);
+        }
+        endFunction("get_fields_with_environment_context", ret != null, ex, tableName);
       }
 
       return ret;
@@ -3459,7 +3542,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<FieldSchema> get_schema(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
-      startFunction("get_schema", ": db=" + db + "tbl=" + tableName);
+      return get_schema_with_environment_context(db,tableName, null);
+    }
+
+
+    /**
+     * Return the schema of the table. This function includes partition columns
+     * in addition to the regular columns.
+     *
+     * @param db
+     *          Name of the database
+     * @param tableName
+     *          Name of the table
+     * @param envContext
+     *          Store session based properties
+     * @return List of columns, each column is a FieldSchema structure
+     * @throws MetaException
+     * @throws UnknownTableException
+     * @throws UnknownDBException
+     */
+    @Override
+    public List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
+          final EnvironmentContext envContext)
+        throws MetaException, UnknownTableException, UnknownDBException {
+      startFunction("get_schema_with_environment_context", ": db=" + db + "tbl=" + tableName);
       boolean success = false;
       Exception ex = null;
       try {
@@ -3472,7 +3578,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (NoSuchObjectException e) {
           throw new UnknownTableException(e.getMessage());
         }
-        List<FieldSchema> fieldSchemas = get_fields(db, base_table_name);
+        List<FieldSchema> fieldSchemas = get_fields_with_environment_context(db, base_table_name,envContext);
 
         if (tbl == null || fieldSchemas == null) {
           throw new UnknownTableException(tableName + " doesn't exist");
@@ -3499,7 +3605,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw me;
         }
       } finally {
-        endFunction("get_schema", success, ex, tableName);
+        endFunction("get_schema_with_environment_context", success, ex, tableName);
       }
     }
 
@@ -4096,12 +4202,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public TableStatsResult get_table_statistics_req(TableStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_table_statistics_req: db=" + dbName + " table=" + tblName);
       TableStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
       try {
-        ColumnStatistics cs = getMS().getTableColumnStatistics(
-            dbName, tblName, request.getColNames());
+        ColumnStatistics cs = getMS().getTableColumnStatistics(dbName, tblName, lowerCaseColNames);
         result = new TableStatsResult(
             cs == null ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
       } finally {
@@ -4139,13 +4249,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
         throws MetaException, NoSuchObjectException, TException {
-      String dbName = request.getDbName(), tblName = request.getTblName();
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
       startFunction("get_partitions_statistics_req: db=" + dbName + " table=" + tblName);
 
       PartitionsStatsResult result = null;
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
-            dbName, tblName, request.getPartNames(), request.getColNames());
+            dbName, tblName, lowerCasePartNames, lowerCaseColNames);
         Map<String, List<ColumnStatisticsObj>> map =
             new HashMap<String, List<ColumnStatisticsObj>>();
         for (ColumnStatistics stat : stats) {
@@ -4287,32 +4406,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().deleteTableColumnStatistics(dbName, tableName, colName);
       } finally {
         endFunction("delete_column_statistics_by_table: ", ret != false, null, tableName);
-      }
-      return ret;
-    }
-
-    @Override
-    public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
-        throws NoSuchObjectException, MetaException, TException {
-      startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
-      AggrStats aggrStats = null;
-      try {
-        aggrStats = new AggrStats(getMS().get_aggr_stats_for(request.getDbName(),
-            request.getTblName(), request.getPartNames(), request.getColNames()));
-        return aggrStats;
-      } finally {
-        endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
-      }
-
-    }
-
-    @Override
-    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
-        throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
-        TException {
-      boolean ret = true;
-      for (ColumnStatistics colStats : request.getColStats()) {
-        ret = ret && update_partition_column_statistics(colStats);
       }
       return ret;
     }
@@ -5385,6 +5478,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void add_dynamic_partitions(AddDynamicPartitions rqst)
+        throws NoSuchTxnException, TxnAbortedException, TException {
+      getTxnHandler().addDynamicPartitions(rqst);
+    }
+
+    @Override
     public GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)
         throws MetaException, TException {
 
@@ -5444,6 +5543,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public AggrStats get_aggr_stats_for(PartitionsStatsRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      String dbName = request.getDbName().toLowerCase();
+      String tblName = request.getTblName().toLowerCase();
+      startFunction("get_aggr_stats_for: db=" + request.getDbName() + " table=" + request.getTblName());
+
+      List<String> lowerCaseColNames = new ArrayList<String>(request.getColNames().size());
+      for (String colName : request.getColNames()) {
+        lowerCaseColNames.add(colName.toLowerCase());
+      }
+      List<String> lowerCasePartNames = new ArrayList<String>(request.getPartNames().size());
+      for (String partName : request.getPartNames()) {
+        lowerCasePartNames.add(lowerCaseConvertPartName(partName));
+      }
+      AggrStats aggrStats = null;
+
+      try {
+        aggrStats = new AggrStats(getMS().get_aggr_stats_for(dbName, tblName, lowerCasePartNames,
+            lowerCaseColNames));
+        return aggrStats;
+      } finally {
+          endFunction("get_partitions_statistics_req: ", aggrStats == null, null, request.getTblName());
+      }
+
+    }
+
+    @Override
+    public boolean set_aggr_stats_for(SetPartitionsStatsRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
+        TException {
+      boolean ret = true;
+      for (ColumnStatistics colStats : request.getColStats()) {
+        ret = ret && update_partition_column_statistics(colStats);
+      }
+      return ret;
+    }
+
+    @Override
     public NotificationEventResponse get_next_notification(NotificationEventRequest rqst)
         throws TException {
       RawStore ms = getMS();
@@ -5454,6 +5591,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public CurrentNotificationEventId get_current_notificationEventId() throws TException {
       RawStore ms = getMS();
       return ms.getCurrentNotificationEventId();
+    }
+
+    @Override
+    public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
+      switch (rqst.getData().getSetField()) {
+        case INSERT_DATA:
+          InsertEvent event = new InsertEvent(rqst.getDbName(), rqst.getTableName(),
+              rqst.getPartitionVals(), rqst.getData().getInsertData().getFilesAdded(),
+              rqst.isSuccessful(), this);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onInsert(event);
+          }
+          return new FireEventResponse();
+
+        default:
+          throw new TException("Event type " + rqst.getData().getSetField().toString() +
+              " not currently supported.");
+      }
+
     }
   }
 
@@ -5804,6 +5960,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // don't doom the rest of the metastore.
         startLock.lock();
         try {
+          startPauseMonitor(conf);
+        } catch (Throwable t) {
+          LOG.warn("Error starting the JVM pause monitor", t);
+        }
+        try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
           while (!startedServing.get()) startCondition.await();
@@ -5820,6 +5981,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     t.start();
+  }
+
+  private static void startPauseMonitor(HiveConf conf) throws Exception {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
+        new org.apache.hadoop.util.JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
+               " GCs and Pauses may not be warned upon.", t);
+    }
   }
 
   private static void startCompactorInitiator(HiveConf conf) throws Exception {

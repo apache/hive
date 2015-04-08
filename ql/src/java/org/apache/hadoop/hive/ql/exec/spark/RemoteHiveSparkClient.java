@@ -17,15 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,6 +40,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -47,14 +53,12 @@ import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
 import org.apache.hive.spark.client.SparkClientFactory;
+import org.apache.hive.spark.client.SparkClientUtilities;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 
 /**
  * RemoteSparkClient is a wrapper of {@link org.apache.hive.spark.client.SparkClient}, which
@@ -73,13 +77,16 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient SparkConf sparkConf;
   private transient HiveConf hiveConf;
 
-  private transient List<String> localJars = new ArrayList<String>();
-  private transient List<String> localFiles = new ArrayList<String>();
+  private transient List<URI> localJars = new ArrayList<URI>();
+  private transient List<URI> localFiles = new ArrayList<URI>();
+
+  private final transient long sparkClientTimtout;
 
   RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws IOException, SparkException {
     this.hiveConf = hiveConf;
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
-    remoteClient = SparkClientFactory.createClient(conf);
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf);
+    sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
   }
 
   @Override
@@ -89,17 +96,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public int getExecutorCount() throws Exception {
-    long timeout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
     Future<Integer> handler = remoteClient.getExecutorCount();
-    return handler.get(timeout, TimeUnit.SECONDS).intValue();
+    return handler.get(sparkClientTimtout, TimeUnit.SECONDS).intValue();
   }
 
   @Override
   public int getDefaultParallelism() throws Exception {
-    long timeout = hiveConf.getTimeVar(
-        HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
     Future<Integer> handler = remoteClient.getDefaultParallelism();
-    return handler.get(timeout, TimeUnit.SECONDS);
+    return handler.get(sparkClientTimtout, TimeUnit.SECONDS);
   }
 
   @Override
@@ -118,14 +122,13 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     byte[] scratchDirBytes = KryoSerializer.serialize(emptyScratchDir);
     byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
 
-    long timeout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
-
-    JobHandle<Serializable> jobHandle = remoteClient.submit(
-        new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes));
-    return new SparkJobRef(jobHandle.getClientJobId(), new RemoteSparkJobStatus(remoteClient, jobHandle, timeout));
+    JobStatusJob job = new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes);
+    JobHandle<Serializable> jobHandle = remoteClient.submit(job);
+    RemoteSparkJobStatus sparkJobStatus = new RemoteSparkJobStatus(remoteClient, jobHandle, sparkClientTimtout);
+    return new RemoteSparkJobRef(hiveConf, jobHandle, sparkJobStatus);
   }
 
-  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {
+  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
     // add hive-exec jar
     addJars((new JobConf(this.getClass())).getJar());
 
@@ -157,28 +160,32 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     addResources(addedArchives);
   }
 
-  private void addResources(String addedFiles) {
+  private void addResources(String addedFiles) throws IOException {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
-      if (!localFiles.contains(addedFile)) {
-        localFiles.add(addedFile);
-        try {
-          remoteClient.addFile(SparkUtilities.getURL(addedFile));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add file:" + addedFile);
+      try {
+        URI fileUri = SparkUtilities.getURI(addedFile);
+        if (fileUri != null && !localFiles.contains(fileUri)) {
+          fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
+          localFiles.add(fileUri);
+          remoteClient.addFile(fileUri);
         }
+      } catch (URISyntaxException e) {
+        LOG.warn("Failed to add file:" + addedFile, e);
       }
     }
   }
 
-  private void addJars(String addedJars) {
+  private void addJars(String addedJars) throws IOException {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
-      if (!localJars.contains(addedJar)) {
-        localJars.add(addedJar);
-        try {
-          remoteClient.addJar(SparkUtilities.getURL(addedJar));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add jar:" + addedJar);
+      try {
+        URI jarUri = SparkUtilities.getURI(addedJar);
+        if (jarUri != null && !localJars.contains(jarUri)) {
+          jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
+          localJars.add(jarUri);
+          remoteClient.addJar(jarUri);
         }
+      } catch (URISyntaxException e) {
+        LOG.warn("Failed to add jar:" + addedJar, e);
       }
     }
   }
@@ -208,6 +215,15 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     @Override
     public Serializable call(JobContext jc) throws Exception {
       JobConf localJobConf = KryoSerializer.deserializeJobConf(jobConfBytes);
+
+      // Add jar to current thread class loader dynamically, and add jar paths to JobConf as Spark
+      // may need to load classes from this jar in other threads.
+      List<String> addedJars = jc.getAddedJars();
+      if (addedJars != null && !addedJars.isEmpty()) {
+        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]));
+        localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
+      }
+
       Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
       SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
 
@@ -234,7 +250,6 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
       return null;
     }
-
   }
 
 }

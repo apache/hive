@@ -193,6 +193,9 @@ public class ParseDriver {
       lexer.setHiveConf(ctx.getConf());
     }
     HiveParser parser = new HiveParser(tokens);
+    if (ctx != null) {
+      parser.setHiveConf(ctx.getConf());
+    }
     parser.setTreeAdaptor(adaptor);
     HiveParser.statement_return r = null;
     try {

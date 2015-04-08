@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -64,7 +66,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
   /* (non-Javadoc)
    * This processor addresses the RS-MJ case that occurs in tez on the small/hash
-   * table side of things. The work that RS will be a part of must be connected 
+   * table side of things. The work that RS will be a part of must be connected
    * to the MJ work via be a broadcast edge.
    * We should not walk down the tree when we encounter this pattern because:
    * the type of work (map work or reduce work) needs to be determined
@@ -91,7 +93,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     parentRS.setSkipTag(true);
     // remember the original parent list before we start modifying it.
     if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
-      List<Operator<?>> parents = new ArrayList(mapJoinOp.getParentOperators());
+      List<Operator<?>> parents = new ArrayList<Operator<?>>(mapJoinOp.getParentOperators());
       context.mapJoinParentMap.put(mapJoinOp, parents);
     }
 
@@ -122,12 +124,14 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     }
     MapJoinDesc joinConf = mapJoinOp.getConf();
     long keyCount = Long.MAX_VALUE, rowCount = Long.MAX_VALUE, bucketCount = 1;
+    long tableSize = Long.MAX_VALUE;
     Statistics stats = parentRS.getStatistics();
     if (stats != null) {
       keyCount = rowCount = stats.getNumRows();
       if (keyCount <= 0) {
         keyCount = rowCount = Long.MAX_VALUE;
       }
+      tableSize = stats.getDataSize();
       ArrayList<String> keyCols = parentRS.getConf().getOutputKeyColumnNames();
       if (keyCols != null && !keyCols.isEmpty()) {
         // See if we can arrive at a smaller number using distinct stats from key columns.
@@ -155,6 +159,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           // We cannot obtain a better estimate without CustomPartitionVertex providing it
           // to us somehow; in which case using statistics would be completely unnecessary.
           keyCount /= bucketCount;
+          tableSize /= bucketCount;
         }
       }
     }
@@ -164,6 +169,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (keyCount != Long.MAX_VALUE) {
       joinConf.getParentKeyCounts().put(pos, keyCount);
     }
+    joinConf.getParentDataSizes().put(pos, tableSize);
 
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;
@@ -173,10 +179,44 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
 
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
-      if (joinConf.getCustomBucketMapJoin()) {
-        edgeType = EdgeType.CUSTOM_EDGE;
+      /*
+       * Here, we can be in one of 4 states.
+       *
+       * 1. If map join work is null implies that we have not yet traversed the big table side. We
+       * just need to see if we can find a reduce sink operator in the big table side. This would
+       * imply a reduce side operation.
+       *
+       * 2. If we don't find a reducesink in 1 it has to be the case that it is a map side operation.
+       *
+       * 3. If we have already created a work item for the big table side, we need to see if we can
+       * find a table scan operator in the big table side. This would imply a map side operation.
+       *
+       * 4. If we don't find a table scan operator, it has to be a reduce side operation.
+       */
+      if (mapJoinWork == null) {
+        Operator<?> rootOp =
+          OperatorUtils.findSingleOperatorUpstream(
+              mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+              ReduceSinkOperator.class);
+        if (rootOp == null) {
+          // likely we found a table scan operator
+          edgeType = EdgeType.CUSTOM_EDGE;
+        } else {
+          // we have found a reduce sink
+          edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+        }
       } else {
-        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+        Operator<?> rootOp =
+            OperatorUtils.findSingleOperatorUpstream(
+                mapJoinOp.getParentOperators().get(joinConf.getPosBigTable()),
+                TableScanOperator.class);
+        if (rootOp != null) {
+          // likely we found a table scan operator
+          edgeType = EdgeType.CUSTOM_EDGE;
+        } else {
+          // we have found a reduce sink
+          edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+        }
       }
     }
     TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
@@ -196,7 +236,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           LOG.debug("Cloning reduce sink for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-              (ReduceSinkDesc) parentRS.getConf().clone(), parentRS.getParentOperators());
+              (ReduceSinkDesc) parentRS.getConf().clone(),
+              new RowSchema(parentRS.getSchema()),
+              parentRS.getParentOperators());
           context.clonedReduceSinks.add(r);
         } else {
           r = parentRS;
@@ -216,8 +258,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     }
     linkWorkMap.put(parentWork, edgeProp);
     context.linkOpWithWorkMap.put(mapJoinOp, linkWorkMap);
-    
-    List<ReduceSinkOperator> reduceSinks 
+
+    List<ReduceSinkOperator> reduceSinks
       = context.linkWorkWithReduceSinkMap.get(parentWork);
     if (reduceSinks == null) {
       reduceSinks = new ArrayList<ReduceSinkOperator>();

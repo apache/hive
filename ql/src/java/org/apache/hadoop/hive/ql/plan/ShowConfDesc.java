@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
 
@@ -41,7 +42,7 @@ public class ShowConfDesc extends DDLDesc implements Serializable {
     this.confName = confName;
   }
 
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public Path getResFile() {
     return resFile;
   }
@@ -50,7 +51,7 @@ public class ShowConfDesc extends DDLDesc implements Serializable {
     this.resFile = resFile;
   }
 
-  @Explain(displayName = "conf name", normalExplain = false)
+  @Explain(displayName = "conf name", explainLevels = { Level.EXTENDED })
   public String getConfName() {
     return confName;
   }

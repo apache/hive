@@ -43,6 +43,7 @@ public class OrcSplit extends FileSplit {
   private boolean hasBase;
   private final List<Long> deltas = new ArrayList<Long>();
   private OrcFile.WriterVersion writerVersion;
+  private long projColsUncompressedSize;
 
   static final int BASE_FLAG = 4;
   static final int ORIGINAL_FLAG = 2;
@@ -57,13 +58,14 @@ public class OrcSplit extends FileSplit {
 
   public OrcSplit(Path path, long offset, long length, String[] hosts,
       ReaderImpl.FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
-      List<Long> deltas) {
+      List<Long> deltas, long projectedDataSize) {
     super(path, offset, length, hosts);
     this.fileMetaInfo = fileMetaInfo;
     hasFooter = this.fileMetaInfo != null;
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.deltas.addAll(deltas);
+    this.projColsUncompressedSize = projectedDataSize;
   }
 
   @Override
@@ -148,5 +150,9 @@ public class OrcSplit extends FileSplit {
 
   public List<Long> getDeltas() {
     return deltas;
+  }
+
+  public long getProjectedColumnsUncompressedSize() {
+    return projColsUncompressedSize;
   }
 }

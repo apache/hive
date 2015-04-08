@@ -19,14 +19,14 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc
                   filterExpr: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(_col0)
                         mode: hash
@@ -44,17 +44,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: double)
-                  outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

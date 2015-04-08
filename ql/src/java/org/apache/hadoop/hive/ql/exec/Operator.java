@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -68,6 +69,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
   private transient ExecMapperContext execContext;
+  private transient boolean rootInitializeCalled = false;
 
   private static AtomicInteger seqId;
 
@@ -101,13 +103,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // dummy operator (for not increasing seqId)
   private Operator(String name) {
     id = name;
+    initOperatorId();
+    childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
   }
 
   public Operator() {
-    id = String.valueOf(seqId.getAndIncrement());
-    childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-    parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-    initOperatorId();
+    this(String.valueOf(seqId.getAndIncrement()));
   }
 
   public static void resetId() {
@@ -252,11 +254,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void setReporter(Reporter rep) {
     reporter = rep;
 
-    // the collector is same across all operators
-    if (childOperators == null) {
-      return;
-    }
-
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setReporter(rep);
     }
@@ -265,11 +262,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   @SuppressWarnings("rawtypes")
   public void setOutputCollector(OutputCollector out) {
     this.out = out;
-
-    // the collector is same across all operators
-    if (childOperators == null) {
-      return;
-    }
 
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setOutputCollector(out);
@@ -281,10 +273,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public void setAlias(String alias) {
     this.alias = alias;
-
-    if (childOperators == null) {
-      return;
-    }
 
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setAlias(alias);
@@ -306,9 +294,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *         otherwise
    */
   protected boolean areAllParentsInitialized() {
-    if (parentOperators == null) {
-      return true;
-    }
     for (Operator<? extends OperatorDesc> parent : parentOperators) {
       if (parent == null) {
         //return true;
@@ -332,7 +317,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @throws HiveException
    */
   @SuppressWarnings("unchecked")
-  public void initialize(Configuration hconf, ObjectInspector[] inputOIs)
+  public final void initialize(Configuration hconf, ObjectInspector[] inputOIs)
       throws HiveException {
     if (state == State.INIT) {
       return;
@@ -343,55 +328,78 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    LOG.info("Initializing Self " + this);
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing operator " + this);
+    }
 
     if (inputOIs != null) {
       inputObjInspectors = inputOIs;
     }
 
     // initialize structure to maintain child op info. operator tree changes
-    // while
-    // initializing so this need to be done here instead of initialize() method
-    if (childOperators != null && !childOperators.isEmpty()) {
-      childOperatorsArray = new Operator[childOperators.size()];
-      for (int i = 0; i < childOperatorsArray.length; i++) {
-        childOperatorsArray[i] = childOperators.get(i);
-      }
-      childOperatorsTag = new int[childOperatorsArray.length];
-      for (int i = 0; i < childOperatorsArray.length; i++) {
-        List<Operator<? extends OperatorDesc>> parentOperators = childOperatorsArray[i]
-            .getParentOperators();
-        if (parentOperators == null) {
-          throw new HiveException("Hive internal error: parent is null in "
-              + childOperatorsArray[i].getClass() + "!");
-        }
-        childOperatorsTag[i] = parentOperators.indexOf(this);
-        if (childOperatorsTag[i] == -1) {
-          throw new HiveException(
-              "Hive internal error: cannot find parent in the child operator!");
-        }
+    // while initializing so this need to be done here instead of constructor
+    childOperatorsArray = new Operator[childOperators.size()];
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      childOperatorsArray[i] = childOperators.get(i);
+    }
+    childOperatorsTag = new int[childOperatorsArray.length];
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      List<Operator<? extends OperatorDesc>> parentOperators =
+          childOperatorsArray[i].getParentOperators();
+      childOperatorsTag[i] = parentOperators.indexOf(this);
+      if (childOperatorsTag[i] == -1) {
+        throw new HiveException("Hive internal error: cannot find parent in the child operator!");
       }
     }
 
     if (inputObjInspectors.length == 0) {
       throw new HiveException("Internal Error during operator initialization.");
     }
+
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
 
-    //pass the exec context to child operators
-    passExecContext(this.execContext);
+    Collection<Future<?>> asyncInitOperations = initializeOp(hconf);
 
-    initializeOp(hconf);
-
-    // sanity check
-    if (childOperatorsArray == null
-        && !(childOperators == null || childOperators.isEmpty())) {
-      throw new HiveException(
-          "Internal Hive error during operator initialization.");
+    // sanity checks
+    if (!rootInitializeCalled
+	|| asyncInitOperations == null
+	|| childOperatorsArray.length != childOperators.size()) {
+      throw new AssertionError("Internal error during operator initialization");
     }
 
-    LOG.info("Initialization Done " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initialization Done " + id + " " + getName());
+    }
+
+    initializeChildren(hconf);
+
+    // let's wait on the async ops before continuing
+    completeInitialization(asyncInitOperations);
+  }
+
+  private void completeInitialization(Collection<Future<?>> fs) throws HiveException {
+    Object[] os = new Object[fs.size()];
+    int i = 0;
+    for (Future<?> f : fs) {
+      try {
+        os[i++] = f.get();
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
+    completeInitializationOp(os);
+  }
+
+  /**
+   * This metod can be used to retrieve the results from async operations
+   * started at init time - before the operator pipeline is started.
+   *
+   * @param os
+   * @throws HiveException
+   */
+  protected void completeInitializationOp(Object[] os) throws HiveException {
+    // no-op default
   }
 
   public void initializeLocalWork(Configuration hconf) throws HiveException {
@@ -406,8 +414,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /**
    * Operator specific initialization.
    */
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    initializeChildren(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    rootInitializeCalled = true;
+    return new ArrayList<Future<?>>();
   }
 
   /**
@@ -416,14 +425,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (isLogInfoEnabled) {
+      LOG.info("Operator " + id + " " + getName() + " initialized");
+    }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    LOG.info("Initializing children of " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing children of " + id + " " + getName());
+    }
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      childOperatorsArray[i].initialize(hconf, outputObjInspector,
-          childOperatorsTag[i]);
+      childOperatorsArray[i].initialize(hconf, outputObjInspector, childOperatorsTag[i]);
       if (reporter != null) {
         childOperatorsArray[i].setReporter(reporter);
       }
@@ -435,10 +447,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public void passExecContext(ExecMapperContext execContext) {
     this.setExecContext(execContext);
-    if(childOperators != null) {
-      for (int i = 0; i < childOperators.size(); i++) {
+    for (int i = 0; i < childOperators.size(); i++) {
         childOperators.get(i).passExecContext(execContext);
-      }
     }
   }
 
@@ -455,7 +465,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
-    LOG.info("Initializing child " + id + " " + getName());
+    if (isLogInfoEnabled) {
+      LOG.info("Initializing child " + id + " " + getName());
+    }
     // Double the size of the array if needed
     if (parentId >= inputObjInspectors.length) {
       int newLength = inputObjInspectors.length * 2;
@@ -491,7 +503,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *          Rows with the same tag should have exactly the same rowInspector
    *          all the time.
    */
-  public abstract void processOp(Object row, int tag) throws HiveException;
+  public abstract void process(Object row, int tag) throws HiveException;
 
   protected final void defaultStartGroup() throws HiveException {
     if (isLogDebugEnabled) {
@@ -565,7 +577,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         if(parent==null){
           continue;
         }
-        LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
+	if (isLogDebugEnabled) {
+	  LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
+	}
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -585,14 +599,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // check if all parents are finished
     if (!allInitializedParentsAreClosed()) {
-      LOG.debug("Not all parent operators are closed. Not closing.");
+      if (isLogDebugEnabled) {
+        LOG.debug("Not all parent operators are closed. Not closing.");
+      }
       return;
     }
 
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
-    LOG.info(id + " finished. closing... ");
+    if (isLogInfoEnabled) {
+      LOG.info(id + " finished. closing... ");
+    }
 
     // call the operator specific close routine
     closeOp(abort);
@@ -606,11 +624,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
-        LOG.debug("Closing child = " + op);
+	if (isLogDebugEnabled) {
+	  LOG.debug("Closing child = " + op);
+	}
         op.close(abort);
       }
 
-      LOG.info(id + " Close done");
+      if (isLogInfoEnabled) {
+	LOG.info(id + " Close done");
+      }
     } catch (HiveException e) {
       e.printStackTrace();
       throw e;
@@ -802,7 +824,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
 
-    if ((childOperatorsArray == null) || (getDone())) {
+    if (getDone()) {
       return;
     }
 
@@ -812,12 +834,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       if (o.getDone()) {
         childrenDone++;
       } else {
-        o.processOp(row, childOperatorsTag[i]);
+        o.process(row, childOperatorsTag[i]);
       }
     }
 
     // if all children are done, this operator is also done
-    if (childrenDone == childOperatorsArray.length) {
+    if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
       setDone(true);
     }
   }
@@ -856,8 +878,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void logStats() {
-    for (String e : statsMap.keySet()) {
-      LOG.info(e.toString() + ":" + statsMap.get(e).toString());
+    if (isLogInfoEnabled) {
+      for (String e : statsMap.keySet()) {
+        LOG.info(e.toString() + ":" + statsMap.get(e).toString());
+      }
     }
   }
 
@@ -947,7 +971,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * Initialize an array of ExprNodeEvaluator and return the result
    * ObjectInspectors.
    */
-  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator[] evals,
+  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator<?>[] evals,
       ObjectInspector rowInspector) throws HiveException {
     ObjectInspector[] result = new ObjectInspector[evals.length];
     for (int i = 0; i < evals.length; i++) {
@@ -960,7 +984,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * Initialize an array of ExprNodeEvaluator from start, for specified length
    * and return the result ObjectInspectors.
    */
-  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator[] evals,
+  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator<?>[] evals,
       int start, int length,
       ObjectInspector rowInspector) throws HiveException {
     ObjectInspector[] result = new ObjectInspector[length];
@@ -975,7 +999,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * StructObjectInspector with integer field names.
    */
   protected static StructObjectInspector initEvaluatorsAndReturnStruct(
-      ExprNodeEvaluator[] evals, List<String> outputColName,
+      ExprNodeEvaluator<?>[] evals, List<String> outputColName,
       ObjectInspector rowInspector) throws HiveException {
     ObjectInspector[] fieldObjectInspectors = initEvaluators(evals,
         rowInspector);
@@ -1037,12 +1061,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setExecContext(ExecMapperContext execContext) {
     this.execContext = execContext;
-    if(this.childOperators != null) {
-      for (int i = 0; i<this.childOperators.size();i++) {
-        Operator<? extends OperatorDesc> op = this.childOperators.get(i);
-        op.setExecContext(execContext);
-      }
-    }
   }
 
   // The input file has changed - every operator can invoke specific action
@@ -1106,6 +1124,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @return Cloned operator
    * @throws CloneNotSupportedException
    */
+  @SuppressWarnings("unchecked")
   public Operator<? extends OperatorDesc> cloneOp() throws CloneNotSupportedException {
     T descClone = (T) conf.clone();
     Operator<? extends OperatorDesc> ret =
@@ -1126,11 +1145,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       throws CloneNotSupportedException {
     Operator<? extends OperatorDesc> newOp = this.cloneOp();
     newOp.setParentOperators(this.parentOperators);
-    // Fix parent in all children
-    if (this.getChildOperators() == null) {
-      newOp.setChildOperators(null);
-      return newOp;
-    }
     List<Operator<? extends OperatorDesc>> newChildren =
         new ArrayList<Operator<? extends OperatorDesc>>();
 
@@ -1279,12 +1293,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (conf != null) {
       return conf.getStatistics();
     }
+
     return null;
   }
 
   public OpTraits getOpTraits() {
     if (conf != null) {
-      return conf.getOpTraits();
+      return conf.getTraits();
     }
 
     return null;
@@ -1292,43 +1307,47 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setOpTraits(OpTraits metaInfo) {
     if (isLogDebugEnabled) {
-      LOG.debug("Setting traits ("+metaInfo+") on "+this);
+      LOG.debug("Setting traits (" + metaInfo + ") on " + this);
     }
     if (conf != null) {
-      conf.setOpTraits(metaInfo);
+      conf.setTraits(metaInfo);
     } else {
-      LOG.warn("Cannot set traits when there's no descriptor: "+this);
+      LOG.warn("Cannot set traits when there's no descriptor: " + this);
     }
   }
 
   public void setStatistics(Statistics stats) {
     if (isLogDebugEnabled) {
-      LOG.debug("Setting stats ("+stats+") on "+this);
+      LOG.debug("Setting stats (" + stats + ") on " + this);
     }
     if (conf != null) {
       conf.setStatistics(stats);
     } else {
-      LOG.warn("Cannot set stats when there's no descriptor: "+this);
+      LOG.warn("Cannot set stats when there's no descriptor: " + this);
     }
   }
 
+  @SuppressWarnings("rawtypes")
   public static Operator createDummy() {
     return new DummyOperator();
   }
 
+  @SuppressWarnings({ "serial", "unchecked", "rawtypes" })
   private static class DummyOperator extends Operator {
     public DummyOperator() { super("dummy"); }
-    @Override
-    public void processOp(Object row, int tag) { }
-    @Override
-    public OperatorType getType() { return null; }
-  }
 
-  public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
-    if ((parentOperators == null) || (parentOperators.size() == 0)) {
+    @Override
+    public void process(Object row, int tag) {
+    }
+
+    @Override
+    public OperatorType getType() {
       return null;
     }
-    Map<Integer, DummyStoreOperator> dummyOps = parentOperators.get(0).getTagToOperatorTree();
-    return dummyOps;
+
+    @Override
+    protected Collection<Future<?>> initializeOp(Configuration conf) {
+      return childOperators;
+    }
   }
 }

@@ -1,4 +1,4 @@
-Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr
 -- JAVA_VERSION_SPECIFIC_OUTPUT
 
@@ -188,7 +188,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, corr
 explain
 select b.p_mfgr, min(p_retailprice) 
@@ -445,7 +445,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -470,7 +470,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-Warning: Shuffle Join JOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-3:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- agg, non corr
 explain
 select b.p_mfgr, min(p_retailprice) 
@@ -597,17 +597,13 @@ STAGE PLANS:
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 7 Data size: 951 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 7 Data size: 951 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 7 Data size: 951 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce
@@ -733,7 +729,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-3:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr

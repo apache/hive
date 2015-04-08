@@ -77,6 +77,10 @@ serdeConstants::serdeConstants() {
 
   BINARY_TYPE_NAME = "binary";
 
+  INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month";
+
+  INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time";
+
   LIST_TYPE_NAME = "array";
 
   MAP_TYPE_NAME = "map";
@@ -88,6 +92,8 @@ serdeConstants::serdeConstants() {
   LIST_COLUMNS = "columns";
 
   LIST_COLUMN_TYPES = "columns.types";
+
+  TIMESTAMP_FORMATS = "timestamp.formats";
 
   PrimitiveTypes.insert("void");
   PrimitiveTypes.insert("boolean");
@@ -103,6 +109,8 @@ serdeConstants::serdeConstants() {
   PrimitiveTypes.insert("date");
   PrimitiveTypes.insert("datetime");
   PrimitiveTypes.insert("timestamp");
+  PrimitiveTypes.insert("interval_year_month");
+  PrimitiveTypes.insert("interval_day_time");
   PrimitiveTypes.insert("decimal");
   PrimitiveTypes.insert("binary");
 

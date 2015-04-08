@@ -32,7 +32,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateSubColCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateSubColScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateSubScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -66,10 +68,8 @@ import org.apache.hadoop.io.IntWritable;
 @VectorizedExpressions({VectorUDFDateSubColScalar.class, VectorUDFDateSubScalarCol.class, VectorUDFDateSubColCol.class})
 public class GenericUDFDateSub extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient TimestampConverter timestampConverter;
-  private transient Converter textConverter;
-  private transient Converter dateWritableConverter;
-  private transient Converter intWritableConverter;
+  private transient Converter dateConverter;
+  private transient Converter daysConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
   private final Calendar calendar = Calendar.getInstance();
@@ -89,7 +89,7 @@ public class GenericUDFDateSub extends GenericUDF {
     if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(1,
           "Only primitive type arguments are accepted but "
-              + arguments[2].getTypeName() + " is passed. as second arguments");
+              + arguments[1].getTypeName() + " is passed. as second arguments");
     }
 
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
@@ -99,16 +99,16 @@ public class GenericUDFDateSub extends GenericUDF {
     case VARCHAR:
     case CHAR:
       inputType1 = PrimitiveCategory.STRING;
-      textConverter = ObjectInspectorConverters.getConverter(
+      dateConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       break;
     case TIMESTAMP:
-      timestampConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
+      dateConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
       break;
     case DATE:
-      dateWritableConverter = ObjectInspectorConverters.getConverter(
+      dateConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableDateObjectInspector);
       break;
@@ -119,52 +119,76 @@ public class GenericUDFDateSub extends GenericUDF {
     }
 
     inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
-    if (inputType2 != PrimitiveCategory.INT) {
-      throw new UDFArgumentException(
-        " DATE_SUB() only takes INT types as second  argument, got " + inputType2);
+    switch (inputType2) {
+      case BYTE:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+        break;
+      case SHORT:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableShortObjectInspector);
+        break;
+      case INT:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+        break;
+      default:
+        throw new UDFArgumentException(
+            " DATE_ADD() only takes TINYINT/SMALLINT/INT/BIGINT types as second argument, got " + inputType2);
     }
-    intWritableConverter = ObjectInspectorConverters.getConverter(
-      (PrimitiveObjectInspector) arguments[1],
-      PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-
     if (arguments[0].get() == null) {
       return null;
     }
-    IntWritable toBeSubed = (IntWritable) intWritableConverter.convert(arguments[1].get());
-    if (toBeSubed == null) {
+
+    Object daysWritableObject = daysConverter.convert(arguments[1].get());
+    if (daysWritableObject == null) {
+      return null;
+    }
+
+    int toBeSubed;
+    if (daysWritableObject instanceof ByteWritable) {
+      toBeSubed = ((ByteWritable) daysWritableObject).get();
+    } else if (daysWritableObject instanceof ShortWritable) {
+      toBeSubed = ((ShortWritable) daysWritableObject).get();
+    } else if (daysWritableObject instanceof IntWritable) {
+      toBeSubed = ((IntWritable) daysWritableObject).get();
+    } else {
       return null;
     }
 
     switch (inputType1) {
     case STRING:
-      String dateString = textConverter.convert(arguments[0].get()).toString();
+      String dateString = dateConverter.convert(arguments[0].get()).toString();
       try {
         calendar.setTime(formatter.parse(dateString.toString()));
-        calendar.add(Calendar.DAY_OF_MONTH, -toBeSubed.get());
       } catch (ParseException e) {
         return null;
       }
       break;
     case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
+      Timestamp ts = ((TimestampWritable) dateConverter.convert(arguments[0].get()))
         .getTimestamp();
       calendar.setTime(ts);
-      calendar.add(Calendar.DAY_OF_MONTH, -toBeSubed.get());
       break;
     case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
+      DateWritable dw = (DateWritable) dateConverter.convert(arguments[0].get());
       calendar.setTime(dw.get());
-      calendar.add(Calendar.DAY_OF_MONTH, -toBeSubed.get());
       break;
     default:
       throw new UDFArgumentException(
         "DATE_SUB() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
+
+    calendar.add(Calendar.DAY_OF_MONTH, -toBeSubed);
     Date newDate = calendar.getTime();
     output.set(formatter.format(newDate));
     return output;
@@ -172,16 +196,6 @@ public class GenericUDFDateSub extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("date_sub(");
-    if (children.length > 0) {
-      sb.append(children[0]);
-      for (int i = 1; i < children.length; i++) {
-        sb.append(", ");
-        sb.append(children[i]);
-      }
-    }
-    sb.append(")");
-    return sb.toString();
+    return getStandardDisplayString("date_sub", children);
   }
 }

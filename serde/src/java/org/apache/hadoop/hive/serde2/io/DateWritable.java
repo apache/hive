@@ -25,9 +25,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -44,8 +41,6 @@ import org.apache.hadoop.io.WritableUtils;
  *
  */
 public class DateWritable implements WritableComparable<DateWritable> {
-  private static final Log LOG = LogFactory.getLog(DateWritable.class);
-
   private static final long MILLIS_PER_DAY = TimeUnit.DAYS.toMillis(1);
 
   // Local time zone.
@@ -134,11 +129,21 @@ public class DateWritable implements WritableComparable<DateWritable> {
     return millisUtc - LOCAL_TIMEZONE.get().getOffset(tmp);
   }
 
+  public static int millisToDays(long millisLocal) {
+    long millisUtc = millisLocal + LOCAL_TIMEZONE.get().getOffset(millisLocal);
+    int days;
+    if (millisUtc >= 0L) {
+      days = (int) (millisUtc / MILLIS_PER_DAY);
+    } else {
+      days = (int) ((millisUtc - 86399999) / MILLIS_PER_DAY);
+    }
+    return days;
+  }
+
   public static int dateToDays(Date d) {
     // convert to equivalent time in UTC, then get day offset
     long millisLocal = d.getTime();
-    long millisUtc = millisLocal + LOCAL_TIMEZONE.get().getOffset(millisLocal);
-    return (int)(millisUtc / MILLIS_PER_DAY);
+    return millisToDays(millisLocal);
   }
 
   public void setFromBytes(byte[] bytes, int offset, int length, VInt vInt) {

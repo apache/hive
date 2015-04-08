@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.hive.hcatalog</groupId>
     <artifactId>hive-hcatalog</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -68,7 +68,6 @@
     </dependency>
   </dependencies>
 
-
   <profiles>
     <profile>
       <id>hadoop-1</id>
@@ -77,6 +76,12 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
           <version>${hadoop-20S.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-test</artifactId>
+          <version>${hadoop-20S.version}</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.pig</groupId>
@@ -102,6 +107,11 @@
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <version>${hadoop-23.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-core</artifactId>
           <version>${hadoop-23.version}</version>
         </dependency>
@@ -110,6 +120,12 @@
           <artifactId>pig</artifactId>
           <version>${pig.version}</version>
           <classifier>h2</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug
@@ -121,9 +137,28 @@
         <!-- Test dependencies -->
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-common</artifactId>
           <version>${hadoop-23.version}</version>
           <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-servlet</artifactId>
           <scope>test</scope>
         </dependency>
       </dependencies>

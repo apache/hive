@@ -48,12 +48,15 @@ class serdeConstants {
   std::string TIMESTAMP_TYPE_NAME;
   std::string DECIMAL_TYPE_NAME;
   std::string BINARY_TYPE_NAME;
+  std::string INTERVAL_YEAR_MONTH_TYPE_NAME;
+  std::string INTERVAL_DAY_TIME_TYPE_NAME;
   std::string LIST_TYPE_NAME;
   std::string MAP_TYPE_NAME;
   std::string STRUCT_TYPE_NAME;
   std::string UNION_TYPE_NAME;
   std::string LIST_COLUMNS;
   std::string LIST_COLUMN_TYPES;
+  std::string TIMESTAMP_FORMATS;
   std::set<std::string>  PrimitiveTypes;
   std::set<std::string>  CollectionTypes;
   std::set<std::string>  IntegralTypes;

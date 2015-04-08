@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -59,9 +57,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -89,22 +85,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  */
 public class MapJoinProcessor implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(MapJoinProcessor.class.getName());
   // mapjoin table descriptor contains a key descriptor which needs the field schema
   // (column type + column name). The column name is not really used anywhere, but it
   // needs to be passed. Use the string defined below for that.
   private static final String MAPJOINKEY_FIELDPREFIX = "mapjoinkey";
 
   public MapJoinProcessor() {
-  }
-
-  @SuppressWarnings("nls")
-  private static Operator<? extends OperatorDesc> putOpInsertMap (
-          ParseContext pGraphContext, Operator<? extends OperatorDesc> op,
-          RowResolver rr) {
-    OpParseContext ctx = new OpParseContext(rr);
-    pGraphContext.getOpParseCtx().put(op, ctx);
-    return op;
   }
 
   /**
@@ -224,12 +210,10 @@ public class MapJoinProcessor implements Transform {
   public static void genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork,
     JoinOperator op, int mapJoinPos)
       throws SemanticException {
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
-        newWork.getMapWork().getOpParseCtxMap();
     // generate the map join operator; already checked the map join
-    MapJoinOperator newMapJoinOp = new MapJoinProcessor().convertMapJoin(conf, opParseCtxMap, op,
-        newWork.getMapWork().isLeftInputJoin(), newWork.getMapWork().getBaseSrc(), newWork.getMapWork().getMapAliases(),
-        mapJoinPos, true, false);
+    MapJoinOperator newMapJoinOp = new MapJoinProcessor().convertMapJoin(conf, op,
+        newWork.getMapWork().isLeftInputJoin(), newWork.getMapWork().getBaseSrc(),
+        newWork.getMapWork().getMapAliases(), mapJoinPos, true, false);
     genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
   }
 
@@ -240,11 +224,9 @@ public class MapJoinProcessor implements Transform {
       // generate the local work for the big table alias
       MapJoinProcessor.genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
       // clean up the mapred work
-      newWork.getMapWork().setOpParseCtxMap(null);
       newWork.getMapWork().setLeftInputJoin(false);
       newWork.getMapWork().setBaseSrc(null);
       newWork.getMapWork().setMapAliases(null);
-
     } catch (Exception e) {
       e.printStackTrace();
       throw new SemanticException("Failed to generate new mapJoin operator " +
@@ -269,10 +251,8 @@ public class MapJoinProcessor implements Transform {
     if (!op.opAllowedAfterMapJoin()) {
       throw new SemanticException(ErrorMsg.OPERATOR_NOT_ALLOWED_WITH_MAPJOIN.getMsg());
     }
-    if (op.getChildOperators() != null) {
-      for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
-        checkChildOperatorType(childOp);
-      }
+    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+      checkChildOperatorType(childOp);
     }
   }
 
@@ -302,7 +282,6 @@ public class MapJoinProcessor implements Transform {
    * @param validateMapJoinTree
    */
   public MapJoinOperator convertMapJoin(HiveConf conf,
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
     JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
     int mapJoinPos, boolean noCheckOuterJoin, boolean validateMapJoinTree) throws SemanticException {
 
@@ -352,9 +331,8 @@ public class MapJoinProcessor implements Transform {
     }
 
     // create the map-join operator
-    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
+    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf,
         op, leftInputJoin, baseSrc, mapAliases, mapJoinPos, noCheckOuterJoin);
-
 
     // remove old parents
     for (pos = 0; pos < newParentOps.size(); pos++) {
@@ -376,22 +354,18 @@ public class MapJoinProcessor implements Transform {
   }
 
   public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
       JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
       int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
 
     MapJoinDesc mapJoinDescriptor =
-        getMapJoinDesc(hconf, opParseCtxMap, op, leftInputJoin, baseSrc, mapAliases,
+        getMapJoinDesc(hconf, op, leftInputJoin, baseSrc, mapAliases,
                 mapJoinPos, noCheckOuterJoin);
 
     // reduce sink row resolver used to generate map join op
-    RowResolver outputRS = opParseCtxMap.get(op).getRowResolver();
+    RowSchema outputRS = op.getSchema();
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        mapJoinDescriptor, new RowSchema(outputRS.getColumnInfos()), op.getParentOperators());
-
-    OpParseContext ctx = new OpParseContext(outputRS);
-    opParseCtxMap.put(mapJoinOp, ctx);
+        mapJoinDescriptor, new RowSchema(outputRS.getSignature()), op.getParentOperators());
 
     mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
     Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
@@ -434,7 +408,6 @@ public class MapJoinProcessor implements Transform {
    * @param noCheckOuterJoin
    */
   public static MapJoinOperator convertSMBJoinToMapJoin(HiveConf hconf,
-    Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
     SMBMapJoinOperator smbJoinOp, int bigTablePos, boolean noCheckOuterJoin)
     throws SemanticException {
     // Create a new map join operator
@@ -451,14 +424,10 @@ public class MapJoinProcessor implements Transform {
 
     mapJoinDesc.setStatistics(smbJoinDesc.getStatistics());
 
-    RowResolver joinRS = opParseCtxMap.get(smbJoinOp).getRowResolver();
+    RowSchema joinRS = smbJoinOp.getSchema();
     // The mapjoin has the same schema as the join operator
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        mapJoinDesc, joinRS.getRowSchema(),
-        new ArrayList<Operator<? extends OperatorDesc>>());
-
-    OpParseContext ctx = new OpParseContext(joinRS);
-    opParseCtxMap.put(mapJoinOp, ctx);
+        mapJoinDesc, joinRS, new ArrayList<Operator<? extends OperatorDesc>>());
 
     // change the children of the original join operator to point to the map
     // join operator
@@ -488,11 +457,10 @@ public class MapJoinProcessor implements Transform {
         HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN);
 
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap = pctx
-        .getOpParseCtx();
-    MapJoinOperator mapJoinOp = convertMapJoin(pctx.getConf(), opParseCtxMap, op,
-        op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(), op.getConf().getMapAliases(),
-        mapJoinPos, noCheckOuterJoin, true);
+    MapJoinOperator mapJoinOp = convertMapJoin(pctx.getConf(), op,
+        op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(),
+        op.getConf().getMapAliases(), mapJoinPos, noCheckOuterJoin, true);
+
     // create a dummy select to select all columns
     genSelectPlan(pctx, mapJoinOp);
     return mapJoinOp;
@@ -597,32 +565,33 @@ public class MapJoinProcessor implements Transform {
 
     // create a dummy select - This select is needed by the walker to split the
     // mapJoin later on
-    RowResolver inputRR = pctx.getOpParseCtx().get(input).getRowResolver();
+    RowSchema inputRS = input.getSchema();
 
     ArrayList<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>();
     ArrayList<String> outputs = new ArrayList<String>();
     List<String> outputCols = input.getConf().getOutputColumnNames();
-    RowResolver outputRS = new RowResolver();
+    ArrayList<ColumnInfo> outputRS = new ArrayList<ColumnInfo>();
 
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
 
     for (int i = 0; i < outputCols.size(); i++) {
       String internalName = outputCols.get(i);
-      String[] nm = inputRR.reverseLookup(internalName);
-      ColumnInfo valueInfo = inputRR.get(nm[0], nm[1]);
+      ColumnInfo valueInfo = inputRS.getColumnInfo(internalName);
       ExprNodeDesc colDesc = new ExprNodeColumnDesc(valueInfo.getType(), valueInfo
-          .getInternalName(), nm[0], valueInfo.getIsVirtualCol());
+          .getInternalName(), valueInfo.getTabAlias(), valueInfo.getIsVirtualCol());
       exprs.add(colDesc);
       outputs.add(internalName);
-      outputRS.put(nm[0], nm[1], new ColumnInfo(internalName, valueInfo.getType(), nm[0], valueInfo
-          .getIsVirtualCol(), valueInfo.isHiddenVirtualCol()));
+      ColumnInfo newCol = new ColumnInfo(internalName, valueInfo.getType(),
+              valueInfo.getTabAlias(), valueInfo.getIsVirtualCol(), valueInfo.isHiddenVirtualCol());
+      newCol.setAlias(valueInfo.getAlias());
+      outputRS.add(newCol);
       colExprMap.put(internalName, colDesc);
     }
 
     SelectDesc select = new SelectDesc(exprs, outputs, false);
 
-    SelectOperator sel = (SelectOperator) putOpInsertMap(pctx, OperatorFactory.getAndMakeChild(select,
-        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+    SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(select,
+            new RowSchema(outputRS), input);
 
     sel.setColumnExprMap(colExprMap);
 
@@ -1055,7 +1024,6 @@ public class MapJoinProcessor implements Transform {
   }
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
       JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
       int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
     JoinDesc desc = op.getConf();

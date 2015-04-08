@@ -346,10 +346,7 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getMapValueElement(Object map, Object key) {
-      if (map == null) {
-        return null;
-      }
-      return ((Map) map).get(key);
+      return ((map == null || key == null)? null : ((Map) map).get(key));
     }
 
     @Override

@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -42,13 +50,6 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -165,7 +166,7 @@ public class GenTezWork implements NodeProcessor {
       }
       // connect the work correctly.
       work.addSortCols(root.getOpTraits().getSortCols().get(0));
-      mergeJoinWork.addMergedWork(work, null);
+      mergeJoinWork.addMergedWork(work, null, context.leafOperatorToFollowingWork);
       Operator<? extends OperatorDesc> parentOp =
           getParentFromStack(context.currentMergeJoinOperator, stack);
       int pos = context.currentMergeJoinOperator.getTagForOperator(parentOp);
@@ -245,7 +246,9 @@ public class GenTezWork implements NodeProcessor {
                   LOG.debug("Cloning reduce sink for multi-child broadcast edge");
                   // we've already set this one up. Need to clone for the next work.
                   r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-                      (ReduceSinkDesc)r.getConf().clone(), r.getParentOperators());
+                      (ReduceSinkDesc)r.getConf().clone(),
+                      new RowSchema(r.getSchema()),
+                      r.getParentOperators());
                   context.clonedReduceSinks.add(r);
                 }
                 r.getConf().setOutputName(work.getName());
@@ -265,6 +268,7 @@ public class GenTezWork implements NodeProcessor {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Removing " + parent + " as parent from " + root);
       }
+      context.leafOperatorToFollowingWork.remove(parent);
       context.leafOperatorToFollowingWork.put(parent, work);
       root.removeParent(parent);
     }
@@ -323,7 +327,7 @@ public class GenTezWork implements NodeProcessor {
         MergeJoinWork mergeJoinWork = (MergeJoinWork) followingWork;
         CommonMergeJoinOperator mergeJoinOp = mergeJoinWork.getMergeJoinOperator();
         work.setTag(mergeJoinOp.getTagForOperator(operator));
-        mergeJoinWork.addMergedWork(null, work);
+        mergeJoinWork.addMergedWork(null, work, context.leafOperatorToFollowingWork);
         tezWork.setVertexType(mergeJoinWork, VertexType.MULTI_INPUT_UNINITIALIZED_EDGES);
         for (BaseWork parentWork : tezWork.getParents(work)) {
           TezEdgeProperty edgeProp = tezWork.getEdgeProperty(parentWork, work);
@@ -396,7 +400,7 @@ public class GenTezWork implements NodeProcessor {
     return null;
   }
 
-  private int getFollowingWorkIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs) 
+  private int getFollowingWorkIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs)
       throws SemanticException {
     int index = 0;
     for (BaseWork baseWork : tezWork.getChildren(unionWork)) {

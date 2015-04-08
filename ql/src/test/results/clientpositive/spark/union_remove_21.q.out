@@ -48,18 +48,18 @@ PREHOOK: query: explain
 insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -70,8 +70,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 4 <- Map 3 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -170,9 +170,9 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
@@ -180,9 +180,9 @@ PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: insert overwrite table outputTbl1
 SELECT a.key
 FROM (
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1 group by key
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
@@ -207,7 +207,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
-	numFiles            	2                   
+	numFiles            	4                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
 	totalSize           	20                  

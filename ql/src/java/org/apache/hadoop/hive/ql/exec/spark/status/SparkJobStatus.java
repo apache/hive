@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.JobExecutionStatus;
 
@@ -30,11 +31,11 @@ public interface SparkJobStatus {
 
   int getJobId();
 
-  JobExecutionStatus getState();
+  JobExecutionStatus getState() throws HiveException;
 
-  int[] getStageIds();
+  int[] getStageIds() throws HiveException;
 
-  Map<String, SparkStageProgress> getSparkStageProgress();
+  Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException;
 
   SparkCounters getCounter();
 

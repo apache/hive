@@ -16,9 +16,12 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -32,7 +35,6 @@ import org.apache.hadoop.io.Writable;
 
 import parquet.column.Dictionary;
 import parquet.io.api.Binary;
-import parquet.io.api.Converter;
 import parquet.io.api.PrimitiveConverter;
 import parquet.schema.OriginalType;
 import parquet.schema.PrimitiveType;
@@ -140,8 +142,23 @@ public enum ETypeConverter {
         @Override
         protected TimestampWritable convert(Binary binary) {
           NanoTime nt = NanoTime.fromBinary(binary);
-          Timestamp ts = NanoTimeUtils.getTimestamp(nt);
+          Map<String, String> metadata = parent.getMetadata();
+          //Current Hive parquet timestamp implementation stores it in UTC, but other components do not do that.
+          //If this file written by current Hive implementation itself, we need to do the reverse conversion, else skip the conversion.
+          boolean skipConversion = Boolean.valueOf(metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion);
           return new TimestampWritable(ts);
+        }
+      };
+    }
+  },
+  EDATE_CONVERTER(DateWritable.class) {
+    @Override
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
+      return new PrimitiveConverter() {
+        @Override
+        public void addInt(final int value) {
+          parent.set(index, new DateWritable(value));
         }
       };
     }
@@ -169,6 +186,8 @@ public enum ETypeConverter {
       return EDECIMAL_CONVERTER.getConverter(type, index, parent);
     } else if (OriginalType.UTF8 == type.getOriginalType()) {
       return ESTRING_CONVERTER.getConverter(type, index, parent);
+    } else if (OriginalType.DATE == type.getOriginalType()) {
+      return EDATE_CONVERTER.getConverter(type, index, parent);
     }
 
     Class<?> javaType = type.getPrimitiveTypeName().javaType;

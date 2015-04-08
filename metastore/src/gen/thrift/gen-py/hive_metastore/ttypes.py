@@ -168,6 +168,23 @@ class GrantRevokeType:
     "REVOKE": 2,
   }
 
+class EventRequestType:
+  INSERT = 1
+  UPDATE = 2
+  DELETE = 3
+
+  _VALUES_TO_NAMES = {
+    1: "INSERT",
+    2: "UPDATE",
+    3: "DELETE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "INSERT": 1,
+    "UPDATE": 2,
+    "DELETE": 3,
+  }
+
 class FunctionType:
   JAVA = 1
 
@@ -8143,6 +8160,118 @@ class ShowCompactResponse:
   def __ne__(self, other):
     return not (self == other)
 
+class AddDynamicPartitions:
+  """
+  Attributes:
+   - txnid
+   - dbname
+   - tablename
+   - partitionnames
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'txnid', None, None, ), # 1
+    (2, TType.STRING, 'dbname', None, None, ), # 2
+    (3, TType.STRING, 'tablename', None, None, ), # 3
+    (4, TType.LIST, 'partitionnames', (TType.STRING,None), None, ), # 4
+  )
+
+  def __init__(self, txnid=None, dbname=None, tablename=None, partitionnames=None,):
+    self.txnid = txnid
+    self.dbname = dbname
+    self.tablename = tablename
+    self.partitionnames = partitionnames
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.dbname = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.tablename = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.LIST:
+          self.partitionnames = []
+          (_etype437, _size434) = iprot.readListBegin()
+          for _i438 in xrange(_size434):
+            _elem439 = iprot.readString();
+            self.partitionnames.append(_elem439)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('AddDynamicPartitions')
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 1)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
+    if self.dbname is not None:
+      oprot.writeFieldBegin('dbname', TType.STRING, 2)
+      oprot.writeString(self.dbname)
+      oprot.writeFieldEnd()
+    if self.tablename is not None:
+      oprot.writeFieldBegin('tablename', TType.STRING, 3)
+      oprot.writeString(self.tablename)
+      oprot.writeFieldEnd()
+    if self.partitionnames is not None:
+      oprot.writeFieldBegin('partitionnames', TType.LIST, 4)
+      oprot.writeListBegin(TType.STRING, len(self.partitionnames))
+      for iter440 in self.partitionnames:
+        oprot.writeString(iter440)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.txnid is None:
+      raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    if self.dbname is None:
+      raise TProtocol.TProtocolException(message='Required field dbname is unset!')
+    if self.tablename is None:
+      raise TProtocol.TProtocolException(message='Required field tablename is unset!')
+    if self.partitionnames is None:
+      raise TProtocol.TProtocolException(message='Required field partitionnames is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class NotificationEventRequest:
   """
   Attributes:
@@ -8371,11 +8500,11 @@ class NotificationEventResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.events = []
-          (_etype437, _size434) = iprot.readListBegin()
-          for _i438 in xrange(_size434):
-            _elem439 = NotificationEvent()
-            _elem439.read(iprot)
-            self.events.append(_elem439)
+          (_etype444, _size441) = iprot.readListBegin()
+          for _i445 in xrange(_size441):
+            _elem446 = NotificationEvent()
+            _elem446.read(iprot)
+            self.events.append(_elem446)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -8392,8 +8521,8 @@ class NotificationEventResponse:
     if self.events is not None:
       oprot.writeFieldBegin('events', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.events))
-      for iter440 in self.events:
-        iter440.write(oprot)
+      for iter447 in self.events:
+        iter447.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -8464,6 +8593,300 @@ class CurrentNotificationEventId:
   def validate(self):
     if self.eventId is None:
       raise TProtocol.TProtocolException(message='Required field eventId is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InsertEventRequestData:
+  """
+  Attributes:
+   - filesAdded
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'filesAdded', (TType.STRING,None), None, ), # 1
+  )
+
+  def __init__(self, filesAdded=None,):
+    self.filesAdded = filesAdded
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.filesAdded = []
+          (_etype451, _size448) = iprot.readListBegin()
+          for _i452 in xrange(_size448):
+            _elem453 = iprot.readString();
+            self.filesAdded.append(_elem453)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InsertEventRequestData')
+    if self.filesAdded is not None:
+      oprot.writeFieldBegin('filesAdded', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRING, len(self.filesAdded))
+      for iter454 in self.filesAdded:
+        oprot.writeString(iter454)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.filesAdded is None:
+      raise TProtocol.TProtocolException(message='Required field filesAdded is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class FireEventRequestData:
+  """
+  Attributes:
+   - insertData
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'insertData', (InsertEventRequestData, InsertEventRequestData.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, insertData=None,):
+    self.insertData = insertData
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.insertData = InsertEventRequestData()
+          self.insertData.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('FireEventRequestData')
+    if self.insertData is not None:
+      oprot.writeFieldBegin('insertData', TType.STRUCT, 1)
+      self.insertData.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class FireEventRequest:
+  """
+  Attributes:
+   - successful
+   - data
+   - dbName
+   - tableName
+   - partitionVals
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.BOOL, 'successful', None, None, ), # 1
+    (2, TType.STRUCT, 'data', (FireEventRequestData, FireEventRequestData.thrift_spec), None, ), # 2
+    (3, TType.STRING, 'dbName', None, None, ), # 3
+    (4, TType.STRING, 'tableName', None, None, ), # 4
+    (5, TType.LIST, 'partitionVals', (TType.STRING,None), None, ), # 5
+  )
+
+  def __init__(self, successful=None, data=None, dbName=None, tableName=None, partitionVals=None,):
+    self.successful = successful
+    self.data = data
+    self.dbName = dbName
+    self.tableName = tableName
+    self.partitionVals = partitionVals
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.BOOL:
+          self.successful = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.data = FireEventRequestData()
+          self.data.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.LIST:
+          self.partitionVals = []
+          (_etype458, _size455) = iprot.readListBegin()
+          for _i459 in xrange(_size455):
+            _elem460 = iprot.readString();
+            self.partitionVals.append(_elem460)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('FireEventRequest')
+    if self.successful is not None:
+      oprot.writeFieldBegin('successful', TType.BOOL, 1)
+      oprot.writeBool(self.successful)
+      oprot.writeFieldEnd()
+    if self.data is not None:
+      oprot.writeFieldBegin('data', TType.STRUCT, 2)
+      self.data.write(oprot)
+      oprot.writeFieldEnd()
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 3)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 4)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
+    if self.partitionVals is not None:
+      oprot.writeFieldBegin('partitionVals', TType.LIST, 5)
+      oprot.writeListBegin(TType.STRING, len(self.partitionVals))
+      for iter461 in self.partitionVals:
+        oprot.writeString(iter461)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.successful is None:
+      raise TProtocol.TProtocolException(message='Required field successful is unset!')
+    if self.data is None:
+      raise TProtocol.TProtocolException(message='Required field data is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class FireEventResponse:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('FireEventResponse')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
     return
 
 

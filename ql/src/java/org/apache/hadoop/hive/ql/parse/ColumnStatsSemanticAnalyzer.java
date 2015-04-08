@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * ColumnStatsSemanticAnalyzer.
@@ -94,13 +95,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
   private Table getTable(ASTNode tree) throws SemanticException {
     String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
-    try {
-      return db.getTable(tableName);
-    } catch (InvalidTableException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
-    } catch (HiveException e) {
-      throw new SemanticException(e.getMessage(), e);
-    }
+    String currentDb = SessionState.get().getCurrentDatabase();
+    String [] names = Utilities.getDbTableName(currentDb, tableName);
+    return getTable(names[0], names[1], true);
   }
 
   private Map<String,String> getPartKeyValuePairsFromAST(ASTNode tree) {
@@ -315,6 +312,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
     rewrittenQueryBuilder.append(" from ");
+    rewrittenQueryBuilder.append(tbl.getDbName());
+    rewrittenQueryBuilder.append(".");
     rewrittenQueryBuilder.append(tbl.getTableName());
     isRewritten = true;
 
@@ -427,10 +426,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       qb = getQB();
       qb.setAnalyzeRewrite(true);
       qbp = qb.getParseInfo();
-      qbp.setTableName(tbl.getTableName());
-      qbp.setTblLvl(isTableLevel);
-      qbp.setColName(colNames);
-      qbp.setColType(colType);
+      analyzeRewrite = new AnalyzeRewriteContext();
+      analyzeRewrite.setTableName(tbl.getDbName() + "." + tbl.getTableName());
+      analyzeRewrite.setTblLvl(isTableLevel);
+      analyzeRewrite.setColName(colNames);
+      analyzeRewrite.setColType(colType);
+      qbp.setAnalyzeRewrite(analyzeRewrite);
       initCtx(ctx);
       LOG.info("Invoking analyze on rewritten query");
       analyzeInternal(rewrittenTree);

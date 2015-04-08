@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -88,18 +87,28 @@ public class GenMRTableScan1 implements NodeProcessor {
         ctx.setCurrAliasId(currAliasId);
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currAliasId));
 
-        QBParseInfo parseInfo = parseCtx.getQB().getParseInfo();
-        if (parseInfo.isAnalyzeCommand()) {
-          boolean partialScan = parseInfo.isPartialScanAnalyzeCommand();
-          boolean noScan = parseInfo.isNoScanAnalyzeCommand();
-          if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
-
+        if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
+          boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
+          boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
+          if (inputFormat.equals(OrcInputFormat.class)) {
+            // For ORC, all the following statements are the same
+            // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+
             // There will not be any MR or Tez job above this task
-            StatsNoJobWork snjWork = new StatsNoJobWork(parseCtx.getQB().getParseInfo().getTableSpec());
+            StatsNoJobWork snjWork = new StatsNoJobWork(op.getConf().getTableMetadata().getTableSpec());
             snjWork.setStatsReliable(parseCtx.getConf().getBoolVar(
                 HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+            // If partition is specified, get pruned partition list
+            Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(op);
+            if (confirmedParts.size() > 0) {
+              Table source = op.getConf().getTableMetadata();
+              List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
+              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
+                  partCols, false);
+              snjWork.setPrunedPartitionList(partList);
+            }
             Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseCtx.getConf());
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);
@@ -110,7 +119,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The plan consists of a simple MapRedTask followed by a StatsTask.
             // The MR task is just a simple TableScanOperator
 
-            StatsWork statsWork = new StatsWork(parseCtx.getQB().getParseInfo().getTableSpec());
+            StatsWork statsWork = new StatsWork(op.getConf().getTableMetadata().getTableSpec());
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
             statsWork.setSourceTask(currTask);
             statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(
@@ -123,7 +132,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
             // The plan consists of a StatsTask only.
-            if (parseInfo.isNoScanAnalyzeCommand()) {
+            if (noScan) {
               statsTask.setParentTasks(null);
               statsWork.setNoScanAnalyzeCommand(true);
               ctx.getRootTasks().remove(currTask);
@@ -131,8 +140,8 @@ public class GenMRTableScan1 implements NodeProcessor {
             }
 
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
-            if (parseInfo.isPartialScanAnalyzeCommand()) {
-              handlePartialScanCommand(op, ctx, parseCtx, currTask, parseInfo, statsWork, statsTask);
+            if (partialScan) {
+              handlePartialScanCommand(op, ctx, parseCtx, currTask, statsWork, statsTask);
             }
 
             currWork.getMapWork().setGatheringStats(true);
@@ -144,10 +153,10 @@ public class GenMRTableScan1 implements NodeProcessor {
             // pruned list,
             // and pass it to setTaskPlan as the last parameter
             Set<Partition> confirmedPartns = GenMapRedUtils
-                .getConfirmedPartitionsForScan(parseInfo);
+                .getConfirmedPartitionsForScan(op);
             if (confirmedPartns.size() > 0) {
-              Table source = parseCtx.getQB().getMetaData().getTableForAlias(alias);
-              List<String> partCols = GenMapRedUtils.getPartitionColumns(parseInfo);
+              Table source = op.getConf().getTableMetadata();
+              List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
               PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns, partCols, false);
               GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx, partList);
             } else { // non-partitioned table
@@ -175,12 +184,11 @@ public class GenMRTableScan1 implements NodeProcessor {
    * @throws SemanticException
    */
   private void handlePartialScanCommand(TableScanOperator op, GenMRProcContext ctx,
-      ParseContext parseCtx, Task<? extends Serializable> currTask, QBParseInfo parseInfo,
+      ParseContext parseCtx, Task<? extends Serializable> currTask,
       StatsWork statsWork, Task<StatsWork> statsTask) throws SemanticException {
     String aggregationKey = op.getConf().getStatsAggPrefix();
     StringBuffer aggregationKeyBuffer = new StringBuffer(aggregationKey);
-    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(parseInfo,
-        aggregationKeyBuffer);
+    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(op, aggregationKeyBuffer);
     aggregationKey = aggregationKeyBuffer.toString();
 
     // scan work

@@ -38,20 +38,21 @@ import org.apache.hadoop.security.token.Token;
  */
 public class SecureCmdDoAs {
   private final Path tokenPath;
+  private final File tokenFile;
 
   public SecureCmdDoAs(HiveConf conf) throws HiveException, IOException{
     // Get delegation token for user from filesystem and write the token along with
     // metastore tokens into a file
     String uname = UserGroupInformation.getLoginUser().getShortUserName();
     FileSystem fs = FileSystem.get(conf);
-    Token<?> fsToken = fs.getDelegationToken(uname);
+    Credentials cred = new Credentials();
+    // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
+    fs.addDelegationTokens(uname, cred);
 
-    File t = File.createTempFile("hive_hadoop_delegation_token", null);
-    tokenPath = new Path(t.toURI());
+    tokenFile = File.createTempFile("hive_hadoop_delegation_token", null);
+    tokenPath = new Path(tokenFile.toURI());
 
     //write credential with token to file
-    Credentials cred = new Credentials();
-    cred.addToken(fsToken.getService(), fsToken);
     cred.writeTokenStorageFile(tokenPath, conf);
   }
 
@@ -60,4 +61,7 @@ public class SecureCmdDoAs {
         tokenPath.toUri().getPath());
   }
 
+  public void close() {
+    tokenFile.delete();
+  }
 }

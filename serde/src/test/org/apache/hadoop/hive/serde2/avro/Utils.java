@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.rmi.server.UID;
 
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 
 class Utils {
@@ -31,10 +32,15 @@ class Utils {
   // chance to muck with the bytes and we're working against real Avro data.
   public static AvroGenericRecordWritable
   serializeAndDeserializeRecord(GenericData.Record record) throws IOException {
+    return serializeAndDeserializeRecord(record, record.getSchema());
+  }
+
+  public static AvroGenericRecordWritable
+  serializeAndDeserializeRecord(GenericData.Record record, Schema fileSchema) throws IOException {
     AvroGenericRecordWritable garw = new AvroGenericRecordWritable(record);
     garw.setRecordReaderID(new UID());
     // Assuming file schema is the same as record schema for testing purpose.
-    garw.setFileSchema(record.getSchema());
+    garw.setFileSchema(fileSchema);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream daos = new DataOutputStream(baos);
     garw.write(daos);

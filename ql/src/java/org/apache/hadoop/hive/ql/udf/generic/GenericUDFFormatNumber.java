@@ -147,7 +147,13 @@ public class GenericUDFFormatNumber extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    int dValue = ((IntObjectInspector) argumentOIs[1]).get(arguments[1].get());
+    Object arg0;
+    Object arg1;
+    if ((arg0 = arguments[0].get()) == null || (arg1 = arguments[1].get()) == null) {
+      return null;
+    }
+
+    int dValue = ((IntObjectInspector) argumentOIs[1]).get(arg1);
 
     if (dValue < 0) {
       throw new HiveException("Argument 2 of function FORMAT_NUMBER must be >= 0, but \""
@@ -181,26 +187,26 @@ public class GenericUDFFormatNumber extends GenericUDF {
     switch (xObjectInspector.getPrimitiveCategory()) {
       case VOID:
       case DOUBLE:
-        xDoubleValue = ((DoubleObjectInspector) argumentOIs[0]).get(arguments[0].get());
+        xDoubleValue = ((DoubleObjectInspector) argumentOIs[0]).get(arg0);
         resultText.set(numberFormat.format(xDoubleValue));
         break;
       case FLOAT:
-        xFloatValue = ((FloatObjectInspector) argumentOIs[0]).get(arguments[0].get());
+        xFloatValue = ((FloatObjectInspector) argumentOIs[0]).get(arg0);
         resultText.set(numberFormat.format(xFloatValue));
         break;
       case DECIMAL:
         xDecimalValue = ((HiveDecimalObjectInspector) argumentOIs[0])
-            .getPrimitiveJavaObject(arguments[0].get());
+            .getPrimitiveJavaObject(arg0);
         resultText.set(numberFormat.format(xDecimalValue.bigDecimalValue()));
         break;
       case BYTE:
       case SHORT:
       case INT:
-        xIntValue = ((IntObjectInspector) argumentOIs[0]).get(arguments[0].get());
+        xIntValue = ((IntObjectInspector) argumentOIs[0]).get(arg0);
         resultText.set(numberFormat.format(xIntValue));
         break;
       case LONG:
-        xLongValue = ((LongObjectInspector) argumentOIs[0]).get(arguments[0].get());
+        xLongValue = ((LongObjectInspector) argumentOIs[0]).get(arg0);
         resultText.set(numberFormat.format(xLongValue));
         break;
       default:
@@ -220,12 +226,6 @@ public class GenericUDFFormatNumber extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
-    StringBuilder sb = new StringBuilder();
-    sb.append("format_number(");
-    for (int i = 0; i < children.length - 1; i++) {
-      sb.append(children[i]).append(", ");
-    }
-    sb.append(children[children.length - 1]).append(")");
-    return sb.toString();
+    return getStandardDisplayString("format_number", children);
   }
 }

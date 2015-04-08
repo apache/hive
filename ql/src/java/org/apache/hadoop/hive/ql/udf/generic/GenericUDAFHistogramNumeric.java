@@ -28,10 +28,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -124,7 +125,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
     private transient PrimitiveObjectInspector nbinsOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list of doubles)
-    private transient StandardListObjectInspector loi;
+    private transient ListObjectInspector loi;
 
 
     @Override
@@ -137,7 +138,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
         inputOI = (PrimitiveObjectInspector) parameters[0];
         nbinsOI = (PrimitiveObjectInspector) parameters[1];
       } else {
-        loi = (StandardListObjectInspector) parameters[0];
+        loi = (ListObjectInspector) parameters[0];
       }
 
       // init output object inspectors
@@ -197,8 +198,10 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
         return;
       }
       List<DoubleWritable> partialHistogram = (List<DoubleWritable>) loi.getList(partial);
+      DoubleObjectInspector doi = (DoubleObjectInspector)loi.getListElementObjectInspector();
+      
       StdAgg myagg = (StdAgg) agg;
-      myagg.histogram.merge(partialHistogram);
+      myagg.histogram.merge(partialHistogram, doi);
     }
 
     @Override

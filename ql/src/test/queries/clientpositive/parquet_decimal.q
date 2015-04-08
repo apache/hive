@@ -14,6 +14,8 @@ INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM dec;
 
 SELECT * FROM parq_dec;
 
+SELECT value, count(*) FROM parq_dec GROUP BY value ORDER BY value;
+
 TRUNCATE TABLE parq_dec;
 
 INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM dec;

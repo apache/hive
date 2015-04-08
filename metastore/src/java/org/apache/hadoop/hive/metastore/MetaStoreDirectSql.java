@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.jdo.JDODataStoreException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
@@ -41,7 +40,6 @@ import javax.jdo.datastore.JDOConnection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.derby.iapi.error.StandardException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -108,6 +106,7 @@ class MetaStoreDirectSql {
    */
   private final DB dbType;
   private final int batchSize;
+  private final boolean convertMapNullsToEmptyStrings;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -122,6 +121,9 @@ class MetaStoreDirectSql {
       batchSize = (dbType == DB.ORACLE || dbType == DB.MSSQL) ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+
+    convertMapNullsToEmptyStrings =
+        HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
 
     this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
     if (isCompatibleDatastore) {
@@ -298,7 +300,7 @@ class MetaStoreDirectSql {
       String type = extractSqlString(dbline[5]);
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
-      db.setParameters(dbParams);
+      db.setParameters(MetaStoreUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
             + " locn["+db.getLocationUri()  +"] desc [" +db.getDescription()
@@ -493,6 +495,7 @@ class MetaStoreDirectSql {
     @SuppressWarnings("unchecked")
     List<Object[]> sqlResult = executeWithArray(query, null, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
+    Deadline.checkTimeout();
 
     // Read all the fields and create partitions, SDs and serdes.
     TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
@@ -581,6 +584,7 @@ class MetaStoreDirectSql {
       serde.setSerializationLib((String)fields[13]);
       serdeSb.append(serdeId).append(",");
       sd.setSerdeInfo(serde);
+      Deadline.checkTimeout();
     }
     query.closeAll();
     timingTrace(doTrace, queryText, start, queryTime);
@@ -848,6 +852,7 @@ class MetaStoreDirectSql {
         func.apply(entry.getValue(), fields);
         fields = null;
       }
+      Deadline.checkTimeout();
     }
     int rv = list.size();
     query.closeAll();
@@ -1148,6 +1153,7 @@ class MetaStoreDirectSql {
           list.size());
       for (Object[] row : list) {
         colStats.add(prepareCSObj(row, 0));
+        Deadline.checkTimeout();
       }
       query.closeAll();
       return colStats;
@@ -1189,6 +1195,7 @@ class MetaStoreDirectSql {
         } else {
           extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
         }
+        Deadline.checkTimeout();
       }
       query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
@@ -1208,6 +1215,7 @@ class MetaStoreDirectSql {
         list = ensureList(qResult);
         for (Object[] row : list) {
           colStats.add(prepareCSObj(row, 0));
+          Deadline.checkTimeout();
         }
         end = doTrace ? System.nanoTime() : 0;
         timingTrace(doTrace, queryText, start, end);
@@ -1247,6 +1255,7 @@ class MetaStoreDirectSql {
             indexToObject.put(sumIndex[ind - 1], row[ind]);
           }
           sumMap.put((String) row[0], indexToObject);
+          Deadline.checkTimeout();
         }
         end = doTrace ? System.nanoTime() : 0;
         timingTrace(doTrace, queryText, start, end);
@@ -1314,6 +1323,7 @@ class MetaStoreDirectSql {
             }
           }
           colStats.add(prepareCSObj(row, 0));
+          Deadline.checkTimeout();
         }
       }
       return colStats;
@@ -1385,6 +1395,7 @@ class MetaStoreDirectSql {
       }
       lastPartName = partName;
       from = i;
+      Deadline.checkTimeout();
     }
 
     timingTrace(doTrace, queryText, start, queryTime);
@@ -1412,6 +1423,7 @@ class MetaStoreDirectSql {
         csd.setLastAnalyzed(extractSqlLong(laObj));
       }
       csos.add(prepareCSObj(row, offset));
+      Deadline.checkTimeout();
     }
     result.setStatsObj(csos);
     return result;

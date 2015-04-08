@@ -29,7 +29,7 @@ File Statistics:
   Column 2: count: 7000 hasNull: true min: RG1 max: STRIPE-3 sum: 46000
 
 Stripes:
-  Stripe: offset: 3 data: 195 rows: 5000 tail: 64 index: 162
+  Stripe: offset: 3 data: 195 rows: 5000 tail: 76 index: 162
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 63
     Stream: column 2 section ROW_INDEX start: 83 length 82
@@ -42,69 +42,65 @@ Stripes:
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[2]
-    Row group index column 2:
-      Entry 0:count: 1000 hasNull: false min: RG1 max: RG1 sum: 3000 positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,66,488
-      Entry 2:count: 1000 hasNull: false min: RG3 max: RG3 sum: 3000 positions: 0,2,125,0,0,66,488
-      Entry 3:count: 0 hasNull: true positions: 0,4,125,0,0,136,488
-      Entry 4:count: 0 hasNull: true positions: 0,6,125,0,0,136,488
-  Stripe: offset: 424 data: 156 rows: 5000 tail: 60 index: 119
-    Stream: column 0 section ROW_INDEX start: 424 length 17
-    Stream: column 1 section ROW_INDEX start: 441 length 63
-    Stream: column 2 section ROW_INDEX start: 504 length 39
-    Stream: column 1 section DATA start: 543 length 113
-    Stream: column 1 section LENGTH start: 656 length 32
-    Stream: column 2 section PRESENT start: 688 length 11
-    Stream: column 2 section DATA start: 699 length 0
-    Stream: column 2 section LENGTH start: 699 length 0
-    Stream: column 2 section DICTIONARY_DATA start: 699 length 0
+    Row group indices for column 2:
+      Entry 0: count: 1000 hasNull: false min: RG1 max: RG1 sum: 3000 positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,66,488
+      Entry 2: count: 1000 hasNull: false min: RG3 max: RG3 sum: 3000 positions: 0,2,125,0,0,66,488
+      Entry 3: count: 0 hasNull: true positions: 0,4,125,0,0,136,488
+      Entry 4: count: 0 hasNull: true positions: 0,6,125,0,0,136,488
+  Stripe: offset: 436 data: 156 rows: 5000 tail: 67 index: 119
+    Stream: column 0 section ROW_INDEX start: 436 length 17
+    Stream: column 1 section ROW_INDEX start: 453 length 63
+    Stream: column 2 section ROW_INDEX start: 516 length 39
+    Stream: column 1 section DATA start: 555 length 113
+    Stream: column 1 section LENGTH start: 668 length 32
+    Stream: column 2 section PRESENT start: 700 length 11
+    Stream: column 2 section DATA start: 711 length 0
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
-    Row group index column 2:
-      Entry 0:count: 0 hasNull: true positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,0,0
-      Entry 2:count: 0 hasNull: true positions: 0,2,120,0,0,0,0
-      Entry 3:count: 0 hasNull: true positions: 0,4,115,0,0,0,0
-      Entry 4:count: 0 hasNull: true positions: 0,6,110,0,0,0,0
-  Stripe: offset: 759 data: 186 rows: 5000 tail: 60 index: 148
-    Stream: column 0 section ROW_INDEX start: 759 length 17
-    Stream: column 1 section ROW_INDEX start: 776 length 63
-    Stream: column 2 section ROW_INDEX start: 839 length 68
-    Stream: column 1 section DATA start: 907 length 113
-    Stream: column 1 section LENGTH start: 1020 length 32
-    Stream: column 2 section DATA start: 1052 length 24
-    Stream: column 2 section LENGTH start: 1076 length 6
-    Stream: column 2 section DICTIONARY_DATA start: 1082 length 11
+    Row group indices for column 2:
+      Entry 0: count: 0 hasNull: true positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,0,0
+      Entry 2: count: 0 hasNull: true positions: 0,2,120,0,0,0,0
+      Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
+      Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
+  Stripe: offset: 778 data: 186 rows: 5000 tail: 72 index: 148
+    Stream: column 0 section ROW_INDEX start: 778 length 17
+    Stream: column 1 section ROW_INDEX start: 795 length 63
+    Stream: column 2 section ROW_INDEX start: 858 length 68
+    Stream: column 1 section DATA start: 926 length 113
+    Stream: column 1 section LENGTH start: 1039 length 32
+    Stream: column 2 section DATA start: 1071 length 24
+    Stream: column 2 section LENGTH start: 1095 length 6
+    Stream: column 2 section DICTIONARY_DATA start: 1101 length 11
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[1]
-    Row group index column 2:
-      Entry 0:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,0,0
-      Entry 1:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,66,488
-      Entry 2:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,198,464
-      Entry 3:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,330,440
-      Entry 4:count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,462,416
-  Stripe: offset: 1153 data: 156 rows: 5000 tail: 60 index: 119
-    Stream: column 0 section ROW_INDEX start: 1153 length 17
-    Stream: column 1 section ROW_INDEX start: 1170 length 63
-    Stream: column 2 section ROW_INDEX start: 1233 length 39
-    Stream: column 1 section DATA start: 1272 length 113
-    Stream: column 1 section LENGTH start: 1385 length 32
-    Stream: column 2 section PRESENT start: 1417 length 11
-    Stream: column 2 section DATA start: 1428 length 0
-    Stream: column 2 section LENGTH start: 1428 length 0
-    Stream: column 2 section DICTIONARY_DATA start: 1428 length 0
+    Row group indices for column 2:
+      Entry 0: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,0,0
+      Entry 1: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,66,488
+      Entry 2: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,198,464
+      Entry 3: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,330,440
+      Entry 4: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,462,416
+  Stripe: offset: 1184 data: 156 rows: 5000 tail: 67 index: 119
+    Stream: column 0 section ROW_INDEX start: 1184 length 17
+    Stream: column 1 section ROW_INDEX start: 1201 length 63
+    Stream: column 2 section ROW_INDEX start: 1264 length 39
+    Stream: column 1 section DATA start: 1303 length 113
+    Stream: column 1 section LENGTH start: 1416 length 32
+    Stream: column 2 section PRESENT start: 1448 length 11
+    Stream: column 2 section DATA start: 1459 length 0
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
-    Row group index column 2:
-      Entry 0:count: 0 hasNull: true positions: 0,0,0,0,0,0,0
-      Entry 1:count: 0 hasNull: true positions: 0,0,125,0,0,0,0
-      Entry 2:count: 0 hasNull: true positions: 0,2,120,0,0,0,0
-      Entry 3:count: 0 hasNull: true positions: 0,4,115,0,0,0,0
-      Entry 4:count: 0 hasNull: true positions: 0,6,110,0,0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 0 hasNull: true positions: 0,0,0,0,0,0,0
+      Entry 1: count: 0 hasNull: true positions: 0,0,125,0,0,0,0
+      Entry 2: count: 0 hasNull: true positions: 0,2,120,0,0,0,0
+      Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
+      Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
 
-File length: 1736 bytes
+File length: 1775 bytes
 Padding length: 0 bytes
 Padding ratio: 0%

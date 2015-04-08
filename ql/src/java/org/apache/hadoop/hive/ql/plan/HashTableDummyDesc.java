@@ -17,12 +17,14 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * HashTable Dummy Descriptor implementation.
  *
  */
-@Explain(displayName = "HashTable Dummy Operator")
+@Explain(displayName = "HashTable Dummy Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class HashTableDummyDesc extends AbstractOperatorDesc {
   private TableDesc tbl;
 

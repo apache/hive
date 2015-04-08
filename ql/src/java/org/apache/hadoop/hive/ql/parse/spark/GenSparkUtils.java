@@ -41,10 +41,12 @@ import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -187,7 +189,15 @@ public class GenSparkUtils {
     throws SemanticException {
 
     List<Operator<?>> roots = new ArrayList<Operator<?>>();
-    roots.addAll(work.getAllRootOperators());
+
+    // For MapWork, getAllRootOperators is not suitable, since it checks
+    // getPathToAliases, and will return null if this is empty. Here we are
+    // replacing getAliasToWork, so should use that information instead.
+    if (work instanceof MapWork) {
+      roots.addAll(((MapWork) work).getAliasToWork().values());
+    } else {
+      roots.addAll(work.getAllRootOperators());
+    }
     if (work.getDummyOps() != null) {
       roots.addAll(work.getDummyOps());
     }
@@ -441,6 +451,25 @@ public class GenSparkUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * Fill MapWork with 'local' work and bucket information for SMB Join.
+   * @param context context, containing references to MapWorks and their SMB information.
+   * @throws SemanticException
+   */
+  public void annotateMapWork(GenSparkProcContext context) throws SemanticException {
+    for (SMBMapJoinOperator smbMapJoinOp : context.smbMapJoinCtxMap.keySet()) {
+      //initialize mapwork with smbMapJoin information.
+      SparkSMBMapJoinInfo smbMapJoinInfo = context.smbMapJoinCtxMap.get(smbMapJoinOp);
+      MapWork work = smbMapJoinInfo.mapWork;
+      SparkSortMergeJoinFactory.annotateMapWork(context, work, smbMapJoinOp,
+        (TableScanOperator) smbMapJoinInfo.bigTableRootOp, false);
+      for (Operator<?> smallTableRootOp : smbMapJoinInfo.smallTableRootOps) {
+        SparkSortMergeJoinFactory.annotateMapWork(context, work, smbMapJoinOp,
+          (TableScanOperator) smallTableRootOp, true);
+      }
+    }
   }
 
   public synchronized int getNextSeqNumber() {

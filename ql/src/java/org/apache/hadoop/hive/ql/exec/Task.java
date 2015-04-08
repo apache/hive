@@ -187,6 +187,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.childTasks = childTasks;
   }
 
+  @Override
   public List<? extends Node> getChildren() {
     return getChildTasks();
   }
@@ -521,7 +522,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return exception;
   }
 
-  void setException(Throwable ex) {
+  protected void setException(Throwable ex) {
     exception = ex;
   }
 
@@ -542,10 +543,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return getId() + ":" + getType();
   }
 
+  @Override
   public int hashCode() {
     return toString().hashCode();
   }
 
+  @Override
   public boolean equals(Object obj) {
     return toString().equals(String.valueOf(obj));
   }

@@ -838,7 +838,7 @@ public class HiveStatement implements java.sql.Statement {
     RowSet rowSet = RowSetFactory.create(tFetchResultsResp.getResults(),
         connection.getProtocol());
     for (Object[] row : rowSet) {
-      logs.add((String)row[0]);
+      logs.add(String.valueOf(row[0]));
     }
     return logs;
   }

@@ -189,7 +189,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -246,7 +246,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/key=484/value=val_484 [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -349,7 +349,7 @@ STAGE PLANS:
                         columns _col0,_col1
                         columns.types string:string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -406,7 +406,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/key=238/value=val_238 [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -502,7 +502,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -559,7 +559,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -656,7 +656,7 @@ STAGE PLANS:
                         columns _col0,_col1
                         columns.types string:string
                         escape.delim \
-                        hive.serialization.extend.nesting.levels true
+                        hive.serialization.extend.additional.nesting.levels true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -713,7 +713,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
 
   Stage: Stage-0
     Fetch Operator

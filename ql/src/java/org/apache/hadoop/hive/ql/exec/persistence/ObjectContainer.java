@@ -1,0 +1,195 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.ql.exec.persistence;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+/**
+ * An eager object container that puts every row directly to output stream.
+ * The object can be of any type.
+ * Kryo is used for the serialization/deserialization.
+ * When reading, we load IN_MEMORY_NUM_ROWS rows from input stream to memory batch by batch.
+ */
+@SuppressWarnings("unchecked")
+public class ObjectContainer<ROW> {
+  private static final Log LOG = LogFactory.getLog(ObjectContainer.class);
+
+  @VisibleForTesting
+  static final int IN_MEMORY_NUM_ROWS = 1024;
+
+  private ROW[] readBuffer;
+  private boolean readBufferUsed = false; // indicates if read buffer has data
+  private int rowsInReadBuffer = 0;       // number of rows in the temporary read buffer
+  private int readCursor = 0;             // cursor during reading
+  private int rowsOnDisk = 0;             // total number of objects in output
+
+  private File parentFile;
+  private File tmpFile;
+
+  private Input input;
+  private Output output;
+
+  private Kryo kryo;
+
+  public ObjectContainer() {
+    readBuffer = (ROW[]) new Object[IN_MEMORY_NUM_ROWS];
+    for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
+      readBuffer[i] = (ROW) new Object();
+    }
+    kryo = Utilities.runtimeSerializationKryo.get();
+    try {
+      setupOutput();
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create temporary output file on disk", e);
+    }
+  }
+
+  private void setupOutput() throws IOException {
+    if (parentFile == null) {
+      parentFile = File.createTempFile("object-container", "");
+      if (parentFile.delete() && parentFile.mkdir()) {
+        parentFile.deleteOnExit();
+      }
+    }
+
+    if (tmpFile == null || input != null) {
+      tmpFile = File.createTempFile("ObjectContainer", ".tmp", parentFile);
+      LOG.info("ObjectContainer created temp file " + tmpFile.getAbsolutePath());
+      tmpFile.deleteOnExit();
+    }
+
+    FileOutputStream fos = null;
+    try {
+      fos = new FileOutputStream(tmpFile);
+      output = new Output(fos);
+    } finally {
+      if (output == null && fos != null) {
+        fos.close();
+      }
+    }
+  }
+
+  public void add(ROW row) {
+    kryo.writeClassAndObject(output, row);
+    rowsOnDisk++;
+  }
+
+  public void clear() {
+    readCursor = rowsInReadBuffer = rowsOnDisk = 0;
+    readBufferUsed = false;
+
+    if (parentFile != null) {
+      if (input != null) {
+        try {
+          input.close();
+        } catch (Throwable ignored) {
+        }
+        input = null;
+      }
+      if (output != null) {
+        try {
+          output.close();
+        } catch (Throwable ignored) {
+        }
+        output = null;
+      }
+      try {
+        FileUtil.fullyDelete(parentFile);
+      } catch (Throwable ignored) {
+      }
+      parentFile = null;
+      tmpFile = null;
+    }
+  }
+
+  public boolean hasNext() {
+    return readBufferUsed || rowsOnDisk > 0;
+  }
+
+  public ROW next() {
+    Preconditions.checkState(hasNext());
+    if (!readBufferUsed) {
+      try {
+        if (input == null && output != null) {
+          // Close output stream if open
+          output.close();
+          output = null;
+
+          FileInputStream fis = null;
+          try {
+            fis = new FileInputStream(tmpFile);
+            input = new Input(fis);
+          } finally {
+            if (input == null && fis != null) {
+              fis.close();
+            }
+          }
+        }
+        if (input != null) {
+          // Load next batch from disk
+          if (rowsOnDisk >= IN_MEMORY_NUM_ROWS) {
+            rowsInReadBuffer = IN_MEMORY_NUM_ROWS;
+          } else {
+            rowsInReadBuffer = rowsOnDisk;
+          }
+
+          for (int i = 0; i < rowsInReadBuffer; i++) {
+            readBuffer[i] = (ROW) kryo.readClassAndObject(input);
+          }
+
+          if (input.eof()) {
+            input.close();
+            input = null;
+          }
+
+          readBufferUsed = true;
+          readCursor = 0;
+          rowsOnDisk -= rowsInReadBuffer;
+        }
+      } catch (Exception e) {
+        clear(); // Clean up the cache
+        throw new RuntimeException("Failed to load rows from disk", e);
+      }
+    }
+
+    ROW row = readBuffer[readCursor];
+    if (++readCursor >= rowsInReadBuffer) {
+      readBufferUsed = false;
+      rowsInReadBuffer = 0;
+      readCursor = 0;
+    }
+    return row;
+  }
+
+  public int size() {
+    return rowsInReadBuffer + rowsOnDisk;
+  }
+}
