@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -156,7 +157,7 @@ public class Driver implements CommandProcessor {
   private String userName;
 
   // For WebUI.  Kept alive after queryPlan is freed.
-  private String savedQueryString;
+  private final QueryDisplay queryDisplay = new QueryDisplay();
 
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -382,7 +383,6 @@ public class Driver implements CommandProcessor {
     } catch (Exception e) {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
-    this.savedQueryString = queryStr;
 
     //holder for parent command type/string when executing reentrant queries
     QueryState queryState = new QueryState();
@@ -403,6 +403,10 @@ public class Driver implements CommandProcessor {
       queryId = QueryPlan.makeQueryId();
       conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     }
+
+    //save some info for webUI for use after plan is freed
+    this.queryDisplay.setQueryStr(queryStr);
+    this.queryDisplay.setQueryId(queryId);
 
     LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
@@ -496,11 +500,15 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
+          conf.isWebUiQueryInfoCacheEnabled()) {
         String explainOutput = getExplainOutput(sem, plan, tree.dump());
-        if (explainOutput != null) {
+        if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
           LOG.info("EXPLAIN output for queryid " + queryId + " : "
-              + explainOutput);
+            + explainOutput);
+        }
+        if (conf.isWebUiQueryInfoCacheEnabled()) {
+          queryDisplay.setExplainPlan(explainOutput);
         }
       }
       return 0;
@@ -526,18 +534,21 @@ public class Driver implements CommandProcessor {
     } finally {
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE);
-      dumpMetaCallTimingWithoutEx("compilation");
+      ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
+      queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
+
       restoreSession(queryState);
       LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
     }
   }
 
-  private void dumpMetaCallTimingWithoutEx(String phase) {
+  private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
     try {
-      Hive.get().dumpAndClearMetaCallTiming(phase);
+      return Hive.get().dumpAndClearMetaCallTiming(phase);
     } catch (HiveException he) {
       LOG.warn("Caught exception attempting to write metadata call information " + he, he);
     }
+    return null;
   }
 
   /**
@@ -1194,6 +1205,12 @@ public class Driver implements CommandProcessor {
       }
     }
 
+    //Save compile-time PerfLogging for WebUI.
+    //Execution-time Perf logs are done by either another thread's PerfLogger
+    //or a reset PerfLogger.
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    queryDisplay.setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
+    queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
     return ret;
   }
 
@@ -1315,6 +1332,8 @@ public class Driver implements CommandProcessor {
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_RUN);
+    queryDisplay.setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
+    queryDisplay.setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
 
     // Take all the driver run hooks and post-execute them.
     try {
@@ -1360,6 +1379,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
+    queryDisplay.setErrorMessage(errorMessage);
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
@@ -1507,6 +1527,7 @@ public class Driver implements CommandProcessor {
         // Launch upto maxthreads tasks
         Task<? extends Serializable> task;
         while ((task = driverCxt.getRunnable(maxthreads)) != null) {
+          queryDisplay.addTask(task);
           TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, driverCxt);
           if (!runner.isRunning()) {
             break;
@@ -1519,6 +1540,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
         hookContext.addCompleteTask(tskRun);
+        queryDisplay.setTaskCompleted(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<? extends Serializable> tsk = tskRun.getTask();
         TaskResult result = tskRun.getTaskResult();
@@ -1658,8 +1680,8 @@ public class Driver implements CommandProcessor {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE)/1000.00;
-      dumpMetaCallTimingWithoutEx("execution");
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
+      ImmutableMap<String, Long> executionHMSTimings = dumpMetaCallTimingWithoutEx("execution");
+      queryDisplay.setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
 
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
       if (stats != null && !stats.isEmpty()) {
@@ -1895,7 +1917,7 @@ public class Driver implements CommandProcessor {
   }
 
 
-  public String getQueryString() {
-    return savedQueryString == null ? "Unknown" : savedQueryString;
+  public QueryDisplay getQueryDisplay() {
+    return queryDisplay;
   }
 }

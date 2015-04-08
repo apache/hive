@@ -24,7 +24,7 @@
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
-  import="org.apache.hive.service.cli.operation.SQLOperationInfo"
+  import="org.apache.hive.service.cli.operation.SQLOperationDisplay"
   import="org.apache.hive.service.cli.session.SessionManager"
   import="org.apache.hive.service.cli.session.HiveSession"
   import="javax.servlet.ServletContext"
@@ -132,29 +132,32 @@ for (HiveSession hiveSession: hiveSessions) {
         <th>Query</th>
         <th>Execution Engine</th>
         <th>State</th>
+        <th>Begin Time</th>
         <th>Elapsed Time (s)</th>
+        <th>Drilldown Link</th>
     </tr>
-<%
-int queries = 0;
-Collection<Operation> operations = sessionManager.getOperations();
-for (Operation operation: operations) {
-  if (operation instanceof SQLOperation) {
-    SQLOperation query = (SQLOperation) operation;
-    queries++;
-%>
+    <%
+      int queries = 0;
+      Collection<SQLOperationDisplay> operations = sessionManager.getOperationManager().getLiveSqlOperations();
+      for (SQLOperationDisplay operation : operations) {
+          queries++;
+    %>
     <tr>
-        <td><%= query.getParentSession().getUserName() %></td>
-        <td><%= query.getQueryStr() %></td>
-        <td><%= query.getConfigForOperation().getVar(ConfVars.HIVE_EXECUTION_ENGINE) %>
-        <td><%= query.getStatus().getState() %></td>
-        <td><%= (currentTime - query.getBeginTime())/1000 %></td>
+        <td><%= operation.getUserName() %></td>
+        <td><%= operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString() %></td>
+        <td><%= operation.getExecutionEngine() %>
+        <td><%= operation.getState() %></td>
+        <td><%= new Date(operation.getBeginTime()) %></td>
+        <td><%= operation.getElapsedTime()/1000 %></td>
+        <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
+        <td>  <a href= <%= link %>>Query Drilldown</a> </td>
     </tr>
+
 <%
   }
-}
 %>
 <tr>
-  <td colspan="5">Total number of queries: <%= queries %></td>
+  <td colspan="7">Total number of queries: <%= queries %></td>
 </tr>
 </table>
 </section>
@@ -169,33 +172,36 @@ for (Operation operation: operations) {
         <th>Execution Engine</th>
         <th>State</th>
         <th>Elapsed Time (s)</th>
-        <th>End Time </th>
+        <th>End Time</th>
+        <th>Drilldown Link</th>
     </tr>
-<%
-queries = 0;
-List<SQLOperationInfo> sqlOperations = sessionManager.getOperationManager().getHistoricalSQLOpInfo();
-for (SQLOperationInfo sqlOperation: sqlOperations) {
-  queries++;
-%>
+    <%
+      queries = 0;
+      operations = sessionManager.getOperationManager().getHistoricalSQLOperations();
+      for (SQLOperationDisplay operation : operations) {
+          queries++;
+    %>
     <tr>
-        <td><%= sqlOperation.userName %></td>
-        <td><%= sqlOperation.queryStr %></td>
-        <td><%= sqlOperation.executionEngine %></td>
-        <td><%= sqlOperation.endState %></td>
-        <td><%= sqlOperation.elapsedTime %></td>
-        <td><%= new Date(sqlOperation.endTime) %></td>
+        <td><%= operation.getUserName() %></td>
+        <td><%= operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString() %></td>
+        <td><%= operation.getExecutionEngine() %>
+        <td><%= operation.getState() %></td>
+        <td><%= operation.getElapsedTime()/1000 %></td>
+        <td><%= operation.getEndTime() == null ? "In Progress" : new Date(operation.getEndTime()) %></td>
+        <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
+        <td>  <a href= <%= link %>>Query Drilldown</a> </td>
     </tr>
-<%
-}
 
+<%
+  }
 %>
 <tr>
-  <td colspan="6">Total number of queries: <%= queries %></td>
+  <td colspan="8">Total number of queries: <%= queries %></td>
 </tr>
 </table>
 </section>
 
-<% 
+<%
  }
 %>
 

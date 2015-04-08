@@ -3029,6 +3029,21 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
   }
 
+  /**
+   * @return true if HS2 webui is enabled
+   */
+  public boolean isWebUiEnabled() {
+    return this.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT) != 0;
+  }
+
+  /**
+   * @return true if HS2 webui query-info cache is enabled
+   */
+  public boolean isWebUiQueryInfoCacheEnabled() {
+    return isWebUiEnabled() && this.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES) > 0;
+  }
+
+
   public static boolean isLoadMetastoreConfig() {
     return loadMetastoreConfig;
   }

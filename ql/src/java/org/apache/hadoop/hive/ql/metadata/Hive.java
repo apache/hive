@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -3210,7 +3211,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     metaCallTimeMap.clear();
   }
 
-  public void dumpAndClearMetaCallTiming(String phase) {
+  public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
     boolean phaseInfoLogged = false;
     if (LOG.isDebugEnabled()) {
       phaseInfoLogged = logDumpPhase(phase);
@@ -3230,7 +3231,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     }
+
+    ImmutableMap<String, Long> result = ImmutableMap.copyOf(metaCallTimeMap);
     metaCallTimeMap.clear();
+    return result;
   }
 
   private boolean logDumpPhase(String phase) {

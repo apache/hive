@@ -78,11 +78,20 @@ public class SQLOperation extends ExecuteStatementOperation {
   private SerDe serde = null;
   private boolean fetchStarted = false;
 
+  //Display for WebUI.
+  private SQLOperationDisplay sqlOpDisplay;
+
+
   public SQLOperation(HiveSession parentSession, String statement, Map<String,
       String> confOverlay, boolean runInBackground) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
     super(parentSession, statement, confOverlay, runInBackground);
     setupSessionIO(parentSession.getSessionState());
+    try {
+      sqlOpDisplay = new SQLOperationDisplay(this);
+    } catch (HiveSQLException e) {
+      LOG.warn("Error calcluating SQL Operation Display for webui", e);
+    }
   }
 
   private void setupSessionIO(SessionState sessionState) {
@@ -110,6 +119,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     try {
       driver = new Driver(sqlOperationConf, getParentSession().getUserName());
+      sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
@@ -157,10 +167,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
-  }
-
-  public String getQueryStr() {
-    return driver == null ? "Unknown" : driver.getQueryString();
   }
 
   private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
@@ -487,18 +493,17 @@ public class SQLOperation extends ExecuteStatementOperation {
   /**
    * Get summary information of this SQLOperation for display in WebUI.
    */
-  public SQLOperationInfo getSQLOperationInfo() {
-    try {
-      return new SQLOperationInfo(
-        getParentSession().getUserName(),
-        driver.getQueryString(),
-        getConfigForOperation().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE),
-        getState(),
-        (int) (System.currentTimeMillis() - getBeginTime()) / 1000,
-        System.currentTimeMillis());
-    } catch (HiveSQLException e) {
-      LOG.warn("Error calcluating SQL Operation Info for webui", e);
+  public SQLOperationDisplay getSQLOperationDisplay() {
+    return sqlOpDisplay;
+  }
+
+  @Override
+  protected void onNewState(OperationState state) {
+    if (state == OperationState.CLOSED) {
+      sqlOpDisplay.closed();
+    } else {
+      //CLOSED state not interesting, state before (FINISHED, ERROR) is.
+      sqlOpDisplay.updateState(state);
     }
-    return null;
   }
 }
