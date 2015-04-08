@@ -73,8 +73,12 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   private static boolean checkInputCorrectBucketing(RelNode child, ImmutableBitSet groupSet) {
+    return false;
+    //TODO: Enable this again
+    /*
     return RelMetadataQuery.distribution(child).getKeys().
             containsAll(groupSet.asList());
+            */
   }
 
   @Override
