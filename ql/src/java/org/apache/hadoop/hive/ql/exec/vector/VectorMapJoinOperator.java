@@ -236,11 +236,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   @Override
   public void closeOp(boolean aborted) throws HiveException {
     super.closeOp(aborted);
-    for (MapJoinTableContainer tableContainer : mapJoinTables) {
-      if (tableContainer != null) {
-        tableContainer.dumpMetrics();
-      }
-    }
     if (!aborted && 0 < outputBatch.size) {
       flushOutput();
     }
