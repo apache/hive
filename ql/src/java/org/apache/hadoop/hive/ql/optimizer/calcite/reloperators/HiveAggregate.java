@@ -38,15 +38,13 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public static final HiveAggRelFactory HIVE_AGGR_REL_FACTORY = new HiveAggRelFactory();
 
-  // Whether input is already sorted
-  private boolean bucketedInput;
+
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
       List<AggregateCall> aggCalls) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, indicator, groupSet,
             groupSets, aggCalls);
-    this.bucketedInput = checkInputCorrectBucketing(child, groupSet);
   }
 
   @Override
@@ -72,15 +70,6 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
     return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
-  private static boolean checkInputCorrectBucketing(RelNode child, ImmutableBitSet groupSet) {
-    return false;
-    //TODO: Enable this again
-    /*
-    return RelMetadataQuery.distribution(child).getKeys().
-            containsAll(groupSet.asList());
-            */
-  }
-
   @Override
   public double getRows() {
     return RelMetadataQuery.getDistinctRowCount(this, groupSet, getCluster().getRexBuilder()
@@ -88,7 +77,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   public boolean isBucketedInput() {
-    return this.bucketedInput;
+    return RelMetadataQuery.distribution(this.getInput()).getKeys().
+            containsAll(groupSet.asList());
   }
 
   private static class HiveAggRelFactory implements AggregateFactory {

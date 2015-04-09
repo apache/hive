@@ -57,16 +57,14 @@ public class HiveJoin extends Join implements HiveRelNode {
   private JoinAlgorithm joinAlgorithm;
   private MapJoinStreamingRelation mapJoinStreamingSide;
   private RelOptCost joinCost;
-  // Whether inputs are already sorted
-  private ImmutableBitSet sortedInputs;
+
 
   public static HiveJoin getJoin(RelOptCluster cluster, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       HiveJoin join = new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
-          JoinAlgorithm.NONE, chooseStreamingSide(left,right), null, leftSemiJoin);
-      join.sortedInputs = checkInputsCorrectOrder(join);
+          JoinAlgorithm.NONE, chooseStreamingSide(left,right), leftSemiJoin);
       return join;
     } catch (InvalidRelException e) {
       throw new RuntimeException(e);
@@ -76,12 +74,11 @@ public class HiveJoin extends Join implements HiveRelNode {
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
       JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin,
-      ImmutableBitSet sortedInputs, boolean leftSemiJoin) throws InvalidRelException {
+      boolean leftSemiJoin) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
     this.joinAlgorithm = joinAlgo;
     this.mapJoinStreamingSide = streamingSideForMapJoin;
-    this.sortedInputs = sortedInputs;
     this.leftSemiJoin = leftSemiJoin;
   }
 
@@ -95,7 +92,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinAlgorithm, mapJoinStreamingSide, sortedInputs, leftSemiJoin);
+          variablesStopped, joinAlgorithm, mapJoinStreamingSide, leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
@@ -120,7 +117,26 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public ImmutableBitSet getSortedInputs() {
-    return sortedInputs;
+    ImmutableBitSet.Builder sortedInputsBuilder = new ImmutableBitSet.Builder();
+    JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(this);
+    List<ImmutableIntList> joinKeysInChildren = new ArrayList<ImmutableIntList>();
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromLeftPartOfJoinKeysInChildSchema()));
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
+
+    for (int i=0; i<this.getInputs().size(); i++) {
+      boolean correctOrderFound = RelCollations.contains(
+              RelMetadataQuery.collations(this.getInputs().get(i)),
+              joinKeysInChildren.get(i));
+      if (correctOrderFound) {
+        sortedInputsBuilder.set(i);
+      }
+    }
+    return sortedInputsBuilder.build();
   }
 
   public boolean isLeftSemiJoin() {
@@ -151,29 +167,6 @@ public class HiveJoin extends Join implements HiveRelNode {
       return MapJoinStreamingRelation.LEFT_RELATION;
     }
     return MapJoinStreamingRelation.NONE;
-  }
-
-  private static ImmutableBitSet checkInputsCorrectOrder(HiveJoin join) {
-    ImmutableBitSet.Builder sortedInputs = new ImmutableBitSet.Builder();
-    JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
-            constructJoinPredicateInfo(join);
-    List<ImmutableIntList> joinKeysInChildren = new ArrayList<ImmutableIntList>();
-    joinKeysInChildren.add(
-            ImmutableIntList.copyOf(
-                    joinPredInfo.getProjsFromLeftPartOfJoinKeysInChildSchema()));
-    joinKeysInChildren.add(
-            ImmutableIntList.copyOf(
-                    joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
-
-    for (int i=0; i<join.getInputs().size(); i++) {
-      boolean correctOrderFound = RelCollations.contains(
-              RelMetadataQuery.collations(join.getInputs().get(i)),
-              joinKeysInChildren.get(i));
-      if (correctOrderFound) {
-        sortedInputs.set(i);
-      }
-    }
-    return sortedInputs.build();
   }
 
   @Override
