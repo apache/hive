@@ -208,6 +208,16 @@ public class FlatRowContainer extends AbstractCollection<Object>
   }
 
   @Override
+  public boolean hasRows() throws HiveException {
+    return rowCount() > 0;
+  }
+
+  @Override
+  public boolean isSingleRow() throws HiveException {
+    return rowCount() == 1;
+  }
+
+  @Override
   public int rowCount() throws HiveException {
     return rowLength > 0 ? (array.length / rowLength) : -rowLength; // see rowLength javadoc
   }
