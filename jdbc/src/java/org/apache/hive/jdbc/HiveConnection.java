@@ -50,10 +50,11 @@ import java.util.concurrent.TimeUnit;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -73,9 +74,17 @@ import org.apache.hive.service.cli.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.cli.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -236,7 +245,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private TTransport createHttpTransport() throws SQLException, TTransportException {
-    DefaultHttpClient httpClient;
+    CloseableHttpClient httpClient;
     boolean useSsl = isSslConnection();
     // Create an http client from the configs
     httpClient = getHttpClient(useSsl);
@@ -260,35 +269,76 @@ public class HiveConnection implements java.sql.Connection {
     return transport;
   }
 
-  private DefaultHttpClient getHttpClient(Boolean useSsl) throws SQLException {
-    DefaultHttpClient httpClient = new DefaultHttpClient();
+  private CloseableHttpClient getHttpClient(Boolean useSsl) throws SQLException {
+    boolean isCookieEnabled = sessConfMap.get(JdbcConnectionParams.COOKIE_AUTH) == null ||
+      (!JdbcConnectionParams.COOKIE_AUTH_FALSE.equalsIgnoreCase(
+      sessConfMap.get(JdbcConnectionParams.COOKIE_AUTH)));
+    String cookieName = sessConfMap.get(JdbcConnectionParams.COOKIE_NAME) == null ?
+      JdbcConnectionParams.DEFAULT_COOKIE_NAMES_HS2 :
+      sessConfMap.get(JdbcConnectionParams.COOKIE_NAME);
+    CookieStore cookieStore = isCookieEnabled ? new BasicCookieStore() : null;
+    HttpClientBuilder httpClientBuilder;
     // Request interceptor for any request pre-processing logic
     HttpRequestInterceptor requestInterceptor;
-    // If Kerberos
+
+    // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
-       * TODO: Optimize this with a mix of kerberos + using cookie.
        */
       requestInterceptor =
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-              host, getServerHttpUrl(useSsl), assumeSubject);
+              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName);
     }
     else {
       /**
        * Add an interceptor to pass username/password in the header.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword());
+      requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
+                                                        cookieStore, cookieName);
     }
-    // Configure httpClient for SSL
+    // Configure http client for cookie based authentication
+    if (isCookieEnabled) {
+      // Create a http client with a retry mechanism when the server returns a status code of 401.
+      httpClientBuilder =
+      HttpClients.custom().setServiceUnavailableRetryStrategy(
+        new  ServiceUnavailableRetryStrategy() {
+
+      @Override
+      public boolean retryRequest(
+        final HttpResponse response,
+        final int executionCount,
+        final HttpContext context) {
+        int statusCode = response.getStatusLine().getStatusCode();
+        boolean ret = statusCode == 401 && executionCount <= 1;
+
+        // Set the context attribute to true which will be interpreted by the request interceptor
+        if (ret) {
+          context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_TRUE);
+        }
+        return ret;
+      }
+
+      @Override
+      public long getRetryInterval() {
+        // Immediate retry
+        return 0;
+      }
+    });
+    } else {
+      httpClientBuilder = HttpClientBuilder.create();
+    }
+    // Add the request interceptor to the client builder
+    httpClientBuilder.addInterceptorFirst(requestInterceptor);
+    // Configure http client for SSL
     if (useSsl) {
       String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
       String sslTrustStorePassword = sessConfMap.get(
-          JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       KeyStore sslTrustStore;
       SSLSocketFactory socketFactory;
       /**
@@ -312,21 +362,25 @@ public class HiveConnection implements java.sql.Connection {
           // Pick trust store config from the given path
           sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
           sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-              sslTrustStorePassword.toCharArray());
+            sslTrustStorePassword.toCharArray());
           socketFactory = new SSLSocketFactory(sslTrustStore);
         }
         socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        Scheme sslScheme = new Scheme("https", 443, socketFactory);
-        httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
+
+        final Registry<ConnectionSocketFactory> registry =
+          RegistryBuilder.<ConnectionSocketFactory>create()
+          .register("https", socketFactory)
+          .build();
+
+        httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
       }
       catch (Exception e) {
         String msg =  "Could not create an https connection to " +
-            jdbcUriString + ". " + e.getMessage();
+          jdbcUriString + ". " + e.getMessage();
         throw new SQLException(msg, " 08S01", e);
       }
     }
-    httpClient.addRequestInterceptor(requestInterceptor);
-    return httpClient;
+    return httpClientBuilder.build();
   }
 
   /**
