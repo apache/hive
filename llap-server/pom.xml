@@ -184,6 +184,12 @@
         </dependency>
         <dependency>
           <groupId>org.apache.tez</groupId>
+          <artifactId>tez-mapreduce</artifactId>
+          <version>${tez.version}</version>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
           <artifactId>tez-dag</artifactId>
           <version>${tez.version}</version>
           <optional>true</optional>

@@ -242,6 +242,11 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     containerRunner.submitWork(request);
   }
 
+  @Override
+  public void sourceStateUpdated(LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto request) {
+    containerRunner.sourceStateUpdated(request);
+  }
+
   @VisibleForTesting
   public long getNumSubmissions() {
     return numSubmissions.get();

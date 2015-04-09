@@ -1,0 +1,212 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.apache.hadoop.hive.llap.tezplugins.helpers;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.llap.LlapNodeId;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.tezplugins.Converters;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
+import org.apache.tez.dag.api.TaskCommunicatorContext;
+import org.apache.tez.dag.api.event.VertexState;
+import org.apache.tez.mapreduce.input.MRInputLegacy;
+import org.apache.tez.runtime.api.impl.InputSpec;
+
+public class SourceStateTracker {
+
+  private static final Log LOG = LogFactory.getLog(SourceStateTracker.class);
+
+  private final TaskCommunicatorContext taskCommunicatorContext;
+  private final LlapTaskCommunicator taskCommunicator;
+
+  // Tracks vertices for which notifications have been registered
+  private final Set<String> notificationRegisteredVertices = new HashSet<>();
+
+  private final Map<String, SourceInfo> sourceInfoMap = new HashMap<>();
+  private final Map<LlapNodeId, NodeInfo> nodeInfoMap = new HashMap<>();
+
+  private volatile String currentDagName;
+
+
+  public SourceStateTracker(TaskCommunicatorContext taskCommunicatorContext,
+                            LlapTaskCommunicator taskCommunicator) {
+    this.taskCommunicatorContext = taskCommunicatorContext;
+    this.taskCommunicator = taskCommunicator;
+  }
+
+  /**
+   * To be invoked after each DAG completes.
+   */
+  public synchronized void resetState(String newDagName) {
+    sourceInfoMap.clear();
+    nodeInfoMap.clear();
+    notificationRegisteredVertices.clear();
+    this.currentDagName = newDagName;
+  }
+
+  public synchronized void addTask(String host, int port, List<InputSpec> inputSpecList) {
+
+    // Add tracking information. Check if source state already known and send out an update if it is.
+
+    List<String> sourcesOfInterest = getSourceInterestList(inputSpecList);
+    if (sourcesOfInterest != null && !sourcesOfInterest.isEmpty()) {
+      LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
+      NodeInfo nodeInfo = getNodeInfo(nodeId);
+
+      // Set up the data structures, before any notifications come in.
+      for (String src : sourcesOfInterest) {
+        VertexState oldStateForNode = nodeInfo.getLastKnownStateForSource(src);
+        if (oldStateForNode == null) {
+          // Not registered for this node.
+          // Register and send state if it is successful.
+          SourceInfo srcInfo = getSourceInfo(src);
+          srcInfo.addNode(nodeId);
+
+          nodeInfo.addSource(src, srcInfo.lastKnownState);
+          if (srcInfo.lastKnownState == VertexState.SUCCEEDED) {
+            sendStateUpdateToNode(nodeId, src, srcInfo.lastKnownState);
+          }
+
+        } else {
+          // Already registered to send updates to this node for the specific source.
+          // Nothing to do for now, unless tracking tasks at a later point.
+        }
+
+        // Setup for actual notifications, if not already done for a previous task.
+        maybeRegisterForVertexUpdates(src);
+      }
+    } else {
+      // Don't need to track anything for this task. No new notifications, etc.
+    }
+  }
+
+  public synchronized void sourceStateUpdated(String sourceName, VertexState sourceState) {
+    SourceInfo sourceInfo = getSourceInfo(sourceName);
+    sourceInfo.lastKnownState = sourceState;
+    // Checking state per node for future failure handling scenarios, where an update
+    // to a single node may fail.
+    for (LlapNodeId nodeId : sourceInfo.getInterestedNodes()) {
+      NodeInfo nodeInfo = nodeInfoMap.get(nodeId);
+      VertexState lastStateForNode = nodeInfo.getLastKnownStateForSource(sourceName);
+      // Send only if the state has changed.
+      if (lastStateForNode != sourceState) {
+        nodeInfo.setLastKnownStateForSource(sourceName, sourceState);
+        sendStateUpdateToNode(nodeId, sourceName, sourceState);
+      }
+    }
+  }
+
+
+  private static class SourceInfo {
+    private final List<LlapNodeId> interestedNodes = new LinkedList<>();
+    // Always start in the running state. Requests for state updates will be sent out after registration.
+    private VertexState lastKnownState = VertexState.RUNNING;
+
+    void addNode(LlapNodeId nodeId) {
+      interestedNodes.add(nodeId);
+    }
+
+    List<LlapNodeId> getInterestedNodes() {
+      return this.interestedNodes;
+    }
+  }
+
+  private synchronized SourceInfo getSourceInfo(String srcName) {
+    SourceInfo sourceInfo = sourceInfoMap.get(srcName);
+    if (sourceInfo == null) {
+      sourceInfo = new SourceInfo();
+      sourceInfoMap.put(srcName, sourceInfo);
+    }
+    return sourceInfo;
+  }
+
+
+  private static class NodeInfo {
+    private final Map<String, VertexState> sourcesOfInterest = new HashMap<>();
+
+    void addSource(String srcName, VertexState sourceState) {
+      sourcesOfInterest.put(srcName, sourceState);
+    }
+
+    VertexState getLastKnownStateForSource(String src) {
+      return sourcesOfInterest.get(src);
+    }
+
+    void setLastKnownStateForSource(String src, VertexState state) {
+      sourcesOfInterest.put(src, state);
+    }
+  }
+
+  private synchronized NodeInfo getNodeInfo(LlapNodeId llapNodeId) {
+    NodeInfo nodeInfo = nodeInfoMap.get(llapNodeId);
+    if (nodeInfo == null) {
+      nodeInfo = new NodeInfo();
+      nodeInfoMap.put(llapNodeId, nodeInfo);
+    }
+    return nodeInfo;
+  }
+
+
+  private List<String> getSourceInterestList(List<InputSpec> inputSpecList) {
+    List<String> sourcesOfInterest = Collections.emptyList();
+    if (inputSpecList != null) {
+      boolean alreadyFound = false;
+      for (InputSpec inputSpec : inputSpecList) {
+        if (isSourceOfInterest(inputSpec)) {
+          if (!alreadyFound) {
+            alreadyFound = true;
+            sourcesOfInterest = new LinkedList<>();
+          }
+          sourcesOfInterest.add(inputSpec.getSourceVertexName());
+        }
+      }
+    }
+    return sourcesOfInterest;
+  }
+
+
+  private void maybeRegisterForVertexUpdates(String sourceName) {
+    if (!notificationRegisteredVertices.contains(sourceName)) {
+      notificationRegisteredVertices.add(sourceName);
+      taskCommunicatorContext.registerForVertexStateUpdates(sourceName, EnumSet.of(
+          VertexState.RUNNING, VertexState.SUCCEEDED));
+    }
+  }
+
+  private boolean isSourceOfInterest(InputSpec inputSpec) {
+    String inputClassName = inputSpec.getInputDescriptor().getClassName();
+    // MRInput is not of interest since it'll always be ready.
+    return !inputClassName.equals(MRInputLegacy.class.getName());
+  }
+
+  void sendStateUpdateToNode(LlapNodeId nodeId, String sourceName, VertexState state) {
+    taskCommunicator.sendStateUpdate(nodeId.getHostname(), nodeId.getPort(),
+        SourceStateUpdatedRequestProto.newBuilder().setDagName(currentDagName).setSrcName(
+            sourceName)
+            .setState(Converters.fromVertexState(state)).build());
+  }
+
+
+}

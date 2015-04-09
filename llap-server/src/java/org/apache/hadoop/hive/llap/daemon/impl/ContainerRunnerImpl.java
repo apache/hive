@@ -21,7 +21,10 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +42,8 @@ import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
@@ -62,8 +67,11 @@ import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezConstants;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
+import org.apache.tez.runtime.api.impl.InputSpec;
+import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.apache.tez.runtime.internals.api.TaskReporterInterface;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
@@ -94,6 +102,9 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private final LlapDaemonExecutorMetrics metrics;
   private final Configuration conf;
   private final ConfParams confParams;
+
+  // Map of dagId to vertices and associated state.
+  private final ConcurrentMap<String, ConcurrentMap<String, SourceStateProto>> sourceCompletionMap = new ConcurrentHashMap<>();
   // TODO Support for removing queued containers, interrupting / killing specific containers
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, String[] localDirsBase, int localShufflePort,
@@ -141,7 +152,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   @Override
   public void serviceStart() {
     // The node id will only be available at this point, since the server has been started in LlapDaemon
-    LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
+    LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(),
+        localAddress.get().getPort());
     this.amReporter = new AMReporter(llapNodeId, conf);
     amReporter.init(conf);
     amReporter.start();
@@ -172,7 +184,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
         localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
         request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
         request.getFragmentSpec().getAttemptNumber());
-    LOG.info("Queueing container for execution: " + stringifyRequest(request));
+    LOG.info("Queueing container for execution: " + stringifySubmitRequest(request));
     // This is the start of container-annotated logging.
     // TODO Reduce the length of this string. Way too verbose at the moment.
     String ndcContextString =
@@ -215,9 +227,10 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
       ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser(), localDirs);
 
+      ConcurrentMap<String, SourceStateProto> sourceCompletionMap = getSourceCompletionMap(request.getFragmentSpec().getDagName());
       TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          credentials, memoryPerExecutor, amReporter, confParams);
+          credentials, memoryPerExecutor, amReporter, sourceCompletionMap, confParams);
       ListenableFuture<ContainerExecutionResult> future = executorService.submit(callable);
       Futures.addCallback(future, new TaskRunnerCallback(request, callable));
       metrics.incrExecutorTotalRequestsHandled();
@@ -225,6 +238,13 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     } finally {
       NDC.pop();
     }
+  }
+
+  @Override
+  public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
+    LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
+    ConcurrentMap<String, SourceStateProto> dagMap = getSourceCompletionMap(request.getDagName());
+    dagMap.put(request.getSrcName(), request.getState());
   }
 
   static class TaskRunnerCallable extends CallableWithNdc<ContainerExecutionResult> {
@@ -241,6 +261,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     private final ConfParams confParams;
     private final Token<JobTokenIdentifier> jobToken;
     private final AMReporter amReporter;
+    private final ConcurrentMap<String, SourceStateProto> sourceCompletionMap;
+    private final TaskSpec taskSpec;
     private volatile TezTaskRunner taskRunner;
     private volatile TaskReporterInterface taskReporter;
     private volatile ListeningExecutorService executor;
@@ -254,17 +276,20 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     TaskRunnerCallable(SubmitWorkRequestProto request, Configuration conf,
                             ExecutionContext executionContext, Map<String, String> envMap,
                             String[] localDirs, Credentials credentials,
-                            long memoryAvailable, AMReporter amReporter, ConfParams confParams) {
+                            long memoryAvailable, AMReporter amReporter,
+                            ConcurrentMap<String, SourceStateProto> sourceCompletionMap, ConfParams confParams) {
       this.request = request;
       this.conf = conf;
       this.executionContext = executionContext;
       this.envMap = envMap;
       this.localDirs = localDirs;
       this.objectRegistry = new ObjectRegistryImpl();
+      this.sourceCompletionMap = sourceCompletionMap;
       this.credentials = credentials;
       this.memoryAvailable = memoryAvailable;
       this.confParams = confParams;
-      jobToken = TokenCache.getSessionToken(credentials);
+      this.jobToken = TokenCache.getSessionToken(credentials);
+      this.taskSpec = Converters.getTaskSpecfromProto(request.getFragmentSpec());
       this.amReporter = amReporter;
       // Register with the AMReporter when the callable is setup. Unregister once it starts running.
       this.amReporter.registerTask(request.getAmHost(), request.getAmPort(), request.getUser(), jobToken);
@@ -274,6 +299,10 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     protected ContainerExecutionResult callInternal() throws Exception {
       this.startTime = System.currentTimeMillis();
       this.threadName = Thread.currentThread().getName();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("canFinish: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
+      }
+
 
       // Unregister from the AMReporter, since the task is now running.
       this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
@@ -320,7 +349,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
           request.getContainerIdString());
 
       taskRunner = new TezTaskRunner(conf, taskUgi, localDirs,
-          Converters.getTaskSpecfromProto(request.getFragmentSpec()),
+          taskSpec,
           request.getAppAttemptNumber(),
           serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor, objectRegistry,
           pid,
@@ -346,8 +375,49 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
        }
       LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
           sw.stop().elapsedMillis());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
+      }
+
       return new ContainerExecutionResult(ContainerExecutionResult.ExitStatus.SUCCESS, null,
           null);
+    }
+
+    /**
+     * Check whether a task can run to completion or may end up blocking on it's sources.
+     * This currently happens via looking up source state.
+     * TODO: Eventually, this should lookup the Hive Processor to figure out whether
+     * it's reached a state where it can finish - especially in cases of failures
+     * after data has been fetched.
+     * @return
+     */
+    public boolean canFinish() {
+      List<InputSpec> inputSpecList =  taskSpec.getInputs();
+      boolean canFinish = true;
+      if (inputSpecList != null && !inputSpecList.isEmpty()) {
+        for (InputSpec inputSpec : inputSpecList) {
+          if (isSourceOfInterest(inputSpec)) {
+            // Lookup the state in the map.
+            SourceStateProto state = sourceCompletionMap.get(inputSpec.getSourceVertexName());
+            if (state != null && state == SourceStateProto.S_SUCCEEDED) {
+              continue;
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Cannot finish due to source: " + inputSpec.getSourceVertexName());
+              }
+              canFinish = false;
+              break;
+            }
+          }
+        }
+      }
+      return canFinish;
+    }
+
+    private boolean isSourceOfInterest(InputSpec inputSpec) {
+      String inputClassName = inputSpec.getInputDescriptor().getClassName();
+      // MRInput is not of interest since it'll always be ready.
+      return !inputClassName.equals(MRInputLegacy.class.getName());
     }
 
     public void shutdown() {
@@ -444,7 +514,15 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     }
   }
 
-  private String stringifyRequest(SubmitWorkRequestProto request) {
+  private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("dagName=").append(request.getDagName())
+        .append(", ").append("sourceName=").append(request.getSrcName())
+        .append(", ").append("state=").append(request.getState());
+    return sb.toString();
+  }
+
+  private String stringifySubmitRequest(SubmitWorkRequestProto request) {
     StringBuilder sb = new StringBuilder();
     sb.append("am_details=").append(request.getAmHost()).append(":").append(request.getAmPort());
     sb.append(", user=").append(request.getUser());
@@ -462,25 +540,40 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     sb.append(", Inputs={");
     if (fragmentSpec.getInputSpecsCount() > 0) {
       for (IOSpecProto ioSpec : fragmentSpec.getInputSpecsList()) {
-        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",").append(ioSpec.getIoDescriptor().getClassName()).append(",").append(ioSpec.getPhysicalEdgeCount()).append("}");
+        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",")
+            .append(ioSpec.getIoDescriptor().getClassName()).append(",")
+            .append(ioSpec.getPhysicalEdgeCount()).append("}");
       }
     }
     sb.append("}");
     sb.append(", Outputs={");
     if (fragmentSpec.getOutputSpecsCount() > 0) {
       for (IOSpecProto ioSpec : fragmentSpec.getOutputSpecsList()) {
-        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",").append(ioSpec.getIoDescriptor().getClassName()).append(",").append(ioSpec.getPhysicalEdgeCount()).append("}");
+        sb.append("{").append(ioSpec.getConnectedVertexName()).append(",")
+            .append(ioSpec.getIoDescriptor().getClassName()).append(",")
+            .append(ioSpec.getPhysicalEdgeCount()).append("}");
       }
     }
     sb.append("}");
     sb.append(", GroupedInputs={");
     if (fragmentSpec.getGroupedInputSpecsCount() > 0) {
       for (GroupInputSpecProto group : fragmentSpec.getGroupedInputSpecsList()) {
-        sb.append("{").append("groupName=").append(group.getGroupName()).append(", elements=").append(group.getGroupVerticesList()).append("}");
+        sb.append("{").append("groupName=").append(group.getGroupName()).append(", elements=")
+            .append(group.getGroupVerticesList()).append("}");
         sb.append(group.getGroupVerticesList());
       }
     }
     sb.append("}");
     return sb.toString();
+  }
+
+  private ConcurrentMap<String, SourceStateProto> getSourceCompletionMap(String dagName) {
+    ConcurrentMap<String, SourceStateProto> dagMap = sourceCompletionMap.get(dagName);
+    if (dagMap == null) {
+      dagMap = new ConcurrentHashMap<>();
+      ConcurrentMap<String, SourceStateProto> old = sourceCompletionMap.putIfAbsent(dagName, dagMap);
+      dagMap = (old != null) ? old : dagMap;
+    }
+    return dagMap;
   }
 }

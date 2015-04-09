@@ -27,13 +27,19 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Message;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemonProtocolClientImpl;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.service.AbstractService;
 
 public class TaskCommunicator extends AbstractService {
+
+  private static final Log LOG = LogFactory.getLog(TaskCommunicator.class);
 
   private final ConcurrentMap<String, LlapDaemonProtocolBlockingPB> hostProxies;
   private ListeningExecutorService executor;
@@ -53,7 +59,7 @@ public class TaskCommunicator extends AbstractService {
 
   public void submitWork(SubmitWorkRequestProto request, String host, int port,
                          final ExecuteRequestCallback<SubmitWorkResponseProto> callback) {
-    ListenableFuture<SubmitWorkResponseProto> future = executor.submit(new SubmitWorkCallable(request, host, port));
+    ListenableFuture<SubmitWorkResponseProto> future = executor.submit(new SubmitWorkCallable(host, port, request));
     Futures.addCallback(future, new FutureCallback<SubmitWorkResponseProto>() {
       @Override
       public void onSuccess(SubmitWorkResponseProto result) {
@@ -68,20 +74,63 @@ public class TaskCommunicator extends AbstractService {
 
   }
 
-  private class SubmitWorkCallable implements Callable<SubmitWorkResponseProto> {
+  public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final String host, final int port,
+                                    final ExecuteRequestCallback<SourceStateUpdatedResponseProto> callback) {
+    ListenableFuture<SourceStateUpdatedResponseProto> future =
+        executor.submit(new SendSourceStateUpdateCallable(host, port, request));
+    Futures.addCallback(future, new FutureCallback<SourceStateUpdatedResponseProto>() {
+      @Override
+      public void onSuccess(SourceStateUpdatedResponseProto result) {
+        callback.setResponse(result);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        callback.indicateError(t);
+      }
+    });
+  }
+
+  private static abstract class CallableRequest<REQUEST extends  Message, RESPONSE extends Message> implements Callable {
+
     final String hostname;
     final int port;
-    final SubmitWorkRequestProto request;
+    final REQUEST request;
 
-    private SubmitWorkCallable(SubmitWorkRequestProto request, String hostname, int port) {
+
+    protected CallableRequest(String hostname, int port, REQUEST request) {
       this.hostname = hostname;
       this.port = port;
       this.request = request;
     }
 
+    public abstract RESPONSE call() throws Exception;
+  }
+
+  private class SubmitWorkCallable extends CallableRequest<SubmitWorkRequestProto, SubmitWorkResponseProto> {
+
+    protected SubmitWorkCallable(String hostname, int port,
+                          SubmitWorkRequestProto submitWorkRequestProto) {
+      super(hostname, port, submitWorkRequestProto);
+    }
+
     @Override
     public SubmitWorkResponseProto call() throws Exception {
       return getProxy(hostname, port).submitWork(null, request);
+    }
+  }
+
+  private class SendSourceStateUpdateCallable
+      extends CallableRequest<SourceStateUpdatedRequestProto, SourceStateUpdatedResponseProto> {
+
+    public SendSourceStateUpdateCallable(String hostname, int port,
+                                         SourceStateUpdatedRequestProto request) {
+      super(hostname, port, request);
+    }
+
+    @Override
+    public SourceStateUpdatedResponseProto call() throws Exception {
+      return getProxy(hostname, port).sourceStateUpdated(null, request);
     }
   }
 

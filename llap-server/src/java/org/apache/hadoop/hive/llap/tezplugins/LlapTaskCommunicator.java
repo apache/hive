@@ -31,9 +31,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
+import org.apache.hadoop.hive.llap.tezplugins.helpers.SourceStateTracker;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
@@ -51,6 +54,7 @@ import org.apache.tez.dag.api.TaskCommunicatorContext;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.TezUncheckedException;
+import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.TaskSpec;
@@ -64,10 +68,15 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final SubmitWorkRequestProto BASE_SUBMIT_WORK_REQUEST;
   private final ConcurrentMap<String, ByteBuffer> credentialMap;
 
+  // Tracks containerIds and taskAttemptIds, so can be kept independent of the running DAG.
+  // When DAG specific cleanup happens, it'll be better to link this to a DAG though.
   private final EntityTracker entityTracker = new EntityTracker();
+  private final SourceStateTracker sourceStateTracker;
 
   private TaskCommunicator communicator;
   private final LlapTaskUmbilicalProtocol umbilical;
+
+  private volatile String currentDagName;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
@@ -87,6 +96,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     BASE_SUBMIT_WORK_REQUEST = baseBuilder.build();
 
     credentialMap = new ConcurrentHashMap<>();
+    sourceStateTracker = new SourceStateTracker(getTaskCommunicatorContext(), this);
   }
 
   @Override
@@ -153,6 +163,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     entityTracker.unregisterContainer(containerId);
   }
 
+
   @Override
   public void registerRunningTaskAttempt(final ContainerId containerId, final TaskSpec taskSpec,
                                          Map<String, LocalResource> additionalResources,
@@ -161,6 +172,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                                          int priority)  {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
         credentialsChanged, priority);
+    if (taskSpec.getDAGName() != currentDagName) {
+      resetCurrentDag(taskSpec.getDAGName());
+    }
 
     SubmitWorkRequestProto requestProto;
     try {
@@ -183,6 +197,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     entityTracker.registerTaskAttempt(containerId, taskSpec.getTaskAttemptID(), host, port);
+
+    sourceStateTracker.addTask(host, port, taskSpec.getInputs());
 
     // Have to register this up front right now. Otherwise, it's possible for the task to start
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
@@ -238,6 +254,45 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // TODO Inform the daemon that this task is no longer running.
     // Currently, a task will end up moving into the RUNNING queue and will
     // be told that it needs to die since it isn't recognized.
+  }
+
+  @Override
+  public void onVertexStateUpdated(VertexStateUpdate vertexStateUpdate) {
+    // Delegate updates over to the source state tracker.
+    sourceStateTracker
+        .sourceStateUpdated(vertexStateUpdate.getVertexName(), vertexStateUpdate.getVertexState());
+  }
+
+  public void sendStateUpdate(final String host, final int port,
+                              final SourceStateUpdatedRequestProto request) {
+    communicator.sendSourceStateUpdate(request, host, port,
+        new TaskCommunicator.ExecuteRequestCallback<SourceStateUpdatedResponseProto>() {
+          @Override
+          public void setResponse(SourceStateUpdatedResponseProto response) {
+          }
+
+          @Override
+          public void indicateError(Throwable t) {
+            // TODO HIVE-10280.
+            // Ideally, this should be retried for a while, after which the node should be marked as failed.
+            // Considering tasks are supposed to run fast. Failing the task immediately may be a good option.
+            LOG.error(
+                "Failed to send state update to node: " + host + ":" + port + ", StateUpdate=" +
+                    request, t);
+          }
+        });
+  }
+
+
+
+  private void resetCurrentDag(String newDagName) {
+    // Working on the assumption that a single DAG runs at a time per AM.
+    currentDagName = newDagName;
+    sourceStateTracker.resetState(newDagName);
+    LOG.info("CurrentDag set to: " + newDagName);
+    // TODO Additional state reset. Potentially sending messages to node to reset.
+    // Is it possible for heartbeats to come in from lost tasks - those should be told to die, which
+    // is likely already happening.
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequest(ContainerId containerId,
