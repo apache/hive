@@ -27,6 +27,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
@@ -62,7 +65,7 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
 
   @Override
   public SubmitWorkResponseProto submitWork(RpcController controller,
-                                            LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
+                                            SubmitWorkRequestProto request) throws
       ServiceException {
     try {
       containerRunner.submitWork(request);
@@ -70,6 +73,14 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
       throw new ServiceException(e);
     }
     return SubmitWorkResponseProto.getDefaultInstance();
+  }
+
+  @Override
+  public SourceStateUpdatedResponseProto sourceStateUpdated(RpcController controller,
+                                                            SourceStateUpdatedRequestProto request) throws
+      ServiceException {
+    containerRunner.sourceStateUpdated(request);
+    return SourceStateUpdatedResponseProto.getDefaultInstance();
   }
 
   @Override

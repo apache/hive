@@ -16,9 +16,12 @@ package org.apache.hadoop.hive.llap.daemon;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 
 public interface ContainerRunner {
 
   void submitWork(SubmitWorkRequestProto request) throws IOException;
+
+  void sourceStateUpdated(SourceStateUpdatedRequestProto request);
 }

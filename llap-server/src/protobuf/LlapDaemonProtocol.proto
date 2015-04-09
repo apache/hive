@@ -60,6 +60,11 @@ message FragmentSpecProto {
   optional int32 attempt_number = 10;
 }
 
+enum SourceStateProto {
+  S_SUCCEEDED = 1;
+  S_RUNNING = 2;
+}
+
 message SubmitWorkRequestProto {
   optional string container_id_string = 1;
   optional string am_host = 2;
@@ -75,6 +80,16 @@ message SubmitWorkRequestProto {
 message SubmitWorkResponseProto {
 }
 
+message SourceStateUpdatedRequestProto {
+  optional string dag_name = 1;
+  optional string src_name = 2;
+  optional SourceStateProto state = 3;
+}
+
+message SourceStateUpdatedResponseProto {
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
+  rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
 }

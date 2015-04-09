@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDes
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UserPayloadProto;
 import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.dag.api.EntityDescriptor;
@@ -31,6 +32,7 @@ import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.api.event.VertexState;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.GroupInputSpec;
 import org.apache.tez.runtime.api.impl.InputSpec;
@@ -248,6 +250,17 @@ public class Converters {
       }
     }
     return userPayload;
+  }
+
+  public static SourceStateProto fromVertexState(VertexState state) {
+    switch (state) {
+      case SUCCEEDED:
+        return SourceStateProto.S_SUCCEEDED;
+      case RUNNING:
+        return SourceStateProto.S_RUNNING;
+      default:
+        throw new RuntimeException("Unexpected state: " + state);
+    }
   }
 
 }

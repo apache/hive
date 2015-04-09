@@ -179,6 +179,9 @@ public class AMReporter extends AbstractService {
             }
             amNodeInfo.stopUmbilical();
           } else {
+            // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
+            amNodeInfo.setNextHeartbeatTime(System.currentTimeMillis() + heartbeatInterval);
+            pendingHeartbeatQueeu.add(amNodeInfo);
             executor.submit(new AMHeartbeatCallable(amNodeInfo));
           }
         } catch (InterruptedException e) {
