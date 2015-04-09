@@ -629,7 +629,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     RelNode modifiedOptimizedOptiqPlan = introduceProjectIfNeeded(optimizedOptiqPlan);
 
-    Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps, 
+    Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps,
         conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(modifiedOptimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
@@ -1350,11 +1350,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           fullyQualifiedTabName = tabMetaData.getTableName();
         }
         RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-            tableAlias, rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+            rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
             partitionCache, noColsMissingStats, getAliasId(tableAlias, qb));
 
         // 5. Build Hive Table Scan Rel
-        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable);
+        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias);
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToCalciteColMap = buildHiveToCalciteColumnMap(rr,
@@ -1942,7 +1942,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
             groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
           }
-          
+
           final int limit = groupingColsSize * 2;
           while (groupingColsSize < limit) {
             String field = getColumnInternalName(groupingColsSize);

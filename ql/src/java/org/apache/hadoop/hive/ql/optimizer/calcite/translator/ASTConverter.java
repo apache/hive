@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -70,8 +71,8 @@ import com.google.common.collect.Iterables;
 public class ASTConverter {
   private static final Log LOG = LogFactory.getLog(ASTConverter.class);
 
-  private RelNode          root;
-  private HiveAST          hiveAST;
+  private final RelNode          root;
+  private final HiveAST          hiveAST;
   private RelNode          from;
   private Filter           where;
   private Aggregate        groupBy;
@@ -214,7 +215,7 @@ public class ASTConverter {
 
   private void convertLimitToASTNode(HiveSort limit) {
     if (limit != null) {
-      HiveSort hiveLimit = (HiveSort) limit;
+      HiveSort hiveLimit = limit;
       RexNode limitExpr = hiveLimit.getFetchExpr();
       if (limitExpr != null) {
         Object val = ((RexLiteral) limitExpr).getValue2();
@@ -225,12 +226,12 @@ public class ASTConverter {
 
   private void convertOBToASTNode(HiveSort order) {
     if (order != null) {
-      HiveSort hiveSort = (HiveSort) order;
+      HiveSort hiveSort = order;
       if (!hiveSort.getCollation().getFieldCollations().isEmpty()) {
         // 1 Add order by token
         ASTNode orderAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
 
-        schema = new Schema((HiveSort) hiveSort);
+        schema = new Schema(hiveSort);
         Map<Integer, RexNode> obRefToCallMap = hiveSort.getInputRefToCallMap();
         RexNode obExpr;
         ASTNode astCol;
@@ -371,7 +372,7 @@ public class ASTConverter {
   static class RexVisitor extends RexVisitorImpl<ASTNode> {
 
     private final Schema schema;
-    private boolean useTypeQualInLiteral;
+    private final boolean useTypeQualInLiteral;
 
     protected RexVisitor(Schema schema) {
       this(schema, false);
@@ -568,7 +569,7 @@ public class ASTConverter {
     private static final long serialVersionUID = 1L;
 
     Schema(TableScan scan) {
-      String tabName = ((RelOptHiveTable) scan.getTable()).getTableAlias();
+      String tabName = ((HiveTableScan) scan).getTableAlias();
       for (RelDataTypeField field : scan.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }
@@ -631,7 +632,7 @@ public class ASTConverter {
      * 1. Project will always be child of Sort.<br>
      * 2. In Calcite every projection in Project is uniquely named
      * (unambigous) without using table qualifier (table name).<br>
-     * 
+     *
      * @param order
      *          Hive Sort Node
      * @return Schema

@@ -179,7 +179,7 @@ public class HiveOpConverter {
 
   /**
    * TODO: 1. PPD needs to get pushed in to TS
-   * 
+   *
    * @param scanRel
    * @return
    */
@@ -207,7 +207,7 @@ public class HiveOpConverter {
     Map<Integer, ColumnInfo> posToNonPartColInfo = ht.getNonPartColInfoMap();
     List<Integer> neededColIndxsFrmReloptHT = scanRel.getNeededColIndxsFrmReloptHT();
     List<String> scanColNames = scanRel.getRowType().getFieldNames();
-    String tableAlias = ht.getTableAlias();
+    String tableAlias = scanRel.getTableAlias();
 
     String colName;
     ColumnInfo colInfo;
@@ -269,7 +269,7 @@ public class HiveOpConverter {
       ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias, projectRel
           .getRowType().getFieldNames().get(pos), projectRel.getInput().getRowType(),
           projectRel.getRowType(), false, projectRel.getCluster().getTypeFactory());
-      exprCols.add((ExprNodeDesc) projectRel.getChildExps().get(pos).accept(converter));
+      exprCols.add(projectRel.getChildExps().get(pos).accept(converter));
       if (converter.getWindowFunctionSpec() != null) {
         windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
       }
@@ -403,7 +403,7 @@ public class HiveOpConverter {
       LimitDesc limitDesc = new LimitDesc(limit);
       // TODO: Set 'last limit' global property
       ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
-      resultOp = (LimitOperator) OperatorFactory.getAndMakeChild(limitDesc,
+      resultOp = OperatorFactory.getAndMakeChild(limitDesc,
           new RowSchema(cinfoLst), resultOp);
 
       if (LOG.isDebugEnabled()) {
@@ -585,7 +585,7 @@ public class HiveOpConverter {
         acidOperation, strictMode);
 
     // 2. Generate backtrack Select operator
-    Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink((ReduceSinkOperator) rsOp,
+    Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(rsOp,
         input);
     SelectDesc selectDesc = new SelectDesc(new ArrayList<ExprNodeDesc>(descriptors.values()),
         new ArrayList<String>(descriptors.keySet()));
@@ -848,7 +848,7 @@ public class HiveOpConverter {
   }
 
   private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel, String tabAlias) {
-    return (ExprNodeDesc) rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), false,
+    return rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), false,
         inputRel.getCluster().getTypeFactory()));
   }
 

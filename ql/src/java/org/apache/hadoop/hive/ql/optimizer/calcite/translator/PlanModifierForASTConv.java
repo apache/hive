@@ -103,7 +103,7 @@ public class PlanModifierForASTConv {
       return null;
     }
     if (rel instanceof HiveTableScan) {
-      return ((RelOptHiveTable)((HiveTableScan)rel).getTable()).getTableAlias();
+      return ((HiveTableScan)rel).getTableAlias();
     }
     if (rel instanceof Project) {
       return null;

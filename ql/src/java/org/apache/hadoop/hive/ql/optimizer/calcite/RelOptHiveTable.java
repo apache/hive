@@ -64,7 +64,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class RelOptHiveTable extends RelOptAbstractTable {
   private final Table                             hiveTblMetadata;
-  private final String                            tblAlias;
   private final ImmutableList<ColumnInfo>         hiveNonPartitionCols;
   private final ImmutableList<ColumnInfo>         hivePartitionCols;
   private final ImmutableMap<Integer, ColumnInfo> hiveNonPartitionColsMap;
@@ -84,14 +83,13 @@ public class RelOptHiveTable extends RelOptAbstractTable {
                                                                       .getLog(RelOptHiveTable.class
                                                                           .getName());
 
-  public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName, String tblAlias,
+  public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
       Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats,
       String qbID) {
     super(calciteSchema, qualifiedTblName, rowType);
     this.hiveTblMetadata = hiveTblMetadata;
-    this.tblAlias = tblAlias;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
@@ -135,7 +133,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
 
     // 3. Build new Table
-    return new RelOptHiveTable(this.schema, this.name, this.tblAlias, newRowType,
+    return new RelOptHiveTable(this.schema, this.name, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.partitionCache, this.noColsMissingStats, qbID);
   }
@@ -222,21 +220,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   public Table getHiveTableMD() {
     return hiveTblMetadata;
-  }
-
-  public String getTableAlias() {
-    // NOTE: Calcite considers tbls to be equal if their names are the same.
-    // Hence
-    // we need to provide Calcite the fully qualified table name
-    // (dbname.tblname)
-    // and not the user provided aliases.
-    // However in HIVE DB name can not appear in select list; in case of join
-    // where table names differ only in DB name, Hive would require user
-    // introducing explicit aliases for tbl.
-    if (tblAlias == null)
-      return hiveTblMetadata.getTableName();
-    else
-      return tblAlias;
   }
 
   private String getColNamesForLogging(Set<String> colLst) {
@@ -442,7 +425,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public List<VirtualColumn> getVirtualCols() {
     return this.hiveVirtualCols;
   }
-  
+
   public List<ColumnInfo> getPartColumns() {
     return this.hivePartitionCols;
   }

@@ -57,6 +57,11 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
+  private final String tblAlias;
+
+  public String getTableAlias() {
+    return tblAlias;
+  }
 
   /**
    * Creates a HiveTableScan.
@@ -70,14 +75,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @param table
    *          HiveDB table
    */
-  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table) {
-    this(cluster, traitSet, table, table.getRowType());
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias) {
+    this(cluster, traitSet, table,  alias, table.getRowType());
   }
 
-  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias,
       RelDataType newRowtype) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
+    this.tblAlias = alias;
     this.hiveTableScanRowType = newRowtype;
     this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
   }
@@ -91,12 +97,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   /**
    * Copy TableScan operator with a new Row Schema. The new Row Schema can only
    * be a subset of this TS schema.
-   * 
+   *
    * @param newRowtype
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table),
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
             newRowtype);
   }
 
@@ -119,7 +125,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public double getRows() {
     return ((RelOptHiveTable) table).getRowCount();
   }
-  
+
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
     return ((RelOptHiveTable) table).getColStat(projIndxLst);
   }
@@ -163,7 +169,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public List<Integer> getNeededColIndxsFrmReloptHT() {
     return neededColIndxsFrmReloptHT;
   }
-  
+
   public RelDataType getPrunedRowType() {
     return hiveTableScanRowType;
   }
