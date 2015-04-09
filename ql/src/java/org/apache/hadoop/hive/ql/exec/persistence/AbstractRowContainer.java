@@ -37,6 +37,17 @@ public interface AbstractRowContainer<ROW> {
   public void addRow(ROW t) throws HiveException;
 
   /**
+   * @return whether the row container has at least 1 row.
+   * NOTE: Originally we named this isEmpty, but that name conflicted with another interface.
+   */
+  public boolean hasRows() throws HiveException;
+
+  /**
+   * @return whether the row container has 1 row.
+   */
+  public boolean isSingleRow() throws HiveException;
+
+  /**
    * @return number of elements in the RowContainer
    */
   public int rowCount() throws HiveException;

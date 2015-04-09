@@ -331,6 +331,17 @@ public class RowContainer<ROW extends List<Object>>
     }
   }
 
+
+  @Override
+  public boolean hasRows() {
+    return size > 0;
+  }
+
+  @Override
+  public boolean isSingleRow() {
+    return size == 1;
+  }
+
   /**
    * Get the number of elements in the RowContainer.
    *
