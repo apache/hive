@@ -18,6 +18,4 @@ PREHOOK: query: alter table aa set serdeproperties ("input.regex" = "[^\\](.*)",
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@aa
 PREHOOK: Output: default@aa
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unclosed character class near index 7
-[^\](.*)
-       ^
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. at least one column must be specified for the table
