@@ -691,11 +691,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         Byte alias = order[i];
         AbstractRowContainer<List<Object>> alw = storage[alias];
 
-        if (alw.rowCount() != 1) {
+        if (!alw.isSingleRow()) {
           allOne = false;
         }
 
-        if (alw.rowCount() == 0) {
+        if (!alw.hasRows()) {
           alw.addRow(dummyObj[i]);
           hasNulls = true;
         } else if (condn[i].getPreserved()) {
@@ -721,16 +721,16 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         AbstractRowContainer<List<Object>> alw = storage[alias];
 
         if (noOuterJoin) {
-          if (alw.rowCount() == 0) {
+          if (!alw.hasRows()) {
             return;
-          } else if (alw.rowCount() > 1) {
+          } else if (!alw.isSingleRow()) {
             mayHasMoreThanOne = true;
           }
         } else {
-          if (alw.rowCount() == 0) {
+          if (!alw.hasRows()) {
             hasEmpty = true;
             alw.addRow(dummyObj[i]);
-          } else if (!hasEmpty && alw.rowCount() == 1) {
+          } else if (!hasEmpty && alw.isSingleRow()) {
             if (hasAnyFiltered(alias, alw.rowIter().first())) {
               hasEmpty = true;
             }

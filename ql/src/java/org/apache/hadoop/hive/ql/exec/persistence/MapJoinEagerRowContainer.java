@@ -81,6 +81,16 @@ public class MapJoinEagerRowContainer
     return null;
   }
 
+  @Override
+  public boolean hasRows() {
+    return list.size() > 0;
+  }
+
+  @Override
+  public boolean isSingleRow() {
+    return list.size() == 1;
+  }
+
   /**
    * Get the number of elements in the RowContainer.
    *
