@@ -84,6 +84,8 @@ public class TestHCatClient {
   private static final String replicationTargetHCatPort = "20102";
   private static HiveConf replicationTargetHCatConf;
   private static SecurityManager securityManager;
+  private static boolean useExternalMS = false;
+  private static boolean useExternalMSForReplication = false;
 
   private static class RunMS implements Runnable {
 
@@ -114,14 +116,22 @@ public class TestHCatClient {
 
   @AfterClass
   public static void tearDown() throws Exception {
-    LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
+    if (!useExternalMS) {
+      LOG.info("Shutting down metastore.");
+      System.setSecurityManager(securityManager);
+    }
   }
 
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
+    String metastoreUri = System.getProperty(HiveConf.ConfVars.METASTOREURIS.varname);
+    if (metastoreUri != null) {
+      hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
+      useExternalMS = true;
+      return;
+    }
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hcatConf);
     }
@@ -177,8 +187,12 @@ public class TestHCatClient {
     assertTrue(testDb.getProperties().size() == 0);
     String warehouseDir = System
       .getProperty("test.warehouse.dir", "/user/hive/warehouse");
-    String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
-    assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
+    if (useExternalMS) {
+      assertTrue(testDb.getLocation().matches(".*" + "/" + db + ".db"));
+    } else {
+      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
+      assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
+    }
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
     cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
     cols.add(new HCatFieldSchema("value", Type.STRING, "value comment"));
@@ -228,7 +242,7 @@ public class TestHCatClient {
     assertEquals("checking " + serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString('\006'),
       table2.getSerdeParams().get(serdeConstants.SERIALIZATION_NULL_FORMAT));
     
-    assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
+    assertTrue(table2.getLocation().toLowerCase().matches(".*" + ("/" + db + ".db/" + tableTwo).toLowerCase()));
 
     HCatCreateTableDesc tableDesc3 = HCatCreateTableDesc.create(db,
       tableThree, cols).fileFormat("orcfile").build();
@@ -387,7 +401,7 @@ public class TestHCatClient {
       .ifNotExists(true).location("/tmp/" + dbName).build();
     client.createDatabase(dbDesc);
     HCatDatabase newDB = client.getDatabase(dbName);
-    assertTrue(newDB.getLocation().equalsIgnoreCase("file:/tmp/" + dbName));
+    assertTrue(newDB.getLocation().matches(".*/tmp/" + dbName));
     client.close();
   }
 
