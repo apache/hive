@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -231,6 +233,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
       SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
+      logConfigurations(localJobConf);
 
       SparkCounters sparkCounters = new SparkCounters(jc.sc());
       Map<String, List<String>> prefixes = localSparkWork.getRequiredCounterPrefix();
@@ -255,6 +258,18 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
       return null;
     }
-  }
 
+    private void logConfigurations(JobConf localJobConf) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Logging job configuration: ");
+        StringWriter outWriter = new StringWriter();
+        try {
+          Configuration.dumpConfiguration(localJobConf, outWriter);
+        } catch (IOException e) {
+          LOG.warn("Error logging job configuration", e);
+        }
+        LOG.info(outWriter.toString());
+      }
+    }
+  }
 }
