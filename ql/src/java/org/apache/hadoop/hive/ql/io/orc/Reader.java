@@ -23,9 +23,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -318,7 +318,7 @@ public interface Reader {
   MetadataReader metadata() throws IOException;
 
   EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
-      Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
+      Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 
   List<Integer> getVersionList();
 

@@ -23,6 +23,10 @@ public class OrcBatchKey {
   public int stripeIx, rgIx;
 
   public OrcBatchKey(long file, int stripeIx, int rgIx) {
+    set(file, stripeIx, rgIx);
+  }
+
+  public void set(long file, int stripeIx, int rgIx) {
     this.file = file;
     this.stripeIx = stripeIx;
     this.rgIx = rgIx;

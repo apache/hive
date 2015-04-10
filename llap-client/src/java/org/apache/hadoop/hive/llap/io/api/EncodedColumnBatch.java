@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.llap.io.api;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
 public class EncodedColumnBatch<BatchKey> {
@@ -37,13 +36,19 @@ public class EncodedColumnBatch<BatchKey> {
     // LlapMemoryBuffer 500 times, have a separate refcount on StreamBuffer itself.
     public AtomicInteger refCount = new AtomicInteger(0);
 
-    public StreamBuffer(int kind) {
-      this.streamKind = kind;
+    public void init(int kind) {
+      streamKind = kind;
+    }
+
+    public void reset() {
+      cacheBuffers.clear();
+      refCount.set(0);
     }
 
     public void incRef() {
       refCount.incrementAndGet();
     }
+
     public int decRef() {
       int i = refCount.decrementAndGet();
       assert i >= 0;
@@ -54,19 +59,21 @@ public class EncodedColumnBatch<BatchKey> {
   public BatchKey batchKey;
   public StreamBuffer[][] columnData;
   public int[] columnIxs;
-  public int colsRemaining = 0;
+  /** Generation version necessary to sync pooling reuse with the fact that two separate threads
+   * operate on batches - the one that decodes them, and potential separate thread w/a "stop" call
+   * that cleans them up. We don't want the decode thread to use the ECB that was thrown out and
+   * reused, so it remembers the version and checks it after making sure no cleanup thread can ever
+   * get to this ECB anymore. All this sync is ONLY needed because of high level cache code (sync
+   * in decode thread is for the map that combines columns coming from cache and from file), so
+   * if we throw this presently-unused code out, we'd be able to get rid of this. */
+  public int version = Integer.MIN_VALUE;
 
-  public EncodedColumnBatch(BatchKey batchKey, int columnCount, int colsRemaining) {
-    this.batchKey = batchKey;
-    this.columnData = new StreamBuffer[columnCount][];
-    this.columnIxs = new int[columnCount];
-    this.colsRemaining = colsRemaining;
-  }
-
-  public void merge(EncodedColumnBatch<BatchKey> other) {
-    // TODO: this may be called when high-level cache produces several columns and IO produces
-    //       several columns. So, for now this will never be called. Need to merge by columnIx-s.
-    throw new UnsupportedOperationException();
+  public void reset() {
+    if (columnData != null) {
+      for (int i = 0; i < columnData.length; ++i) {
+        columnData[i] = null;
+      }
+    }
   }
 
   public void initColumn(int colIxMod, int colIx, int streamCount) {

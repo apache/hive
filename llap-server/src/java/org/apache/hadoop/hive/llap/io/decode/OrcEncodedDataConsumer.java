@@ -30,12 +30,14 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
+import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 
-public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
+public class OrcEncodedDataConsumer
+  extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {
   private EncodedTreeReaderFactory.TreeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
@@ -66,7 +68,7 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
   }
 
   @Override
-  protected void decodeBatch(EncodedColumnBatch<OrcBatchKey> batch,
+  protected void decodeBatch(OrcEncodedColumnBatch batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
     int currentStripeIndex = batch.batchKey.stripeIx;
 
@@ -97,11 +99,12 @@ public class OrcEncodedDataConsumer extends EncodedDataConsumer<OrcBatchKey> {
           if (batchSize == 0) break;
         }
 
-        ColumnVectorBatch cvb = new ColumnVectorBatch(batch.columnIxs.length);
+        ColumnVectorBatch cvb = cvbPool.take();
+        assert cvb.cols.length == batch.columnIxs.length; // Must be constant per split.
         cvb.size = batchSize;
 
         for (int idx = 0; idx < batch.columnIxs.length; idx++) {
-          cvb.cols[idx] = (ColumnVector)columnReaders[idx].nextVector(null, batchSize);
+          cvb.cols[idx] = (ColumnVector)columnReaders[idx].nextVector(cvb.cols[idx], batchSize);
         }
 
         // we are done reading a batch, send it to consumer for processing
