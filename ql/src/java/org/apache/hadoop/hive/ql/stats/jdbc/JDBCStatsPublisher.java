@@ -81,7 +81,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
     Utilities.SQLCommand<Void> setQueryTimeout = new Utilities.SQLCommand<Void>() {
       @Override
       public Void run(PreparedStatement stmt) throws SQLException {
-        stmt.setQueryTimeout(timeout);
+        Utilities.setQueryTimeout(stmt, timeout);
         return null;
       }
     };
@@ -278,7 +278,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
         conn = DriverManager.getConnection(connectionString);
 
         stmt = conn.createStatement();
-        stmt.setQueryTimeout(timeout);
+        Utilities.setQueryTimeout(stmt, timeout);
 
         // TODO: why is this not done using Hive db scripts?
         // Check if the table exists

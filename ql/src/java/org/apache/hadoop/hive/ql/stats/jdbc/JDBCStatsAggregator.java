@@ -81,7 +81,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
     Utilities.SQLCommand<Void> setQueryTimeout = new Utilities.SQLCommand<Void>() {
       @Override
       public Void run(PreparedStatement stmt) throws SQLException {
-        stmt.setQueryTimeout(timeout);
+        Utilities.setQueryTimeout(stmt, timeout);
         return null;
       }
     };
