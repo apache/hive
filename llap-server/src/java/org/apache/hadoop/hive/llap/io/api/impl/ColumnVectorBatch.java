@@ -37,4 +37,10 @@ public class ColumnVectorBatch {
     this.cols = new ColumnVector[columnCount];
     this.size = batchSize;
   }
+
+  public void swapColumnVector(int ix, ColumnVector[] other, int otherIx) {
+    ColumnVector old = other[otherIx];
+    other[otherIx] = cols[ix];
+    cols[ix] = old;
+  }
 }

@@ -29,22 +29,52 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.CacheChunkFactory;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
+import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public abstract class InStream extends InputStream {
 
   private static final Log LOG = LogFactory.getLog(InStream.class);
-  private static final LogLevels LOGL = new LogLevels(LOG);
-
+  private static final FixedSizedObjectPool<TrackedCacheChunk> TCC_POOL =
+      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<TrackedCacheChunk>() {
+        @Override
+        protected TrackedCacheChunk create() {
+          return new TrackedCacheChunk();
+        }
+        @Override
+        protected void resetBeforeOffer(TrackedCacheChunk t) {
+          t.reset();
+        }
+      });
+  private static final FixedSizedObjectPool<ProcCacheChunk> PCC_POOL =
+      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<ProcCacheChunk>() {
+        @Override
+        protected ProcCacheChunk create() {
+          return new ProcCacheChunk();
+        }
+        @Override
+        protected void resetBeforeOffer(ProcCacheChunk t) {
+          t.reset();
+        }
+      });
+  final static CacheChunkFactory CC_FACTORY = new CacheChunkFactory() {
+        @Override
+        public DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
+          TrackedCacheChunk tcc = TCC_POOL.take();
+          tcc.init(buffer, offset, end);
+          return tcc;
+        }
+      };
   protected final Long fileId;
   protected final String name;
   protected long length;
@@ -539,20 +569,24 @@ public abstract class InStream extends InputStream {
     }
   }
 
-  public static class TrackedCacheChunkFactory implements LowLevelCache.CacheChunkFactory {
-    // TODO: in future, this can also be used as a pool
-    @Override
-    public DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
-      return new TrackedCacheChunk(buffer, offset, end);
-    }
-  }
-
   /** Cache chunk which tracks whether it has been fully read. See
       EncodedReaderImpl class comment about refcounts. */
   public static class TrackedCacheChunk extends CacheChunk {
     public boolean isReleased = false;
-    public TrackedCacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
-      super(buffer, offset, end);
+    public TrackedCacheChunk() {
+      super(null, -1, -1);
+    }
+
+    public void init(LlapMemoryBuffer buffer, long offset, long end) {
+      this.buffer = buffer;
+      this.offset = offset;
+      this.end = end;
+    }
+
+    public void reset() {
+      this.buffer = null;
+      this.next = this.prev = null;
+      this.isReleased = false;
     }
   }
 
@@ -563,12 +597,18 @@ public abstract class InStream extends InputStream {
    * the DiskRange list created for the request, and everyone treats it like regular CacheChunk.
    */
   private static class ProcCacheChunk extends TrackedCacheChunk {
-    public ProcCacheChunk(long cbStartOffset, long cbEndOffset, boolean isCompressed,
+    public void init(long cbStartOffset, long cbEndOffset, boolean isCompressed,
         ByteBuffer originalData, LlapMemoryBuffer targetBuffer, int originalCbIndex) {
-      super(targetBuffer, cbStartOffset, cbEndOffset);
+      super.init(targetBuffer, cbStartOffset, cbEndOffset);
       this.isCompressed = isCompressed;
       this.originalData = originalData;
       this.originalCbIndex = originalCbIndex;
+    }
+
+    @Override
+    public void reset() {
+      super.reset();
+      this.originalData = null;
     }
 
     boolean isCompressed;
@@ -595,12 +635,16 @@ public abstract class InStream extends InputStream {
    * @return Last buffer cached during decomrpession. Cache buffers are never removed from
    *         the master list, so they are safe to keep as iterators for various streams.
    */
-  // TODO#: move to EncodedReaderImpl
+  // TODO: move to EncodedReaderImpl
   public static DiskRangeList uncompressStream(long fileId, long baseOffset, DiskRangeList start,
       long cOffset, long endCOffset, ZeroCopyReaderShim zcr, CompressionCodec codec,
       int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset)
           throws IOException {
-    streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
+    if (streamBuffer.cacheBuffers == null) {
+      streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
+    } else {
+      streamBuffer.cacheBuffers.clear();
+    }
     if (cOffset == endCOffset) return null;
     List<ProcCacheChunk> toDecompress = null;
     List<ByteBuffer> toRelease = null;
@@ -734,6 +778,17 @@ public abstract class InStream extends InputStream {
     }
 
     return lastCached;
+  }
+
+  public static void releaseCacheChunksIntoObjectPool(DiskRangeList current) {
+    while (current != null) {
+      if (current instanceof ProcCacheChunk) {
+        PCC_POOL.offer((ProcCacheChunk)current);
+      } else if (current instanceof TrackedCacheChunk) {
+        TCC_POOL.offer((TrackedCacheChunk)current);
+      }
+      current = current.next;
+    }
   }
 
   private static void ponderReleaseInitialRefcount(LowLevelCache cache,
@@ -950,7 +1005,8 @@ public abstract class InStream extends InputStream {
     // Add it to result in order we are processing.
     cacheBuffers.add(futureAlloc);
     // Add it to the list of work to decompress.
-    ProcCacheChunk cc = new ProcCacheChunk(cbStartOffset, cbEndOffset, !isUncompressed,
+    ProcCacheChunk cc = PCC_POOL.take();
+    cc.init(cbStartOffset, cbEndOffset, !isUncompressed,
         fullCompressionBlock, futureAlloc, cacheBuffers.size() - 1);
     toDecompress.add(cc);
     // Adjust the compression block position.

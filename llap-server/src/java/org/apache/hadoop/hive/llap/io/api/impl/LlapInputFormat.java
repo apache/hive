@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -102,6 +103,7 @@ public class LlapInputFormat
     private final VectorizedRowBatchCtx rbCtx;
 
     private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
+    private ColumnVectorBatch lastCvb = null;
     private boolean isFirst = true;
 
     private Throwable pendingError = null;
@@ -155,8 +157,8 @@ public class LlapInputFormat
       }
       // VRB was created from VrbCtx, so we already have pre-allocated column vectors
       for (int i = 0; i < cvb.cols.length; ++i) {
-        int columnId = columnIds.get(i);
-        value.cols[columnId] = cvb.cols[i]; // TODO: reuse CV objects that are replaced
+        // Return old CVs (if any) to caller. We assume these things all have the same schema.
+        cvb.swapColumnVector(i, value.cols, columnIds.get(i));
       }
       value.selectedInUse = false;
       value.size = cvb.size;
@@ -189,8 +191,9 @@ public class LlapInputFormat
     }
 
     ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
-      // TODO: if some collection is needed, return previous ColumnVectorBatch here
-      ColumnVectorBatch current = null;
+      if (lastCvb != null) {
+        feedback.returnData(lastCvb);
+      }
       synchronized (pendingData) {
         // We are waiting for next block. Either we will get it, or be told we are done.
         boolean doLogBlocking = DebugUtils.isTraceMttEnabled() && isNothingToReport();
@@ -204,12 +207,12 @@ public class LlapInputFormat
           LlapIoImpl.LOG.info("next is unblocked");
         }
         rethrowErrorIfAny();
-        current = pendingData.poll();
+        lastCvb = pendingData.poll();
       }
-      if (DebugUtils.isTraceMttEnabled() && current != null) {
-        LlapIoImpl.LOG.info("Processing will receive vector " + current);
+      if (DebugUtils.isTraceMttEnabled() && lastCvb != null) {
+        LlapIoImpl.LOG.info("Processing will receive vector " + lastCvb);
       }
-      return current;
+      return lastCvb;
     }
 
     private boolean isNothingToReport() {

@@ -18,7 +18,6 @@ import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
@@ -30,6 +29,8 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReader;
+import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
@@ -45,8 +46,14 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 
+/**
+ * This produces EncodedColumnBatch via ORC EncodedDataImpl.
+ * It serves as Consumer for EncodedColumnBatch too, for the high-level cache scenario where
+ * it inserts itself into the pipeline to put the data in cache, before passing it to the real
+ * consumer. It also serves as ConsumerFeedback that receives processed EncodedColumnBatch-es.
+ */
 public class OrcEncodedDataReader extends CallableWithNdc<Void>
-    implements ConsumerFeedback<StreamBuffer>, Consumer<EncodedColumnBatch<OrcBatchKey>> {
+    implements ConsumerFeedback<OrcEncodedColumnBatch>, Consumer<OrcEncodedColumnBatch> {
   private static final Log LOG = LogFactory.getLog(OrcEncodedDataReader.class);
 
   private final OrcMetadataCache metadataCache;
@@ -73,7 +80,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * read. Contains only stripes that are read, and only columns included. null => read all RGs.
    */
   private boolean[][][] readState;
-  private volatile boolean isStopped = false, isPaused = false;
+  private volatile boolean isStopped = false;
+  @SuppressWarnings("unused")
+  private volatile boolean isPaused = false;
 
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
       OrcMetadataCache metadataCache, Configuration conf, InputSplit split,
@@ -204,7 +213,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // 5. Create encoded data reader.
     // In case if we have high-level cache, we will intercept the data and add it there;
     // otherwise just pass the data directly to the consumer.
-    Consumer<EncodedColumnBatch<OrcBatchKey>> dataConsumer =
+    Consumer<OrcEncodedColumnBatch> dataConsumer =
         (cache == null) ? this.consumer : this;
     try {
       ensureOrcReader();
@@ -447,14 +456,21 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   @Override
-  public void returnData(StreamBuffer data) {
-    if (data.decRef() != 0) return;
-    if (DebugUtils.isTraceLockingEnabled()) {
-      for (LlapMemoryBuffer buf : data.cacheBuffers) {
-        LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
+  public void returnData(OrcEncodedColumnBatch ecb) {
+    for (StreamBuffer[] datas : ecb.columnData) {
+      for (StreamBuffer data : datas) {
+        if (data.decRef() != 0) continue;
+        if (DebugUtils.isTraceLockingEnabled()) {
+          for (LlapMemoryBuffer buf : data.cacheBuffers) {
+            LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
+          }
+        }
+        lowLevelCache.releaseBuffers(data.cacheBuffers);
+        EncodedReaderImpl.SB_POOL.offer(data);
       }
     }
-    lowLevelCache.releaseBuffers(data.cacheBuffers);
+    // We can offer ECB even with some streams not discarded; reset() will clear the arrays.
+    EncodedReaderImpl.ECB_POOL.offer(ecb);
   }
 
   /**
@@ -576,8 +592,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       boolean[] isMissingAnyRgs = new boolean[cols.length];
       int totalRgCount = getRgCount(fileMetadata.getStripes().get(key.stripeIx), rowIndexStride);
       for (int rgIx = 0; rgIx < totalRgCount; ++rgIx) {
-        EncodedColumnBatch<OrcBatchKey> col = new EncodedColumnBatch<OrcBatchKey>(
-            new OrcBatchKey(fileId, key.stripeIx, rgIx), cols.length, cols.length);
+        OrcEncodedColumnBatch col = EncodedReaderImpl.ECB_POOL.take();
+        col.init(fileId, key.stripeIx, rgIx, cols.length);
         boolean hasAnyCached = false;
         try {
           key.rgIx = rgIx;
@@ -633,7 +649,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   @Override
-  public void consumeData(EncodedColumnBatch<OrcBatchKey> data) {
+  public void consumeData(OrcEncodedColumnBatch data) {
     // Store object in cache; create new key object - cannot be reused.
     assert cache != null;
     for (int i = 0; i < data.columnData.length; ++i) {

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +37,6 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.InStream.TrackedCacheChunk;
-import org.apache.hadoop.hive.ql.io.orc.InStream.TrackedCacheChunkFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
+import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
 
 /**
@@ -76,7 +78,50 @@ import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
  */
 public class EncodedReaderImpl implements EncodedReader {
   public static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
-
+  private static final FixedSizedObjectPool<ColumnReadContext> COLCTX_POOL =
+      new FixedSizedObjectPool<>(256, new FixedSizedObjectPool.PoolObjectHelper<ColumnReadContext>() {
+        @Override
+        public ColumnReadContext create() {
+          return new ColumnReadContext();
+        }
+        @Override
+        public void resetBeforeOffer(ColumnReadContext t) {
+          t.reset();
+        }
+      });
+  private static final FixedSizedObjectPool<StreamContext> STREAMCTX_POOL =
+      new FixedSizedObjectPool<>(256, new FixedSizedObjectPool.PoolObjectHelper<StreamContext>() {
+        @Override
+        public StreamContext create() {
+          return new StreamContext();
+        }
+        @Override
+        public void resetBeforeOffer(StreamContext t) {
+          t.reset();
+        }
+      });
+  public static final FixedSizedObjectPool<OrcEncodedColumnBatch> ECB_POOL =
+      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<OrcEncodedColumnBatch>() {
+        @Override
+        protected OrcEncodedColumnBatch create() {
+          return new OrcEncodedColumnBatch();
+        }
+        @Override
+        protected void resetBeforeOffer(OrcEncodedColumnBatch t) {
+          t.reset();
+        }
+      });
+  public static final FixedSizedObjectPool<StreamBuffer> SB_POOL =
+      new FixedSizedObjectPool<>(8192, new PoolObjectHelper<StreamBuffer>() {
+        @Override
+        protected StreamBuffer create() {
+          return new StreamBuffer();
+        }
+        @Override
+        protected void resetBeforeOffer(StreamBuffer t) {
+          t.reset();
+        }
+      });
   private final long fileId;
   private final FSDataInputStream file;
   private final CompressionCodec codec;
@@ -87,13 +132,12 @@ public class EncodedReaderImpl implements EncodedReader {
   private final LowLevelCache cache;
   private final ByteBufferAllocatorPool pool;
   // For now, one consumer for all calls.
-  private final Consumer<EncodedColumnBatch<OrcBatchKey>> consumer;
-  // TODO: if used as a pool, pass in externally
-  private final TrackedCacheChunkFactory cacheChunkFactory = new TrackedCacheChunkFactory();
+  private final Consumer<OrcEncodedColumnBatch> consumer;
+
 
   public EncodedReaderImpl(FileSystem fileSystem, Path path, long fileId, boolean useZeroCopy,
       List<OrcProto.Type> types, CompressionCodec codec, int bufferSize, long strideRate,
-      LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer)
+      LowLevelCache cache, Consumer<OrcEncodedColumnBatch> consumer)
           throws IOException {
     this.fileId = fileId;
     this.file = fileSystem.open(path);
@@ -111,27 +155,34 @@ public class EncodedReaderImpl implements EncodedReader {
     }
   }
 
-
   /** Helper context for each column being read */
   private static final class ColumnReadContext {
-    public ColumnReadContext(int colIx, ColumnEncoding encoding, RowIndex rowIndex) {
+    public void init(int colIx, ColumnEncoding encoding, RowIndex rowIndex) {
       this.encoding = encoding;
       this.rowIndex = rowIndex;
       this.colIx = colIx;
+      streamCount = 0;
+    }
+    public void reset() {
+      encoding = null;
+      rowIndex = null;
+      streamCount = 0;
+      Arrays.fill(streams, null);
     }
     public static final int MAX_STREAMS = OrcProto.Stream.Kind.ROW_INDEX_VALUE;
     /** The number of streams that are part of this column. */
     int streamCount = 0;
     final StreamContext[] streams = new StreamContext[MAX_STREAMS];
     /** Column encoding. */
-    final ColumnEncoding encoding;
+    ColumnEncoding encoding;
     /** Column rowindex. */
-    final OrcProto.RowIndex rowIndex;
+    OrcProto.RowIndex rowIndex;
     /** Column index in the file. */
-    final int colIx;
+    int colIx;
 
     public void addStream(long offset, OrcProto.Stream stream, int indexIx) {
-      streams[streamCount++] = new StreamContext(stream, offset, indexIx);
+      StreamContext sctx = streams[streamCount++] = STREAMCTX_POOL.take();
+      sctx.init(stream, offset, indexIx);
     }
 
     @Override
@@ -152,16 +203,21 @@ public class EncodedReaderImpl implements EncodedReader {
   }
 
   private static final class StreamContext {
-    public StreamContext(OrcProto.Stream stream, long streamOffset, int streamIndexOffset) {
+    public void init(OrcProto.Stream stream, long streamOffset, int streamIndexOffset) {
       this.kind = stream.getKind();
       this.length = stream.getLength();
       this.offset = streamOffset;
       this.streamIndexOffset = streamIndexOffset;
     }
+    void reset() {
+      bufferIter = null;
+      stripeLevelStream = null;
+      kind = null;
+    }
     /** Offsets of each stream in the column. */
-    public final long offset, length;
-    public final int streamIndexOffset;
-    public final OrcProto.Stream.Kind kind;
+    public long offset, length;
+    public int streamIndexOffset;
+    public OrcProto.Stream.Kind kind;
     /** Iterators for the buffers; used to maintain position in per-rg reading. */
     DiskRangeList bufferIter;
     /** Saved stripe-level stream, to reuse for each RG (e.g. dictionaries). */
@@ -175,6 +231,20 @@ public class EncodedReaderImpl implements EncodedReader {
       sb.append(" length: ").append(length);
       sb.append(" index_offset: ").append(streamIndexOffset);
       return sb.toString();
+    }
+  }
+
+  public static final class OrcEncodedColumnBatch extends EncodedColumnBatch<OrcBatchKey> {
+    public void init(long fileId, int stripeIx, int rgIx, int columnCount) {
+      if (batchKey == null) {
+        batchKey = new OrcBatchKey(fileId, stripeIx, rgIx);
+      } else {
+        batchKey.set(fileId, stripeIx, rgIx);
+      }
+      if (columnIxs == null || columnCount != columnIxs.length) {
+        columnIxs = new int[columnCount];
+        columnData = new StreamBuffer[columnCount][];
+      }
     }
   }
 
@@ -200,7 +270,7 @@ public class EncodedReaderImpl implements EncodedReader {
     ColumnReadContext[] colCtxs = new ColumnReadContext[colRgs.length];
     boolean[] includedRgs = null;
     boolean isCompressed = (codec != null);
-
+    DiskRangeListMutateHelper toRead = null;
     DiskRangeListCreateHelper listToRead = new DiskRangeListCreateHelper();
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
@@ -219,8 +289,8 @@ public class EncodedReaderImpl implements EncodedReader {
         assert colCtxs[colRgIx] == null;
         lastColIx = colIx;
         includedRgs = colRgs[colRgIx];
-        ctx = colCtxs[colRgIx] = new ColumnReadContext(
-            colIx, encodings.get(colIx), indexes[colIx]);
+        ctx = colCtxs[colRgIx] = COLCTX_POOL.take();
+        ctx.init(colIx, encodings.get(colIx), indexes[colIx]);
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Creating context " + colRgIx + " for column " + colIx + ":" + ctx.toString());
         }
@@ -250,17 +320,18 @@ public class EncodedReaderImpl implements EncodedReader {
 
     if (listToRead.get() == null) {
       LOG.warn("Nothing to read for stripe [" + stripe + "]");
+      releaseContexts(colCtxs);
       return;
     }
 
     // 2. Now, read all of the ranges from cache or disk.
-    DiskRangeListMutateHelper toRead = new DiskRangeListMutateHelper(listToRead.get());
+    toRead = new DiskRangeListMutateHelper(listToRead.get());
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Resulting disk ranges to read (file " + fileId + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     if (cache != null) {
-      cache.getFileData(fileId, toRead.next, stripeOffset, cacheChunkFactory);
+      cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY);
       if (DebugUtils.isTraceOrcEnabled()) {
         LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
@@ -282,8 +353,8 @@ public class EncodedReaderImpl implements EncodedReader {
     for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
       boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
-      EncodedColumnBatch<OrcBatchKey> ecb = new EncodedColumnBatch<OrcBatchKey>(
-          new OrcBatchKey(fileId, stripeIx, rgIx), colRgs.length, 0);
+      OrcEncodedColumnBatch ecb = ECB_POOL.take();
+      ecb.init(fileId, stripeIx, rgIx, colRgs.length);
       boolean isRGSelected = true;
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
@@ -305,7 +376,8 @@ public class EncodedReaderImpl implements EncodedReader {
                   + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
             }
             if (sctx.stripeLevelStream == null) {
-              sctx.stripeLevelStream = new StreamBuffer(sctx.kind.getNumber());
+              sctx.stripeLevelStream = SB_POOL.take();
+              sctx.stripeLevelStream.init(sctx.kind.getNumber());
               // We will be using this for each RG while also sending RGs to processing.
               // To avoid buffers being unlocked, run refcount one ahead; we will not increase
               // it when building the last RG, so each RG processing will decref once, and the
@@ -333,7 +405,8 @@ public class EncodedReaderImpl implements EncodedReader {
                     isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
             // See class comment about refcounts.
             long unlockUntilCOffset = sctx.offset + nextCOffsetRel;
-            cb = new StreamBuffer(sctx.kind.getNumber());
+            cb = SB_POOL.take();
+            cb.init(sctx.kind.getNumber());
             cb.incRef();
             if (DebugUtils.isTraceOrcEnabled()) {
               LOG.info("Getting data for column "+ ctx.colIx + " " + (isLastRg ? "last " : "")
@@ -356,13 +429,34 @@ public class EncodedReaderImpl implements EncodedReader {
         consumer.consumeData(ecb);
       }
     }
+    releaseContexts(colCtxs);
+
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Disk ranges after processing all the data "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
     // Release the unreleased buffers. See class comment about refcounts.
-    DiskRangeList current = toRead.next;
+    releaseInitialRefcounts(toRead.next);
+    InStream.releaseCacheChunksIntoObjectPool(toRead.next);
+  }
+
+
+  private void releaseContexts(ColumnReadContext[] colCtxs) {
+    // Return all contexts to the pools.
+    for (ColumnReadContext ctx : colCtxs) {
+      if (ctx == null) continue;
+      for (int i = 0; i < ctx.streamCount; ++i) {
+        StreamContext sctx = ctx.streams[i];
+        if (sctx == null) continue;
+        STREAMCTX_POOL.offer(sctx);
+      }
+      COLCTX_POOL.offer(ctx);
+    }
+  }
+
+
+  private void releaseInitialRefcounts(DiskRangeList current) {
     while (current != null) {
       DiskRangeList toFree = current;
       current = current.next;
@@ -377,6 +471,7 @@ public class EncodedReaderImpl implements EncodedReader {
       cc.isReleased = true;
     }
   }
+
 
   @Override
   public void close() throws IOException {

@@ -25,32 +25,42 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
+import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
 /**
  *
  */
-public abstract class EncodedDataConsumer<BatchKey> implements
-  Consumer<EncodedColumnBatch<BatchKey>>, ReadPipeline {
+public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
+  implements Consumer<BatchType>, ReadPipeline {
   private volatile boolean isStopped = false;
   // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
-  private final HashMap<BatchKey, EncodedColumnBatch<BatchKey>> pendingData = new HashMap<>();
-  private ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback;
+  private final HashMap<BatchKey, BatchType> pendingData = new HashMap<>();
+  private ConsumerFeedback<BatchType> upstreamFeedback;
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private Callable<Void> readCallable;
-  private final int colCount;
   private final LlapDaemonQueueMetrics queueMetrics;
+  // TODO: if we were using Exchanger, pool would not be necessary here - it would be 1/N items
+  private final static int CVB_POOL_SIZE = 8;
+  // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
+  protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
 
-  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, int colCount,
+  public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
       LlapDaemonQueueMetrics queueMetrics) {
     this.downstreamConsumer = consumer;
-    this.colCount = colCount;
     this.queueMetrics = queueMetrics;
+    cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
+        new PoolObjectHelper<ColumnVectorBatch>() {
+              @Override
+              public ColumnVectorBatch create() {
+                return new ColumnVectorBatch(colCount);
+              }
+        });
   }
 
-  public void init(ConsumerFeedback<EncodedColumnBatch.StreamBuffer> upstreamFeedback,
+  public void init(ConsumerFeedback<BatchType> upstreamFeedback,
       Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
     this.readCallable = readCallable;
@@ -62,10 +72,11 @@ public abstract class EncodedDataConsumer<BatchKey> implements
   }
 
   @Override
-  public void consumeData(EncodedColumnBatch<BatchKey> data) {
+  public void consumeData(BatchType data) {
     // TODO: data arrives in whole batches now, not in columns. We could greatly simplify this.
-    EncodedColumnBatch<BatchKey> targetBatch = null;
+    BatchType targetBatch = null;
     boolean localIsStopped = false;
+    Integer targetBatchVersion = null;
     synchronized (pendingData) {
       localIsStopped = isStopped;
       if (!localIsStopped) {
@@ -74,55 +85,51 @@ public abstract class EncodedDataConsumer<BatchKey> implements
           targetBatch = data;
           pendingData.put(data.batchKey, data);
         }
+        // We have the map locked; the code the throws things away from map only bumps the version
+        // under the same map lock; code the throws things away here only bumps the version when
+        // the batch was taken out of the map.
+        targetBatchVersion = targetBatch.version;
       }
       queueMetrics.setQueueSize(pendingData.size());
     }
     if (localIsStopped) {
-      returnProcessed(data.columnData);
+      returnSourceData(data);
       return;
     }
-
+    assert targetBatchVersion != null;
     synchronized (targetBatch) {
-      // Check if we are stopped and the batch was already cleaned.
-      localIsStopped = (targetBatch.columnData == null);
-      if (!localIsStopped) {
-        if (targetBatch != data) {
-          targetBatch.merge(data);
-        }
-        if (0 == targetBatch.colsRemaining) {
-          synchronized (pendingData) {
-            targetBatch = isStopped ? null : pendingData.remove(data.batchKey);
-          }
-          // Check if we are stopped and the batch had been removed from map.
-          localIsStopped = (targetBatch == null);
-          // We took the batch out of the map. No more contention with stop possible.
-        }
+      if (targetBatch != data) {
+        throw new UnsupportedOperationException("Merging is not supported");
       }
+      synchronized (pendingData) {
+        targetBatch = isStopped ? null : pendingData.remove(data.batchKey);
+        // Check if someone already threw this away and changed the version.
+        localIsStopped = (targetBatchVersion != targetBatch.version);
+      }
+      // We took the batch out of the map. No more contention with stop possible.
     }
-    if (localIsStopped) {
-      returnProcessed(data.columnData);
+    if (localIsStopped && (targetBatch != data)) {
+      returnSourceData(data);
       return;
     }
-    if (0 == targetBatch.colsRemaining) {
-      long start = System.currentTimeMillis();
-      decodeBatch(targetBatch, downstreamConsumer);
-      long end = System.currentTimeMillis();
-      queueMetrics.addProcessingTime(end - start);
-      // Batch has been decoded; unlock the buffers in cache
-      returnProcessed(targetBatch.columnData);
-    }
+    long start = System.currentTimeMillis();
+    decodeBatch(targetBatch, downstreamConsumer);
+    long end = System.currentTimeMillis();
+    queueMetrics.addProcessingTime(end - start);
+    returnSourceData(targetBatch);
   }
 
-  protected abstract void decodeBatch(EncodedColumnBatch<BatchKey> batch,
+  /**
+   * Returns the ECB to caller for reuse. Only safe to call if the thread is the only owner
+   * of the ECB in question; or, if ECB is still in pendingData, pendingData must be locked.
+   */
+  private void returnSourceData(BatchType data) {
+    ++data.version;
+    upstreamFeedback.returnData(data);
+  }
+
+  protected abstract void decodeBatch(BatchType batch,
       Consumer<ColumnVectorBatch> downstreamConsumer);
-
-  protected void returnProcessed(EncodedColumnBatch.StreamBuffer[][] data) {
-    for (EncodedColumnBatch.StreamBuffer[] sbs : data) {
-      for (EncodedColumnBatch.StreamBuffer sb : sbs) {
-        upstreamFeedback.returnData(sb);
-      }
-    }
-  }
 
   @Override
   public void setDone() {
@@ -143,33 +150,24 @@ public abstract class EncodedDataConsumer<BatchKey> implements
 
   @Override
   public void returnData(ColumnVectorBatch data) {
-    // TODO: column vectors could be added to object pool here
+    cvbPool.offer(data);
   }
 
   private void dicardPendingData(boolean isStopped) {
-    List<EncodedColumnBatch<BatchKey>> batches = new ArrayList<EncodedColumnBatch<BatchKey>>(
+    List<BatchType> batches = new ArrayList<BatchType>(
         pendingData.size());
     synchronized (pendingData) {
       if (isStopped) {
         this.isStopped = true;
       }
-      batches.addAll(pendingData.values());
+      for (BatchType ecb : pendingData.values()) {
+        ++ecb.version;
+        batches.add(ecb);
+      }
       pendingData.clear();
     }
-    List<EncodedColumnBatch.StreamBuffer> dataToDiscard = new ArrayList<StreamBuffer>(
-        batches.size() * colCount * 2);
-    for (EncodedColumnBatch<BatchKey> batch : batches) {
-      synchronized (batch) {
-        for (EncodedColumnBatch.StreamBuffer[] bb : batch.columnData) {
-          for (EncodedColumnBatch.StreamBuffer b : bb) {
-            dataToDiscard.add(b);
-          }
-        }
-        batch.columnData = null;
-      }
-    }
-    for (EncodedColumnBatch.StreamBuffer data : dataToDiscard) {
-      upstreamFeedback.returnData(data);
+    for (BatchType batch : batches) {
+      upstreamFeedback.returnData(batch);
     }
   }
 

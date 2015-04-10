@@ -69,7 +69,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
   }
 
-  public OrcStripeMetadata(long id) {
+  private OrcStripeMetadata(long id) {
     stripeKey = new OrcBatchKey(id, 0, 0);
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
