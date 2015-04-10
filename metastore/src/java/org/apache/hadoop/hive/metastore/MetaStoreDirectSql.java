@@ -1032,11 +1032,14 @@ class MetaStoreDirectSql {
         // The underlying database field is varchar, we need to compare numbers.
         // Note that this won't work with __HIVE_DEFAULT_PARTITION__. It will fail and fall
         // back to JDO. That is by design; we could add an ugly workaround here but didn't.
-        if (colType == FilterType.Integral) {
+        
+        // The cast here fails in postgres when it is pushed down in joins. See 
+        // https://issues.apache.org/jira/browse/HIVE-10296
+        /* if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
           tableValue = "cast(" + tableValue + " as date)";
-        }
+        } */
 
         if (dbHasJoinCastBug) {
           // This is a workaround for DERBY-6358 and Oracle bug; it is pretty horrible.
@@ -1049,7 +1052,7 @@ class MetaStoreDirectSql {
         }
       }
       if (!node.isReverseOrder) {
-        params.add(nodeValue);
+        params.add(nodeValue.toString());
       }
 
       filterBuffer.append(node.isReverseOrder
