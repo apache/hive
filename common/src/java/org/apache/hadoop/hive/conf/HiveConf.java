@@ -1596,9 +1596,15 @@ public class HiveConf extends Configuration {
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
             "operation_logs",
         "Top level directory where operation logs are stored if logging functionality is enabled"),
-    HIVE_SERVER2_LOGGING_OPERATION_VERBOSE("hive.server2.logging.operation.verbose", false,
-            "When true, HS2 operation logs available for clients will be verbose"),
     HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
+    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
+        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
+        "HS2 operation logging mode available to clients to be set at session level.\n" +
+        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
+        "  NONE: Ignore any logging\n" +
+        "  EXECUTION: Log completion of tasks\n" +
+        "  PERFORMANCE: Execution + Performance logs \n" +
+        "  VERBOSE: All logs" ),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
