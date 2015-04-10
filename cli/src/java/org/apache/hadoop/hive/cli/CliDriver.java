@@ -785,6 +785,7 @@ public class CliDriver {
 
   protected void setupConsoleReader() throws IOException {
     reader = new ConsoleReader();
+    reader.setExpandEvents(false);
     reader.setBellEnabled(false);
     for (Completer completer : getCommandCompleter()) {
       reader.addCompleter(completer);
