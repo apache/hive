@@ -458,7 +458,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         }
       } else {
         if (System.currentTimeMillis() > nodeNotFoundLogTime.get() + 5000l) {
-          LOG.warn("Recevied ping from unknown node: " + hostname + ":" + port +
+          LOG.warn("Received ping from unknown node: " + hostname + ":" + port +
               ". Could be caused by pre-emption by the AM," +
               " or a mismatched hostname. Enable debug logging for mismatched host names");
           nodeNotFoundLogTime.set(System.currentTimeMillis());
