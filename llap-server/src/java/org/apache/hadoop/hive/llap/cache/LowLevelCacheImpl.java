@@ -411,9 +411,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         leftToCheck += fc.cache.size();
       }
       // Iterate thru all the filecaches. This is best-effort.
-      // If these super-long-lived iterator affects the map in some bad way,
+      // If these super-long-lived iterators affect the map in some bad way,
       // we'd need to sleep once per round instead.
       Iterator<Map.Entry<Long, FileCache>> iter = cache.entrySet().iterator();
+      boolean isPastEndTime = false;
       while (iter.hasNext()) {
         FileCache fc = iter.next().getValue();
         if (!fc.incRef()) {
@@ -423,8 +424,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.cache.entrySet().iterator();
         boolean isEmpty = true;
         while (subIter.hasNext()) {
-          Thread.sleep((leftToCheck <= 0)
-              ? 1 : (endTime - System.nanoTime()) / (1000000L * leftToCheck));
+          long time = -1;
+          isPastEndTime = isPastEndTime || ((time = System.nanoTime()) >= endTime);
+          Thread.sleep(((leftToCheck <= 0) || isPastEndTime)
+              ? 1 : (endTime - time) / (1000000L * leftToCheck));
           if (subIter.next().getValue().isInvalid()) {
             subIter.remove();
           } else {
