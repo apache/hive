@@ -111,6 +111,7 @@ public class AMReporter extends AbstractService {
       @Override
       public void onFailure(Throwable t) {
         LOG.error("AMReporter QueueDrainer exited with error", t);
+        System.exit(-1);
       }
     });
     LOG.info("Started service: " + getName());
@@ -180,7 +181,8 @@ public class AMReporter extends AbstractService {
             amNodeInfo.stopUmbilical();
           } else {
             // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
-            amNodeInfo.setNextHeartbeatTime(System.currentTimeMillis() + heartbeatInterval);
+            long next = System.currentTimeMillis() + heartbeatInterval;
+            amNodeInfo.setNextHeartbeatTime(next);
             pendingHeartbeatQueeu.add(amNodeInfo);
             executor.submit(new AMHeartbeatCallable(amNodeInfo));
           }
@@ -298,7 +300,7 @@ public class AMReporter extends AbstractService {
 
     @Override
     public long getDelay(TimeUnit unit) {
-      return 0;
+      return unit.convert(nextHeartbeatTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
