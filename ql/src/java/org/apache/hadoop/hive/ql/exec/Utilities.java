@@ -46,6 +46,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTransientException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -3086,6 +3087,24 @@ public final class Utilities {
         // just throw other types (SQLNonTransientException / SQLRecoverableException)
         throw e;
       }
+    }
+  }
+
+  public static void setQueryTimeout(java.sql.Statement stmt, int timeout) throws SQLException {
+    if (timeout < 0) {
+      LOG.info("Invalid query timeout " + timeout);
+      return;
+    }
+    try {
+      stmt.setQueryTimeout(timeout);
+    } catch (SQLException e) {
+      String message = e.getMessage() == null ? null : e.getMessage().toLowerCase();
+      if (e instanceof SQLFeatureNotSupportedException ||
+         (message != null && (message.contains("implemented") || message.contains("supported")))) {
+        LOG.info("setQueryTimeout is not supported");
+        return;
+      }
+      throw e;
     }
   }
 

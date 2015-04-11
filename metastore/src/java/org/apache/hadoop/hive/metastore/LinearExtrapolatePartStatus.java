@@ -19,10 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.util.Map;
-
-import org.apache.hadoop.hive.metastore.api.Decimal;
 
 public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
 
@@ -35,6 +32,15 @@ public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
     if (minInd == maxInd) {
       return min[0];
     }
+    //note that recent metastore stores decimal in string.
+    double decimalmin= 0;
+    double decimalmax = 0;
+    if (colStatTypes[colStatIndex] == ColStatType.Decimal) {
+      BigDecimal bdmin = new BigDecimal(min[0].toString());
+      decimalmin = bdmin.doubleValue();
+      BigDecimal bdmax = new BigDecimal(max[0].toString());
+      decimalmax = bdmax.doubleValue();
+    }
     if (aggrTypes[colStatIndex] == AggrType.Max) {
       if (minInd < maxInd) {
         // right border is the max
@@ -45,15 +51,9 @@ public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
           return (Double) ((Double) min[0] + (((Double) max[0] - (Double) min[0])
               * (rightBorderInd - minInd) / (maxInd - minInd)));
         } else {
-          Decimal dmax = (Decimal) max[0];
-          BigDecimal bdmax = new BigDecimal(dmax.toString());
-          double doublemax = bdmax.doubleValue();
-          Decimal dmin = (Decimal) min[0];
-          BigDecimal bdmin = new BigDecimal(dmin.toString());
-          double doublemin = bdmin.doubleValue();
-          double ret = doublemin + (doublemax - doublemin)
+          double ret = decimalmin + (decimalmax - decimalmin)
               * (rightBorderInd - minInd) / (maxInd - minInd);
-          return createThriftDecimal(String.valueOf(ret));
+          return String.valueOf(ret);
         }
       } else {
         // left border is the max
@@ -62,17 +62,11 @@ public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
               * minInd / (minInd - maxInd));
         } else if (colStatTypes[colStatIndex] == ColStatType.Double) {
           return (Double) ((Double) min[0] + ((Double) max[0] - (Double) min[0])
-              * minInd / (maxInd - minInd));
+              * minInd / (minInd - maxInd));
         } else {
-          Decimal dmax = (Decimal) max[0];
-          BigDecimal bdmax = new BigDecimal(dmax.toString());
-          double doublemax = bdmax.doubleValue();
-          Decimal dmin = (Decimal) min[0];
-          BigDecimal bdmin = new BigDecimal(dmin.toString());
-          double doublemin = bdmin.doubleValue();
-          double ret = doublemin + (doublemax - doublemin) * minInd
-              / (maxInd - minInd);
-          return createThriftDecimal(String.valueOf(ret));
+          double ret = decimalmin + (decimalmax - decimalmin) * minInd
+              / (minInd - maxInd);
+          return String.valueOf(ret);
         }
       }
     } else {
@@ -87,16 +81,9 @@ public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
               * maxInd / (maxInd - minInd);
           return ret;
         } else {
-          Decimal dmax = (Decimal) max[0];
-          BigDecimal bdmax = new BigDecimal(dmax.toString());
-          double doublemax = bdmax.doubleValue();
-          Decimal dmin = (Decimal) min[0];
-          BigDecimal bdmin = new BigDecimal(dmin.toString());
-          double doublemin = bdmin.doubleValue();
-          double ret = doublemax - (doublemax - doublemin) * maxInd
+          double ret = decimalmax - (decimalmax - decimalmin) * maxInd
               / (maxInd - minInd);
-          return createThriftDecimal(String.valueOf(ret));
-
+          return String.valueOf(ret);
         }
       } else {
         // right border is the min
@@ -109,24 +96,11 @@ public class LinearExtrapolatePartStatus implements IExtrapolatePartStatus {
               * (rightBorderInd - maxInd) / (minInd - maxInd);
           return ret;
         } else {
-          Decimal dmax = (Decimal) max[0];
-          BigDecimal bdmax = new BigDecimal(dmax.toString());
-          double doublemax = bdmax.doubleValue();
-          Decimal dmin = (Decimal) min[0];
-          BigDecimal bdmin = new BigDecimal(dmin.toString());
-          double doublemin = bdmin.doubleValue();
-          double ret = doublemax - (doublemax - doublemin)
+          double ret = decimalmax - (decimalmax - decimalmin)
               * (rightBorderInd - maxInd) / (minInd - maxInd);
-          return createThriftDecimal(String.valueOf(ret));
+          return String.valueOf(ret);
         }
       }
     }
   }
-
-  private static Decimal createThriftDecimal(String s) {
-    BigDecimal d = new BigDecimal(s);
-    return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()),
-        (short) d.scale());
-  }
-
 }

@@ -167,6 +167,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_MANAGER,
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
+      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION
       };
 
   /**
@@ -1262,6 +1263,8 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0,
         "Standard error expressed in percentage. Provides a tradeoff between accuracy and compute cost. \n" +
         "A lower value for error indicates higher accuracy and a higher compute cost."),
+    HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION("hive.metastore.stats.ndv.densityfunction", false,
+        "Whether to use density function to estimate the NDV for the whole table based on the NDV of partitions"),
     HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150,
         "Determines if when the prefix of the key used for intermediate stats collection\n" +
         "exceeds a certain length, a hash of the key is used instead.  If the value < 0 then hashing"),
@@ -1606,8 +1609,14 @@ public class HiveConf extends Configuration {
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
             "operation_logs",
         "Top level directory where operation logs are stored if logging functionality is enabled"),
-    HIVE_SERVER2_LOGGING_OPERATION_VERBOSE("hive.server2.logging.operation.verbose", false,
-            "When true, HS2 operation logs available for clients will be verbose"),
+    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
+        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
+        "HS2 operation logging mode available to clients to be set at session level.\n" +
+        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
+        "  NONE: Ignore any logging\n" +
+        "  EXECUTION: Log completion of tasks\n" +
+        "  PERFORMANCE: Execution + Performance logs \n" +
+        "  VERBOSE: All logs" ),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
@@ -1701,10 +1710,6 @@ public class HiveConf extends Configuration {
         "Path component of URL endpoint when in HTTP mode."),
     HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE("hive.server2.thrift.max.message.size", 100*1024*1024,
         "Maximum message size in bytes a HS2 server will accept."),
-    HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS("hive.server2.thrift.http.min.worker.threads", 5,
-        "Minimum number of worker threads when in HTTP mode."),
-    HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500,
-        "Maximum number of worker threads when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME("hive.server2.thrift.http.max.idle.time", "1800s",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Maximum idle time for a connection on the server when in HTTP mode."),
