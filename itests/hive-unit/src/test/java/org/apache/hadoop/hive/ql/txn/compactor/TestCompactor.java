@@ -371,7 +371,7 @@ public class TestCompactor {
     executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
         "'today'), (2, 'wilma', 'yesterday')", driver);
 
-    executeStatementOnDriver("update " + tblName + " set a = 3", driver);
+    executeStatementOnDriver("update " + tblName + " set b = 'fred' where a = 1", driver);
 
     executeStatementOnDriver("delete from " + tblName + " where b = 'fred'", driver);
 
