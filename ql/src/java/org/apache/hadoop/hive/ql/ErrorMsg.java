@@ -429,6 +429,7 @@ public enum ErrorMsg {
       "Alter table partition type {0} does not support cascade", true),
 
   DROP_NATIVE_FUNCTION(10301, "Cannot drop native function"),
+  UPDATE_CANNOT_UPDATE_BUCKET_VALUE(10302, "Updating values of bucketing columns is not supported.  Column {0}.", true),
 
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
