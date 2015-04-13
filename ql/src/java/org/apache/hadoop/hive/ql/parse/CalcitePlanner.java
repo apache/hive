@@ -1851,15 +1851,38 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genGBLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
+
+      // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
+      // Check and transform group by *. This will only happen for select distinct *.
+      // Here the "genSelectPlan" is being leveraged.
+      // The main benefits are (1) remove virtual columns that should
+      // not be included in the group by; (2) add the fully qualified column names to unParseTranslator
+      // so that view is supported. The drawback is that an additional SEL op is added. If it is
+      // not necessary, it will be removed by NonBlockingOpDeDupProc Optimizer because it will match
+      // SEL%SEL% rule.
+      ASTNode selExprList = qb.getParseInfo().getSelForClause(detsClauseName);
+      if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
+          && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
+        ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
+        if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel);
+          RowResolver rr = this.relToHiveRR.get(srcRel);
+          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
+        }
+      }
+
       List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
       HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
-      // NOTE: Multi Insert is not supported
-      boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+      boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
+      boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
+          : false;
+
+      final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
           || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
 
-      // 0. Sanity check
+      // 2. Sanity check
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
           && qbp.getDistinctFuncExprsForClause(detsClauseName).size() > 1) {
         throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.getMsg());
@@ -1884,39 +1907,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      // 1. Gather GB Expressions (AST) (GB + Aggregations)
-      // Check and transform group by *. This will only happen for select distinct *.
-      // Here the "genSelectPlan" is being leveraged.
-      // The main benefits are (1) remove virtual columns that should
-      // not be included in the group by; (2) add the fully qualified column names to unParseTranslator
-      // so that view is supported. The drawback is that an additional SEL op is added. If it is
-      // not necessary, it will be removed by NonBlockingOpDeDupProc Optimizer because it will match
-      // SEL%SEL% rule.
-      ASTNode selExprList = qb.getParseInfo().getSelForClause(detsClauseName);
-      if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
-          && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
-        ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
-        if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel);
-          RowResolver rr = this.relToHiveRR.get(srcRel);
-          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
-        }
-      }
-      boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
-      boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
-          : false;
 
       if (hasGrpByAstExprs || hasAggregationTrees) {
         ArrayList<ExprNodeDesc> gbExprNDescLst = new ArrayList<ExprNodeDesc>();
         ArrayList<String> outputColumnNames = new ArrayList<String>();
 
-        // 2. Input, Output Row Resolvers
+        // 3. Input, Output Row Resolvers
         RowResolver groupByInputRowResolver = this.relToHiveRR.get(srcRel);
         RowResolver groupByOutputRowResolver = new RowResolver();
         groupByOutputRowResolver.setIsExprResolver(true);
 
         if (hasGrpByAstExprs) {
-          // 3. Construct GB Keys (ExprNode)
+          // 4. Construct GB Keys (ExprNode)
           for (int i = 0; i < grpByAstExprs.size(); ++i) {
             ASTNode grpbyExpr = grpByAstExprs.get(i);
             Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
@@ -1931,7 +1933,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 4. GroupingSets, Cube, Rollup
+        // 5. GroupingSets, Cube, Rollup
         int groupingColsSize = gbExprNDescLst.size();
         List<Integer> groupingSets = null;
         if (cubeRollupGrpSetPresent) {
@@ -1957,18 +1959,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 5. Construct aggregation function Info
+        // 6. Construct aggregation function Info
         ArrayList<AggInfo> aggregations = new ArrayList<AggInfo>();
         if (hasAggregationTrees) {
           assert (aggregationTrees != null);
           for (ASTNode value : aggregationTrees.values()) {
-            // 5.1 Determine type of UDAF
+            // 6.1 Determine type of UDAF
             // This is the GenericUDAF name
             String aggName = SemanticAnalyzer.unescapeIdentifier(value.getChild(0).getText());
             boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
             boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
 
-            // 5.2 Convert UDAF Params to ExprNodeDesc
+            // 6.2 Convert UDAF Params to ExprNodeDesc
             ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
             for (int i = 1; i < value.getChildCount(); i++) {
               ASTNode paraExpr = (ASTNode) value.getChild(i);
@@ -1992,7 +1994,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id
+        // 7. If GroupingSets, Cube, Rollup were used, we account grouping__id
         if(groupingSets != null && !groupingSets.isEmpty()) {
           String field = getColumnInternalName(groupingColsSize + aggregations.size());
           outputColumnNames.add(field);
@@ -2004,7 +2006,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                           true));
         }
 
-        // 7. We create the group_by operator
+        // 8. We create the group_by operator
         gbRel = genGBRelNode(gbExprNDescLst, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(gbRel,
             buildHiveToCalciteColumnMap(groupByOutputRowResolver, gbRel));
