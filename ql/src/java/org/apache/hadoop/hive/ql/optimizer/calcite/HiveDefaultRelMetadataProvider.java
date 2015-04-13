@@ -67,8 +67,9 @@ public class HiveDefaultRelMetadataProvider {
 
     // Return MD provider
     return ChainedRelMetadataProvider.of(ImmutableList
-            .of(new HiveRelMdCost(cm).getMetadataProvider(),
+            .of(
                     HiveRelMdDistinctRowCount.SOURCE,
+                    new HiveRelMdCost(cm).getMetadataProvider(),
                     HiveRelMdSelectivity.SOURCE,
                     HiveRelMdRowCount.SOURCE,
                     HiveRelMdUniqueKeys.SOURCE,
