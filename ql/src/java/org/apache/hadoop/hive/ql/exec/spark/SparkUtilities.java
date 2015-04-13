@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -97,6 +98,11 @@ public class SparkUtilities {
 
     String name = FilenameUtils.getName(uri.getPath());
     return name;
+  }
+
+  public static boolean isDedicatedCluster(Configuration conf) {
+    String master = conf.get("spark.master");
+    return master.startsWith("yarn-") || master.startsWith("local");
   }
 
   public static SparkSession getSparkSession(HiveConf conf,
