@@ -83,25 +83,27 @@ public class <ClassName> extends VectorExpression {
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) { 
       outputVector[0] = vector1[0] <OperatorSymbol> vector2[0];
     } else if (inputColVector1.isRepeating) {
+      final <OperandType1> vector1Value = vector1[0];
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[0] <OperatorSymbol> vector2[i];
+          outputVector[i] = vector1Value <OperatorSymbol> vector2[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[0] <OperatorSymbol> vector2[i];
+          outputVector[i] = vector1Value <OperatorSymbol> vector2[i];
         }
       }
     } else if (inputColVector2.isRepeating) {
+      final <OperandType2> vector2Value = vector2[0];
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[i] <OperatorSymbol> vector2[0];
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[i] <OperatorSymbol> vector2[0];
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
         }
       }
     } else {
