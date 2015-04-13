@@ -55,7 +55,6 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   private final boolean leftSemiJoin;
   private JoinAlgorithm joinAlgorithm;
-  private MapJoinStreamingRelation mapJoinStreamingSide;
   private RelOptCost joinCost;
 
 
@@ -64,7 +63,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       HiveJoin join = new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
-          JoinAlgorithm.NONE, chooseStreamingSide(left,right), leftSemiJoin);
+          JoinAlgorithm.NONE, leftSemiJoin);
       return join;
     } catch (InvalidRelException e) {
       throw new RuntimeException(e);
@@ -73,12 +72,10 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
-      JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin,
-      boolean leftSemiJoin) throws InvalidRelException {
+      JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
     this.joinAlgorithm = joinAlgo;
-    this.mapJoinStreamingSide = streamingSideForMapJoin;
     this.leftSemiJoin = leftSemiJoin;
   }
 
@@ -92,7 +89,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinAlgorithm, mapJoinStreamingSide, leftSemiJoin);
+          variablesStopped, joinAlgorithm, leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
@@ -109,7 +106,20 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public MapJoinStreamingRelation getMapJoinStreamingSide() {
-    return mapJoinStreamingSide;
+    Double leftInputSize = RelMetadataQuery.memory(left);
+    Double rightInputSize = RelMetadataQuery.memory(right);
+    if (leftInputSize == null && rightInputSize == null) {
+      return MapJoinStreamingRelation.NONE;
+    } else if (leftInputSize != null &&
+            (rightInputSize == null ||
+            (leftInputSize < rightInputSize))) {
+      return MapJoinStreamingRelation.RIGHT_RELATION;
+    } else if (rightInputSize != null &&
+            (leftInputSize == null ||
+            (rightInputSize <= leftInputSize))) {
+      return MapJoinStreamingRelation.LEFT_RELATION;
+    }
+    return MapJoinStreamingRelation.NONE;
   }
 
   public void setJoinCost(RelOptCost joinCost) {
@@ -149,24 +159,6 @@ public class HiveJoin extends Join implements HiveRelNode {
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
     return RelMetadataQuery.getNonCumulativeCost(this);
-  }
-
-  private static MapJoinStreamingRelation chooseStreamingSide(RelNode left,
-          RelNode right) {
-    Double leftInputSize = RelMetadataQuery.memory(left);
-    Double rightInputSize = RelMetadataQuery.memory(right);
-    if (leftInputSize == null && rightInputSize == null) {
-      return MapJoinStreamingRelation.NONE;
-    } else if (leftInputSize != null &&
-            (rightInputSize == null ||
-            (leftInputSize < rightInputSize))) {
-      return MapJoinStreamingRelation.RIGHT_RELATION;
-    } else if (rightInputSize != null &&
-            (leftInputSize == null ||
-            (rightInputSize <= leftInputSize))) {
-      return MapJoinStreamingRelation.LEFT_RELATION;
-    }
-    return MapJoinStreamingRelation.NONE;
   }
 
   @Override
