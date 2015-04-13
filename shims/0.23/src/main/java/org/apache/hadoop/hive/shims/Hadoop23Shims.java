@@ -1137,10 +1137,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     try {
       Class clazzDistCp = Class.forName("org.apache.hadoop.tools.DistCp");
-      Constructor c = clazzDistCp.getConstructor();
-      c.setAccessible(true);
-      Tool distcp = (Tool)c.newInstance();
-      distcp.setConf(conf);
+      Tool distcp;
+      if (org.apache.hadoop.mapred.MRVersion.isMR2()) {
+        Constructor c = clazzDistCp.getConstructor();
+        c.setAccessible(true);
+        distcp = (Tool)c.newInstance();
+        distcp.setConf(conf);
+      } else {
+        Constructor c = clazzDistCp.getConstructor(Configuration.class);
+        c.setAccessible(true);
+        distcp = (Tool)c.newInstance(conf);
+      }
+
       rc = distcp.run(params);
     } catch (ClassNotFoundException e) {
       throw new IOException("Cannot find DistCp class package: " + e.getMessage());
