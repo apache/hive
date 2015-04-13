@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
@@ -54,20 +52,19 @@ public class HiveRelMdSize extends RelMdSize {
 
   public List<Double> averageColumnSizes(HiveTableScan scan) {
     List<Integer> neededcolsLst = scan.getNeededColIndxsFrmReloptHT();
-    Set<Integer> needColsSet = new HashSet<Integer>(neededcolsLst);
     List<ColStatistics> columnStatistics = ((RelOptHiveTable) scan.getTable())
-        .getColStat(neededcolsLst);
+        .getColStat(neededcolsLst, true);
 
     // Obtain list of col stats, or use default if they are not available
     final ImmutableList.Builder<Double> list = ImmutableList.builder();
     int indxRqdCol = 0;
     int nFields = scan.getRowType().getFieldCount();
     for (int i = 0; i < nFields; i++) {
-      if (needColsSet.contains(i)) {
+      if (neededcolsLst.contains(i)) {
         ColStatistics columnStatistic = columnStatistics.get(indxRqdCol);
         indxRqdCol++;
         if (columnStatistic == null) {
-          RelDataTypeField field = scan.getPrunedRowType().getFieldList().get(i);
+          RelDataTypeField field = scan.getRowType().getFieldList().get(i);
           list.add(averageTypeValueSize(field.getType()));
         } else {
           list.add(columnStatistic.getAvgColLen());

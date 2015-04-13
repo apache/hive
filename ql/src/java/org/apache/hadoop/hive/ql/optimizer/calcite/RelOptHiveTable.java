@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 public class RelOptHiveTable extends RelOptAbstractTable {
   private final Table                             hiveTblMetadata;
@@ -259,7 +260,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
   }
 
-  private void updateColStats(Set<Integer> projIndxLst) {
+  private void updateColStats(Set<Integer> projIndxLst, boolean allowNullColumnForMissingStats) {
     List<String> nonPartColNamesThatRqrStats = new ArrayList<String>();
     List<Integer> nonPartColIndxsThatRqrStats = new ArrayList<Integer>();
     List<String> partColNamesThatRqrStats = new ArrayList<String>();
@@ -372,9 +373,13 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     if (!colNamesFailedStats.isEmpty()) {
       String logMsg = "No Stats for " + hiveTblMetadata.getCompleteName() + ", Columns: "
           + getColNamesForLogging(colNamesFailedStats);
-      LOG.error(logMsg);
       noColsMissingStats.getAndAdd(colNamesFailedStats.size());
-      throw new RuntimeException(logMsg);
+      if (allowNullColumnForMissingStats) {
+        LOG.warn(logMsg);
+      } else {
+        LOG.error(logMsg);
+        throw new RuntimeException(logMsg);
+      }
     }
   }
 
@@ -387,10 +392,14 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
-    ImmutableList.Builder<ColStatistics> colStatsBldr = ImmutableList.<ColStatistics> builder();
+    return getColStat(projIndxLst, false);
+  }
+
+  public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowNullColumnForMissingStats) {
+    List<ColStatistics> colStatsBldr = Lists.newArrayList();
 
     if (projIndxLst != null) {
-      updateColStats(new HashSet<Integer>(projIndxLst));
+      updateColStats(new HashSet<Integer>(projIndxLst), allowNullColumnForMissingStats);
       for (Integer i : projIndxLst) {
         colStatsBldr.add(hiveColStatsMap.get(i));
       }
@@ -399,13 +408,13 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       for (Integer i = 0; i < noOfNonVirtualCols; i++) {
         pILst.add(i);
       }
-      updateColStats(new HashSet<Integer>(pILst));
+      updateColStats(new HashSet<Integer>(pILst), allowNullColumnForMissingStats);
       for (Integer pi : pILst) {
         colStatsBldr.add(hiveColStatsMap.get(pi));
       }
     }
 
-    return colStatsBldr.build();
+    return colStatsBldr;
   }
 
   /*
