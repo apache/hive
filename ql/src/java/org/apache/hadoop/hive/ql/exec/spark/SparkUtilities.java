@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -99,6 +97,11 @@ public class SparkUtilities {
 
     String[] splits = uri.getPath().split(File.separator);
     return  splits[splits.length-1];
+  }
+
+  public static boolean isDedicatedCluster(Configuration conf) {
+    String master = conf.get("spark.master");
+    return master.startsWith("yarn-") || master.startsWith("local");
   }
 
   public static SparkSession getSparkSession(HiveConf conf,
