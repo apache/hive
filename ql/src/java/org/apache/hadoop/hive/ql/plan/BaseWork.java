@@ -60,8 +60,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   private String name;
 
   // Vectorization.
-  protected Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = null;
-  protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
+  protected Map<String, Integer> vectorColumnNameMap;
+  protected Map<Integer, String> vectorColumnTypeMap;
+  protected Map<Integer, String> vectorScratchColumnTypeMap;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -143,21 +144,28 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
-  public Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps() {
-    return allScratchColumnVectorTypeMaps;
+  public Map<String, Integer> getVectorColumnNameMap() {
+    return vectorColumnNameMap;
   }
 
-  public void setAllScratchColumnVectorTypeMaps(
-      Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps) {
-    this.allScratchColumnVectorTypeMaps = allScratchColumnVectorTypeMaps;
+  public void setVectorColumnNameMap(Map<String, Integer> vectorColumnNameMap) {
+    this.vectorColumnNameMap = vectorColumnNameMap;
   }
 
-  public Map<String, Map<String, Integer>> getAllColumnVectorMaps() {
-    return allColumnVectorMaps;
+  public Map<Integer, String> getVectorColumnTypeMap() {
+    return vectorColumnTypeMap;
   }
 
-  public void setAllColumnVectorMaps(Map<String, Map<String, Integer>> allColumnVectorMaps) {
-    this.allColumnVectorMaps = allColumnVectorMaps;
+  public void setVectorColumnTypeMap(Map<Integer, String> vectorColumnTypeMap) {
+    this.vectorColumnTypeMap = vectorColumnTypeMap;
+  }
+
+  public Map<Integer, String> getVectorScratchColumnTypeMap() {
+    return vectorScratchColumnTypeMap;
+  }
+
+  public void setVectorScratchColumnTypeMap(Map<Integer, String> vectorScratchColumnTypeMap) {
+    this.vectorScratchColumnTypeMap = vectorScratchColumnTypeMap;
   }
 
   /**

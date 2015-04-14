@@ -132,7 +132,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
   boolean[] columnSortOrderIsDesc;
 
   private static byte[] decimalBuffer = null;
-  private static Charset decimalCharSet = Charset.forName("US-ASCII");
+  public static Charset decimalCharSet = Charset.forName("US-ASCII");
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -572,7 +572,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return ((BaseCharTypeInfo)type).getLength();
   }
 
-  static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
+  public static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
       throws IOException {
     // Get the actual length first
     int start = buffer.tell();
@@ -636,7 +636,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return serializeBytesWritable;
   }
 
-  private static void writeByte(RandomAccessOutput buffer, byte b, boolean invert) {
+  public static void writeByte(RandomAccessOutput buffer, byte b, boolean invert) {
     if (invert) {
       b = (byte) (0xff ^ b);
     }
@@ -892,7 +892,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
   }
 
-  private static void serializeBytes(
+  public static void serializeBytes(
       ByteStream.Output buffer, byte[] data, int length, boolean invert) {
     for (int i = 0; i < length; i++) {
       if (data[i] == 0 || data[i] == 1) {
@@ -905,14 +905,27 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) 0, invert);
   }
 
-  private static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
+  public static void serializeBytes(
+      ByteStream.Output buffer, byte[] data, int offset, int length, boolean invert) {
+    for (int i = offset; i < offset + length; i++) {
+      if (data[i] == 0 || data[i] == 1) {
+        writeByte(buffer, (byte) 1, invert);
+        writeByte(buffer, (byte) (data[i] + 1), invert);
+      } else {
+        writeByte(buffer, data[i], invert);
+      }
+    }
+    writeByte(buffer, (byte) 0, invert);
+  }
+
+  public static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
     writeByte(buffer, (byte) ((v >> 24) ^ 0x80), invert);
     writeByte(buffer, (byte) (v >> 16), invert);
     writeByte(buffer, (byte) (v >> 8), invert);
     writeByte(buffer, (byte) v, invert);
   }
 
-  private static void serializeLong(ByteStream.Output buffer, long v, boolean invert) {
+  public static void serializeLong(ByteStream.Output buffer, long v, boolean invert) {
     writeByte(buffer, (byte) ((v >> 56) ^ 0x80), invert);
     writeByte(buffer, (byte) (v >> 48), invert);
     writeByte(buffer, (byte) (v >> 40), invert);

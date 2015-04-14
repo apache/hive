@@ -465,9 +465,9 @@ public final class Utilities {
     }
   }
 
-  public static Map<String, Map<Integer, String>> getMapWorkAllScratchColumnVectorTypeMaps(Configuration hiveConf) {
+  public static Map<Integer, String> getMapWorkVectorScratchColumnTypeMap(Configuration hiveConf) {
     MapWork mapWork = getMapWork(hiveConf);
-    return mapWork.getAllScratchColumnVectorTypeMaps();
+    return mapWork.getVectorScratchColumnTypeMap();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {

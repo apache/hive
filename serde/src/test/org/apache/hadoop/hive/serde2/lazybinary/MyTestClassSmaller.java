@@ -18,36 +18,68 @@
 package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Random;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 
 public class MyTestClassSmaller {
-    Byte myByte;
-    Short myShort;
-    Integer myInt;
-    Long myLong;
-    Float myFloat;
-    Double myDouble;
-    String myString;
-    HiveDecimal myDecimal;
-    Date myDate;
+
+    public Boolean myBool;
+    public Byte myByte;
+    public Short myShort;
+    public Integer myInt;
+    public Long myLong;
+    public Float myFloat;
+    public Double myDouble;
+    public String myString;
+    public HiveChar myHiveChar;
+    public HiveVarchar myHiveVarchar;
+    public byte[] myBinary;
+    public HiveDecimal myDecimal;
+    public Date myDate;
+    public Timestamp myTimestamp;
+    public HiveIntervalYearMonth myIntervalYearMonth;
+    public HiveIntervalDayTime myIntervalDayTime;
+
     MyTestInnerStruct myStruct;
 
-    public MyTestClassSmaller() {
+    public final static int smallerCount = 17;
+
+    public int randomFill(Random r, ExtraTypeInfo extraTypeInfo) {
+      int randField = r.nextInt(smallerCount);
+      int field = 0;
+
+      myBool = (randField == field++) ? null : (r.nextInt(1) == 1);
+      myByte = (randField == field++) ? null : Byte.valueOf((byte) r.nextInt());
+      myShort = (randField == field++) ? null : Short.valueOf((short) r.nextInt());
+      myInt = (randField == field++) ? null : Integer.valueOf(r.nextInt());
+      myLong = (randField == field++) ? null : Long.valueOf(r.nextLong());
+      myFloat = (randField == field++) ? null : Float
+          .valueOf(r.nextFloat() * 10 - 5);
+      myDouble = (randField == field++) ? null : Double
+          .valueOf(r.nextDouble() * 10 - 5);
+      myString = (randField == field++) ? null : MyTestPrimitiveClass.getRandString(r);
+      myHiveChar = (randField == field++) ? null : MyTestPrimitiveClass.getRandHiveChar(r, extraTypeInfo);
+      myHiveVarchar = (randField == field++) ? null : MyTestPrimitiveClass.getRandHiveVarchar(r, extraTypeInfo);
+      myBinary = MyTestPrimitiveClass.getRandBinary(r, r.nextInt(1000));
+      myDecimal = (randField == field++) ? null : MyTestPrimitiveClass.getRandHiveDecimal(r, extraTypeInfo);
+      myDate = (randField == field++) ? null : MyTestPrimitiveClass.getRandDate(r);
+      myTimestamp = (randField == field++) ? null : MyTestPrimitiveClass.getRandTimestamp(r);
+      myIntervalYearMonth = (randField == field++) ? null : MyTestPrimitiveClass.getRandIntervalYearMonth(r);
+      myIntervalDayTime = (randField == field++) ? null : MyTestPrimitiveClass.getRandIntervalDayTime(r);
+
+      myStruct = (randField == field++) ? null : new MyTestInnerStruct(
+          r.nextInt(5) - 2, r.nextInt(5) - 2);
+      return field;
     }
 
-    public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, Float f,
-			      Double d, String st, HiveDecimal bd, Date date, MyTestInnerStruct is) {
-	myByte = b;
-	myShort = s;
-	myInt = i;
-	myLong = l;
-	myFloat = f;
-	myDouble = d;
-	myString = st;
-	myDecimal = bd;
-	myDate = date;
-	myStruct = is;
-    }
 }

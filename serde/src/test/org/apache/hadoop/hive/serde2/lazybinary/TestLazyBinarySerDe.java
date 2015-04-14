@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
 import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
@@ -91,7 +93,7 @@ public class TestLazyBinarySerDe extends TestCase {
    * @return the initialized LazyBinarySerDe
    * @throws Throwable
    */
-  private SerDe getSerDe(String fieldNames, String fieldTypes) throws Throwable {
+  protected static SerDe getSerDe(String fieldNames, String fieldTypes) throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
     schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
@@ -194,46 +196,20 @@ public class TestLazyBinarySerDe extends TestCase {
 
     int num = 100;
     for (int itest = 0; itest < num; itest++) {
-      int randField = r.nextInt(11);
-      Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-      Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-      Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-      Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-      Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-      Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-      String st = randField > 6 ? null : TestBinarySortableSerDe
-          .getRandString(r);
-      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-      Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
-      MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
-          .nextInt(5) - 2, r.nextInt(5) - 2);
-      List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
-          .getRandIntegerArray(r);
-      byte[] ba  = TestBinarySortableSerDe.getRandBA(r, itest);
-      Map<String, List<MyTestInnerStruct>> mp = new HashMap<String, List<MyTestInnerStruct>>();
-      String key = TestBinarySortableSerDe.getRandString(r);
-      List<MyTestInnerStruct> value = randField > 9 ? null
-          : getRandStructArray(r);
-      mp.put(key, value);
-      String key1 = TestBinarySortableSerDe.getRandString(r);
-      mp.put(key1, null);
-      String key2 = TestBinarySortableSerDe.getRandString(r);
-      List<MyTestInnerStruct> value2 = getRandStructArray(r);
-      mp.put(key2, value2);
-
-      MyTestClassBigger input = new MyTestClassBigger(b, s, n, l, f, d, st, bd, date, is,
-          li, ba, mp);
-      BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
+      MyTestClassBigger t = new MyTestClassBigger();
+      ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+      t.randomFill(r, extraTypeInfo);
+      BytesWritable bw = (BytesWritable) serde1.serialize(t, rowOI1);
       Object output = serde2.deserialize(bw);
 
-      if (0 != compareDiffSizedStructs(input, rowOI1, output, serdeOI2)) {
+      if (0 != compareDiffSizedStructs(t, rowOI1, output, serdeOI2)) {
         System.out.println("structs      = "
-            + SerDeUtils.getJSONString(input, rowOI1));
+            + SerDeUtils.getJSONString(t, rowOI1));
         System.out.println("deserialized = "
             + SerDeUtils.getJSONString(output, serdeOI2));
         System.out.println("serialized   = "
             + TestBinarySortableSerDe.hexString(bw));
-        assertEquals(input, output);
+        assertEquals(t, output);
       }
     }
   }
@@ -263,34 +239,20 @@ public class TestLazyBinarySerDe extends TestCase {
 
     int num = 100;
     for (int itest = 0; itest < num; itest++) {
-      int randField = r.nextInt(12);
-      Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-      Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-      Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-      Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-      Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-      Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-      String st = randField > 6 ? null : TestBinarySortableSerDe
-          .getRandString(r);
-      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-      Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
-      MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
-          .nextInt(5) - 2, r.nextInt(5) - 2);
-      List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
-          .getRandIntegerArray(r);
-      byte[] ba = TestBinarySortableSerDe.getRandBA(r, itest);
-      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, bd, date, is, li, ba);
-      BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
+      MyTestClass t = new MyTestClass();
+      ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+      t.randomFill(r, extraTypeInfo);
+      BytesWritable bw = (BytesWritable) serde1.serialize(t, rowOI1);
       Object output = serde2.deserialize(bw);
 
-      if (0 != compareDiffSizedStructs(input, rowOI1, output, serdeOI2)) {
+      if (0 != compareDiffSizedStructs(t, rowOI1, output, serdeOI2)) {
         System.out.println("structs      = "
-            + SerDeUtils.getJSONString(input, rowOI1));
+            + SerDeUtils.getJSONString(t, rowOI1));
         System.out.println("deserialized = "
             + SerDeUtils.getJSONString(output, serdeOI2));
         System.out.println("serialized   = "
             + TestBinarySortableSerDe.hexString(bw));
-        assertEquals(input, output);
+        assertEquals(t, output);
       }
     }
   }
@@ -320,34 +282,21 @@ public class TestLazyBinarySerDe extends TestCase {
 
     int num = 100;
     for (int itest = 0; itest < num; itest++) {
-      int randField = r.nextInt(12);
-      Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-      Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-      Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-      Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-      Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-      Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-      String st = randField > 6 ? null : TestBinarySortableSerDe
-          .getRandString(r);
-      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-      Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
-      MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
-          .nextInt(5) - 2, r.nextInt(5) - 2);
-      List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
-          .getRandIntegerArray(r);
-      byte[] ba = TestBinarySortableSerDe.getRandBA(r, itest);
-      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, bd, date, is, li,ba);
-      BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
+      MyTestClass t = new MyTestClass();
+      ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+      t.randomFill(r, extraTypeInfo);
+
+      BytesWritable bw = (BytesWritable) serde1.serialize(t, rowOI1);
       Object output = serde2.deserialize(bw);
 
-      if (0 != compareDiffSizedStructs(input, rowOI1, output, serdeOI2)) {
+      if (0 != compareDiffSizedStructs(t, rowOI1, output, serdeOI2)) {
         System.out.println("structs      = "
-            + SerDeUtils.getJSONString(input, rowOI1));
+            + SerDeUtils.getJSONString(t, rowOI1));
         System.out.println("deserialized = "
             + SerDeUtils.getJSONString(output, serdeOI2));
         System.out.println("serialized   = "
             + TestBinarySortableSerDe.hexString(bw));
-        assertEquals(input, output);
+        assertEquals(t, output);
       }
     }
   }
@@ -377,33 +326,20 @@ public class TestLazyBinarySerDe extends TestCase {
 
     int num = 100;
     for (int itest = 0; itest < num; itest++) {
-      int randField = r.nextInt(9);
-      Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-      Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-      Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-      Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-      Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-      Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-      String st = randField > 6 ? null : TestBinarySortableSerDe
-          .getRandString(r);
-      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-      Date date = randField > 7 ? null : TestBinarySortableSerDe.getRandDate(r);
-      MyTestInnerStruct is = randField > 7 ? null : new MyTestInnerStruct(r
-          .nextInt(5) - 2, r.nextInt(5) - 2);
-
-      MyTestClassSmaller input = new MyTestClassSmaller(b, s, n, l, f, d, st, bd, date,
-          is);
-      BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
+      MyTestClassSmaller t = new MyTestClassSmaller();
+      ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+      t.randomFill(r, extraTypeInfo);
+      BytesWritable bw = (BytesWritable) serde1.serialize(t, rowOI1);
       Object output = serde2.deserialize(bw);
 
-      if (0 != compareDiffSizedStructs(input, rowOI1, output, serdeOI2)) {
+      if (0 != compareDiffSizedStructs(t, rowOI1, output, serdeOI2)) {
         System.out.println("structs      = "
-            + SerDeUtils.getJSONString(input, rowOI1));
+            + SerDeUtils.getJSONString(t, rowOI1));
         System.out.println("deserialized = "
             + SerDeUtils.getJSONString(output, serdeOI2));
         System.out.println("serialized   = "
             + TestBinarySortableSerDe.hexString(bw));
-        assertEquals(input, output);
+        assertEquals(t, output);
       }
     }
   }
@@ -421,13 +357,13 @@ public class TestLazyBinarySerDe extends TestCase {
     StructObjectInspector soi1 = (StructObjectInspector) serdeOI;
     List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
     LazyBinaryMapObjectInspector lazympoi = (LazyBinaryMapObjectInspector) fields1
-        .get(12).getFieldObjectInspector();
+        .get(MyTestClassBigger.mapPos).getFieldObjectInspector();
     ObjectInspector lazympkeyoi = lazympoi.getMapKeyObjectInspector();
     ObjectInspector lazympvalueoi = lazympoi.getMapValueObjectInspector();
 
     StructObjectInspector soi2 = rowOI;
     List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
-    MapObjectInspector inputmpoi = (MapObjectInspector) fields2.get(12)
+    MapObjectInspector inputmpoi = (MapObjectInspector) fields2.get(MyTestClassBigger.mapPos)
         .getFieldObjectInspector();
     ObjectInspector inputmpkeyoi = inputmpoi.getMapKeyObjectInspector();
     ObjectInspector inputmpvalueoi = inputmpoi.getMapValueObjectInspector();
@@ -439,18 +375,19 @@ public class TestLazyBinarySerDe extends TestCase {
 
       int randFields = r.nextInt(10);
       for (int i = 0; i < randFields; i++) {
-        String key = TestBinarySortableSerDe.getRandString(r);
+        String key = MyTestPrimitiveClass.getRandString(r);
         int randField = r.nextInt(10);
         List<MyTestInnerStruct> value = randField > 4 ? null
             : getRandStructArray(r);
         mp.put(key, value);
+
       }
 
-      MyTestClassBigger input = new MyTestClassBigger(null, null, null, null,
-						      null, null, null, null, null, null, null, null, mp);
-      BytesWritable bw = (BytesWritable) serde.serialize(input, rowOI);
+      MyTestClassBigger t = new MyTestClassBigger();
+      t.myMap = mp;
+      BytesWritable bw = (BytesWritable) serde.serialize(t, rowOI);
       Object output = serde.deserialize(bw);
-      Object lazyobj = soi1.getStructFieldData(output, fields1.get(12));
+      Object lazyobj = soi1.getStructFieldData(output, fields1.get(MyTestClassBigger.mapPos));
       Map<?, ?> outputmp = lazympoi.getMap(lazyobj);
 
       if (outputmp.size() != mp.size()) {
@@ -497,23 +434,9 @@ public class TestLazyBinarySerDe extends TestCase {
       Random r = new Random(1234);
       MyTestClass rows[] = new MyTestClass[num];
       for (int i = 0; i < num; i++) {
-        int randField = r.nextInt(12);
-        Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-        Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-        Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-        Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-        Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-        Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-        String st = randField > 6 ? null : TestBinarySortableSerDe
-            .getRandString(r);
-        HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-        Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
-        MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
-            .nextInt(5) - 2, r.nextInt(5) - 2);
-        List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
-            .getRandIntegerArray(r);
-        byte[] ba = TestBinarySortableSerDe.getRandBA(r, i);
-        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, bd, date, is, li, ba);
+        MyTestClass t = new MyTestClass();
+        ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+        t.randomFill(r, extraTypeInfo);
         rows[i] = t;
       }
 
