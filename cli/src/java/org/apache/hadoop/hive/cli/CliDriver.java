@@ -767,6 +767,8 @@ public class CliDriver {
       System.err.println(e.getMessage());
     }
 
+    System.out.println("WARNING: Hive CLI is deprecated and migration to Beeline is recommended.");
+
     // add shutdown hook to flush the history to history file
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
