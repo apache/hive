@@ -638,8 +638,8 @@ public abstract class InStream extends InputStream {
   // TODO: move to EncodedReaderImpl
   public static DiskRangeList uncompressStream(long fileId, long baseOffset, DiskRangeList start,
       long cOffset, long endCOffset, ZeroCopyReaderShim zcr, CompressionCodec codec,
-      int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset)
-          throws IOException {
+      int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset,
+      long streamStartOffset) throws IOException {
     if (streamBuffer.cacheBuffers == null) {
       streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     } else {
@@ -679,7 +679,7 @@ public abstract class InStream extends InputStream {
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
         }
-        ponderReleaseInitialRefcount(cache, unlockUntilCOffset, cc);
+        ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamStartOffset, cc);
         lastCached = cc;
         next = current.next;
       } else if (current instanceof IncompleteCb)  {
@@ -774,7 +774,7 @@ public abstract class InStream extends InputStream {
 
     // 7. It may happen that we only use new compression buffers once. Release initial refcounts.
     for (ProcCacheChunk chunk : toDecompress) {
-      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, chunk);
+      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamStartOffset, chunk);
     }
 
     return lastCached;
@@ -792,11 +792,28 @@ public abstract class InStream extends InputStream {
   }
 
   private static void ponderReleaseInitialRefcount(LowLevelCache cache,
-      long unlockUntilCOffset, TrackedCacheChunk cc) {
+      long unlockUntilCOffset, long streamStartOffset, TrackedCacheChunk cc) {
     if (cc.getEnd() > unlockUntilCOffset) return;
+    assert !cc.isReleased;
+    releaseInitialRefcount(cache, cc, false);
+    // Release all the previous buffers that we may not have been able to release due to reuse.
+    DiskRangeList prev = cc.prev;
+    while (true) {
+      if ((prev == null) || (prev.getEnd() <= streamStartOffset)
+          || !(prev instanceof TrackedCacheChunk)) break;
+      TrackedCacheChunk prevCc = (TrackedCacheChunk)prev;
+      if (prevCc.isReleased) break;
+      releaseInitialRefcount(cache, prevCc, true);
+      prev = prev.prev;
+    }
+  }
+
+  private static void releaseInitialRefcount(
+      LowLevelCache cache, TrackedCacheChunk cc, boolean isBacktracking) {
     // This is the last RG for which this buffer will be used. Remove the initial refcount
     if (DebugUtils.isTraceLockingEnabled()) {
-      LOG.info("Unlocking " + cc.buffer + " for the fetching thread");
+      LOG.info("Unlocking " + cc.buffer + " for the fetching thread"
+          + (isBacktracking ? "; backtracking" : ""));
     }
     cache.releaseBuffer(cc.buffer);
     cc.isReleased = true;

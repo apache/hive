@@ -387,7 +387,7 @@ public class EncodedReaderImpl implements EncodedReader {
               long unlockUntilCOffset = sctx.offset + sctx.length;
               DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, iter,
                   sctx.offset, sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
-                  sctx.stripeLevelStream, unlockUntilCOffset);
+                  sctx.stripeLevelStream, unlockUntilCOffset, sctx.offset);
               if (lastCached != null) {
                 iter = lastCached;
               }
@@ -417,7 +417,8 @@ public class EncodedReaderImpl implements EncodedReader {
             boolean isStartOfStream = sctx.bufferIter == null;
             DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
             DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, range,
-                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb, unlockUntilCOffset);
+                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb, unlockUntilCOffset,
+                sctx.offset);
             if (lastCached != null) {
               sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid
             }
