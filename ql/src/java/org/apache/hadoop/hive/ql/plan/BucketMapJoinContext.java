@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * was inner class of MapreLocalWork. context for bucket mapjoin (or smb join)
@@ -130,7 +131,7 @@ public class BucketMapJoinContext implements Serializable {
     this.bucketMatcherClass = bucketMatcherClass;
   }
 
-  @Explain(displayName = "Alias Bucket File Name Mapping", normalExplain = false)
+  @Explain(displayName = "Alias Bucket File Name Mapping", explainLevels = { Level.EXTENDED })
   public Map<String, Map<String, List<String>>> getAliasBucketFileNameMapping() {
     return aliasBucketFileNameMapping;
   }
@@ -149,7 +150,7 @@ public class BucketMapJoinContext implements Serializable {
     }
   }
 
-  @Explain(displayName = "Alias Bucket Base File Name Mapping", normalExplain = false)
+  @Explain(displayName = "Alias Bucket Base File Name Mapping", explainLevels = { Level.EXTENDED })
   public Map<String, Map<String, List<String>>> getAliasBucketBaseFileNameMapping() {
     return aliasBucketBaseFileNameMapping;
   }
@@ -159,7 +160,7 @@ public class BucketMapJoinContext implements Serializable {
     this.aliasBucketBaseFileNameMapping = aliasBucketBaseFileNameMapping;
   }
 
-  @Explain(displayName = "Alias Bucket Output File Name Mapping", normalExplain = false)
+  @Explain(displayName = "Alias Bucket Output File Name Mapping", explainLevels = { Level.EXTENDED })
   public Map<String, Integer> getBucketFileNameMapping() {
     return bucketFileNameMapping;
   }

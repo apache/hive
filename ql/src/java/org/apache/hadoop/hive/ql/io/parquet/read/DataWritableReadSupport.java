@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -24,17 +25,21 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
-import parquet.column.ColumnDescriptor;
+import parquet.hadoop.api.InitContext;
 import parquet.hadoop.api.ReadSupport;
 import parquet.io.api.RecordMaterializer;
+import parquet.schema.GroupType;
 import parquet.schema.MessageType;
-import parquet.schema.PrimitiveType;
-import parquet.schema.PrimitiveType.PrimitiveTypeName;
 import parquet.schema.Type;
-import parquet.schema.Type.Repetition;
+import parquet.schema.Types;
+import parquet.schema.PrimitiveType.PrimitiveTypeName;
 
 /**
  *
@@ -45,8 +50,7 @@ import parquet.schema.Type.Repetition;
  */
 public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
-  private static final String TABLE_SCHEMA = "table_schema";
-  public static final String HIVE_SCHEMA_KEY = "HIVE_TABLE_SCHEMA";
+  public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
 
   /**
@@ -56,80 +60,176 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
    * @param columns comma separated list of columns
    * @return list with virtual columns removed
    */
-  private static List<String> getColumns(final String columns) {
+  private static List<String> getColumnNames(final String columns) {
     return (List<String>) VirtualColumn.
         removeVirtualColumns(StringUtils.getStringCollection(columns));
   }
 
   /**
+   * Returns a list of TypeInfo objects from a string which contains column
+   * types strings.
    *
+   * @param types Comma separated list of types
+   * @return A list of TypeInfo objects.
+   */
+  private static List<TypeInfo> getColumnTypes(final String types) {
+    return TypeInfoUtils.getTypeInfosFromTypeString(types);
+  }
+
+  /**
+   * Searchs for a fieldName into a parquet GroupType by ignoring string case.
+   * GroupType#getType(String fieldName) is case sensitive, so we use this method.
+   *
+   * @param groupType Group of field types where to search for fieldName
+   * @param fieldName The field what we are searching
+   * @return The Type object of the field found; null otherwise.
+   */
+  private static Type getFieldTypeIgnoreCase(GroupType groupType, String fieldName) {
+    for (Type type : groupType.getFields()) {
+      if (type.getName().equalsIgnoreCase(fieldName)) {
+        return type;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Searchs column names by name on a given Parquet schema, and returns its corresponded
+   * Parquet schema types.
+   *
+   * @param schema Group schema where to search for column names.
+   * @param colNames List of column names.
+   * @param colTypes List of column types.
+   * @return List of GroupType objects of projected columns.
+   */
+  private static List<Type> getProjectedGroupFields(GroupType schema, List<String> colNames, List<TypeInfo> colTypes) {
+    List<Type> schemaTypes = new ArrayList<Type>();
+
+    ListIterator columnIterator = colNames.listIterator();
+    while (columnIterator.hasNext()) {
+      TypeInfo colType = colTypes.get(columnIterator.nextIndex());
+      String colName = (String) columnIterator.next();
+
+      Type fieldType = getFieldTypeIgnoreCase(schema, colName);
+      if (fieldType != null) {
+        if (colType.getCategory() == ObjectInspector.Category.STRUCT) {
+          if (fieldType.isPrimitive()) {
+            throw new IllegalStateException("Invalid schema data type, found: PRIMITIVE, expected: STRUCT");
+          }
+
+          GroupType groupFieldType = fieldType.asGroupType();
+
+          List<Type> groupFields = getProjectedGroupFields(
+              groupFieldType,
+              ((StructTypeInfo) colType).getAllStructFieldNames(),
+              ((StructTypeInfo) colType).getAllStructFieldTypeInfos()
+          );
+
+          Type[] typesArray = groupFields.toArray(new Type[0]);
+          schemaTypes.add(Types.buildGroup(groupFieldType.getRepetition())
+              .addFields(typesArray)
+              .named(fieldType.getName())
+          );
+        } else {
+          schemaTypes.add(fieldType);
+        }
+      } else {
+        // Add type for schema evolution
+        schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
+      }
+    }
+
+    return schemaTypes;
+  }
+
+  /**
+   * Searchs column names by name on a given Parquet message schema, and returns its projected
+   * Parquet schema types.
+   *
+   * @param schema Message type schema where to search for column names.
+   * @param colNames List of column names.
+   * @param colTypes List of column types.
+   * @return A MessageType object of projected columns.
+   */
+  private static MessageType getSchemaByName(MessageType schema, List<String> colNames, List<TypeInfo> colTypes) {
+    List<Type> projectedFields = getProjectedGroupFields(schema, colNames, colTypes);
+    Type[] typesArray = projectedFields.toArray(new Type[0]);
+
+    return Types.buildMessage()
+        .addFields(typesArray)
+        .named(schema.getName());
+  }
+
+  /**
+   * Searchs column names by index on a given Parquet file schema, and returns its corresponded
+   * Parquet schema types.
+   *
+   * @param schema Message schema where to search for column names.
+   * @param colNames List of column names.
+   * @param colIndexes List of column indexes.
+   * @return A MessageType object of the column names found.
+   */
+  private static MessageType getSchemaByIndex(MessageType schema, List<String> colNames, List<Integer> colIndexes) {
+    List<Type> schemaTypes = new ArrayList<Type>();
+
+    for (Integer i : colIndexes) {
+      if (i < colNames.size()) {
+        if (i < schema.getFieldCount()) {
+          schemaTypes.add(schema.getType(i));
+        } else {
+          //prefixing with '_mask_' to ensure no conflict with named
+          //columns in the file schema
+          schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named("_mask_" + colNames.get(i)));
+        }
+      }
+    }
+
+    return new MessageType(schema.getName(), schemaTypes);
+  }
+
+  /**
    * It creates the readContext for Parquet side with the requested schema during the init phase.
    *
-   * @param configuration needed to get the wanted columns
-   * @param keyValueMetaData // unused
-   * @param fileSchema parquet file schema
+   * @param context
    * @return the parquet ReadContext
    */
   @Override
-  public parquet.hadoop.api.ReadSupport.ReadContext init(final Configuration configuration,
-      final Map<String, String> keyValueMetaData, final MessageType fileSchema) {
-    final String columns = configuration.get(IOConstants.COLUMNS);
-    final Map<String, String> contextMetadata = new HashMap<String, String>();
-    final boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
-    if (columns != null) {
-      final List<String> listColumns = getColumns(columns);
-      final Map<String, String> lowerCaseFileSchemaColumns = new HashMap<String,String>();
-      for (ColumnDescriptor c : fileSchema.getColumns()) {
-        lowerCaseFileSchemaColumns.put(c.getPath()[0].toLowerCase(), c.getPath()[0]);
-      }
-      final List<Type> typeListTable = new ArrayList<Type>();
-      if(indexAccess) {
-        for (int index = 0; index < listColumns.size(); index++) {
-          //Take columns based on index or pad the field
-          if(index < fileSchema.getFieldCount()) {
-            typeListTable.add(fileSchema.getType(index));
-          } else {
-            //prefixing with '_mask_' to ensure no conflict with named
-            //columns in the file schema
-            typeListTable.add(new PrimitiveType(Repetition.OPTIONAL, PrimitiveTypeName.BINARY, "_mask_"+listColumns.get(index)));
-          }
+  public parquet.hadoop.api.ReadSupport.ReadContext init(InitContext context) {
+    Configuration configuration = context.getConfiguration();
+    MessageType fileSchema = context.getFileSchema();
+    String columnNames = configuration.get(IOConstants.COLUMNS);
+    Map<String, String> contextMetadata = new HashMap<String, String>();
+    boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
+
+    if (columnNames != null) {
+      List<String> columnNamesList = getColumnNames(columnNames);
+
+      MessageType tableSchema;
+      if (indexAccess) {
+        List<Integer> indexSequence = new ArrayList<Integer>();
+
+        // Generates a sequence list of indexes
+        for(int i = 0; i < columnNamesList.size(); i++) {
+          indexSequence.add(i);
         }
+
+        tableSchema = getSchemaByIndex(fileSchema, columnNamesList, indexSequence);
       } else {
-        for (String col : listColumns) {
-          col = col.toLowerCase();
-          // listColumns contains partition columns which are metadata only
-          if (lowerCaseFileSchemaColumns.containsKey(col)) {
-            typeListTable.add(fileSchema.getType(lowerCaseFileSchemaColumns.get(col)));
-          } else {
-            // below allows schema evolution
-            typeListTable.add(new PrimitiveType(Repetition.OPTIONAL, PrimitiveTypeName.BINARY, col));
-          }
-        }
+        String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
+        List<TypeInfo> columnTypesList = getColumnTypes(columnTypes);
+
+        tableSchema = getSchemaByName(fileSchema, columnNamesList, columnTypesList);
       }
-      MessageType tableSchema = new MessageType(TABLE_SCHEMA, typeListTable);
-      contextMetadata.put(HIVE_SCHEMA_KEY, tableSchema.toString());
 
-      final List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+      contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, tableSchema.toString());
 
-      final List<Type> typeListWanted = new ArrayList<Type>();
+      List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+      MessageType requestedSchemaByUser = getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
 
-      for (final Integer idx : indexColumnsWanted) {
-        if (idx < listColumns.size()) {
-          String col = listColumns.get(idx);
-          if (indexAccess) {
-              typeListWanted.add(fileSchema.getFields().get(idx));
-          } else {
-            col = col.toLowerCase();
-            if (lowerCaseFileSchemaColumns.containsKey(col)) {
-              typeListWanted.add(tableSchema.getType(lowerCaseFileSchemaColumns.get(col)));
-            }
-          }
-        }
-      }
-      MessageType requestedSchemaByUser = new MessageType(fileSchema.getName(), typeListWanted);
       return new ReadContext(requestedSchemaByUser, contextMetadata);
     } else {
-      contextMetadata.put(HIVE_SCHEMA_KEY, fileSchema.toString());
+      contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, fileSchema.toString());
       return new ReadContext(fileSchema, contextMetadata);
     }
   }

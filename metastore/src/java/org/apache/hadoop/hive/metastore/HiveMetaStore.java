@@ -5487,7 +5487,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw newMetaException(e);
       } finally {
-        endFunction("get_database", func != null, ex);
+        endFunction("get_function", func != null, ex);
       }
 
       return func;
@@ -6060,6 +6060,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // don't doom the rest of the metastore.
         startLock.lock();
         try {
+          startPauseMonitor(conf);
+        } catch (Throwable t) {
+          LOG.warn("Error starting the JVM pause monitor", t);
+        }
+        try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
           while (!startedServing.get()) startCondition.await();
@@ -6076,6 +6081,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     t.start();
+  }
+
+  private static void startPauseMonitor(HiveConf conf) throws Exception {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
+        new org.apache.hadoop.util.JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
+               " GCs and Pauses may not be warned upon.", t);
+    }
   }
 
   private static void startCompactorInitiator(HiveConf conf) throws Exception {

@@ -151,4 +151,6 @@ public interface HiveSession extends HiveSessionBase {
       throws HiveSQLException;
 
   void closeExpiredOperations();
+
+  long getNoOperationTime();
 }

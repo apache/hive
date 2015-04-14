@@ -15,7 +15,12 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,10 +43,13 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
+import parquet.filter2.compat.FilterCompat;
+import parquet.filter2.compat.RowGroupFilter;
 import parquet.filter2.predicate.FilterPredicate;
 import parquet.hadoop.ParquetFileReader;
 import parquet.hadoop.ParquetInputFormat;
 import parquet.hadoop.ParquetInputSplit;
+import parquet.hadoop.api.InitContext;
 import parquet.hadoop.api.ReadSupport.ReadContext;
 import parquet.hadoop.metadata.BlockMetaData;
 import parquet.hadoop.metadata.FileMetaData;
@@ -66,6 +74,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private boolean skipTimestampConversion = false;
   private JobConf jobConf;
   private final ProjectionPusher projectionPusher;
+  private List<BlockMetaData> filtedBlocks;
 
   public ParquetRecordReaderWrapper(
       final ParquetInputFormat<ArrayWritable> newInputFormat,
@@ -93,8 +102,6 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     if (taskAttemptID == null) {
       taskAttemptID = new TaskAttemptID();
     }
-
-    setFilter(jobConf);
 
     // create a TaskInputOutputContext
     Configuration conf = jobConf;
@@ -130,13 +137,13 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     }
   }
 
-  public void setFilter(final JobConf conf) {
+  public FilterCompat.Filter setFilter(final JobConf conf) {
     String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     String columnNamesString =
       conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
     if (serializedPushdown == null || columnNamesString == null || serializedPushdown.isEmpty() ||
       columnNamesString.isEmpty()) {
-      return;
+      return null;
     }
 
     FilterPredicate p =
@@ -145,9 +152,11 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     if (p != null) {
       LOG.debug("Predicate filter for parquet is " + p.toString());
       ParquetInputFormat.setFilterPredicate(conf, p);
+      return FilterCompat.get(p);
     } else {
       LOG.debug("No predicate filter can be generated for " + TableScanDesc.FILTER_EXPR_CONF_STR +
         " with the value of " + serializedPushdown);
+      return null;
     }
   }
 
@@ -238,15 +247,16 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
       jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
+      FilterCompat.Filter filter = setFilter(jobConf);
 
       final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(jobConf, finalPath);
       final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
       final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
 
-      final ReadContext readContext = new DataWritableReadSupport()
-          .init(jobConf, fileMetaData.getKeyValueMetaData(), fileMetaData.getSchema());
+      final ReadContext readContext = new DataWritableReadSupport().init(new InitContext(jobConf,
+          null, fileMetaData.getSchema()));
       schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-          .get(DataWritableReadSupport.HIVE_SCHEMA_KEY)).getFieldCount();
+          .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
       final long splitStart = ((FileSplit) oldSplit).getStart();
       final long splitLength = ((FileSplit) oldSplit).getLength();
@@ -258,24 +268,43 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       }
       if (splitGroup.isEmpty()) {
         LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
-        split = null;
-      } else {
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-          skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
-        }
-        split = new ParquetInputSplit(finalPath,
-                splitStart,
-                splitLength,
-                ((FileSplit) oldSplit).getLocations(),
-                splitGroup,
-                readContext.getRequestedSchema().toString(),
-                fileMetaData.getSchema().toString(),
-                fileMetaData.getKeyValueMetaData(),
-                readContext.getReadSupportMetadata());
+        return null;
       }
+
+      if (filter != null) {
+        filtedBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
+        if (filtedBlocks.isEmpty()) {
+          LOG.debug("All row groups are dropped due to filter predicates");
+          return null;
+        }
+
+        long droppedBlocks = splitGroup.size() - filtedBlocks.size();
+        if (droppedBlocks > 0) {
+          LOG.debug("Dropping " + droppedBlocks + " row groups that do not pass filter predicate");
+        }
+      } else {
+        filtedBlocks = splitGroup;
+      }
+
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+        skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
+      }
+      split = new ParquetInputSplit(finalPath,
+          splitStart,
+          splitLength,
+          ((FileSplit) oldSplit).getLocations(),
+          filtedBlocks,
+          readContext.getRequestedSchema().toString(),
+          fileMetaData.getSchema().toString(),
+          fileMetaData.getKeyValueMetaData(),
+          readContext.getReadSupportMetadata());
+      return split;
     } else {
       throw new IllegalArgumentException("Unknown split type: " + oldSplit);
     }
-    return split;
+  }
+
+  public List<BlockMetaData> getFiltedBlocks() {
+    return filtedBlocks;
   }
 }

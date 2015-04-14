@@ -29,12 +29,14 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * BaseWork. Base class for any "work" that's being done on the cluster. Items like stats
  * gathering that are commonly used regardless of the type of work live here.
  */
-@SuppressWarnings({"serial", "deprecation"})
+@SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
 
   // dummyOps is a reference to all the HashTableDummy operators in the
@@ -58,9 +60,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   private String name;
 
   // Vectorization.
-  protected Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = null;
-  protected Map<String, Map<String, Integer>> allColumnVectorMaps = null;
-  protected boolean vectorMode = false;
+  protected Map<String, Integer> vectorColumnNameMap;
+  protected Map<Integer, String> vectorColumnTypeMap;
+  protected Map<Integer, String> vectorScratchColumnTypeMap;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -142,27 +144,34 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
-  public Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps() {
-    return allScratchColumnVectorTypeMaps;
+  public Map<String, Integer> getVectorColumnNameMap() {
+    return vectorColumnNameMap;
   }
 
-  public void setAllScratchColumnVectorTypeMaps(
-      Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps) {
-    this.allScratchColumnVectorTypeMaps = allScratchColumnVectorTypeMaps;
+  public void setVectorColumnNameMap(Map<String, Integer> vectorColumnNameMap) {
+    this.vectorColumnNameMap = vectorColumnNameMap;
   }
 
-  public Map<String, Map<String, Integer>> getAllColumnVectorMaps() {
-    return allColumnVectorMaps;
+  public Map<Integer, String> getVectorColumnTypeMap() {
+    return vectorColumnTypeMap;
   }
 
-  public void setAllColumnVectorMaps(Map<String, Map<String, Integer>> allColumnVectorMaps) {
-    this.allColumnVectorMaps = allColumnVectorMaps;
+  public void setVectorColumnTypeMap(Map<Integer, String> vectorColumnTypeMap) {
+    this.vectorColumnTypeMap = vectorColumnTypeMap;
+  }
+
+  public Map<Integer, String> getVectorScratchColumnTypeMap() {
+    return vectorScratchColumnTypeMap;
+  }
+
+  public void setVectorScratchColumnTypeMap(Map<Integer, String> vectorScratchColumnTypeMap) {
+    this.vectorScratchColumnTypeMap = vectorScratchColumnTypeMap;
   }
 
   /**
    * @return the mapredLocalWork
    */
-  @Explain(displayName = "Local Work")
+  @Explain(displayName = "Local Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public MapredLocalWork getMapRedLocalWork() {
     return mrLocalWork;
   }
@@ -173,15 +182,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    */
   public void setMapRedLocalWork(final MapredLocalWork mapLocalWork) {
     this.mrLocalWork = mapLocalWork;
-  }
-
-  @Override
-  public void setVectorMode(boolean vectorMode) {
-    this.vectorMode = vectorMode;
-  }
-
-  public boolean getVectorMode() {
-    return vectorMode;
   }
 
   public abstract void configureJobConf(JobConf job);

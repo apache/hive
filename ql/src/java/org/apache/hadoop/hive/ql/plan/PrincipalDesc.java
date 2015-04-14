@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Principal")
+
+@Explain(displayName = "Principal", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PrincipalDesc implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
@@ -41,7 +43,7 @@ public class PrincipalDesc implements Serializable, Cloneable {
     super();
   }
 
-  @Explain(displayName="name")
+  @Explain(displayName="name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
   }
@@ -50,7 +52,7 @@ public class PrincipalDesc implements Serializable, Cloneable {
     this.name = name;
   }
 
-  @Explain(displayName="type", normalExplain = false)
+  @Explain(displayName="type", explainLevels = { Level.EXTENDED })
   public PrincipalType getType() {
     return type;
   }

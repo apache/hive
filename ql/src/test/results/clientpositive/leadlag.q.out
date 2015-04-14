@@ -223,6 +223,8 @@ Manufacturer#5	almond antique sky peru orange	2	-8
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	17
 Manufacturer#5	almond azure blanched chiffon midnight	23	21
 PREHOOK: query: -- 6. testRankInLead
+-- disable cbo because of CALCITE-653
+
 select p_mfgr, p_name, p_size, r1,
 lead(r1,1,r1) over (distribute by p_mfgr sort by p_name) as deltaRank
 from (
@@ -234,6 +236,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 6. testRankInLead
+-- disable cbo because of CALCITE-653
+
 select p_mfgr, p_name, p_size, r1,
 lead(r1,1,r1) over (distribute by p_mfgr sort by p_name) as deltaRank
 from (

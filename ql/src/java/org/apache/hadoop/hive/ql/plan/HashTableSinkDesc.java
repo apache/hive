@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Map Join operator Descriptor implementation.
  *
  */
-@Explain(displayName = "HashTable Sink Operator")
+@Explain(displayName = "HashTable Sink Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class HashTableSinkDesc extends JoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -285,7 +287,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   }
 
   @Override
-  @Explain(displayName = "filter mappings", normalExplain = false)
+  @Explain(displayName = "filter mappings", explainLevels = { Level.EXTENDED })
   public Map<Integer, String> getFilterMapString() {
     return toCompactString(filterMap);
   }
@@ -301,7 +303,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   /**
    * @return the keys in string form
    */
-  @Explain(displayName = "keys")
+  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
@@ -328,7 +330,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   /**
    * @return the position of the big table not in memory
    */
-  @Explain(displayName = "Position of Big Table", normalExplain = false)
+  @Explain(displayName = "Position of Big Table", explainLevels = { Level.EXTENDED })
   public int getPosBigTable() {
     return posBigTable;
   }

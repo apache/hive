@@ -498,26 +498,26 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private void reloadHashTable(HashPartition partition,
                                HybridHashTableContainer hybridHtContainer)
       throws IOException, ClassNotFoundException, HiveException, SerDeException {
-    // Deserialize the on-disk hash table
-    // We're sure this part is smaller than memory limit
-    BytesBytesMultiHashMap restoredHashMap = partition.getHashMapFromDisk();
-    int rowCount = restoredHashMap.getNumValues();
-    LOG.info("Hybrid Grace Hash Join: Deserializing spilled hash partition...");
-    LOG.info("Hybrid Grace Hash Join: Number of rows restored from hashmap: " + rowCount);
 
     // Merge the sidefile into the newly created hash table
     // This is where the spilling may happen again
     KeyValueContainer kvContainer = partition.getSidefileKVContainer();
-    rowCount += kvContainer.size();
+    int rowCount = kvContainer.size();
     LOG.info("Hybrid Grace Hash Join: Number of rows restored from KeyValueContainer: " +
         kvContainer.size());
+
+    // Deserialize the on-disk hash table
+    // We're sure this part is smaller than memory limit
+    BytesBytesMultiHashMap restoredHashMap = partition.getHashMapFromDisk(rowCount);
+    rowCount += restoredHashMap.getNumValues();
+    LOG.info("Hybrid Grace Hash Join: Deserializing spilled hash partition...");
+    LOG.info("Hybrid Grace Hash Join: Number of rows in hashmap: " + rowCount);
 
     // If based on the new key count, keyCount is smaller than a threshold,
     // then just load the entire restored hashmap into memory.
     // The size of deserialized partition shouldn't exceed half of memory limit
     if (rowCount * hybridHtContainer.getTableRowSize() >= hybridHtContainer.getMemoryThreshold() / 2) {
-      throw new RuntimeException("Hybrid Grace Hash Join: Hash table cannot be reloaded since it" +
-          " will be greater than memory limit. Recursive spilling is currently not supported");
+      LOG.info("Hybrid Grace Hash Join: Hash table reload can fail since it will be greater than memory limit. Recursive spilling is currently not supported");
     }
 
     KeyValueHelper writeHelper = hybridHtContainer.getWriteHelper();

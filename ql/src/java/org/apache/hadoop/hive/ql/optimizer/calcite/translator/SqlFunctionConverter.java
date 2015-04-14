@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -382,7 +383,7 @@ public class SqlFunctionConverter {
       // We can create Calcite IS_DISTINCT_FROM operator for this. But since our
       // join reordering algo cant handle this anyway there is no advantage of
       // this.So, bail out for now.
-      throw new CalciteSemanticException("<=> is not yet supported for cbo.");
+      throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
     }
     SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
     if (calciteOp == null) {

@@ -417,7 +417,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
 
     @Override
     public MapJoinRowContainer getCurrentRows() {
-      return currentValue.isEmpty() ? null : currentValue;
+      return !currentValue.hasRows() ? null : currentValue;
     }
 
     @Override
@@ -430,8 +430,11 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
-    private List<WriteBuffers.ByteSegmentRef> refs;
-    private int currentRow;
+
+    /** Hash table wrapper specific to the container. */
+    private final BytesBytesMultiHashMap.ThreadSafeGetter threadSafeHashMapGetter;
+    private BytesBytesMultiHashMap.Result hashMapResult;
+
     /**
      * Sometimes, when container is empty in multi-table mapjoin, we need to add a dummy row.
      * This container does not normally support adding rows; this is for the dummy row.
@@ -449,48 +452,56 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
+      threadSafeHashMapGetter = hashMap.createGetterForThread();
+      hashMapResult = new BytesBytesMultiHashMap.Result();
       clearRows();
     }
 
     public JoinUtil.JoinResult setFromOutput(Output output) {
-      if (refs == null) {
-        refs = new ArrayList<WriteBuffers.ByteSegmentRef>();
-      }
-      byte aliasFilter = hashMap.getValueRefs(output.getData(), output.getLength(), refs);
-      this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
-      this.dummyRow = null;
-      if (refs.isEmpty()) {
+
+      aliasFilter = threadSafeHashMapGetter.getValueResult(
+              output.getData(), 0, output.getLength(), hashMapResult);
+      dummyRow = null;
+      if (hashMapResult.hasRows()) {
+        return JoinUtil.JoinResult.MATCH;
+      } else {
+        aliasFilter = (byte) 0xff;
         return JoinUtil.JoinResult.NOMATCH;
       }
-      else {
-        return JoinUtil.JoinResult.MATCH;
-      }
+
+   }
+
+    @Override
+    public boolean hasRows() {
+      return hashMapResult.hasRows() || (dummyRow != null);
     }
 
-    public boolean isEmpty() {
-      return refs.isEmpty() && (dummyRow == null);
+    @Override
+    public boolean isSingleRow() {
+      if (!hashMapResult.hasRows()) {
+        return (dummyRow != null);
+      }
+      return hashMapResult.isSingleRow();
     }
 
     // Implementation of row container
     @Override
     public AbstractRowContainer.RowIterator<List<Object>> rowIter() throws HiveException {
-      currentRow = -1;
       return this;
     }
 
     @Override
     public int rowCount() throws HiveException {
-      return dummyRow != null ? 1 : refs.size();
+      // For performance reasons we do not want to chase the values to the end to determine
+      // the count.  Use hasRows and isSingleRow instead.
+      throw new UnsupportedOperationException("Getting the row count not supported");
     }
 
     @Override
     public void clearRows() {
       // Doesn't clear underlying hashtable
-      if (refs != null) {
-        refs.clear();
-      }
+      hashMapResult.forget();
       dummyRow = null;
-      currentRow = -1;
       aliasFilter = (byte) 0xff;
     }
 
@@ -507,29 +518,38 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     // Implementation of row iterator
     @Override
     public List<Object> first() throws HiveException {
-      currentRow = 0;
-      return nextInternal();
-    }
 
-    @Override
-    public List<Object> next() throws HiveException {
-      return nextInternal();
-    }
-
-    private List<Object> nextInternal() throws HiveException {
+      // A little strange that we forget the dummy row on read.
       if (dummyRow != null) {
         List<Object> result = dummyRow;
         dummyRow = null;
         return result;
       }
-      if (currentRow < 0 || refs.size() < currentRow) throw new HiveException("No rows");
-      if (refs.size() == currentRow) return null;
-      WriteBuffers.ByteSegmentRef ref = refs.get(currentRow++);
+
+      WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      if (byteSegmentRef == null) {
+        return null;
+      } else {
+        return uppack(byteSegmentRef);
+      }
+
+    }
+
+    @Override
+    public List<Object> next() throws HiveException {
+
+      WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.next();
+      if (byteSegmentRef == null) {
+        return null;
+      } else {
+        return uppack(byteSegmentRef);
+      }
+
+    }
+
+    private List<Object> uppack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
       if (ref.getLength() == 0) {
         return EMPTY_LIST; // shortcut, 0 length means no fields
-      }
-      if (ref.getBytes() == null) {
-        hashMap.populateValue(ref);
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
@@ -538,7 +558,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
 
     @Override
     public void addRow(List<Object> t) {
-      if (dummyRow != null || !refs.isEmpty()) {
+      if (dummyRow != null || hashMapResult.hasRows()) {
         throw new RuntimeException("Cannot add rows when not empty");
       }
       dummyRow = t;

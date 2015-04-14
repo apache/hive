@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 
 
 import com.esotericsoftware.kryo.Kryo;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -123,15 +124,20 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     /* Restore the hashmap from disk by deserializing it.
      * Currently Kryo is used for this purpose.
      */
-    public BytesBytesMultiHashMap getHashMapFromDisk()
+    public BytesBytesMultiHashMap getHashMapFromDisk(int initialCapacity)
         throws IOException, ClassNotFoundException {
       if (hashMapSpilledOnCreation) {
-        return new BytesBytesMultiHashMap(threshold, loadFactor, wbSize, -1);
+        return new BytesBytesMultiHashMap(Math.max(threshold, initialCapacity) , loadFactor, wbSize, -1);
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
         com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
         Kryo kryo = Utilities.runtimeSerializationKryo.get();
         BytesBytesMultiHashMap restoredHashMap = kryo.readObject(input, BytesBytesMultiHashMap.class);
+
+        if (initialCapacity > 0) {
+          restoredHashMap.expandAndRehashToTarget(initialCapacity);
+        }
+
         input.close();
         inputStream.close();
         Files.delete(hashMapLocalPath);
@@ -163,7 +169,8 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
 
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memUsage, long tableSize)
       throws SerDeException {
-    this(HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
+    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
+         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
          HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
          HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
          HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD),
@@ -171,22 +178,27 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
          tableSize, keyCount, memUsage);
   }
 
-  private HybridHashTableContainer(int threshold, float loadFactor, int wbSize,
+  private HybridHashTableContainer(float keyCountAdj, int threshold, float loadFactor, int wbSize,
                                    long noConditionalTaskThreshold, int memCheckFreq, long tableSize,
                                    long keyCount, long memUsage) throws SerDeException {
+
+    int newKeyCount = HashMapWrapper.calculateTableSize(
+        keyCountAdj, threshold, loadFactor, keyCount);
+
     memoryThreshold = noConditionalTaskThreshold;
-    tableRowSize = tableSize / keyCount;
+    tableRowSize = tableSize / newKeyCount;
     memoryCheckFrequency = memCheckFreq;
 
     int numPartitions = calcNumPartitions(tableSize, wbSize); // estimate # of partitions to create
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
     long memoryAllocated = 0;
+    int initialCapacity = Math.max(newKeyCount / numPartitions, threshold / numPartitions);
     for (int i = 0; i < numPartitions; i++) {
       if (i == 0) { // We unconditionally create a hashmap for the first hash partition
-        hashPartitions[i] = new HashPartition(threshold, loadFactor, wbSize, memUsage, true);
+        hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, wbSize, memUsage, true);
       } else {
-        hashPartitions[i] = new HashPartition(threshold, loadFactor, wbSize, memUsage,
+        hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, wbSize, memUsage,
                                               memoryAllocated + wbSize < memoryThreshold);
       }
       if (isHashMapSpilledOnCreation(i)) {
@@ -555,7 +567,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
 
     @Override
     public MapJoinRowContainer getCurrentRows() {
-      return currentValue.isEmpty() ? null : currentValue;
+      return !currentValue.hasRows() ? null : currentValue;
     }
 
     @Override
@@ -568,8 +580,8 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
   private class ReusableRowContainer
     implements MapJoinRowContainer, AbstractRowContainer.RowIterator<List<Object>> {
     private byte aliasFilter;
-    private List<WriteBuffers.ByteSegmentRef> refs;
-    private int currentRow;
+    private BytesBytesMultiHashMap.Result hashMapResult;
+
     /**
      * Sometimes, when container is empty in multi-table mapjoin, we need to add a dummy row.
      * This container does not normally support adding rows; this is for the dummy row.
@@ -589,6 +601,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
+      hashMapResult = new BytesBytesMultiHashMap.Result();
       clearRows();
     }
 
@@ -600,57 +613,58 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
      *        the evaluation for this big table row will be postponed.
      */
     public JoinUtil.JoinResult setFromOutput(Output output) throws HiveException {
-      if (refs == null) {
-        refs = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
-      }
-
       int keyHash = WriteBuffers.murmurHash(output.getData(), 0, output.getLength());
       partitionId = keyHash & (hashPartitions.length - 1);
 
       // If the target hash table is on disk, spill this row to disk as well to be processed later
       if (isOnDisk(partitionId)) {
         toSpillPartitionId = partitionId;
-        refs.clear();
+        hashMapResult.forget();
         return JoinUtil.JoinResult.SPILL;
       }
       else {
-        byte aliasFilter = hashPartitions[partitionId].hashMap.getValueRefs(
-            output.getData(), output.getLength(), refs);
-        this.aliasFilter = refs.isEmpty() ? (byte) 0xff : aliasFilter;
-        this.dummyRow = null;
-        if (refs.isEmpty()) {
-          return JoinUtil.JoinResult.NOMATCH;
-        }
-        else {
+        aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(output.getData(), 0, output.getLength(), hashMapResult);
+        dummyRow = null;
+        if (hashMapResult.hasRows()) {
           return JoinUtil.JoinResult.MATCH;
+        } else {
+          aliasFilter = (byte) 0xff;
+          return JoinUtil.JoinResult.NOMATCH;
         }
       }
     }
 
-    public boolean isEmpty() {
-      return refs.isEmpty() && (dummyRow == null);
+    @Override
+    public boolean hasRows() {
+      return hashMapResult.hasRows() || (dummyRow != null);
+    }
+
+    @Override
+    public boolean isSingleRow() {
+      if (!hashMapResult.hasRows()) {
+        return (dummyRow != null);
+      }
+      return hashMapResult.isSingleRow();
     }
 
     // Implementation of row container
     @Override
-    public RowIterator<List<Object>> rowIter() throws HiveException {
-      currentRow = -1;
+    public AbstractRowContainer.RowIterator<List<Object>> rowIter() throws HiveException {
       return this;
     }
 
     @Override
     public int rowCount() throws HiveException {
-      return dummyRow != null ? 1 : refs.size();
+      // For performance reasons we do not want to chase the values to the end to determine
+      // the count.  Use hasRows and isSingleRow instead.
+      throw new UnsupportedOperationException("Getting the row count not supported");
     }
 
     @Override
     public void clearRows() {
       // Doesn't clear underlying hashtable
-      if (refs != null) {
-        refs.clear();
-      }
+      hashMapResult.forget();
       dummyRow = null;
-      currentRow = -1;
       aliasFilter = (byte) 0xff;
     }
 
@@ -667,36 +681,47 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     // Implementation of row iterator
     @Override
     public List<Object> first() throws HiveException {
-      currentRow = 0;
-      return next();
-    }
 
-
-    @Override
-    public List<Object> next() throws HiveException {
+      // A little strange that we forget the dummy row on read.
       if (dummyRow != null) {
         List<Object> result = dummyRow;
         dummyRow = null;
         return result;
       }
-      if (currentRow < 0 || refs.size() < currentRow) throw new HiveException("No rows");
-      if (refs.size() == currentRow) return null;
-      WriteBuffers.ByteSegmentRef ref = refs.get(currentRow++);
+
+      WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      if (byteSegmentRef == null) {
+        return null;
+      } else {
+        return uppack(byteSegmentRef);
+      }
+
+    }
+
+    @Override
+    public List<Object> next() throws HiveException {
+
+      WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.next();
+      if (byteSegmentRef == null) {
+        return null;
+      } else {
+        return uppack(byteSegmentRef);
+      }
+
+    }
+
+    private List<Object> uppack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
       if (ref.getLength() == 0) {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
-      if (ref.getBytes() == null) {
-        // partitionId is derived from previously calculated value in setFromOutput()
-        hashPartitions[partitionId].hashMap.populateValue(ref);
-      }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
-      return valueStruct.getFieldsAsList();
+      return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
     }
 
     @Override
     public void addRow(List<Object> t) {
-      if (dummyRow != null || !refs.isEmpty()) {
+      if (dummyRow != null || hashMapResult.hasRows()) {
         throw new RuntimeException("Cannot add rows when not empty");
       }
       dummyRow = t;

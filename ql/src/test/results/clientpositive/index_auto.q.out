@@ -146,7 +146,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__src_src_index__
+            alias: default__src_src_index__
             filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) (type: boolean)
             Filter Operator
               predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) (type: boolean)

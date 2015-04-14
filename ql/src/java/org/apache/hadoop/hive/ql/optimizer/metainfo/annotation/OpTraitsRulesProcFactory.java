@@ -50,19 +50,19 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * 1. Bucketing columns.
  * 2. Table
  * 3. Pruned partitions
- * 
+ *
  * Bucketing columns refer to not to the bucketing columns from the table object but instead
  * to the dynamic 'bucketing' done by operators such as reduce sinks and group-bys.
  * All the operators have a translation from their input names to the output names corresponding
  * to the bucketing column. The colExprMap that is a part of every operator is used in this
  * transformation.
- * 
+ *
  * The table object is used for the base-case in map-reduce when deciding to perform a bucket
  * map join. This object is used in the BucketMapJoinProc to find if number of files for the
  * table correspond to the number of buckets specified in the meta data.
- * 
+ *
  * The pruned partition information has the same purpose as the table object at the moment.
- * 
+ *
  * The traits of sorted-ness etc. can be populated as well for future optimizations to make use of.
  */
 
@@ -106,13 +106,11 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(bucketCols);
       int numBuckets = -1;
-      int numReduceSinks = 1;
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
-        numReduceSinks += parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols);
       rs.setOpTraits(opTraits);
       return null;
     }
@@ -132,8 +130,8 @@ public class OpTraitsRulesProcFactory {
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
         if (!partitions.isEmpty()) {
           for (Partition p : partitions) {
-            List<String> fileNames = 
-                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(), 
+            List<String> fileNames =
+                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(),
                     pGraphContext);
             // The number of files for the table should be same as number of
             // buckets.
@@ -146,8 +144,8 @@ public class OpTraitsRulesProcFactory {
         }
       } else {
 
-        List<String> fileNames = 
-            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(), 
+        List<String> fileNames =
+            AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(),
                 pGraphContext);
         Integer num = new Integer(tbl.getNumBuckets());
 
@@ -188,7 +186,7 @@ public class OpTraitsRulesProcFactory {
         sortedColsList.add(sortCols);
       }
       // num reduce sinks hardcoded to 0 because TS has no parents
-      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList, 0);
+      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -213,13 +211,8 @@ public class OpTraitsRulesProcFactory {
       }
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
-      int numReduceSinks = 0;
-      OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
-      if (parentOpTraits != null) {
-        numReduceSinks = parentOpTraits.getNumReduceSinks();
-      }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols);
       gbyOp.setOpTraits(opTraits);
       return null;
     }
@@ -255,7 +248,7 @@ public class OpTraitsRulesProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator selOp = (SelectOperator) nd;
-      List<List<String>> parentBucketColNames = 
+      List<List<String>> parentBucketColNames =
           selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
 
       List<List<String>> listBucketCols = null;
@@ -264,7 +257,7 @@ public class OpTraitsRulesProcFactory {
         if (parentBucketColNames != null) {
           listBucketCols = getConvertedColNames(parentBucketColNames, selOp);
         }
-        List<List<String>> parentSortColNames = 
+        List<List<String>> parentSortColNames =
             selOp.getParentOperators().get(0).getOpTraits().getSortCols();
         if (parentSortColNames != null) {
           listSortCols = getConvertedColNames(parentSortColNames, selOp);
@@ -272,13 +265,11 @@ public class OpTraitsRulesProcFactory {
       }
 
       int numBuckets = -1;
-      int numReduceSinks = 0;
       OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
-        numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, numReduceSinks);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols);
       selOp.setOpTraits(opTraits);
       return null;
     }
@@ -307,13 +298,10 @@ public class OpTraitsRulesProcFactory {
         OpTraits parentOpTraits = rsOp.getOpTraits();
         bucketColsList.add(getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos));
         sortColsList.add(getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos));
-        if (parentOpTraits.getNumReduceSinks() > numReduceSinks) {
-          numReduceSinks = parentOpTraits.getNumReduceSinks();
-        }
         pos++;
       }
 
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList));
       return null;
     }
 
@@ -366,17 +354,7 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
-
-      int numReduceSinks = 0;
-      for (Operator<?> parentOp : operator.getParentOperators()) {
-        if (parentOp.getOpTraits() == null) {
-          continue;
-        }
-        if (parentOp.getOpTraits().getNumReduceSinks() > numReduceSinks) {
-          numReduceSinks = parentOp.getOpTraits().getNumReduceSinks();
-        }
-      }
-      OpTraits opTraits = new OpTraits(null, -1, null, numReduceSinks);
+      OpTraits opTraits = new OpTraits(null, -1, null);
       operator.setOpTraits(opTraits);
       return null;
     }

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -78,6 +79,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient List<Object> otherKey = null;
   transient List<Object> values = null;
   transient RecordSource[] sources;
+  transient WritableComparator[][] keyComparators;
+
   transient List<Operator<? extends OperatorDesc>> originalParents =
       new ArrayList<Operator<? extends OperatorDesc>>();
 
@@ -105,6 +108,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     nextKeyWritables = new ArrayList[maxAlias];
     fetchDone = new boolean[maxAlias];
     foundNextKeyGroup = new boolean[maxAlias];
+    keyComparators = new WritableComparator[maxAlias][];
+
+    for (Entry<Byte, List<ExprNodeDesc>> entry : conf.getKeys().entrySet()) {
+      keyComparators[entry.getKey().intValue()] = new WritableComparator[entry.getValue().size()];
+    }
 
     int bucketSize;
 
@@ -279,7 +287,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         result[pos] = -1;
         continue;
       }
-      result[pos] = compareKeys(key, smallestOne);
+      result[pos] = compareKeys(pos, key, smallestOne);
       if (result[pos] < 0) {
         smallestOne = key;
       }
@@ -383,7 +391,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         if (candidateStorage[pos] == null) {
           continue;
         }
-        if (this.candidateStorage[pos].rowCount() > 0) {
+        if (this.candidateStorage[pos].hasRows()) {
           dataInCache = true;
           break;
         }
@@ -411,14 +419,16 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     this.nextGroupStorage[t] = oldRowContainer;
   }
 
+  @SuppressWarnings("rawtypes")
   private boolean processKey(byte alias, List<Object> key) throws HiveException {
     List<Object> keyWritable = keyWritables[alias];
     if (keyWritable == null) {
       // the first group.
       keyWritables[alias] = key;
+      keyComparators[alias] = new WritableComparator[key.size()];
       return false;
     } else {
-      int cmp = compareKeys(key, keyWritable);
+      int cmp = compareKeys(alias, key, keyWritable);
       if (cmp != 0) {
         nextKeyWritables[alias] = key;
         return true;
@@ -428,35 +438,71 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   @SuppressWarnings("rawtypes")
-  private int compareKeys(List<Object> k1, List<Object> k2) {
-    int ret = 0;
+  private int compareKeys(byte alias, List<Object> k1, List<Object> k2) {
+    final WritableComparator[] comparators = keyComparators[alias];
 
     // join keys have difference sizes?
-    ret = k1.size() - k2.size();
-    if (ret != 0) {
-      return ret;
+    if (k1.size() != k2.size()) {
+      return k1.size() - k2.size();
     }
 
-    for (int i = 0; i < k1.size(); i++) {
+    if (comparators.length == 0) {
+      // cross-product - no keys really
+      return 0;
+    }
+
+    if (comparators.length > 1) {
+      // rare case
+      return compareKeysMany(comparators, k1, k2);
+    } else {
+      return compareKey(comparators, 0,
+          (WritableComparable) k1.get(0),
+          (WritableComparable) k2.get(0),
+          nullsafes != null ? nullsafes[0]: false);
+    }
+  }
+
+  @SuppressWarnings("rawtypes")
+  private int compareKeysMany(WritableComparator[] comparators,
+      final List<Object> k1,
+      final List<Object> k2) {
+    // invariant: k1.size == k2.size
+    int ret = 0;
+    final int size = k1.size();
+    for (int i = 0; i < size; i++) {
       WritableComparable key_1 = (WritableComparable) k1.get(i);
       WritableComparable key_2 = (WritableComparable) k2.get(i);
-      if (key_1 == null && key_2 == null) {
-        if (nullsafes != null && nullsafes[i]) {
-          continue;
-        } else {
-          return -1;
-        }
-      } else if (key_1 == null) {
-        return -1;
-      } else if (key_2 == null) {
-        return 1;
-      }
-      ret = WritableComparator.get(key_1.getClass()).compare(key_1, key_2);
+      ret = compareKey(comparators, i, key_1, key_2,
+          nullsafes != null ? nullsafes[i] : false);
       if (ret != 0) {
         return ret;
       }
     }
     return ret;
+  }
+
+  @SuppressWarnings("rawtypes")
+  private int compareKey(final WritableComparator comparators[], final int pos,
+      final WritableComparable key_1,
+      final WritableComparable key_2,
+      final boolean nullsafe) {
+
+    if (key_1 == null && key_2 == null) {
+      if (nullsafe) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } else if (key_1 == null) {
+      return -1;
+    } else if (key_2 == null) {
+      return 1;
+    }
+
+    if (comparators[pos] == null) {
+      comparators[pos] = WritableComparator.get(key_1.getClass());
+    }
+    return comparators[pos].compare(key_1, key_2);
   }
 
   @SuppressWarnings("unchecked")
@@ -501,12 +547,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (parent == null) {
       throw new HiveException("No valid parents.");
     }
-    Map<Integer, DummyStoreOperator> dummyOps = parent.getTagToOperatorTree();
+    Map<Integer, DummyStoreOperator> dummyOps =
+        ((TezContext) (MapredContext.get())).getDummyOpsMap();
     for (Entry<Integer, DummyStoreOperator> connectOp : dummyOps.entrySet()) {
       if (connectOp.getValue().getChildOperators() == null
-	  || connectOp.getValue().getChildOperators().isEmpty()) {
-	parentOperators.add(connectOp.getKey(), connectOp.getValue());
-	connectOp.getValue().getChildOperators().add(this);
+          || connectOp.getValue().getChildOperators().isEmpty()) {
+        parentOperators.add(connectOp.getKey(), connectOp.getValue());
+        connectOp.getValue().getChildOperators().add(this);
       }
     }
     super.initializeLocalWork(hconf);

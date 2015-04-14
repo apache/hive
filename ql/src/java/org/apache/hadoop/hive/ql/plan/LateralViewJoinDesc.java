@@ -19,13 +19,15 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * LateralViewJoinDesc.
  *
  */
-@Explain(displayName = "Lateral View Join Operator")
+@Explain(displayName = "Lateral View Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class LateralViewJoinDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -44,7 +46,7 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
     this.outputInternalColNames = outputInternalColNames;
   }
 
-  @Explain(displayName = "outputColumnNames")
+  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ArrayList<String> getOutputInternalColNames() {
     return outputInternalColNames;
   }

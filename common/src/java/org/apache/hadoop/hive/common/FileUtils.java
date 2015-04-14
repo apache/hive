@@ -335,16 +335,16 @@ public final class FileUtils {
    * @param fs
    *          file system
    * @param path
-   * @return the argument path if it exists or a parent path exists. Returns
-   *         NULL root is only parent that exists
+   * @return FileStatus for argument path if it exists or the first ancestor in the path that exists
    * @throws IOException
    */
-  public static Path getPathOrParentThatExists(FileSystem fs, Path path) throws IOException {
-    if (!fs.exists(path)) {
-      Path parentPath = path.getParent();
-      return getPathOrParentThatExists(fs, parentPath);
+  public static FileStatus getPathOrParentThatExists(FileSystem fs, Path path) throws IOException {
+    FileStatus stat = FileUtils.getFileStatusOrNull(fs, path);
+    if (stat != null) {
+      return stat;
     }
-    return path;
+    Path parentPath = path.getParent();
+    return getPathOrParentThatExists(fs, parentPath);
   }
 
   /**
@@ -743,4 +743,20 @@ public final class FileUtils {
 
   }
 
+  /**
+   * Attempts to get file status.  This method differs from the FileSystem API in that it returns
+   * null instead of throwing FileNotFoundException if the path does not exist.
+   *
+   * @param fs file system to check
+   * @param path file system path to check
+   * @return FileStatus for path or null if path does not exist
+   * @throws IOException if there is an I/O error
+   */
+  public static FileStatus getFileStatusOrNull(FileSystem fs, Path path) throws IOException {
+    try {
+      return fs.getFileStatus(path);
+    } catch (FileNotFoundException e) {
+      return null;
+    }
+  }
 }

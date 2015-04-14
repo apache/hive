@@ -211,3 +211,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 12,332.1235	12,332.12	12,332.1000	-12,332	12,332.6000
+PREHOOK: query: -- nulls
+SELECT
+  format_number(cast(null as int), 0),
+  format_number(12332.123456BD, cast(null as int)),
+  format_number(cast(null as int), cast(null as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: -- nulls
+SELECT
+  format_number(cast(null as int), 0),
+  format_number(12332.123456BD, cast(null as int)),
+  format_number(cast(null as int), cast(null as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL	NULL

@@ -54,7 +54,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
   }
 
   // todo this should be configured in serde
-  private byte[] decodeIfNeeded(byte[] recv) {
+  public static byte[] decodeIfNeeded(byte[] recv) {
     boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
     if (DEBUG_LOG_ENABLED && arrayByteBase64) {
       LOG.debug("Data only contains Base64 alphabets only so try to decode the data.");

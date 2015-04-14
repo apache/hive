@@ -93,6 +93,9 @@
                   mkdir -p $DOWNLOAD_DIR
                   download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
                   cp -f $HIVE_ROOT/data/conf/spark/log4j.properties $BASE_DIR/spark/conf/
+                  sed '/package /d' ${basedir}/${hive.path.to.root}/contrib/src/java/org/apache/hadoop/hive/contrib/udf/example/UDFExampleAdd.java > /tmp/UDFExampleAdd.java
+                  javac -cp  ${settings.localRepository}/org/apache/hive/hive-exec/${project.version}/hive-exec-${project.version}.jar /tmp/UDFExampleAdd.java -d /tmp
+                  jar -cf /tmp/udfexampleadd-1.0.jar -C /tmp UDFExampleAdd.class
                 </echo>
               </target>
             </configuration>

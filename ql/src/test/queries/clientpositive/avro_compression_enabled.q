@@ -29,7 +29,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
     {
       "name":"extra_field",
       "type":"string",
-      "doc:":"an extra field not in the original file",
+      "doc":"an extra field not in the original file",
       "default":"fishfingers and custard"
     }
   ]

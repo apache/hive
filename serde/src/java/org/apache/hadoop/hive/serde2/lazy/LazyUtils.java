@@ -161,7 +161,7 @@ public final class LazyUtils {
         }
       }
     } else {
-      out.write(bytes, 0, len);
+      out.write(bytes, start, len);
     }
   }
 

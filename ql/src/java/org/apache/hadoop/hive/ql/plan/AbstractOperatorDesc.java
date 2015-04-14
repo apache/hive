@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public class AbstractOperatorDesc implements OperatorDesc {
 
@@ -33,9 +34,9 @@ public class AbstractOperatorDesc implements OperatorDesc {
   static {
     PTFUtils.makeTransient(AbstractOperatorDesc.class, "opProps");
   }
-  
+
   @Override
-  @Explain(skipHeader = true, displayName = "Statistics")
+  @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Statistics getStatistics() {
     return statistics;
   }
@@ -50,14 +51,18 @@ public class AbstractOperatorDesc implements OperatorDesc {
     throw new CloneNotSupportedException("clone not supported");
   }
 
+  public boolean getVectorMode() {
+    return vectorMode;
+  }
+
   public void setVectorMode(boolean vm) {
     this.vectorMode = vm;
   }
-  
+
   public OpTraits getTraits() {
     return opTraits;
   }
-  
+
   public void setTraits(OpTraits opTraits) {
     this.opTraits = opTraits;
   }

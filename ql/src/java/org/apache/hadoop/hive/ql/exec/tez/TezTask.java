@@ -27,15 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
@@ -48,22 +49,22 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.common.security.DAGAccessControls;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.StatusGetOpts;
+import org.json.JSONObject;
 
 /**
  *
@@ -165,6 +166,9 @@ public class TezTask extends Task<TezWork> {
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
       rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf, dag);
+      if (rc != 0) {
+        this.setException(new HiveException(monitor.getDiagnostics()));
+      }
 
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
@@ -276,7 +280,18 @@ public class TezTask extends Task<TezWork> {
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
+
+    // set some info for the query
+    JSONObject json = new JSONObject().put("context", "Hive").put("description", ctx.getCmd());
+    String dagInfo = json.toString();
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("DagInfo: " + dagInfo);
+    }
+    dag.setDAGInfo(dagInfo);
+
     dag.setCredentials(conf.getCredentials());
+    setAccessControlsForCurrentUser(dag);
 
     for (BaseWork w: ws) {
 
@@ -349,6 +364,17 @@ public class TezTask extends Task<TezWork> {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
+  }
+
+  private void setAccessControlsForCurrentUser(DAG dag) {
+    // get current user
+    String currentUser = SessionState.getUserFromAuthenticator();
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("Setting Tez DAG access for " + currentUser);
+    }
+    // set permissions for current user on DAG
+    DAGAccessControls ac = new DAGAccessControls(currentUser, currentUser);
+    dag.setAccessControls(ac);
   }
 
   DAGClient submit(JobConf conf, DAG dag, Path scratchDir,

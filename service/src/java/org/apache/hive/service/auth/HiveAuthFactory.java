@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.thrift.DBTokenStore;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.SecurityUtil;
@@ -110,9 +111,17 @@ public class HiveAuthFactory {
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
         // start delegation token manager
         try {
-          HMSHandler baseHandler = new HiveMetaStore.HMSHandler(
-              "new db based metaserver", conf, true);
-          saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS(), ServerMode.HIVESERVER2);
+          // rawStore is only necessary for DBTokenStore
+          Object rawStore = null;
+          String tokenStoreClass = conf.getVar(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS);
+
+          if (tokenStoreClass.equals(DBTokenStore.class.getName())) {
+            HMSHandler baseHandler = new HiveMetaStore.HMSHandler(
+                "new db based metaserver", conf, true);
+            rawStore = baseHandler.getMS();
+          }
+
+          saslServer.startDelegationTokenSecretManager(conf, rawStore, ServerMode.HIVESERVER2);
         }
         catch (MetaException|IOException e) {
           throw new TTransportException("Failed to start token manager", e);

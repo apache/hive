@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ShowDatabasesDesc.
  *
  */
-@Explain(displayName = "Show Databases")
+@Explain(displayName = "Show Databases", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowDatabasesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
@@ -89,7 +91,7 @@ public class ShowDatabasesDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }

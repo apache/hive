@@ -163,7 +163,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp
-        .setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
+.setOpTraits(new OpTraits(null, -1, null));
     mapJoinOp.setStatistics(joinOp.getStatistics());
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -178,8 +178,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
     // we cannot convert to bucket map join, we cannot convert to
     // map join either based on the size. Check if we can convert to SMB join.
-    if ((context.conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN) == false)
-        || (joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
+    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN) == false) {
       convertJoinSMBJoin(joinOp, context, 0, 0, false);
       return null;
     }
@@ -254,9 +253,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     CommonMergeJoinOperator mergeJoinOp =
         (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
             mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
-    int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
-    OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp
-        .getOpTraits().getSortCols(), numReduceSinks);
+    OpTraits opTraits =
+        new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp.getOpTraits()
+            .getSortCols());
     mergeJoinOp.setOpTraits(opTraits);
     mergeJoinOp.setStatistics(joinOp.getStatistics());
 
@@ -321,8 +320,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (currentOp instanceof ReduceSinkOperator) {
       return;
     }
-    currentOp.setOpTraits(new OpTraits(null, -1, null,
-        currentOp.getOpTraits().getNumReduceSinks()));
+    currentOp.setOpTraits(new OpTraits(null, -1, null));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -345,7 +343,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // we can set the traits for this join operator
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
+            tezBucketJoinProcCtx.getNumBuckets(), null);
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);

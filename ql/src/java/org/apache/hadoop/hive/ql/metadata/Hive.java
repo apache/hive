@@ -132,6 +132,7 @@ import com.google.common.collect.Sets;
  * get methods in this class.
  */
 
+@SuppressWarnings({"deprecation", "rawtypes"})
 public class Hive {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
@@ -139,6 +140,9 @@ public class Hive {
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
   private UserGroupInformation owner;
+
+  // metastore calls timing information
+  private final Map<String, Long> metaCallTimeMap = new HashMap<String, Long>();
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
@@ -759,6 +763,13 @@ public class Hive {
       throws HiveException {
 
     try {
+      String tdname = Utilities.getDatabaseName(tableName);
+      String idname = Utilities.getDatabaseName(indexTblName);
+      if (!idname.equals(tdname)) {
+        throw new HiveException("Index on different database (" + idname
+          + ") from base table (" + tdname + ") is not supported.");
+      }
+
       Index old_index = null;
       try {
         old_index = getIndex(tableName, indexName);
@@ -849,9 +860,8 @@ public class Hive {
       org.apache.hadoop.hive.metastore.api.Table tt = null;
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
+      String itname = Utilities.getTableName(indexTblName);
       if (indexHandler.usesIndexTable()) {
-        String idname = Utilities.getDatabaseName(indexTblName);
-        String itname = Utilities.getTableName(indexTblName);
         tt = new org.apache.hadoop.hive.ql.metadata.Table(idname, itname).getTTable();
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
@@ -876,9 +886,6 @@ public class Hive {
         throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
       }
 
-      String tdname = Utilities.getDatabaseName(tableName);
-      String ttname = Utilities.getTableName(tableName);
-
       StorageDescriptor indexSd = new StorageDescriptor(
           indexTblCols,
           location,
@@ -891,7 +898,8 @@ public class Hive {
           sortCols,
           null/*parameters*/);
 
-      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
+      String ttname = Utilities.getTableName(tableName);
+      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, itname,
           indexSd, new HashMap<String,String>(), deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
@@ -2411,7 +2419,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<List<Path[]>> result = new ArrayList<List<Path[]>>();
     try {
-      FileStatus destStatus = !replace && fs.exists(destf) ? fs.getFileStatus(destf) : null;
+      FileStatus destStatus = !replace ? FileUtils.getFileStatusOrNull(fs, destf) : null;
       if (destStatus != null && !destStatus.isDir()) {
         throw new HiveException("checkPaths: destination " + destf
             + " should be a directory");
@@ -2813,7 +2821,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf,
           true);
 
-      HadoopShims shims = ShimLoader.getHadoopShims();
       if (oldPath != null) {
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
@@ -2976,7 +2983,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       };
-    return RetryingMetaStoreClient.getProxy(conf, hookLoader,
+    return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
         SessionHiveMetaStoreClient.class.getName());
   }
 
@@ -3236,4 +3243,37 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(te);
     }
   }
+
+  public void clearMetaCallTiming() {
+    metaCallTimeMap.clear();
+  }
+
+  public void dumpAndClearMetaCallTiming(String phase) {
+    boolean phaseInfoLogged = false;
+    if (LOG.isDebugEnabled()) {
+      phaseInfoLogged = logDumpPhase(phase);
+      LOG.debug("Total time spent in each metastore function (ms): " + metaCallTimeMap);
+    }
+
+    if (LOG.isInfoEnabled()) {
+      // print information about calls that took longer time at INFO level
+      for (Entry<String, Long> callTime : metaCallTimeMap.entrySet()) {
+        // dump information if call took more than 1 sec (1000ms)
+        if (callTime.getValue() > 1000) {
+          if (!phaseInfoLogged) {
+            phaseInfoLogged = logDumpPhase(phase);
+          }
+          LOG.info("Total time spent in this metastore function was greater than 1000ms : "
+              + callTime);
+        }
+      }
+    }
+    metaCallTimeMap.clear();
+  }
+
+  private boolean logDumpPhase(String phase) {
+    LOG.info("Dumping metastore api call timing information for : " + phase + " phase");
+    return true;
+  }
+
 };

@@ -21,17 +21,20 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * ReduceSinkDesc.
  *
  */
-@Explain(displayName = "Reduce Output Operator")
+@Explain(displayName = "Reduce Output Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ReduceSinkDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   /**
@@ -194,7 +197,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.outputValueColumnNames = outputValueColumnNames;
   }
 
-  @Explain(displayName = "key expressions")
+  @Explain(displayName = "key expressions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getKeyColString() {
     return PlanUtils.getExprListString(keyCols);
   }
@@ -215,7 +218,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.numDistributionKeys = numKeys;
   }
 
-  @Explain(displayName = "value expressions")
+  @Explain(displayName = "value expressions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getValueColsString() {
     return PlanUtils.getExprListString(valueCols);
   }
@@ -228,7 +231,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.valueCols = valueCols;
   }
 
-  @Explain(displayName = "Map-reduce partition columns")
+  @Explain(displayName = "Map-reduce partition columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getParitionColsString() {
     return PlanUtils.getExprListString(partitionCols);
   }
@@ -249,7 +252,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return false;
   }
 
-  @Explain(displayName = "tag", normalExplain = false)
+  @Explain(displayName = "tag", explainLevels = { Level.EXTENDED })
   public int getTag() {
     return tag;
   }
@@ -266,7 +269,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.topN = topN;
   }
 
-  @Explain(displayName = "TopN", normalExplain = false)
+  @Explain(displayName = "TopN", explainLevels = { Level.EXTENDED })
   public Integer getTopNExplain() {
     return topN > 0 ? topN : null;
   }
@@ -337,7 +340,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         of the same length as key columns, that consists of only "+"
    *         (ascending order) and "-" (descending order).
    */
-  @Explain(displayName = "sort order")
+  @Explain(displayName = "sort order", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -365,6 +368,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
   }
 
+  @Explain(displayName = "outputname", explainLevels = { Level.USER })
   public String getOutputName() {
     return outputName;
   }
@@ -397,7 +401,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return skipTag;
   }
 
-  @Explain(displayName = "auto parallelism", normalExplain = false)
+  @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
   }

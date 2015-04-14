@@ -20,10 +20,14 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -60,10 +64,42 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 @SuppressWarnings("deprecation")
 public class WindowingTableFunction extends TableFunctionEvaluator {
+  public static final Log LOG =LogFactory.getLog(WindowingTableFunction.class.getName());
+  static class WindowingFunctionInfoHelper {
+    private boolean supportsWindow;
+
+    WindowingFunctionInfoHelper() {
+    }
+
+    public WindowingFunctionInfoHelper(boolean supportsWindow) {
+      this.supportsWindow = supportsWindow;
+    }
+
+    public boolean isSupportsWindow() {
+      return supportsWindow;
+    }
+    public void setSupportsWindow(boolean supportsWindow) {
+      this.supportsWindow = supportsWindow;
+    }
+  }
 
   StreamingState streamingState;
   RankLimit rnkLimitDef;
+
+  // There is some information about the windowing functions that needs to be initialized
+  // during query compilation time, and made available to during the map/reduce tasks via
+  // plan serialization.
+  Map<String, WindowingFunctionInfoHelper> windowingFunctionHelpers = null;
   
+  public Map<String, WindowingFunctionInfoHelper> getWindowingFunctionHelpers() {
+    return windowingFunctionHelpers;
+  }
+
+  public void setWindowingFunctionHelpers(
+      Map<String, WindowingFunctionInfoHelper> windowingFunctionHelpers) {
+    this.windowingFunctionHelpers = windowingFunctionHelpers;
+  }
+
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException {
@@ -147,9 +183,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   private boolean streamingPossible(Configuration cfg, WindowFunctionDef wFnDef)
       throws HiveException {
     WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
-    WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFnDef
-        .getName());
 
+    WindowingFunctionInfoHelper wFnInfo = getWindowingFunctionInfoHelper(wFnDef.getName());
     if (!wFnInfo.isSupportsWindow()) {
       return true;
     }
@@ -257,6 +292,45 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
     canAcceptInputAsStream = true;
     return new int[] {precedingSpan, followingSpan};
+  }
+
+  private void initializeWindowingFunctionInfoHelpers() throws SemanticException {
+    // getWindowFunctionInfo() cannot be called during map/reduce tasks. So cache necessary
+    // values during query compilation, and rely on plan serialization to bring this info
+    // to the object during the map/reduce tasks.
+    if (windowingFunctionHelpers != null) {
+      return;
+    }
+
+    windowingFunctionHelpers = new HashMap<String, WindowingFunctionInfoHelper>();
+    WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
+    for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
+      WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
+      GenericUDAFEvaluator fnEval = wFn.getWFnEval();
+      WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn.getName());
+      boolean supportsWindow = wFnInfo.isSupportsWindow();
+      windowingFunctionHelpers.put(wFn.getName(), new WindowingFunctionInfoHelper(supportsWindow));
+    }
+  }
+
+  @Override
+  protected void setOutputOI(StructObjectInspector outputOI) {
+    super.setOutputOI(outputOI);
+    // Call here because at this point the WindowTableFunctionDef has been set
+    try {
+      initializeWindowingFunctionInfoHelpers();
+    } catch (SemanticException err) {
+      throw new RuntimeException("Unexpected error while setting up windowing function", err);
+    }
+  }
+
+  private WindowingFunctionInfoHelper getWindowingFunctionInfoHelper(String fnName) {
+    WindowingFunctionInfoHelper wFnInfoHelper = windowingFunctionHelpers.get(fnName);
+    if (wFnInfoHelper == null) {
+      // Should not happen
+      throw new RuntimeException("No cached WindowingFunctionInfoHelper for " + fnName);
+    }
+    return wFnInfoHelper;
   }
 
   @Override
@@ -412,8 +486,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       if (fnEval instanceof ISupportStreamingModeForWindowing) {
         fnEval.terminate(streamingState.aggBuffers[i]);
 
-        WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn
-            .getName());
+        WindowingFunctionInfoHelper wFnInfo = getWindowingFunctionInfoHelper(wFn.getName());
         if (!wFnInfo.isSupportsWindow()) {
           numRowsRemaining = ((ISupportStreamingModeForWindowing) fnEval)
               .getRowsRemainingAfterTerminate();

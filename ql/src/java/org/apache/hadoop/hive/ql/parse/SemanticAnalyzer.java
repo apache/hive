@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -1577,13 +1578,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // Disallow INSERT INTO on bucketized tables
         boolean isAcid = isAcidTable(tab);
-        if (qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName()) &&
+        boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName());
+        if (isTableWrittenTo &&
             tab.getNumBuckets() > 0 && !isAcid) {
           throw new SemanticException(ErrorMsg.INSERT_INTO_BUCKETIZED_TABLE.
               getMsg("Table: " + tab_name));
         }
         // Disallow update and delete on non-acid tables
-        if ((updating() || deleting()) && !isAcid) {
+        if ((updating() || deleting()) && !isAcid && isTableWrittenTo) {
+          //isTableWrittenTo: delete from acidTbl where a in (select id from nonAcidTable)
+          //so only assert this if we are actually writing to this table
           // isAcidTable above also checks for whether we are using an acid compliant
           // transaction manager.  But that has already been caught in
           // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid
@@ -2992,7 +2996,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (ensureUniqueCols) {
           if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
-                + " => " + oColInfo + " due to duplication, see previous warnings");
+                + " => " + oColInfo + " due to duplication, see previous warnings",
+                UnsupportedFeature.Duplicates_in_RR);
           }
         } else {
           output.put(tmp[0], tmp[1], oColInfo);
@@ -11016,9 +11021,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Process the position alias in GROUPBY and ORDERBY
   private void processPositionAlias(ASTNode ast) throws SemanticException {
+    boolean isByPos = false;
     if (HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS) == false) {
-      return;
+          HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS) == true) {
+      isByPos = true;
     }
 
     if (ast.getChildCount()  == 0) {
@@ -11052,15 +11058,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
           ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
           if (node.getToken().getType() == HiveParser.Number) {
-            int pos = Integer.parseInt(node.getText());
-            if (pos > 0 && pos <= selectExpCnt) {
-              groupbyNode.setChild(child_pos,
-                selectNode.getChild(pos - 1).getChild(0));
+            if (isByPos) {
+              int pos = Integer.parseInt(node.getText());
+              if (pos > 0 && pos <= selectExpCnt) {
+                groupbyNode.setChild(child_pos,
+                  selectNode.getChild(pos - 1).getChild(0));
+              } else {
+                throw new SemanticException(
+                  ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
+                  "Position alias: " + pos + " does not exist\n" +
+                  "The Select List is indexed from 1 to " + selectExpCnt));
+              }
             } else {
-              throw new SemanticException(
-                ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
-                "Position alias: " + pos + " does not exist\n" +
-                "The Select List is indexed from 1 to " + selectExpCnt));
+              warn("Using constant number  " + node.getText() +
+                " in group by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
             }
           }
         }
@@ -11079,19 +11090,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos);
           ASTNode node = (ASTNode) colNode.getChild(0);
           if (node.getToken().getType() == HiveParser.Number) {
-            if (!isAllCol) {
-              int pos = Integer.parseInt(node.getText());
-              if (pos > 0 && pos <= selectExpCnt) {
-                colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
+            if( isByPos ) {
+              if (!isAllCol) {
+                int pos = Integer.parseInt(node.getText());
+                if (pos > 0 && pos <= selectExpCnt) {
+                  colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
+                } else {
+                  throw new SemanticException(
+                    ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                    "Position alias: " + pos + " does not exist\n" +
+                    "The Select List is indexed from 1 to " + selectExpCnt));
+                }
               } else {
                 throw new SemanticException(
-                  ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
-                  "Position alias: " + pos + " does not exist\n" +
-                  "The Select List is indexed from 1 to " + selectExpCnt));
+                  ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
               }
-            } else {
-              throw new SemanticException(
-                ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
+            } else { //if not using position alias and it is a number.
+              warn("Using constant number " + node.getText() +
+                " in order by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
             }
           }
         }
@@ -12091,5 +12107,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
     }
+  }
+  private void warn(String msg) {
+    SessionState.getConsole().printInfo(
+        String.format("Warning: %s", msg));
   }
 }

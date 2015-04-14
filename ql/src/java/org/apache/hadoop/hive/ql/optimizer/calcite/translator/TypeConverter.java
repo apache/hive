@@ -34,6 +34,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -228,7 +229,7 @@ public class TypeConverter {
   public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory)
     throws CalciteSemanticException{
     // Union type is not supported in Calcite.
-    throw new CalciteSemanticException("Union type is not supported");
+    throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.Union_type);
   }
 
   public static TypeInfo convert(RelDataType rType) {

@@ -88,7 +88,7 @@ public class TestVectorSelectOperator {
     columns.add("a");
     columns.add("b");
     columns.add("c");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     SelectDesc selDesc = new SelectDesc(false);
     List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();

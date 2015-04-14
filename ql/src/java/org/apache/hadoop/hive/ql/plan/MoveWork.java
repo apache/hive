@@ -25,12 +25,14 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * MoveWork.
  *
  */
-@Explain(displayName = "Move Operator")
+@Explain(displayName = "Move Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MoveWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private LoadTableDesc loadTableWork;
@@ -81,7 +83,7 @@ public class MoveWork implements Serializable {
     this.checkFileFormat = checkFileFormat;
   }
 
-  @Explain(displayName = "tables")
+  @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LoadTableDesc getLoadTableWork() {
     return loadTableWork;
   }

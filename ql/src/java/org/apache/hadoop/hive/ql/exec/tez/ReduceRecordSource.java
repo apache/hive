@@ -68,7 +68,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private boolean abort = false;
 
-  private static Deserializer inputKeyDeserializer;
+  private Deserializer inputKeyDeserializer;
 
   // Input value serde needs to be an array to support different SerDe
   // for different tags
@@ -114,7 +114,7 @@ public class ReduceRecordSource implements RecordSource {
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
-      Map<String, Map<Integer, String>> scratchColumnVectorTypes)
+      Map<Integer, String> vectorScratchColumnTypeMap)
       throws Exception {
 
     ObjectInspector keyObjectInspector;
@@ -180,10 +180,8 @@ public class ReduceRecordSource implements RecordSource {
         }
         rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
 
-        Map<Integer, String> reduceShuffleScratchColumnTypeMap = 
-                scratchColumnVectorTypes.get("_REDUCE_SHUFFLE_");
         batchContext = new VectorizedRowBatchCtx();
-        batchContext.init(reduceShuffleScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
+        batchContext.init(vectorScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
         batch = batchContext.createVectorizedRowBatch();
       } else {
         ois.add(keyObjectInspector);

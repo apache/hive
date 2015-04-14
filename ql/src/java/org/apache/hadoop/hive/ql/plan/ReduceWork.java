@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -153,7 +155,7 @@ public class ReduceWork extends BaseWork {
     return vectorMode ? "vectorized" : null;
   }
 
-  @Explain(displayName = "Reduce Operator Tree")
+  @Explain(displayName = "Reduce Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Operator<?> getReducer() {
     return reducer;
   }
@@ -162,7 +164,7 @@ public class ReduceWork extends BaseWork {
     this.reducer = reducer;
   }
 
-  @Explain(displayName = "Needs Tagging", normalExplain = false)
+  @Explain(displayName = "Needs Tagging", explainLevels = { Level.EXTENDED })
   public boolean getNeedsTagging() {
     return needsTagging;
   }

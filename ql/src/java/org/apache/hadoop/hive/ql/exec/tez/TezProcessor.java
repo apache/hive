@@ -129,9 +129,9 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       LOG.info("Running task: " + getContext().getUniqueIdentifier());
 
       if (isMap) {
-        rproc = new MapRecordProcessor(jobConf);
+        rproc = new MapRecordProcessor(jobConf, getContext());
       } else {
-        rproc = new ReduceRecordProcessor();
+        rproc = new ReduceRecordProcessor(jobConf, getContext());
       }
 
       initializeAndRunProcessor(inputs, outputs);
@@ -144,7 +144,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     try {
 
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
-      rproc.init(jobConf, getContext(), mrReporter, inputs, outputs);
+      rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
       //done - output does not need to be committed as hive does not use outputcommitter

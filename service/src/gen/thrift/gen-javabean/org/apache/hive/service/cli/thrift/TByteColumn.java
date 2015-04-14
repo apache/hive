@@ -449,7 +449,7 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
                 struct.values = new ArrayList<Byte>(_list62.size);
                 for (int _i63 = 0; _i63 < _list62.size; ++_i63)
                 {
-                  byte _elem64; // required
+                  byte _elem64; // optional
                   _elem64 = iprot.readByte();
                   struct.values.add(_elem64);
                 }
@@ -533,7 +533,7 @@ public class TByteColumn implements org.apache.thrift.TBase<TByteColumn, TByteCo
         struct.values = new ArrayList<Byte>(_list67.size);
         for (int _i68 = 0; _i68 < _list67.size; ++_i68)
         {
-          byte _elem69; // required
+          byte _elem69; // optional
           _elem69 = iprot.readByte();
           struct.values.add(_elem69);
         }

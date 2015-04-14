@@ -23,14 +23,27 @@ import java.util.Set;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.junit.Test;
 
-public class TestErrorMsg extends TestCase {
+public class TestErrorMsg {
 
+  @Test
   public void testUniqueErrorCode() {
     Set<Integer> numbers = new HashSet<Integer>();
     for (ErrorMsg err : ErrorMsg.values()) {
       int code = err.getErrorCode();
       Assert.assertTrue("duplicated error number " + code, numbers.add(code));
     }
+  }
+  @Test
+  public void testReverseMatch() {
+    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_AUTOCOMMIT, "COMMIT");
+    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_TXN, "ALTER TABLE", "1");
+    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, "ROLLBACK");
+  }
+  private void testReverseMatch(ErrorMsg errorMsg, String... args) {
+    String parametrizedMsg = errorMsg.format(args);
+    ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(parametrizedMsg);
+    Assert.assertEquals("Didn't find expected msg", errorMsg.getErrorCode(), canonicalMsg.getErrorCode());
   }
 }

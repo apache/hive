@@ -495,17 +495,19 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       for (int sindex = 0; sindex < smallTblBucketNums.size(); sindex++) {
         int smallTblBucketNum = smallTblBucketNums.get(sindex);
         List<String> smallTblFileNames = smallTblFilesList.get(sindex);
-        if (bigTblBucketNum >= smallTblBucketNum) {
-          // if the big table has more buckets than the current small table,
-          // use "MOD" to get small table bucket names. For example, if the big
-          // table has 4 buckets and the small table has 2 buckets, then the
-          // mapping should be 0->0, 1->1, 2->0, 3->1.
-          int toAddSmallIndex = bindex % smallTblBucketNum;
-          resultFileNames.add(smallTblFileNames.get(toAddSmallIndex));
-        } else {
-          int jump = smallTblBucketNum / bigTblBucketNum;
-          for (int i = bindex; i < smallTblFileNames.size(); i = i + jump) {
-            resultFileNames.add(smallTblFileNames.get(i));
+        if (smallTblFileNames.size() > 0) {
+          if (bigTblBucketNum >= smallTblBucketNum) {
+            // if the big table has more buckets than the current small table,
+            // use "MOD" to get small table bucket names. For example, if the big
+            // table has 4 buckets and the small table has 2 buckets, then the
+            // mapping should be 0->0, 1->1, 2->0, 3->1.
+            int toAddSmallIndex = bindex % smallTblBucketNum;
+            resultFileNames.add(smallTblFileNames.get(toAddSmallIndex));
+          } else {
+            int jump = smallTblBucketNum / bigTblBucketNum;
+            for (int i = bindex; i < smallTblFileNames.size(); i = i + jump) {
+              resultFileNames.add(smallTblFileNames.get(i));
+            }
           }
         }
       }

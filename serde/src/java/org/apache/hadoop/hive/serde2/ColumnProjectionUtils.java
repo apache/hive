@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * ColumnProjectionUtils.
@@ -149,6 +152,14 @@ public final class ColumnProjectionUtils {
       }
     }
     return result;
+  }
+
+  public static List<String> getReadColumnNames(Configuration conf) {
+    String colNames = conf.get(READ_COLUMN_NAMES_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    if (colNames != null && !colNames.isEmpty()) {
+      return Arrays.asList(colNames.split(","));
+    }
+    return Lists.newArrayList();
   }
 
   private static void setReadColumnIDConf(Configuration conf, String id) {

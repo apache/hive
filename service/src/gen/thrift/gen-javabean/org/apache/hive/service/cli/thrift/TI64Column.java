@@ -449,7 +449,7 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
                 struct.values = new ArrayList<Long>(_list86.size);
                 for (int _i87 = 0; _i87 < _list86.size; ++_i87)
                 {
-                  long _elem88; // required
+                  long _elem88; // optional
                   _elem88 = iprot.readI64();
                   struct.values.add(_elem88);
                 }
@@ -533,7 +533,7 @@ public class TI64Column implements org.apache.thrift.TBase<TI64Column, TI64Colum
         struct.values = new ArrayList<Long>(_list91.size);
         for (int _i92 = 0; _i92 < _list91.size; ++_i92)
         {
-          long _elem93; // required
+          long _elem93; // optional
           _elem93 = iprot.readI64();
           struct.values.add(_elem93);
         }

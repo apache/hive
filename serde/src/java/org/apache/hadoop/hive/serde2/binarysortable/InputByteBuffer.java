@@ -78,6 +78,10 @@ public class InputByteBuffer {
     return end;
   }
 
+  public final boolean isEof() {
+    return (start >= end);
+  }
+
   /**
    * Returns the underlying byte array.
    */

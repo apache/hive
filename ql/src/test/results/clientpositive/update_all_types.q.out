@@ -1,6 +1,7 @@
 PREHOOK: query: create table acid_uat(ti tinyint,
                  si smallint,
                  i int,
+                 j int,
                  bi bigint,
                  f float,
                  d double,
@@ -17,6 +18,7 @@ PREHOOK: Output: default@acid_uat
 POSTHOOK: query: create table acid_uat(ti tinyint,
                  si smallint,
                  i int,
+                 j int,
                  bi bigint,
                  f float,
                  d double,
@@ -34,6 +36,7 @@ PREHOOK: query: insert into table acid_uat
     select ctinyint,
            csmallint,
            cint,
+           cint j,
            cbigint,
            cfloat,
            cdouble,
@@ -52,6 +55,7 @@ POSTHOOK: query: insert into table acid_uat
     select ctinyint,
            csmallint,
            cint,
+           cint j,
            cbigint,
            cfloat,
            cdouble,
@@ -74,6 +78,7 @@ POSTHOOK: Lineage: acid_uat.de EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(
 POSTHOOK: Lineage: acid_uat.dt EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: acid_uat.f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
 POSTHOOK: Lineage: acid_uat.i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uat.j SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acid_uat.s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: acid_uat.si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: acid_uat.t SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
@@ -87,20 +92,20 @@ POSTHOOK: query: select * from acid_uat order by i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 #### A masked pattern was here ####
-11	NULL	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
-NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1970-01-01	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
-11	NULL	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
-NULL	8373	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1970-01-01	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
-NULL	-5470	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1970-01-01	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
--51	NULL	-1071480828	-1401575336	-51.0	NULL	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
-8	NULL	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
-NULL	-741	-1070883071	-1645852809	NULL	-741.0	NULL	NULL	1970-01-01	0ruyd6Y50JpdGRf6HqD	0ruyd6Y50JpdGRf6HqD	xH7445Rals48VOulSyR5F               	false
-NULL	-947	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1970-01-01	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
-11	NULL	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
+11	NULL	-1073279343	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
+NULL	-7382	-1073051226	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1969-12-31	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
+11	NULL	-1072910839	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
+NULL	8373	-1072081801	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1969-12-31	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
+NULL	-5470	-1072076362	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1969-12-31	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
+-51	NULL	-1071480828	-1071480828	-1401575336	-51.0	NULL	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
+8	NULL	-1071363017	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
+NULL	-741	-1070883071	-1070883071	-1645852809	NULL	-741.0	NULL	NULL	1969-12-31	0ruyd6Y50JpdGRf6HqD	0ruyd6Y50JpdGRf6HqD	xH7445Rals48VOulSyR5F               	false
+NULL	-947	-1070551679	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1969-12-31	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
+11	NULL	-1069736047	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
 PREHOOK: query: update acid_uat set
     ti = 1,
     si = 2,
-    i = 3,
+    j = 3,
     bi = 4,
     f = 3.14,
     d = 6.28,
@@ -118,7 +123,7 @@ PREHOOK: Output: default@acid_uat
 POSTHOOK: query: update acid_uat set
     ti = 1,
     si = 2,
-    i = 3,
+    j = 3,
     bi = 4,
     f = 3.14,
     d = 6.28,
@@ -141,16 +146,16 @@ POSTHOOK: query: select * from acid_uat order by i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 #### A masked pattern was here ####
-11	NULL	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
-NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1970-01-01	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
-11	NULL	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
-NULL	8373	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1970-01-01	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
-NULL	-5470	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1970-01-01	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
--51	NULL	-1071480828	-1401575336	-51.0	NULL	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
-8	NULL	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
-NULL	-947	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1970-01-01	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
-11	NULL	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
-1	2	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+11	NULL	-1073279343	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
+NULL	-7382	-1073051226	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1969-12-31	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
+11	NULL	-1072910839	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
+NULL	8373	-1072081801	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1969-12-31	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
+NULL	-5470	-1072076362	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1969-12-31	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
+-51	NULL	-1071480828	-1071480828	-1401575336	-51.0	NULL	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
+8	NULL	-1071363017	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
+1	2	-1070883071	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+NULL	-947	-1070551679	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1969-12-31	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
+11	NULL	-1069736047	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
 PREHOOK: query: update acid_uat set
   ti = ti * 2,
   si = cast(f as int),
@@ -175,13 +180,13 @@ POSTHOOK: query: select * from acid_uat order by i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 #### A masked pattern was here ####
-11	NULL	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
-NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1970-01-01	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
-11	NULL	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
-NULL	8373	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1970-01-01	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
-NULL	-5470	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1970-01-01	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
--102	-51	-1071480828	-1401575336	-51.0	-51.0	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
-8	NULL	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
-NULL	-947	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1970-01-01	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
-11	NULL	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
-1	2	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+11	NULL	-1073279343	-1073279343	-1595604468	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
+NULL	-7382	-1073051226	-1073051226	-1887561756	NULL	-7382.0	NULL	NULL	1969-12-31	A34p7oRr2WvUJNf	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d              	false
+11	NULL	-1072910839	-1072910839	2048385991	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
+NULL	8373	-1072081801	-1072081801	1864027286	NULL	8373.0	NULL	NULL	1969-12-31	dPkN74F7	dPkN74F7	4KWs6gw7lv2WYd66P                   	true
+NULL	-5470	-1072076362	-1072076362	1864027286	NULL	-5470.0	NULL	NULL	1969-12-31	2uLyD28144vklju213J1mr	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P                   	true
+-102	-51	-1071480828	-1071480828	-1401575336	-51.0	-51.0	-51	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
+8	NULL	-1071363017	-1071363017	1349676361	8.0	NULL	8	1969-12-31 16:00:15.892	NULL	Anj0oF	Anj0oF	IwE1G7Qb0B1NEfV030g                 	true
+1	2	-1070883071	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+NULL	-947	-1070551679	-1070551679	1864027286	NULL	-947.0	NULL	NULL	1969-12-31	iUR3Q	iUR3Q	4KWs6gw7lv2WYd66P                   	false
+11	NULL	-1069736047	-1069736047	-453772520	11.0	NULL	11	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true

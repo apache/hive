@@ -297,6 +297,18 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  private static void startPauseMonitor(HiveConf conf) throws Exception {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
+        new org.apache.hadoop.util.JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
+               " GCs and Pauses may not be warned upon.", t);
+    }
+  }
+
   private static void startHiveServer2() throws Throwable {
     long attempts = 0, maxAttempts = 1;
     while (true) {
@@ -308,6 +320,7 @@ public class HiveServer2 extends CompositeService {
         server = new HiveServer2();
         server.init(hiveConf);
         server.start();
+        startPauseMonitor(hiveConf);
         // If we're supporting dynamic service discovery, we'll add the service uri for this
         // HiveServer2 instance to Zookeeper as a znode.
         if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {

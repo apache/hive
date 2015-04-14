@@ -21,11 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.JobConf;
 
 public class MergeJoinWork extends BaseWork {
@@ -65,7 +68,8 @@ public class MergeJoinWork extends BaseWork {
     this.mergeJoinOp = mergeJoinOp;
   }
 
-  public void addMergedWork(BaseWork work, BaseWork connectWork) {
+  public void addMergedWork(BaseWork work, BaseWork connectWork,
+      Map<Operator<?>, BaseWork> leafOperatorToFollowingWork) {
     if (work != null) {
       if ((bigTableWork != null) && (bigTableWork != work)) {
         assert false;
@@ -76,10 +80,43 @@ public class MergeJoinWork extends BaseWork {
 
     if (connectWork != null) {
       this.mergeWorkList.add(connectWork);
+      if ((connectWork instanceof ReduceWork) && (bigTableWork != null)) {
+        /*
+         * For tez to route data from an up-stream vertex correctly to the following vertex, the
+         * output name in the reduce sink needs to be setup appropriately. In the case of reduce
+         * side merge work, we need to ensure that the parent work that provides data to this merge
+         * work is setup to point to the right vertex name - the main work name.
+         * 
+         * In this case, if the big table work has already been created, we can hook up the merge
+         * work items for the small table correctly.
+         */
+        setReduceSinkOutputName(connectWork, leafOperatorToFollowingWork, bigTableWork.getName());
+      }
+    }
+
+    if (work != null) {
+      /*
+       * Same reason as above. This is the case when we have the main work item after the merge work
+       * has been created for the small table side.
+       */
+      for (BaseWork mergeWork : mergeWorkList) {
+        if (mergeWork instanceof ReduceWork) {
+          setReduceSinkOutputName(mergeWork, leafOperatorToFollowingWork, work.getName());
+        }
+      }
     }
   }
 
-  @Explain(skipHeader = true, displayName = "Join")
+  private void setReduceSinkOutputName(BaseWork mergeWork,
+      Map<Operator<?>, BaseWork> leafOperatorToFollowingWork, String name) {
+    for (Entry<Operator<?>, BaseWork> entry : leafOperatorToFollowingWork.entrySet()) {
+      if (entry.getValue() == mergeWork) {
+        ((ReduceSinkOperator) entry.getKey()).getConf().setOutputName(name);
+      }
+    }
+  }
+
+  @Explain(skipHeader=true, displayName = "Join", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<BaseWork> getBaseWorkList() {
     return mergeWorkList;
   }
@@ -88,7 +125,7 @@ public class MergeJoinWork extends BaseWork {
     return ((MapWork) bigTableWork).getAliasToWork().keySet().iterator().next();
   }
 
-  @Explain(skipHeader = true, displayName = "Main")
+  @Explain(skipHeader=true, displayName = "Main", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public BaseWork getMainWork() {
     return bigTableWork;
   }

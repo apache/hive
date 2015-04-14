@@ -17,13 +17,14 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
  * LimitDesc.
  *
  */
-@Explain(displayName = "Limit")
+@Explain(displayName = "Limit", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class LimitDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private int limit;
@@ -36,7 +37,7 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.limit = limit;
   }
 
-  @Explain(displayName = "Number of rows")
+  @Explain(displayName = "Number of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
   }

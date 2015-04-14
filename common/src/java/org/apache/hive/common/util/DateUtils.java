@@ -65,5 +65,12 @@ public class DateUtils {
       long totalNanos) {
     intervalDayTime.set(totalNanos / NANOS_PER_SEC, (int) (totalNanos % NANOS_PER_SEC));
   }
-}
 
+  public static long getIntervalDayTimeTotalSecondsFromTotalNanos(long totalNanos) {
+    return totalNanos / NANOS_PER_SEC;
+  }
+
+  public static int getIntervalDayTimeNanosFromTotalNanos(long totalNanos) {
+    return (int) (totalNanos % NANOS_PER_SEC);
+  }
+}

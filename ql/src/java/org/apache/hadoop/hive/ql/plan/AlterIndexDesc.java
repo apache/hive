@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * AlterIndexDesc.
  *
  */
-@Explain(displayName = "Alter Index")
+@Explain(displayName = "Alter Index", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterIndexDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String indexName;
@@ -53,7 +55,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   /**
    * @return the name of the index
    */
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getIndexName() {
     return indexName;
   }
@@ -69,7 +71,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   /**
    * @return the baseTable
    */
-  @Explain(displayName = "new name")
+  @Explain(displayName = "new name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getBaseTableName() {
     return baseTable;
   }

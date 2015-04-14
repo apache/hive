@@ -68,11 +68,13 @@ public class TestCliDriverMethods extends TestCase {
   // Some of these tests require intercepting System.exit() using the SecurityManager.
   // It is safer to  register/unregister our SecurityManager during setup/teardown instead
   // of doing it within the individual test cases.
+  @Override
   public void setUp() {
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager(securityManager));
   }
 
+  @Override
   public void tearDown() {
     System.setSecurityManager(securityManager);
   }
@@ -322,7 +324,7 @@ public class TestCliDriverMethods extends TestCase {
 
   private static void setEnvLinux(String key, String value) throws Exception {
     Class[] classes = Collections.class.getDeclaredClasses();
-    Map<String, String> env = (Map<String, String>) System.getenv();
+    Map<String, String> env = System.getenv();
     for (Class cl : classes) {
       if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
         Field field = cl.getDeclaredField("m");
@@ -362,9 +364,8 @@ public class TestCliDriverMethods extends TestCase {
   private static class FakeCliDriver extends CliDriver {
 
     @Override
-    protected ConsoleReader getConsoleReader() throws IOException {
-      ConsoleReader reslt = new FakeConsoleReader();
-      return reslt;
+    protected void setupConsoleReader() throws IOException {
+      reader = new FakeConsoleReader();
     }
 
   }

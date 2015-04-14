@@ -210,7 +210,7 @@ public abstract class Operation {
 
       // create OperationLog object with above log file
       try {
-        operationLog = new OperationLog(opHandle.toString(), operationLogFile);
+        operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
       } catch (FileNotFoundException e) {
         LOG.warn("Unable to instantiate OperationLog object for operation: " +
             opHandle, e);

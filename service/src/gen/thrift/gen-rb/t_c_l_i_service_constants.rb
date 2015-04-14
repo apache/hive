@@ -23,6 +23,8 @@ PRIMITIVE_TYPES = Set.new([
     17,
     18,
     19,
+    20,
+    21,
 ])
 
 COMPLEX_TYPES = Set.new([
@@ -58,6 +60,8 @@ TYPE_NAMES = {
     17 => %q"DATE",
     18 => %q"VARCHAR",
     19 => %q"CHAR",
+    20 => %q"INTERVAL_YEAR_MONTH",
+    21 => %q"INTERVAL_DAY_TIME",
 }
 
 CHARACTER_MAXIMUM_LENGTH = %q"characterMaximumLength"
