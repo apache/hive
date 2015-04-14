@@ -46,6 +46,7 @@ import org.apache.tez.dag.app.ControlledClock;
 import org.apache.tez.dag.app.rm.TaskSchedulerService.TaskSchedulerAppCallback;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mortbay.log.Log;
 
 public class TestLlapTaskSchedulerService {
 
@@ -96,7 +97,6 @@ public class TestLlapTaskSchedulerService {
     try {
       Priority priority1 = Priority.newInstance(1);
       String[] hosts1 = new String[]{HOST1};
-
       Object task1 = new Object();
       Object clientCookie1 = new Object();
       tsWrapper.allocateTask(task1, hosts1, priority1, clientCookie1);
@@ -111,11 +111,10 @@ public class TestLlapTaskSchedulerService {
 
       // Verify that the node is blacklisted
       assertEquals(1, tsWrapper.ts.dagStats.numRejectedTasks);
-      assertEquals(2, tsWrapper.ts.activeHosts.size());
-      assertEquals(2, tsWrapper.ts.activeHostList.length);
+      assertEquals(2, tsWrapper.ts.instanceToNodeMap.size());
       LlapTaskSchedulerService.NodeInfo disabledNodeInfo = tsWrapper.ts.disabledNodes.peek();
       assertNotNull(disabledNodeInfo);
-      assertEquals(HOST1, disabledNodeInfo.hostname);
+      assertEquals(HOST1, disabledNodeInfo.host.getHost());
       assertEquals((10000l), disabledNodeInfo.getDelay(TimeUnit.NANOSECONDS));
       assertEquals((10000l + 10000l), disabledNodeInfo.expireTimeMillis);
 
@@ -164,8 +163,7 @@ public class TestLlapTaskSchedulerService {
 
       // Verify that the node is blacklisted
       assertEquals(3, tsWrapper.ts.dagStats.numRejectedTasks);
-      assertEquals(0, tsWrapper.ts.activeHosts.size());
-      assertEquals(0, tsWrapper.ts.activeHostList.length);
+      assertEquals(0, tsWrapper.ts.instanceToNodeMap.size());
       assertEquals(3, tsWrapper.ts.disabledNodes.size());
 
 

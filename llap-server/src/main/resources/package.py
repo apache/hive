@@ -47,7 +47,7 @@ def zipdir(path, zip, prefix="."):
 			zip.write(src, dst)
 	
 def main(args):
-	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel="])
+	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel=","chaosmonkey="])
 	version = os.getenv("HIVE_VERSION")
 	if not version:
 		version = strftime("%d%b%Y", gmtime()) 
@@ -58,6 +58,7 @@ def main(args):
 	d_args = ""
 	d_loglevel = "INFO"
 	input = None
+	monkey = "0"
 	for k,v in opts:
 		if k in ("--input"):
 			input = v
@@ -71,12 +72,17 @@ def main(args):
 			d_args = v
 		elif k in ("--loglevel"):
 			d_loglevel = v
+		elif k in ("--chaosmonkey"):
+			monkey = v
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
 		return
 	config = json_parse(open(join(input, "config.json")).read())
 	resource = LlapResource(config)
+	monkey_interval = int(monkey) 
+	# 5% container failure every monkey_interval seconds
+	monkey_percentage = 5 # 5%
 	vars = {
 		"home" : home,
 		"version" : version,
@@ -88,7 +94,10 @@ def main(args):
 		"java_home" : os.getenv("JAVA_HOME"),
 		"name" : name,
 		"daemon_args" : d_args,
-		"daemon_loglevel" : d_loglevel
+		"daemon_loglevel" : d_loglevel,
+		"monkey_interval" : monkey_interval,
+		"monkey_percentage" : monkey_percentage,
+		"monkey_enabled" : monkey_interval > 0
 	}
 	
 	if not exists(output):
