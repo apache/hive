@@ -24,9 +24,7 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
@@ -49,12 +47,7 @@ public class HiveRelMdParallelism extends RelMdParallelism {
   //~ Methods ----------------------------------------------------------------
 
   public Boolean isPhaseTransition(HiveJoin join) {
-    // As Exchange operator is introduced later on, we make a
-    // common join operator create a new stage for the moment
-    if (join.getJoinAlgorithm() == JoinAlgorithm.COMMON_JOIN) {
-      return true;
-    }
-    return false;
+    return join.isPhaseTransition();
   }
 
   public Boolean isPhaseTransition(HiveSort sort) {
@@ -64,23 +57,7 @@ public class HiveRelMdParallelism extends RelMdParallelism {
   }
 
   public Integer splitCount(HiveJoin join) {
-    if (join.getJoinAlgorithm() == JoinAlgorithm.COMMON_JOIN) {
-      return splitCountRepartition(join);
-    }
-    else if (join.getJoinAlgorithm() == JoinAlgorithm.MAP_JOIN ||
-              join.getJoinAlgorithm() == JoinAlgorithm.BUCKET_JOIN ||
-              join.getJoinAlgorithm() == JoinAlgorithm.SMB_JOIN) {
-      RelNode largeInput;
-      if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.LEFT_RELATION) {
-        largeInput = join.getLeft();
-      } else if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.RIGHT_RELATION) {
-        largeInput = join.getRight();
-      } else {
-        return null;
-      }
-      return splitCount(largeInput);
-    }
-    return null;
+    return join.getSplitCount();
   }
 
   public Integer splitCount(HiveTableScan scan) {

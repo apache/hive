@@ -15,23 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite;
+package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 
-import org.apache.calcite.plan.Context;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
+public class HiveAlgorithmsConf {
+  
+  private Double maxSplitSize;
+  private Double maxMemory;
 
 
-public class HiveConfigContext implements Context {
-  private HiveAlgorithmsConf config;
-
-  public HiveConfigContext(HiveAlgorithmsConf config) {
-    this.config = config;
+  public HiveAlgorithmsConf(Double maxSplitSize, Double maxMemory) {
+    this.maxSplitSize = maxSplitSize;
+    this.maxMemory = maxMemory;
   }
 
-  public <T> T unwrap(Class<T> clazz) {
-    if (clazz.isInstance(config)) {
-      return clazz.cast(config);
-    }
-    return null;
+  public Double getMaxSplitSize() {
+    return maxSplitSize;
   }
+
+  public Double getMaxMemory() {
+    return maxMemory;
+  }
+
 }

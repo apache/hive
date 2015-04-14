@@ -17,18 +17,28 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 
-import java.util.EnumSet;
-
 import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /**
  * Default implementation of the cost model.
  * Currently used by MR and Spark execution engines.
  */
 public class HiveDefaultCostModel extends HiveCostModel {
+  
+  public static final HiveDefaultCostModel INSTANCE =
+          new HiveDefaultCostModel();
+
+  private HiveDefaultCostModel() {
+    super(Sets.newHashSet(DefaultJoinAlgorithm.INSTANCE));
+  }
 
   @Override
   public RelOptCost getDefaultCost() {
@@ -40,28 +50,62 @@ public class HiveDefaultCostModel extends HiveCostModel {
     return HiveCost.FACTORY.makeZeroCost();
   }
 
-  @Override
-  protected EnumSet<JoinAlgorithm> getExecutableJoinAlgorithms(HiveJoin join) {
-    return EnumSet.of(JoinAlgorithm.NONE);
-  }
 
-  @Override
-  protected RelOptCost getJoinCost(HiveJoin join, JoinAlgorithm algorithm) {
-    RelOptCost algorithmCost;
-    switch (algorithm) {
-      case NONE:
-        algorithmCost = computeJoinCardinalityCost(join);
-        break;
-      default:
-        algorithmCost = null;
+  /**
+   * Default join algorithm. Cost is based on cardinality.
+   */
+  public static class DefaultJoinAlgorithm implements JoinAlgorithm {
+
+    public static final JoinAlgorithm INSTANCE = new DefaultJoinAlgorithm();
+    private static final String ALGORITHM_NAME = "None";
+
+
+    @Override
+    public String getName() {
+      return ALGORITHM_NAME;
     }
-    return algorithmCost;
-  }
 
-  private static RelOptCost computeJoinCardinalityCost(HiveJoin join) {
-    double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
-    double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
-    return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
+    @Override
+    public boolean isExecutable(HiveJoin join) {
+      return true;
+    }
+
+    @Override
+    public RelOptCost getCost(HiveJoin join) {
+      double leftRCount = RelMetadataQuery.getRowCount(join.getLeft());
+      double rightRCount = RelMetadataQuery.getRowCount(join.getRight());
+      return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
+    }
+
+    @Override
+    public ImmutableList<RelCollation> getCollation(HiveJoin join) {
+      return null;
+    }
+
+    @Override
+    public RelDistribution getDistribution(HiveJoin join) {
+      return null;
+    }
+
+    @Override
+    public Double getMemory(HiveJoin join) {
+      return null;
+    }
+
+    @Override
+    public Double getCumulativeMemoryWithinPhaseSplit(HiveJoin join) {
+      return null;
+    }
+
+    @Override
+    public Boolean isPhaseTransition(HiveJoin join) {
+      return false;
+    }
+
+    @Override
+    public Integer getSplitCount(HiveJoin join) {
+      return null;
+    }
   }
 
 }

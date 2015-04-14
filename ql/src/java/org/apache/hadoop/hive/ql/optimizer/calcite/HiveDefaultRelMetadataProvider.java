@@ -23,8 +23,8 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
@@ -52,12 +52,9 @@ public class HiveDefaultRelMetadataProvider {
     final HiveCostModel cm;
     if (HiveConf.getVar(this.hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
             && HiveConf.getBoolVar(this.hiveConf, HiveConf.ConfVars.EXTENDED_COST_MODEL)) {
-      final Double maxMemory = (double) HiveConf.getLongVar(
-              this.hiveConf,
-              HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-      cm = new HiveOnTezCostModel(maxMemory);
+      cm = HiveOnTezCostModel.INSTANCE;
     } else {
-      cm = new HiveDefaultCostModel();
+      cm = HiveDefaultCostModel.INSTANCE;
     }
 
     // Get max split size for HiveRelMdParallelism

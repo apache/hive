@@ -18,17 +18,14 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import org.apache.calcite.rel.RelCollations;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdMemory;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
@@ -69,73 +66,11 @@ public class HiveRelMdMemory extends RelMdMemory {
   }
 
   public Double memory(HiveJoin join) {
-    Double memory = 0.0;
-    if (join.getJoinAlgorithm() == JoinAlgorithm.COMMON_JOIN) {
-      // Left side
-      final Double leftAvgRowSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
-      final Double leftRowCount = RelMetadataQuery.getRowCount(join.getLeft());
-      if (leftAvgRowSize == null || leftRowCount == null) {
-        return null;
-      }
-      memory += leftAvgRowSize * leftRowCount;
-      // Right side
-      final Double rightAvgRowSize = RelMetadataQuery.getAverageRowSize(join.getRight());
-      final Double rightRowCount = RelMetadataQuery.getRowCount(join.getRight());
-      if (rightAvgRowSize == null || rightRowCount == null) {
-        return null;
-      }
-      memory += rightAvgRowSize * rightRowCount;
-    } else if (join.getJoinAlgorithm() == JoinAlgorithm.MAP_JOIN ||
-          join.getJoinAlgorithm() == JoinAlgorithm.BUCKET_JOIN) {
-      RelNode inMemoryInput;
-      if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.LEFT_RELATION) {
-        inMemoryInput = join.getRight();
-      } else if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.RIGHT_RELATION) {
-        inMemoryInput = join.getLeft();
-      } else {
-        return null;
-      }
-      // Result
-      final Double avgRowSize = RelMetadataQuery.getAverageRowSize(inMemoryInput);
-      final Double rowCount = RelMetadataQuery.getRowCount(inMemoryInput);
-      if (avgRowSize == null || rowCount == null) {
-        return null;
-      }
-      memory = avgRowSize * rowCount;
-    }
-    return memory;
+    return join.getMemory();
   }
 
   public Double cumulativeMemoryWithinPhaseSplit(HiveJoin join) {
-    if (join.getJoinAlgorithm() == JoinAlgorithm.MAP_JOIN ||
-            join.getJoinAlgorithm() == JoinAlgorithm.BUCKET_JOIN) {
-      // Check streaming side
-      RelNode inMemoryInput;
-      if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.LEFT_RELATION) {
-        inMemoryInput = join.getRight();
-      } else if (join.getMapJoinStreamingSide() == MapJoinStreamingRelation.RIGHT_RELATION) {
-        inMemoryInput = join.getLeft();
-      } else {
-        return null;
-      }
-
-      if (join.getJoinAlgorithm() == JoinAlgorithm.MAP_JOIN) {
-        // If simple map join, the whole relation goes in memory
-        return RelMetadataQuery.cumulativeMemoryWithinPhase(inMemoryInput);
-      }
-      else if (join.getJoinAlgorithm() == JoinAlgorithm.BUCKET_JOIN) {
-        // If bucket map join, only a split goes in memory
-        final Double memoryInput =
-                RelMetadataQuery.cumulativeMemoryWithinPhase(inMemoryInput);
-        final Integer splitCount = RelMetadataQuery.splitCount(inMemoryInput);
-        if (memoryInput == null || splitCount == null) {
-          return null;
-        }
-        return memoryInput / splitCount;
-      }
-    }
-    // Else, we fall back to default
-    return super.cumulativeMemoryWithinPhaseSplit(join);
+    return join.getCumulativeMemoryWithinPhaseSplit();
   }
 
   public Double memory(HiveLimit limit) {
