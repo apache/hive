@@ -196,18 +196,13 @@ public class PartitionPruner implements Transform {
     // Remove all parts that are not partition columns. See javadoc for details.
     ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
     String oldFilter = prunerExpr.getExprString();
-    if (isBooleanExpr(compactExpr)) {
-    	// For null and true values, return every partition
-    	if (!isFalseExpr(compactExpr)) {
-    		// Non-strict mode, and all the predicates are on non-partition columns - get everything.
-        if (LOG.isDebugEnabled()) {
-    		  LOG.debug("Filter " + oldFilter + " was null after compacting");
-        }
-    		return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
-    	} else {
-    		return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(new ArrayList<Partition>()),
-    				new ArrayList<String>(), false);
-    	}
+    if (compactExpr == null || isBooleanExpr(compactExpr)) {
+      if (isFalseExpr(compactExpr)) {
+        return new PrunedPartitionList(
+            tab, new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
+      }
+      // For null and true values, return every partition
+      return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
@@ -241,22 +236,22 @@ public class PartitionPruner implements Transform {
     partsCache.put(key, ppList);
     return ppList;
   }
-  
+
   static private boolean isBooleanExpr(ExprNodeDesc expr) {
-	  return  expr != null && expr instanceof ExprNodeConstantDesc && 
+    return  expr != null && expr instanceof ExprNodeConstantDesc &&
               ((ExprNodeConstantDesc)expr).getTypeInfo() instanceof PrimitiveTypeInfo &&
               ((PrimitiveTypeInfo)(((ExprNodeConstantDesc)expr).getTypeInfo())).
-              getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME);	  
+              getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME);
   }
   static private boolean isTrueExpr(ExprNodeDesc expr) {
-      return  isBooleanExpr(expr) &&  
-              ((ExprNodeConstantDesc)expr).getValue() != null &&
-              ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.TRUE);
+      return  isBooleanExpr(expr) &&
+          ((ExprNodeConstantDesc)expr).getValue() != null &&
+          ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.TRUE);
   }
   static private boolean isFalseExpr(ExprNodeDesc expr) {
-      return  isBooleanExpr(expr) && 
+      return  isBooleanExpr(expr) &&
               ((ExprNodeConstantDesc)expr).getValue() != null &&
-              ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.FALSE);	  
+              ((ExprNodeConstantDesc)expr).getValue().equals(Boolean.FALSE);
   }
 
   /**
@@ -268,42 +263,48 @@ public class PartitionPruner implements Transform {
    */
   static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
     // If this is a constant boolean expression, return the value.
-	if (expr == null) {
-		return null;
-	}
-	if (expr instanceof ExprNodeConstantDesc) {
-      if (isBooleanExpr(expr)) {
-        return expr;
-      } else {
-        throw new IllegalStateException("Unexpected non-null ExprNodeConstantDesc: "
-          + expr.getExprString());
+    if (expr == null) {
+      return null;
+    }
+    if (expr instanceof ExprNodeConstantDesc) {
+      if (((ExprNodeConstantDesc)expr).getValue() == null) return null;
+      if (!isBooleanExpr(expr)) {
+        throw new IllegalStateException("Unexpected non-boolean ExprNodeConstantDesc: "
+            + expr.getExprString());
       }
+      return expr;
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
       boolean isAnd = udf instanceof GenericUDFOPAnd;
       boolean isOr = udf instanceof GenericUDFOPOr;
-      
+
       if (isAnd || isOr) {
         List<ExprNodeDesc> children = expr.getChildren();
-        ExprNodeDesc left = children.get(0);
-        children.set(0, compactExpr(left));
-        ExprNodeDesc right = children.get(1);
-        children.set(1, compactExpr(right));
-
-        if (isTrueExpr(children.get(0)) && isTrueExpr(children.get(1))) {
-        	return new ExprNodeConstantDesc(Boolean.TRUE);
-        } else if (isTrueExpr(children.get(0)))  {
-        	return isAnd ? children.get(1) :  new ExprNodeConstantDesc(Boolean.TRUE);
-        } else if (isTrueExpr(children.get(1))) {
-        	return isAnd ? children.get(0) : new ExprNodeConstantDesc(Boolean.TRUE);
-        } else if (isFalseExpr(children.get(0)) && isFalseExpr(children.get(1))) {
-        	return new ExprNodeConstantDesc(Boolean.FALSE);
-        } else if (isFalseExpr(children.get(0)))  {
-            return isAnd ? new ExprNodeConstantDesc(Boolean.FALSE) : children.get(1);
-        } else if (isFalseExpr(children.get(1))) {
-            return isAnd ? new ExprNodeConstantDesc(Boolean.FALSE) : children.get(0);
-        } 
-        
+        ExprNodeDesc left = compactExpr(children.get(0));
+        ExprNodeDesc right = compactExpr(children.get(1));
+        // Non-partition expressions are converted to nulls.
+        if (left == null && right == null) {
+          return null;
+        } else if (left == null) {
+          return isAnd ? right : null;
+        } else if (right == null) {
+          return isAnd ? left : null;
+        }
+        // Handle boolean expressions
+        boolean isLeftFalse = isFalseExpr(left), isRightFalse = isFalseExpr(right),
+            isLeftTrue = isTrueExpr(left), isRightTrue = isTrueExpr(right);
+        if ((isRightTrue && isLeftTrue) || (isOr && (isLeftTrue || isRightTrue))) {
+          return new ExprNodeConstantDesc(Boolean.TRUE);
+        } else if ((isRightFalse && isLeftFalse) || (isAnd && (isLeftFalse || isRightFalse))) {
+          return new ExprNodeConstantDesc(Boolean.FALSE);
+        } else if ((isAnd && isLeftTrue) || (isOr && isLeftFalse)) {
+          return right;
+        } else if ((isAnd && isRightTrue) || (isOr && isRightFalse)) {
+          return left;
+        }
+        // Nothing to compact, update expr with compacted children.
+        children.set(0, left);
+        children.set(1, right);
       }
       return expr;
     } else {
@@ -328,9 +329,9 @@ public class PartitionPruner implements Transform {
       if (!partCols.contains(column)) {
         // Column doesn't appear to be a partition column for the table.
         return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
-      } 
+      }
       referred.add(column);
-    }	        
+    }
     if (expr instanceof ExprNodeGenericFuncDesc) {
       List<ExprNodeDesc> children = expr.getChildren();
       for (int i = 0; i < children.size(); ++i) {

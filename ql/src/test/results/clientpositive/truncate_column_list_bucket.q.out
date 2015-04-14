@@ -94,52 +94,14 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: test_tab
-            Statistics: Num rows: 17 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: (key = '484') (type: boolean)
-              Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: '484' (type: string), value (type: string), '1' (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2
-                        columns.types string:string:string
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
           Partition
-            base file name: key=484
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
             partition values:
@@ -182,14 +144,20 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.test_tab
             name: default.test_tab
-      Truncated Path -> Alias:
-        /test_tab/part=1/key=484 [test_tab]
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: test_tab
+          Statistics: Num rows: 17 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (key = '484') (type: boolean)
+            Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: '484' (type: string), value (type: string), '1' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: SELECT * FROM test_tab WHERE part = '1' AND key = '484'
 PREHOOK: type: QUERY
@@ -233,52 +201,14 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: test_tab
-            Statistics: Num rows: 17 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: (key = '0') (type: boolean)
-              Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: '0' (type: string), value (type: string), '1' (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2
-                        columns.types string:string:string
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
           Partition
-            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
             partition values:
@@ -321,14 +251,20 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.test_tab
             name: default.test_tab
-      Truncated Path -> Alias:
-        /test_tab/part=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [test_tab]
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: test_tab
+          Statistics: Num rows: 17 Data size: 1761 Basic stats: COMPLETE Column stats: NONE
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (key = '0') (type: boolean)
+            Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: '0' (type: string), value (type: string), '1' (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: SELECT * FROM test_tab WHERE part = '1' AND key = '0'
 PREHOOK: type: QUERY
