@@ -587,7 +587,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                     _val27 = new ArrayList<PrivilegeGrantInfo>(_list28.size);
                     for (int _i29 = 0; _i29 < _list28.size; ++_i29)
                     {
-                      PrivilegeGrantInfo _elem30; // required
+                      PrivilegeGrantInfo _elem30; // optional
                       _elem30 = new PrivilegeGrantInfo();
                       _elem30.read(iprot);
                       _val27.add(_elem30);
@@ -618,7 +618,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                     _val34 = new ArrayList<PrivilegeGrantInfo>(_list35.size);
                     for (int _i36 = 0; _i36 < _list35.size; ++_i36)
                     {
-                      PrivilegeGrantInfo _elem37; // required
+                      PrivilegeGrantInfo _elem37; // optional
                       _elem37 = new PrivilegeGrantInfo();
                       _elem37.read(iprot);
                       _val34.add(_elem37);
@@ -649,7 +649,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                     _val41 = new ArrayList<PrivilegeGrantInfo>(_list42.size);
                     for (int _i43 = 0; _i43 < _list42.size; ++_i43)
                     {
-                      PrivilegeGrantInfo _elem44; // required
+                      PrivilegeGrantInfo _elem44; // optional
                       _elem44 = new PrivilegeGrantInfo();
                       _elem44.read(iprot);
                       _val41.add(_elem44);
@@ -834,7 +834,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
               _val60 = new ArrayList<PrivilegeGrantInfo>(_list61.size);
               for (int _i62 = 0; _i62 < _list61.size; ++_i62)
               {
-                PrivilegeGrantInfo _elem63; // required
+                PrivilegeGrantInfo _elem63; // optional
                 _elem63 = new PrivilegeGrantInfo();
                 _elem63.read(iprot);
                 _val60.add(_elem63);
@@ -859,7 +859,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
               _val67 = new ArrayList<PrivilegeGrantInfo>(_list68.size);
               for (int _i69 = 0; _i69 < _list68.size; ++_i69)
               {
-                PrivilegeGrantInfo _elem70; // required
+                PrivilegeGrantInfo _elem70; // optional
                 _elem70 = new PrivilegeGrantInfo();
                 _elem70.read(iprot);
                 _val67.add(_elem70);
@@ -884,7 +884,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
               _val74 = new ArrayList<PrivilegeGrantInfo>(_list75.size);
               for (int _i76 = 0; _i76 < _list75.size; ++_i76)
               {
-                PrivilegeGrantInfo _elem77; // required
+                PrivilegeGrantInfo _elem77; // optional
                 _elem77 = new PrivilegeGrantInfo();
                 _elem77.read(iprot);
                 _val74.add(_elem77);

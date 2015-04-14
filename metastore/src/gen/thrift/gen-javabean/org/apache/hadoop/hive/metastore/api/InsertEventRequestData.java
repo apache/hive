@@ -354,7 +354,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
                 struct.filesAdded = new ArrayList<String>(_list508.size);
                 for (int _i509 = 0; _i509 < _list508.size; ++_i509)
                 {
-                  String _elem510; // required
+                  String _elem510; // optional
                   _elem510 = iprot.readString();
                   struct.filesAdded.add(_elem510);
                 }
@@ -424,7 +424,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
         struct.filesAdded = new ArrayList<String>(_list513.size);
         for (int _i514 = 0; _i514 < _list513.size; ++_i514)
         {
-          String _elem515; // required
+          String _elem515; // optional
           _elem515 = iprot.readString();
           struct.filesAdded.add(_elem515);
         }

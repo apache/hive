@@ -368,13 +368,25 @@ struct DecimalColumnStatsData {
 4: required i64 numDVs
 }
 
+struct Date {
+1: required i64 daysSinceEpoch
+}
+
+struct DateColumnStatsData {
+1: optional Date lowValue,
+2: optional Date highValue,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
 union ColumnStatisticsData {
 1: BooleanColumnStatsData booleanStats,
 2: LongColumnStatsData longStats,
 3: DoubleColumnStatsData doubleStats,
 4: StringColumnStatsData stringStats,
 5: BinaryColumnStatsData binaryStats,
-6: DecimalColumnStatsData decimalStats
+6: DecimalColumnStatsData decimalStats,
+7: DateColumnStatsData dateStats
 }
 
 struct ColumnStatisticsObj {

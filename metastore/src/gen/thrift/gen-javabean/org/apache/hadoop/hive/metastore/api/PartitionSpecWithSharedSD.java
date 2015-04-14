@@ -434,7 +434,7 @@ public class PartitionSpecWithSharedSD implements org.apache.thrift.TBase<Partit
                 struct.partitions = new ArrayList<PartitionWithoutSD>(_list244.size);
                 for (int _i245 = 0; _i245 < _list244.size; ++_i245)
                 {
-                  PartitionWithoutSD _elem246; // required
+                  PartitionWithoutSD _elem246; // optional
                   _elem246 = new PartitionWithoutSD();
                   _elem246.read(iprot);
                   struct.partitions.add(_elem246);
@@ -534,7 +534,7 @@ public class PartitionSpecWithSharedSD implements org.apache.thrift.TBase<Partit
           struct.partitions = new ArrayList<PartitionWithoutSD>(_list249.size);
           for (int _i250 = 0; _i250 < _list249.size; ++_i250)
           {
-            PartitionWithoutSD _elem251; // required
+            PartitionWithoutSD _elem251; // optional
             _elem251 = new PartitionWithoutSD();
             _elem251.read(iprot);
             struct.partitions.add(_elem251);

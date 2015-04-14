@@ -191,6 +191,13 @@ public class MTableColumnStatistics {
     this.avgColLen = avgColLen;
   }
 
+  public void setDateStats(Long numNulls, Long numNDVs, Long lowValue, Long highValue) {
+    this.numNulls = numNulls;
+    this.numDVs = numNDVs;
+    this.longLowValue = lowValue;
+    this.longHighValue = highValue;
+  }
+
   public Long getLongLowValue() {
     return longLowValue;
   }

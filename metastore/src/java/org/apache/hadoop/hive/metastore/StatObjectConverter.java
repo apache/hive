@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -103,6 +105,13 @@ public class StatObjectConverter {
            binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null,
            binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
            binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
+     } else if (statsObj.getStatsData().isSetDateStats()) {
+       DateColumnStatsData dateStats = statsObj.getStatsData().getDateStats();
+       mColStats.setDateStats(
+           dateStats.isSetNumNulls() ? dateStats.getNumNulls() : null,
+           dateStats.isSetNumDVs() ? dateStats.getNumDVs() : null,
+           dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
+           dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
      }
      return mColStats;
   }
@@ -258,6 +267,19 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(mStatsObj.getNumNulls());
+      Long highValue = mStatsObj.getLongHighValue();
+      if (highValue != null) {
+        dateStats.setHighValue(new Date(highValue));
+      }
+      Long lowValue = mStatsObj.getLongLowValue();
+      if (lowValue != null) {
+        dateStats.setLowValue(new Date(lowValue));
+      }
+      dateStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDateStats(dateStats);
     }
     statsObj.setStatsData(colStatsData);
     return statsObj;
@@ -330,6 +352,13 @@ public class StatObjectConverter {
           binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null,
           binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
           binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
+    } else if (statsObj.getStatsData().isSetDateStats()) {
+      DateColumnStatsData dateStats = statsObj.getStatsData().getDateStats();
+      mColStats.setDateStats(
+          dateStats.isSetNumNulls() ? dateStats.getNumNulls() : null,
+          dateStats.isSetNumDVs() ? dateStats.getNumDVs() : null,
+          dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
+          dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
     }
     return mColStats;
   }
@@ -397,6 +426,13 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(mStatsObj.getNumNulls());
+      dateStats.setHighValue(new Date(mStatsObj.getLongHighValue()));
+      dateStats.setLowValue(new Date(mStatsObj.getLongLowValue()));
+      dateStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDateStats(dateStats);
     }
     statsObj.setStatsData(colStatsData);
     return statsObj;
@@ -473,6 +509,17 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      if (lhigh != null) {
+        dateStats.setHighValue(new Date(MetaStoreDirectSql.extractSqlLong(lhigh)));
+      }
+      if (llow != null) {
+        dateStats.setLowValue(new Date(MetaStoreDirectSql.extractSqlLong(llow)));
+      }
+      dateStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
+      data.setDateStats(dateStats);
     }
   }
 
