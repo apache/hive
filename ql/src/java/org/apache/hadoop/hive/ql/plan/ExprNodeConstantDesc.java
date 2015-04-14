@@ -84,7 +84,6 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   @Override
   public ConstantObjectInspector getWritableObjectInspector() {
     PrimitiveTypeInfo pti = (PrimitiveTypeInfo) getTypeInfo();
-    PrimitiveCategory pc = pti.getPrimitiveCategory();
     // Convert from Java to Writable
     Object writableValue = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(pti).getPrimitiveWritableObject(
