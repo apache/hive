@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.lib;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -37,7 +38,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
   protected final List<Node> toWalk = new ArrayList<Node>();
-  protected final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
+  protected final IdentityHashMap<Node, Object> retMap = new  IdentityHashMap<Node, Object>();
   protected final Dispatcher dispatcher;
 
   /**

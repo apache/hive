@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -44,7 +43,6 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -146,11 +144,9 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ALTER_TABLE_EVENT,
         msgFactory.buildAlterTableMessage(before, after).toString());
-    if (event != null) {
-      event.setDbName(after.getDbName());
-      event.setTableName(after.getTableName());
-      enqueue(event);
-    }
+    event.setDbName(after.getDbName());
+    event.setTableName(after.getTableName());
+    enqueue(event);
   }
 
   /**
@@ -162,7 +158,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = partitionEvent.getTable();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ADD_PARTITION_EVENT,
-        msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitions()).toString());
+        msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -192,11 +188,9 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ALTER_PARTITION_EVENT,
         msgFactory.buildAlterPartitionMessage(before, after).toString());
-    if (event != null) {
-      event.setDbName(before.getDbName());
-      event.setTableName(before.getTableName());
-      enqueue(event);
-    }
+    event.setDbName(before.getDbName());
+    event.setTableName(before.getTableName());
+    enqueue(event);
   }
 
   /**

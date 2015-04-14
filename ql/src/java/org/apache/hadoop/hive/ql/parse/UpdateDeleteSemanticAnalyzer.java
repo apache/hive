@@ -140,6 +140,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     List<FieldSchema> partCols = mTable.getPartCols();
+    List<String> bucketingCols = mTable.getBucketCols();
 
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getDotName(tableName));
@@ -199,7 +200,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
             }
           }
         }
-
+        //updating bucket column should move row from one file to another - not supported
+        if(bucketingCols != null && bucketingCols.contains(columnName)) {
+          throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_BUCKET_VALUE,columnName);
+        }
         // This means that in UPDATE T SET x = _something_
         // _something_ can be whatever is supported in SELECT _something_
         setCols.put(columnName, (ASTNode)assignment.getChildren().get(1));

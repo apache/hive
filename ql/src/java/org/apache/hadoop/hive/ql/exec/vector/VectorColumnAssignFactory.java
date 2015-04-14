@@ -573,6 +573,12 @@ public class VectorColumnAssignFactory {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_DAY_TIME);
       } else if (writables[i] instanceof BooleanWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BOOLEAN);
+      } else if (writables[i] instanceof HiveDecimalWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.DECIMAL);
+      } else if (writables[i] instanceof HiveCharWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.CHAR);
+      } else if (writables[i] instanceof HiveVarcharWritable) {
+        vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.VARCHAR);
       } else {
         throw new HiveException("Unimplemented vector assigner for writable type " +
            writables[i].getClass());

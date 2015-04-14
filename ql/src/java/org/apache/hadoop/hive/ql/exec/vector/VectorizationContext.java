@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -128,6 +130,9 @@ public class VectorizationContext {
   private static final Log LOG = LogFactory.getLog(
       VectorizationContext.class.getName());
 
+  private String contextName;
+  private int level;
+
   VectorExpressionDescriptor vMap;
 
   private List<Integer> projectedColumns;
@@ -140,7 +145,10 @@ public class VectorizationContext {
 
   // Convenient constructor for initial batch creation takes
   // a list of columns names and maps them to 0..n-1 indices.
-  public VectorizationContext(List<String> initialColumnNames) {
+  public VectorizationContext(String contextName, List<String> initialColumnNames) {
+    this.contextName = contextName;
+    level = 0;
+    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level + " initialColumnNames " + initialColumnNames.toString());
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -157,8 +165,11 @@ public class VectorizationContext {
 
   // Constructor to with the individual addInitialColumn method
   // followed by a call to finishedAddingInitialColumns.
-  public VectorizationContext() {
-    projectedColumns = new ArrayList<Integer>();
+  public VectorizationContext(String contextName) {
+    this.contextName = contextName;
+    level = 0;
+    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level);
+      projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);
@@ -169,7 +180,10 @@ public class VectorizationContext {
   // Constructor useful making a projection vectorization context.
   // Use with resetProjectionColumns and addProjectionColumn.
   // Keeps existing output column map, etc.
-  public VectorizationContext(VectorizationContext vContext) {
+  public VectorizationContext(String contextName, VectorizationContext vContext) {
+    this.contextName = contextName;
+    level = vContext.level + 1;
+    LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
     this.projectionColumnMap = new HashMap<String, Integer>();
@@ -238,13 +252,6 @@ public class VectorizationContext {
   //Map column number to type
   private OutputColumnManager ocm;
 
-  // File key is used by operators to retrieve the scratch vectors
-  // from mapWork at runtime. The operators that modify the structure of
-  // a vector row batch, need to allocate scratch vectors as well. Every
-  // operator that creates a new Vectorization context should set a unique
-  // fileKey.
-  private String fileKey = null;
-
   // Set of UDF classes for type casting data types in row-mode.
   private static Set<Class<?>> castExpressionUdfs = new HashSet<Class<?>>();
   static {
@@ -266,14 +273,6 @@ public class VectorizationContext {
     castExpressionUdfs.add(UDFToInteger.class);
     castExpressionUdfs.add(UDFToLong.class);
     castExpressionUdfs.add(UDFToShort.class);
-  }
-
-  public String getFileKey() {
-    return fileKey;
-  }
-
-  public void setFileKey(String fileKey) {
-    this.fileKey = fileKey;
   }
 
   protected int getInputColumnIndex(String name) throws HiveException {
@@ -316,6 +315,7 @@ public class VectorizationContext {
         // We need to differentiate DECIMAL columns by their precision and scale...
         String normalizedTypeName = getNormalizedName(hiveTypeName);
         int relativeCol = allocateOutputColumnInternal(normalizedTypeName);
+        // LOG.info("allocateOutputColumn for hiveTypeName " + hiveTypeName + " column " + (initialOutputCol + relativeCol));
         return initialOutputCol + relativeCol;
       }
 
@@ -357,6 +357,22 @@ public class VectorizationContext {
         usedOutputColumns.remove(index-initialOutputCol);
       }
     }
+
+    public int[] currentScratchColumns() {
+      TreeSet<Integer> treeSet = new TreeSet();
+      for (Integer col : usedOutputColumns) {
+        treeSet.add(initialOutputCol + col);
+      }
+      return ArrayUtils.toPrimitive(treeSet.toArray(new Integer[0]));
+    }
+  }
+
+  public int allocateScratchColumn(String hiveTypeName) {
+    return ocm.allocateOutputColumn(hiveTypeName);
+  }
+
+  public int[] currentScratchColumns() {
+    return ocm.currentScratchColumns();
   }
 
   private VectorExpression getColumnVectorExpression(ExprNodeColumnDesc
@@ -2106,6 +2122,10 @@ public class VectorizationContext {
         "\" for type: \"" + inputType.name() + " (reduce-side = " + isReduce + ")");
   }
 
+  public int firstOutputColumnIndex() {
+    return firstOutputColumnIndex;
+  }
+
   public Map<Integer, String> getScratchColumnTypeMap() {
     Map<Integer, String> map = new HashMap<Integer, String>();
     for (int i = 0; i < ocm.outputColCount; i++) {
@@ -2117,7 +2137,7 @@ public class VectorizationContext {
 
   public String toString() {
     StringBuilder sb = new StringBuilder(32);
-    sb.append("Context key ").append(getFileKey()).append(", ");
+    sb.append("Context name ").append(contextName).append(", level " + level + ", ");
 
     Comparator<Integer> comparerInteger = new Comparator<Integer>() {
         @Override
@@ -2129,11 +2149,11 @@ public class VectorizationContext {
     for (Map.Entry<String, Integer> entry : projectionColumnMap.entrySet()) {
       sortedColumnMap.put(entry.getValue(), entry.getKey());
     }
-    sb.append("sortedProjectionColumnMap ").append(sortedColumnMap).append(", ");
+    sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
     Map<Integer, String> sortedScratchColumnTypeMap = new TreeMap<Integer, String>(comparerInteger);
     sortedScratchColumnTypeMap.putAll(getScratchColumnTypeMap());
-    sb.append("sortedScratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
+    sb.append("sorted scratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
 
     return sb.toString();
   }

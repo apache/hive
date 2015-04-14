@@ -109,7 +109,9 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
     @Override
     public boolean next(NullWritable key, VectorizedRowBatch outputBatch)
         throws IOException {
-      assert(outputBatch.numCols == assigners.length);
+      if (assigners != null) {
+        assert(outputBatch.numCols == assigners.length);
+      }
       outputBatch.reset();
       int maxSize = outputBatch.getMaxSize();
       try {

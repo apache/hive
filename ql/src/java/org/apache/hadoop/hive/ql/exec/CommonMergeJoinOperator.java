@@ -391,7 +391,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         if (candidateStorage[pos] == null) {
           continue;
         }
-        if (this.candidateStorage[pos].rowCount() > 0) {
+        if (this.candidateStorage[pos].hasRows()) {
           dataInCache = true;
           break;
         }

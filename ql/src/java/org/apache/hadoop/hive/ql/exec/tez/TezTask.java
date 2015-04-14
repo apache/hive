@@ -64,6 +64,7 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.StatusGetOpts;
+import org.json.JSONObject;
 
 /**
  *
@@ -279,6 +280,16 @@ public class TezTask extends Task<TezWork> {
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
+
+    // set some info for the query
+    JSONObject json = new JSONObject().put("context", "Hive").put("description", ctx.getCmd());
+    String dagInfo = json.toString();
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("DagInfo: " + dagInfo);
+    }
+    dag.setDAGInfo(dagInfo);
+
     dag.setCredentials(conf.getCredentials());
     setAccessControlsForCurrentUser(dag);
 

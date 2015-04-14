@@ -232,7 +232,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     sources[tag] = new ReduceRecordSource();
     sources[tag].init(jconf, redWork.getReducer(), redWork.getVectorMode(), keyTableDesc,
         valueTableDesc, reader, tag == bigTablePosition, (byte) tag,
-        redWork.getAllScratchColumnVectorTypeMaps());
+        redWork.getVectorScratchColumnTypeMap());
     ois[tag] = sources[tag].getObjectInspector();
   }
 

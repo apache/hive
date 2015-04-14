@@ -303,6 +303,38 @@ public final class WriteBuffers implements RandomAccessOutput {
     return true;
   }
 
+  /**
+   * Compares part of the buffer with a part of an external byte array.
+   * Does not modify readPoint.
+   */
+  public boolean isEqual(byte[] left, int leftOffset, int leftLength, long rightOffset, int rightLength) {
+    if (rightLength != leftLength) {
+      return false;
+    }
+    int rightIndex = getBufferIndex(rightOffset), rightFrom = getOffset(rightOffset);
+    byte[] rightBuffer = writeBuffers.get(rightIndex);
+    if (rightFrom + rightLength <= wbSize) {
+      // TODO: allow using unsafe optionally.
+      for (int i = 0; i < leftLength; ++i) {
+        if (left[leftOffset + i] != rightBuffer[rightFrom + i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+    for (int i = 0; i < rightLength; ++i) {
+      if (rightFrom == wbSize) {
+        ++rightIndex;
+        rightBuffer = writeBuffers.get(rightIndex);
+        rightFrom = 0;
+      }
+      if (left[leftOffset + i] != rightBuffer[rightFrom++]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public void clear() {
     writeBuffers.clear();
     clearState();
@@ -517,6 +549,19 @@ public final class WriteBuffers implements RandomAccessOutput {
       setByte(offset++, (byte)(v >>> 8));
       setByte(offset, (byte)(v));
     }
+    writePos.bufferIndex = prevIndex;
+    writePos.buffer = writeBuffers.get(writePos.bufferIndex);
+    writePos.offset = prevOffset;
+  }
+
+
+  @Override
+  public void writeByte(long offset, byte value) {
+    int prevIndex = writePos.bufferIndex, prevOffset = writePos.offset;
+    setWritePoint(offset);
+    // One byte is always available for writing.
+    writePos.buffer[writePos.offset] = value;
+
     writePos.bufferIndex = prevIndex;
     writePos.buffer = writeBuffers.get(writePos.bufferIndex);
     writePos.offset = prevOffset;

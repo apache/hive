@@ -14,12 +14,12 @@ select count(*) from acid where ds='2008-04-08';
 insert into table acid partition(ds='2008-04-08') values("foo", "bar");
 select count(*) from acid where ds='2008-04-08';
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08';
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08';
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08';
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08';
 select count(*) from acid where ds='2008-04-08';
 
-explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08');
-update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08');
+explain update acid set value = 'bar' where key = 'foo' and ds in ('2008-04-08');
+update acid set value = 'bar' where key = 'foo' and ds in ('2008-04-08');
 select count(*) from acid where ds in ('2008-04-08');
 
 delete from acid where key = 'foo' and ds='2008-04-08';
@@ -36,12 +36,12 @@ select count(*) from acid where ds='2008-04-08';
 insert into table acid partition(ds='2008-04-08') values("foo", "bar");
 select count(*) from acid where ds='2008-04-08';
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08';
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08';
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08';
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08';
 select count(*) from acid where ds='2008-04-08';
 
-explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08');
-update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08');
+explain update acid set value = 'bar' where key = 'foo' and ds in ('2008-04-08');
+update acid set value = 'bar' where key = 'foo' and ds in ('2008-04-08');
 select count(*) from acid where ds in ('2008-04-08');
 
 delete from acid where key = 'foo' and ds='2008-04-08';
@@ -58,12 +58,12 @@ select count(*) from acid where ds='2008-04-08' and hr=11;
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
 select count(*) from acid where ds='2008-04-08' and hr>=11;
 
 delete from acid where key = 'foo' and ds='2008-04-08' and hr=11;
@@ -80,12 +80,12 @@ select count(*) from acid where ds='2008-04-08' and hr=11;
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
 select count(*) from acid where ds='2008-04-08' and hr>=11;
 
 delete from acid where key = 'foo' and ds='2008-04-08' and hr=11;
@@ -103,12 +103,12 @@ select count(*) from acid where ds='2008-04-08' and hr=11;
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11;
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
-explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
-update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11;
+explain update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
+update acid set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11;
 select count(*) from acid where ds='2008-04-08' and hr>=11;
 
 delete from acid where key = 'foo' and ds='2008-04-08' and hr=11;

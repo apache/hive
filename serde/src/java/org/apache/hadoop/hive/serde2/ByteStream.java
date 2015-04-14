@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /**
  * Extensions to bytearrayinput/output streams.
@@ -90,14 +92,32 @@ public class ByteStream {
     }
 
     @Override
+    public void writeByte(long offset, byte value) {
+      getData()[(int) offset] = value;
+    }
+
+    @Override
     public void reserve(int byteCount) {
       for (int i = 0; i < byteCount; ++i) {
         write(0);
       }
     }
+
+    public boolean arraysEquals(Output output) {
+      if (count != output.count) {
+        return false;
+      }
+      for (int i = 0; i < count; i++) {
+        if (buf[i] != output.buf[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   public static interface RandomAccessOutput {
+    public void writeByte(long offset, byte value);
     public void writeInt(long offset, int value);
     public void reserve(int byteCount);
     public void write(int b);

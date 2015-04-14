@@ -29,7 +29,7 @@ implements SettableHiveDecimalObjectInspector {
   public WritableHiveDecimalObjectInspector() {
   }
 
-  protected WritableHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+  public WritableHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
     super(typeInfo);
   }
 

@@ -25,6 +25,8 @@ import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.protocol.HttpContext;
 
 /**
@@ -40,31 +42,59 @@ public class HttpKerberosRequestInterceptor implements HttpRequestInterceptor {
   String host;
   String serverHttpUrl;
   boolean assumeSubject;
+  CookieStore cookieStore;
+  boolean isCookieEnabled;
+  String cookieName;
 
   // A fair reentrant lock
   private static ReentrantLock kerberosLock = new ReentrantLock(true);
 
   public HttpKerberosRequestInterceptor(String principal, String host,
-      String serverHttpUrl, boolean assumeSubject) {
+      String serverHttpUrl, boolean assumeSubject, CookieStore cs, String cn) {
     this.principal = principal;
     this.host = host;
     this.serverHttpUrl = serverHttpUrl;
     this.assumeSubject = assumeSubject;
+    this.cookieStore = cs;
+    isCookieEnabled = (cs != null);
+    cookieName = cn;
   }
 
   @Override
   public void process(HttpRequest httpRequest, HttpContext httpContext)
       throws HttpException, IOException {
     String kerberosAuthHeader;
+
     try {
       // Generate the service ticket for sending to the server.
       // Locking ensures the tokens are unique in case of concurrent requests
       kerberosLock.lock();
-      kerberosAuthHeader = HttpAuthUtils.getKerberosServiceTicket(
-          principal, host, serverHttpUrl, assumeSubject);
-      // Set the session key token (Base64 encoded) in the headers
-      httpRequest.addHeader(HttpAuthUtils.AUTHORIZATION + ": " +
-          HttpAuthUtils.NEGOTIATE + " ", kerberosAuthHeader);
+      // If cookie based authentication is allowed, generate ticket only when necessary.
+      // The necessary condition is either when there are no server side cookies in the
+      // cookiestore which can be send back or when the server returns a 401 error code
+      // indicating that the previous cookie has expired.
+      if (isCookieEnabled) {
+        httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+      }
+      // Generate the kerberos ticket under the following scenarios:
+      // 1. Cookie Authentication is disabled OR
+      // 2. The first time when the request is sent OR
+      // 3. The server returns a 401, which sometimes means the cookie has expired
+      if (!isCookieEnabled || ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
+          (cookieStore == null || (cookieStore != null &&
+          Utils.needToSendCredentials(cookieStore, cookieName)))) ||
+          (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
+          httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
+          equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {
+        kerberosAuthHeader = HttpAuthUtils.getKerberosServiceTicket(
+            principal, host, serverHttpUrl, assumeSubject);
+        // Set the session key token (Base64 encoded) in the headers
+        httpRequest.addHeader(HttpAuthUtils.AUTHORIZATION + ": " +
+            HttpAuthUtils.NEGOTIATE + " ", kerberosAuthHeader);
+      }
+      if (isCookieEnabled) {
+        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_FALSE);
+      }
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);
     }

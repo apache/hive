@@ -68,10 +68,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
      * Create a new vectorization context to create a new projection, but keep
      * same output column manager must be inherited to track the scratch the columns.
      */
-    vOutContext = new VectorizationContext(vContext);
-
-    // Set a fileKey, although this operator doesn't use it.
-    vOutContext.setFileKey(vContext.getFileKey() + "/_SELECT_");
+    vOutContext = new VectorizationContext(getName(), vContext);
 
     vOutContext.resetProjectionColumns();
     for (int i=0; i < colList.size(); ++i) {

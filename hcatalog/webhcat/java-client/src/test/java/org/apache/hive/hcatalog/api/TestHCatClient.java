@@ -18,18 +18,24 @@
  */
 package org.apache.hive.hcatalog.api;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -42,12 +48,17 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hive.hcatalog.api.repl.Command;
+import org.apache.hive.hcatalog.api.repl.ReplicationTask;
+import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
+import org.apache.hive.hcatalog.api.repl.StagingDirectoryProvider;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
+import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,6 +74,8 @@ import static org.junit.Assert.assertArrayEquals;
 
 import org.apache.hadoop.util.Shell;
 
+import javax.annotation.Nullable;
+
 public class TestHCatClient {
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatClient.class);
   private static final String msPort = "20101";
@@ -71,6 +84,8 @@ public class TestHCatClient {
   private static final String replicationTargetHCatPort = "20102";
   private static HiveConf replicationTargetHCatConf;
   private static SecurityManager securityManager;
+  private static boolean useExternalMS = false;
+  private static boolean useExternalMSForReplication = false;
 
   private static class RunMS implements Runnable {
 
@@ -101,18 +116,28 @@ public class TestHCatClient {
 
   @AfterClass
   public static void tearDown() throws Exception {
-    LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
+    if (!useExternalMS) {
+      LOG.info("Shutting down metastore.");
+      System.setSecurityManager(securityManager);
+    }
   }
 
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
+    String metastoreUri = System.getProperty(HiveConf.ConfVars.METASTOREURIS.varname);
+    if (metastoreUri != null) {
+      hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
+      useExternalMS = true;
+      return;
+    }
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hcatConf);
     }
 
+    System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
+        DbNotificationListener.class.getName()); // turn on db notification listener on metastore
     Thread t = new Thread(new RunMS(msPort));
     t.start();
     Thread.sleep(10000);
@@ -162,8 +187,12 @@ public class TestHCatClient {
     assertTrue(testDb.getProperties().size() == 0);
     String warehouseDir = System
       .getProperty("test.warehouse.dir", "/user/hive/warehouse");
-    String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
-    assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
+    if (useExternalMS) {
+      assertTrue(testDb.getLocation().matches(".*" + "/" + db + ".db"));
+    } else {
+      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
+      assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
+    }
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
     cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
     cols.add(new HCatFieldSchema("value", Type.STRING, "value comment"));
@@ -213,7 +242,7 @@ public class TestHCatClient {
     assertEquals("checking " + serdeConstants.SERIALIZATION_NULL_FORMAT, Character.toString('\006'),
       table2.getSerdeParams().get(serdeConstants.SERIALIZATION_NULL_FORMAT));
     
-    assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
+    assertTrue(table2.getLocation().toLowerCase().matches(".*" + ("/" + db + ".db/" + tableTwo).toLowerCase()));
 
     HCatCreateTableDesc tableDesc3 = HCatCreateTableDesc.create(db,
       tableThree, cols).fileFormat("orcfile").build();
@@ -372,7 +401,7 @@ public class TestHCatClient {
       .ifNotExists(true).location("/tmp/" + dbName).build();
     client.createDatabase(dbDesc);
     HCatDatabase newDB = client.getDatabase(dbName);
-    assertTrue(newDB.getLocation().equalsIgnoreCase("file:/tmp/" + dbName));
+    assertTrue(newDB.getLocation().matches(".*/tmp/" + dbName));
     client.close();
   }
 
@@ -789,6 +818,113 @@ public class TestHCatClient {
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
       isReplicationTargetHCatRunning = true;
+    }
+  }
+
+  /**
+   * Test for event-based replication scenario
+   *
+   * Does not test if replication actually happened, merely tests if we're able to consume a repl task
+   * iter appropriately, calling all the functions expected of the interface, without errors.
+   */
+  @Test
+  public void testReplicationTaskIter() throws Exception {
+
+    HCatClient sourceMetastore = HCatClient.create(new Configuration(hcatConf));
+
+    List<HCatNotificationEvent> notifs = sourceMetastore.getNextNotification(
+        0, 0, new IMetaStoreClient.NotificationFilter() {
+      @Override
+      public boolean accept(NotificationEvent event) {
+        return true;
+      }
+    });
+    for(HCatNotificationEvent n : notifs){
+      LOG.info("notif from dblistener:" + n.getEventId()
+          + ":" + n.getEventTime() + ",t:" + n.getEventType() + ",o:" + n.getDbName() + "." + n.getTableName());
+    }
+
+    Iterator<ReplicationTask> taskIter = sourceMetastore.getReplicationTasks(0, 0, "mydb", null);
+    while(taskIter.hasNext()){
+      ReplicationTask task = taskIter.next();
+      HCatNotificationEvent n = task.getEvent();
+      LOG.info("notif from tasks:" + n.getEventId()
+          + ":" + n.getEventTime() + ",t:" + n.getEventType() + ",o:" + n.getDbName() + "." + n.getTableName()
+          + ",s:" + n.getEventScope());
+      LOG.info("task :" + task.getClass().getName());
+      if (task.needsStagingDirs()){
+        StagingDirectoryProvider provider = new StagingDirectoryProvider() {
+          @Override
+          public String getStagingDirectory(String key) {
+            LOG.info("getStagingDirectory(" + key + ") called!");
+            return "/tmp/" + key.replaceAll(" ","_");
+          }
+        };
+        task
+            .withSrcStagingDirProvider(provider)
+            .withDstStagingDirProvider(provider);
+      }
+      if (task.isActionable()){
+        LOG.info("task was actionable!");
+        Function<Command, String> commandDebugPrinter = new Function<Command, String>() {
+          @Override
+          public String apply(@Nullable Command cmd) {
+            StringBuilder sb = new StringBuilder();
+            String serializedCmd = null;
+            try {
+              serializedCmd = ReplicationUtils.serializeCommand(cmd);
+            } catch (IOException e) {
+              e.printStackTrace();
+              throw new RuntimeException(e);
+            }
+            sb.append("SERIALIZED:"+serializedCmd+"\n");
+            Command command = null;
+            try {
+              command = ReplicationUtils.deserializeCommand(serializedCmd);
+            } catch (IOException e) {
+              e.printStackTrace();
+              throw new RuntimeException(e);
+            }
+            sb.append("CMD:[" + command.getClass().getName() + "]\n");
+            sb.append("EVENTID:[" +command.getEventId()+"]\n");
+            for (String s : command.get()) {
+              sb.append("CMD:" + s);
+              sb.append("\n");
+            }
+            sb.append("Retriable:" + command.isRetriable() + "\n");
+            sb.append("Undoable:" + command.isUndoable() + "\n");
+            if (command.isUndoable()) {
+              for (String s : command.getUndo()) {
+                sb.append("UNDO:" + s);
+                sb.append("\n");
+              }
+            }
+            List<String> locns = command.cleanupLocationsPerRetry();
+            sb.append("cleanupLocationsPerRetry entries :" + locns.size());
+            for (String s : locns){
+              sb.append("RETRY_CLEANUP:"+s);
+              sb.append("\n");
+            }
+            locns = command.cleanupLocationsAfterEvent();
+            sb.append("cleanupLocationsAfterEvent entries :" + locns.size());
+            for (String s : locns){
+              sb.append("AFTER_EVENT_CLEANUP:"+s);
+              sb.append("\n");
+            }
+            return sb.toString();
+          }
+        };
+        LOG.info("On src:");
+        for (String s : Iterables.transform(task.getSrcWhCommands(), commandDebugPrinter)){
+          LOG.info(s);
+        }
+        LOG.info("On dest:");
+        for (String s : Iterables.transform(task.getDstWhCommands(), commandDebugPrinter)){
+          LOG.info(s);
+        }
+      } else {
+        LOG.info("task was not actionable.");
+      }
     }
   }
 
