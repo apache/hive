@@ -85,6 +85,9 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("loglevel").withLongOpt("loglevel")
         .withDescription("log levels for the llap instance").create('l'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName("chaosmonkey").withLongOpt("chaosmonkey")
+        .withDescription("chaosmonkey interval").create('m'));
+
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
   }
@@ -101,7 +104,7 @@ public class LlapOptionsProcessor {
     String directory = commandLine.getOptionValue("directory");
 
     String name = commandLine.getOptionValue("name", null);
-    // loglevel & args are parsed by the python processor
+    // loglevel, chaosmonkey & args are parsed by the python processor
 
     return new LlapOptions(name, instances, directory);
   }

@@ -78,7 +78,11 @@ appConfig = """
     "site.global.daemon_args": "%(daemon_args)s",
     "site.global.library_path": "%(hadoop_home)s/lib/native",
     "site.global.memory_val": "%(heap)d",
-    "site.global.pid_file": "${AGENT_WORK_ROOT}/app/run/llap-daemon.pid"
+    "site.global.pid_file": "${AGENT_WORK_ROOT}/app/run/llap-daemon.pid",
+    "internal.chaos.monkey.probability.amlaunchfailure": "0",
+    "internal.chaos.monkey.probability.containerfailure": "%(monkey_percentage)d",
+    "internal.chaos.monkey.interval.seconds": "%(monkey_interval)d",
+    "internal.chaos.monkey.enabled": "%(monkey_enabled)s"
   },
   "components": {
     "slider-appmaster": {
@@ -115,5 +119,4 @@ slider stop %(name)s
 slider destroy %(name)s 
 slider install-package --name LLAP --package  $BASEDIR/llap-%(version)s.zip --replacepkg
 slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json
-slider status %(name)s
 """
