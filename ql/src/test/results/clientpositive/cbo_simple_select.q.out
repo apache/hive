@@ -120,6 +120,16 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1	1	25.0
 NULL	NULL	NULL
 NULL	NULL	NULL
+PREHOOK: query: select * from cbo_t1 where (((key=1) and (c_float=10)) and (c_int=20))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cbo_t1 where (((key=1) and (c_float=10)) and (c_int=20))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
 PREHOOK: query: -- 2. Test Select + TS + FIL
 select * from cbo_t1 where cbo_t1.c_int >= 0
 PREHOOK: type: QUERY

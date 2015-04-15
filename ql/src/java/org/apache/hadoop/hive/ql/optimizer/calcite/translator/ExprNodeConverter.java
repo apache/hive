@@ -39,8 +39,11 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -76,6 +79,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   boolean            partitioningExpr;
   WindowFunctionSpec wfs;
   private final RelDataTypeFactory dTFactory;
+  protected final Log LOG = LogFactory.getLog(this.getClass().getName());
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
           boolean partitioningExpr, RelDataTypeFactory dTFactory) {
@@ -128,29 +132,42 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             call.operands.get(0).getType())) {
       return args.get(0);
     } else if (ASTConverter.isFlat(call)) {
-        // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
-        // exprnode
+      // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
+      // exprnode
+      GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2);
       ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
       tmpExprArgs.addAll(args.subList(0, 2));
-      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2), tmpExprArgs);
+      try {
+        gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, tmpExprArgs);
+      } catch (UDFArgumentException e) {
+        LOG.error(e);
+        throw new RuntimeException(e);
+      }
       for (int i = 2; i < call.operands.size(); i++) {
         tmpExprArgs = new ArrayList<ExprNodeDesc>();
         tmpExprArgs.add(gfDesc);
         tmpExprArgs.add(args.get(i));
-        gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-            SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2), tmpExprArgs);
+        try {
+          gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, tmpExprArgs);
+        } catch (UDFArgumentException e) {
+          LOG.error(e);
+          throw new RuntimeException(e);
+        }
       }
     } else {
-      GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(
-          call.getOperator(), call.getType(), args.size());
+      GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(),
+          args.size());
       if (hiveUdf == null) {
-        throw new RuntimeException("Cannot find UDF for " + call.getType() + " " + call.getOperator()
-            + "[" + call.getOperator().getKind() + "]/" + args.size());
+        throw new RuntimeException("Cannot find UDF for " + call.getType() + " "
+            + call.getOperator() + "[" + call.getOperator().getKind() + "]/" + args.size());
       }
-      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()), hiveUdf, args);
+      try {
+        gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+      } catch (UDFArgumentException e) {
+        LOG.error(e);
+        throw new RuntimeException(e);
+      }
     }
-
     return gfDesc;
   }
 
