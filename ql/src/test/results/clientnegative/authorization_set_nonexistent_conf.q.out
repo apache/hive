@@ -1,0 +1,9 @@
+PREHOOK: query: -- run a sql query to initialize authorization, then try setting a non-existent config param
+use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: -- run a sql query to initialize authorization, then try setting a non-existent config param
+use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+Query returned non-zero code: 1, cause: hive configuration hive.exec.reduce.max does not exists.
