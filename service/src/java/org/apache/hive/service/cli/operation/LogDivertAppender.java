@@ -18,10 +18,16 @@
 
 package org.apache.hive.service.cli.operation;
 import java.io.CharArrayWriter;
+import java.util.Enumeration;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
+import org.apache.hive.service.cli.CLIServiceUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.apache.log4j.WriterAppender;
@@ -36,6 +42,8 @@ import com.google.common.base.Joiner;
 public class LogDivertAppender extends WriterAppender {
   private static final Logger LOG = Logger.getLogger(LogDivertAppender.class.getName());
   private final OperationManager operationManager;
+  private boolean isVerbose;
+  private Layout verboseLayout;
 
   /**
    * A log filter that filters messages coming from the logger with the given names.
@@ -45,18 +53,71 @@ public class LogDivertAppender extends WriterAppender {
    * White list filter is used for less verbose log collection
    */
   private static class NameFilter extends Filter {
-    private final Pattern namePattern;
-    private final boolean excludeMatches;
+    private Pattern namePattern;
+    private LoggingLevel loggingMode;
+    private OperationManager operationManager;
 
-    public NameFilter(boolean isExclusionFilter, String [] loggerNames) {
-      this.excludeMatches = isExclusionFilter;
-      String matchRegex = Joiner.on("|").join(loggerNames);
-      this.namePattern = Pattern.compile(matchRegex);
+    /* Patterns that are excluded in verbose logging level.
+     * Filter out messages coming from log processing classes, or we'll run an infinite loop.
+     */
+    private static final Pattern verboseExcludeNamePattern = Pattern.compile(Joiner.on("|").
+      join(new String[] {LOG.getName(), OperationLog.class.getName(),
+      OperationManager.class.getName()}));
+
+    /* Patterns that are included in execution logging level.
+     * In execution mode, show only select logger messages.
+     */
+    private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
+      join(new String[] {"org.apache.hadoop.mapreduce.JobSubmitter",
+      "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName(),
+      "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
+
+    /* Patterns that are included in performance logging level.
+     * In performance mode, show execution and performance logger messages.
+     */
+    private static final Pattern performanceIncludeNamePattern = Pattern.compile(
+      executionIncludeNamePattern.pattern() + "|" + PerfLogger.class.getName());
+
+    private void setCurrentNamePattern(OperationLog.LoggingLevel mode) {
+      if (mode == OperationLog.LoggingLevel.VERBOSE) {
+        this.namePattern = verboseExcludeNamePattern;
+      } else if (mode == OperationLog.LoggingLevel.EXECUTION) {
+        this.namePattern = executionIncludeNamePattern;
+      } else if (mode == OperationLog.LoggingLevel.PERFORMANCE) {
+        this.namePattern = performanceIncludeNamePattern;
+      }
+    }
+
+    public NameFilter(
+      OperationLog.LoggingLevel loggingMode, OperationManager op) {
+      this.operationManager = op;
+      this.loggingMode = loggingMode;
+      setCurrentNamePattern(loggingMode);
     }
 
     @Override
     public int decide(LoggingEvent ev) {
+      OperationLog log = operationManager.getOperationLogByThread();
+      boolean excludeMatches = (loggingMode == OperationLog.LoggingLevel.VERBOSE);
+
+      if (log == null) {
+        return Filter.DENY;
+      }
+
+      OperationLog.LoggingLevel currentLoggingMode = log.getOpLoggingLevel();
+      // If logging is disabled, deny everything.
+      if (currentLoggingMode == OperationLog.LoggingLevel.NONE) {
+        return Filter.DENY;
+      }
+      // Look at the current session's setting
+      // and set the pattern and excludeMatches accordingly.
+      if (currentLoggingMode != loggingMode) {
+        loggingMode = currentLoggingMode;
+        setCurrentNamePattern(loggingMode);
+      }
+
       boolean isMatch = namePattern.matcher(ev.getLoggerName()).matches();
+
       if (excludeMatches == isMatch) {
         // Deny if this is black-list filter (excludeMatches = true) and it
         // matched
@@ -70,25 +131,61 @@ public class LogDivertAppender extends WriterAppender {
   /** This is where the log message will go to */
   private final CharArrayWriter writer = new CharArrayWriter();
 
-  public LogDivertAppender(Layout layout, OperationManager operationManager, boolean isVerbose) {
-    setLayout(layout);
+  private void setLayout (boolean isVerbose, Layout lo) {
+    if (isVerbose) {
+      if (lo == null) {
+        lo = CLIServiceUtils.verboseLayout;
+        LOG.info("Cannot find a Layout from a ConsoleAppender. Using default Layout pattern.");
+      }
+    } else {
+      lo = CLIServiceUtils.nonVerboseLayout;
+    }
+    setLayout(lo);
+  }
+
+  private void initLayout(boolean isVerbose) {
+    // There should be a ConsoleAppender. Copy its Layout.
+    Logger root = Logger.getRootLogger();
+    Layout layout = null;
+
+    Enumeration<?> appenders = root.getAllAppenders();
+    while (appenders.hasMoreElements()) {
+      Appender ap = (Appender) appenders.nextElement();
+      if (ap.getClass().equals(ConsoleAppender.class)) {
+        layout = ap.getLayout();
+        break;
+      }
+    }
+    setLayout(isVerbose, layout);
+  }
+
+  public LogDivertAppender(OperationManager operationManager,
+    OperationLog.LoggingLevel loggingMode) {
+    isVerbose = (loggingMode == OperationLog.LoggingLevel.VERBOSE);
+    initLayout(isVerbose);
     setWriter(writer);
     setName("LogDivertAppender");
     this.operationManager = operationManager;
+    this.verboseLayout = isVerbose ? layout : CLIServiceUtils.verboseLayout;
+    addFilter(new NameFilter(loggingMode, operationManager));
+  }
 
-    if (isVerbose) {
-      // Filter out messages coming from log processing classes, or we'll run an
-      // infinite loop.
-      String[] exclLoggerNames = { LOG.getName(), OperationLog.class.getName(),
-          OperationManager.class.getName() };
-      addFilter(new NameFilter(true, exclLoggerNames));
-    } else {
-      // in non verbose mode, show only select logger messages
-      String[] inclLoggerNames = { "org.apache.hadoop.mapreduce.JobSubmitter",
-          "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName(),
-          "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"};
-      addFilter(new NameFilter(false, inclLoggerNames));
+  @Override
+  public void doAppend(LoggingEvent event) {
+    OperationLog log = operationManager.getOperationLogByThread();
+
+    // Set current layout depending on the verbose/non-verbose mode.
+    if (log != null) {
+      boolean isCurrModeVerbose = (log.getOpLoggingLevel() == OperationLog.LoggingLevel.VERBOSE);
+
+      // If there is a logging level change from verbose->non-verbose or vice-versa since
+      // the last subAppend call, change the layout to preserve consistency.
+      if (isCurrModeVerbose != isVerbose) {
+        isVerbose = isCurrModeVerbose;
+        setLayout(isVerbose, verboseLayout);
+      }
     }
+    super.doAppend(event);
   }
 
   /**

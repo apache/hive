@@ -26,8 +26,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Alter Table Partition Merge Files")
+
+@Explain(displayName = "Alter Table Partition Merge Files", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTablePartMergeFilesDesc {
 
   private String tableName;

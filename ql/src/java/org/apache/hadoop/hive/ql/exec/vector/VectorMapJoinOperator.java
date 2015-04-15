@@ -120,8 +120,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
 
     // We are making a new output vectorized row batch.
-    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
-    vOutContext.setFileKey(vContext.getFileKey() + "/MAP_JOIN_" + desc.getBigTableAlias());
+    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
   }
 
   @Override

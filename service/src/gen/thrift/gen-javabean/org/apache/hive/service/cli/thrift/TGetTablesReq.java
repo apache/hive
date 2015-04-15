@@ -715,7 +715,7 @@ public class TGetTablesReq implements org.apache.thrift.TBase<TGetTablesReq, TGe
                 struct.tableTypes = new ArrayList<String>(_list172.size);
                 for (int _i173 = 0; _i173 < _list172.size; ++_i173)
                 {
-                  String _elem174; // required
+                  String _elem174; // optional
                   _elem174 = iprot.readString();
                   struct.tableTypes.add(_elem174);
                 }
@@ -856,7 +856,7 @@ public class TGetTablesReq implements org.apache.thrift.TBase<TGetTablesReq, TGe
           struct.tableTypes = new ArrayList<String>(_list177.size);
           for (int _i178 = 0; _i178 < _list177.size; ++_i178)
           {
-            String _elem179; // required
+            String _elem179; // optional
             _elem179 = iprot.readString();
             struct.tableTypes.add(_elem179);
           }

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * DDLWork.
@@ -562,7 +563,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the createTblDesc
    */
-  @Explain(displayName = "Create Table Operator")
+  @Explain(displayName = "Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public CreateTableDesc getCreateTblDesc() {
     return createTblDesc;
   }
@@ -608,7 +609,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the createTblDesc
    */
-  @Explain(displayName = "Create Table Operator")
+  @Explain(displayName = "Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public CreateTableLikeDesc getCreateTblLikeDesc() {
     return createTblLikeDesc;
   }
@@ -624,7 +625,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the createTblDesc
    */
-  @Explain(displayName = "Create View Operator")
+  @Explain(displayName = "Create View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public CreateViewDesc getCreateViewDesc() {
     return createVwDesc;
   }
@@ -640,7 +641,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the dropTblDesc
    */
-  @Explain(displayName = "Drop Table Operator")
+  @Explain(displayName = "Drop Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public DropTableDesc getDropTblDesc() {
     return dropTblDesc;
   }
@@ -656,7 +657,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the alterTblDesc
    */
-  @Explain(displayName = "Alter Table Operator")
+  @Explain(displayName = "Alter Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AlterTableDesc getAlterTblDesc() {
     return alterTblDesc;
   }
@@ -672,7 +673,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showDatabasesDesc
    */
-  @Explain(displayName = "Show Databases Operator")
+  @Explain(displayName = "Show Databases Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowDatabasesDesc getShowDatabasesDesc() {
     return showDatabasesDesc;
   }
@@ -688,7 +689,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showTblsDesc
    */
-  @Explain(displayName = "Show Table Operator")
+  @Explain(displayName = "Show Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowTablesDesc getShowTblsDesc() {
     return showTblsDesc;
   }
@@ -704,7 +705,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showColumnsDesc
    */
-  @Explain(displayName = "Show Columns Operator")
+  @Explain(displayName = "Show Columns Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowColumnsDesc getShowColumnsDesc() {
     return showColumnsDesc;
   }
@@ -720,7 +721,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showFuncsDesc
    */
-  @Explain(displayName = "Show Function Operator")
+  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowFunctionsDesc getShowFuncsDesc() {
     return showFuncsDesc;
   }
@@ -728,17 +729,17 @@ public class DDLWork implements Serializable {
   /**
    * @return the showLocksDesc
    */
-  @Explain(displayName = "Show Lock Operator")
+  @Explain(displayName = "Show Lock Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowLocksDesc getShowLocksDesc() {
     return showLocksDesc;
   }
 
-  @Explain(displayName = "Show Compactions Operator")
+  @Explain(displayName = "Show Compactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowCompactionsDesc getShowCompactionsDesc() {
     return showCompactionsDesc;
   }
 
-  @Explain(displayName = "Show Transactions Operator")
+  @Explain(displayName = "Show Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowTxnsDesc getShowTxnsDesc() {
     return showTxnsDesc;
   }
@@ -746,7 +747,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the lockTblDesc
    */
-  @Explain(displayName = "Lock Table Operator")
+  @Explain(displayName = "Lock Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LockTableDesc getLockTblDesc() {
     return lockTblDesc;
   }
@@ -754,7 +755,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the unlockTblDesc
    */
-  @Explain(displayName = "Unlock Table Operator")
+  @Explain(displayName = "Unlock Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public UnlockTableDesc getUnlockTblDesc() {
     return unlockTblDesc;
   }
@@ -762,7 +763,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the descFuncDesc
    */
-  @Explain(displayName = "Show Function Operator")
+  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public DescFunctionDesc getDescFunctionDesc() {
     return descFunctionDesc;
   }
@@ -818,7 +819,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showPartsDesc
    */
-  @Explain(displayName = "Show Partitions Operator")
+  @Explain(displayName = "Show Partitions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowPartitionsDesc getShowPartsDesc() {
     return showPartsDesc;
   }
@@ -834,7 +835,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showCreateTblDesc
    */
-  @Explain(displayName = "Show Create Table Operator")
+  @Explain(displayName = "Show Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowCreateTableDesc getShowCreateTblDesc() {
     return showCreateTblDesc;
   }
@@ -850,7 +851,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the showIndexesDesc
    */
-  @Explain(displayName = "Show Index Operator")
+  @Explain(displayName = "Show Index Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowIndexesDesc getShowIndexesDesc() {
     return showIndexesDesc;
   }
@@ -862,7 +863,7 @@ public class DDLWork implements Serializable {
   /**
    * @return the descTblDesc
    */
-  @Explain(displayName = "Describe Table Operator")
+  @Explain(displayName = "Describe Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public DescTableDesc getDescTblDesc() {
     return descTblDesc;
   }
@@ -878,7 +879,7 @@ public class DDLWork implements Serializable {
   /**
    * @return information about the partitions we want to add.
    */
-  @Explain(displayName = "Add Partition Operator")
+  @Explain(displayName = "Add Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AddPartitionDesc getAddPartitionDesc() {
     return addPartitionDesc;
   }
@@ -1101,7 +1102,7 @@ public class DDLWork implements Serializable {
     this.alterTableAlterPartDesc = alterPartitionDesc;
   }
 
-  @Explain(displayName = "Truncate Table Operator")
+  @Explain(displayName = "Truncate Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TruncateTableDesc getTruncateTblDesc() {
     return truncateTblDesc;
   }

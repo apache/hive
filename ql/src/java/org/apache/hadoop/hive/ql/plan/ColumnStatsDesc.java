@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * Contains the information needed to persist column level statistics
  */
@@ -51,7 +53,7 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
     this.tableName = tableName;
   }
 
-  @Explain(displayName = "Is Table Level Stats", normalExplain=false)
+  @Explain(displayName = "Is Table Level Stats", explainLevels = { Level.EXTENDED })
   public boolean isTblLevel() {
     return isTblLevel;
   }

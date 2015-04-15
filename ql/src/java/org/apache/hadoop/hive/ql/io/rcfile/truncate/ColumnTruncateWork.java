@@ -30,9 +30,10 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.Mapper;
 
-@Explain(displayName = "Column Truncate")
+@Explain(displayName = "Column Truncate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ColumnTruncateWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;

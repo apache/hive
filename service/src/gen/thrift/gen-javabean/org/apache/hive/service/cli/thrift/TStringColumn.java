@@ -449,7 +449,7 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
                 struct.values = new ArrayList<String>(_list102.size);
                 for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  String _elem104; // required
+                  String _elem104; // optional
                   _elem104 = iprot.readString();
                   struct.values.add(_elem104);
                 }
@@ -533,7 +533,7 @@ public class TStringColumn implements org.apache.thrift.TBase<TStringColumn, TSt
         struct.values = new ArrayList<String>(_list107.size);
         for (int _i108 = 0; _i108 < _list107.size; ++_i108)
         {
-          String _elem109; // required
+          String _elem109; // optional
           _elem109 = iprot.readString();
           struct.values.add(_elem109);
         }

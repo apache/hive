@@ -17,7 +17,8 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V4,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V5,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V6,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V7
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V7,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V8
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -26,9 +27,10 @@ const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V4",
   "HIVE_CLI_SERVICE_PROTOCOL_V5",
   "HIVE_CLI_SERVICE_PROTOCOL_V6",
-  "HIVE_CLI_SERVICE_PROTOCOL_V7"
+  "HIVE_CLI_SERVICE_PROTOCOL_V7",
+  "HIVE_CLI_SERVICE_PROTOCOL_V8"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(7, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(8, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTTypeIdValues[] = {
   TTypeId::BOOLEAN_TYPE,
@@ -50,7 +52,9 @@ int _kTTypeIdValues[] = {
   TTypeId::NULL_TYPE,
   TTypeId::DATE_TYPE,
   TTypeId::VARCHAR_TYPE,
-  TTypeId::CHAR_TYPE
+  TTypeId::CHAR_TYPE,
+  TTypeId::INTERVAL_YEAR_MONTH_TYPE,
+  TTypeId::INTERVAL_DAY_TIME_TYPE
 };
 const char* _kTTypeIdNames[] = {
   "BOOLEAN_TYPE",
@@ -72,9 +76,11 @@ const char* _kTTypeIdNames[] = {
   "NULL_TYPE",
   "DATE_TYPE",
   "VARCHAR_TYPE",
-  "CHAR_TYPE"
+  "CHAR_TYPE",
+  "INTERVAL_YEAR_MONTH_TYPE",
+  "INTERVAL_DAY_TIME_TYPE"
 };
-const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(20, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(22, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTStatusCodeValues[] = {
   TStatusCode::SUCCESS_STATUS,

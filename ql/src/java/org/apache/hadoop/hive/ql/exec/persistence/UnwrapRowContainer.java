@@ -95,6 +95,17 @@ public class UnwrapRowContainer
     internal.addRow(t);
   }
 
+
+  @Override
+  public boolean hasRows() throws HiveException {
+    return internal.hasRows();
+  }
+
+  @Override
+  public boolean isSingleRow() throws HiveException {
+    return internal.isSingleRow();
+  }
+
   @Override
   public int rowCount() throws HiveException {
     return internal.rowCount();

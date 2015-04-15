@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * AlterDatabaseDesc.
  *
  */
-@Explain(displayName = "Create Database")
+@Explain(displayName = "Create Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterDatabaseDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -68,7 +70,7 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
     this.dbProperties = dbProps;
   }
 
-  @Explain(displayName="name")
+  @Explain(displayName="name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
   }

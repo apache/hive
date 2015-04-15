@@ -40,6 +40,7 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 
 import com.google.common.collect.ImmutableList;
@@ -87,7 +88,7 @@ public class HiveProject extends Project implements HiveRelNode {
     // 1 Ensure columnNames are unique - CALCITE-411
     if (fieldNames != null && !Util.isDistinct(fieldNames)) {
       String msg = "Select list contains multiple expressions with the same name." + fieldNames;
-      throw new CalciteSemanticException(msg);
+      throw new CalciteSemanticException(msg, UnsupportedFeature.Same_name_in_multiple_expressions);
     }
     RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), exps, fieldNames);
     return create(cluster, child, exps, rowType, Collections.<RelCollation> emptyList());

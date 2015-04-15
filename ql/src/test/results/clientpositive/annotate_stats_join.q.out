@@ -456,22 +456,6 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col2 (type: int)
           TableScan
-            alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: deptid is not null (type: boolean)
-              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: lastname (type: string), deptid (type: int), locid (type: int)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col2 (type: int)
-          TableScan
             alias: d
             Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -487,6 +471,22 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
+          TableScan
+            alias: e
+            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: deptid is not null (type: boolean)
+              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col2 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:

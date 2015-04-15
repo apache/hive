@@ -21,12 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * CopyWork.
  *
  */
-@Explain(displayName = "Copy")
+@Explain(displayName = "Copy", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CopyWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path fromPath;
@@ -46,12 +47,12 @@ public class CopyWork implements Serializable {
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
   }
   
-  @Explain(displayName = "source")
+  @Explain(displayName = "source", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Path getFromPath() {
     return fromPath;
   }
 
-  @Explain(displayName = "destination")
+  @Explain(displayName = "destination", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Path getToPath() {
     return toPath;
   }

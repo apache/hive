@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * DropDatabaseDesc.
  *
  */
-@Explain(displayName = "Drop Database")
+@Explain(displayName = "Drop Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropDatabaseDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -43,7 +45,7 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
     this.cascade = cascade;
   }
 
-  @Explain(displayName = "database")
+  @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
   }

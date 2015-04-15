@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -106,7 +108,7 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
     Class.forName(driverName);
     Connection con1 = getConnection("default");
-    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE.varname, "" + true);
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -891,6 +893,54 @@ public class TestJdbcDriver2 {
 
     // no more rows
     assertFalse(res.next());
+  }
+
+  @Test
+  public void testIntervalTypes() throws Exception {
+    Statement stmt = con.createStatement();
+
+    // Since interval types not currently supported as table columns, need to create them
+    // as expressions.
+    ResultSet res = stmt.executeQuery(
+        "select case when c17 is null then null else interval '1' year end as col1,"
+        + " c17 -  c17 as col2 from " + dataTypeTableName + " order by col1");
+    ResultSetMetaData meta = res.getMetaData();
+
+    assertEquals("col1", meta.getColumnLabel(1));
+    assertEquals(java.sql.Types.OTHER, meta.getColumnType(1));
+    assertEquals("interval_year_month", meta.getColumnTypeName(1));
+    assertEquals(11, meta.getColumnDisplaySize(1));
+    assertEquals(11, meta.getPrecision(1));
+    assertEquals(0, meta.getScale(1));
+    assertEquals(HiveIntervalYearMonth.class.getName(), meta.getColumnClassName(1));
+
+    assertEquals("col2", meta.getColumnLabel(2));
+    assertEquals(java.sql.Types.OTHER, meta.getColumnType(2));
+    assertEquals("interval_day_time", meta.getColumnTypeName(2));
+    assertEquals(29, meta.getColumnDisplaySize(2));
+    assertEquals(29, meta.getPrecision(2));
+    assertEquals(0, meta.getScale(2));
+    assertEquals(HiveIntervalDayTime.class.getName(), meta.getColumnClassName(2));
+
+    // row 1 - results should be null
+    assertTrue(res.next());
+    // skip the last (partitioning) column since it is always non-null
+    for (int i = 1; i < meta.getColumnCount(); i++) {
+      assertNull("Column " + i + " should be null", res.getObject(i));
+    }
+
+    // row 2 - results should be null
+    assertTrue(res.next());
+    for (int i = 1; i < meta.getColumnCount(); i++) {
+      assertNull("Column " + i + " should be null", res.getObject(i));
+    }
+
+    // row 3
+    assertTrue(res.next());
+    assertEquals("1-0", res.getString(1));
+    assertEquals(1, ((HiveIntervalYearMonth) res.getObject(1)).getYears());
+    assertEquals("0 00:00:00.000000000", res.getString(2));
+    assertEquals(0, ((HiveIntervalDayTime) res.getObject(2)).getDays());
   }
 
   private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {

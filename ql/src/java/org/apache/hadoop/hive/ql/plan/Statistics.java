@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import com.google.common.collect.Lists;
@@ -101,7 +102,7 @@ public class Statistics implements Serializable {
   }
 
   @Override
-  @Explain(displayName = "Statistics")
+  @Explain(displayName = "Statistics", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Num rows: ");

@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * CreateMacroDesc.
  *
  */
-@Explain(displayName = "Create Macro")
+@Explain(displayName = "Create Macro", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateMacroDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -52,7 +53,7 @@ public class CreateMacroDesc implements Serializable {
     this.body = body;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getMacroName() {
     return macroName;
   }

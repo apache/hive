@@ -447,7 +447,7 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
                 struct.open_txns = new HashSet<Long>(2*_set436.size);
                 for (int _i437 = 0; _i437 < _set436.size; ++_i437)
                 {
-                  long _elem438; // required
+                  long _elem438; // optional
                   _elem438 = iprot.readI64();
                   struct.open_txns.add(_elem438);
                 }
@@ -523,7 +523,7 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
         struct.open_txns = new HashSet<Long>(2*_set441.size);
         for (int _i442 = 0; _i442 < _set441.size; ++_i442)
         {
-          long _elem443; // required
+          long _elem443; // optional
           _elem443 = iprot.readI64();
           struct.open_txns.add(_elem443);
         }

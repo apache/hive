@@ -2652,21 +2652,130 @@ class DecimalColumnStatsData {
 
 void swap(DecimalColumnStatsData &a, DecimalColumnStatsData &b);
 
+
+class Date {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  Date() : daysSinceEpoch(0) {
+  }
+
+  virtual ~Date() throw() {}
+
+  int64_t daysSinceEpoch;
+
+  void __set_daysSinceEpoch(const int64_t val) {
+    daysSinceEpoch = val;
+  }
+
+  bool operator == (const Date & rhs) const
+  {
+    if (!(daysSinceEpoch == rhs.daysSinceEpoch))
+      return false;
+    return true;
+  }
+  bool operator != (const Date &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Date & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(Date &a, Date &b);
+
+typedef struct _DateColumnStatsData__isset {
+  _DateColumnStatsData__isset() : lowValue(false), highValue(false) {}
+  bool lowValue;
+  bool highValue;
+} _DateColumnStatsData__isset;
+
+class DateColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "D0719F3BBA8248297BB5287552897F59";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x71,0x9F,0x3B,0xBA,0x82,0x48,0x29,0x7B,0xB5,0x28,0x75,0x52,0x89,0x7F,0x59};
+
+  DateColumnStatsData() : numNulls(0), numDVs(0) {
+  }
+
+  virtual ~DateColumnStatsData() throw() {}
+
+  Date lowValue;
+  Date highValue;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  _DateColumnStatsData__isset __isset;
+
+  void __set_lowValue(const Date& val) {
+    lowValue = val;
+    __isset.lowValue = true;
+  }
+
+  void __set_highValue(const Date& val) {
+    highValue = val;
+    __isset.highValue = true;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const DateColumnStatsData & rhs) const
+  {
+    if (__isset.lowValue != rhs.__isset.lowValue)
+      return false;
+    else if (__isset.lowValue && !(lowValue == rhs.lowValue))
+      return false;
+    if (__isset.highValue != rhs.__isset.highValue)
+      return false;
+    else if (__isset.highValue && !(highValue == rhs.highValue))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const DateColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DateColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(DateColumnStatsData &a, DateColumnStatsData &b);
+
 typedef struct _ColumnStatisticsData__isset {
-  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false), decimalStats(false) {}
+  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false), decimalStats(false), dateStats(false) {}
   bool booleanStats;
   bool longStats;
   bool doubleStats;
   bool stringStats;
   bool binaryStats;
   bool decimalStats;
+  bool dateStats;
 } _ColumnStatisticsData__isset;
 
 class ColumnStatisticsData {
  public:
 
-  static const char* ascii_fingerprint; // = "D079ACEA6EE0998D0A45CB65FF1EAADD";
-  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x79,0xAC,0xEA,0x6E,0xE0,0x99,0x8D,0x0A,0x45,0xCB,0x65,0xFF,0x1E,0xAA,0xDD};
+  static const char* ascii_fingerprint; // = "15E449CA15A23E37F2D54C31ACA52106";
+  static const uint8_t binary_fingerprint[16]; // = {0x15,0xE4,0x49,0xCA,0x15,0xA2,0x3E,0x37,0xF2,0xD5,0x4C,0x31,0xAC,0xA5,0x21,0x06};
 
   ColumnStatisticsData() {
   }
@@ -2679,6 +2788,7 @@ class ColumnStatisticsData {
   StringColumnStatsData stringStats;
   BinaryColumnStatsData binaryStats;
   DecimalColumnStatsData decimalStats;
+  DateColumnStatsData dateStats;
 
   _ColumnStatisticsData__isset __isset;
 
@@ -2706,6 +2816,10 @@ class ColumnStatisticsData {
     decimalStats = val;
   }
 
+  void __set_dateStats(const DateColumnStatsData& val) {
+    dateStats = val;
+  }
+
   bool operator == (const ColumnStatisticsData & rhs) const
   {
     if (!(booleanStats == rhs.booleanStats))
@@ -2719,6 +2833,8 @@ class ColumnStatisticsData {
     if (!(binaryStats == rhs.binaryStats))
       return false;
     if (!(decimalStats == rhs.decimalStats))
+      return false;
+    if (!(dateStats == rhs.dateStats))
       return false;
     return true;
   }
@@ -2739,8 +2855,8 @@ void swap(ColumnStatisticsData &a, ColumnStatisticsData &b);
 class ColumnStatisticsObj {
  public:
 
-  static const char* ascii_fingerprint; // = "E49E62CFC71682004614EFEDAC3CD3F4";
-  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9E,0x62,0xCF,0xC7,0x16,0x82,0x00,0x46,0x14,0xEF,0xED,0xAC,0x3C,0xD3,0xF4};
+  static const char* ascii_fingerprint; // = "A82BA819C9FFEDDEBC0D50F6F4E46534";
+  static const uint8_t binary_fingerprint[16]; // = {0xA8,0x2B,0xA8,0x19,0xC9,0xFF,0xED,0xDE,0xBC,0x0D,0x50,0xF6,0xF4,0xE4,0x65,0x34};
 
   ColumnStatisticsObj() : colName(), colType() {
   }
@@ -2868,8 +2984,8 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 class ColumnStatistics {
  public:
 
-  static const char* ascii_fingerprint; // = "6682E234199B2CD3807B1ED420C6A7F8";
-  static const uint8_t binary_fingerprint[16]; // = {0x66,0x82,0xE2,0x34,0x19,0x9B,0x2C,0xD3,0x80,0x7B,0x1E,0xD4,0x20,0xC6,0xA7,0xF8};
+  static const char* ascii_fingerprint; // = "8A64D0A67FFD3A372726A320B3913D5A";
+  static const uint8_t binary_fingerprint[16]; // = {0x8A,0x64,0xD0,0xA6,0x7F,0xFD,0x3A,0x37,0x27,0x26,0xA3,0x20,0xB3,0x91,0x3D,0x5A};
 
   ColumnStatistics() {
   }
@@ -2912,8 +3028,8 @@ void swap(ColumnStatistics &a, ColumnStatistics &b);
 class AggrStats {
  public:
 
-  static const char* ascii_fingerprint; // = "399BDBAF7503E0BFB5E1D99C83D790CD";
-  static const uint8_t binary_fingerprint[16]; // = {0x39,0x9B,0xDB,0xAF,0x75,0x03,0xE0,0xBF,0xB5,0xE1,0xD9,0x9C,0x83,0xD7,0x90,0xCD};
+  static const char* ascii_fingerprint; // = "1FC765A3AB2954591C14B0D946778213";
+  static const uint8_t binary_fingerprint[16]; // = {0x1F,0xC7,0x65,0xA3,0xAB,0x29,0x54,0x59,0x1C,0x14,0xB0,0xD9,0x46,0x77,0x82,0x13};
 
   AggrStats() : partsFound(0) {
   }
@@ -2956,8 +3072,8 @@ void swap(AggrStats &a, AggrStats &b);
 class SetPartitionsStatsRequest {
  public:
 
-  static const char* ascii_fingerprint; // = "635C0DA9A947DA57AAE693A5DFB86569";
-  static const uint8_t binary_fingerprint[16]; // = {0x63,0x5C,0x0D,0xA9,0xA9,0x47,0xDA,0x57,0xAA,0xE6,0x93,0xA5,0xDF,0xB8,0x65,0x69};
+  static const char* ascii_fingerprint; // = "8BCBF2CE9E942D0FB7D8F4ED57D8DC27";
+  static const uint8_t binary_fingerprint[16]; // = {0x8B,0xCB,0xF2,0xCE,0x9E,0x94,0x2D,0x0F,0xB7,0xD8,0xF4,0xED,0x57,0xD8,0xDC,0x27};
 
   SetPartitionsStatsRequest() {
   }
@@ -3209,8 +3325,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 class TableStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "CE3E8F0D9B310B8D33CB7A89A75F3E05";
-  static const uint8_t binary_fingerprint[16]; // = {0xCE,0x3E,0x8F,0x0D,0x9B,0x31,0x0B,0x8D,0x33,0xCB,0x7A,0x89,0xA7,0x5F,0x3E,0x05};
+  static const char* ascii_fingerprint; // = "2E398BAC949C93A194F1A19CA5074FF8";
+  static const uint8_t binary_fingerprint[16]; // = {0x2E,0x39,0x8B,0xAC,0x94,0x9C,0x93,0xA1,0x94,0xF1,0xA1,0x9C,0xA5,0x07,0x4F,0xF8};
 
   TableStatsResult() {
   }
@@ -3246,8 +3362,8 @@ void swap(TableStatsResult &a, TableStatsResult &b);
 class PartitionsStatsResult {
  public:
 
-  static const char* ascii_fingerprint; // = "FF175B50C5EF6F442D3AF25B06435A39";
-  static const uint8_t binary_fingerprint[16]; // = {0xFF,0x17,0x5B,0x50,0xC5,0xEF,0x6F,0x44,0x2D,0x3A,0xF2,0x5B,0x06,0x43,0x5A,0x39};
+  static const char* ascii_fingerprint; // = "DD38B4AA7D02E288659AA12CBAAEF33B";
+  static const uint8_t binary_fingerprint[16]; // = {0xDD,0x38,0xB4,0xAA,0x7D,0x02,0xE2,0x88,0x65,0x9A,0xA1,0x2C,0xBA,0xAE,0xF3,0x3B};
 
   PartitionsStatsResult() {
   }

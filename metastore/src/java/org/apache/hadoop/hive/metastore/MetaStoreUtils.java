@@ -620,10 +620,10 @@ public class MetaStoreUtils {
    */
   static public boolean validateColumnType(String type) {
     int last = 0;
-    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
       if (i == type.length()
-          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+          || isValidTypeChar(type.charAt(i)) != lastAlphaDigit) {
         String token = type.substring(last, i);
         last = i;
         if (!hiveThriftTypeMap.contains(token)) {
@@ -633,6 +633,10 @@ public class MetaStoreUtils {
       }
     }
     return true;
+  }
+
+  private static boolean isValidTypeChar(char c) {
+    return Character.isLetterOrDigit(c) || c == '_';
   }
 
   public static String validateSkewedColNames(List<String> cols) {
@@ -720,6 +724,12 @@ public class MetaStoreUtils {
             "timestamp");
     typeToThriftTypeMap.put(
         org.apache.hadoop.hive.serde.serdeConstants.DECIMAL_TYPE_NAME, "decimal");
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME,
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME,
+        org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   }
 
   static Set<String> hiveThriftTypeMap; //for validation

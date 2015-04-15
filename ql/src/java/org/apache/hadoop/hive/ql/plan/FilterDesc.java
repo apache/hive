@@ -19,13 +19,15 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.List;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * FilterDesc.
  *
  */
-@Explain(displayName = "Filter Operator")
+@Explain(displayName = "Filter Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class FilterDesc extends AbstractOperatorDesc {
 
   /**
@@ -100,7 +102,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
-  @Explain(displayName = "predicate")
+  @Explain(displayName = "predicate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getPredicateString() {
     StringBuffer sb = new StringBuffer();
     PlanUtils.addExprToStringBuffer(predicate, sb);
@@ -116,7 +118,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.predicate = predicate;
   }
 
-  @Explain(displayName = "isSamplingPred", normalExplain = false)
+  @Explain(displayName = "isSamplingPred", explainLevels = { Level.EXTENDED })
   public boolean getIsSamplingPred() {
     return isSamplingPred;
   }
@@ -133,7 +135,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
-  @Explain(displayName = "sampleDesc", normalExplain = false)
+  @Explain(displayName = "sampleDesc", explainLevels = { Level.EXTENDED })
   public String getSampleDescExpr() {
     return sampleDescr == null ? null : sampleDescr.toString();
   }

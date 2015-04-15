@@ -77,12 +77,12 @@ STAGE PLANS:
                   alias: char_2
                   Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: char(20)), key (type: char(10))
-                    outputColumnNames: value, key
+                    expressions: value (type: char(20)), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(UDFToInteger(key)), count()
-                      keys: value (type: char(20))
+                      aggregations: sum(_col1), count()
+                      keys: _col0 (type: char(20))
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
@@ -101,15 +101,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: char(20)), _col1 (type: bigint), _col2 (type: bigint)
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: char(20))
+                  sort order: +
                   Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: char(20))
-                    sort order: +
-                    Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
             Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:
@@ -209,12 +205,12 @@ STAGE PLANS:
                   alias: char_2
                   Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: char(20)), key (type: char(10))
-                    outputColumnNames: value, key
+                    expressions: value (type: char(20)), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(UDFToInteger(key)), count()
-                      keys: value (type: char(20))
+                      aggregations: sum(_col1), count()
+                      keys: _col0 (type: char(20))
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
@@ -233,15 +229,11 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: char(20)), _col1 (type: bigint), _col2 (type: bigint)
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: char(20))
+                  sort order: -
                   Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: char(20))
-                    sort order: -
-                    Statistics: Num rows: 250 Data size: 49500 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
             Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:

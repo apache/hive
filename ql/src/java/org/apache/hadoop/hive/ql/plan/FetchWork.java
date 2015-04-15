@@ -29,13 +29,14 @@ import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * FetchWork.
  *
  */
-@Explain(displayName = "Fetch Operator")
+@Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -185,7 +186,7 @@ public class FetchWork implements Serializable {
    *
    * @return the partDesc array list
    */
-  @Explain(displayName = "Partition Description", normalExplain = false)
+  @Explain(displayName = "Partition Description", explainLevels = { Level.EXTENDED })
   public ArrayList<PartitionDesc> getPartDescOrderedByPartDir() {
     ArrayList<PartitionDesc> partDescOrdered = partDesc;
 
@@ -232,7 +233,7 @@ public class FetchWork implements Serializable {
   /**
    * @return the limit
    */
-  @Explain(displayName = "limit")
+  @Explain(displayName = "limit", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
   }
@@ -253,7 +254,7 @@ public class FetchWork implements Serializable {
     this.leastNumRows = leastNumRows;
   }
 
-  @Explain(displayName = "Processor Tree")
+  @Explain(displayName = "Processor Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Operator<?> getSource() {
     return source;
   }

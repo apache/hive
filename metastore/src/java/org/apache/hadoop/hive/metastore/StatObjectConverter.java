@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -103,6 +105,13 @@ public class StatObjectConverter {
            binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null,
            binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
            binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
+     } else if (statsObj.getStatsData().isSetDateStats()) {
+       DateColumnStatsData dateStats = statsObj.getStatsData().getDateStats();
+       mColStats.setDateStats(
+           dateStats.isSetNumNulls() ? dateStats.getNumNulls() : null,
+           dateStats.isSetNumDVs() ? dateStats.getNumDVs() : null,
+           dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
+           dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
      }
      return mColStats;
   }
@@ -258,6 +267,19 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(mStatsObj.getNumNulls());
+      Long highValue = mStatsObj.getLongHighValue();
+      if (highValue != null) {
+        dateStats.setHighValue(new Date(highValue));
+      }
+      Long lowValue = mStatsObj.getLongLowValue();
+      if (lowValue != null) {
+        dateStats.setLowValue(new Date(lowValue));
+      }
+      dateStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDateStats(dateStats);
     }
     statsObj.setStatsData(colStatsData);
     return statsObj;
@@ -330,6 +352,13 @@ public class StatObjectConverter {
           binaryStats.isSetNumNulls() ? binaryStats.getNumNulls() : null,
           binaryStats.isSetMaxColLen() ? binaryStats.getMaxColLen() : null,
           binaryStats.isSetAvgColLen() ? binaryStats.getAvgColLen() : null);
+    } else if (statsObj.getStatsData().isSetDateStats()) {
+      DateColumnStatsData dateStats = statsObj.getStatsData().getDateStats();
+      mColStats.setDateStats(
+          dateStats.isSetNumNulls() ? dateStats.getNumNulls() : null,
+          dateStats.isSetNumDVs() ? dateStats.getNumDVs() : null,
+          dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
+          dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
     }
     return mColStats;
   }
@@ -397,6 +426,13 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(mStatsObj.getNumNulls());
+      dateStats.setHighValue(new Date(mStatsObj.getLongHighValue()));
+      dateStats.setLowValue(new Date(mStatsObj.getLongLowValue()));
+      dateStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setDateStats(dateStats);
     }
     statsObj.setStatsData(colStatsData);
     return statsObj;
@@ -473,6 +509,144 @@ public class StatObjectConverter {
       }
       decimalStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setDecimalStats(decimalStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      if (lhigh != null) {
+        dateStats.setHighValue(new Date(MetaStoreDirectSql.extractSqlLong(lhigh)));
+      }
+      if (llow != null) {
+        dateStats.setLowValue(new Date(MetaStoreDirectSql.extractSqlLong(llow)));
+      }
+      dateStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
+      data.setDateStats(dateStats);
+    }
+  }
+
+  public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
+      Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
+      Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses,
+      Object avgLong, Object avgDouble, Object avgDecimal, Object sumDist,
+      boolean useDensityFunctionForNDVEstimation) throws MetaException {
+    colType = colType.toLowerCase();
+    if (colType.equals("boolean")) {
+      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+      boolStats.setNumFalses(MetaStoreDirectSql.extractSqlLong(falses));
+      boolStats.setNumTrues(MetaStoreDirectSql.extractSqlLong(trues));
+      boolStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      data.setBooleanStats(boolStats);
+    } else if (colType.equals("string") || colType.startsWith("varchar")
+        || colType.startsWith("char")) {
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      stringStats.setAvgColLen((Double) avglen);
+      stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
+      stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
+      data.setStringStats(stringStats);
+    } else if (colType.equals("binary")) {
+      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+      binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      binaryStats.setAvgColLen((Double) avglen);
+      binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
+      data.setBinaryStats(binaryStats);
+    } else if (colType.equals("bigint") || colType.equals("int") || colType.equals("smallint")
+        || colType.equals("tinyint") || colType.equals("timestamp")) {
+      LongColumnStatsData longStats = new LongColumnStatsData();
+      longStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      if (lhigh != null) {
+        longStats.setHighValue(MetaStoreDirectSql.extractSqlLong(lhigh));
+      }
+      if (llow != null) {
+        longStats.setLowValue(MetaStoreDirectSql.extractSqlLong(llow));
+      }
+      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
+      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
+          && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
+        // We have estimation, lowerbound and higherbound. We use estimation if
+        // it is between lowerbound and higherbound.
+        long estimation = MetaStoreDirectSql
+            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
+                .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
+        if (estimation < lowerBound) {
+          longStats.setNumDVs(lowerBound);
+        } else if (estimation > higherBound) {
+          longStats.setNumDVs(higherBound);
+        } else {
+          longStats.setNumDVs(estimation);
+        }
+      } else {
+        longStats.setNumDVs(lowerBound);
+      }
+      data.setLongStats(longStats);
+    } else if (colType.equals("double") || colType.equals("float")) {
+      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+      doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      if (dhigh != null) {
+        doubleStats.setHighValue((Double) dhigh);
+      }
+      if (dlow != null) {
+        doubleStats.setLowValue((Double) dlow);
+      }
+      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
+      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      if (useDensityFunctionForNDVEstimation && dhigh != null && dlow != null && avgDouble != null
+          && MetaStoreDirectSql.extractSqlDouble(avgDouble) != 0.0) {
+        long estimation = MetaStoreDirectSql
+            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(dhigh) - MetaStoreDirectSql
+                .extractSqlLong(dlow)) / MetaStoreDirectSql.extractSqlDouble(avgDouble));
+        if (estimation < lowerBound) {
+          doubleStats.setNumDVs(lowerBound);
+        } else if (estimation > higherBound) {
+          doubleStats.setNumDVs(higherBound);
+        } else {
+          doubleStats.setNumDVs(estimation);
+        }
+      } else {
+        doubleStats.setNumDVs(lowerBound);
+      }
+      data.setDoubleStats(doubleStats);
+    } else if (colType.startsWith("decimal")) {
+      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+      decimalStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      Decimal low = null;
+      Decimal high = null;
+      BigDecimal blow = null;
+      BigDecimal bhigh = null;
+      if (dechigh instanceof BigDecimal) {
+        bhigh = (BigDecimal) dechigh;
+        high = new Decimal(ByteBuffer.wrap(bhigh.unscaledValue().toByteArray()),
+            (short) bhigh.scale());
+      } else if (dechigh instanceof String) {
+        bhigh = new BigDecimal((String) dechigh);
+        high = createThriftDecimal((String) dechigh);
+      }
+      decimalStats.setHighValue(high);
+      if (declow instanceof BigDecimal) {
+        blow = (BigDecimal) declow;
+        low = new Decimal(ByteBuffer.wrap(blow.unscaledValue().toByteArray()), (short) blow.scale());
+      } else if (dechigh instanceof String) {
+        blow = new BigDecimal((String) declow);
+        low = createThriftDecimal((String) declow);
+      }
+      decimalStats.setLowValue(low);
+      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
+      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      if (useDensityFunctionForNDVEstimation && dechigh != null && declow != null && avgDecimal != null
+          && MetaStoreDirectSql.extractSqlDouble(avgDecimal) != 0.0) {
+        long estimation = MetaStoreDirectSql.extractSqlLong(MetaStoreDirectSql.extractSqlLong(bhigh
+            .subtract(blow).floatValue() / MetaStoreDirectSql.extractSqlDouble(avgDecimal)));
+        if (estimation < lowerBound) {
+          decimalStats.setNumDVs(lowerBound);
+        } else if (estimation > higherBound) {
+          decimalStats.setNumDVs(higherBound);
+        } else {
+          decimalStats.setNumDVs(estimation);
+        }
+      } else {
+        decimalStats.setNumDVs(lowerBound);
+      }
+      data.setDecimalStats(decimalStats);
     }
   }
 
@@ -484,4 +658,5 @@ public class StatObjectConverter {
   private static String createJdoDecimalString(Decimal d) {
     return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
   }
+
 }

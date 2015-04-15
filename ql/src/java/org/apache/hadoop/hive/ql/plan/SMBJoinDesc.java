@@ -23,8 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Sorted Merge Bucket Map Join Operator")
+
+@Explain(displayName = "Sorted Merge Bucket Map Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class SMBJoinDesc extends MapJoinDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;

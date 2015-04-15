@@ -248,7 +248,6 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
           boolean statsAvailable = false;
           for(FileStatus file: fileList) {
             if (!file.isDir()) {
-              // TODO: do we need to wrap for Llap here? probably later when stats are cached?
               InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
                   table.getInputFormatClass(), jc);
               InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table

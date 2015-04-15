@@ -34,11 +34,11 @@ POSTHOOK: Input: default@acid_utt
 -1070883071	0ruyd6Y50JpdGRf6HqD
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet
-PREHOOK: query: update acid_utt set b = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
+PREHOOK: query: update acid_utt set a = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_utt
 PREHOOK: Output: default@acid_utt
-POSTHOOK: query: update acid_utt set b = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
+POSTHOOK: query: update acid_utt set a = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_utt
 POSTHOOK: Output: default@acid_utt
@@ -50,6 +50,7 @@ POSTHOOK: query: select * from acid_utt order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_utt
 #### A masked pattern was here ####
+NULL	0ruyd6Y50JpdGRf6HqD
 -1073279343	oj1YrV5Wa
 -1073051226	A34p7oRr2WvUJNf
 -1072910839	0iqrc5
@@ -57,6 +58,5 @@ POSTHOOK: Input: default@acid_utt
 -1072076362	2uLyD28144vklju213J1mr
 -1071480828	aw724t8c5558x2xneC624
 -1071363017	Anj0oF
--1070883071	fred
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet

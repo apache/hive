@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public class ShowColumnsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -64,7 +65,7 @@ public class ShowColumnsDesc extends DDLDesc implements Serializable {
   /**
    * @return the tableName
    */
-  @Explain(displayName = "table name")
+  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
@@ -80,7 +81,7 @@ public class ShowColumnsDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }

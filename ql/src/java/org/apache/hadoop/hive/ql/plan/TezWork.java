@@ -36,6 +36,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * TezWork. This class encapsulates all the work objects that can be executed
@@ -44,7 +46,7 @@ import org.apache.hadoop.mapred.JobConf;
  *
  */
 @SuppressWarnings("serial")
-@Explain(displayName = "Tez")
+@Explain(displayName = "Tez", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class TezWork extends AbstractOperatorDesc {
 
   public enum VertexType {
@@ -87,7 +89,7 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * getWorkMap returns a map of "vertex name" to BaseWork
    */
-  @Explain(displayName = "Vertices")
+  @Explain(displayName = "Vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, BaseWork> getWorkMap() {
     Map<String, BaseWork> result = new LinkedHashMap<String, BaseWork>();
     for (BaseWork w: getAllWork()) {
@@ -286,7 +288,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
   }
 
-  @Explain(displayName = "Edges")
+  @Explain(displayName = "Edges", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, List<Dependency>> getDependencyMap() {
     Map<String, List<Dependency>> result = new LinkedHashMap<String, List<Dependency>>();
     for (Map.Entry<BaseWork, List<BaseWork>> entry: invertedWorkGraph.entrySet()) {

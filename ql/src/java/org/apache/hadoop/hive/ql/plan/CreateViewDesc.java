@@ -24,12 +24,14 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * CreateViewDesc.
  *
  */
-@Explain(displayName = "Create View")
+@Explain(displayName = "Create View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -65,7 +67,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.isAlterViewAs = isAlterViewAs;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getViewName() {
     return viewName;
   }
@@ -74,7 +76,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.viewName = viewName;
   }
 
-  @Explain(displayName = "original text")
+  @Explain(displayName = "original text", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getViewOriginalText() {
     return originalText;
   }

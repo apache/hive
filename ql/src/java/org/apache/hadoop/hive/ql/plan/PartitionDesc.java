@@ -40,14 +40,16 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * PartitionDesc.
  *
  */
-@Explain(displayName = "Partition")
+@Explain(displayName = "Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PartitionDesc implements Serializable, Cloneable {
 
   static {
@@ -94,7 +96,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     setOutputFileFormatClass(part.getOutputFormatClass());
   }
 
-  @Explain(displayName = "")
+  @Explain(displayName = "", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TableDesc getTableDesc() {
     return tableDesc;
   }
@@ -103,7 +105,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     this.tableDesc = tableDesc;
   }
 
-  @Explain(displayName = "partition values")
+  @Explain(displayName = "partition values", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LinkedHashMap<String, String> getPartSpec() {
     return partSpec;
   }
@@ -176,7 +178,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     return properties;
   }
 
-  @Explain(displayName = "properties", normalExplain = false)
+  @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
     return HiveStringUtils.getPropertiesExplain(getProperties());
   }
@@ -196,27 +198,27 @@ public class PartitionDesc implements Serializable, Cloneable {
   /**
    * @return the serdeClassName
    */
-  @Explain(displayName = "serde")
+  @Explain(displayName = "serde", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getSerdeClassName() {
     return getProperties().getProperty(serdeConstants.SERIALIZATION_LIB);
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
   }
 
-  @Explain(displayName = "input format")
+  @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();
   }
 
-  @Explain(displayName = "output format")
+  @Explain(displayName = "output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOutputFileFormatClassName() {
     return getOutputFileFormatClass().getName();
   }
 
-  @Explain(displayName = "base file name", normalExplain = false)
+  @Explain(displayName = "base file name", explainLevels = { Level.EXTENDED })
   public String getBaseFileName() {
     return baseFileName;
   }

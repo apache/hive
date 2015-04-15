@@ -156,6 +156,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public void startPauseMonitor(Configuration conf) {
+    /* no supported */
+  }
+
+  @Override
   public boolean isLocalMode(Configuration conf) {
     return "local".equals(getJobLauncherRpcAddress(conf));
   }
