@@ -44,6 +44,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;
   private final List<ColumnEncoding> encodings;
   private final List<Stream> streams;
+  private final long rowCount;
   private RecordReaderImpl.Index rowIndex;
 
   private final int estimatedMemUsage;
@@ -64,6 +65,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
+    rowCount = stripe.getNumberOfRows();
     rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
 
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
@@ -73,7 +75,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     stripeKey = new OrcBatchKey(id, 0, 0);
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
-    estimatedMemUsage = 0;
+    rowCount = estimatedMemUsage = 0;
   }
 
   @VisibleForTesting
@@ -144,6 +146,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   public OrcBatchKey getKey() {
     return stripeKey;
+  }
+
+  public long getRowCount() {
+    return rowCount;
   }
 
   @VisibleForTesting
