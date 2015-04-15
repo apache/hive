@@ -1,6 +1,5 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
@@ -33,9 +32,8 @@ public class HiveSortExchange extends SortExchange {
       RelDistribution distribution, RelCollation collation) {
     RelOptCluster cluster = input.getCluster();
     distribution = RelDistributionTraitDef.INSTANCE.canonize(distribution);
-    RelTraitSet traitSet =
-        input.getTraitSet().replace(Convention.NONE).replace(distribution);
     collation = RelCollationTraitDef.INSTANCE.canonize(collation);
+    RelTraitSet traitSet = RelTraitSet.createEmpty().plus(distribution).plus(collation);
     return new HiveSortExchange(cluster, traitSet, input, distribution, collation);
   }
 
