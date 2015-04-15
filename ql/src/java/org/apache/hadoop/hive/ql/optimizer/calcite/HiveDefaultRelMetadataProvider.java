@@ -51,10 +51,10 @@ public class HiveDefaultRelMetadataProvider {
     // Create cost metadata provider
     final HiveCostModel cm;
     if (HiveConf.getVar(this.hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-            && HiveConf.getBoolVar(this.hiveConf, HiveConf.ConfVars.EXTENDED_COST_MODEL)) {
-      cm = HiveOnTezCostModel.INSTANCE;
+            && HiveConf.getBoolVar(this.hiveConf, HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL)) {
+      cm = HiveOnTezCostModel.getCostModel(hiveConf);
     } else {
-      cm = HiveDefaultCostModel.INSTANCE;
+      cm = HiveDefaultCostModel.getCostModel();
     }
 
     // Get max split size for HiveRelMdParallelism

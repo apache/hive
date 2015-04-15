@@ -26,6 +26,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
@@ -39,23 +40,37 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveAlgorithmsUtil {
 
-  private static final double CPU_COST         = 1.0;
-  private static final double NET_COST         = 150.0 * CPU_COST;
-  private static final double LOCAL_WRITE_COST = 4.0 * NET_COST;
-  private static final double LOCAL_READ_COST  = 4.0 * NET_COST;
-  private static final double HDFS_WRITE_COST  = 10.0 * LOCAL_WRITE_COST;
-  private static final double HDFS_READ_COST   = 1.5 * LOCAL_READ_COST;
+  private final double cpuCost;
+  private final double netCost;
+  private final double localFSWrite;
+  private final double localFSRead;
+  private final double hdfsWrite;
+  private final double hdfsRead;
+
+  HiveAlgorithmsUtil(HiveConf conf) {
+    cpuCost = Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_CPU));
+    netCost = cpuCost
+        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_NET));
+    localFSWrite = netCost
+        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_WRITE));
+    localFSRead = netCost
+        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_READ));
+    hdfsWrite = localFSWrite
+        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_WRITE));
+    hdfsRead = localFSRead
+        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_READ));
+  }
 
   public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr) {
     return new HiveCost(hr.getRows(), 0, 0);
   }
 
-  public static HiveCost computeCost(HiveTableScan t) {
+  public HiveCost computeCost(HiveTableScan t) {
     double cardinality = t.getRows();
-    return new HiveCost(cardinality, 0, HDFS_WRITE_COST * cardinality * 0);
+    return new HiveCost(cardinality, 0, hdfsWrite * cardinality * 0);
   }
 
-  public static double computeSortMergeCPUCost(
+  public double computeSortMergeCPUCost(
           ImmutableList<Double> cardinalities,
           ImmutableBitSet sorted) {
     // Sort-merge join
@@ -67,16 +82,16 @@ public class HiveAlgorithmsUtil {
         cpuCost += computeSortCPUCost(cardinality);
       }
       // Merge cost
-      cpuCost += cardinality * CPU_COST;
+      cpuCost += cardinality * cpuCost;
     }
     return cpuCost;
   }
 
-  public static double computeSortCPUCost(Double cardinality) {
-    return cardinality * Math.log(cardinality) * CPU_COST;
+  public double computeSortCPUCost(Double cardinality) {
+    return cardinality * Math.log(cardinality) * cpuCost;
   }
 
-  public static double computeSortMergeIOCost(
+  public double computeSortMergeIOCost(
           ImmutableList<Pair<Double, Double>> relationInfos) {
     // Sort-merge join
     double ioCost = 0.0;
@@ -86,17 +101,17 @@ public class HiveAlgorithmsUtil {
     return ioCost;
   }
 
-  public static double computeSortIOCost(Pair<Double, Double> relationInfo) {
+  public double computeSortIOCost(Pair<Double, Double> relationInfo) {
     // Sort-merge join
     double ioCost = 0.0;
     double cardinality = relationInfo.left;
     double averageTupleSize = relationInfo.right;
     // Write cost
-    ioCost += cardinality * averageTupleSize * LOCAL_WRITE_COST;
+    ioCost += cardinality * averageTupleSize * localFSWrite;
     // Read cost
-    ioCost += cardinality * averageTupleSize * LOCAL_READ_COST;
+    ioCost += cardinality * averageTupleSize * localFSRead;
     // Net transfer cost
-    ioCost += cardinality * averageTupleSize * NET_COST;
+    ioCost += cardinality * averageTupleSize * netCost;
     return ioCost;
   }
 
@@ -110,12 +125,12 @@ public class HiveAlgorithmsUtil {
       if (!streaming.get(i)) {
         cpuCost += cardinality;
       }
-      cpuCost += cardinality * CPU_COST;
+      cpuCost += cardinality * cpuCost;
     }
     return cpuCost;
   }
 
-  public static double computeMapJoinIOCost(
+  public double computeMapJoinIOCost(
           ImmutableList<Pair<Double, Double>> relationInfos,
           ImmutableBitSet streaming, int parallelism) {
     // Hash-join
@@ -124,13 +139,13 @@ public class HiveAlgorithmsUtil {
       double cardinality = relationInfos.get(i).left;
       double averageTupleSize = relationInfos.get(i).right;
       if (!streaming.get(i)) {
-        ioCost += cardinality * averageTupleSize * NET_COST * parallelism;
+        ioCost += cardinality * averageTupleSize * netCost * parallelism;
       }
     }
     return ioCost;
   }
 
-  public static double computeBucketMapJoinCPUCost(
+  public double computeBucketMapJoinCPUCost(
           ImmutableList<Double> cardinalities,
           ImmutableBitSet streaming) {
     // Hash-join
@@ -138,14 +153,14 @@ public class HiveAlgorithmsUtil {
     for (int i=0; i<cardinalities.size(); i++) {
       double cardinality = cardinalities.get(i);
       if (!streaming.get(i)) {
-        cpuCost += cardinality * CPU_COST;
+        cpuCost += cardinality * cpuCost;
       }
-      cpuCost += cardinality * CPU_COST;
+      cpuCost += cardinality * cpuCost;
     }
     return cpuCost;
   }
 
-  public static double computeBucketMapJoinIOCost(
+  public double computeBucketMapJoinIOCost(
           ImmutableList<Pair<Double, Double>> relationInfos,
           ImmutableBitSet streaming, int parallelism) {
     // Hash-join
@@ -154,7 +169,7 @@ public class HiveAlgorithmsUtil {
       double cardinality = relationInfos.get(i).left;
       double averageTupleSize = relationInfos.get(i).right;
       if (!streaming.get(i)) {
-        ioCost += cardinality * averageTupleSize * NET_COST * parallelism;
+        ioCost += cardinality * averageTupleSize * netCost * parallelism;
       }
     }
     return ioCost;
@@ -165,12 +180,12 @@ public class HiveAlgorithmsUtil {
     // Hash-join
     double cpuCost = 0.0;
     for (int i=0; i<cardinalities.size(); i++) {
-      cpuCost += cardinalities.get(i) * CPU_COST;
+      cpuCost += cardinalities.get(i) * cpuCost;
     }
     return cpuCost;
   }
 
-  public static double computeSMBMapJoinIOCost(
+  public double computeSMBMapJoinIOCost(
           ImmutableList<Pair<Double, Double>> relationInfos,
           ImmutableBitSet streaming, int parallelism) {
     // Hash-join
@@ -179,7 +194,7 @@ public class HiveAlgorithmsUtil {
       double cardinality = relationInfos.get(i).left;
       double averageTupleSize = relationInfos.get(i).right;
       if (!streaming.get(i)) {
-        ioCost += cardinality * averageTupleSize * NET_COST * parallelism;
+        ioCost += cardinality * averageTupleSize * netCost * parallelism;
       }
     }
     return ioCost;

@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
@@ -33,8 +34,15 @@ import com.google.common.collect.Sets;
  */
 public class HiveDefaultCostModel extends HiveCostModel {
   
-  public static final HiveDefaultCostModel INSTANCE =
-          new HiveDefaultCostModel();
+  private static HiveDefaultCostModel INSTANCE;
+
+  synchronized public static HiveDefaultCostModel getCostModel() {
+    if (INSTANCE == null) {
+      INSTANCE = new HiveDefaultCostModel();
+    }
+
+    return INSTANCE;
+  }
 
   private HiveDefaultCostModel() {
     super(Sets.newHashSet(DefaultJoinAlgorithm.INSTANCE));

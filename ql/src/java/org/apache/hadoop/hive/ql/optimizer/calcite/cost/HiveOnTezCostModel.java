@@ -29,6 +29,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -42,15 +43,26 @@ import com.google.common.collect.Sets;
  */
 public class HiveOnTezCostModel extends HiveCostModel {
 
-  public static final HiveOnTezCostModel INSTANCE =
-          new HiveOnTezCostModel();
+  private static HiveOnTezCostModel INSTANCE;
 
-  private HiveOnTezCostModel() {
+  private static HiveAlgorithmsUtil algoUtils;
+
+  synchronized public static HiveOnTezCostModel getCostModel(HiveConf conf) {
+    if (INSTANCE == null) {
+      INSTANCE = new HiveOnTezCostModel(conf);
+    }
+
+    return INSTANCE;
+  }
+
+  private HiveOnTezCostModel(HiveConf conf) {
     super(Sets.newHashSet(
             TezCommonJoinAlgorithm.INSTANCE,
             TezMapJoinAlgorithm.INSTANCE,
             TezBucketJoinAlgorithm.INSTANCE,
             TezSMBJoinAlgorithm.INSTANCE));
+
+    algoUtils = new HiveAlgorithmsUtil(conf);
   }
 
   @Override
@@ -69,7 +81,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
         return null;
       }
       // 2. CPU cost = sorting cost
-      final double cpuCost = HiveAlgorithmsUtil.computeSortCPUCost(rCount);
+      final double cpuCost = algoUtils.computeSortCPUCost(rCount);
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to GBy +
       //              cost of transferring map outputs to GBy operator
@@ -77,7 +89,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       if (rAverageSize == null) {
         return null;
       }
-      final double ioCost = HiveAlgorithmsUtil.computeSortIOCost(new Pair<Double,Double>(rCount,rAverageSize));
+      final double ioCost = algoUtils.computeSortIOCost(new Pair<Double,Double>(rCount,rAverageSize));
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
     }
@@ -118,7 +130,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(leftRCount).
               add(rightRCount).
               build();
-      final double cpuCost = HiveAlgorithmsUtil.computeSortMergeCPUCost(cardinalities, join.getSortedInputs());
+      final double cpuCost = algoUtils.computeSortMergeCPUCost(cardinalities, join.getSortedInputs());
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to join +
       //              cost of transferring map outputs to Join operator
@@ -131,7 +143,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(new Pair<Double,Double>(leftRCount,leftRAverageSize)).
               add(new Pair<Double,Double>(rightRCount,rightRAverageSize)).
               build();
-      final double ioCost = HiveAlgorithmsUtil.computeSortMergeIOCost(relationInfos);
+      final double ioCost = algoUtils.computeSortMergeIOCost(relationInfos);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
     }
@@ -242,7 +254,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               build();
       final int parallelism = RelMetadataQuery.splitCount(join) == null
               ? 1 : RelMetadataQuery.splitCount(join);
-      final double ioCost = HiveAlgorithmsUtil.computeMapJoinIOCost(relationInfos, streaming, parallelism);
+      final double ioCost = algoUtils.computeMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
     }
@@ -382,7 +394,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
           return null;
       }
       ImmutableBitSet streaming = streamingBuilder.build();
-      final double cpuCost = HiveAlgorithmsUtil.computeBucketMapJoinCPUCost(cardinalities, streaming);
+      final double cpuCost = algoUtils.computeBucketMapJoinCPUCost(cardinalities, streaming);
       // 3. IO cost = cost of transferring small tables to join node *
       //              degree of parallelism
       final Double leftRAverageSize = RelMetadataQuery.getAverageRowSize(join.getLeft());
@@ -396,7 +408,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               build();
       final int parallelism = RelMetadataQuery.splitCount(join) == null
               ? 1 : RelMetadataQuery.splitCount(join);
-      final double ioCost = HiveAlgorithmsUtil.computeBucketMapJoinIOCost(relationInfos, streaming, parallelism);
+      final double ioCost = algoUtils.computeBucketMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
     }
@@ -540,7 +552,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
               build();
       final int parallelism = RelMetadataQuery.splitCount(join) == null
               ? 1 : RelMetadataQuery.splitCount(join);
-      final double ioCost = HiveAlgorithmsUtil.computeSMBMapJoinIOCost(relationInfos, streaming, parallelism);
+      final double ioCost = algoUtils.computeSMBMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
     }
