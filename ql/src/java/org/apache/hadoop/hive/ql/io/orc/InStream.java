@@ -697,9 +697,10 @@ public abstract class InStream extends InputStream {
           toDecompress = new ArrayList<ProcCacheChunk>();
           toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
         }
-        lastCached = addOneCompressionBuffer(bc, zcr, bufferSize,
+        ProcCacheChunk newCached = addOneCompressionBuffer(bc, zcr, bufferSize,
             cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
-        next = (lastCached != null) ? lastCached.next : null;
+        lastCached = (newCached == null) ? lastCached : newCached;
+        next = (newCached != null) ? newCached.next : null;
         currentCOffset = (next != null) ? next.getOffset() : -1;
       }
 
