@@ -1,3 +1,15 @@
+PREHOOK: query: DROP TABLE cross_numbers
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE cross_numbers
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_llap_small
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_llap_small
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_llap(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -32,6 +44,22 @@ POSTHOOK: query: CREATE TABLE orc_llap(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap
+PREHOOK: query: CREATE TABLE orc_llap_small(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT)
+    STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap_small
+POSTHOOK: query: CREATE TABLE orc_llap_small(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT)
+    STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap_small
 PREHOOK: query: create table cross_numbers(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -80,6 +108,110 @@ POSTHOOK: Lineage: orc_llap.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 POSTHOOK: Lineage: orc_llap.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_llap.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_llap.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (cross_numbers)cross_numbers.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: insert into table orc_llap_small
+select ctinyint, csmallint, cint from alltypesorc where ctinyint is not null and cint is not null limit 15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap_small
+POSTHOOK: query: insert into table orc_llap_small
+select ctinyint, csmallint, cint from alltypesorc where ctinyint is not null and cint is not null limit 15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap_small
+POSTHOOK: Lineage: orc_llap_small.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_small.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: -- Cross join with no projection - do it on small table
+explain
+select count(1) from orc_llap_small y join orc_llap_small x
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Cross join with no projection - do it on small table
+explain
+select count(1) from orc_llap_small y join orc_llap_small x
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:$hdt$_0:y 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:$hdt$_0:y 
+          TableScan
+            alias: y
+            Statistics: Num rows: 15 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 15 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: y
+            Statistics: Num rows: 15 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 15 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                Statistics: Num rows: 16 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Group By Operator
+                  aggregations: count(1)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      LLAP IO: all inputs
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+225
 PREHOOK: query: -- Hash cannot be vectorized, so run hash as the last step on a temp table
 drop table llap_temp_table
 PREHOOK: type: DROPTABLE
@@ -915,3 +1047,27 @@ POSTHOOK: query: drop table llap_temp_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@llap_temp_table
 POSTHOOK: Output: default@llap_temp_table
+PREHOOK: query: DROP TABLE cross_numbers
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@cross_numbers
+PREHOOK: Output: default@cross_numbers
+POSTHOOK: query: DROP TABLE cross_numbers
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@cross_numbers
+POSTHOOK: Output: default@cross_numbers
+PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap
+PREHOOK: Output: default@orc_llap
+POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: default@orc_llap
+PREHOOK: query: DROP TABLE orc_llap_small
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap_small
+PREHOOK: Output: default@orc_llap_small
+POSTHOOK: query: DROP TABLE orc_llap_small
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap_small
+POSTHOOK: Output: default@orc_llap_small

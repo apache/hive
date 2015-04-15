@@ -235,6 +235,7 @@ public class EncodedReaderImpl implements EncodedReader {
   }
 
   public static final class OrcEncodedColumnBatch extends EncodedColumnBatch<OrcBatchKey> {
+    public static final int ALL_RGS = -1;
     public void init(long fileId, int stripeIx, int rgIx, int columnCount) {
       if (batchKey == null) {
         batchKey = new OrcBatchKey(fileId, stripeIx, rgIx);
@@ -272,11 +273,13 @@ public class EncodedReaderImpl implements EncodedReader {
     boolean isCompressed = (codec != null);
     DiskRangeListMutateHelper toRead = null;
     DiskRangeListCreateHelper listToRead = new DiskRangeListCreateHelper();
+    boolean hasIndexOnlyCols = false;
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int colIx = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
       if (!included[colIx] || StreamName.getArea(streamKind) != StreamName.Area.DATA) {
+        hasIndexOnlyCols = hasIndexOnlyCols | included[colIx];
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Skipping stream: " + streamKind + " at " + offset + ", " + length);
         }
@@ -319,7 +322,14 @@ public class EncodedReaderImpl implements EncodedReader {
     }
 
     if (listToRead.get() == null) {
-      LOG.warn("Nothing to read for stripe [" + stripe + "]");
+      // No data to read for this stripe. Check if we have some included index-only columns.
+      if (hasIndexOnlyCols) {
+        OrcEncodedColumnBatch ecb = ECB_POOL.take();
+        ecb.init(fileId, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
+        consumer.consumeData(ecb);
+      } else {
+        LOG.warn("Nothing to read for stripe [" + stripe + "]");
+      }
       releaseContexts(colCtxs);
       return;
     }

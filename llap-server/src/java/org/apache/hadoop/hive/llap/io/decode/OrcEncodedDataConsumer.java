@@ -78,8 +78,13 @@ public class OrcEncodedDataConsumer
       OrcStripeMetadata stripeMetadata = stripes[currentStripeIndex];
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.batchKey.rgIx;
-      OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexes()[0].getEntry(rgIdx);
-      long nonNullRowCount = getRowCount(rowIndex);
+      long nonNullRowCount = -1;
+      if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
+        nonNullRowCount = stripeMetadata.getRowCount();
+      } else {
+        OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexes()[0].getEntry(rgIdx);
+        nonNullRowCount = getRowCount(rowIndex);
+      }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       int numCols = batch.columnIxs.length;

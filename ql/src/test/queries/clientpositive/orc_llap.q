@@ -7,6 +7,10 @@ SET hive.exec.orc.default.row.index.stride=1000;
 SET hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
 
+DROP TABLE cross_numbers;
+DROP TABLE orc_llap;
+DROP TABLE orc_llap_small;
+
 CREATE TABLE orc_llap(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -22,6 +26,13 @@ CREATE TABLE orc_llap(
     cboolean2 BOOLEAN)
     STORED AS ORC;
 
+CREATE TABLE orc_llap_small(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT)
+    STORED AS ORC;
+
+
 create table cross_numbers(i int);
 
 insert into table cross_numbers
@@ -32,8 +43,17 @@ insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers;
 
+insert into table orc_llap_small
+select ctinyint, csmallint, cint from alltypesorc where ctinyint is not null and cint is not null limit 15;
+
+
 SET hive.llap.io.enabled=true;
 set hive.auto.convert.join=true;
+
+-- Cross join with no projection - do it on small table
+explain
+select count(1) from orc_llap_small y join orc_llap_small x;
+select count(1) from orc_llap_small y join orc_llap_small x;
 
 
 -- Hash cannot be vectorized, so run hash as the last step on a temp table
@@ -116,3 +136,8 @@ select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.cs
 select sum(hash(*)) from llap_temp_table;
 
 drop table llap_temp_table;
+
+
+DROP TABLE cross_numbers;
+DROP TABLE orc_llap;
+DROP TABLE orc_llap_small;
