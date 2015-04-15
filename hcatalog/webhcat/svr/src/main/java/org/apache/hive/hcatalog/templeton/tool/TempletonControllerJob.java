@@ -18,9 +18,7 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 
@@ -28,13 +26,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
@@ -47,7 +41,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Tool;
 import org.apache.hive.hcatalog.templeton.AppConfig;
-import org.apache.hive.hcatalog.templeton.Main;
 import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
 import org.apache.thrift.TException;
@@ -114,6 +107,15 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     if(memoryMb != null && memoryMb.length() != 0) {
       conf.set(AppConfig.HADOOP_MAP_MEMORY_MB, memoryMb);
     }
+    String amMemoryMB = appConf.amMemoryMb();
+    if (amMemoryMB != null && !amMemoryMB.isEmpty()) {
+      conf.set(AppConfig.HADOOP_MR_AM_MEMORY_MB, amMemoryMB);
+    }
+    String amJavaOpts = appConf.controllerAMChildOpts();
+    if (amJavaOpts != null && !amJavaOpts.isEmpty()) {
+      conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
+    }
+
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
     Job job = new Job(conf);

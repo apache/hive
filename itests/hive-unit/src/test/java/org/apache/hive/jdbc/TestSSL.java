@@ -155,7 +155,7 @@ public class TestSSL {
         cause = cause.getCause();
       }
       Assert.assertEquals("org.apache.http.NoHttpResponseException", cause.getClass().getName());
-      Assert.assertEquals("The target server failed to respond", cause.getMessage());
+      Assert.assertTrue(cause.getMessage().contains("failed to respond"));
     }
     miniHS2.stop();
   }

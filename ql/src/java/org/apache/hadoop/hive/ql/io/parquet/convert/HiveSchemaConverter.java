@@ -98,7 +98,8 @@ public class HiveSchemaConverter {
         return Types.optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(bytes).as(OriginalType.DECIMAL).
             scale(scale).precision(prec).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
-        return new PrimitiveType(repetition, PrimitiveTypeName.INT32, name, OriginalType.DATE);
+        return Types.primitive(PrimitiveTypeName.INT32, repetition).as(OriginalType.DATE).named
+            (name);
       } else if (typeInfo.equals(TypeInfoFactory.unknownTypeInfo)) {
         throw new UnsupportedOperationException("Unknown type not implemented");
       } else {

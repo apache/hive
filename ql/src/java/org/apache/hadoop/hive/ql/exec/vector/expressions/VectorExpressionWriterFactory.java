@@ -28,6 +28,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -47,6 +49,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
@@ -56,6 +60,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObj
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * VectorExpressionWritableFactory helper class for generating VectorExpressionWritable objects.
@@ -430,6 +435,12 @@ public final class VectorExpressionWriterFactory {
           case DATE:
             return genVectorExpressionWritableDate(
                 (SettableDateObjectInspector) fieldObjInspector);
+          case INTERVAL_YEAR_MONTH:
+            return genVectorExpressionWritableIntervalYearMonth(
+                (SettableHiveIntervalYearMonthObjectInspector) fieldObjInspector);
+          case INTERVAL_DAY_TIME:
+            return genVectorExpressionWritableIntervalDayTime(
+                (SettableHiveIntervalDayTimeObjectInspector) fieldObjInspector);
           case DECIMAL:
             return genVectorExpressionWritableDecimal(
                 (SettableHiveDecimalObjectInspector) fieldObjInspector);
@@ -583,6 +594,84 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object initValue(Object ignored) {
         return ((SettableTimestampObjectInspector) this.objectInspector).create(new Timestamp(0));
+      }
+   }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableIntervalYearMonth(
+      SettableHiveIntervalYearMonthObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterLong() {
+      private Object obj;
+      private HiveIntervalYearMonth interval;
+
+      public VectorExpressionWriter init(SettableHiveIntervalYearMonthObjectInspector objInspector)
+          throws HiveException {
+        super.init(objInspector);
+        interval = new HiveIntervalYearMonth();
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(long value) {
+        interval.set((int) value);
+        ((SettableHiveIntervalYearMonthObjectInspector) this.objectInspector).set(obj, interval);
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object field, long value) {
+        if (null == field) {
+          field = initValue(null);
+        }
+        interval.set((int) value);
+        ((SettableHiveIntervalYearMonthObjectInspector) this.objectInspector).set(field, interval);
+        return field;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableHiveIntervalYearMonthObjectInspector) this.objectInspector)
+            .create(new HiveIntervalYearMonth());
+      }
+   }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableIntervalDayTime(
+      SettableHiveIntervalDayTimeObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterLong() {
+      private Object obj;
+      private HiveIntervalDayTime interval;
+
+      public VectorExpressionWriter init(SettableHiveIntervalDayTimeObjectInspector objInspector)
+          throws HiveException {
+        super.init(objInspector);
+        interval = new HiveIntervalDayTime();
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object writeValue(long value) {
+        DateUtils.setIntervalDayTimeTotalNanos(interval, value);
+        ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(obj, interval);
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object field, long value) {
+        if (null == field) {
+          field = initValue(null);
+        }
+        DateUtils.setIntervalDayTimeTotalNanos(interval, value);
+        ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector).set(field, interval);
+        return field;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableHiveIntervalDayTimeObjectInspector) this.objectInspector)
+            .create(new HiveIntervalDayTime());
       }
    }.init(fieldObjInspector);
   }

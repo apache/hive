@@ -19,12 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
@@ -38,6 +37,8 @@ import org.junit.Test;
  * Test cases for vectorized filter operator.
  */
 public class TestVectorFilterOperator {
+
+  HiveConf hconf = new HiveConf();
 
   /**
    * Fundamental logic and performance tests for vector filters belong here.
@@ -87,7 +88,7 @@ public class TestVectorFilterOperator {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     FilterDesc fdesc = new FilterDesc();
     fdesc.setPredicate(col1Expr);
     return new VectorFilterOperator(vc, fdesc);
@@ -96,6 +97,7 @@ public class TestVectorFilterOperator {
   @Test
   public void testBasicFilterOperator() throws HiveException {
     VectorFilterOperator vfo = getAVectorFilterOperator();
+    vfo.initialize(hconf, null);
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr();
@@ -124,6 +126,7 @@ public class TestVectorFilterOperator {
   @Test
   public void testBasicFilterLargeData() throws HiveException {
     VectorFilterOperator vfo = getAVectorFilterOperator();
+    vfo.initialize(hconf, null);
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr();
@@ -136,7 +139,7 @@ public class TestVectorFilterOperator {
     VectorizedRowBatch vrg = fdr.getNext();
 
     while (vrg.size > 0) {
-      vfo.processOp(vrg, 0);
+      vfo.process(vrg, 0);
       vrg = fdr.getNext();
     }
     long endTime = System.currentTimeMillis();

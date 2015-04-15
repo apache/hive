@@ -151,7 +151,7 @@ public class TestVectorizationContext {
     VectorUDFUnixTimeStampLong v1 = new VectorUDFUnixTimeStampLong();
     VectorExpressionDescriptor.Builder builder1 = new VectorExpressionDescriptor.Builder();
     VectorExpressionDescriptor.Descriptor d1 = builder1.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY)
+        .setNumArguments(1).setArgumentTypes(VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY)
         .setInputExpressionTypes(VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
     assertTrue(d1.matches(v1.getDescriptor()));
 
@@ -247,7 +247,7 @@ public class TestVectorizationContext {
     children5.add(col6Expr);
     modExpr.setChildren(children5);
 
-    VectorizationContext vc = new VectorizationContext();
+    VectorizationContext vc = new VectorizationContext("name");
     vc.addInitialColumn("col1");
     vc.addInitialColumn("col2");
     vc.addInitialColumn("col3");
@@ -297,7 +297,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -322,7 +322,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -341,7 +341,7 @@ public class TestVectorizationContext {
     children1.add(col2Expr);
     exprDesc.setChildren(children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -360,7 +360,7 @@ public class TestVectorizationContext {
     children1.add(col2Expr);
     exprDesc.setChildren(children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -378,7 +378,7 @@ public class TestVectorizationContext {
     children1.add(col2Expr);
     exprDesc.setChildren(children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -395,7 +395,7 @@ public class TestVectorizationContext {
     children1.add(col2Expr);
     exprDesc.setChildren(children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -412,7 +412,7 @@ public class TestVectorizationContext {
     children1.add(col2Expr);
     exprDesc.setChildren(children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -434,7 +434,7 @@ public class TestVectorizationContext {
 
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
@@ -480,7 +480,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(andExprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -530,7 +530,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression veAnd = vc.getVectorExpression(andExprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(veAnd.getClass(), FilterExprAndExpr.class);
     assertEquals(veAnd.getChildExpressions()[0].getClass(), FilterLongColGreaterLongScalar.class);
@@ -555,7 +555,7 @@ public class TestVectorizationContext {
     orExprDesc.setChildren(children4);
 
     //Allocate new Vectorization context to reset the intermediate columns.
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
     VectorExpression veOr = vc.getVectorExpression(orExprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(veOr.getClass(), FilterExprOrExpr.class);
     assertEquals(veOr.getChildExpressions()[0].getClass(), FilterLongColGreaterLongScalar.class);
@@ -596,7 +596,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(notExpr, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -633,7 +633,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(isNullExpr, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -674,7 +674,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(isNotNullExpr, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -703,7 +703,7 @@ public class TestVectorizationContext {
 
     List<String> columns = new ArrayList<String>();
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(scalarMinusConstant, VectorExpressionDescriptor.Mode.PROJECTION);
 
     assertEquals(ve.getClass(), LongScalarSubtractLongColumn.class);
@@ -726,7 +726,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
 
@@ -744,7 +744,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("col0");
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(negExprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
@@ -762,7 +762,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("col0");
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(negExprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
@@ -787,7 +787,7 @@ public class TestVectorizationContext {
 
     List<String> columns = new ArrayList<String>();
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(scalarGreaterColExpr, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(FilterLongScalarGreaterLongColumn.class, ve.getClass());
   }
@@ -810,7 +810,7 @@ public class TestVectorizationContext {
 
     List<String> columns = new ArrayList<String>();
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(colEqualScalar, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(FilterLongColEqualLongScalar.class, ve.getClass());
   }
@@ -833,7 +833,7 @@ public class TestVectorizationContext {
 
     List<String> columns = new ArrayList<String>();
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(colEqualScalar, VectorExpressionDescriptor.Mode.PROJECTION);
     assertEquals(LongColEqualLongScalar.class, ve.getClass());
   }
@@ -850,7 +850,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("b");
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     GenericUDF stringLower = new GenericUDFLower();
     stringUnary.setGenericUDF(stringLower);
 
@@ -860,7 +860,7 @@ public class TestVectorizationContext {
     assertEquals(1, ((StringLower) ve).getColNum());
     assertEquals(2, ((StringLower) ve).getOutputColumn());
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
 
     ExprNodeGenericFuncDesc anotherUnary = new ExprNodeGenericFuncDesc();
     anotherUnary.setTypeInfo(TypeInfoFactory.stringTypeInfo);
@@ -895,7 +895,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("b");
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     // Sin(double)
     GenericUDFBridge gudfBridge = new GenericUDFBridge("sin", false, UDFSin.class.getName());
@@ -986,7 +986,7 @@ public class TestVectorizationContext {
     List<String> columns = new ArrayList<String>();
     columns.add("b");
     columns.add("a");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     //UDFYear
     GenericUDFBridge gudfBridge = new GenericUDFBridge("year", false, UDFYear.class.getName());
@@ -1024,7 +1024,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterStringColumnBetween);
@@ -1050,7 +1050,7 @@ public class TestVectorizationContext {
     exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
         children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterCharColumnBetween);
 
@@ -1075,7 +1075,7 @@ public class TestVectorizationContext {
     exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
         children1);
 
-    vc = new VectorizationContext(columns);
+    vc = new VectorizationContext("name", columns);
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterVarCharColumnBetween);
 
@@ -1144,7 +1144,7 @@ public class TestVectorizationContext {
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterStringColumnInList);
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
@@ -1199,7 +1199,7 @@ public class TestVectorizationContext {
     columns.add("col1");
     columns.add("col2");
     columns.add("col3");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     VectorExpression ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprLongColumnLongColumn);
 

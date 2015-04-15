@@ -23,9 +23,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 
-@Explain(displayName = "Partition table definition")
+@Explain(displayName = "Partition table definition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PartitionedTableFunctionDef extends PTFInputDef {
   private String name;
   private String resolverClassName;
@@ -40,7 +41,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
   
   private transient List<String> referencedColumns;
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
   }
@@ -83,7 +84,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     return partition;
   }
 
-  @Explain(displayName = "partition by")
+  @Explain(displayName = "partition by", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getPartitionExplain() {
     if (partition == null || partition.getExpressions() == null) {
       return null;
@@ -110,7 +111,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     this.order = order;
   }
 
-  @Explain(displayName = "order by")
+  @Explain(displayName = "order by", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOrderExplain() {
     if (order == null || order.getExpressions() == null) {
       return null;
@@ -144,7 +145,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     this.args = args;
   }
 
-  @Explain(displayName = "arguments")
+  @Explain(displayName = "arguments", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getArgsExplain() {
     if (args == null) {
       return null;
@@ -188,7 +189,7 @@ public class PartitionedTableFunctionDef extends PTFInputDef {
     this.resolverClassName = resolverClassName;
   }
 
-  @Explain(displayName = "referenced columns")
+  @Explain(displayName = "referenced columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getReferencedColumns() {
     return referencedColumns;
   }

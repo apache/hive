@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -50,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
  * ColumnStatsUpdateTask implementation. For example, ALTER TABLE src_stat
@@ -235,11 +238,33 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDecimalStats(decimalStats);
       statsObj.setStatsData(statsData);
+    } else if (columnType.equalsIgnoreCase("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      Map<String, String> mapProp = work.getMapProp();
+      for (Entry<String, String> entry : mapProp.entrySet()) {
+        String fName = entry.getKey();
+        String value = entry.getValue();
+        if (fName.equals("numNulls")) {
+          dateStats.setNumNulls(Long.parseLong(value));
+        } else if (fName.equals("numDVs")) {
+          dateStats.setNumDVs(Long.parseLong(value));
+        } else if (fName.equals("lowValue")) {
+          // Date high/low value is stored as long in stats DB, but allow users to set high/low
+          // value using either date format (yyyy-mm-dd) or numeric format (days since epoch)
+          dateStats.setLowValue(readDateValue(value));
+        } else if (fName.equals("highValue")) {
+          dateStats.setHighValue(readDateValue(value));
+        } else {
+          throw new SemanticException("Unknown stat");
+        }
+      }
+      statsData.setDateStats(dateStats);
+      statsObj.setStatsData(statsData);
     } else {
       throw new SemanticException("Unsupported type");
     }
-
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName,
+    String [] names = Utilities.getDbTableName(dbName, tableName);
+    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1],
         partName, partName == null);
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
@@ -301,5 +326,17 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   @Override
   public String getName() {
     return "COLUMNSTATS UPDATE TASK";
+  }
+
+  private Date readDateValue(String dateStr) {
+    // try either yyyy-mm-dd, or integer representing days since epoch
+    try {
+      DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(dateStr));
+      return new Date(writableVal.getDays());
+    } catch (IllegalArgumentException err) {
+      // Fallback to integer parsing
+      LOG.debug("Reading date value as days since epoch: " + dateStr);
+      return new Date(Long.parseLong(dateStr));
+    }
   }
 }

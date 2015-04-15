@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ScriptDesc.
  *
  */
-@Explain(displayName = "Transform Operator")
+@Explain(displayName = "Transform Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ScriptDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private String scriptCmd;
@@ -59,7 +61,7 @@ public class ScriptDesc extends AbstractOperatorDesc {
     this.scriptErrInfo = scriptErrInfo;
   }
 
-  @Explain(displayName = "command")
+  @Explain(displayName = "command", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getScriptCmd() {
     return scriptCmd;
   }
@@ -68,7 +70,7 @@ public class ScriptDesc extends AbstractOperatorDesc {
     this.scriptCmd = scriptCmd;
   }
 
-  @Explain(displayName = "output info")
+  @Explain(displayName = "output info", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TableDesc getScriptOutputInfo() {
     return scriptOutputInfo;
   }

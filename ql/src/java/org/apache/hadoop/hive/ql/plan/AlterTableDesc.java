@@ -32,12 +32,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * AlterTableDesc.
  *
  */
-@Explain(displayName = "Alter Table")
+@Explain(displayName = "Alter Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -261,12 +262,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.numberBuckets = numBuckets;
   }
 
-  @Explain(displayName = "new columns")
+  @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getNewColsString() {
     return Utilities.getFieldSchemaString(getNewCols());
   }
 
-  @Explain(displayName = "type")
+  @Explain(displayName = "type", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getAlterTableTypeString() {
     return op.getName();
   }
@@ -274,7 +275,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the old name of the table
    */
-  @Explain(displayName = "old name")
+  @Explain(displayName = "old name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOldName() {
     return oldName;
   }
@@ -290,7 +291,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the newName
    */
-  @Explain(displayName = "new name")
+  @Explain(displayName = "new name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getNewName() {
     return newName;
   }
@@ -368,7 +369,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the input format
    */
-  @Explain(displayName = "input format")
+  @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getInputFormat() {
     return inputFormat;
   }
@@ -384,7 +385,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the output format
    */
-  @Explain(displayName = "output format")
+  @Explain(displayName = "output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOutputFormat() {
     return outputFormat;
   }
@@ -400,7 +401,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the storage handler
    */
-  @Explain(displayName = "storage handler")
+  @Explain(displayName = "storage handler", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getStorageHandler() {
     return storageHandler;
   }

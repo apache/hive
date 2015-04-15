@@ -20,8 +20,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
@@ -32,9 +37,12 @@ import org.apache.tez.runtime.api.ProcessorContext;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 /**
  * Process input from tez LogicalInput and write output
@@ -42,11 +50,11 @@ import java.util.Map.Entry;
  */
 public abstract class RecordProcessor  {
 
-  protected JobConf jconf;
+  protected final JobConf jconf;
   protected Map<String, LogicalInput> inputs;
   protected Map<String, LogicalOutput> outputs;
   protected Map<String, OutputCollector> outMap;
-  protected ProcessorContext processorContext;
+  protected final ProcessorContext processorContext;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
 
@@ -59,22 +67,23 @@ public abstract class RecordProcessor  {
   protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
+  public RecordProcessor(JobConf jConf, ProcessorContext processorContext) {
+    this.jconf = jConf;
+    this.processorContext = processorContext;
+  }
+
   /**
    * Common initialization code for RecordProcessors
-   * @param jconf
-   * @param processorContext the {@link ProcessorContext}
    * @param mrReporter
    * @param inputs map of Input names to {@link LogicalInput}s
    * @param outputs map of Output names to {@link LogicalOutput}s
    * @throws Exception
    */
-  void init(JobConf jconf, ProcessorContext processorContext, MRTaskReporter mrReporter,
+  void init(MRTaskReporter mrReporter,
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
-    this.jconf = jconf;
     this.reporter = mrReporter;
     this.inputs = inputs;
     this.outputs = outputs;
-    this.processorContext = processorContext;
 
     isLogInfoEnabled = l4j.isInfoEnabled();
     isLogTraceEnabled = l4j.isTraceEnabled();
@@ -108,6 +117,34 @@ public abstract class RecordProcessor  {
     for (Entry<String, LogicalOutput> entry : outputs.entrySet()) {
       TezKVOutputCollector collector = new TezKVOutputCollector(entry.getValue());
       outMap.put(entry.getKey(), collector);
+    }
+  }
+
+  public List<BaseWork> getMergeWorkList(final JobConf jconf, String key, String queryId,
+      ObjectCache cache, List<String> cacheKeys) throws HiveException {
+    String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
+    if (prefixes != null) {
+      List<BaseWork> mergeWorkList = new ArrayList<BaseWork>();
+
+      for (final String prefix : prefixes.split(",")) {
+        if (prefix == null || prefix.isEmpty()) {
+          continue;
+        }
+
+        key = queryId + prefix;
+        cacheKeys.add(key);
+
+        mergeWorkList.add((BaseWork) cache.retrieve(key, new Callable<Object>() {
+          @Override
+          public Object call() {
+            return Utilities.getMergeWork(jconf, prefix);
+          }
+        }));
+      }
+
+      return mergeWorkList;
+    } else {
+      return null;
     }
   }
 }

@@ -32,6 +32,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -45,6 +47,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -64,6 +68,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -126,7 +132,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
   boolean[] columnSortOrderIsDesc;
 
   private static byte[] decimalBuffer = null;
-  private static Charset decimalCharSet = Charset.forName("US-ASCII");
+  public static Charset decimalCharSet = Charset.forName("US-ASCII");
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -244,11 +250,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case LONG: {
         LongWritable r = reuse == null ? new LongWritable()
             : (LongWritable) reuse;
-        long v = buffer.read(invert) ^ 0x80;
-        for (int i = 0; i < 7; i++) {
-          v = (v << 8) + (buffer.read(invert) & 0xff);
-        }
-        r.set(v);
+        r.set(deserializeLong(buffer, invert));
         return r;
       }
       case FLOAT: {
@@ -373,6 +375,22 @@ public class BinarySortableSerDe extends AbstractSerDe {
         }
         t.setBinarySortable(bytes, 0);
         return t;
+
+      case INTERVAL_YEAR_MONTH: {
+        HiveIntervalYearMonthWritable i = reuse == null ? new HiveIntervalYearMonthWritable()
+            : (HiveIntervalYearMonthWritable) reuse;
+        i.set(deserializeInt(buffer, invert));
+        return i;
+      }
+
+      case INTERVAL_DAY_TIME: {
+        HiveIntervalDayTimeWritable i = reuse == null ? new HiveIntervalDayTimeWritable()
+            : (HiveIntervalDayTimeWritable) reuse;
+        long totalSecs = deserializeLong(buffer, invert);
+        int nanos = deserializeInt(buffer, invert);
+        i.set(totalSecs, nanos);
+        return i;
+      }
 
       case DECIMAL: {
         // See serialization of decimal for explanation (below)
@@ -542,11 +560,19 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return v;
   }
 
+  private static long deserializeLong(InputByteBuffer buffer, boolean invert) throws IOException {
+    long v = buffer.read(invert) ^ 0x80;
+    for (int i = 0; i < 7; i++) {
+      v = (v << 8) + (buffer.read(invert) & 0xff);
+    }
+    return v;
+  }
+
   static int getCharacterMaxLength(TypeInfo type) {
     return ((BaseCharTypeInfo)type).getLength();
   }
 
-  static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
+  public static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
       throws IOException {
     // Get the actual length first
     int start = buffer.tell();
@@ -610,7 +636,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return serializeBytesWritable;
   }
 
-  private static void writeByte(RandomAccessOutput buffer, byte b, boolean invert) {
+  public static void writeByte(RandomAccessOutput buffer, byte b, boolean invert) {
     if (invert) {
       b = (byte) (0xff ^ b);
     }
@@ -661,14 +687,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case LONG: {
         LongObjectInspector loi = (LongObjectInspector) poi;
         long v = loi.get(o);
-        writeByte(buffer, (byte) ((v >> 56) ^ 0x80), invert);
-        writeByte(buffer, (byte) (v >> 48), invert);
-        writeByte(buffer, (byte) (v >> 40), invert);
-        writeByte(buffer, (byte) (v >> 32), invert);
-        writeByte(buffer, (byte) (v >> 24), invert);
-        writeByte(buffer, (byte) (v >> 16), invert);
-        writeByte(buffer, (byte) (v >> 8), invert);
-        writeByte(buffer, (byte) v, invert);
+        serializeLong(buffer, v, invert);
         return;
       }
       case FLOAT: {
@@ -753,6 +772,22 @@ public class BinarySortableSerDe extends AbstractSerDe {
         for (int i = 0; i < data.length; i++) {
           writeByte(buffer, data[i], invert);
         }
+        return;
+      }
+      case INTERVAL_YEAR_MONTH: {
+        HiveIntervalYearMonthObjectInspector ioi = (HiveIntervalYearMonthObjectInspector) poi;
+        HiveIntervalYearMonth intervalYearMonth = ioi.getPrimitiveJavaObject(o);
+        int totalMonths = intervalYearMonth.getTotalMonths();
+        serializeInt(buffer, totalMonths, invert);
+        return;
+      }
+      case INTERVAL_DAY_TIME: {
+        HiveIntervalDayTimeObjectInspector ioi = (HiveIntervalDayTimeObjectInspector) poi;
+        HiveIntervalDayTime intervalDayTime = ioi.getPrimitiveJavaObject(o);
+        long totalSecs = intervalDayTime.getTotalSeconds();
+        int nanos = intervalDayTime.getNanos();
+        serializeLong(buffer, totalSecs, invert);
+        serializeInt(buffer, nanos, invert);
         return;
       }
       case DECIMAL: {
@@ -857,7 +892,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
   }
 
-  private static void serializeBytes(
+  public static void serializeBytes(
       ByteStream.Output buffer, byte[] data, int length, boolean invert) {
     for (int i = 0; i < length; i++) {
       if (data[i] == 0 || data[i] == 1) {
@@ -870,8 +905,32 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) 0, invert);
   }
 
-  private static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
+  public static void serializeBytes(
+      ByteStream.Output buffer, byte[] data, int offset, int length, boolean invert) {
+    for (int i = offset; i < offset + length; i++) {
+      if (data[i] == 0 || data[i] == 1) {
+        writeByte(buffer, (byte) 1, invert);
+        writeByte(buffer, (byte) (data[i] + 1), invert);
+      } else {
+        writeByte(buffer, data[i], invert);
+      }
+    }
+    writeByte(buffer, (byte) 0, invert);
+  }
+
+  public static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
     writeByte(buffer, (byte) ((v >> 24) ^ 0x80), invert);
+    writeByte(buffer, (byte) (v >> 16), invert);
+    writeByte(buffer, (byte) (v >> 8), invert);
+    writeByte(buffer, (byte) v, invert);
+  }
+
+  public static void serializeLong(ByteStream.Output buffer, long v, boolean invert) {
+    writeByte(buffer, (byte) ((v >> 56) ^ 0x80), invert);
+    writeByte(buffer, (byte) (v >> 48), invert);
+    writeByte(buffer, (byte) (v >> 40), invert);
+    writeByte(buffer, (byte) (v >> 32), invert);
+    writeByte(buffer, (byte) (v >> 24), invert);
     writeByte(buffer, (byte) (v >> 16), invert);
     writeByte(buffer, (byte) (v >> 8), invert);
     writeByte(buffer, (byte) v, invert);

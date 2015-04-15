@@ -24,7 +24,7 @@ set mapred.input.dir.recursive=true;
 -- to run the test only on hadoop 23
 
 create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile;
+create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as rcfile;
 
 load data local inpath '../../data/files/T1.txt' into table inputTbl1;
 
@@ -32,17 +32,17 @@ explain
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as values, '1' as ds from inputTbl1 group by key
+  SELECT key, count(1) as `values`, '1' as ds from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values, '2' as ds from inputTbl1 group by key
+  SELECT key, count(1) as `values`, '2' as ds from inputTbl1 group by key
 ) a;
 
 insert overwrite table outputTbl1 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as values, '1' as ds from inputTbl1 group by key
+  SELECT key, count(1) as `values`, '1' as ds from inputTbl1 group by key
   UNION ALL
-  SELECT key, count(1) as values, '2' as ds from inputTbl1 group by key
+  SELECT key, count(1) as `values`, '2' as ds from inputTbl1 group by key
 ) a;
 
 desc formatted outputTbl1;
@@ -50,5 +50,5 @@ desc formatted outputTbl1;
 show partitions outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 where ds = '1' order by key, values;
-select * from outputTbl1 where ds = '2' order by key, values;
+select * from outputTbl1 where ds = '1' order by key, `values`;
+select * from outputTbl1 where ds = '2' order by key, `values`;

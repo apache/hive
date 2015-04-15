@@ -55,8 +55,6 @@ public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
   private static transient final Log LOG = LogFactory.getLog(FunctionTask.class);
 
-  transient HiveConf conf;
-
   public FunctionTask() {
     super();
   }
@@ -64,7 +62,6 @@ public class FunctionTask extends Task<FunctionWork> {
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
-    this.conf = conf;
   }
 
   @Override

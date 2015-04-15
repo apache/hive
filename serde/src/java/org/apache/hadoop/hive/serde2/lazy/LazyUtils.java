@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -159,7 +161,7 @@ public final class LazyUtils {
         }
       }
     } else {
-      out.write(bytes, 0, len);
+      out.write(bytes, start, len);
     }
   }
 
@@ -252,6 +254,16 @@ public final class LazyUtils {
     case TIMESTAMP: {
       LazyTimestamp.writeUTF8(out,
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
+      break;
+    }
+    case INTERVAL_YEAR_MONTH: {
+      LazyHiveIntervalYearMonth.writeUTF8(out,
+          ((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveWritableObject(o));
+      break;
+    }
+    case INTERVAL_DAY_TIME: {
+      LazyHiveIntervalDayTime.writeUTF8(out,
+          ((HiveIntervalDayTimeObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
     case DECIMAL: {

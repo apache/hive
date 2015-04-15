@@ -425,7 +425,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1/ds=2 [$hdt$_0:$hdt$_0:t1]
+        /t1/ds=2 [$hdt$_0:t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

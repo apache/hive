@@ -1,38 +1,38 @@
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL
+PREHOOK: query: DROP TABLE IF EXISTS `DECIMAL`
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL
+POSTHOOK: query: DROP TABLE IF EXISTS `DECIMAL`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL (dec decimal)
+PREHOOK: query: CREATE TABLE `DECIMAL` (dec decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DECIMAL
-POSTHOOK: query: CREATE TABLE DECIMAL (dec decimal)
+POSTHOOK: query: CREATE TABLE `DECIMAL` (dec decimal)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE DECIMAL
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE `DECIMAL`
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@decimal
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE DECIMAL
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE `DECIMAL`
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@decimal
-PREHOOK: query: SELECT dec FROM DECIMAL
+PREHOOK: query: SELECT dec FROM `DECIMAL`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dec FROM DECIMAL
+POSTHOOK: query: SELECT dec FROM `DECIMAL`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal
 #### A masked pattern was here ####
 1000000000
 NULL
-PREHOOK: query: DROP TABLE DECIMAL
+PREHOOK: query: DROP TABLE `DECIMAL`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal
 PREHOOK: Output: default@decimal
-POSTHOOK: query: DROP TABLE DECIMAL
+POSTHOOK: query: DROP TABLE `DECIMAL`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal
 POSTHOOK: Output: default@decimal

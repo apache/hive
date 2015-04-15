@@ -206,7 +206,7 @@ public class CuckooSetBytes {
     // Save original values
     if (prev1 == null) {
       prev1 = t1;
-      prev1 = t2;
+      prev2 = t2;
     }
     t1 = new byte[n][];
     t2 = new byte[n][];

@@ -24,6 +24,7 @@ class TProtocolVersion:
   HIVE_CLI_SERVICE_PROTOCOL_V5 = 4
   HIVE_CLI_SERVICE_PROTOCOL_V6 = 5
   HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
+  HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
 
   _VALUES_TO_NAMES = {
     0: "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -33,6 +34,7 @@ class TProtocolVersion:
     4: "HIVE_CLI_SERVICE_PROTOCOL_V5",
     5: "HIVE_CLI_SERVICE_PROTOCOL_V6",
     6: "HIVE_CLI_SERVICE_PROTOCOL_V7",
+    7: "HIVE_CLI_SERVICE_PROTOCOL_V8",
   }
 
   _NAMES_TO_VALUES = {
@@ -43,6 +45,7 @@ class TProtocolVersion:
     "HIVE_CLI_SERVICE_PROTOCOL_V5": 4,
     "HIVE_CLI_SERVICE_PROTOCOL_V6": 5,
     "HIVE_CLI_SERVICE_PROTOCOL_V7": 6,
+    "HIVE_CLI_SERVICE_PROTOCOL_V8": 7,
   }
 
 class TTypeId:
@@ -66,6 +69,8 @@ class TTypeId:
   DATE_TYPE = 17
   VARCHAR_TYPE = 18
   CHAR_TYPE = 19
+  INTERVAL_YEAR_MONTH_TYPE = 20
+  INTERVAL_DAY_TIME_TYPE = 21
 
   _VALUES_TO_NAMES = {
     0: "BOOLEAN_TYPE",
@@ -88,6 +93,8 @@ class TTypeId:
     17: "DATE_TYPE",
     18: "VARCHAR_TYPE",
     19: "CHAR_TYPE",
+    20: "INTERVAL_YEAR_MONTH_TYPE",
+    21: "INTERVAL_DAY_TIME_TYPE",
   }
 
   _NAMES_TO_VALUES = {
@@ -111,6 +118,8 @@ class TTypeId:
     "DATE_TYPE": 17,
     "VARCHAR_TYPE": 18,
     "CHAR_TYPE": 19,
+    "INTERVAL_YEAR_MONTH_TYPE": 20,
+    "INTERVAL_DAY_TIME_TYPE": 21,
   }
 
 class TStatusCode:
@@ -3245,7 +3254,7 @@ class TOpenSessionReq:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'client_protocol', None,     6, ), # 1
+    (1, TType.I32, 'client_protocol', None,     7, ), # 1
     (2, TType.STRING, 'username', None, None, ), # 2
     (3, TType.STRING, 'password', None, None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
@@ -3354,7 +3363,7 @@ class TOpenSessionResp:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
-    (2, TType.I32, 'serverProtocolVersion', None,     6, ), # 2
+    (2, TType.I32, 'serverProtocolVersion', None,     7, ), # 2
     (3, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
   )

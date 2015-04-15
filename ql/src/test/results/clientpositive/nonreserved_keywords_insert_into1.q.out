@@ -1,18 +1,18 @@
-PREHOOK: query: DROP TABLE insert
+PREHOOK: query: DROP TABLE `insert`
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE insert
+POSTHOOK: query: DROP TABLE `insert`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE insert (key INT, as STRING)
+PREHOOK: query: CREATE TABLE `insert` (key INT, `as` STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@insert
-POSTHOOK: query: CREATE TABLE insert (key INT, as STRING)
+POSTHOOK: query: CREATE TABLE `insert` (key INT, `as` STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -71,32 +71,32 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-PREHOOK: query: INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+PREHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
-POSTHOOK: query: INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+POSTHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(hash)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (hash) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (hash) FROM `insert`
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(hash)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (hash) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (hash) FROM `insert`
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 10226524244
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -155,41 +155,41 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-PREHOOK: query: INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+PREHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
-POSTHOOK: query: INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
+POSTHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(sum)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (sum) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (sum) FROM `insert`
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(sum)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (sum) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (sum) FROM `insert`
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 20453048488
-PREHOOK: query: SELECT COUNT(*) FROM insert
+PREHOOK: query: SELECT COUNT(*) FROM `insert`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM insert
+POSTHOOK: query: SELECT COUNT(*) FROM `insert`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 200
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 10
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 10
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -248,34 +248,34 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-PREHOOK: query: INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 10
+PREHOOK: query: INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
-POSTHOOK: query: INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 10
+POSTHOOK: query: INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(add)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (add) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (add) FROM `insert`
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(add)) FROM (
-    SELECT TRANSFORM(*) USING 'tr \t _' AS (add) FROM insert
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (add) FROM `insert`
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 -826625916
-PREHOOK: query: DROP TABLE insert
+PREHOOK: query: DROP TABLE `insert`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert
 PREHOOK: Output: default@insert
-POSTHOOK: query: DROP TABLE insert
+POSTHOOK: query: DROP TABLE `insert`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert
 POSTHOOK: Output: default@insert

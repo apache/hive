@@ -42,10 +42,10 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
   private final SerializationUtils utils;
 
   RunLengthIntegerReaderV2(InStream input, boolean signed,
-      Configuration conf) throws IOException {
+      boolean skipCorrupt) throws IOException {
     this.input = input;
     this.signed = signed;
-    this.skipCorrupt = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this.skipCorrupt = skipCorrupt;
     this.utils = new SerializationUtils();
   }
 

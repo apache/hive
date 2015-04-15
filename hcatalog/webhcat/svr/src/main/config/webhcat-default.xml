@@ -39,7 +39,7 @@
 
   <property>
     <name>templeton.libjars</name>
-    <value>${env.TEMPLETON_HOME}/share/webhcat/svr/lib/zookeeper-3.4.3.jar</value>
+    <value>${env.TEMPLETON_HOME}/../lib/zookeeper-3.4.6.jar,${env.TEMPLETON_HOME}/../lib/hive-common-1.2.0-SNAPSHOT.jar</value>
     <description>Jars to add to the classpath.</description>
   </property>
 
@@ -106,7 +106,21 @@
   <property>
     <name>templeton.hive.path</name>
     <value>hive-0.11.0.tar.gz/hive-0.11.0/bin/hive</value>
-    <description>The path to the Hive executable.</description>
+    <description>The path to the Hive executable.  Applies only if templeton.hive.archive is defined.</description>
+  </property>
+
+  <property>
+    <name>templeton.hive.extra.files</name>
+    <value></value>
+    <description>The resources in this list will be localized to the node running LaunchMapper and added to HADOOP_CLASSPTH
+      before launching 'hive' command.  If the path /foo/bar is a directory, the contents of the the entire dir will be localized
+      and ./bar/* will be added to HADOOP_CLASSPATH.  Note that since classpath path processing does not recurse into subdirectories,
+      the paths in this property may be overlapping.  For example, to run Hive on Tez jobs, 3 items need to be localized:
+      /tez-client/conf/tez-site.xml,/tez-client/,/tez-client/lib.  In this example, "./tez-site.xml:./tez-client/*:./lib/*" will be added to
+      HADOOP_CLASSPATH.
+      This can be used to specify config files, Tez artifacts, etc.  This will be sent -files option of hadoop jar command thus
+      each path is interpreted by Generic Option Parser.  It can be local or hdfs path.
+    </description>
   </property>
 
   <property>
@@ -196,6 +210,32 @@
         therefore the configuration in mapred-site.xml will be used.
     </description>
   </property>
+
+  <!--
+  <property>
+    <name>templeton.controller.mr.am.java.opts</name>
+    <value></value>
+    <description>Java options to be set for the templeton controller job's
+        MapReduce application master. When submitting the controller job,
+        Templeton will override yarn.app.mapreduce.am.command-opts with
+        this value.  If this is not specified, Templeton will not set the
+        property and therefore the value will be picked up from
+        mapred-site.xml.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.mr.am.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Application Master's memory
+        limit in MB. When submitting controller job, Templeton will
+        overwrite yarn.app.mapreduce.am.resource.mb with this value. If
+        empty, Templeton will not set yarn.app.mapreduce.am.resource.mb
+        when submitting the controller job, therefore the configuration
+        in mapred-site.xml will be used.
+    </description>
+  </property>
+  -->
 
   <property>
     <name>templeton.exec.envs</name>

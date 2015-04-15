@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -51,11 +53,13 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -187,6 +191,23 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     }
   }
 
+  private void unpackDateStats(ObjectInspector oi, Object o, String fName,
+      ColumnStatisticsObj statsObj) {
+    if (fName.equals("countnulls")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDateStats().setNumNulls(v);
+    } else if (fName.equals("numdistinctvalues")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDateStats().setNumDVs(v);
+    } else if (fName.equals("max")) {
+      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getDateStats().setHighValue(new Date(v.getDays()));
+    } else if (fName.equals("min")) {
+      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getDateStats().setLowValue(new Date(v.getDays()));
+    }
+  }
+
   private void unpackPrimitiveObject (ObjectInspector oi, Object o, String fieldName,
       ColumnStatisticsObj statsObj) {
     if (o == null) {
@@ -222,6 +243,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
         statsData.setDecimalStats(decimalStats);
         statsObj.setStatsData(statsData);
+      } else if (s.equalsIgnoreCase("date")) {
+        DateColumnStatsData dateStats = new DateColumnStatsData();
+        statsData.setDateStats(dateStats);
+        statsObj.setStatsData(statsData);
       }
     } else {
       // invoke the right unpack method depending on data type of the column
@@ -237,6 +262,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         unpackBinaryStats(oi, o, fieldName, statsObj);
       } else if (statsObj.getStatsData().isSetDecimalStats()) {
         unpackDecimalStats(oi, o, fieldName, statsObj);
+      } else if (statsObj.getStatsData().isSetDateStats()) {
+        unpackDateStats(oi, o, fieldName, statsObj);
       }
     }
   }
@@ -267,7 +294,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
 
   private List<ColumnStatistics> constructColumnStatsFromPackedRows() throws HiveException, MetaException, IOException {
 
-    String dbName = SessionState.get().getCurrentDatabase();
+    String currentDb = SessionState.get().getCurrentDatabase();
     String tableName = work.getColStats().getTableName();
     String partName = null;
     List<String> colName = work.getColStats().getColName();
@@ -286,7 +313,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
       List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
 
-      Table tbl = db.getTable(dbName,tableName);
+      Table tbl = db.getTable(currentDb,tableName);
       List<FieldSchema> partColSchema = tbl.getPartCols();
       // Partition columns are appended at end, we only care about stats column
       int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
@@ -313,8 +340,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
       }
-
-      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName, partName, isTblLevel);
+      String [] names = Utilities.getDbTableName(currentDb, tableName);
+      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1], partName, isTblLevel);
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
@@ -368,7 +395,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         return persistPartitionStats();
       }
     } catch (Exception e) {
-        LOG.info(e);
+      LOG.error("Failed to run column stats task", e);
     }
     return 1;
   }

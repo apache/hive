@@ -449,7 +449,7 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
                 struct.values = new ArrayList<Short>(_list70.size);
                 for (int _i71 = 0; _i71 < _list70.size; ++_i71)
                 {
-                  short _elem72; // required
+                  short _elem72; // optional
                   _elem72 = iprot.readI16();
                   struct.values.add(_elem72);
                 }
@@ -533,7 +533,7 @@ public class TI16Column implements org.apache.thrift.TBase<TI16Column, TI16Colum
         struct.values = new ArrayList<Short>(_list75.size);
         for (int _i76 = 0; _i76 < _list75.size; ++_i76)
         {
-          short _elem77; // required
+          short _elem77; // optional
           _elem77 = iprot.readI16();
           struct.values.add(_elem77);
         }

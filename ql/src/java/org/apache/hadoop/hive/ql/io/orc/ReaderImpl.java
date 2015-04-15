@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -33,34 +35,37 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.protobuf.CodedInputStream;
 
-final class ReaderImpl implements Reader {
+public class ReaderImpl implements Reader {
 
   private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
 
-  private final FileSystem fileSystem;
-  private final Path path;
-  private final CompressionKind compressionKind;
-  private final CompressionCodec codec;
-  private final int bufferSize;
+  protected final FileSystem fileSystem;
+  protected final Path path;
+  protected final CompressionKind compressionKind;
+  protected final CompressionCodec codec;
+  protected final int bufferSize;
   private OrcProto.Metadata metadata = null;
   private final int metadataSize;
-  private final OrcProto.Footer footer;
+  protected final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
-  private final Configuration conf;
+  protected final Configuration conf;
   private final List<Integer> versionList;
   private final OrcFile.WriterVersion writerVersion;
 
@@ -295,7 +300,7 @@ final class ReaderImpl implements Reader {
    * @param options options for reading
    * @throws IOException
    */
-  ReaderImpl(Path path, OrcFile.ReaderOptions options) throws IOException {
+  public ReaderImpl(Path path, OrcFile.ReaderOptions options) throws IOException {
     FileSystem fs = options.getFilesystem();
     if (fs == null) {
       fs = path.getFileSystem(options.getConfiguration());
@@ -463,14 +468,14 @@ final class ReaderImpl implements Reader {
       int footerBufferSize = footerBuffer.limit() - footerBuffer.position() - metadataSize;
       footerBuffer.limit(position + metadataSize);
 
-      InputStream instream = InStream.create("metadata", new ByteBuffer[]{footerBuffer},
-          new long[]{0L}, metadataSize, codec, bufferSize);
+      InputStream instream = InStream.create("metadata", Lists.<DiskRange>newArrayList(
+          new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize);
       this.metadata = OrcProto.Metadata.parseFrom(instream);
 
       footerBuffer.position(position + metadataSize);
       footerBuffer.limit(position + metadataSize + footerBufferSize);
-      instream = InStream.create("footer", new ByteBuffer[]{footerBuffer},
-          new long[]{0L}, footerBufferSize, codec, bufferSize);
+      instream = InStream.create("footer", Lists.<DiskRange>newArrayList(
+          new BufferChunk(footerBuffer, 0)), footerBufferSize, codec, bufferSize);
       this.footer = OrcProto.Footer.parseFrom(instream);
 
       footerBuffer.position(position);
@@ -689,5 +694,10 @@ final class ReaderImpl implements Reader {
 
   public List<UserMetadataItem> getOrcProtoUserMetadata() {
     return footer.getMetadataList();
+  }
+
+  @Override
+  public MetadataReader metadata() throws IOException {
+    return new MetadataReader(fileSystem, path, codec, bufferSize, footer.getTypesCount());
   }
 }

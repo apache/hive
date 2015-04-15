@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
@@ -57,7 +59,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   @Override
   @SuppressWarnings("unchecked")
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     if (conf.getGenJoinKeys()) {
       int tagLen = conf.getTagLength();
       joinKeys = new List[tagLen];
@@ -66,7 +68,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
           inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     }
 
-    super.initializeOp(hconf);
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     numMapRowsRead = 0;
 
@@ -81,7 +83,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
         !hasFilter(posBigTable), reporter);
     storage[posBigTable] = bigPosRC;
 
-    initializeChildren(hconf);
+    return result;
   }
 
   @Override

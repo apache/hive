@@ -9,7 +9,7 @@ set hive.enforce.bucketing=true;
 set user.name=user1;
 -- current user has been set (comment line before the set cmd is resulting in parse error!!)
 
-CREATE TABLE t_auth_up(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
+CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 CREATE TABLE t_select(i int);
 GRANT ALL ON TABLE t_select TO ROLE public;
@@ -24,4 +24,4 @@ SHOW GRANT ON TABLE t_auth_up;
 
 
 set user.name=userWIns;
-update t_auth_up set i = 0 where i > 0;
+update t_auth_up set j = 0 where i > 0;

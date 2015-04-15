@@ -68,7 +68,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private boolean abort = false;
 
-  private static Deserializer inputKeyDeserializer;
+  private Deserializer inputKeyDeserializer;
 
   // Input value serde needs to be an array to support different SerDe
   // for different tags
@@ -114,7 +114,7 @@ public class ReduceRecordSource implements RecordSource {
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
-      Map<String, Map<Integer, String>> scratchColumnVectorTypes)
+      Map<Integer, String> vectorScratchColumnTypeMap)
       throws Exception {
 
     ObjectInspector keyObjectInspector;
@@ -180,10 +180,8 @@ public class ReduceRecordSource implements RecordSource {
         }
         rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
 
-        Map<Integer, String> reduceShuffleScratchColumnTypeMap = 
-                scratchColumnVectorTypes.get("_REDUCE_SHUFFLE_");
         batchContext = new VectorizedRowBatchCtx();
-        batchContext.init(reduceShuffleScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
+        batchContext.init(vectorScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
         batch = batchContext.createVectorizedRowBatch();
       } else {
         ois.add(keyObjectInspector);
@@ -325,7 +323,7 @@ public class ReduceRecordSource implements RecordSource {
       row.add(deserializeValue(valueWritable, tag));
 
       try {
-        reducer.processOp(row, tag);
+        reducer.process(row, tag);
       } catch (Exception e) {
         String rowString = null;
         try {
@@ -364,7 +362,7 @@ public class ReduceRecordSource implements RecordSource {
         rowIdx++;
         if (rowIdx >= BATCH_SIZE) {
           VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-          reducer.processOp(batch, tag);
+          reducer.process(batch, tag);
 
           // Reset just the value columns and value buffer.
           for (int i = keysColumnOffset; i < batch.numCols; i++) {
@@ -377,7 +375,7 @@ public class ReduceRecordSource implements RecordSource {
       if (rowIdx > 0) {
         // Flush final partial batch.
         VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-        reducer.processOp(batch, tag);
+        reducer.process(batch, tag);
       }
       batch.reset();
       keyBuffer.reset();

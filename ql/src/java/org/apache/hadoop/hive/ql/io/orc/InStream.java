@@ -20,28 +20,47 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
-abstract class InStream extends InputStream {
+import com.google.common.annotations.VisibleForTesting;
+
+public abstract class InStream extends InputStream {
 
   private static final Log LOG = LogFactory.getLog(InStream.class);
 
+  protected final String name;
+  protected final long length;
+
+  public InStream(String name, long length) {
+    this.name = name;
+    this.length = length;
+  }
+
+  public String getStreamName() {
+    return name;
+  }
+
+  public long getStreamLength() {
+    return length;
+  }
+
   private static class UncompressedStream extends InStream {
-    private final String name;
-    private final ByteBuffer[] bytes;
-    private final long[] offsets;
+    private final List<DiskRange> bytes;
     private final long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;
 
-    public UncompressedStream(String name, ByteBuffer[] input, long[] offsets,
-                              long length) {
-      this.name = name;
+    public UncompressedStream(String name, List<DiskRange> input, long length) {
+      super(name, length);
       this.bytes = input;
-      this.offsets = offsets;
       this.length = length;
       currentRange = 0;
       currentOffset = 0;
@@ -83,12 +102,10 @@ abstract class InStream extends InputStream {
 
     @Override
     public void close() {
-      currentRange = bytes.length;
+      currentRange = bytes.size();
       currentOffset = length;
       // explicit de-ref of bytes[]
-      for(int i = 0; i < bytes.length; i++) {
-        bytes[i] = null;
-      }
+      bytes.clear();
     }
 
     @Override
@@ -97,23 +114,27 @@ abstract class InStream extends InputStream {
     }
 
     public void seek(long desired) {
-      for(int i = 0; i < bytes.length; ++i) {
-        if (desired == 0 && bytes[i].remaining() == 0) {
-          if (LOG.isWarnEnabled()) {
-            LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
-          }
+      if (desired == 0 && bytes.isEmpty()) {
+        logEmptySeek(name);
+        return;
+      }
+      int i = 0;
+      for(DiskRange curRange : bytes) {
+        if (desired == 0 && curRange.getData().remaining() == 0) {
+          logEmptySeek(name);
           return;
         }
-        if (offsets[i] <= desired &&
-            desired - offsets[i] < bytes[i].remaining()) {
+        if (curRange.getOffset() <= desired &&
+            (desired - curRange.getOffset()) < curRange.getLength()) {
           currentOffset = desired;
           currentRange = i;
-          this.range = bytes[i].duplicate();
+          this.range = curRange.getData().duplicate();
           int pos = range.position();
-          pos += (int)(desired - offsets[i]); // this is why we duplicate
+          pos += (int)(desired - curRange.getOffset()); // this is why we duplicate
           this.range.position(pos);
           return;
         }
+        ++i;
       }
       throw new IllegalArgumentException("Seek in " + name + " to " +
         desired + " is outside of the data");
@@ -127,50 +148,40 @@ abstract class InStream extends InputStream {
     }
   }
 
+  private static ByteBuffer allocateBuffer(int size, boolean isDirect) {
+    // TODO: use the same pool as the ORC readers
+    if (isDirect) {
+      return ByteBuffer.allocateDirect(size);
+    } else {
+      return ByteBuffer.allocate(size);
+    }
+  }
+
   private static class CompressedStream extends InStream {
-    private final String name;
-    private final ByteBuffer[] bytes;
-    private final long[] offsets;
+    private final List<DiskRange> bytes;
     private final int bufferSize;
-    private final long length;
     private ByteBuffer uncompressed;
     private final CompressionCodec codec;
     private ByteBuffer compressed;
     private long currentOffset;
     private int currentRange;
     private boolean isUncompressedOriginal;
-    private boolean isDirect = false;
 
-    public CompressedStream(String name, ByteBuffer[] input,
-                            long[] offsets, long length,
-                            CompressionCodec codec, int bufferSize
-                           ) {
+    public CompressedStream(String name, List<DiskRange> input, long length,
+                            CompressionCodec codec, int bufferSize) {
+      super(name, length);
       this.bytes = input;
-      this.name = name;
       this.codec = codec;
-      this.length = length;
-      if(this.length > 0) {
-        isDirect = this.bytes[0].isDirect();
-      }
-      this.offsets = offsets;
       this.bufferSize = bufferSize;
       currentOffset = 0;
       currentRange = 0;
-    }
-
-    private ByteBuffer allocateBuffer(int size) {
-      // TODO: use the same pool as the ORC readers
-      if(isDirect == true) {
-        return ByteBuffer.allocateDirect(size);
-      } else {
-        return ByteBuffer.allocate(size);
-      }
     }
 
     private void readHeader() throws IOException {
       if (compressed == null || compressed.remaining() <= 0) {
         seek(currentOffset);
       }
+      long originalOffset = currentOffset;
       if (compressed.remaining() > OutStream.HEADER_SIZE) {
         int b0 = compressed.get() & 0xff;
         int b1 = compressed.get() & 0xff;
@@ -193,10 +204,10 @@ abstract class InStream extends InputStream {
           isUncompressedOriginal = true;
         } else {
           if (isUncompressedOriginal) {
-            uncompressed = allocateBuffer(bufferSize);
+            uncompressed = allocateBuffer(bufferSize, slice.isDirect());
             isUncompressedOriginal = false;
           } else if (uncompressed == null) {
-            uncompressed = allocateBuffer(bufferSize);
+            uncompressed = allocateBuffer(bufferSize, slice.isDirect());
           } else {
             uncompressed.clear();
           }
@@ -246,11 +257,9 @@ abstract class InStream extends InputStream {
     public void close() {
       uncompressed = null;
       compressed = null;
-      currentRange = bytes.length;
+      currentRange = bytes.size();
       currentOffset = length;
-      for(int i = 0; i < bytes.length; i++) {
-        bytes[i] = null;
-      }
+      bytes.clear();
     }
 
     @Override
@@ -267,7 +276,7 @@ abstract class InStream extends InputStream {
       }
     }
 
-    /* slices a read only contigous buffer of chunkLength */
+    /* slices a read only contiguous buffer of chunkLength */
     private ByteBuffer slice(int chunkLength) throws IOException {
       int len = chunkLength;
       final long oldOffset = currentOffset;
@@ -279,7 +288,7 @@ abstract class InStream extends InputStream {
         currentOffset += len;
         compressed.position(compressed.position() + len);
         return slice;
-      } else if (currentRange >= (bytes.length - 1)) {
+      } else if (currentRange >= (bytes.size() - 1)) {
         // nothing has been modified yet
         throw new IOException("EOF in " + this + " while trying to read " +
             chunkLength + " bytes");
@@ -293,16 +302,19 @@ abstract class InStream extends InputStream {
 
       // we need to consolidate 2 or more buffers into 1
       // first copy out compressed buffers
-      ByteBuffer copy = allocateBuffer(chunkLength);
+      ByteBuffer copy = allocateBuffer(chunkLength, compressed.isDirect());
       currentOffset += compressed.remaining();
       len -= compressed.remaining();
       copy.put(compressed);
+      ListIterator<DiskRange> iter = bytes.listIterator(currentRange);
 
-      while (len > 0 && (++currentRange) < bytes.length) {
+      while (len > 0 && iter.hasNext()) {
+        ++currentRange;
         if (LOG.isDebugEnabled()) {
           LOG.debug(String.format("Read slow-path, >1 cross block reads with %s", this.toString()));
         }
-        compressed = bytes[currentRange].duplicate();
+        DiskRange range = iter.next();
+        compressed = range.getData().duplicate();
         if (compressed.remaining() >= len) {
           slice = compressed.slice();
           slice.limit(len);
@@ -323,40 +335,46 @@ abstract class InStream extends InputStream {
     }
 
     private void seek(long desired) throws IOException {
-      for(int i = 0; i < bytes.length; ++i) {
-        if (offsets[i] <= desired &&
-            desired - offsets[i] < bytes[i].remaining()) {
+      if (desired == 0 && bytes.isEmpty()) {
+        logEmptySeek(name);
+        return;
+      }
+      int i = 0;
+      for (DiskRange range : bytes) {
+        if (range.getOffset() <= desired && desired < range.getEnd()) {
           currentRange = i;
-          compressed = bytes[i].duplicate();
+          compressed = range.getData().duplicate();
           int pos = compressed.position();
-          pos += (int)(desired - offsets[i]);
+          pos += (int)(desired - range.getOffset());
           compressed.position(pos);
           currentOffset = desired;
           return;
         }
+        ++i;
       }
       // if they are seeking to the precise end, go ahead and let them go there
-      int segments = bytes.length;
-      if (segments != 0 &&
-          desired == offsets[segments - 1] + bytes[segments - 1].remaining()) {
+      int segments = bytes.size();
+      if (segments != 0 && desired == bytes.get(segments - 1).getEnd()) {
+        DiskRange range = bytes.get(segments - 1);
         currentRange = segments - 1;
-        compressed = bytes[currentRange].duplicate();
+        compressed = range.getData().duplicate();
         compressed.position(compressed.limit());
         currentOffset = desired;
         return;
       }
-      throw new IOException("Seek outside of data in " + this + " to " +
-        desired);
+      throw new IOException("Seek outside of data in " + this + " to " + desired);
     }
 
     private String rangeString() {
       StringBuilder builder = new StringBuilder();
-      for(int i=0; i < offsets.length; ++i) {
+      int i = 0;
+      for (DiskRange range : bytes) {
         if (i != 0) {
           builder.append("; ");
         }
-        builder.append(" range " + i + " = " + offsets[i] + " to " +
-            bytes[i].remaining());
+        builder.append(" range " + i + " = " + range.getOffset()
+            + " to " + (range.getEnd() - range.getOffset()));
+        ++i;
       }
       return builder.toString();
     }
@@ -375,10 +393,16 @@ abstract class InStream extends InputStream {
 
   public abstract void seek(PositionProvider index) throws IOException;
 
+  private static void logEmptySeek(String name) {
+    if (LOG.isWarnEnabled()) {
+      LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
+    }
+  }
+
   /**
    * Create an input stream from a list of buffers.
-   * @param name the name of the stream
-   * @param input the list of ranges of bytes for the stream
+   * @param streamName the name of the stream
+   * @param buffers the list of ranges of bytes for the stream
    * @param offsets a list of offsets (the same length as input) that must
    *                contain the first offset of the each set of bytes in input
    * @param length the length in bytes of the stream
@@ -387,17 +411,40 @@ abstract class InStream extends InputStream {
    * @return an input stream
    * @throws IOException
    */
-  public static InStream create(String name,
-                                ByteBuffer[] input,
+  @VisibleForTesting
+  @Deprecated
+  public static InStream create(String streamName,
+                                ByteBuffer[] buffers,
                                 long[] offsets,
                                 long length,
                                 CompressionCodec codec,
                                 int bufferSize) throws IOException {
+    List<DiskRange> input = new ArrayList<DiskRange>(buffers.length);
+    for (int i = 0; i < buffers.length; ++i) {
+      input.add(new BufferChunk(buffers[i], offsets[i]));
+    }
+    return create(streamName, input, length, codec, bufferSize);
+  }
+
+  /**
+   * Create an input stream from a list of disk ranges with data.
+   * @param name the name of the stream
+   * @param input the list of ranges of bytes for the stream; from disk or cache
+   * @param length the length in bytes of the stream
+   * @param codec the compression codec
+   * @param bufferSize the compression buffer size
+   * @return an input stream
+   * @throws IOException
+   */
+  public static InStream create(String name,
+                                List<DiskRange> input,
+                                long length,
+                                CompressionCodec codec,
+                                int bufferSize) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(name, input, offsets, length);
+      return new UncompressedStream(name, input, length);
     } else {
-      return new CompressedStream(name, input, offsets, length, codec,
-          bufferSize);
+      return new CompressedStream(name, input, length, codec, bufferSize);
     }
   }
 }

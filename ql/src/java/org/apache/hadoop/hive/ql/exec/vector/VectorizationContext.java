@@ -31,13 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -113,6 +117,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * Context class for vectorization execution.
@@ -124,6 +129,9 @@ public class VectorizationContext {
 
   private static final Log LOG = LogFactory.getLog(
       VectorizationContext.class.getName());
+
+  private String contextName;
+  private int level;
 
   VectorExpressionDescriptor vMap;
 
@@ -137,7 +145,10 @@ public class VectorizationContext {
 
   // Convenient constructor for initial batch creation takes
   // a list of columns names and maps them to 0..n-1 indices.
-  public VectorizationContext(List<String> initialColumnNames) {
+  public VectorizationContext(String contextName, List<String> initialColumnNames) {
+    this.contextName = contextName;
+    level = 0;
+    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level + " initialColumnNames " + initialColumnNames.toString());
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -154,8 +165,11 @@ public class VectorizationContext {
 
   // Constructor to with the individual addInitialColumn method
   // followed by a call to finishedAddingInitialColumns.
-  public VectorizationContext() {
-    projectedColumns = new ArrayList<Integer>();
+  public VectorizationContext(String contextName) {
+    this.contextName = contextName;
+    level = 0;
+    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level);
+      projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);
@@ -166,7 +180,10 @@ public class VectorizationContext {
   // Constructor useful making a projection vectorization context.
   // Use with resetProjectionColumns and addProjectionColumn.
   // Keeps existing output column map, etc.
-  public VectorizationContext(VectorizationContext vContext) {
+  public VectorizationContext(String contextName, VectorizationContext vContext) {
+    this.contextName = contextName;
+    level = vContext.level + 1;
+    LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
     this.projectionColumnMap = new HashMap<String, Integer>();
@@ -235,13 +252,6 @@ public class VectorizationContext {
   //Map column number to type
   private OutputColumnManager ocm;
 
-  // File key is used by operators to retrieve the scratch vectors
-  // from mapWork at runtime. The operators that modify the structure of
-  // a vector row batch, need to allocate scratch vectors as well. Every
-  // operator that creates a new Vectorization context should set a unique
-  // fileKey.
-  private String fileKey = null;
-
   // Set of UDF classes for type casting data types in row-mode.
   private static Set<Class<?>> castExpressionUdfs = new HashSet<Class<?>>();
   static {
@@ -253,6 +263,8 @@ public class VectorizationContext {
     castExpressionUdfs.add(GenericUDFToChar.class);
     castExpressionUdfs.add(GenericUDFToVarchar.class);
     castExpressionUdfs.add(GenericUDFTimestamp.class);
+    castExpressionUdfs.add(GenericUDFToIntervalYearMonth.class);
+    castExpressionUdfs.add(GenericUDFToIntervalDayTime.class);
     castExpressionUdfs.add(UDFToByte.class);
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
@@ -261,14 +273,6 @@ public class VectorizationContext {
     castExpressionUdfs.add(UDFToInteger.class);
     castExpressionUdfs.add(UDFToLong.class);
     castExpressionUdfs.add(UDFToShort.class);
-  }
-
-  public String getFileKey() {
-    return fileKey;
-  }
-
-  public void setFileKey(String fileKey) {
-    this.fileKey = fileKey;
   }
 
   protected int getInputColumnIndex(String name) throws HiveException {
@@ -311,6 +315,7 @@ public class VectorizationContext {
         // We need to differentiate DECIMAL columns by their precision and scale...
         String normalizedTypeName = getNormalizedName(hiveTypeName);
         int relativeCol = allocateOutputColumnInternal(normalizedTypeName);
+        // LOG.info("allocateOutputColumn for hiveTypeName " + hiveTypeName + " column " + (initialOutputCol + relativeCol));
         return initialOutputCol + relativeCol;
       }
 
@@ -352,6 +357,22 @@ public class VectorizationContext {
         usedOutputColumns.remove(index-initialOutputCol);
       }
     }
+
+    public int[] currentScratchColumns() {
+      TreeSet<Integer> treeSet = new TreeSet();
+      for (Integer col : usedOutputColumns) {
+        treeSet.add(initialOutputCol + col);
+      }
+      return ArrayUtils.toPrimitive(treeSet.toArray(new Integer[0]));
+    }
+  }
+
+  public int allocateScratchColumn(String hiveTypeName) {
+    return ocm.allocateOutputColumn(hiveTypeName);
+  }
+
+  public int[] currentScratchColumns() {
+    return ocm.currentScratchColumns();
   }
 
   private VectorExpression getColumnVectorExpression(ExprNodeColumnDesc
@@ -658,6 +679,12 @@ public class VectorizationContext {
       case TIMESTAMP:
         genericUdf = new GenericUDFToUnixTimeStamp();
         break;
+      case INTERVAL_YEAR_MONTH:
+        genericUdf = new GenericUDFToIntervalYearMonth();
+        break;
+      case INTERVAL_DAY_TIME:
+        genericUdf = new GenericUDFToIntervalDayTime();
+        break;
       case BINARY:
         genericUdf = new GenericUDFToBinary();
         break;
@@ -871,8 +898,16 @@ public class VectorizationContext {
     switch (vectorArgType) {
     case INT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).longValue());
+    case DATE:
+      return new ConstantVectorExpression(outCol, DateWritable.dateToDays((Date) constantValue));
     case TIMESTAMP:
       return new ConstantVectorExpression(outCol, TimestampUtils.getTimeNanoSec((Timestamp) constantValue));
+    case INTERVAL_YEAR_MONTH:
+      return new ConstantVectorExpression(outCol,
+          ((HiveIntervalYearMonth) constantValue).getTotalMonths());
+    case INTERVAL_DAY_TIME:
+      return new ConstantVectorExpression(outCol,
+          DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) constantValue));
     case FLOAT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).doubleValue());
     case DECIMAL:
@@ -1773,6 +1808,14 @@ public class VectorizationContext {
     return resultType.equalsIgnoreCase("date");
   }
 
+  public static boolean isIntervalYearMonthFamily(String resultType) {
+    return resultType.equalsIgnoreCase("interval_year_month");
+  }
+
+  public static boolean isIntervalDayTimeFamily(String resultType) {
+    return resultType.equalsIgnoreCase("interval_day_time");
+  }
+
   // return true if this is any kind of float
   public static boolean isFloatFamily(String resultType) {
     return resultType.equalsIgnoreCase("double")
@@ -1843,12 +1886,19 @@ public class VectorizationContext {
 
   private Object getVectorTypeScalarValue(ExprNodeConstantDesc constDesc) throws HiveException {
     String t = constDesc.getTypeInfo().getTypeName();
-    if (isTimestampFamily(t)) {
-      return TimestampUtils.getTimeNanoSec((Timestamp) getScalarValue(constDesc));
-    } else if (isDateFamily(t)) {
-      return DateWritable.dateToDays((Date) getScalarValue(constDesc));
-    } else {
-      return getScalarValue(constDesc);
+    VectorExpression.Type type = VectorExpression.Type.getValue(t);
+    Object scalarValue = getScalarValue(constDesc);
+    switch (type) {
+      case TIMESTAMP:
+        return TimestampUtils.getTimeNanoSec((Timestamp) scalarValue);
+      case DATE:
+        return DateWritable.dateToDays((Date) scalarValue);
+      case INTERVAL_YEAR_MONTH:
+        return ((HiveIntervalYearMonth) scalarValue).getTotalMonths();
+      case INTERVAL_DAY_TIME:
+        return DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) scalarValue);
+      default:
+        return scalarValue;
     }
   }
 
@@ -1935,6 +1985,9 @@ public class VectorizationContext {
       return "Date";
     case TIMESTAMP:
       return "Timestamp";
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return hiveTypeName;
     default:
       return "None";
     }
@@ -1959,6 +2012,9 @@ public class VectorizationContext {
       return "Date";
     case TIMESTAMP:
       return "Timestamp";
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return hiveTypeName;
     default:
       return "None";
     }
@@ -1969,16 +2025,16 @@ public class VectorizationContext {
   // TODO:   And, investigate if different reduce-side versions are needed for var* and std*, or if map-side aggregate can be used..  Right now they are conservatively
   //         marked map-side (HASH).
   static ArrayList<AggregateDefinition> aggregatesDefinition = new ArrayList<AggregateDefinition>() {{
-    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    null,                          VectorUDAFMinLong.class));
+    add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMinLong.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMinDouble.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMinString.class));
     add(new AggregateDefinition("min",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMinDecimal.class));
-    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    null,                          VectorUDAFMaxLong.class));
+    add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    null,                          VectorUDAFMaxLong.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           null,                          VectorUDAFMaxDouble.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          null,                          VectorUDAFMaxString.class));
     add(new AggregateDefinition("max",         VectorExpressionDescriptor.ArgumentType.DECIMAL,                null,                          VectorUDAFMaxDecimal.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.NONE,                   GroupByDesc.Mode.HASH,         VectorUDAFCountStar.class));
-    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATETIME_FAMILY,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
+    add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_DATETIME_INTERVAL_FAMILY,    GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.INT_FAMILY,             GroupByDesc.Mode.MERGEPARTIAL, VectorUDAFCountMerge.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY,           GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
     add(new AggregateDefinition("count",       VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,          GroupByDesc.Mode.HASH,         VectorUDAFCount.class));
@@ -2066,6 +2122,10 @@ public class VectorizationContext {
         "\" for type: \"" + inputType.name() + " (reduce-side = " + isReduce + ")");
   }
 
+  public int firstOutputColumnIndex() {
+    return firstOutputColumnIndex;
+  }
+
   public Map<Integer, String> getScratchColumnTypeMap() {
     Map<Integer, String> map = new HashMap<Integer, String>();
     for (int i = 0; i < ocm.outputColCount; i++) {
@@ -2077,7 +2137,7 @@ public class VectorizationContext {
 
   public String toString() {
     StringBuilder sb = new StringBuilder(32);
-    sb.append("Context key ").append(getFileKey()).append(", ");
+    sb.append("Context name ").append(contextName).append(", level " + level + ", ");
 
     Comparator<Integer> comparerInteger = new Comparator<Integer>() {
         @Override
@@ -2089,11 +2149,11 @@ public class VectorizationContext {
     for (Map.Entry<String, Integer> entry : projectionColumnMap.entrySet()) {
       sortedColumnMap.put(entry.getValue(), entry.getKey());
     }
-    sb.append("sortedProjectionColumnMap ").append(sortedColumnMap).append(", ");
+    sb.append("sorted projectionColumnMap ").append(sortedColumnMap).append(", ");
 
     Map<Integer, String> sortedScratchColumnTypeMap = new TreeMap<Integer, String>(comparerInteger);
     sortedScratchColumnTypeMap.putAll(getScratchColumnTypeMap());
-    sb.append("sortedScratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
+    sb.append("sorted scratchColumnTypeMap ").append(sortedScratchColumnTypeMap);
 
     return sb.toString();
   }

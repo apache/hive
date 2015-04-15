@@ -54,9 +54,6 @@ public class ForwardWalker extends DefaultGraphWalker {
   @SuppressWarnings("unchecked")
   protected void addAllParents(Node nd) {
     Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
-    if (op.getParentOperators() == null) {
-      return;
-    }
     getToWalk().removeAll(op.getParentOperators());
     getToWalk().addAll(0, op.getParentOperators());
   }
@@ -68,6 +65,7 @@ public class ForwardWalker extends DefaultGraphWalker {
 * current operator in the graph
 * @throws SemanticException
 */
+  @Override
   public void walk(Node nd) throws SemanticException {
     if (opStack.empty() || nd != opStack.peek()) {
       opStack.push(nd);

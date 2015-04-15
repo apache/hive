@@ -439,7 +439,7 @@ public class AggrStats implements org.apache.thrift.TBase<AggrStats, AggrStats._
                 struct.colStats = new ArrayList<ColumnStatisticsObj>(_list278.size);
                 for (int _i279 = 0; _i279 < _list278.size; ++_i279)
                 {
-                  ColumnStatisticsObj _elem280; // required
+                  ColumnStatisticsObj _elem280; // optional
                   _elem280 = new ColumnStatisticsObj();
                   _elem280.read(iprot);
                   struct.colStats.add(_elem280);
@@ -522,7 +522,7 @@ public class AggrStats implements org.apache.thrift.TBase<AggrStats, AggrStats._
         struct.colStats = new ArrayList<ColumnStatisticsObj>(_list283.size);
         for (int _i284 = 0; _i284 < _list283.size; ++_i284)
         {
-          ColumnStatisticsObj _elem285; // required
+          ColumnStatisticsObj _elem285; // optional
           _elem285 = new ColumnStatisticsObj();
           _elem285.read(iprot);
           struct.colStats.add(_elem285);

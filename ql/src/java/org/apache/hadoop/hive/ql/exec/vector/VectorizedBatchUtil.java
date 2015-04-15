@@ -20,29 +20,38 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -50,6 +59,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 public class VectorizedBatchUtil {
   private static final Log LOG = LogFactory.getLog(VectorizedBatchUtil.class);
@@ -126,6 +136,8 @@ public class VectorizedBatchUtil {
         case LONG:
         case TIMESTAMP:
         case DATE:
+        case INTERVAL_YEAR_MONTH:
+        case INTERVAL_DAY_TIME:
           cvList.add(new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
           break;
         case FLOAT:
@@ -235,10 +247,30 @@ public class VectorizedBatchUtil {
     final int off = colOffset;
     // Iterate thru the cols and load the batch
     for (int i = 0; i < fieldRefs.size(); i++) {
-      setVector(row, oi, fieldRefs, batch, buffer, rowIndex, i, off);
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, i, off);
     }
   }
 
+  /**
+   * Add only the projected column of a regular row to the specified vectorized row batch
+   * @param row the regular row
+   * @param oi object inspector for the row
+   * @param rowIndex the offset to add in the batch
+   * @param batch vectorized row batch
+   * @param buffer data output buffer
+   * @throws HiveException
+   */
+  public static void addProjectedRowToBatchFrom(Object row, StructObjectInspector oi,
+      int rowIndex, VectorizedRowBatch batch, DataOutputBuffer buffer) throws HiveException {
+    List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
+    for (int i = 0; i < fieldRefs.size(); i++) {
+      int projectedOutputCol = batch.projectedColumns[i];
+      if (batch.cols[projectedOutputCol] == null) {
+        continue;
+      }
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, projectedOutputCol, 0);
+    }
+  }
   /**
    * Iterates thru all the columns in a given row and populates the batch
    * from a given offset
@@ -268,21 +300,21 @@ public class VectorizedBatchUtil {
         // The value will have already been set before we're called, so don't overwrite it
         continue;
       }
-      setVector(row, oi, fieldRefs, batch, buffer, rowIndex, i, 0);
+      setVector(row, oi, fieldRefs.get(i), batch, buffer, rowIndex, i, 0);
     }
   }
 
   private static void setVector(Object row,
                                 StructObjectInspector oi,
-                                List<? extends StructField> fieldRefs,
+                                StructField field,
                                 VectorizedRowBatch batch,
                                 DataOutputBuffer buffer,
                                 int rowIndex,
                                 int colIndex,
                                 int offset) throws HiveException {
 
-    Object fieldData = oi.getStructFieldData(row, fieldRefs.get(colIndex));
-    ObjectInspector foi = fieldRefs.get(colIndex).getFieldObjectInspector();
+    Object fieldData = oi.getStructFieldData(row, field);
+    ObjectInspector foi = field.getFieldObjectInspector();
 
     // Vectorization only supports PRIMITIVE data types. Assert the same
     assert (foi.getCategory() == Category.PRIMITIVE);
@@ -394,6 +426,30 @@ public class VectorizedBatchUtil {
       }
     }
       break;
+    case INTERVAL_YEAR_MONTH: {
+      LongColumnVector lcv = (LongColumnVector) batch.cols[offset + colIndex];
+      if (writableCol != null) {
+        HiveIntervalYearMonth i = ((HiveIntervalYearMonthWritable) writableCol).getHiveIntervalYearMonth();
+        lcv.vector[rowIndex] = i.getTotalMonths();
+        lcv.isNull[rowIndex] = false;
+      } else {
+        lcv.vector[rowIndex] = 1;
+        setNullColIsNullValue(lcv, rowIndex);
+      }
+    }
+      break;
+    case INTERVAL_DAY_TIME: {
+      LongColumnVector lcv = (LongColumnVector) batch.cols[offset + colIndex];
+      if (writableCol != null) {
+        HiveIntervalDayTime i = ((HiveIntervalDayTimeWritable) writableCol).getHiveIntervalDayTime();
+        lcv.vector[rowIndex] = DateUtils.getIntervalDayTimeTotalNanos(i);
+        lcv.isNull[rowIndex] = false;
+      } else {
+        lcv.vector[rowIndex] = 1;
+        setNullColIsNullValue(lcv, rowIndex);
+      }
+    }
+      break;
     case BINARY: {
       BytesColumnVector bcv = (BytesColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
@@ -491,5 +547,98 @@ public class VectorizedBatchUtil {
           poi.getPrimitiveCategory());
     }
   }
-}
 
+  public static StandardStructObjectInspector convertToStandardStructObjectInspector(
+      StructObjectInspector structObjectInspector) throws HiveException {
+
+    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    List<ObjectInspector> oids = new ArrayList<ObjectInspector>();
+    ArrayList<String> columnNames = new ArrayList<String>();
+
+    for(StructField field : fields) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+          field.getFieldObjectInspector().getTypeName());
+      ObjectInspector standardWritableObjectInspector = 
+              TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
+      oids.add(standardWritableObjectInspector);
+      columnNames.add(field.getFieldName());
+    }
+    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames,oids);
+  }
+
+  public static PrimitiveTypeInfo[] primitiveTypeInfosFromStructObjectInspector(
+      StructObjectInspector structObjectInspector) throws HiveException {
+
+    List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    PrimitiveTypeInfo[] result = new PrimitiveTypeInfo[fields.size()];
+
+    int i = 0;
+    for(StructField field : fields) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+          field.getFieldObjectInspector().getTypeName());
+      result[i++] =  (PrimitiveTypeInfo) typeInfo;
+    }
+    return result;
+  }
+
+
+  public static String displayBytes(byte[] bytes, int start, int length) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < start + length; i++) {
+      char ch = (char) bytes[i];
+      if (ch < ' ' || ch > '~') {
+        sb.append(String.format("\\%03d", (int) (bytes[i] & 0xff)));
+      } else {
+        sb.append(ch);
+      }
+    }
+    return sb.toString();
+  }
+
+  public static void debugDisplayOneRow(VectorizedRowBatch batch, int index, String prefix) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(prefix + " row " + index + " ");
+    for (int i = 0; i < batch.projectionSize; i++) {
+      int column = batch.projectedColumns[i];
+      ColumnVector colVector = batch.cols[column];
+      if (colVector == null) {
+        sb.append("(null colVector " + column + ")");
+      } else {
+        boolean isRepeating = colVector.isRepeating;
+        index = (isRepeating ? 0 : index);
+        if (colVector.noNulls || !colVector.isNull[index]) {
+          if (colVector instanceof LongColumnVector) {
+            sb.append(((LongColumnVector) colVector).vector[index]);
+          } else if (colVector instanceof DoubleColumnVector) {
+            sb.append(((DoubleColumnVector) colVector).vector[index]);
+          } else if (colVector instanceof BytesColumnVector) {
+            BytesColumnVector bytesColumnVector = (BytesColumnVector) colVector;
+            byte[] bytes = bytesColumnVector.vector[index];
+            int start = bytesColumnVector.start[index];
+            int length = bytesColumnVector.length[index];
+            if (bytes == null) {
+              sb.append("(Unexpected null bytes with start " + start + " length " + length + ")");
+            } else {
+              sb.append(displayBytes(bytes, start, length));
+            }
+          } else if (colVector instanceof DecimalColumnVector) {
+            sb.append(((DecimalColumnVector) colVector).vector[index].toString());
+          } else {
+            sb.append("Unknown");
+          }
+        } else {
+          sb.append("NULL");
+        }
+      }
+      sb.append(" ");
+    }
+    System.out.println(sb.toString());
+  }
+
+  public static void debugDisplayBatch(VectorizedRowBatch batch, String prefix) throws HiveException {
+    for (int i = 0; i < batch.size; i++) {
+      int index = (batch.selectedInUse ? batch.selected[i] : i);
+      debugDisplayOneRow(batch, index, prefix);
+    }
+  }
+}

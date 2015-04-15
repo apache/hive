@@ -37,9 +37,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Splitter;
+
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
+import jline.console.history.History;
 import jline.console.history.PersistentHistory;
 import jline.console.completer.StringsCompleter;
 import jline.console.completer.ArgumentCompleter;
@@ -93,12 +95,16 @@ public class CliDriver {
   public static final String HIVERCFILE = ".hiverc";
 
   private final LogHelper console;
+  protected ConsoleReader reader;
   private Configuration conf;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
     Log LOG = LogFactory.getLog("CliDriver");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("CliDriver inited with classpath " + System.getProperty("java.class.path"));
+    }
     console = new LogHelper(LOG);
   }
 
@@ -712,34 +718,10 @@ public class CliDriver {
       return 3;
     }
 
-    ConsoleReader reader =  getConsoleReader();
-    reader.setBellEnabled(false);
-    // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-    for (Completer completer : getCommandCompleter()) {
-      reader.addCompleter(completer);
-    }
+    setupConsoleReader();
 
     String line;
-    final String HISTORYFILE = ".hivehistory";
-    String historyDirectory = System.getProperty("user.home");
-    PersistentHistory history = null;
-    try {
-      if ((new File(historyDirectory)).exists()) {
-        String historyFile = historyDirectory + File.separator + HISTORYFILE;
-        history = new FileHistory(new File(historyFile));
-        reader.setHistory(history);
-      } else {
-        System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
-                           " does not exist.   History will not be available during this session.");
-      }
-    } catch (Exception e) {
-      System.err.println("WARNING: Encountered an error while trying to initialize Hive's " +
-                         "history file.  History will not be available during this session.");
-      System.err.println(e.getMessage());
-    }
-
     int ret = 0;
-
     String prefix = "";
     String curDB = getFormattedDb(conf, ss);
     String curPrompt = prompt + curDB;
@@ -763,15 +745,56 @@ public class CliDriver {
       }
     }
 
-    if (history != null) {
-      history.flush();
-    }
     return ret;
   }
 
-  protected ConsoleReader getConsoleReader() throws IOException{
-    return new ConsoleReader();
+  private void setupCmdHistory() {
+    final String HISTORYFILE = ".hivehistory";
+    String historyDirectory = System.getProperty("user.home");
+    PersistentHistory history = null;
+    try {
+      if ((new File(historyDirectory)).exists()) {
+        String historyFile = historyDirectory + File.separator + HISTORYFILE;
+        history = new FileHistory(new File(historyFile));
+        reader.setHistory(history);
+      } else {
+        System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
+                           " does not exist.   History will not be available during this session.");
+      }
+    } catch (Exception e) {
+      System.err.println("WARNING: Encountered an error while trying to initialize Hive's " +
+                         "history file.  History will not be available during this session.");
+      System.err.println(e.getMessage());
+    }
+
+    System.out.println("WARNING: Hive CLI is deprecated and migration to Beeline is recommended.");
+
+    // add shutdown hook to flush the history to history file
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      @Override
+      public void run() {
+        History h = reader.getHistory();
+        if (h instanceof FileHistory) {
+          try {
+            ((FileHistory) h).flush();
+          } catch (IOException e) {
+            System.err.println("WARNING: Failed to write command history file: " + e.getMessage());
+          }
+        }
+      }
+    }));
   }
+
+  protected void setupConsoleReader() throws IOException {
+    reader = new ConsoleReader();
+    reader.setExpandEvents(false);
+    reader.setBellEnabled(false);
+    for (Completer completer : getCommandCompleter()) {
+      reader.addCompleter(completer);
+    }
+    setupCmdHistory();
+  }
+
   /**
    * Retrieve the current database name string to display, based on the
    * configuration value.

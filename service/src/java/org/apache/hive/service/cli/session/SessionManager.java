@@ -62,6 +62,7 @@ public class SessionManager extends CompositeService {
 
   private long checkInterval;
   private long sessionTimeout;
+  private boolean checkOperation;
 
   private volatile boolean shutdown;
   // The HiveServer2 instance running this service
@@ -107,6 +108,8 @@ public class SessionManager extends CompositeService {
         hiveConf, ConfVars.HIVE_SERVER2_SESSION_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     sessionTimeout = HiveConf.getTimeVar(
         hiveConf, ConfVars.HIVE_SERVER2_IDLE_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+    checkOperation = HiveConf.getBoolVar(hiveConf,
+        ConfVars.HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION);
   }
 
   private void initOperationLogRootDir() {
@@ -155,7 +158,8 @@ public class SessionManager extends CompositeService {
         for (sleepInterval(interval); !shutdown; sleepInterval(interval)) {
           long current = System.currentTimeMillis();
           for (HiveSession session : new ArrayList<HiveSession>(handleToSession.values())) {
-            if (sessionTimeout > 0 && session.getLastAccessTime() + sessionTimeout <= current) {
+            if (sessionTimeout > 0 && session.getLastAccessTime() + sessionTimeout <= current
+                && (!checkOperation || session.getNoOperationTime() > sessionTimeout)) {
               SessionHandle handle = session.getSessionHandle();
               LOG.warn("Session " + handle + " is Timed-out (last access : " +
                   new Date(session.getLastAccessTime()) + ") and will be closed");

@@ -72,9 +72,9 @@ PREHOOK: Input: default@doctors
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -98,7 +98,7 @@ PREHOOK: Input: default@default__doctors_doctors_index__
 POSTHOOK: query: DESCRIBE EXTENDED default__doctors_doctors_index__
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@default__doctors_doctors_index__
-number              	int                 	from deserializer   
+number              	int                 	Order of playing the role
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
 	 	 
@@ -113,7 +113,7 @@ POSTHOOK: Input: default@doctors
 POSTHOOK: Output: default@default__doctors_doctors_index__
 POSTHOOK: Lineage: default__doctors_doctors_index__._bucketname SIMPLE [(doctors)doctors.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__doctors_doctors_index__._offsets EXPRESSION [(doctors)doctors.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
-POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__doctors_doctors_index__.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:Order of playing the role), ]
 PREHOOK: query: EXPLAIN SELECT * FROM doctors WHERE number > 6
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM doctors WHERE number > 6
@@ -134,7 +134,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__doctors_doctors_index__
+            alias: default__doctors_doctors_index__
             filterExpr: (number > 6) (type: boolean)
             Filter Operator
               predicate: (number > 6) (type: boolean)

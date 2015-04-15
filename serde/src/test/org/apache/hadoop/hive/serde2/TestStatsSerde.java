@@ -30,7 +30,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
 import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -104,24 +106,11 @@ public class TestStatsSerde extends TestCase {
       int num = 1000;
       Random r = new Random(1234);
       MyTestClass rows[] = new MyTestClass[num];
+
       for (int i = 0; i < num; i++) {
-        int randField = r.nextInt(12);
-        Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
-        Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
-        Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
-        Long l = randField > 3 ? null : Long.valueOf(r.nextLong());
-        Float f = randField > 4 ? null : Float.valueOf(r.nextFloat());
-        Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
-        String st = randField > 6 ? null : TestBinarySortableSerDe
-            .getRandString(r);
-	HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
-	      Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
-        MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
-            .nextInt(5) - 2, r.nextInt(5) - 2);
-        List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
-            .getRandIntegerArray(r);
-        byte[] ba = TestBinarySortableSerDe.getRandBA(r, i);
-        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, bd, date, is, li,ba);
+        MyTestClass t = new MyTestClass();
+        ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+        t.randomFill(r, extraTypeInfo);
         rows[i] = t;
       }
 

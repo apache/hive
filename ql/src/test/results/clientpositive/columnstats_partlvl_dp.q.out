@@ -118,7 +118,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeName, employeeID
           Column Types: string, int
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
 PREHOOK: type: QUERY
@@ -191,7 +191,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
 PREHOOK: type: QUERY
@@ -275,7 +275,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
 PREHOOK: type: QUERY
@@ -356,7 +356,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeid, employeename
           Column Types: int, string
-          Table: employee_part
+          Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: QUERY

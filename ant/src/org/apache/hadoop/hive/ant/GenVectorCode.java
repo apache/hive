@@ -35,6 +35,89 @@ public class GenVectorCode extends Task {
 
   private static String [][] templateExpansions =
     {
+      // The following datetime/interval arithmetic operations can be done using the vectorized values
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Add", "interval_year_month", "interval_year_month", "+"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Add", "interval_year_month", "interval_year_month", "+"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Add", "interval_year_month", "interval_year_month", "+"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Subtract", "interval_year_month", "interval_year_month", "-"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Subtract", "interval_year_month", "interval_year_month", "-"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Subtract", "interval_year_month", "interval_year_month", "-"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Add", "interval_day_time", "interval_day_time", "+"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Add", "interval_day_time", "interval_day_time", "+"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Add", "interval_day_time", "interval_day_time", "+"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Subtract", "interval_day_time", "interval_day_time", "-"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Subtract", "interval_day_time", "interval_day_time", "-"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Subtract", "interval_day_time", "interval_day_time", "-"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Add", "interval_day_time", "timestamp", "+"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Add", "interval_day_time", "timestamp", "+"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Add", "interval_day_time", "timestamp", "+"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Add", "timestamp", "interval_day_time", "+"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Add", "timestamp", "interval_day_time", "+"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Add", "timestamp", "interval_day_time", "+"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Subtract", "timestamp", "interval_day_time", "-"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Subtract", "timestamp", "interval_day_time", "-"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Subtract", "timestamp", "interval_day_time", "-"},
+
+      {"DTIColumnArithmeticDTIScalarNoConvert", "Subtract", "timestamp", "timestamp", "-"},
+      {"DTIScalarArithmeticDTIColumnNoConvert", "Subtract", "timestamp", "timestamp", "-"},
+      {"DTIColumnArithmeticDTIColumnNoConvert", "Subtract", "timestamp", "timestamp", "-"},
+
+      // The following datetime/interval arithmetic functions require type conversion for one or both operands
+      {"ColumnArithmeticColumnWithConvert", "Subtract", "date", "date", "-", "TimestampUtils.daysToNanoseconds", "TimestampUtils.daysToNanoseconds"},
+      {"ScalarArithmeticColumnWithConvert", "Subtract", "date", "date", "-", "TimestampUtils.daysToNanoseconds", "TimestampUtils.daysToNanoseconds"},
+      {"ColumnArithmeticScalarWithConvert", "Subtract", "date", "date", "-", "TimestampUtils.daysToNanoseconds", "TimestampUtils.daysToNanoseconds"},
+
+      {"ColumnArithmeticColumnWithConvert", "Subtract", "date", "timestamp", "-", "TimestampUtils.daysToNanoseconds", ""},
+      {"ScalarArithmeticColumnWithConvert", "Subtract", "date", "timestamp", "-", "TimestampUtils.daysToNanoseconds", ""},
+      {"ColumnArithmeticScalarWithConvert", "Subtract", "date", "timestamp", "-", "TimestampUtils.daysToNanoseconds", ""},
+
+      {"ColumnArithmeticColumnWithConvert", "Subtract", "timestamp", "date", "-", "", "TimestampUtils.daysToNanoseconds"},
+      {"ScalarArithmeticColumnWithConvert", "Subtract", "timestamp", "date", "-", "", "TimestampUtils.daysToNanoseconds"},
+      {"ColumnArithmeticScalarWithConvert", "Subtract", "timestamp", "date", "-", "", "TimestampUtils.daysToNanoseconds"},
+
+      {"ColumnArithmeticColumnWithConvert", "Add", "date", "interval_day_time", "+", "TimestampUtils.daysToNanoseconds", ""},
+      {"ScalarArithmeticColumnWithConvert", "Add", "date", "interval_day_time", "+", "TimestampUtils.daysToNanoseconds", ""},
+      {"ColumnArithmeticScalarWithConvert", "Add", "date", "interval_day_time", "+", "TimestampUtils.daysToNanoseconds", ""},
+
+      {"ColumnArithmeticColumnWithConvert", "Subtract", "date", "interval_day_time", "-", "TimestampUtils.daysToNanoseconds", ""},
+      {"ScalarArithmeticColumnWithConvert", "Subtract", "date", "interval_day_time", "-", "TimestampUtils.daysToNanoseconds", ""},
+      {"ColumnArithmeticScalarWithConvert", "Subtract", "date", "interval_day_time", "-", "TimestampUtils.daysToNanoseconds", ""},
+
+      {"ColumnArithmeticColumnWithConvert", "Add", "interval_day_time", "date", "+", "", "TimestampUtils.daysToNanoseconds"},
+      {"ScalarArithmeticColumnWithConvert", "Add", "interval_day_time", "date", "+", "", "TimestampUtils.daysToNanoseconds"},
+      {"ColumnArithmeticScalarWithConvert", "Add", "interval_day_time", "date", "+", "", "TimestampUtils.daysToNanoseconds"},
+
+      // Most year-month interval arithmetic needs its own generation
+      {"DateTimeColumnArithmeticIntervalColumnWithConvert", "Add", "date", "interval_year_month", "+", "", "dtm.addMonthsToDays"},
+      {"DateTimeScalarArithmeticIntervalColumnWithConvert", "Add", "date", "interval_year_month", "+", "", "dtm.addMonthsToDays"},
+      {"DateTimeColumnArithmeticIntervalScalarWithConvert", "Add", "date", "interval_year_month", "+", "", "dtm.addMonthsToDays"},
+
+      {"DateTimeColumnArithmeticIntervalColumnWithConvert", "Subtract", "date", "interval_year_month", "-", "", "dtm.addMonthsToDays"},
+      {"DateTimeScalarArithmeticIntervalColumnWithConvert", "Subtract", "date", "interval_year_month", "-", "", "dtm.addMonthsToDays"},
+      {"DateTimeColumnArithmeticIntervalScalarWithConvert", "Subtract", "date", "interval_year_month", "-", "", "dtm.addMonthsToDays"},
+
+      {"DateTimeColumnArithmeticIntervalColumnWithConvert", "Add", "timestamp", "interval_year_month", "+", "", "dtm.addMonthsToNanosUtc"},
+      {"DateTimeScalarArithmeticIntervalColumnWithConvert", "Add", "timestamp", "interval_year_month", "+", "", "dtm.addMonthsToNanosUtc"},
+      {"DateTimeColumnArithmeticIntervalScalarWithConvert", "Add", "timestamp", "interval_year_month", "+", "", "dtm.addMonthsToNanosUtc"},
+
+      {"DateTimeColumnArithmeticIntervalColumnWithConvert", "Subtract", "timestamp", "interval_year_month", "-", "", "dtm.addMonthsToNanosUtc"},
+      {"DateTimeScalarArithmeticIntervalColumnWithConvert", "Subtract", "timestamp", "interval_year_month", "-", "", "dtm.addMonthsToNanosUtc"},
+      {"DateTimeColumnArithmeticIntervalScalarWithConvert", "Subtract", "timestamp", "interval_year_month", "-", "", "dtm.addMonthsToNanosUtc"},
+
+      {"IntervalColumnArithmeticDateTimeColumnWithConvert", "Add", "interval_year_month", "date", "+", "", "dtm.addMonthsToDays"},
+      {"IntervalScalarArithmeticDateTimeColumnWithConvert", "Add", "interval_year_month", "date", "+", "", "dtm.addMonthsToDays"},
+      {"IntervalColumnArithmeticDateTimeScalarWithConvert", "Add", "interval_year_month", "date", "+", "", "dtm.addMonthsToDays"},
+
+      {"IntervalColumnArithmeticDateTimeColumnWithConvert", "Add", "interval_year_month", "timestamp", "+", "", "dtm.addMonthsToNanosUtc"},
+      {"IntervalScalarArithmeticDateTimeColumnWithConvert", "Add", "interval_year_month", "timestamp", "+", "", "dtm.addMonthsToNanosUtc"},
+      {"IntervalColumnArithmeticDateTimeScalarWithConvert", "Add", "interval_year_month", "timestamp", "+", "", "dtm.addMonthsToNanosUtc"},
+
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "long", "*"},
@@ -528,6 +611,88 @@ public class GenVectorCode extends Task {
       {"ColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"ColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
+      // Interval comparisons
+      {"DTIScalarCompareColumn", "Equal", "interval_year_month"},
+      {"DTIScalarCompareColumn", "Equal", "interval_day_time"},
+      {"DTIScalarCompareColumn", "NotEqual", "interval_year_month"},
+      {"DTIScalarCompareColumn", "NotEqual", "interval_day_time"},
+      {"DTIScalarCompareColumn", "Less", "interval_year_month"},
+      {"DTIScalarCompareColumn", "Less", "interval_day_time"},
+      {"DTIScalarCompareColumn", "LessEqual", "interval_year_month"},
+      {"DTIScalarCompareColumn", "LessEqual", "interval_day_time"},
+      {"DTIScalarCompareColumn", "Greater", "interval_year_month"},
+      {"DTIScalarCompareColumn", "Greater", "interval_day_time"},
+      {"DTIScalarCompareColumn", "GreaterEqual", "interval_year_month"},
+      {"DTIScalarCompareColumn", "GreaterEqual", "interval_day_time"},
+
+      {"DTIColumnCompareScalar", "Equal", "interval_year_month"},
+      {"DTIColumnCompareScalar", "Equal", "interval_day_time"},
+      {"DTIColumnCompareScalar", "NotEqual", "interval_year_month"},
+      {"DTIColumnCompareScalar", "NotEqual", "interval_day_time"},
+      {"DTIColumnCompareScalar", "Less", "interval_year_month"},
+      {"DTIColumnCompareScalar", "Less", "interval_day_time"},
+      {"DTIColumnCompareScalar", "LessEqual", "interval_year_month"},
+      {"DTIColumnCompareScalar", "LessEqual", "interval_day_time"},
+      {"DTIColumnCompareScalar", "Greater", "interval_year_month"},
+      {"DTIColumnCompareScalar", "Greater", "interval_day_time"},
+      {"DTIColumnCompareScalar", "GreaterEqual", "interval_year_month"},
+      {"DTIColumnCompareScalar", "GreaterEqual", "interval_day_time"},
+
+      {"FilterDTIScalarCompareColumn", "Equal", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "Equal", "interval_day_time"},
+      {"FilterDTIScalarCompareColumn", "NotEqual", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "NotEqual", "interval_day_time"},
+      {"FilterDTIScalarCompareColumn", "Less", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "Less", "interval_day_time"},
+      {"FilterDTIScalarCompareColumn", "LessEqual", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "LessEqual", "interval_day_time"},
+      {"FilterDTIScalarCompareColumn", "Greater", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "Greater", "interval_day_time"},
+      {"FilterDTIScalarCompareColumn", "GreaterEqual", "interval_year_month"},
+      {"FilterDTIScalarCompareColumn", "GreaterEqual", "interval_day_time"},
+
+      {"FilterDTIColumnCompareScalar", "Equal", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "Equal", "interval_day_time"},
+      {"FilterDTIColumnCompareScalar", "NotEqual", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "NotEqual", "interval_day_time"},
+      {"FilterDTIColumnCompareScalar", "Less", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "Less", "interval_day_time"},
+      {"FilterDTIColumnCompareScalar", "LessEqual", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "LessEqual", "interval_day_time"},
+      {"FilterDTIColumnCompareScalar", "Greater", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "Greater", "interval_day_time"},
+      {"FilterDTIColumnCompareScalar", "GreaterEqual", "interval_year_month"},
+      {"FilterDTIColumnCompareScalar", "GreaterEqual", "interval_day_time"},
+
+      // Date comparisons
+      {"DTIScalarCompareColumn", "Equal", "date"},
+      {"DTIScalarCompareColumn", "NotEqual", "date"},
+      {"DTIScalarCompareColumn", "Less", "date"},
+      {"DTIScalarCompareColumn", "LessEqual", "date"},
+      {"DTIScalarCompareColumn", "Greater", "date"},
+      {"DTIScalarCompareColumn", "GreaterEqual", "date"},
+
+      {"DTIColumnCompareScalar", "Equal", "date"},
+      {"DTIColumnCompareScalar", "NotEqual", "date"},
+      {"DTIColumnCompareScalar", "Less", "date"},
+      {"DTIColumnCompareScalar", "LessEqual", "date"},
+      {"DTIColumnCompareScalar", "Greater", "date"},
+      {"DTIColumnCompareScalar", "GreaterEqual", "date"},
+
+      {"FilterDTIScalarCompareColumn", "Equal", "date"},
+      {"FilterDTIScalarCompareColumn", "NotEqual", "date"},
+      {"FilterDTIScalarCompareColumn", "Less", "date"},
+      {"FilterDTIScalarCompareColumn", "LessEqual", "date"},
+      {"FilterDTIScalarCompareColumn", "Greater", "date"},
+      {"FilterDTIScalarCompareColumn", "GreaterEqual", "date"},
+
+      {"FilterDTIColumnCompareScalar", "Equal", "date"},
+      {"FilterDTIColumnCompareScalar", "NotEqual", "date"},
+      {"FilterDTIColumnCompareScalar", "Less", "date"},
+      {"FilterDTIColumnCompareScalar", "LessEqual", "date"},
+      {"FilterDTIColumnCompareScalar", "Greater", "date"},
+      {"FilterDTIColumnCompareScalar", "GreaterEqual", "date"},
+
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
       //   <ResultCast>, <Cleanup> <VectorExprArgType>
       {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", "", ""},
@@ -896,6 +1061,38 @@ public class GenVectorCode extends Task {
         generateFilterDecimalScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterDecimalColumnCompareColumn")) {
         generateFilterDecimalColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("FilterDTIScalarCompareColumn")) {
+        generateFilterDTIScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("FilterDTIColumnCompareScalar")) {
+        generateFilterDTIColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("DTIScalarCompareColumn")) {
+        generateDTIScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("DTIColumnCompareScalar")) {
+        generateDTIColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("DTIColumnArithmeticDTIScalarNoConvert")) {
+        generateColumnArithmeticScalar(tdesc);
+      } else if (tdesc[0].equals("DTIScalarArithmeticDTIColumnNoConvert")) {
+        generateScalarArithmeticColumn(tdesc);
+      } else if (tdesc[0].equals("DTIColumnArithmeticDTIColumnNoConvert")) {
+        generateColumnArithmeticColumn(tdesc);
+      } else if (tdesc[0].equals("ColumnArithmeticColumnWithConvert")) {
+        generateColumnArithmeticColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("ScalarArithmeticColumnWithConvert")) {
+        generateScalarArithmeticColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("ColumnArithmeticScalarWithConvert")) {
+        generateColumnArithmeticScalarWithConvert(tdesc);
+      } else if (tdesc[0].equals("DateTimeColumnArithmeticIntervalColumnWithConvert")) {
+        generateDateTimeColumnArithmeticIntervalColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("DateTimeScalarArithmeticIntervalColumnWithConvert")) {
+        generateDateTimeScalarArithmeticIntervalColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("DateTimeColumnArithmeticIntervalScalarWithConvert")) {
+        generateDateTimeColumnArithmeticIntervalScalarWithConvert(tdesc);
+      } else if (tdesc[0].equals("IntervalColumnArithmeticDateTimeColumnWithConvert")) {
+        generateDateTimeColumnArithmeticIntervalColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("IntervalScalarArithmeticDateTimeColumnWithConvert")) {
+        generateDateTimeScalarArithmeticIntervalColumnWithConvert(tdesc);
+      } else if (tdesc[0].equals("IntervalColumnArithmeticDateTimeScalarWithConvert")) {
+        generateDateTimeColumnArithmeticIntervalScalarWithConvert(tdesc);
       } else {
         continue;
       }
@@ -1324,12 +1521,18 @@ public class GenVectorCode extends Task {
     String className = getCamelCaseType(operandType) + "ColUnaryMinus";
         File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
+    String vectorExprArgType = operandType;
+    if (operandType.equals("long")) {
+      // interval types can use long version
+      vectorExprArgType = "int_interval_family";
+    }
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -1353,7 +1556,7 @@ public class GenVectorCode extends Task {
     // Toss in timestamp and date.
     if (operandType.equals("long")) {
       // Let comparisons occur for DATE and TIMESTAMP, too.
-      vectorExprArgType = "int_datetime_family";
+      vectorExprArgType = "int_datetime_interval_family";
     }
     templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
 
@@ -1385,8 +1588,8 @@ public class GenVectorCode extends Task {
 
     // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      vectorExprArgType2 = "int_datetime_family";
-      vectorExprArgType3 = "int_datetime_family";
+      vectorExprArgType2 = "int_datetime_interval_family";
+      vectorExprArgType3 = "int_datetime_interval_family";
     }
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
@@ -1418,8 +1621,8 @@ public class GenVectorCode extends Task {
 
     // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      vectorExprArgType2 = "int_datetime_family";
-      vectorExprArgType3 = "int_datetime_family";
+      vectorExprArgType2 = "int_datetime_interval_family";
+      vectorExprArgType3 = "int_datetime_interval_family";
     }
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
@@ -1450,8 +1653,8 @@ public class GenVectorCode extends Task {
 
     // Toss in timestamp and date.
     if (operandType2.equals("long") && operandType3.equals("long")) {
-      vectorExprArgType2 = "int_datetime_family";
-      vectorExprArgType3 = "int_datetime_family";
+      vectorExprArgType2 = "int_datetime_interval_family";
+      vectorExprArgType3 = "int_datetime_interval_family";
     }
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
@@ -1586,8 +1789,8 @@ public class GenVectorCode extends Task {
     // But {timestamp|date} and scalar must be handled separately.
     if (operandType1.equals("long") && operandType2.equals("long")) {
       // Let comparisons occur for DATE and TIMESTAMP, too.
-      vectorExprArgType1 = "int_datetime_family";
-      vectorExprArgType2 = "int_datetime_family";
+      vectorExprArgType1 = "int_datetime_interval_family";
+      vectorExprArgType2 = "int_datetime_interval_family";
     }
     templateString = templateString.replaceAll("<VectorExprArgType1>", vectorExprArgType1);
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
@@ -1738,6 +1941,7 @@ public class GenVectorCode extends Task {
 
   private void generateColumnArithmeticOperatorColumn(String[] tdesc, String returnType,
          String className) throws Exception {
+    String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String outputColumnVectorType = this.getColumnVectorType(returnType);
@@ -1752,6 +1956,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
     templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
@@ -1813,6 +2018,7 @@ public class GenVectorCode extends Task {
 
   private void generateColumnArithmeticOperatorScalar(String[] tdesc, String returnType,
      String className) throws Exception {
+    String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String outputColumnVectorType = this.getColumnVectorType(returnType);
@@ -1825,6 +2031,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
@@ -1832,12 +2039,17 @@ public class GenVectorCode extends Task {
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
+    String testScalarType = operandType2;
+    if (isDateTimeIntervalType(testScalarType)) {
+      testScalarType = "long";
+    }
+
     testCodeGen.addColumnScalarOperationTestCases(
           true,
           className,
           inputColumnVectorType,
           outputColumnVectorType,
-          operandType2);
+          testScalarType);
   }
 
   private void generateScalarCompareOperatorColumn(String[] tdesc, boolean filter,
@@ -1886,6 +2098,7 @@ public class GenVectorCode extends Task {
 
   private void generateScalarArithmeticOperatorColumn(String[] tdesc, String returnType,
      String className) throws Exception {
+     String operatorName = tdesc[1];
      String operandType1 = tdesc[2];
      String operandType2 = tdesc[3];
      String outputColumnVectorType = this.getColumnVectorType(
@@ -1899,6 +2112,7 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<ClassName>", className);
      templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
      templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+     templateString = templateString.replaceAll("<OperatorName>", operatorName);
      templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
      templateString = templateString.replaceAll("<OperandType1>", operandType1);
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
@@ -1907,12 +2121,17 @@ public class GenVectorCode extends Task {
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
+     String testScalarType = operandType1;
+     if (isDateTimeIntervalType(testScalarType)) {
+       testScalarType = "long";
+     }
+
      testCodeGen.addColumnScalarOperationTestCases(
            false,
            className,
            inputColumnVectorType,
            outputColumnVectorType,
-           operandType1);
+           testScalarType);
   }
 
   //Binary arithmetic operator
@@ -2053,6 +2272,378 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
+  // TODO: These can eventually be used to replace generateTimestampScalarCompareTimestampColumn()
+  private void generateDTIScalarCompareColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = getCamelCaseType(operandType) + "Scalar" + operatorName
+        + getCamelCaseType(operandType) + "Column";
+    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterDTIScalarCompareColumn(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = "Filter" + getCamelCaseType(operandType) + "Scalar" + operatorName
+        + getCamelCaseType(operandType) + "Column";
+    String baseClassName = "FilterLongScalar" + operatorName + "LongColumn";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateDTIColumnCompareScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = getCamelCaseType(operandType) + "Col" + operatorName
+        + getCamelCaseType(operandType) + "Scalar";
+    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterDTIColumnCompareScalar(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType = tdesc[2];
+    String className = "Filter" + getCamelCaseType(operandType) + "Col" + operatorName
+        + getCamelCaseType(operandType) + "Scalar";
+    String baseClassName = "FilterLongCol" + operatorName + "LongScalar";
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateColumnArithmeticColumnWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion1 = tdesc[5];
+    String typeConversion2 = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversion1>", typeConversion1);
+    templateString = templateString.replaceAll("<TypeConversion2>", typeConversion2);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(vectorReturnType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    testCodeGen.addColumnColumnOperationTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType);
+  }
+
+  private void generateScalarArithmeticColumnWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion1 = tdesc[5];
+    String typeConversion2 = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(
+        returnType == null ? "long" : returnType);
+    String inputColumnVectorType = this.getColumnVectorType(operandType2);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversion1>", typeConversion1);
+    templateString = templateString.replaceAll("<TypeConversion2>", typeConversion2);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(vectorReturnType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+
+    String testScalarType = operandType1;
+    if (isDateTimeIntervalType(testScalarType)) {
+      testScalarType = "long";
+    }
+
+    testCodeGen.addColumnScalarOperationTestCases(
+          false,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType);
+  }
+
+  private void generateColumnArithmeticScalarWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion1 = tdesc[5];
+    String typeConversion2 = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String inputColumnVectorType = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversion1>", typeConversion1);
+    templateString = templateString.replaceAll("<TypeConversion2>", typeConversion2);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    String testScalarType = operandType2;
+    if (isDateTimeIntervalType(testScalarType)) {
+      testScalarType = "long";
+    }
+
+    testCodeGen.addColumnScalarOperationTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType);
+  }
+
+  private void generateDateTimeColumnArithmeticIntervalColumnWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion = tdesc[5];
+    String operatorFunction = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+    templateString = templateString.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversionToMillis>", typeConversion);
+    templateString = templateString.replaceAll("<OperatorFunction>", operatorFunction);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(vectorReturnType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    testCodeGen.addColumnColumnOperationTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType);
+  }
+
+  private void generateDateTimeScalarArithmeticIntervalColumnWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion = tdesc[5];
+    String operatorFunction = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(
+        returnType == null ? "long" : returnType);
+    String inputColumnVectorType = this.getColumnVectorType(operandType2);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversionToMillis>", typeConversion);
+    templateString = templateString.replaceAll("<OperatorFunction>", operatorFunction);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(vectorReturnType));
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+       className, templateString);
+
+    String testScalarType = operandType1;
+    if (isDateTimeIntervalType(testScalarType)) {
+      testScalarType = "long";
+    }
+
+    testCodeGen.addColumnScalarOperationTestCases(
+          false,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType);
+  }
+
+  private void generateDateTimeColumnArithmeticIntervalScalarWithConvert(String[] tdesc) throws Exception {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String operatorSymbol = tdesc[4];
+    String typeConversion = tdesc[5];
+    String operatorFunction = tdesc[6];
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
+    String returnType = getArithmeticReturnType(operandType1, operandType2);
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String inputColumnVectorType = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
+    String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
+    // For date/timestamp/interval, this should be "long"
+    String vectorOperandType1 = this.getVectorPrimitiveType(inputColumnVectorType1);
+    String vectorOperandType2 = this.getVectorPrimitiveType(inputColumnVectorType2);
+    String vectorReturnType = this.getVectorPrimitiveType(outputColumnVectorType);
+
+    //Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperatorName>", operatorName);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<OperandType1>", operandType1);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<VectorOperandType1>", vectorOperandType1);
+    templateString = templateString.replaceAll("<VectorOperandType2>", vectorOperandType2);
+    templateString = templateString.replaceAll("<VectorReturnType>", vectorReturnType);
+    templateString = templateString.replaceAll("<TypeConversionToMillis>", typeConversion);
+    templateString = templateString.replaceAll("<OperatorFunction>", operatorFunction);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+
+    String testScalarType = operandType2;
+    if (isDateTimeIntervalType(testScalarType)) {
+      testScalarType = "long";
+    }
+
+    testCodeGen.addColumnScalarOperationTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType);
+  }
+
+  private static boolean isDateTimeIntervalType(String type) {
+    return (type.equals("date")
+        || type.equals("timestamp")
+        || type.equals("interval_year_month")
+        || type.equals("interval_day_time"));
+  }
+
   static void writeFile(long templateTime, String outputDir, String classesDir,
        String className, String str) throws IOException {
     File outputFile = new File(outputDir, className + ".java");
@@ -2098,6 +2689,14 @@ public class GenVectorCode extends Task {
       return "Double";
     } else if (type.equals("decimal")) {
       return "Decimal";
+    } else if (type.equals("interval_year_month")) {
+      return "IntervalYearMonth";
+    } else if (type.equals("interval_day_time")) {
+      return "IntervalDayTime";
+    } else if (type.equals("timestamp")) {
+      return "Timestamp";
+    } else if (type.equals("date")) {
+      return "Date";
     } else {
       return type;
     }
@@ -2111,20 +2710,60 @@ public class GenVectorCode extends Task {
     return firstLetterAsCap + word.substring(1);
   }
 
+  private static final String ARITHMETIC_RETURN_TYPES[][] = {
+    { "interval_year_month", "interval_year_month", "interval_year_month"},
+    { "interval_year_month", "date", "date"},
+    { "date", "interval_year_month", "date"},
+    { "interval_year_month", "timestamp", "timestamp"},
+    { "timestamp", "interval_year_month", "timestamp"},
+    { "interval_day_time", "interval_day_time", "interval_day_time"},
+    { "interval_day_time", "date", "timestamp"},
+    { "date", "interval_day_time", "timestamp"},
+    { "interval_day_time", "timestamp", "timestamp"},
+    { "timestamp", "interval_day_time", "timestamp"},
+    { "date", "date", "interval_day_time"},
+    { "timestamp", "timestamp", "interval_day_time"},
+    { "timestamp", "date", "interval_day_time"},
+    { "date", "timestamp", "interval_day_time"},
+    { "*", "double", "double"},
+    { "double", "*", "double"},
+  };
+
   private String getArithmeticReturnType(String operandType1,
       String operandType2) {
+/*
     if (operandType1.equals("double") ||
         operandType2.equals("double")) {
       return "double";
+    } else if (operandType1.equals("interval_year_month") &&
+        operandType2.equals("interval_year_month")) {
+      return "interval_year_month";
+    } else if (operandType1.equals("interval_year_month") &&
+        operandType2.equals("date")) {
+      return "date";
+    } else if (operandType1.equals("date") &&
+        operandType2.equals("interval_year_month")) {
+      return "date";
+    } else if (operandType1.equals("interval_day_time") &&
+        operandType2.equals("interval_day_time")) {
+      return "interval_day_time";
     } else {
       return "long";
     }
+*/
+    for (String[] combination : ARITHMETIC_RETURN_TYPES) {
+      if ((combination[0].equals("*") || combination[0].equals(operandType1)) &&
+          (combination[1].equals("*") || combination[1].equals(operandType2))) {
+        return combination[2];
+      }
+    }
+    return "long";
   }
 
   private String getColumnVectorType(String primitiveType) throws Exception {
     if(primitiveType.equals("double")) {
       return "DoubleColumnVector";
-    } else if (primitiveType.equals("long")) {
+    } else if (primitiveType.equals("long") || isDateTimeIntervalType(primitiveType)) {
         return "LongColumnVector";
     } else if (primitiveType.equals("decimal")) {
         return "DecimalColumnVector";
@@ -2134,6 +2773,19 @@ public class GenVectorCode extends Task {
     throw new Exception("Unimplemented primitive column vector type: " + primitiveType);
   }
 
+  private String getVectorPrimitiveType(String columnVectorType) throws Exception {
+    if (columnVectorType.equals("LongColumnVector")) {
+      return "long";
+    } else if (columnVectorType.equals("double")) {
+      return "double";
+    } else if (columnVectorType.equals("DecimalColumnVector")) {
+      return "decimal";
+    } else if (columnVectorType.equals("BytesColumnVector")) {
+      return "string";
+    }
+    throw new Exception("Could not determine primitive type for column vector type: " + columnVectorType);
+  }
+
   private String getOutputWritableType(String primitiveType) throws Exception {
     if (primitiveType.equals("long")) {
       return "LongWritable";
@@ -2141,6 +2793,14 @@ public class GenVectorCode extends Task {
       return "DoubleWritable";
     } else if (primitiveType.equals("decimal")) {
       return "HiveDecimalWritable";
+    } else if (primitiveType.equals("interval_year_month")) {
+      return "HiveIntervalYearMonthWritable";
+    } else if (primitiveType.equals("interval_day_time")) {
+      return "HiveIntervalDayTimeWritable";
+    } else if (primitiveType.equals("date")) {
+      return "HiveDateWritable";
+    } else if (primitiveType.equals("timestamp")) {
+      return "HiveTimestampWritable";
     }
     throw new Exception("Unimplemented primitive output writable: " + primitiveType);
   }
@@ -2152,6 +2812,14 @@ public class GenVectorCode extends Task {
       return "PrimitiveObjectInspectorFactory.writableDoubleObjectInspector";
     } else if (primitiveType.equals("decimal")) {
       return "PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector";
+    } else if (primitiveType.equals("interval_year_month")) {
+      return "PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector";
+    } else if (primitiveType.equals("interval_day_time")) {
+      return "PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector";
+    } else if (primitiveType.equals("date")) {
+      return "PrimitiveObjectInspectorFactory.writableDateObjectInspector";
+    } else if (primitiveType.equals("timestamp")) {
+      return "PrimitiveObjectInspectorFactory.writableTimestampObjectInspector";
     }
     throw new Exception("Unimplemented primitive output inspector: " + primitiveType);
   }

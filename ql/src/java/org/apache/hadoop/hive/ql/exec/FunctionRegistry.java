@@ -68,8 +68,11 @@ import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftLeft;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRight;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRightUnsigned;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
 import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
 import org.apache.hadoop.hive.ql.udf.UDFPI;
@@ -188,6 +191,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("round", GenericUDFRound.class);
     system.registerGenericUDF("floor", GenericUDFFloor.class);
     system.registerUDF("sqrt", UDFSqrt.class, false);
+    system.registerGenericUDF("cbrt", GenericUDFCbrt.class);
     system.registerGenericUDF("ceil", GenericUDFCeil.class);
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
@@ -212,6 +216,7 @@ public final class FunctionRegistry {
     system.registerUDF("atan", UDFAtan.class, false);
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("e", UDFE.class, false);
+    system.registerGenericUDF("factorial", GenericUDFFactorial.class);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);
@@ -268,6 +273,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("date_sub", GenericUDFDateSub.class);
     system.registerGenericUDF("datediff", GenericUDFDateDiff.class);
     system.registerGenericUDF("add_months", GenericUDFAddMonths.class);
+    system.registerGenericUDF("months_between", GenericUDFMonthsBetween.class);
 
     system.registerUDF("get_json_object", UDFJson.class, false);
 
@@ -292,6 +298,9 @@ public final class FunctionRegistry {
     system.registerUDF("|", UDFOPBitOr.class, true);
     system.registerUDF("^", UDFOPBitXor.class, true);
     system.registerUDF("~", UDFOPBitNot.class, true);
+    system.registerUDF("shiftleft", UDFOPBitShiftLeft.class, true);
+    system.registerUDF("shiftright", UDFOPBitShiftRight.class, true);
+    system.registerUDF("shiftrightunsigned", UDFOPBitShiftRightUnsigned.class, true);
 
     system.registerGenericUDF("current_database", UDFCurrentDB.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
@@ -335,6 +344,8 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
+    system.registerGenericUDF(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, GenericUDFToIntervalYearMonth.class);
+    system.registerGenericUDF(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, GenericUDFToIntervalDayTime.class);
     system.registerGenericUDF(serdeConstants.BINARY_TYPE_NAME, GenericUDFToBinary.class);
     system.registerGenericUDF(serdeConstants.DECIMAL_TYPE_NAME, GenericUDFToDecimal.class);
     system.registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME, GenericUDFToVarchar.class);

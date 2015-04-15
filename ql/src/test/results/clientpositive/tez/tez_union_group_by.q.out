@@ -4,7 +4,7 @@ u bigint,
 t string,
 st string
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 PREHOOK: type: CREATETABLE
@@ -16,7 +16,7 @@ u bigint,
 t string,
 st string
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 POSTHOOK: type: CREATETABLE
@@ -26,7 +26,7 @@ PREHOOK: query: CREATE TABLE y
 (
 u bigint
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 PREHOOK: type: CREATETABLE
@@ -36,7 +36,7 @@ POSTHOOK: query: CREATE TABLE y
 (
 u bigint
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 POSTHOOK: type: CREATETABLE
@@ -46,7 +46,7 @@ PREHOOK: query: CREATE TABLE z
 (
 u bigint
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 PREHOOK: type: CREATETABLE
@@ -56,7 +56,7 @@ POSTHOOK: query: CREATE TABLE z
 (
 u bigint
 )
-PARTITIONED BY (date string)
+PARTITIONED BY (`date` string)
 STORED AS ORC 
 TBLPROPERTIES ("orc.compress"="ZLIB")
 POSTHOOK: type: CREATETABLE
@@ -88,14 +88,14 @@ PREHOOK: query: EXPLAIN
 SELECT o.u, n.u
 FROM 
 (
-SELECT m.u, Min(date) as ft
+SELECT m.u, Min(`date`) as ft
 FROM 
 (
-SELECT u, date FROM x WHERE date < '2014-09-02' 
+SELECT u, `date` FROM x WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM y WHERE date < '2014-09-02' 
+SELECT u, `date` FROM y WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM z WHERE date < '2014-09-02' 
+SELECT u, `date` FROM z WHERE `date` < '2014-09-02' 
 ) m
 GROUP BY m.u
 ) n 
@@ -105,7 +105,7 @@ SELECT x.u
 FROM x
 JOIN v 
 ON (x.t = v.t AND x.st <=> v.st)
-WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+WHERE x.`date` >= '2014-03-04' AND x.`date` < '2014-09-03'
 GROUP BY x.u
 ) o
 ON n.u = o.u 
@@ -115,14 +115,14 @@ POSTHOOK: query: EXPLAIN
 SELECT o.u, n.u
 FROM 
 (
-SELECT m.u, Min(date) as ft
+SELECT m.u, Min(`date`) as ft
 FROM 
 (
-SELECT u, date FROM x WHERE date < '2014-09-02' 
+SELECT u, `date` FROM x WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM y WHERE date < '2014-09-02' 
+SELECT u, `date` FROM y WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM z WHERE date < '2014-09-02' 
+SELECT u, `date` FROM z WHERE `date` < '2014-09-02' 
 ) m
 GROUP BY m.u
 ) n 
@@ -132,7 +132,7 @@ SELECT x.u
 FROM x
 JOIN v 
 ON (x.t = v.t AND x.st <=> v.st)
-WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+WHERE x.`date` >= '2014-03-04' AND x.`date` < '2014-09-03'
 GROUP BY x.u
 ) o
 ON n.u = o.u 
@@ -258,14 +258,14 @@ STAGE PLANS:
 PREHOOK: query: SELECT o.u, n.u
 FROM 
 (
-SELECT m.u, Min(date) as ft
+SELECT m.u, Min(`date`) as ft
 FROM 
 (
-SELECT u, date FROM x WHERE date < '2014-09-02' 
+SELECT u, `date` FROM x WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM y WHERE date < '2014-09-02' 
+SELECT u, `date` FROM y WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM z WHERE date < '2014-09-02' 
+SELECT u, `date` FROM z WHERE `date` < '2014-09-02' 
 ) m
 GROUP BY m.u
 ) n 
@@ -275,7 +275,7 @@ SELECT x.u
 FROM x
 JOIN v 
 ON (x.t = v.t AND x.st <=> v.st)
-WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+WHERE x.`date` >= '2014-03-04' AND x.`date` < '2014-09-03'
 GROUP BY x.u
 ) o
 ON n.u = o.u 
@@ -289,14 +289,14 @@ PREHOOK: Input: default@z
 POSTHOOK: query: SELECT o.u, n.u
 FROM 
 (
-SELECT m.u, Min(date) as ft
+SELECT m.u, Min(`date`) as ft
 FROM 
 (
-SELECT u, date FROM x WHERE date < '2014-09-02' 
+SELECT u, `date` FROM x WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM y WHERE date < '2014-09-02' 
+SELECT u, `date` FROM y WHERE `date` < '2014-09-02' 
 UNION ALL
-SELECT u, date FROM z WHERE date < '2014-09-02' 
+SELECT u, `date` FROM z WHERE `date` < '2014-09-02' 
 ) m
 GROUP BY m.u
 ) n 
@@ -306,7 +306,7 @@ SELECT x.u
 FROM x
 JOIN v 
 ON (x.t = v.t AND x.st <=> v.st)
-WHERE x.date >= '2014-03-04' AND x.date < '2014-09-03'
+WHERE x.`date` >= '2014-03-04' AND x.`date` < '2014-09-03'
 GROUP BY x.u
 ) o
 ON n.u = o.u 

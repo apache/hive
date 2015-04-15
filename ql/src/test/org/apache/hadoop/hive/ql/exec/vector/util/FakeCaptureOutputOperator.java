@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -36,17 +37,17 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
   implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   public interface OutputInspector {
     public void inspectRow(Object row, int tag) throws HiveException;
   }
-  
+
   private OutputInspector outputInspector;
-  
+
   public void setOutputInspector(OutputInspector outputInspector) {
     this.outputInspector = outputInspector;
   }
-  
+
   public OutputInspector getOutputInspector() {
     return outputInspector;
   }
@@ -67,18 +68,20 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
     return out;
   }
 
-  
+
   public List<Object> getCapturedRows() {
     return rows;
   }
 
   @Override
-  public void initializeOp(Configuration conf) throws HiveException {
+  public Collection<Future<?>> initializeOp(Configuration conf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(conf);
     rows = new ArrayList<Object>();
+    return result;
   }
 
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     rows.add(row);
     if (null != outputInspector) {
       outputInspector.inspectRow(row, tag);

@@ -350,14 +350,14 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
           case 1: // EVENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list492 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list492.size);
-                for (int _i493 = 0; _i493 < _list492.size; ++_i493)
+                org.apache.thrift.protocol.TList _list500 = iprot.readListBegin();
+                struct.events = new ArrayList<NotificationEvent>(_list500.size);
+                for (int _i501 = 0; _i501 < _list500.size; ++_i501)
                 {
-                  NotificationEvent _elem494; // required
-                  _elem494 = new NotificationEvent();
-                  _elem494.read(iprot);
-                  struct.events.add(_elem494);
+                  NotificationEvent _elem502; // optional
+                  _elem502 = new NotificationEvent();
+                  _elem502.read(iprot);
+                  struct.events.add(_elem502);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
-          for (NotificationEvent _iter495 : struct.events)
+          for (NotificationEvent _iter503 : struct.events)
           {
-            _iter495.write(oprot);
+            _iter503.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
-        for (NotificationEvent _iter496 : struct.events)
+        for (NotificationEvent _iter504 : struct.events)
         {
-          _iter496.write(oprot);
+          _iter504.write(oprot);
         }
       }
     }
@@ -421,14 +421,14 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
     public void read(org.apache.thrift.protocol.TProtocol prot, NotificationEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list497 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list497.size);
-        for (int _i498 = 0; _i498 < _list497.size; ++_i498)
+        org.apache.thrift.protocol.TList _list505 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.events = new ArrayList<NotificationEvent>(_list505.size);
+        for (int _i506 = 0; _i506 < _list505.size; ++_i506)
         {
-          NotificationEvent _elem499; // required
-          _elem499 = new NotificationEvent();
-          _elem499.read(iprot);
-          struct.events.add(_elem499);
+          NotificationEvent _elem507; // optional
+          _elem507 = new NotificationEvent();
+          _elem507.read(iprot);
+          struct.events.add(_elem507);
         }
       }
       struct.setEventsIsSet(true);

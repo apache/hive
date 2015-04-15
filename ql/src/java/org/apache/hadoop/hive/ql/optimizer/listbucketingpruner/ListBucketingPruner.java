@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.listbucketingpruner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -190,7 +191,7 @@ public class ListBucketingPruner implements Transform {
       finalPaths = execute(ctx, part, pruner);
     } catch (SemanticException e) {
       // Use full partition path for error case.
-      LOG.warn("Using full partition scan :" + part.getPath() + ".", e);
+      LOG.warn("Using full partition scan :" + Arrays.toString(part.getPath()) + ".", e);
       finalPaths = part.getPath();
     }
 
@@ -215,7 +216,7 @@ public class ListBucketingPruner implements Transform {
     if (ListBucketingPrunerUtils.isUnknownState(pruner)) {
       // Use full partition path for error case.
       LOG.warn("List bucketing pruner is either null or in unknown state "
-          + " so that it uses full partition scan :" + part.getPath());
+          + " so that it uses full partition scan :" + Arrays.toString(part.getPath()));
       finalPaths = part.getPath();
     } else {
       // Retrieve skewed columns.
@@ -357,7 +358,7 @@ public class ListBucketingPruner implements Transform {
   private static Path[] generateFinalPath(Partition part, List<Path> selectedPaths) {
     Path[] finalPaths;
     if (selectedPaths.size() == 0) {
-      LOG.warn("Using full partition scan :" + part.getPath() + ".");
+      LOG.warn("Using full partition scan :" + Arrays.toString(part.getPath()) + ".");
       finalPaths = part.getPath();
     } else {
       finalPaths = selectedPaths.toArray(new Path[0]);

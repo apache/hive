@@ -49,24 +49,24 @@ public class TestBytesBytesMultiHashMap {
   public void testPutGetOne() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(0, 0);
-    map.put(kv);
-    verifyResults(map, kv.getLastKey(), kv.getLastValue());
+    map.put(kv, -1);
+    verifyHashMapResult(map, kv.getLastKey(), kv.getLastValue());
     kv = new RandomKvSource(10, 100);
-    map.put(kv);
-    verifyResults(map, kv.getLastKey(), kv.getLastValue());
+    map.put(kv, -1);
+    verifyHashMapResult(map, kv.getLastKey(), kv.getLastValue());
   }
 
   @Test
   public void testPutGetMultiple() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(0, 100);
-    map.put(kv);
-    verifyResults(map, kv.getLastKey(), kv.getLastValue());
+    map.put(kv, -1);
+    verifyHashMapResult(map, kv.getLastKey(), kv.getLastValue());
     FixedKeyKvSource kv2 = new FixedKeyKvSource(kv.getLastKey(), 0, 100);
     kv2.values.add(kv.getLastValue());
     for (int i = 0; i < 3; ++i) {
-      map.put(kv2);
-      verifyResults(map, kv2.key, kv2.values.toArray(new byte[kv2.values.size()][]));
+      map.put(kv2, -1);
+      verifyHashMapResult(map, kv2.key, kv2.values.toArray(new byte[kv2.values.size()][]));
     }
   }
 
@@ -74,17 +74,17 @@ public class TestBytesBytesMultiHashMap {
   public void testGetNonExistent() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(1, 100);
-    map.put(kv);
+    map.put(kv, -1);
     byte[] key = kv.getLastKey();
     key[0] = (byte)(key[0] + 1);
     FixedKeyKvSource kv2 = new FixedKeyKvSource(kv.getLastKey(), 0, 100);
-    map.put(kv2);
+    map.put(kv2, -1);
     key[0] = (byte)(key[0] + 1);
-    List<WriteBuffers.ByteSegmentRef> results = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
-    map.getValueRefs(key, key.length, results);
-    assertTrue(results.isEmpty());
-    map.getValueRefs(key, 0, results);
-    assertTrue(results.isEmpty());
+    BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
+    map.getValueResult(key, 0, key.length, hashMapResult);
+    assertTrue(!hashMapResult.hasRows());
+    map.getValueResult(key, 0, 0, hashMapResult);
+    assertTrue(!hashMapResult.hasRows());
   }
 
   @Test
@@ -93,16 +93,15 @@ public class TestBytesBytesMultiHashMap {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, 1f, WB_SIZE);
     UniqueKeysKvSource kv = new UniqueKeysKvSource();
     for (int i = 0; i < CAPACITY; ++i) {
-      map.put(kv);
+      map.put(kv, -1);
     }
     for (int i = 0; i < kv.keys.size(); ++i) {
-      verifyResults(map, kv.keys.get(i), kv.values.get(i));
+      verifyHashMapResult(map, kv.keys.get(i), kv.values.get(i));
     }
     assertEquals(CAPACITY, map.getCapacity());
     // Get of non-existent key should terminate..
-    List<WriteBuffers.ByteSegmentRef> results = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
-    map.getValueRefs(new byte[0], 0, results);
-    assertTrue(results.isEmpty());
+    BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
+    map.getValueResult(new byte[0], 0, 0, hashMapResult);
   }
 
   @Test
@@ -111,25 +110,31 @@ public class TestBytesBytesMultiHashMap {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(1, 0.0000001f, WB_SIZE);
     UniqueKeysKvSource kv = new UniqueKeysKvSource();
     for (int i = 0; i < 18; ++i) {
-      map.put(kv);
+      map.put(kv, -1);
       for (int j = 0; j <= i; ++j) {
-        verifyResults(map, kv.keys.get(j), kv.values.get(j));
+        verifyHashMapResult(map, kv.keys.get(j), kv.values.get(j));
       }
     }
     assertEquals(1 << 18, map.getCapacity());
   }
 
-  private void verifyResults(BytesBytesMultiHashMap map, byte[] key, byte[]... values) {
-    List<WriteBuffers.ByteSegmentRef> results = new ArrayList<WriteBuffers.ByteSegmentRef>(0);
-    byte state = map.getValueRefs(key, key.length, results);
-    assertEquals(state, results.size());
-    assertEquals(values.length, results.size());
+  private void verifyHashMapResult(BytesBytesMultiHashMap map, byte[] key, byte[]... values) {
+    BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
+    byte state = map.getValueResult(key, 0, key.length, hashMapResult);
     HashSet<ByteBuffer> hs = new HashSet<ByteBuffer>();
-    for (int i = 0; i < results.size(); ++i) {
-      WriteBuffers.ByteSegmentRef result = results.get(i);
-      map.populateValue(result);
-      hs.add(result.copy());
+    int count = 0;
+    if (hashMapResult.hasRows()) {
+      WriteBuffers.ByteSegmentRef ref = hashMapResult.first();
+      while (ref != null) {
+        count++;
+        hs.add(ref.copy());
+        ref = hashMapResult.next();
+      }
+    } else {
+      assertTrue(hashMapResult.isEof());
     }
+    assertEquals(state, count);
+    assertEquals(values.length, count);
     for (int i = 0; i < values.length; ++i) {
       assertTrue(hs.contains(ByteBuffer.wrap(values[i])));
     }
@@ -165,7 +170,7 @@ public class TestBytesBytesMultiHashMap {
 
     @Override
     public void writeKey(RandomAccessOutput dest) throws SerDeException {
-      lastKey += 465623573; // This number is certified to be random.
+      lastKey += 465623573;
       int len = LazyBinaryUtils.writeVLongToByteArray(buffer, lastKey);
       lastBuffer = Arrays.copyOf(buffer, len);
       keys.add(lastBuffer);

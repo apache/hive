@@ -354,7 +354,7 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
                 struct.colStats = new ArrayList<ColumnStatistics>(_list286.size);
                 for (int _i287 = 0; _i287 < _list286.size; ++_i287)
                 {
-                  ColumnStatistics _elem288; // required
+                  ColumnStatistics _elem288; // optional
                   _elem288 = new ColumnStatistics();
                   _elem288.read(iprot);
                   struct.colStats.add(_elem288);
@@ -425,7 +425,7 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
         struct.colStats = new ArrayList<ColumnStatistics>(_list291.size);
         for (int _i292 = 0; _i292 < _list291.size; ++_i292)
         {
-          ColumnStatistics _elem293; // required
+          ColumnStatistics _elem293; // optional
           _elem293 = new ColumnStatistics();
           _elem293.read(iprot);
           struct.colStats.add(_elem293);

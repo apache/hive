@@ -46,6 +46,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTransientException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -208,6 +209,8 @@ public final class Utilities {
   public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
+  public static String MAPNAME = "Map ";
+  public static String REDUCENAME = "Reducer ";
 
   /**
    * ReduceField:
@@ -239,6 +242,7 @@ public final class Utilities {
 
   private static ThreadLocal<Map<Path, BaseWork>> gWorkMap =
       new ThreadLocal<Map<Path, BaseWork>>() {
+    @Override
     protected Map<Path, BaseWork> initialValue() {
       return new HashMap<Path, BaseWork>();
     }
@@ -304,12 +308,13 @@ public final class Utilities {
   public static Path setMergeWork(JobConf conf, MergeJoinWork mergeJoinWork, Path mrScratchDir,
       boolean useCache) {
     for (BaseWork baseWork : mergeJoinWork.getBaseWorkList()) {
-      setBaseWork(conf, baseWork, mrScratchDir, baseWork.getName() + MERGE_PLAN_NAME, useCache);
+      String prefix = baseWork.getName();
+      setBaseWork(conf, baseWork, mrScratchDir, prefix + MERGE_PLAN_NAME, useCache);
       String prefixes = conf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
       if (prefixes == null) {
-        prefixes = baseWork.getName();
+        prefixes = prefix;
       } else {
-        prefixes = prefixes + "," + baseWork.getName();
+        prefixes = prefixes + "," + prefix;
       }
       conf.set(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES, prefixes);
     }
@@ -429,7 +434,13 @@ public final class Utilities {
                 + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
           }
         } else if (name.contains(MERGE_PLAN_NAME)) {
-          gWork = deserializePlan(in, MapWork.class, conf);
+          if (name.startsWith(MAPNAME)) {
+            gWork = deserializePlan(in, MapWork.class, conf);
+          } else if (name.startsWith(REDUCENAME)) {
+            gWork = deserializePlan(in, ReduceWork.class, conf);
+          } else {
+            throw new RuntimeException("Unknown work type: " + name);
+          }
         }
         gWorkMap.get().put(path, gWork);
       } else if (LOG.isDebugEnabled()) {
@@ -454,9 +465,9 @@ public final class Utilities {
     }
   }
 
-  public static Map<String, Map<Integer, String>> getMapWorkAllScratchColumnVectorTypeMaps(Configuration hiveConf) {
+  public static Map<Integer, String> getMapWorkVectorScratchColumnTypeMap(Configuration hiveConf) {
     MapWork mapWork = getMapWork(hiveConf);
-    return mapWork.getAllScratchColumnVectorTypeMaps();
+    return mapWork.getVectorScratchColumnTypeMap();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
@@ -3076,6 +3087,24 @@ public final class Utilities {
         // just throw other types (SQLNonTransientException / SQLRecoverableException)
         throw e;
       }
+    }
+  }
+
+  public static void setQueryTimeout(java.sql.Statement stmt, int timeout) throws SQLException {
+    if (timeout < 0) {
+      LOG.info("Invalid query timeout " + timeout);
+      return;
+    }
+    try {
+      stmt.setQueryTimeout(timeout);
+    } catch (SQLException e) {
+      String message = e.getMessage() == null ? null : e.getMessage().toLowerCase();
+      if (e instanceof SQLFeatureNotSupportedException ||
+         (message != null && (message.contains("implemented") || message.contains("supported")))) {
+        LOG.info("setQueryTimeout is not supported");
+        return;
+      }
+      throw e;
     }
   }
 

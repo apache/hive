@@ -69,6 +69,7 @@ public class UDFJson extends UDF {
   }
   private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
   private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
+  private static final JavaType LIST_TYPE = TypeFactory.fromClass(List.class);
 
   // An LRU cache using a linked hash map
   static class HashCache<K, V> extends LinkedHashMap<K, V> {
@@ -123,9 +124,23 @@ public class UDFJson extends UDF {
    */
   public Text evaluate(String jsonString, String pathString) {
 
-    if (jsonString == null || jsonString == "" || pathString == null
-        || pathString == "") {
+    if (jsonString == null || jsonString.isEmpty() || pathString == null
+        || pathString.isEmpty() || pathString.charAt(0) != '$') {
       return null;
+    }
+
+    int pathExprStart = 1;
+    boolean isRootArray = false;
+
+    if (pathString.length() > 1) {
+      if (pathString.charAt(1) == '[') {
+        pathExprStart = 0;
+        isRootArray = true;
+      } else if (pathString.charAt(1) == '.') {
+        isRootArray = pathString.length() > 2 && pathString.charAt(2) == '[';
+      } else {
+        return null;
+      }
     }
 
     // Cache pathExpr
@@ -135,24 +150,22 @@ public class UDFJson extends UDF {
       pathExprCache.put(pathString, pathExpr);
     }
 
-    if (!pathExpr[0].equalsIgnoreCase("$")) {
-      return null;
-    }
     // Cache extractObject
     Object extractObject = extractObjectCache.get(jsonString);
     if (extractObject == null) {
+      JavaType javaType = isRootArray ? LIST_TYPE : MAP_TYPE;
       try {
-        extractObject = MAPPER.readValue(jsonString, MAP_TYPE);
+        extractObject = MAPPER.readValue(jsonString, javaType);
       } catch (Exception e) {
         return null;
       }
       extractObjectCache.put(jsonString, extractObject);
     }
-    for (int i = 1; i < pathExpr.length; i++) {
+    for (int i = pathExprStart; i < pathExpr.length; i++) {
       if (extractObject == null) {
           return null;
       }
-      extractObject = extract(extractObject, pathExpr[i]);
+      extractObject = extract(extractObject, pathExpr[i], i == pathExprStart && isRootArray);
     }
     if (extractObject instanceof Map || extractObject instanceof List) {
       try {
@@ -168,36 +181,37 @@ public class UDFJson extends UDF {
     return result;
   }
 
-  private Object extract(Object json, String path) {
-
-    // Cache patternkey.matcher(path).matches()
-    Matcher mKey = null;
-    Boolean mKeyMatches = mKeyMatchesCache.get(path);
-    if (mKeyMatches == null) {
-      mKey = patternKey.matcher(path);
-      mKeyMatches = mKey.matches() ? Boolean.TRUE : Boolean.FALSE;
-      mKeyMatchesCache.put(path, mKeyMatches);
-    }
-    if (!mKeyMatches.booleanValue()) {
-      return null;
-    }
-
-    // Cache mkey.group(1)
-    String mKeyGroup1 = mKeyGroup1Cache.get(path);
-    if (mKeyGroup1 == null) {
-      if (mKey == null) {
+  private Object extract(Object json, String path, boolean skipMapProc) {
+    // skip MAP processing for the first path element if root is array
+    if (!skipMapProc) {
+      // Cache patternkey.matcher(path).matches()
+      Matcher mKey = null;
+      Boolean mKeyMatches = mKeyMatchesCache.get(path);
+      if (mKeyMatches == null) {
         mKey = patternKey.matcher(path);
         mKeyMatches = mKey.matches() ? Boolean.TRUE : Boolean.FALSE;
         mKeyMatchesCache.put(path, mKeyMatches);
-        if (!mKeyMatches.booleanValue()) {
-          return null;
-        }
       }
-      mKeyGroup1 = mKey.group(1);
-      mKeyGroup1Cache.put(path, mKeyGroup1);
-    }
-    json = extract_json_withkey(json, mKeyGroup1);
+      if (!mKeyMatches.booleanValue()) {
+        return null;
+      }
 
+      // Cache mkey.group(1)
+      String mKeyGroup1 = mKeyGroup1Cache.get(path);
+      if (mKeyGroup1 == null) {
+        if (mKey == null) {
+          mKey = patternKey.matcher(path);
+          mKeyMatches = mKey.matches() ? Boolean.TRUE : Boolean.FALSE;
+          mKeyMatchesCache.put(path, mKeyMatches);
+          if (!mKeyMatches.booleanValue()) {
+            return null;
+          }
+        }
+        mKeyGroup1 = mKey.group(1);
+        mKeyGroup1Cache.put(path, mKeyGroup1);
+      }
+      json = extract_json_withkey(json, mKeyGroup1);
+    }
     // Cache indexList
     ArrayList<String> indexList = indexListCache.get(path);
     if (indexList == null) {

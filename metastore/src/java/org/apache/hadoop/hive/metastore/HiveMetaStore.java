@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -3445,13 +3446,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<FieldSchema> get_fields(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
-      startFunction("get_fields", ": db=" + db + "tbl=" + tableName);
+      return get_fields_with_environment_context(db, tableName, null);
+    }
+
+    @Override
+    public List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
+        final EnvironmentContext envContext)
+        throws MetaException, UnknownTableException, UnknownDBException {
+      startFunction("get_fields_with_environment_context", ": db=" + db + "tbl=" + tableName);
       String[] names = tableName.split("\\.");
       String base_table_name = names[0];
 
       Table tbl;
       List<FieldSchema> ret = null;
       Exception ex = null;
+      ClassLoader orgHiveLoader = null;
+      Configuration curConf = hiveConf;
       try {
         try {
           tbl = get_table_core(db, base_table_name);
@@ -3464,7 +3474,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ret = tbl.getSd().getCols();
         } else {
           try {
-            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl, false);
+            if (envContext != null) {
+              String addedJars = envContext.getProperties().get("hive.added.jars.path");
+              if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+                //for thread safe
+                curConf = getConf();
+                orgHiveLoader = curConf.getClassLoader();
+                ClassLoader loader = MetaStoreUtils.addToClassPath(orgHiveLoader, org.apache.commons.lang.StringUtils.split(addedJars, ","));
+                curConf.setClassLoader(loader);
+              }
+            }
+
+            Deserializer s = MetaStoreUtils.getDeserializer(curConf, tbl, false);
             ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
           } catch (SerDeException e) {
             StringUtils.stringifyException(e);
@@ -3483,7 +3504,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        endFunction("get_fields", ret != null, ex, tableName);
+        if (orgHiveLoader != null) {
+          curConf.setClassLoader(orgHiveLoader);
+        }
+        endFunction("get_fields_with_environment_context", ret != null, ex, tableName);
       }
 
       return ret;
@@ -3505,7 +3529,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<FieldSchema> get_schema(String db, String tableName)
         throws MetaException, UnknownTableException, UnknownDBException {
-      startFunction("get_schema", ": db=" + db + "tbl=" + tableName);
+      return get_schema_with_environment_context(db,tableName, null);
+    }
+
+
+    /**
+     * Return the schema of the table. This function includes partition columns
+     * in addition to the regular columns.
+     *
+     * @param db
+     *          Name of the database
+     * @param tableName
+     *          Name of the table
+     * @param envContext
+     *          Store session based properties
+     * @return List of columns, each column is a FieldSchema structure
+     * @throws MetaException
+     * @throws UnknownTableException
+     * @throws UnknownDBException
+     */
+    @Override
+    public List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
+          final EnvironmentContext envContext)
+        throws MetaException, UnknownTableException, UnknownDBException {
+      startFunction("get_schema_with_environment_context", ": db=" + db + "tbl=" + tableName);
       boolean success = false;
       Exception ex = null;
       try {
@@ -3518,7 +3565,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (NoSuchObjectException e) {
           throw new UnknownTableException(e.getMessage());
         }
-        List<FieldSchema> fieldSchemas = get_fields(db, base_table_name);
+        List<FieldSchema> fieldSchemas = get_fields_with_environment_context(db, base_table_name,envContext);
 
         if (tbl == null || fieldSchemas == null) {
           throw new UnknownTableException(tableName + " doesn't exist");
@@ -3545,7 +3592,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw me;
         }
       } finally {
-        endFunction("get_schema", success, ex, tableName);
+        endFunction("get_schema_with_environment_context", success, ex, tableName);
       }
     }
 
@@ -5440,7 +5487,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw newMetaException(e);
       } finally {
-        endFunction("get_database", func != null, ex);
+        endFunction("get_function", func != null, ex);
       }
 
       return func;
@@ -5517,6 +5564,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
       return getTxnHandler().showCompact(rqst);
+    }
+
+    @Override
+    public void add_dynamic_partitions(AddDynamicPartitions rqst)
+        throws NoSuchTxnException, TxnAbortedException, TException {
+      getTxnHandler().addDynamicPartitions(rqst);
     }
 
     @Override
@@ -6007,6 +6060,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // don't doom the rest of the metastore.
         startLock.lock();
         try {
+          startPauseMonitor(conf);
+        } catch (Throwable t) {
+          LOG.warn("Error starting the JVM pause monitor", t);
+        }
+        try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
           while (!startedServing.get()) startCondition.await();
@@ -6023,6 +6081,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     t.start();
+  }
+
+  private static void startPauseMonitor(HiveConf conf) throws Exception {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
+        new org.apache.hadoop.util.JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
+               " GCs and Pauses may not be warned upon.", t);
+    }
   }
 
   private static void startCompactorInitiator(HiveConf conf) throws Exception {

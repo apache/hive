@@ -20,7 +20,6 @@ package org.apache.hive.service.cli.operation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +41,7 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.log4j.Appender;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 /**
  * OperationManager.
@@ -54,7 +50,6 @@ import org.apache.log4j.PatternLayout;
 public class OperationManager extends AbstractService {
   private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
 
-  private HiveConf hiveConf;
   private final Map<OperationHandle, Operation> handleToOperation =
       new HashMap<OperationHandle, Operation>();
 
@@ -64,10 +59,9 @@ public class OperationManager extends AbstractService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    this.hiveConf = hiveConf;
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
-      boolean isVerbose = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE);
-      initOperationLogCapture(isVerbose);
+      initOperationLogCapture(hiveConf.getVar(
+        HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
     } else {
       LOG.debug("Operation level logging is turned off");
     }
@@ -86,34 +80,10 @@ public class OperationManager extends AbstractService {
     super.stop();
   }
 
-  private void initOperationLogCapture(boolean isVerbose) {
-    // There should be a ConsoleAppender. Copy its Layout.
-    Logger root = Logger.getRootLogger();
-    Layout layout = null;
-
-    Enumeration<?> appenders = root.getAllAppenders();
-    while (appenders.hasMoreElements()) {
-      Appender ap = (Appender) appenders.nextElement();
-      if (ap.getClass().equals(ConsoleAppender.class)) {
-        layout = ap.getLayout();
-        break;
-      }
-    }
-
-    final String VERBOSE_PATTERN = "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n";
-    final String NONVERBOSE_PATTERN = "%-5p : %m%n";
-
-    if (isVerbose) {
-      if (layout == null) {
-        layout = new PatternLayout(VERBOSE_PATTERN);
-        LOG.info("Cannot find a Layout from a ConsoleAppender. Using default Layout pattern.");
-      }
-    } else {
-      layout = new PatternLayout(NONVERBOSE_PATTERN);
-    }
+  private void initOperationLogCapture(String loggingMode) {
     // Register another Appender (with the same layout) that talks to us.
-    Appender ap = new LogDivertAppender(layout, this, isVerbose);
-    root.addAppender(ap);
+    Appender ap = new LogDivertAppender(this, OperationLog.getLoggingLevel(loggingMode));
+    Logger.getRootLogger().addAppender(ap);
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,

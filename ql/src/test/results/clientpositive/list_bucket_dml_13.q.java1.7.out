@@ -166,7 +166,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:src]
+        /src [src]
 
   Stage: Stage-0
     Move Operator
@@ -318,52 +318,14 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: list_bucketing_mul_col
-            Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: ((col2 = '466') and (col4 = 'val_466')) (type: boolean)
-              Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: col1 (type: string), '466' (type: string), col3 (type: string), 'val_466' (type: string), col5 (type: string), '2008-04-08' (type: string), '2013-01-23+18:00:99' (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
-                        columns.types string:string:string:string:string:string:string
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
           Partition
-            base file name: col4=val_466
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
             partition values:
@@ -407,14 +369,20 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_mul_col
             name: default.list_bucketing_mul_col
-      Truncated Path -> Alias:
-        /list_bucketing_mul_col/ds=2008-04-08/hr=2013-01-23+18%3A00%3A99/col2=466/col4=val_466 [list_bucketing_mul_col]
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: list_bucketing_mul_col
+          Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: ((col2 = '466') and (col4 = 'val_466')) (type: boolean)
+            Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: col1 (type: string), '466' (type: string), col3 (type: string), 'val_466' (type: string), col5 (type: string), '2008-04-08' (type: string), '2013-01-23+18:00:99' (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+              Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466"

@@ -42,7 +42,6 @@ KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
 KW_NONE: 'NONE';
-KW_DEFAULT : 'DEFAULT';
 KW_AND : 'AND';
 KW_OR : 'OR';
 KW_NOT : 'NOT' | '!';
@@ -123,6 +122,7 @@ KW_DOUBLE: 'DOUBLE';
 KW_DATE: 'DATE';
 KW_DATETIME: 'DATETIME';
 KW_TIMESTAMP: 'TIMESTAMP';
+KW_INTERVAL: 'INTERVAL';
 KW_DECIMAL: 'DECIMAL';
 KW_STRING: 'STRING';
 KW_CHAR: 'CHAR';
@@ -298,6 +298,12 @@ KW_AUTHORIZATION: 'AUTHORIZATION';
 KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
 KW_RELOAD: 'RELOAD';
+KW_YEAR: 'YEAR';
+KW_MONTH: 'MONTH';
+KW_DAY: 'DAY';
+KW_HOUR: 'HOUR';
+KW_MINUTE: 'MINUTE';
+KW_SECOND: 'SECOND';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -60,7 +60,7 @@ public class TestStorageBasedMetastoreAuthorizationReads extends StorageBasedMet
     setPermissions(db.getLocationUri(), "-rwxrwxrwx");
 
     String dbDotTable = dbName + "." + tblName;
-    resp = driver.run("create table " + dbDotTable + "(i int) partitioned by (date string)");
+    resp = driver.run("create table " + dbDotTable + "(i int) partitioned by (`date` string)");
     Assert.assertEquals(0, resp.getResponseCode());
     Table tab = msc.getTable(dbName, tblName);
     setPermissions(tab.getSd().getLocation(), perm);

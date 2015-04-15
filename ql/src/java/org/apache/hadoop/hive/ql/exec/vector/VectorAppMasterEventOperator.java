@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -27,15 +28,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ObjectWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -59,18 +54,19 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
   }
 
   @Override
-  public void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
     valueWriters = VectorExpressionWriterFactory.getExpressionWriters(
         (StructObjectInspector) inputObjInspectors[0]);
     singleRow = new Object[valueWriters.length];
+    return result;
   }
 
   @Override
-  public void processOp(Object data, int tag) throws HiveException {
-    
+  public void process(Object data, int tag) throws HiveException {
+
     VectorizedRowBatch vrg = (VectorizedRowBatch) data;
-    
+
     Writable [] records = null;
     Writable recordValue = null;
     boolean vectorizedSerde = false;
@@ -85,7 +81,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
     } catch (SerDeException e1) {
       throw new HiveException(e1);
     }
-    
+
     for (int i = 0; i < vrg.size; i++) {
       Writable row = null;
       if (vectorizedSerde) {

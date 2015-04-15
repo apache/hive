@@ -50,8 +50,8 @@ POSTHOOK: query: INSERT INTO TABLE doctors_copy SELECT number, first_name FROM d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@doctors
 POSTHOOK: Output: default@doctors_copy
-POSTHOOK: Lineage: doctors_copy.first_name SIMPLE [(doctors)doctors.FieldSchema(name:first_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: doctors_copy.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: doctors_copy.first_name SIMPLE [(doctors)doctors.FieldSchema(name:first_name, type:string, comment:), ]
+POSTHOOK: Lineage: doctors_copy.number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:), ]
 PREHOOK: query: ALTER TABLE doctors_copy ADD COLUMNS (last_name string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@doctors_copy
@@ -74,9 +74,9 @@ PREHOOK: Input: default@doctors_copy
 POSTHOOK: query: DESCRIBE doctors_copy
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@doctors_copy
-number              	int                 	from deserializer   
-first_name          	string              	from deserializer   
-last_name           	string              	from deserializer   
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
 PREHOOK: query: SELECT * FROM doctors_copy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@doctors_copy

@@ -88,8 +88,9 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
     throws HiveException {
       super.init(m, parameters);
-      partialCountAggOI =
-        PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+      if (mode == Mode.PARTIAL2 || mode == Mode.FINAL) {
+        partialCountAggOI = (LongObjectInspector)parameters[0];
+      }
       result = new LongWritable(0);
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }

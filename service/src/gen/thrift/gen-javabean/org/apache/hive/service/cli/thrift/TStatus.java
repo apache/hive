@@ -698,7 +698,7 @@ public class TStatus implements org.apache.thrift.TBase<TStatus, TStatus._Fields
                 struct.infoMessages = new ArrayList<String>(_list134.size);
                 for (int _i135 = 0; _i135 < _list134.size; ++_i135)
                 {
-                  String _elem136; // required
+                  String _elem136; // optional
                   _elem136 = iprot.readString();
                   struct.infoMessages.add(_elem136);
                 }
@@ -848,7 +848,7 @@ public class TStatus implements org.apache.thrift.TBase<TStatus, TStatus._Fields
           struct.infoMessages = new ArrayList<String>(_list139.size);
           for (int _i140 = 0; _i140 < _list139.size; ++_i140)
           {
-            String _elem141; // required
+            String _elem141; // optional
             _elem141 = iprot.readString();
             struct.infoMessages.add(_elem141);
           }

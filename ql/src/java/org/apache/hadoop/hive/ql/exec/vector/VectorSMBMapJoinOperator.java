@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +49,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements VectorizationContextRegion {
 
   private static final Log LOG = LogFactory.getLog(
-      VectorSMBMapJoinOperator.class.getName());  
-  
+      VectorSMBMapJoinOperator.class.getName());
+
   private static final long serialVersionUID = 1L;
 
   private VectorExpression[] bigTableValueExpressions;
@@ -65,7 +67,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   // transient.
   //---------------------------------------------------------------------------
 
-  private transient VectorizedRowBatch outputBatch;  
+  private transient VectorizedRowBatch outputBatch;
 
   private transient VectorizedRowBatchCtx vrbCtx = null;
 
@@ -78,23 +80,23 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   private transient VectorHashKeyWrapper[] keyValues;
 
   private transient SMBJoinKeyEvaluator keyEvaluator;
-  
+
   private transient VectorExpressionWriter[] valueWriters;
-  
+
   private interface SMBJoinKeyEvaluator {
     List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException;
-}  
+}
 
   public VectorSMBMapJoinOperator() {
     super();
   }
-  
+
   public VectorSMBMapJoinOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
     this();
     SMBJoinDesc desc = (SMBJoinDesc) conf;
     this.conf = desc;
-    
+
     order = desc.getTagOrder();
     numAliases = desc.getExprs().size();
     posBigTable = (byte) desc.getPosBigTable();
@@ -115,10 +117,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
 
     // We are making a new output vectorized row batch.
-    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
-    vOutContext.setFileKey(vContext.getFileKey() + "/SMB_JOIN_" + desc.getBigTableAlias());
+    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
   }
-  
+
   @Override
   protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
     if (alias == this.posBigTable) {
@@ -127,21 +128,21 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     } else {
       return super.smbJoinComputeKeys(row, alias);
     }
-  }  
-  
+  }
+
   @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-    super.initializeOp(hconf);
+  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+    Collection<Future<?>> result = super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
-    
+
     outputBatch = vrbCtx.createVectorizedRowBatch();
-    
+
     keyWrapperBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-    
+
     outputVectorAssigners = new HashMap<ObjectInspector, VectorColumnAssign[]>();
-    
+
     // This key evaluator translates from the vectorized VectorHashKeyWrapper format
     // into the row-mode MapJoinKey
     keyEvaluator = new SMBJoinKeyEvaluator() {
@@ -163,14 +164,14 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
         return key;
       };
     }.init();
-    
+
     Map<Byte, List<ExprNodeDesc>> valueExpressions = conf.getExprs();
-    List<ExprNodeDesc> bigTableExpressions = valueExpressions.get(posBigTable);    
-    
+    List<ExprNodeDesc> bigTableExpressions = valueExpressions.get(posBigTable);
+
     // We're hijacking the big table evaluators and replacing them with our own custom ones
     // which are going to return values from the input batch vector expressions
     List<ExprNodeEvaluator> vectorNodeEvaluators = new ArrayList<ExprNodeEvaluator>(bigTableExpressions.size());
-    
+
     VectorExpressionWriterFactory.processVectorExpressions(
         bigTableExpressions,
         new VectorExpressionWriterFactory.ListOIDClosure() {
@@ -180,7 +181,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
             valueWriters = writers;
             joinValuesObjectInspectors[posBigTable] = oids;
           }
-        });    
+        });
 
     for(int i=0; i<bigTableExpressions.size(); ++i) {
       ExprNodeDesc desc = bigTableExpressions.get(i);
@@ -213,51 +214,51 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     }
     // Now replace the old evaluators with our own
     joinValues[posBigTable] = vectorNodeEvaluators;
-    
+    return result;
   }
-  
+
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     byte alias = (byte) tag;
-    
+
     if (alias != this.posBigTable) {
-      super.processOp(row, tag);
+      super.process(row, tag);
     } else {
-  
+
       VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
-  
+
       if (null != bigTableFilterExpressions) {
         for(VectorExpression ve : bigTableFilterExpressions) {
           ve.evaluate(inBatch);
         }
       }
-  
+
       if (null != bigTableValueExpressions) {
         for(VectorExpression ve : bigTableValueExpressions) {
           ve.evaluate(inBatch);
         }
       }
-  
+
       keyWrapperBatch.evaluateBatch(inBatch);
       keyValues = keyWrapperBatch.getVectorHashKeyWrappers();
-  
+
       // This implementation of vectorized JOIN is delegating all the work
       // to the row-mode implementation by hijacking the big table node evaluators
       // and calling the row-mode join processOp for each row in the input batch.
-      // Since the JOIN operator is not fully vectorized anyway at the moment 
+      // Since the JOIN operator is not fully vectorized anyway at the moment
       // (due to the use of row-mode small-tables) this is a reasonable trade-off.
       //
       for(batchIndex=0; batchIndex < inBatch.size; ++batchIndex ) {
-        super.processOp(row, tag);
+        super.process(row, tag);
       }
-  
+
       // Set these two to invalid values so any attempt to use them
       // outside the inner loop results in NPE/OutOfBounds errors
       batchIndex = -1;
       keyValues = null;
     }
   }
-  
+
   @Override
   public void closeOp(boolean aborted) throws HiveException {
     super.closeOp(aborted);
@@ -265,7 +266,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
       flushOutput();
     }
   }
-  
+
   @Override
   protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
     Object[] values = (Object[]) row;
@@ -283,11 +284,11 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
       flushOutput();
     }
   }
-  
+
   private void flushOutput() throws HiveException {
     forward(outputBatch, null);
     outputBatch.reset();
-  }  
+  }
 
   @Override
   public VectorizationContext getOuputVectorizationContext() {

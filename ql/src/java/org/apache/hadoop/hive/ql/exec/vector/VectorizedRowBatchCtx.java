@@ -35,13 +35,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * Context for Vectorized row batch. this calss does eager deserialization of row data using serde
@@ -170,9 +173,8 @@ public class VectorizedRowBatchCtx {
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
 
     String partitionPath = split.getPath().getParent().toString();
-    scratchColumnTypeMap = Utilities
-        .getMapWorkAllScratchColumnVectorTypeMaps(hiveConf)
-        .get(partitionPath);
+    scratchColumnTypeMap = Utilities.getMapWorkVectorScratchColumnTypeMap(hiveConf);
+    // LOG.info("VectorizedRowBatchCtx init scratchColumnTypeMap " + scratchColumnTypeMap.toString());
 
     Properties partProps =
         (part.getPartSpec() == null || part.getPartSpec().isEmpty()) ?
@@ -301,6 +303,8 @@ public class VectorizedRowBatchCtx {
           case LONG:
           case TIMESTAMP:
           case DATE:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
             result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
             break;
           case FLOAT:
@@ -503,7 +507,31 @@ public class VectorizedRowBatchCtx {
           }
         }
         break;
-        
+
+        case INTERVAL_YEAR_MONTH: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else {
+            lcv.fill(((HiveIntervalYearMonth) value).getTotalMonths());
+            lcv.isNull[0] = false;
+          }
+        }
+
+        case INTERVAL_DAY_TIME: {
+          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          if (value == null) {
+            lcv.noNulls = false;
+            lcv.isNull[0] = true;
+            lcv.isRepeating = true;
+          } else {
+            lcv.fill(DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) value));
+            lcv.isNull[0] = false;
+          }
+        }
+
         case FLOAT: {
           DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
           if (value == null) {
@@ -601,7 +629,7 @@ public class VectorizedRowBatchCtx {
       for (int i = origNumCols; i < newNumCols; i++) {
        String typeName = scratchColumnTypeMap.get(i);
        if (typeName == null) {
-         throw new HiveException("No type found for column type entry " + i);
+         throw new HiveException("No type entry found for column " + i + " in map " + scratchColumnTypeMap.toString());
        }
         vrb.cols[i] = allocateColumnVector(typeName,
             VectorizedRowBatch.DEFAULT_SIZE);
@@ -616,7 +644,7 @@ public class VectorizedRowBatchCtx {
    * @param decimalType The given decimal type string.
    * @return An integer array of size 2 with first element set to precision and second set to scale.
    */
-  private int[] getScalePrecisionFromDecimalType(String decimalType) {
+  private static int[] getScalePrecisionFromDecimalType(String decimalType) {
     Pattern p = Pattern.compile("\\d+");
     Matcher m = p.matcher(decimalType);
     m.find();
@@ -627,7 +655,7 @@ public class VectorizedRowBatchCtx {
     return precScale;
   }
 
-  private ColumnVector allocateColumnVector(String type, int defaultSize) {
+  public static ColumnVector allocateColumnVector(String type, int defaultSize) {
     if (type.equalsIgnoreCase("double")) {
       return new DoubleColumnVector(defaultSize);
     } else if (VectorizationContext.isStringFamily(type)) {
@@ -637,24 +665,12 @@ public class VectorizedRowBatchCtx {
       return new DecimalColumnVector(defaultSize, precisionScale[0], precisionScale[1]);
     } else if (type.equalsIgnoreCase("long") ||
                type.equalsIgnoreCase("date") ||
-               type.equalsIgnoreCase("timestamp")) {
+               type.equalsIgnoreCase("timestamp") ||
+               type.equalsIgnoreCase(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME) ||
+               type.equalsIgnoreCase(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
       return new LongColumnVector(defaultSize);
     } else {
       throw new Error("Cannot allocate vector column for " + type);
     }
-  }
-
-  public VectorColumnAssign[] buildObjectAssigners(VectorizedRowBatch outputBatch)
-        throws HiveException {
-    List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
-    assert outputBatch.numCols == fieldRefs.size();
-    VectorColumnAssign[] assigners = new VectorColumnAssign[fieldRefs.size()];
-    for(int i = 0; i < assigners.length; ++i) {
-        StructField fieldRef = fieldRefs.get(i);
-        ObjectInspector fieldOI = fieldRef.getFieldObjectInspector();
-        assigners[i] = VectorColumnAssignFactory.buildObjectAssign(
-                outputBatch, i, fieldOI);
-    }
-    return assigners;
   }
 }

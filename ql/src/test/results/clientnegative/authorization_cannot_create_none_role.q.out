@@ -2,6 +2,4 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: create role None
-PREHOOK: type: CREATEROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Role name cannot be one of the reserved roles: [ALL, DEFAULT, NONE]
+FAILED: ParseException line 2:12 Failed to recognize predicate 'None'. Failed rule: 'identifier' in create role

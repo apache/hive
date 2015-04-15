@@ -31,6 +31,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -38,6 +40,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -221,6 +225,12 @@ public final class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry timestampTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME, null,
       Timestamp.class, TimestampWritable.class);
+  public static final PrimitiveTypeEntry intervalYearMonthTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, null,
+      HiveIntervalYearMonth.class, HiveIntervalYearMonthWritable.class);
+  public static final PrimitiveTypeEntry intervalDayTimeTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, null,
+      HiveIntervalDayTime.class, HiveIntervalDayTimeWritable.class);
   public static final PrimitiveTypeEntry decimalTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.DECIMAL, serdeConstants.DECIMAL_TYPE_NAME, null,
       HiveDecimal.class, HiveDecimalWritable.class);
@@ -250,6 +260,8 @@ public final class PrimitiveObjectInspectorUtils {
     registerType(shortTypeEntry);
     registerType(dateTypeEntry);
     registerType(timestampTypeEntry);
+    registerType(intervalYearMonthTypeEntry);
+    registerType(intervalDayTimeTypeEntry);
     registerType(decimalTypeEntry);
     registerType(unknownTypeEntry);
   }
@@ -425,6 +437,14 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP: {
       return ((TimestampObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((TimestampObjectInspector) oi2).getPrimitiveWritableObject(o2));
+    }
+    case INTERVAL_YEAR_MONTH: {
+      return ((HiveIntervalYearMonthObjectInspector) oi1).getPrimitiveWritableObject(o1)
+          .equals(((HiveIntervalYearMonthObjectInspector) oi2).getPrimitiveWritableObject(o2));
+    }
+    case INTERVAL_DAY_TIME: {
+      return ((HiveIntervalDayTimeObjectInspector) oi1).getPrimitiveWritableObject(o1)
+          .equals(((HiveIntervalDayTimeObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
     case BINARY: {
       return ((BinaryObjectInspector) oi1).getPrimitiveWritableObject(o1).
@@ -836,6 +856,12 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
+    case INTERVAL_YEAR_MONTH:
+      result = ((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveWritableObject(o).toString();
+      break;
+    case INTERVAL_DAY_TIME:
+      result = ((HiveIntervalDayTimeObjectInspector) oi).getPrimitiveWritableObject(o).toString();
+      break;
     case DECIMAL:
       result = ((HiveDecimalObjectInspector) oi)
           .getPrimitiveJavaObject(o).toString();
@@ -1032,27 +1058,33 @@ public final class PrimitiveObjectInspectorUtils {
     }
 
     Timestamp result = null;
+    long longValue = 0;
     switch (oi.getPrimitiveCategory()) {
     case VOID:
       result = null;
       break;
     case BOOLEAN:
-      result = new Timestamp(((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      longValue = ((BooleanObjectInspector) oi).get(o) ? 1 : 0;
+      result = TimestampWritable.longToTimestamp(longValue); 
       break;
     case BYTE:
-      result = new Timestamp(((ByteObjectInspector) oi).get(o));
+      longValue = ((ByteObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case SHORT:
-      result = new Timestamp(((ShortObjectInspector) oi).get(o));
+      longValue = ((ShortObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case INT:
-      result = new Timestamp(((IntObjectInspector) oi).get(o));
+      longValue = ((IntObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case LONG:
-      result = new Timestamp(((LongObjectInspector) oi).get(o));
+      longValue = ((LongObjectInspector) oi).get(o);
+      result = TimestampWritable.longToTimestamp(longValue);
       break;
     case FLOAT:
-      result = TimestampWritable.floatToTimestamp(((FloatObjectInspector) oi).get(o));
+      result = TimestampWritable.doubleToTimestamp(((FloatObjectInspector) oi).get(o));
       break;
     case DOUBLE:
       result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
@@ -1103,6 +1135,71 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
+  public static HiveIntervalYearMonth getHiveIntervalYearMonth(Object o, PrimitiveObjectInspector oi) {
+    if (o == null) {
+      return null;
+    }
+
+    HiveIntervalYearMonth result = null;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID:
+        result = null;
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR: {
+        try {
+          String val = getString(o, oi).trim();
+          result = HiveIntervalYearMonth.valueOf(val);
+        } catch (IllegalArgumentException e) {
+          result = null;
+        }
+        break;
+      }
+      case INTERVAL_YEAR_MONTH:
+        result = ((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveJavaObject(o);
+        break;
+
+      default:
+        throw new RuntimeException("Cannot convert to IntervalYearMonth from: " + oi.getTypeName());
+    }
+
+    return result;
+  }
+
+
+  public static HiveIntervalDayTime getHiveIntervalDayTime(Object o, PrimitiveObjectInspector oi) {
+    if (o == null) {
+      return null;
+    }
+
+    HiveIntervalDayTime result = null;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID:
+        result = null;
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR: {
+        try {
+          String val = getString(o, oi).trim();
+          result = HiveIntervalDayTime.valueOf(val);
+        } catch (IllegalArgumentException e) {
+          result = null;
+        }
+        break;
+      }
+      case INTERVAL_DAY_TIME:
+        result = ((HiveIntervalDayTimeObjectInspector) oi).getPrimitiveJavaObject(o);
+        break;
+
+      default:
+        throw new RuntimeException("Cannot convert to IntervalDayTime from: " + oi.getTypeName());
+    }
+
+    return result;
+  }
+
   public static Class<?> getJavaPrimitiveClassFromObjectInspector(ObjectInspector oi) {
     if (oi.getCategory() != Category.PRIMITIVE) {
       return null;
@@ -1117,7 +1214,7 @@ public final class PrimitiveObjectInspectorUtils {
    * Provide a general grouping for each primitive data type.
    */
   public static enum PrimitiveGrouping {
-    NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, BINARY_GROUP,
+    NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, INTERVAL_GROUP, BINARY_GROUP,
     VOID_GROUP, UNKNOWN_GROUP
   };
 
@@ -1147,6 +1244,9 @@ public final class PrimitiveObjectInspectorUtils {
       case TIMESTAMP:
       case DATE:
         return PrimitiveGrouping.DATE_GROUP;
+      case INTERVAL_YEAR_MONTH:
+      case INTERVAL_DAY_TIME:
+        return PrimitiveGrouping.INTERVAL_GROUP;
       case BINARY:
         return PrimitiveGrouping.BINARY_GROUP;
       case VOID:

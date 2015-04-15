@@ -22,15 +22,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -65,6 +69,8 @@ public class TypeConverter {
     b.put(SqlTypeName.DOUBLE.getName(), new HiveToken(HiveParser.TOK_DOUBLE, "TOK_DOUBLE"));
     b.put(SqlTypeName.DATE.getName(), new HiveToken(HiveParser.TOK_DATE, "TOK_DATE"));
     b.put(SqlTypeName.TIMESTAMP.getName(), new HiveToken(HiveParser.TOK_TIMESTAMP, "TOK_TIMESTAMP"));
+    b.put(SqlTypeName.INTERVAL_YEAR_MONTH.getName(), new HiveToken(HiveParser.TOK_INTERVAL_YEAR_MONTH, "TOK_INTERVAL_YEAR_MONTH"));
+    b.put(SqlTypeName.INTERVAL_DAY_TIME.getName(), new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME, "TOK_INTERVAL_DAY_TIME"));
     b.put(SqlTypeName.BINARY.getName(), new HiveToken(HiveParser.TOK_BINARY, "TOK_BINARY"));
     calciteToHiveTypeNameMap = b.build();
   };
@@ -162,6 +168,14 @@ public class TypeConverter {
     case TIMESTAMP:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
+    case INTERVAL_YEAR_MONTH:
+      convertedType = dtFactory.createSqlIntervalType(
+          new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
+      break;
+    case INTERVAL_DAY_TIME:
+      convertedType = dtFactory.createSqlIntervalType(
+          new SqlIntervalQualifier(TimeUnit.DAY, TimeUnit.SECOND, new SqlParserPos(1,1)));
+      break;
     case BINARY:
       convertedType = dtFactory.createSqlType(SqlTypeName.BINARY);
       break;
@@ -215,7 +229,7 @@ public class TypeConverter {
   public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory)
     throws CalciteSemanticException{
     // Union type is not supported in Calcite.
-    throw new CalciteSemanticException("Union type is not supported");
+    throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.Union_type);
   }
 
   public static TypeInfo convert(RelDataType rType) {
@@ -277,6 +291,10 @@ public class TypeConverter {
       return TypeInfoFactory.dateTypeInfo;
     case TIMESTAMP:
       return TypeInfoFactory.timestampTypeInfo;
+    case INTERVAL_YEAR_MONTH:
+      return TypeInfoFactory.intervalYearMonthTypeInfo;
+    case INTERVAL_DAY_TIME:
+      return TypeInfoFactory.intervalDayTimeTypeInfo;
     case BINARY:
       return TypeInfoFactory.binaryTypeInfo;
     case DECIMAL:

@@ -34,6 +34,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
+import org.apache.http.client.CookieStore;
+import org.apache.http.cookie.Cookie;
 
 public class Utils {
   public static final Log LOG = LogFactory.getLog(Utils.class.getName());
@@ -55,6 +57,11 @@ public class Utils {
   private static final String URI_JDBC_PREFIX = "jdbc:";
 
   private static final String URI_HIVE_PREFIX = "hive2:";
+
+  // This value is set to true by the setServiceUnavailableRetryStrategy() when the server returns 401
+  static final String HIVE_SERVER2_RETRY_KEY = "hive.server2.retryserver";
+  static final String HIVE_SERVER2_RETRY_TRUE = "true";
+  static final String HIVE_SERVER2_RETRY_FALSE = "false";
 
   public static class JdbcConnectionParams {
     // Note on client side parameter naming convention:
@@ -98,6 +105,11 @@ public class Utils {
     // Default namespace value on ZooKeeper.
     // This value is used if the param "zooKeeperNamespace" is not specified in the JDBC Uri.
     static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";
+    static final String COOKIE_AUTH = "cookieAuth";
+    static final String COOKIE_AUTH_FALSE = "false";
+    static final String COOKIE_NAME = "cookieName";
+    // The default value of the cookie name when CookieAuth=true
+    static final String DEFAULT_COOKIE_NAMES_HS2 = "hive.server2.auth";
 
     // Non-configurable params:
     // Currently supports JKS keystore format
@@ -559,5 +571,29 @@ public class Utils {
       version = -1;
     }
     return version;
+  }
+
+  /**
+   * The function iterates through the list of cookies in the cookiestore and tries to
+   * match them with the cookieName. If there is a match, the cookieStore already
+   * has a valid cookie and the client need not send Credentials for validation purpose.
+   * @param cookieStore The cookie Store
+   * @param cookieName Name of the cookie which needs to be validated
+   * @return true or false based on whether the client needs to send the credentials or
+   * not to the server.
+   */
+  static boolean needToSendCredentials(CookieStore cookieStore, String cookieName) {
+    if (cookieName == null || cookieStore == null) {
+      return true;
+    }
+
+    List<Cookie> cookies = cookieStore.getCookies();
+
+    for (Cookie c : cookies) {
+      if (c.getName().equals(cookieName)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

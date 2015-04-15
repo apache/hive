@@ -368,13 +368,25 @@ struct DecimalColumnStatsData {
 4: required i64 numDVs
 }
 
+struct Date {
+1: required i64 daysSinceEpoch
+}
+
+struct DateColumnStatsData {
+1: optional Date lowValue,
+2: optional Date highValue,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
 union ColumnStatisticsData {
 1: BooleanColumnStatsData booleanStats,
 2: LongColumnStatsData longStats,
 3: DoubleColumnStatsData doubleStats,
 4: StringColumnStatsData stringStats,
 5: BinaryColumnStatsData binaryStats,
-6: DecimalColumnStatsData decimalStats
+6: DecimalColumnStatsData decimalStats,
+7: DateColumnStatsData dateStats
 }
 
 struct ColumnStatisticsObj {
@@ -651,6 +663,13 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct AddDynamicPartitions {
+    1: required i64 txnid,
+    2: required string dbname,
+    3: required string tablename,
+    4: required list<string> partitionnames,
+}
+
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
@@ -786,9 +805,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Gets a list of FieldSchemas describing the columns of a particular table
   list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
+  list<FieldSchema> get_fields_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
 
   // Gets a list of FieldSchemas describing both the columns and the partition keys of a particular table
   list<FieldSchema> get_schema(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
+  list<FieldSchema> get_schema_with_environment_context(1: string db_name, 2: string table_name, 3:EnvironmentContext environment_context) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
 
   // create a Hive table. Following fields must be set
   // tableName
@@ -1162,6 +1183,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+  void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 

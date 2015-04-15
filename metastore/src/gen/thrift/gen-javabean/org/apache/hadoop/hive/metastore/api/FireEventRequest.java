@@ -712,13 +712,13 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
           case 5: // PARTITION_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list508 = iprot.readListBegin();
-                struct.partitionVals = new ArrayList<String>(_list508.size);
-                for (int _i509 = 0; _i509 < _list508.size; ++_i509)
+                org.apache.thrift.protocol.TList _list516 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list516.size);
+                for (int _i517 = 0; _i517 < _list516.size; ++_i517)
                 {
-                  String _elem510; // required
-                  _elem510 = iprot.readString();
-                  struct.partitionVals.add(_elem510);
+                  String _elem518; // optional
+                  _elem518 = iprot.readString();
+                  struct.partitionVals.add(_elem518);
                 }
                 iprot.readListEnd();
               }
@@ -767,9 +767,9 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
           oprot.writeFieldBegin(PARTITION_VALS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionVals.size()));
-            for (String _iter511 : struct.partitionVals)
+            for (String _iter519 : struct.partitionVals)
             {
-              oprot.writeString(_iter511);
+              oprot.writeString(_iter519);
             }
             oprot.writeListEnd();
           }
@@ -815,9 +815,9 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
       if (struct.isSetPartitionVals()) {
         {
           oprot.writeI32(struct.partitionVals.size());
-          for (String _iter512 : struct.partitionVals)
+          for (String _iter520 : struct.partitionVals)
           {
-            oprot.writeString(_iter512);
+            oprot.writeString(_iter520);
           }
         }
       }
@@ -842,13 +842,13 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list513 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.partitionVals = new ArrayList<String>(_list513.size);
-          for (int _i514 = 0; _i514 < _list513.size; ++_i514)
+          org.apache.thrift.protocol.TList _list521 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list521.size);
+          for (int _i522 = 0; _i522 < _list521.size; ++_i522)
           {
-            String _elem515; // required
-            _elem515 = iprot.readString();
-            struct.partitionVals.add(_elem515);
+            String _elem523; // optional
+            _elem523 = iprot.readString();
+            struct.partitionVals.add(_elem523);
           }
         }
         struct.setPartitionValsIsSet(true);

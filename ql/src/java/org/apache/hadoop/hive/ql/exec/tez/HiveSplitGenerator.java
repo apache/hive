@@ -19,22 +19,17 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -57,7 +52,6 @@ import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
 import org.apache.tez.runtime.api.events.InputDataInformationEvent;
 import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
@@ -71,174 +65,102 @@ public class HiveSplitGenerator extends InputInitializer {
 
   private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
 
-  private static final SplitGrouper grouper = new SplitGrouper();
-  private final DynamicPartitionPruner pruner = new DynamicPartitionPruner();
-  private InputInitializerContext context;
-  private static Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cache =
-      new HashMap<Map<String, PartitionDesc>, Map<String, PartitionDesc>>();
+  private final DynamicPartitionPruner pruner;
+  private final Configuration conf;
+  private final JobConf jobConf;
+  private final MRInputUserPayloadProto userPayloadProto;
+  private final MapWork work;
+  private final SplitGrouper splitGrouper = new SplitGrouper();
 
-  public HiveSplitGenerator(InputInitializerContext initializerContext) {
+
+  public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
+      SerDeException {
     super(initializerContext);
-  }
+    Preconditions.checkNotNull(initializerContext);
+    userPayloadProto =
+        MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
-  public HiveSplitGenerator() {
-    this(null);
+    this.conf =
+        TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
+
+    this.jobConf = new JobConf(conf);
+    // Read all credentials into the credentials instance stored in JobConf.
+    ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
+
+    this.work = Utilities.getMapWork(jobConf);
+
+    // Events can start coming in the moment the InputInitializer is created. The pruner
+    // must be setup and initialized here so that it sets up it's structures to start accepting events.
+    // Setting it up in initialize leads to a window where events may come in before the pruner is
+    // initialized, which may cause it to drop events.
+    pruner = new DynamicPartitionPruner(initializerContext, work, jobConf);
+
   }
 
   @Override
   public List<Event> initialize() throws Exception {
-    InputInitializerContext rootInputContext = getContext();
+    // Setup the map work for this thread. Pruning modified the work instance to potentially remove
+    // partitions. The same work instance must be used when generating splits.
+    Utilities.setMapWork(jobConf, work);
+    try {
+      boolean sendSerializedEvents =
+          conf.getBoolean("mapreduce.tez.input.initializer.serialize.event.payload", true);
 
-    context = rootInputContext;
+      // perform dynamic partition pruning
+      pruner.prune();
 
-    MRInputUserPayloadProto userPayloadProto =
-        MRInputHelpers.parseMRInputPayload(rootInputContext.getInputUserPayload());
+      InputSplitInfoMem inputSplitInfo = null;
+      String realInputFormatName = conf.get("mapred.input.format.class");
+      boolean groupingEnabled = userPayloadProto.getGroupingEnabled();
+      if (groupingEnabled) {
+        // Need to instantiate the realInputFormat
+        InputFormat<?, ?> inputFormat =
+            (InputFormat<?, ?>) ReflectionUtils
+                .newInstance(JavaUtils.loadClass(realInputFormatName),
+                    jobConf);
 
-    Configuration conf =
-        TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
+        int totalResource = getContext().getTotalAvailableResource().getMemory();
+        int taskResource = getContext().getVertexTaskResource().getMemory();
+        int availableSlots = totalResource / taskResource;
 
-    boolean sendSerializedEvents =
-        conf.getBoolean("mapreduce.tez.input.initializer.serialize.event.payload", true);
+        // Create the un-grouped splits
+        float waves =
+            conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+                TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
-    // Read all credentials into the credentials instance stored in JobConf.
-    JobConf jobConf = new JobConf(conf);
-    ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
+        InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+        LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
+            + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
 
-    MapWork work = Utilities.getMapWork(jobConf);
+        Multimap<Integer, InputSplit> groupedSplits =
+            splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
+        // And finally return them in a flat array
+        InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
+        LOG.info("Number of grouped splits: " + flatSplits.length);
 
-    // perform dynamic partition pruning
-    pruner.prune(work, jobConf, context);
+        List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits);
 
-    InputSplitInfoMem inputSplitInfo = null;
-    String realInputFormatName = conf.get("mapred.input.format.class");
-    boolean groupingEnabled = userPayloadProto.getGroupingEnabled();
-    if (groupingEnabled) {
-      // Need to instantiate the realInputFormat
-      InputFormat<?, ?> inputFormat =
-          (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
-              jobConf);
+        inputSplitInfo =
+            new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
+      } else {
+        // no need for grouping and the target #of tasks.
+        // This code path should never be triggered at the moment. If grouping is disabled,
+        // DAGUtils uses MRInputAMSplitGenerator.
+        // If this is used in the future - make sure to disable grouping in the payload, if it isn't already disabled
+        throw new RuntimeException(
+            "HiveInputFormat does not support non-grouped splits, InputFormatName is: "
+                + realInputFormatName);
+        // inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(jobConf, false, 0);
+      }
 
-      int totalResource = rootInputContext.getTotalAvailableResource().getMemory();
-      int taskResource = rootInputContext.getVertexTaskResource().getMemory();
-      int availableSlots = totalResource / taskResource;
-
-      // Create the un-grouped splits
-      float waves =
-          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
-              TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
-
-      InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
-      LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
-          + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
-
-      Multimap<Integer, InputSplit> groupedSplits =
-          generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
-      // And finally return them in a flat array
-      InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
-      LOG.info("Number of grouped splits: " + flatSplits.length);
-
-      List<TaskLocationHint> locationHints = grouper.createTaskLocationHints(flatSplits);
-
+      return createEventList(sendSerializedEvents, inputSplitInfo);
+    } finally {
       Utilities.clearWork(jobConf);
-
-      inputSplitInfo =
-          new InputSplitInfoMem(flatSplits, locationHints, flatSplits.length, null, jobConf);
-    } else {
-      // no need for grouping and the target #of tasks.
-      // This code path should never be triggered at the moment. If grouping is disabled,
-      // DAGUtils uses MRInputAMSplitGenerator.
-      // If this is used in the future - make sure to disable grouping in the payload, if it isn't already disabled
-      throw new RuntimeException(
-          "HiveInputFormat does not support non-grouped splits, InputFormatName is: "
-              + realInputFormatName);
-      // inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(jobConf, false, 0);
     }
-
-    return createEventList(sendSerializedEvents, inputSplitInfo);
   }
 
 
-  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
-      Configuration conf, InputSplit[] splits, float waves, int availableSlots)
-      throws Exception {
-    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true);
-  }
 
-  public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
-      Configuration conf, InputSplit[] splits, float waves, int availableSlots, String inputName,
-      boolean groupAcrossFiles) throws Exception {
-
-    MapWork work = populateMapWork(jobConf, inputName);
-    Multimap<Integer, InputSplit> bucketSplitMultiMap =
-        ArrayListMultimap.<Integer, InputSplit> create();
-
-    int i = 0;
-    InputSplit prevSplit = null;
-    for (InputSplit s : splits) {
-      // this is the bit where we make sure we don't group across partition
-      // schema boundaries
-      if (schemaEvolved(s, prevSplit, groupAcrossFiles, work)) {
-        ++i;
-        prevSplit = s;
-      }
-      bucketSplitMultiMap.put(i, s);
-    }
-    LOG.info("# Src groups for split generation: " + (i + 1));
-
-    // group them into the chunks we want
-    Multimap<Integer, InputSplit> groupedSplits =
-        grouper.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
-
-    return groupedSplits;
-  }
-
-  private MapWork populateMapWork(JobConf jobConf, String inputName) {
-    MapWork work = null;
-    if (inputName != null) {
-      work = (MapWork) Utilities.getMergeWork(jobConf, inputName);
-      // work can still be null if there is no merge work for this input
-    }
-    if (work == null) {
-      work = Utilities.getMapWork(jobConf);
-    }
-
-    return work;
-  }
-
-  public boolean schemaEvolved(InputSplit s, InputSplit prevSplit, boolean groupAcrossFiles,
-      MapWork work) throws IOException {
-    boolean retval = false;
-    Path path = ((FileSplit) s).getPath();
-    PartitionDesc pd =
-        HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
-            path, cache);
-    String currentDeserializerClass = pd.getDeserializerClassName();
-    Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
-
-    Class<?> previousInputFormatClass = null;
-    String previousDeserializerClass = null;
-    if (prevSplit != null) {
-      Path prevPath = ((FileSplit) prevSplit).getPath();
-      if (!groupAcrossFiles) {
-        return !path.equals(prevPath);
-      }
-      PartitionDesc prevPD =
-          HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
-              prevPath, cache);
-      previousDeserializerClass = prevPD.getDeserializerClassName();
-      previousInputFormatClass = prevPD.getInputFileFormatClass();
-    }
-
-    if ((currentInputFormatClass != previousInputFormatClass)
-        || (!currentDeserializerClass.equals(previousDeserializerClass))) {
-      retval = true;
-    }
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Adding split " + path + " to src new group? " + retval);
-    }
-    return retval;
-  }
 
   private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
 

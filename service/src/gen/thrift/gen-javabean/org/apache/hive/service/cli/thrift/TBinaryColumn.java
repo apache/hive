@@ -451,7 +451,7 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
                 struct.values = new ArrayList<ByteBuffer>(_list110.size);
                 for (int _i111 = 0; _i111 < _list110.size; ++_i111)
                 {
-                  ByteBuffer _elem112; // required
+                  ByteBuffer _elem112; // optional
                   _elem112 = iprot.readBinary();
                   struct.values.add(_elem112);
                 }
@@ -535,7 +535,7 @@ public class TBinaryColumn implements org.apache.thrift.TBase<TBinaryColumn, TBi
         struct.values = new ArrayList<ByteBuffer>(_list115.size);
         for (int _i116 = 0; _i116 < _list115.size; ++_i116)
         {
-          ByteBuffer _elem117; // required
+          ByteBuffer _elem117; // optional
           _elem117 = iprot.readBinary();
           struct.values.add(_elem117);
         }

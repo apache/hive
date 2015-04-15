@@ -22,12 +22,13 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * CreateFunctionDesc.
  *
  */
-@Explain(displayName = "Create Function")
+@Explain(displayName = "Create Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -50,7 +51,7 @@ public class CreateFunctionDesc implements Serializable {
     this.resources = resources;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getFunctionName() {
     return functionName;
   }

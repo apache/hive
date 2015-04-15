@@ -1,12 +1,12 @@
-CREATE TABLE table(string string) STORED AS TEXTFILE;
+CREATE TABLE `table`(`string` string) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE table;
+LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE `table`;
 
-SELECT table, count(1)
+SELECT `table`, count(1)
 FROM
 (
-  FROM table
-  SELECT TRANSFORM (table.string)
-  USING 'java -cp ../util/target/classes/ org.apache.hadoop.hive.scripts.extracturl' AS (table, count)
+  FROM `table`
+  SELECT TRANSFORM (`table`.`string`)
+  USING 'java -cp ../util/target/classes/ org.apache.hadoop.hive.scripts.extracturl' AS (`table`, count)
 ) subq
-GROUP BY table;
+GROUP BY `table`;

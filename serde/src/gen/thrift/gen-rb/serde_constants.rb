@@ -73,6 +73,10 @@ DECIMAL_TYPE_NAME = %q"decimal"
 
 BINARY_TYPE_NAME = %q"binary"
 
+INTERVAL_YEAR_MONTH_TYPE_NAME = %q"interval_year_month"
+
+INTERVAL_DAY_TIME_TYPE_NAME = %q"interval_day_time"
+
 LIST_TYPE_NAME = %q"array"
 
 MAP_TYPE_NAME = %q"map"
@@ -102,6 +106,8 @@ PrimitiveTypes = Set.new([
   %q"date",
   %q"datetime",
   %q"timestamp",
+  %q"interval_year_month",
+  %q"interval_day_time",
   %q"decimal",
   %q"binary",
 ])

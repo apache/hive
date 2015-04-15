@@ -760,14 +760,25 @@ public class Commands {
       while (beeLine.getConsoleReader() != null && !(line.trim().endsWith(";"))
         && beeLine.getOpts().isAllowMultiLineCommand()) {
 
-        StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
-        for (int i = 0; i < prompt.length() - 1; i++) {
-          if (prompt.charAt(i) != '>') {
-            prompt.setCharAt(i, i % 2 == 0 ? '.' : ' ');
+        if (!beeLine.getOpts().isSilent()) {
+          StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
+          for (int i = 0; i < prompt.length() - 1; i++) {
+            if (prompt.charAt(i) != '>') {
+              prompt.setCharAt(i, i % 2 == 0 ? '.' : ' ');
+            }
           }
         }
 
-        String extra = beeLine.getConsoleReader().readLine(prompt.toString());
+        String extra = null;
+        if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
+          extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
+        } else {
+          extra = beeLine.getConsoleReader().readLine(beeLine.getPrompt());
+        }
+
+        if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
+          break;
+        }
         if (!beeLine.isComment(extra)) {
           line += "\n" + extra;
         }
@@ -776,100 +787,104 @@ public class Commands {
       beeLine.handleException(e);
     }
 
-    line = line.trim();
-    if (line.endsWith(";")) {
-      line = line.substring(0, line.length() - 1);
-    }
-
     if (!(beeLine.assertConnection())) {
       return false;
     }
 
-    String sql = line;
-
-    if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
-      sql = sql.substring(1);
-    }
-
-    String prefix = call ? "call" : "sql";
-
-    if (sql.startsWith(prefix)) {
-      sql = sql.substring(prefix.length());
-    }
-
-    // batch statements?
-    if (beeLine.getBatch() != null) {
-      beeLine.getBatch().add(sql);
-      return true;
-    }
-
-    try {
-      Statement stmnt = null;
-      boolean hasResults;
-      Thread logThread = null;
-
-      try {
-        long start = System.currentTimeMillis();
-
-        if (call) {
-          stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
-          hasResults = ((CallableStatement) stmnt).execute();
-        } else {
-          stmnt = beeLine.createStatement();
-          if (beeLine.getOpts().isSilent()) {
-            hasResults = stmnt.execute(sql);
-          } else {
-            logThread = new Thread(createLogRunnable(stmnt));
-            logThread.setDaemon(true);
-            logThread.start();
-            hasResults = stmnt.execute(sql);
-            logThread.interrupt();
-            logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-          }
+    line = line.trim();
+    String[] cmds = line.split(";");
+    for (int i = 0; i < cmds.length; i++) {
+      String sql = cmds[i].trim();
+      if (sql.length() != 0) {
+        if (beeLine.isComment(sql)) {
+          //skip this and rest cmds in the line
+          break;
+        }
+        if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
+          sql = sql.substring(1);
         }
 
-        beeLine.showWarnings();
+        String prefix = call ? "call" : "sql";
 
-        if (hasResults) {
-          do {
-            ResultSet rs = stmnt.getResultSet();
-            try {
-              int count = beeLine.print(rs);
-              long end = System.currentTimeMillis();
+        if (sql.startsWith(prefix)) {
+          sql = sql.substring(prefix.length());
+        }
 
-              beeLine.info(beeLine.loc("rows-selected", count) + " "
-                  + beeLine.locElapsedTime(end - start));
-            } finally {
-              if (logThread != null) {
+        // batch statements?
+        if (beeLine.getBatch() != null) {
+          beeLine.getBatch().add(sql);
+          continue;
+        }
+
+        try {
+          Statement stmnt = null;
+          boolean hasResults;
+          Thread logThread = null;
+
+          try {
+            long start = System.currentTimeMillis();
+
+            if (call) {
+              stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
+              hasResults = ((CallableStatement) stmnt).execute();
+            } else {
+              stmnt = beeLine.createStatement();
+              if (beeLine.getOpts().isSilent()) {
+                hasResults = stmnt.execute(sql);
+              } else {
+                logThread = new Thread(createLogRunnable(stmnt));
+                logThread.setDaemon(true);
+                logThread.start();
+                hasResults = stmnt.execute(sql);
+                logThread.interrupt();
                 logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-                showRemainingLogsIfAny(stmnt);
-                logThread = null;
               }
-              rs.close();
             }
-          } while (BeeLine.getMoreResults(stmnt));
-        } else {
-          int count = stmnt.getUpdateCount();
-          long end = System.currentTimeMillis();
-          beeLine.info(beeLine.loc("rows-affected", count)
-              + " " + beeLine.locElapsedTime(end - start));
-        }
-      } finally {
-        if (logThread != null) {
-          if (!logThread.isInterrupted()) {
-            logThread.interrupt();
+
+            beeLine.showWarnings();
+
+            if (hasResults) {
+              do {
+                ResultSet rs = stmnt.getResultSet();
+                try {
+                  int count = beeLine.print(rs);
+                  long end = System.currentTimeMillis();
+
+                  beeLine.info(beeLine.loc("rows-selected", count) + " "
+                      + beeLine.locElapsedTime(end - start));
+                } finally {
+                  if (logThread != null) {
+                    logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+                    showRemainingLogsIfAny(stmnt);
+                    logThread = null;
+                  }
+                  rs.close();
+                }
+              } while (BeeLine.getMoreResults(stmnt));
+            } else {
+              int count = stmnt.getUpdateCount();
+              long end = System.currentTimeMillis();
+              beeLine.info(beeLine.loc("rows-affected", count)
+                  + " " + beeLine.locElapsedTime(end - start));
+            }
+          } finally {
+            if (logThread != null) {
+              if (!logThread.isInterrupted()) {
+                logThread.interrupt();
+              }
+              logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+              showRemainingLogsIfAny(stmnt);
+            }
+            if (stmnt != null) {
+              stmnt.close();
+            }
           }
-          logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-          showRemainingLogsIfAny(stmnt);
+        } catch (Exception e) {
+          return beeLine.error(e);
         }
-        if (stmnt != null) {
-          stmnt.close();
-        }
+        beeLine.showWarnings();
       }
-    } catch (Exception e) {
-      return beeLine.error(e);
     }
-    beeLine.showWarnings();
     return true;
   }
 

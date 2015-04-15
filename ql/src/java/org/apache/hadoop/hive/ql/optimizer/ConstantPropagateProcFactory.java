@@ -517,16 +517,12 @@ public final class ConstantPropagateProcFactory {
       if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(clz)) {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
         TypeInfo typeInfo = poi.getTypeInfo();
-
-        // Handling parameterized types (varchar, decimal, etc).
-        if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME)
-            || typeInfo.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME)
-            || typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)) {
-
-          // Do not support parameterized types.
-          return null;
-        }
         o = poi.getPrimitiveJavaObject(o);
+        if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME) ||
+            typeInfo.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) ||
+            typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)) {
+          return new ExprNodeConstantDesc(typeInfo, o);
+        }
       } else if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
 
       } else {

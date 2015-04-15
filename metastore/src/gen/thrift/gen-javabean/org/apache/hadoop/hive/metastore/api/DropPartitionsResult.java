@@ -346,7 +346,7 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
                 struct.partitions = new ArrayList<Partition>(_list396.size);
                 for (int _i397 = 0; _i397 < _list396.size; ++_i397)
                 {
-                  Partition _elem398; // required
+                  Partition _elem398; // optional
                   _elem398 = new Partition();
                   _elem398.read(iprot);
                   struct.partitions.add(_elem398);
@@ -428,7 +428,7 @@ public class DropPartitionsResult implements org.apache.thrift.TBase<DropPartiti
           struct.partitions = new ArrayList<Partition>(_list401.size);
           for (int _i402 = 0; _i402 < _list401.size; ++_i402)
           {
-            Partition _elem403; // required
+            Partition _elem403; // optional
             _elem403 = new Partition();
             _elem403.read(iprot);
             struct.partitions.add(_elem403);

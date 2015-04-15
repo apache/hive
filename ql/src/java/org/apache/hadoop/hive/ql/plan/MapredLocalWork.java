@@ -31,12 +31,14 @@ import java.util.Set;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * MapredLocalWork.
  *
  */
-@Explain(displayName = "Map Reduce Local Work")
+@Explain(displayName = "Map Reduce Local Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MapredLocalWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -83,7 +85,7 @@ public class MapredLocalWork implements Serializable {
   }
 
 
-  @Explain(displayName = "Alias -> Map Local Operator Tree")
+  @Explain(displayName = "Alias -> Map Local Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LinkedHashMap<String, Operator<? extends OperatorDesc>> getAliasToWork() {
     return aliasToWork;
   }
@@ -104,7 +106,7 @@ public class MapredLocalWork implements Serializable {
   /**
    * @return the aliasToFetchWork
    */
-  @Explain(displayName = "Alias -> Map Local Tables")
+  @Explain(displayName = "Alias -> Map Local Tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LinkedHashMap<String, FetchWork> getAliasToFetchWork() {
     return aliasToFetchWork;
   }
@@ -138,7 +140,7 @@ public class MapredLocalWork implements Serializable {
     }
   }
 
-  @Explain(displayName = "Bucket Mapjoin Context", normalExplain = false)
+  @Explain(displayName = "Bucket Mapjoin Context", explainLevels = { Level.EXTENDED })
   public BucketMapJoinContext getBucketMapjoinContextExplain() {
     return bucketMapjoinContext != null &&
         bucketMapjoinContext.getBucketFileNameMapping() != null ? bucketMapjoinContext : null;

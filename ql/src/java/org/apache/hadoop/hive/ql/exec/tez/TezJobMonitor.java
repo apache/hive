@@ -98,7 +98,7 @@ public class TezJobMonitor {
 
   // in-place progress update related variables
   private int lines;
-  private PrintStream out;
+  private final PrintStream out;
   private String separator;
 
   private transient LogHelper console;
@@ -114,6 +114,8 @@ public class TezJobMonitor {
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
   private static final List<DAGClient> shutdownList;
+
+  private StringBuffer diagnostics;
 
   static {
     shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
@@ -251,6 +253,7 @@ public class TezJobMonitor {
       DAG dag) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
+    diagnostics = new StringBuffer();
 
     boolean running = false;
     boolean done = false;
@@ -396,6 +399,7 @@ public class TezJobMonitor {
           if (rc != 0 && status != null) {
             for (String diag : status.getDiagnostics()) {
               console.printError(diag);
+              diagnostics.append(diag);
             }
           }
           shutdownList.remove(dagClient);
@@ -785,7 +789,7 @@ public class TezJobMonitor {
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskAttemptCount();
       if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
+        reportBuffer.append(String.format("%s: -/-\t", s));
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);
@@ -800,11 +804,11 @@ public class TezJobMonitor {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
         }
         if(complete < total && (complete > 0 || running > 0 || failed > 0)) {
-          
+
           if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
             perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
           }
-          
+
           /* vertex is started, but not complete */
           if (failed > 0) {
             reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
@@ -824,5 +828,9 @@ public class TezJobMonitor {
     }
 
     return reportBuffer.toString();
+  }
+
+  public String getDiagnostics() {
+    return diagnostics.toString();
   }
 }

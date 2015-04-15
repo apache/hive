@@ -34,6 +34,7 @@ base64
 between
 bin
 case
+cbrt
 ceil
 ceiling
 coalesce
@@ -74,6 +75,7 @@ ewah_bitmap_empty
 ewah_bitmap_or
 exp
 explode
+factorial
 field
 find_in_set
 first_value
@@ -123,6 +125,7 @@ max
 min
 minute
 month
+months_between
 named_struct
 negative
 next_day
@@ -164,6 +167,9 @@ rpad
 rtrim
 second
 sentences
+shiftleft
+shiftright
+shiftrightunsigned
 sign
 sin
 size
@@ -217,6 +223,7 @@ PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '^c.*'
 POSTHOOK: type: SHOWFUNCTIONS
 case
+cbrt
 ceil
 ceiling
 coalesce
@@ -320,6 +327,7 @@ max
 min
 minute
 month
+months_between
 xpath
 xpath_boolean
 xpath_double

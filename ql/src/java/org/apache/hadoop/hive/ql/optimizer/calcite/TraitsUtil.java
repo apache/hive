@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelCollationImpl;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 
 public class TraitsUtil {
@@ -32,6 +32,6 @@ public class TraitsUtil {
   }
 
   public static RelTraitSet getDefaultTraitSet(RelOptCluster cluster) {
-    return cluster.traitSetOf(HiveRelNode.CONVENTION, RelCollationImpl.EMPTY);
+    return cluster.traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
   }
 }

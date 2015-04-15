@@ -94,10 +94,10 @@ public class TestHiveAuthorizerCheckInvocation {
     SessionState.start(conf);
     driver = new Driver(conf);
     runCmd("create table " + tableName
-        + " (i int, j int, k string) partitioned by (city string, date string) ");
+        + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create database " + dbName);
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
-    runCmd("create table " + acidTableName + " (i int, j int) clustered by (i) into 2 buckets " +
+    runCmd("create table " + acidTableName + " (i int, j int, k int) clustered by (k) into 2 buckets " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
   }
 
@@ -273,7 +273,7 @@ public class TestHiveAuthorizerCheckInvocation {
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     tableObj = inputs.get(0);
-    assertEquals(1, tableObj.getColumns().size());
+    assertEquals(2, tableObj.getColumns().size());
     assertEquals("j", tableObj.getColumns().get(0));
   }
 

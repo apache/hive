@@ -24,6 +24,8 @@ import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hive.service.cli.thrift.TBoolValue;
 import org.apache.hive.service.cli.thrift.TByteValue;
@@ -144,6 +146,22 @@ public class ColumnValue {
     return TColumnValue.stringVal(tStrValue);
   }
 
+  private static TColumnValue stringValue(HiveIntervalYearMonth value) {
+    TStringValue tStrValue = new TStringValue();
+    if (value != null) {
+      tStrValue.setValue(value.toString());
+    }
+    return TColumnValue.stringVal(tStrValue);
+  }
+
+  private static TColumnValue stringValue(HiveIntervalDayTime value) {
+    TStringValue tStrValue = new TStringValue();
+    if (value != null) {
+      tStrValue.setValue(value.toString());
+    }
+    return TColumnValue.stringVal(tStrValue);
+  }
+
   public static TColumnValue toTColumnValue(Type type, Object value) {
     switch (type) {
     case BOOLEAN_TYPE:
@@ -170,6 +188,10 @@ public class ColumnValue {
       return dateValue((Date)value);
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
+    case INTERVAL_YEAR_MONTH_TYPE:
+      return stringValue((HiveIntervalYearMonth) value);
+    case INTERVAL_DAY_TIME_TYPE:
+      return stringValue((HiveIntervalDayTime) value);
     case DECIMAL_TYPE:
       return stringValue(((HiveDecimal)value));
     case BINARY_TYPE:

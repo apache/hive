@@ -109,6 +109,8 @@ if [ ! -f $HIVE_SCHEMA_BASE ]; then
 	exit 1
 fi
 
+log "Calling $SCRIPT_EXECUTE ..."
+
 if ! execute_test $HIVE_SCHEMA_BASE; then
 	echo "Error: Cannot execute SQL file: $HIVE_SCHEMA_BASE"
 fi
@@ -124,3 +126,5 @@ do
 		fi
 	fi
 done
+
+log "Tests executed."

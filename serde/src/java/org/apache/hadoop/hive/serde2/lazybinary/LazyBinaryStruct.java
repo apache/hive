@@ -166,15 +166,18 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     // Extra bytes at the end?
     if (!extraFieldWarned && lastFieldByteEnd < structByteEnd) {
       extraFieldWarned = true;
-      LOG.warn("Extra bytes detected at the end of the row! Ignoring similar "
-          + "problems.");
+      LOG.warn("Extra bytes detected at the end of the row! " +
+           "Last field end " + lastFieldByteEnd + " and serialize buffer end " + structByteEnd + ". " +
+               "Ignoring similar problems.");
     }
 
     // Missing fields?
     if (!missingFieldWarned && lastFieldByteEnd > structByteEnd) {
       missingFieldWarned = true;
-      LOG.info("Missing fields! Expected " + fields.length + " fields but "
-          + "only got " + fieldId + "! Ignoring similar problems.");
+      LOG.info("Missing fields! Expected " + fields.length + " fields but " +
+              "only got " + fieldId + "! " +
+          "Last field end " + lastFieldByteEnd + " and serialize buffer end " + structByteEnd + ". " +
+          "Ignoring similar problems.");
     }
 
     Arrays.fill(fieldInited, false);
