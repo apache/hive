@@ -52,6 +52,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
+  private MessageType tableSchema;
 
   /**
    * From a string which columns names (including hive column), return a list
@@ -205,7 +206,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     if (columnNames != null) {
       List<String> columnNamesList = getColumnNames(columnNames);
 
-      MessageType tableSchema;
       if (indexAccess) {
         List<Integer> indexSequence = new ArrayList<Integer>();
 
@@ -229,6 +229,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
       return new ReadContext(requestedSchemaByUser, contextMetadata);
     } else {
+      tableSchema = fileSchema;
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, fileSchema.toString());
       return new ReadContext(fileSchema, contextMetadata);
     }
@@ -258,6 +259,11 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       metadata.put(key, String.valueOf(HiveConf.getBoolVar(
         configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
     }
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata);
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema,
+        metadata);
+  }
+
+  public MessageType getTableSchema() {
+    return tableSchema;
   }
 }

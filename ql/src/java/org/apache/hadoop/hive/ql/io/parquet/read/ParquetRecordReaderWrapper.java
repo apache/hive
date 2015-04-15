@@ -252,10 +252,10 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
       final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
 
-      final ReadContext readContext = new DataWritableReadSupport().init(new InitContext(jobConf,
+      DataWritableReadSupport readSupport = new DataWritableReadSupport();
+      final ReadContext readContext = readSupport.init(new InitContext(jobConf,
           null, fileMetaData.getSchema()));
-      schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-          .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
+      schemaSize = readSupport.getTableSchema().getFieldCount();
       final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
       final long splitStart = ((FileSplit) oldSplit).getStart();
       final long splitLength = ((FileSplit) oldSplit).getLength();
