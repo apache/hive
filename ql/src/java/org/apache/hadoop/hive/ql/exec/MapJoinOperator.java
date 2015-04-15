@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import static org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
 import static org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
@@ -229,8 +229,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
-      SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
- null);
+      SerDe keySerializer = (SerDe) ReflectionUtil.newInstance(
+          keyTableDesc.getDeserializerClass(), null);
       SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
       MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
       for (int pos = 0; pos < order.length; pos++) {
@@ -243,8 +243,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         } else {
           valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
         }
-        SerDe valueSerDe =
-            (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
+        SerDe valueSerDe = (SerDe) ReflectionUtil.newInstance(
+            valueTableDesc.getDeserializerClass(), null);
         SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
         MapJoinObjectSerDeContext valueContext =
             new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));

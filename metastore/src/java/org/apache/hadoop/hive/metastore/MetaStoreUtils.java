@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import javax.annotation.Nullable;
 
@@ -372,7 +372,7 @@ public class MetaStoreUtils {
       return null;
     }
     try {
-      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
+      Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
               asSubclass(Deserializer.class), conf);
       if (skipConfError) {
         SerDeUtils.initializeSerDeWithoutErrorCheck(deserializer, conf,
@@ -419,7 +419,7 @@ public class MetaStoreUtils {
       org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
     String lib = part.getSd().getSerdeInfo().getSerializationLib();
     try {
-      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
+      Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
         asSubclass(Deserializer.class), conf);
       SerDeUtils.initializeSerDe(deserializer, conf, MetaStoreUtils.getTableMetadata(table),
                                  MetaStoreUtils.getPartitionMetadata(part, table));

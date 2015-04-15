@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * ReduceWork represents all the information used to run a reduce task on the cluster.
@@ -114,7 +113,7 @@ public class ReduceWork extends BaseWork {
   private ObjectInspector getObjectInspector(TableDesc desc) {
     ObjectInspector objectInspector;
     try {
-      Deserializer deserializer = ReflectionUtils.newInstance(desc
+      Deserializer deserializer = ReflectionUtil.newInstance(desc
                 .getDeserializerClass(), null);
       SerDeUtils.initializeSerDe(deserializer, null, desc.getProperties(), null);
       objectInspector = deserializer.getObjectInspector();
