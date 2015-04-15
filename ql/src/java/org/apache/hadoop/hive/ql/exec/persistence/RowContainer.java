@@ -46,7 +46,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * Simple persistent container for rows.
@@ -213,8 +213,7 @@ public class RowContainer<ROW extends List<Object>>
         JobConf localJc = getLocalFSJobConfClone(jc);
         if (inputSplits == null) {
           if (this.inputFormat == null) {
-            // TODO: do we need to wrap here?
-            inputFormat = ReflectionUtils.newInstance(
+            inputFormat = ReflectionUtil.newInstance(
                 tblDesc.getInputFileFormatClass(), localJc);
           }
 

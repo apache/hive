@@ -52,8 +52,8 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
@@ -150,7 +150,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         boolean statsAvailable = false;
         for(FileStatus file: fileList) {
           if (!file.isDir()) {
-            InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtils.newInstance(
+            InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
                 partn.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
                 new String[] { partn.getLocation() });
@@ -249,7 +249,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
           for(FileStatus file: fileList) {
             if (!file.isDir()) {
               // TODO: do we need to wrap for Llap here? probably later when stats are cached?
-              InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtils.newInstance(
+              InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
                   table.getInputFormatClass(), jc);
               InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
                   .getDataLocation().toString() });

@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 public class JoinUtil {
 
@@ -268,7 +268,7 @@ public class JoinUtil {
     if (desc == null) {
       return null;
     }
-    SerDe sd = (SerDe) ReflectionUtils.newInstance(desc.getDeserializerClass(),
+    SerDe sd = (SerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
         null);
     try {
       SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
