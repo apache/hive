@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 
 /**
@@ -145,7 +147,19 @@ public final class MetaDataFormatUtils {
   }
 
   private static String convertToString(Decimal val) {
+    if (val == null) {
+      return "";
+    }
     return HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale()).toString();
+  }
+
+  private static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
+    if (val == null) {
+      return "";
+    }
+
+    DateWritable writableValue = new DateWritable((int) val.getDaysSinceEpoch());
+    return writableValue.toString();
   }
 
   private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
@@ -196,6 +210,12 @@ public final class MetaDataFormatUtils {
           LongColumnStatsData lcsd = csd.getLongStats();
           appendColumnStatsNoFormatting(colBuffer, lcsd.getLowValue(), lcsd.getHighValue(),
               lcsd.getNumNulls(), lcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetDateStats()) {
+          DateColumnStatsData dcsd = csd.getDateStats();
+          appendColumnStatsNoFormatting(colBuffer,
+              convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()),
+              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
         }
       } else {
         appendColumnStatsNoFormatting(colBuffer, "", "", "", "", "", "", "", "");
@@ -440,6 +460,12 @@ public final class MetaDataFormatUtils {
           LongColumnStatsData lcsd = csd.getLongStats();
           appendColumnStats(tableInfo, lcsd.getLowValue(), lcsd.getHighValue(), lcsd.getNumNulls(),
               lcsd.getNumDVs(), "", "", "", "");
+        } else if (csd.isSetDateStats()) {
+          DateColumnStatsData dcsd = csd.getDateStats();
+          appendColumnStats(tableInfo,
+              convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()),
+              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
         }
       } else {
         appendColumnStats(tableInfo, "", "", "", "", "", "", "", "");

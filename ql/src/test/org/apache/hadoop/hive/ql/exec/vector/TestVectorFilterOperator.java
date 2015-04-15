@@ -88,7 +88,7 @@ public class TestVectorFilterOperator {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext(columns);
+    VectorizationContext vc = new VectorizationContext("name", columns);
     FilterDesc fdesc = new FilterDesc();
     fdesc.setPredicate(col1Expr);
     return new VectorFilterOperator(vc, fdesc);
