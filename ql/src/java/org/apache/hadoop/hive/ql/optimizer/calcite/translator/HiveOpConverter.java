@@ -34,6 +34,7 @@ import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
+import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -167,8 +168,8 @@ public class HiveOpConverter {
       return visit((HiveSort) rn);
     } else if (rn instanceof HiveUnion) {
       return visit((HiveUnion) rn);
-    } else if (rn instanceof LogicalExchange) {
-      return visit((LogicalExchange) rn);
+    } else if (rn instanceof SortExchange) {
+      return visit((SortExchange) rn);
     } else if (rn instanceof HiveAggregate) {
       return visit((HiveAggregate) rn);
     }
@@ -472,7 +473,7 @@ public class HiveOpConverter {
     return inputs[0].clone(unionOp);
   }
 
-  OpAttr visit(LogicalExchange exchangeRel) throws SemanticException {
+  OpAttr visit(SortExchange exchangeRel) throws SemanticException {
     OpAttr inputOpAf = dispatch(exchangeRel.getInput());
 
     if (LOG.isDebugEnabled()) {
