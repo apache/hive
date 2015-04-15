@@ -59,7 +59,7 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * An util class for various Hive file format tasks.
@@ -274,7 +274,7 @@ public final class HiveFileFormatUtils {
 
   private static HiveOutputFormat<?, ?> getHiveOutputFormat(
       Configuration conf, Class<? extends OutputFormat> outputClass) throws HiveException {
-    OutputFormat<?, ?> outputFormat = ReflectionUtils.newInstance(outputClass, conf);
+    OutputFormat<?, ?> outputFormat = ReflectionUtil.newInstance(outputClass, conf);
     if (!(outputFormat instanceof HiveOutputFormat)) {
       outputFormat = new HivePassThroughOutputFormat(outputFormat);
     }

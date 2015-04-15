@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * serialize row by user specified serde and call toString() to make string type result
@@ -50,12 +50,13 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
     }
   }
 
+//TODO#: THIS
   private SerDe initializeSerde(Configuration conf, Properties props) throws Exception {
     String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
     Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,
         Utilities.getSessionSpecifiedClassLoader()).asSubclass(SerDe.class);
     // cast only needed for Hadoop 0.17 compatibility
-    SerDe serde = ReflectionUtils.newInstance(serdeClass, null);
+    SerDe serde = ReflectionUtil.newInstance(serdeClass, null);
 
     Properties serdeProps = new Properties();
     if (serde instanceof DelimitedJSONSerDe) {

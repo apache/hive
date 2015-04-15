@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * PartitionDesc.
@@ -136,7 +136,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   public Deserializer getDeserializer(Configuration conf) throws Exception {
     Properties schema = getProperties();
     String clazzName = getDeserializerClassName();
-    Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(clazzName)
+    Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(clazzName)
         .asSubclass(Deserializer.class), conf);
     SerDeUtils.initializeSerDe(deserializer, conf, getTableDesc().getProperties(), schema);
     return deserializer;
