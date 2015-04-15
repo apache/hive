@@ -83,18 +83,6 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
           TableScan
-            alias: p4
-            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_name is not null (type: boolean)
-              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: p_name (type: string)
-                sort order: +
-                Map-reduce partition columns: p_name (type: string)
-                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-          TableScan
             alias: p2
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
@@ -118,6 +106,18 @@ STAGE PLANS:
                 Map-reduce partition columns: p3_name (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: p3_partkey (type: int), p3_mfgr (type: string), p3_brand (type: string), p3_type (type: string), p3_size (type: int), p3_container (type: string), p3_retailprice (type: double), p3_comment (type: string)
+          TableScan
+            alias: p4
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_name is not null (type: boolean)
+              Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: p_name (type: string)
+                sort order: +
+                Map-reduce partition columns: p_name (type: string)
+                Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
