@@ -25,12 +25,14 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * GroupByDesc.
  *
  */
-@Explain(displayName = "Group By Operator")
+@Explain(displayName = "Group By Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class GroupByDesc extends AbstractOperatorDesc {
   /**
    * Group-by Mode: COMPLETE: complete 1-phase aggregation: iterate, terminate
@@ -156,7 +158,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.mode = mode;
   }
 
-  @Explain(displayName = "keys")
+  @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
   }
@@ -169,7 +171,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.keys = keys;
   }
 
-  @Explain(displayName = "outputColumnNames")
+  @Explain(displayName = "outputColumnNames", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -201,7 +203,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.memoryThreshold = memoryThreshold;
   }
 
-  @Explain(displayName = "aggregations")
+  @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getAggregatorStrings() {
     List<String> res = new ArrayList<String>();
     for (AggregationDesc agg: aggregators) {

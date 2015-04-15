@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * DropFunctionDesc.
  *
  */
-@Explain(displayName = "Drop Function")
+@Explain(displayName = "Drop Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -42,7 +44,7 @@ public class DropFunctionDesc implements Serializable {
     this.isTemp = isTemp;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getFunctionName() {
     return functionName;
   }

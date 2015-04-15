@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.session;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 
 import java.io.*;
@@ -36,10 +37,38 @@ public class OperationLog {
 
   private final String operationName;
   private final LogFile logFile;
+  private LoggingLevel opLoggingLevel = LoggingLevel.UNKNOWN;
 
-  public OperationLog(String name, File file) throws FileNotFoundException{
+  public static enum LoggingLevel {
+    NONE, EXECUTION, PERFORMANCE, VERBOSE, UNKNOWN
+  }
+
+  public OperationLog(String name, File file, HiveConf hiveConf) throws FileNotFoundException {
     operationName = name;
     logFile = new LogFile(file);
+
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      String logLevel = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
+      opLoggingLevel = getLoggingLevel(logLevel);
+    }
+  }
+
+  public static LoggingLevel getLoggingLevel (String mode) {
+    if (mode.equalsIgnoreCase("none")) {
+      return LoggingLevel.NONE;
+    } else if (mode.equalsIgnoreCase("execution")) {
+      return LoggingLevel.EXECUTION;
+    } else if (mode.equalsIgnoreCase("verbose")) {
+      return LoggingLevel.VERBOSE;
+    } else if (mode.equalsIgnoreCase("performance")) {
+      return LoggingLevel.PERFORMANCE;
+    } else {
+      return LoggingLevel.UNKNOWN;
+    }
+  }
+
+  public LoggingLevel getOpLoggingLevel() {
+    return opLoggingLevel;
   }
 
   /**

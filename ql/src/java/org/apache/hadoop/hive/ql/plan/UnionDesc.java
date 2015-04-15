@@ -17,13 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 
 /**
  * unionDesc is a empty class currently. However, union has more than one input
  * (as compared with forward), and therefore, we need a separate class.
  **/
-@Explain(displayName = "Union")
+@Explain(displayName = "Union", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UnionDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private transient int numInputs;

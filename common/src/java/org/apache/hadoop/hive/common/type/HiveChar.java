@@ -55,7 +55,7 @@ public class HiveChar extends HiveBaseChar
     return StringUtils.stripEnd(value, " ");
   }
 
-  protected String getPaddedValue() {
+  public String getPaddedValue() {
     return value;
   }
 

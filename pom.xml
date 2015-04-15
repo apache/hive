@@ -126,8 +126,8 @@
     <hbase.hadoop1.version>0.98.9-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.98.9-hadoop2</hbase.hadoop2.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.2.5</httpcomponents.client.version>
-    <httpcomponents.core.version>4.2.5</httpcomponents.core.version>
+    <httpcomponents.client.version>4.4</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
@@ -1085,6 +1085,16 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop-23.version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
           <dependency>
             <groupId>org.apache.hadoop</groupId>

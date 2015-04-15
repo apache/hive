@@ -213,6 +213,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
+  public void startPauseMonitor(Configuration conf) {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor = new org.apache.hadoop.util
+          .JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." + " GCs and Pauses may not be " +
+          "warned upon.", t);
+    }
+  }
+
+  @Override
   public boolean isLocalMode(Configuration conf) {
     return "local".equals(conf.get("mapreduce.framework.name"));
   }

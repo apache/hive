@@ -21,9 +21,11 @@ package org.apache.hive.hcatalog.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
@@ -63,6 +65,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.hcatalog.api.repl.HCatReplicationTaskIterator;
+import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -71,6 +75,8 @@ import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 /**
  * The HCatClientHMSImpl is the Hive Metastore client based implementation of
@@ -567,33 +573,35 @@ public class HCatClientHMSImpl extends HCatClient {
         && "TRUE".equalsIgnoreCase(table.getParameters().get("EXTERNAL"));
   }
 
-  private void dropPartitionsUsingExpressions(Table table, Map<String, String> partitionSpec, boolean ifExists)
-    throws SemanticException, TException {
+  private void dropPartitionsUsingExpressions(Table table, Map<String, String> partitionSpec,
+                                              boolean ifExists, boolean deleteData)
+      throws SemanticException, TException {
     LOG.info("HCatClient: Dropping partitions using partition-predicate Expressions.");
     ExprNodeGenericFuncDesc partitionExpression = new ExpressionBuilder(table, partitionSpec).build();
     ObjectPair<Integer, byte[]> serializedPartitionExpression =
         new ObjectPair<Integer, byte[]>(partitionSpec.size(),
             Utilities.serializeExpressionToKryo(partitionExpression));
     hmsClient.dropPartitions(table.getDbName(), table.getTableName(), Arrays.asList(serializedPartitionExpression),
-        !isExternal(table),  // Delete data?
-        false,               // Ignore Protection?
-        ifExists,            // Fail if table doesn't exist?
-        false);              // Need results back?
+        deleteData && !isExternal(table),  // Delete data?
+        false,                             // Ignore Protection?
+        ifExists,                          // Fail if table doesn't exist?
+        false);                            // Need results back?
   }
 
   private void dropPartitionsIteratively(String dbName, String tableName,
-                                         Map<String, String> partitionSpec, boolean ifExists) throws HCatException, TException {
+                                         Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
+      throws HCatException, TException {
     LOG.info("HCatClient: Dropping partitions iteratively.");
     List<Partition> partitions = hmsClient.listPartitionsByFilter(dbName, tableName,
         getFilterString(partitionSpec), (short) -1);
     for (Partition partition : partitions) {
-      dropPartition(partition, ifExists);
+      dropPartition(partition, ifExists, deleteData);
     }
   }
 
   @Override
   public void dropPartitions(String dbName, String tableName,
-                 Map<String, String> partitionSpec, boolean ifExists)
+                 Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
     throws HCatException {
     LOG.info("HCatClient dropPartitions(db=" + dbName + ",table=" + tableName + ", partitionSpec: ["+ partitionSpec + "]).");
     try {
@@ -602,17 +610,17 @@ public class HCatClientHMSImpl extends HCatClient {
 
       if (hiveConfig.getBoolVar(HiveConf.ConfVars.METASTORE_CLIENT_DROP_PARTITIONS_WITH_EXPRESSIONS)) {
         try {
-          dropPartitionsUsingExpressions(table, partitionSpec, ifExists);
+          dropPartitionsUsingExpressions(table, partitionSpec, ifExists, deleteData);
         }
         catch (SemanticException parseFailure) {
           LOG.warn("Could not push down partition-specification to back-end, for dropPartitions(). Resorting to iteration.",
               parseFailure);
-          dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists);
+          dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists, deleteData);
         }
       }
       else {
         // Not using expressions.
-        dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists);
+        dropPartitionsIteratively(dbName, tableName, partitionSpec, ifExists, deleteData);
       }
     } catch (NoSuchObjectException e) {
       throw new ObjectNotFoundException(
@@ -627,10 +635,16 @@ public class HCatClientHMSImpl extends HCatClient {
     }
   }
 
-  private void dropPartition(Partition partition, boolean ifExists)
+  @Override
+  public void dropPartitions(String dbName, String tableName,
+                             Map<String, String> partitionSpec, boolean ifExists) throws HCatException {
+    dropPartitions(dbName, tableName, partitionSpec, ifExists, true);
+  }
+
+  private void dropPartition(Partition partition, boolean ifExists, boolean deleteData)
     throws HCatException, MetaException, TException {
     try {
-      hmsClient.dropPartition(partition.getDbName(), partition.getTableName(), partition.getValues());
+      hmsClient.dropPartition(partition.getDbName(), partition.getTableName(), partition.getValues(), deleteData);
     } catch (NoSuchObjectException e) {
       if (!ifExists) {
         throw new ObjectNotFoundException(
@@ -965,18 +979,27 @@ public class HCatClientHMSImpl extends HCatClient {
   }
 
   @Override
+  public Iterator<ReplicationTask> getReplicationTasks(
+      long lastEventId, int maxEvents, String dbName, String tableName) throws HCatException {
+    return new HCatReplicationTaskIterator(this,lastEventId,maxEvents,dbName,tableName);
+  }
+
+  @Override
   public List<HCatNotificationEvent> getNextNotification(long lastEventId, int maxEvents,
                                                          IMetaStoreClient.NotificationFilter filter)
       throws HCatException {
     try {
-      List<HCatNotificationEvent> events = new ArrayList<HCatNotificationEvent>();
       NotificationEventResponse rsp = hmsClient.getNextNotification(lastEventId, maxEvents, filter);
       if (rsp != null && rsp.getEvents() != null) {
-        for (NotificationEvent event : rsp.getEvents()) {
-          events.add(new HCatNotificationEvent(event));
-        }
+        return Lists.transform(rsp.getEvents(), new Function<NotificationEvent, HCatNotificationEvent>() {
+          @Override
+          public HCatNotificationEvent apply(@Nullable NotificationEvent notificationEvent) {
+            return new HCatNotificationEvent(notificationEvent);
+          }
+        });
+      } else {
+        return new ArrayList<HCatNotificationEvent>();
       }
-      return events;
     } catch (TException e) {
       throw new ConnectionFailureException("TException while getting notifications", e);
     }

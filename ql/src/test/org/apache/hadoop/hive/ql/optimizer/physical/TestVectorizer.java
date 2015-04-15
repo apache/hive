@@ -52,7 +52,7 @@ public class TestVectorizer {
     columns.add("col3");
 
     //Generate vectorized expression
-    vContext = new VectorizationContext(columns);
+    vContext = new VectorizationContext("name", columns);
   }
 
   @Description(name = "fake", value = "FAKE")

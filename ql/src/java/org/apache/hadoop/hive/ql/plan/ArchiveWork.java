@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ArchiveWork.
  *
  */
-@Explain(displayName = "Map Reduce")
+@Explain(displayName = "Map Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ArchiveWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private ArchiveActionType type;

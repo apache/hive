@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
@@ -81,6 +83,10 @@ public class HCatBaseTest {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
+
+    if (Shell.WINDOWS) {
+      WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
+    }
   }
 
   protected void logAndRegister(PigServer server, String query) throws IOException {

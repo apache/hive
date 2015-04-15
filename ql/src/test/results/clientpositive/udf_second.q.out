@@ -2,14 +2,16 @@ PREHOOK: query: DESCRIBE FUNCTION second
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION second
 POSTHOOK: type: DESCFUNCTION
-second(date) - Returns the second of date
+second(date) - Returns the second component of the string/timestamp/interval
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED second
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED second
 POSTHOOK: type: DESCFUNCTION
-second(date) - Returns the second of date
-date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
-Example:
+second(date) - Returns the second component of the string/timestamp/interval
+param can be one of:
+1. A string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
+2. A timestamp value
+3. A day-time interval valueExample:
    > SELECT second('2009-07-30 12:58:59') FROM src LIMIT 1;
   59
   > SELECT second('12:58:59') FROM src LIMIT 1;

@@ -8,7 +8,7 @@ insert into table acid_utt select cint, cast(cstring1 as varchar(128)) from allt
 
 select a,b from acid_utt order by a;
 
-update acid_utt set b = 'fred' where b = '0ruyd6Y50JpdGRf6HqD';
+update acid_utt set a = 'fred' where b = '0ruyd6Y50JpdGRf6HqD';
 
 select * from acid_utt order by a;
 

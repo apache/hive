@@ -190,6 +190,7 @@ public class VectorizedRowBatch implements Writable {
    *  - sets size to 0
    *  - sets endOfFile to false
    *  - resets each column
+   *  - inits each column
    */
   public void reset() {
     selectedInUse = false;
@@ -198,6 +199,7 @@ public class VectorizedRowBatch implements Writable {
     for (ColumnVector vc : cols) {
       if (vc != null) {
         vc.reset();
+        vc.init();
       }
     }
   }

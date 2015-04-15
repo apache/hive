@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Create Role")
+
+@Explain(displayName = "Create Role", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class RoleDDLDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -108,12 +110,12 @@ public class RoleDDLDesc extends DDLDesc implements Serializable {
     this.roleOwnerName = roleOwnerName;
   }
 
-  @Explain(displayName = "name")
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
   }
 
-  @Explain(displayName = "role operation")
+  @Explain(displayName = "role operation", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public RoleOperation getOperation() {
     return operation;
   }

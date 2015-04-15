@@ -3404,13 +3404,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
       throws HiveException {
-    List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
-    StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
+      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = alterTbl.getNewCols();
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
       if (serializationLib.equals(
@@ -3437,6 +3437,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setCols(oldCols);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
+      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
       String oldName = alterTbl.getOldColName();
@@ -3499,6 +3501,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       sd.setCols(newCols);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
       if (serializationLib.equals(
@@ -3523,8 +3526,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().getParameters().remove(keyItr.next());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       String serdeName = alterTbl.getSerdeName();
       sd.getSerdeInfo().setSerializationLib(serdeName);
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
@@ -3539,6 +3544,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       sd.setInputFormat(alterTbl.getInputFormat());
       sd.setOutputFormat(alterTbl.getOutputFormat());
       if (alterTbl.getSerdeName() != null) {
@@ -3559,6 +3565,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.setProtectMode(mode);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
           .getCols());
@@ -3583,6 +3590,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setSortCols(alterTbl.getSortColumns());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
+      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       String newLocation = alterTbl.getNewLocation();
       try {
         URI locUri = new URI(newLocation);

@@ -633,7 +633,7 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
                 struct.partitionnames = new ArrayList<String>(_list492.size);
                 for (int _i493 = 0; _i493 < _list492.size; ++_i493)
                 {
-                  String _elem494; // required
+                  String _elem494; // optional
                   _elem494 = iprot.readString();
                   struct.partitionnames.add(_elem494);
                 }
@@ -725,7 +725,7 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         struct.partitionnames = new ArrayList<String>(_list497.size);
         for (int _i498 = 0; _i498 < _list497.size; ++_i498)
         {
-          String _elem499; // required
+          String _elem499; // optional
           _elem499 = iprot.readString();
           struct.partitionnames.add(_elem499);
         }

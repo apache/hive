@@ -18,11 +18,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ORC fast file merge operator descriptor.
  */
-@Explain(displayName = "ORC File Merge Operator")
+@Explain(displayName = "ORC File Merge Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class OrcFileMergeDesc extends FileMergeDesc {
   
   public OrcFileMergeDesc() {

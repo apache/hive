@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -148,7 +149,7 @@ public class RexNodeConverter {
       // This may happen for schema-less tables, where columns are dynamically
       // supplied by serdes.
       throw new CalciteSemanticException("Unexpected rexnode : "
-          + rexNode.getClass().getCanonicalName());
+          + rexNode.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
     }
   }
 
@@ -352,7 +353,7 @@ public class RexNodeConverter {
         // For now, we will not run CBO in the presence of invalid decimal
         // literals.
         throw new CalciteSemanticException("Expression " + literal.getExprString()
-            + " is not a valid decimal");
+            + " is not a valid decimal", UnsupportedFeature.Invalid_decimal);
         // TODO: return createNullLiteral(literal);
       }
       BigDecimal bd = (BigDecimal) value;

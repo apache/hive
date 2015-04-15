@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import org.apache.hive.service.cli.Type;
 
 /**
  * HiveResultSetMetaData.
@@ -43,9 +44,13 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
+  private Type getHiveType(int column) throws SQLException {
+    return JdbcColumn.typeStringToHiveType(columnTypes.get(toZeroIndex(column)));
+  }
+
   public String getColumnClassName(int column) throws SQLException {
-    int columnType = getColumnType(column);
-    return JdbcColumn.columnClassName(columnType, columnAttributes.get(toZeroIndex(column)));
+    return JdbcColumn.columnClassName(getHiveType(column),
+        columnAttributes.get(toZeroIndex(column)));
   }
 
   public int getColumnCount() throws SQLException {
@@ -53,9 +58,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public int getColumnDisplaySize(int column) throws SQLException {
-    int columnType = getColumnType(column);
-
-    return JdbcColumn.columnDisplaySize(columnType, columnAttributes.get(toZeroIndex(column)));
+    return JdbcColumn.columnDisplaySize(getHiveType(column),
+        columnAttributes.get(toZeroIndex(column)));
   }
 
   public String getColumnLabel(int column) throws SQLException {
@@ -79,15 +83,13 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public int getPrecision(int column) throws SQLException {
-    int columnType = getColumnType(column);
-
-    return JdbcColumn.columnPrecision(columnType, columnAttributes.get(toZeroIndex(column)));
+    return JdbcColumn.columnPrecision(getHiveType(column),
+        columnAttributes.get(toZeroIndex(column)));
   }
 
   public int getScale(int column) throws SQLException {
-    int columnType = getColumnType(column);
-
-    return JdbcColumn.columnScale(columnType, columnAttributes.get(toZeroIndex(column)));
+    return JdbcColumn.columnScale(getHiveType(column),
+        columnAttributes.get(toZeroIndex(column)));
   }
 
   public String getSchemaName(int column) throws SQLException {

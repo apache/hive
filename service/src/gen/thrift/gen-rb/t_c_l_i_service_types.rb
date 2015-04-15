@@ -14,8 +14,9 @@ module TProtocolVersion
   HIVE_CLI_SERVICE_PROTOCOL_V5 = 4
   HIVE_CLI_SERVICE_PROTOCOL_V6 = 5
   HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
-  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7"}
-  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7]).freeze
+  HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
+  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7", 7 => "HIVE_CLI_SERVICE_PROTOCOL_V8"}
+  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7, HIVE_CLI_SERVICE_PROTOCOL_V8]).freeze
 end
 
 module TTypeId
@@ -39,8 +40,10 @@ module TTypeId
   DATE_TYPE = 17
   VARCHAR_TYPE = 18
   CHAR_TYPE = 19
-  VALUE_MAP = {0 => "BOOLEAN_TYPE", 1 => "TINYINT_TYPE", 2 => "SMALLINT_TYPE", 3 => "INT_TYPE", 4 => "BIGINT_TYPE", 5 => "FLOAT_TYPE", 6 => "DOUBLE_TYPE", 7 => "STRING_TYPE", 8 => "TIMESTAMP_TYPE", 9 => "BINARY_TYPE", 10 => "ARRAY_TYPE", 11 => "MAP_TYPE", 12 => "STRUCT_TYPE", 13 => "UNION_TYPE", 14 => "USER_DEFINED_TYPE", 15 => "DECIMAL_TYPE", 16 => "NULL_TYPE", 17 => "DATE_TYPE", 18 => "VARCHAR_TYPE", 19 => "CHAR_TYPE"}
-  VALID_VALUES = Set.new([BOOLEAN_TYPE, TINYINT_TYPE, SMALLINT_TYPE, INT_TYPE, BIGINT_TYPE, FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, TIMESTAMP_TYPE, BINARY_TYPE, ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, USER_DEFINED_TYPE, DECIMAL_TYPE, NULL_TYPE, DATE_TYPE, VARCHAR_TYPE, CHAR_TYPE]).freeze
+  INTERVAL_YEAR_MONTH_TYPE = 20
+  INTERVAL_DAY_TIME_TYPE = 21
+  VALUE_MAP = {0 => "BOOLEAN_TYPE", 1 => "TINYINT_TYPE", 2 => "SMALLINT_TYPE", 3 => "INT_TYPE", 4 => "BIGINT_TYPE", 5 => "FLOAT_TYPE", 6 => "DOUBLE_TYPE", 7 => "STRING_TYPE", 8 => "TIMESTAMP_TYPE", 9 => "BINARY_TYPE", 10 => "ARRAY_TYPE", 11 => "MAP_TYPE", 12 => "STRUCT_TYPE", 13 => "UNION_TYPE", 14 => "USER_DEFINED_TYPE", 15 => "DECIMAL_TYPE", 16 => "NULL_TYPE", 17 => "DATE_TYPE", 18 => "VARCHAR_TYPE", 19 => "CHAR_TYPE", 20 => "INTERVAL_YEAR_MONTH_TYPE", 21 => "INTERVAL_DAY_TIME_TYPE"}
+  VALID_VALUES = Set.new([BOOLEAN_TYPE, TINYINT_TYPE, SMALLINT_TYPE, INT_TYPE, BIGINT_TYPE, FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, TIMESTAMP_TYPE, BINARY_TYPE, ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, USER_DEFINED_TYPE, DECIMAL_TYPE, NULL_TYPE, DATE_TYPE, VARCHAR_TYPE, CHAR_TYPE, INTERVAL_YEAR_MONTH_TYPE, INTERVAL_DAY_TIME_TYPE]).freeze
 end
 
 module TStatusCode
@@ -947,7 +950,7 @@ class TOpenSessionReq
   CONFIGURATION = 4
 
   FIELDS = {
-    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     6, :enum_class => ::TProtocolVersion},
+    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     7, :enum_class => ::TProtocolVersion},
     USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username', :optional => true},
     PASSWORD => {:type => ::Thrift::Types::STRING, :name => 'password', :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
@@ -974,7 +977,7 @@ class TOpenSessionResp
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
-    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     6, :enum_class => ::TProtocolVersion},
+    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     7, :enum_class => ::TProtocolVersion},
     SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle, :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }

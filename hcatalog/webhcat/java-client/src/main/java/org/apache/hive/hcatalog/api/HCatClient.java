@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.api;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 
@@ -379,6 +381,24 @@ public abstract class HCatClient {
     throws HCatException;
 
   /**
+   * Drops partition(s) that match the specified (and possibly partial) partition specification.
+   * A partial partition-specification is one where not all partition-keys have associated values. For example,
+   * for a table ('myDb.myTable') with 2 partition keys (dt string, region string),
+   * if for each dt ('20120101', '20120102', etc.) there can exist 3 regions ('us', 'uk', 'in'), then,
+   *  1. Complete partition spec: dropPartitions('myDb', 'myTable', {dt='20120101', region='us'}) would drop 1 partition.
+   *  2. Partial  partition spec: dropPartitions('myDb', 'myTable', {dt='20120101'}) would drop all 3 partitions,
+   *                              with dt='20120101' (i.e. region = 'us', 'uk' and 'in').
+   * @param dbName The database name.
+   * @param tableName The table name.
+   * @param partitionSpec The partition specification, {[col_name,value],[col_name2,value2]}.
+   * @param ifExists Hive returns an error if the partition specified does not exist, unless ifExists is set to true.
+   * @param deleteData Whether to delete the underlying data.
+   * @throws HCatException,ConnectionFailureException
+   */
+   public abstract void dropPartitions(String dbName, String tableName,
+                    Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
+    throws HCatException;
+  /**
    * List partitions by filter.
    *
    * @param dbName The database name.
@@ -466,6 +486,23 @@ public abstract class HCatClient {
    * By default, this is set to <db-name>.<table-name>. Returns null when not set.
    */
   public abstract String getMessageBusTopicName(String dbName, String tableName) throws HCatException;
+
+
+  /**
+   * Get an iterator that iterates over a list of replication tasks needed to replicate all the
+   * events that have taken place for a given db/table.
+   * @param lastEventId : The last event id that was processed for this reader. The returned
+   *                    replication tasks will start from this point forward
+   * @param maxEvents : Maximum number of events to consider for generating the
+   *                  replication tasks. If < 1, then all available events will be considered.
+   * @param dbName : The database name for which we're interested in the events for.
+   * @param tableName : The table name for which we're interested in the events for - if null,
+   *                  then this function will behave as if it were running at a db level.
+   * @return an iterator over a list of replication events that can be processed one by one.
+   * @throws HCatException
+   */
+  public abstract Iterator<ReplicationTask> getReplicationTasks(
+      long lastEventId, int maxEvents, String dbName, String tableName) throws HCatException;
 
   /**
    * Get a list of notifications

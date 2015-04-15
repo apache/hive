@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ShowTableStatusDesc.
  *
  */
-@Explain(displayName = "Show Table Status")
+@Explain(displayName = "Show Table Status", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
@@ -108,7 +110,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
     return resFile;
   }
 
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFileString() {
     return getResFile();
   }
@@ -124,7 +126,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   /**
    * @return the database name
    */
-  @Explain(displayName = "database")
+  @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbName() {
     return dbName;
   }
@@ -140,7 +142,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   /**
    * @return the partSpec
    */
-  @Explain(displayName = "partition")
+  @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public HashMap<String, String> getPartSpec() {
     return partSpec;
   }

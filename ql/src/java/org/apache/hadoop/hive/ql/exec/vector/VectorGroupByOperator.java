@@ -766,8 +766,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
-    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
-    vOutContext.setFileKey(vContext.getFileKey() + "/_GROUPBY_");
+    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
   }
 
   public VectorGroupByOperator() {

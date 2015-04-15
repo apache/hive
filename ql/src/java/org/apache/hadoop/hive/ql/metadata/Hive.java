@@ -141,6 +141,9 @@ public class Hive {
   private IMetaStoreClient metaStoreClient;
   private UserGroupInformation owner;
 
+  // metastore calls timing information
+  private final Map<String, Long> metaCallTimeMap = new HashMap<String, Long>();
+
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
     protected synchronized Hive initialValue() {
@@ -2980,7 +2983,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       };
-    return RetryingMetaStoreClient.getProxy(conf, hookLoader,
+    return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
         SessionHiveMetaStoreClient.class.getName());
   }
 
@@ -3240,4 +3243,37 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(te);
     }
   }
+
+  public void clearMetaCallTiming() {
+    metaCallTimeMap.clear();
+  }
+
+  public void dumpAndClearMetaCallTiming(String phase) {
+    boolean phaseInfoLogged = false;
+    if (LOG.isDebugEnabled()) {
+      phaseInfoLogged = logDumpPhase(phase);
+      LOG.debug("Total time spent in each metastore function (ms): " + metaCallTimeMap);
+    }
+
+    if (LOG.isInfoEnabled()) {
+      // print information about calls that took longer time at INFO level
+      for (Entry<String, Long> callTime : metaCallTimeMap.entrySet()) {
+        // dump information if call took more than 1 sec (1000ms)
+        if (callTime.getValue() > 1000) {
+          if (!phaseInfoLogged) {
+            phaseInfoLogged = logDumpPhase(phase);
+          }
+          LOG.info("Total time spent in this metastore function was greater than 1000ms : "
+              + callTime);
+        }
+      }
+    }
+    metaCallTimeMap.clear();
+  }
+
+  private boolean logDumpPhase(String phase) {
+    LOG.info("Dumping metastore api call timing information for : " + phase + " phase");
+    return true;
+  }
+
 };

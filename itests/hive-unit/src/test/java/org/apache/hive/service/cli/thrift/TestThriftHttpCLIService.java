@@ -160,7 +160,7 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
     String httpUrl = transportMode + "://" + host + ":" + port +
         "/" + thriftHttpPath + "/";
     httpClient.addRequestInterceptor(
-        new HttpBasicAuthInterceptor(USERNAME, PASSWORD));
+        new HttpBasicAuthInterceptor(USERNAME, PASSWORD, null, null));
     return new THttpClient(httpUrl, httpClient);
   }
 

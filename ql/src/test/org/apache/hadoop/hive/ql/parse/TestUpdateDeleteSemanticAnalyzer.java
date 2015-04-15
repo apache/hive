@@ -17,15 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -44,7 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestUpdateDeleteSemanticAnalyzer {
@@ -135,7 +131,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateAllNonPartitioned() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update T set a = 5", "testUpdateAllNonPartitioned");
+      ReturnInfo rc = parseAndAnalyze("update T set b = 5", "testUpdateAllNonPartitioned");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
       cleanupTables();
@@ -145,7 +141,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateAllNonPartitionedWhere() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update T set a = 5 where b > 5",
+      ReturnInfo rc = parseAndAnalyze("update T set b = 5 where b > 5",
           "testUpdateAllNonPartitionedWhere");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
@@ -156,7 +152,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateAllPartitioned() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update U set a = 5", "testUpdateAllPartitioned");
+      ReturnInfo rc = parseAndAnalyze("update U set b = 5", "testUpdateAllPartitioned");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
       cleanupTables();
@@ -166,7 +162,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateAllPartitionedWhere() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update U set a = 5 where b > 5",
+      ReturnInfo rc = parseAndAnalyze("update U set b = 5 where b > 5",
           "testUpdateAllPartitionedWhere");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
@@ -177,7 +173,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateOnePartition() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update U set a = 5 where ds = 'today'",
+      ReturnInfo rc = parseAndAnalyze("update U set b = 5 where ds = 'today'",
           "testUpdateOnePartition");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
@@ -188,7 +184,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   @Test
   public void testUpdateOnePartitionWhere() throws Exception {
     try {
-      ReturnInfo rc = parseAndAnalyze("update U set a = 5 where ds = 'today' and b > 5",
+      ReturnInfo rc = parseAndAnalyze("update U set b = 5 where ds = 'today' and b > 5",
           "testUpdateOnePartitionWhere");
       LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
     } finally {
@@ -266,7 +262,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     db = sem.getDb();
 
     // I have to create the tables here (rather than in setup()) because I need the Hive
-    // connection, which is conviently created by the semantic analyzer.
+    // connection, which is conveniently created by the semantic analyzer.
     Map<String, String> params = new HashMap<String, String>(1);
     params.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
     db.createTable("T", Arrays.asList("a", "b"), null, OrcInputFormat.class,
@@ -297,7 +293,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     fs.create(tmp);
     fs.deleteOnExit(tmp);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false);
+        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(conf, plan, null);

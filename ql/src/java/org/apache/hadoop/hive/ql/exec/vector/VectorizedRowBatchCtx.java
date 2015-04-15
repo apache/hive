@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -174,9 +173,8 @@ public class VectorizedRowBatchCtx {
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
 
     String partitionPath = split.getPath().getParent().toString();
-    scratchColumnTypeMap = Utilities
-        .getMapWorkAllScratchColumnVectorTypeMaps(hiveConf)
-        .get(partitionPath);
+    scratchColumnTypeMap = Utilities.getMapWorkVectorScratchColumnTypeMap(hiveConf);
+    // LOG.info("VectorizedRowBatchCtx init scratchColumnTypeMap " + scratchColumnTypeMap.toString());
 
     Properties partProps =
         (part.getPartSpec() == null || part.getPartSpec().isEmpty()) ?
@@ -629,7 +627,7 @@ public class VectorizedRowBatchCtx {
       for (int i = origNumCols; i < newNumCols; i++) {
        String typeName = scratchColumnTypeMap.get(i);
        if (typeName == null) {
-         throw new HiveException("No type found for column type entry " + i);
+         throw new HiveException("No type entry found for column " + i + " in map " + scratchColumnTypeMap.toString());
        }
         vrb.cols[i] = allocateColumnVector(typeName,
             VectorizedRowBatch.DEFAULT_SIZE);
@@ -644,7 +642,7 @@ public class VectorizedRowBatchCtx {
    * @param decimalType The given decimal type string.
    * @return An integer array of size 2 with first element set to precision and second set to scale.
    */
-  private int[] getScalePrecisionFromDecimalType(String decimalType) {
+  private static int[] getScalePrecisionFromDecimalType(String decimalType) {
     Pattern p = Pattern.compile("\\d+");
     Matcher m = p.matcher(decimalType);
     m.find();
@@ -655,7 +653,7 @@ public class VectorizedRowBatchCtx {
     return precScale;
   }
 
-  private ColumnVector allocateColumnVector(String type, int defaultSize) {
+  public static ColumnVector allocateColumnVector(String type, int defaultSize) {
     if (type.equalsIgnoreCase("double")) {
       return new DoubleColumnVector(defaultSize);
     } else if (VectorizationContext.isStringFamily(type)) {

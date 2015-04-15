@@ -165,9 +165,11 @@ create_publish_file() {
 
 if patch_contains_hms_upgrade "$PATCH_URL"; then
 	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_HOST "
-		rm -rf metastore/ &&
-		svn co http://svn.apache.org/repos/asf/hive/$BRANCH/testutils/metastore metastore &&
-		sudo bash -x metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\" --branch $BRANCH
+		rm -rf hive/ &&
+		svn co http://svn.apache.org/repos/asf/hive/$BRANCH hive &&
+		cd hive/ &&
+		curl ${PATCH_URL} | bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh - &&
+		sudo bash -x testutils/metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\" --branch $BRANCH
 	"
 	BUILD_STATUS=$?
 	if [[ $BUILD_STATUS = 0 ]]; then

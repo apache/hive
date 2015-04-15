@@ -125,6 +125,7 @@ max
 min
 minute
 month
+months_between
 named_struct
 negative
 next_day
@@ -326,6 +327,7 @@ max
 min
 minute
 month
+months_between
 xpath
 xpath_boolean
 xpath_double

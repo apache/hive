@@ -182,14 +182,14 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   {
     this();
     this.values = values;
-    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
-    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+    this.dbName = dbName;
+    this.tableName = tableName;
     this.createTime = createTime;
     setCreateTimeIsSet(true);
     this.lastAccessTime = lastAccessTime;
     setLastAccessTimeIsSet(true);
     this.sd = sd;
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = parameters;
   }
 
   /**
@@ -205,10 +205,10 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
       this.values = __this__values;
     }
     if (other.isSetDbName()) {
-      this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(other.dbName);
+      this.dbName = other.dbName;
     }
     if (other.isSetTableName()) {
-      this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(other.tableName);
+      this.tableName = other.tableName;
     }
     this.createTime = other.createTime;
     this.lastAccessTime = other.lastAccessTime;
@@ -222,9 +222,9 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__parameters_copy_key = org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
+        String __this__parameters_copy_key = other_element_key;
 
-        String __this__parameters_copy_value = org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
+        String __this__parameters_copy_value = other_element_value;
 
         __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
       }
@@ -296,7 +296,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setDbName(String dbName) {
-    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
+    this.dbName = dbName;
   }
 
   public void unsetDbName() {
@@ -319,7 +319,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setTableName(String tableName) {
-    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+    this.tableName = tableName;
   }
 
   public void unsetTableName() {
@@ -420,7 +420,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = parameters;
   }
 
   public void unsetParameters() {
@@ -945,7 +945,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
                 struct.values = new ArrayList<String>(_list208.size);
                 for (int _i209 = 0; _i209 < _list208.size; ++_i209)
                 {
-                  String _elem210; // required
+                  String _elem210; // optional
                   _elem210 = iprot.readString();
                   struct.values.add(_elem210);
                 }
@@ -1184,7 +1184,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           struct.values = new ArrayList<String>(_list219.size);
           for (int _i220 = 0; _i220 < _list219.size; ++_i220)
           {
-            String _elem221; // required
+            String _elem221; // optional
             _elem221 = iprot.readString();
             struct.values.add(_elem221);
           }

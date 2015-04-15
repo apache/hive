@@ -266,7 +266,7 @@ public class TestJdbcWithMiniHS2 {
 
     // Set some conf parameters
     String hiveConf = "hive.cli.print.header=true;hive.server2.async.exec.shutdown.timeout=20;"
-        + "hive.server2.async.exec.threads=30;hive.server2.thrift.http.max.worker.threads=15";
+        + "hive.server2.async.exec.threads=30;hive.server2.thrift.max.worker.threads=15";
     // Set some conf vars
     String hiveVar = "stab=salesTable;icol=customerID";
     String jdbcUri = miniHS2.getJdbcURL() + "?" + hiveConf + "#" + hiveVar;
@@ -284,7 +284,7 @@ public class TestJdbcWithMiniHS2 {
     verifyConfProperty(stmt, "hive.cli.print.header", "true");
     verifyConfProperty(stmt, "hive.server2.async.exec.shutdown.timeout", "20");
     verifyConfProperty(stmt, "hive.server2.async.exec.threads", "30");
-    verifyConfProperty(stmt, "hive.server2.thrift.http.max.worker.threads",
+    verifyConfProperty(stmt, "hive.server2.thrift.max.worker.threads",
         "15");
     verifyConfProperty(stmt, "stab", "salesTable");
     verifyConfProperty(stmt, "icol", "customerID");

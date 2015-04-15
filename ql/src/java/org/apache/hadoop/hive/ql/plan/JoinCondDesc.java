@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * Join conditions Descriptor implementation.
@@ -107,7 +109,7 @@ public class JoinCondDesc implements Serializable {
     this.type = type;
   }
 
-  @Explain
+  @Explain(explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getJoinCondString() {
     StringBuilder sb = new StringBuilder();
 

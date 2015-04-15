@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * UnlockDatabaseDesc.
  *
  */
-@Explain(displayName = "Unlock Database")
+@Explain(displayName = "Unlock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UnlockDatabaseDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -34,7 +36,7 @@ public class UnlockDatabaseDesc extends DDLDesc implements Serializable {
     this.databaseName = databaseName;
   }
 
-  @Explain(displayName = "database")
+  @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
   }

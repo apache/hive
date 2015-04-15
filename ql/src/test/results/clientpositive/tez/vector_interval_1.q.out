@@ -1,0 +1,822 @@
+PREHOOK: query: drop table if exists vector_interval_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists vector_interval_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table vector_interval_1 (ts timestamp, dt date, str1 string, str2 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_interval_1
+POSTHOOK: query: create table vector_interval_1 (ts timestamp, dt date, str1 string, str2 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_interval_1
+PREHOOK: query: insert into vector_interval_1
+  select timestamp '2001-01-01 01:02:03', date '2001-01-01', '1-2', '1 2:3:4' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@vector_interval_1
+POSTHOOK: query: insert into vector_interval_1
+  select timestamp '2001-01-01 01:02:03', date '2001-01-01', '1-2', '1 2:3:4' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@vector_interval_1
+POSTHOOK: Lineage: vector_interval_1.dt SIMPLE []
+POSTHOOK: Lineage: vector_interval_1.str1 SIMPLE []
+POSTHOOK: Lineage: vector_interval_1.str2 SIMPLE []
+POSTHOOK: Lineage: vector_interval_1.ts SIMPLE []
+PREHOOK: query: insert into vector_interval_1
+  select null, null, null, null from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@vector_interval_1
+POSTHOOK: query: insert into vector_interval_1
+  select null, null, null, null from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@vector_interval_1
+POSTHOOK: Lineage: vector_interval_1.dt EXPRESSION []
+POSTHOOK: Lineage: vector_interval_1.str1 EXPRESSION []
+POSTHOOK: Lineage: vector_interval_1.str2 EXPRESSION []
+POSTHOOK: Lineage: vector_interval_1.ts EXPRESSION []
+PREHOOK: query: -- constants/cast from string
+explain
+select
+  str1,
+  interval '1-2' year to month, interval_year_month(str1),
+  interval '1 2:3:4' day to second, interval_day_time(str2)
+from vector_interval_1 order by str1
+PREHOOK: type: QUERY
+POSTHOOK: query: -- constants/cast from string
+explain
+select
+  str1,
+  interval '1-2' year to month, interval_year_month(str1),
+  interval '1 2:3:4' day to second, interval_day_time(str2)
+from vector_interval_1 order by str1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: str1 (type: string), 1-2 (type: interval_year_month), CAST( str1 AS INTERVAL YEAR TO MONTH) (type: interval_year_month), 1 02:03:04.000000000 (type: interval_day_time), CAST( str2 AS INTERVAL DAY TO SECOND) (type: interval_day_time)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_year_month), _col2 (type: interval_year_month), _col3 (type: interval_day_time), _col4 (type: interval_day_time)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: interval_year_month), VALUE._col1 (type: interval_year_month), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  str1,
+  interval '1-2' year to month, interval_year_month(str1),
+  interval '1 2:3:4' day to second, interval_day_time(str2)
+from vector_interval_1 order by str1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  str1,
+  interval '1-2' year to month, interval_year_month(str1),
+  interval '1 2:3:4' day to second, interval_day_time(str2)
+from vector_interval_1 order by str1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	1-2	NULL	1 02:03:04.000000000	NULL
+1-2	1-2	1-2	1 02:03:04.000000000	1 02:03:04.000000000
+PREHOOK: query: -- interval arithmetic
+explain
+select
+  dt,
+  interval '1-2' year to month + interval '1-2' year to month,
+  interval_year_month(str1) + interval_year_month(str1),
+  interval '1-2' year to month + interval_year_month(str1),
+  interval '1-2' year to month - interval '1-2' year to month,
+  interval_year_month(str1) - interval_year_month(str1),
+  interval '1-2' year to month - interval_year_month(str1)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- interval arithmetic
+explain
+select
+  dt,
+  interval '1-2' year to month + interval '1-2' year to month,
+  interval_year_month(str1) + interval_year_month(str1),
+  interval '1-2' year to month + interval_year_month(str1),
+  interval '1-2' year to month - interval '1-2' year to month,
+  interval_year_month(str1) - interval_year_month(str1),
+  interval '1-2' year to month - interval_year_month(str1)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date), 2-4 (type: interval_year_month), (CAST( str1 AS INTERVAL YEAR TO MONTH) + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (1-2 + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), 0-0 (type: interval_year_month), (CAST( str1 AS INTERVAL YEAR TO MONTH) - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (1-2 - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_year_month), _col2 (type: interval_year_month), _col3 (type: interval_year_month), _col4 (type: interval_year_month), _col5 (type: interval_year_month), _col6 (type: interval_year_month)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_year_month), VALUE._col1 (type: interval_year_month), VALUE._col2 (type: interval_year_month), VALUE._col3 (type: interval_year_month), VALUE._col4 (type: interval_year_month), VALUE._col5 (type: interval_year_month)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  dt,
+  interval '1-2' year to month + interval '1-2' year to month,
+  interval_year_month(str1) + interval_year_month(str1),
+  interval '1-2' year to month + interval_year_month(str1),
+  interval '1-2' year to month - interval '1-2' year to month,
+  interval_year_month(str1) - interval_year_month(str1),
+  interval '1-2' year to month - interval_year_month(str1)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  dt,
+  interval '1-2' year to month + interval '1-2' year to month,
+  interval_year_month(str1) + interval_year_month(str1),
+  interval '1-2' year to month + interval_year_month(str1),
+  interval '1-2' year to month - interval '1-2' year to month,
+  interval_year_month(str1) - interval_year_month(str1),
+  interval '1-2' year to month - interval_year_month(str1)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	2-4	NULL	NULL	0-0	NULL	NULL
+2001-01-01	2-4	2-4	2-4	0-0	0-0	0-0
+PREHOOK: query: explain
+select
+  dt,
+  interval '1 2:3:4' day to second + interval '1 2:3:4' day to second,
+  interval_day_time(str2) + interval_day_time(str2),
+  interval '1 2:3:4' day to second + interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval '1 2:3:4' day to second,
+  interval_day_time(str2) - interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval_day_time(str2)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+  dt,
+  interval '1 2:3:4' day to second + interval '1 2:3:4' day to second,
+  interval_day_time(str2) + interval_day_time(str2),
+  interval '1 2:3:4' day to second + interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval '1 2:3:4' day to second,
+  interval_day_time(str2) - interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval_day_time(str2)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date), 2 04:06:08.000000000 (type: interval_day_time), (CAST( str2 AS INTERVAL DAY TO SECOND) + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (1 02:03:04.000000000 + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), 0 00:00:00.000000000 (type: interval_day_time), (CAST( str2 AS INTERVAL DAY TO SECOND) - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (1 02:03:04.000000000 - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time), _col4 (type: interval_day_time), _col5 (type: interval_day_time), _col6 (type: interval_day_time)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time), VALUE._col4 (type: interval_day_time), VALUE._col5 (type: interval_day_time)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  dt,
+  interval '1 2:3:4' day to second + interval '1 2:3:4' day to second,
+  interval_day_time(str2) + interval_day_time(str2),
+  interval '1 2:3:4' day to second + interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval '1 2:3:4' day to second,
+  interval_day_time(str2) - interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval_day_time(str2)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  dt,
+  interval '1 2:3:4' day to second + interval '1 2:3:4' day to second,
+  interval_day_time(str2) + interval_day_time(str2),
+  interval '1 2:3:4' day to second + interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval '1 2:3:4' day to second,
+  interval_day_time(str2) - interval_day_time(str2),
+  interval '1 2:3:4' day to second - interval_day_time(str2)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
+2001-01-01	2 04:06:08.000000000	2 04:06:08.000000000	2 04:06:08.000000000	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+PREHOOK: query: -- date-interval arithmetic
+explain
+select
+  dt,
+  dt + interval '1-2' year to month,
+  dt + interval_year_month(str1),
+  interval '1-2' year to month + dt,
+  interval_year_month(str1) + dt,
+  dt - interval '1-2' year to month,
+  dt - interval_year_month(str1),
+  dt + interval '1 2:3:4' day to second,
+  dt + interval_day_time(str2),
+  interval '1 2:3:4' day to second + dt,
+  interval_day_time(str2) + dt,
+  dt - interval '1 2:3:4' day to second,
+  dt - interval_day_time(str2)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- date-interval arithmetic
+explain
+select
+  dt,
+  dt + interval '1-2' year to month,
+  dt + interval_year_month(str1),
+  interval '1-2' year to month + dt,
+  interval_year_month(str1) + dt,
+  dt - interval '1-2' year to month,
+  dt - interval_year_month(str1),
+  dt + interval '1 2:3:4' day to second,
+  dt + interval_day_time(str2),
+  interval '1 2:3:4' day to second + dt,
+  interval_day_time(str2) + dt,
+  dt - interval '1 2:3:4' day to second,
+  dt - interval_day_time(str2)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date), (dt + 1-2) (type: date), (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (1-2 + dt) (type: date), (CAST( str1 AS INTERVAL YEAR TO MONTH) + dt) (type: date), (dt - 1-2) (type: date), (dt - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (dt + 1 02:03:04.000000000) (type: timestamp), (dt + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (1 02:03:04.000000000 + dt) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + dt) (type: timestamp), (dt - 1 02:03:04.000000000) (type: timestamp), (dt - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: date), _col4 (type: date), _col5 (type: date), _col6 (type: date), _col7 (type: timestamp), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date), VALUE._col1 (type: date), VALUE._col2 (type: date), VALUE._col3 (type: date), VALUE._col4 (type: date), VALUE._col5 (type: date), VALUE._col6 (type: timestamp), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  dt,
+  dt + interval '1-2' year to month,
+  dt + interval_year_month(str1),
+  interval '1-2' year to month + dt,
+  interval_year_month(str1) + dt,
+  dt - interval '1-2' year to month,
+  dt - interval_year_month(str1),
+  dt + interval '1 2:3:4' day to second,
+  dt + interval_day_time(str2),
+  interval '1 2:3:4' day to second + dt,
+  interval_day_time(str2) + dt,
+  dt - interval '1 2:3:4' day to second,
+  dt - interval_day_time(str2)
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  dt,
+  dt + interval '1-2' year to month,
+  dt + interval_year_month(str1),
+  interval '1-2' year to month + dt,
+  interval_year_month(str1) + dt,
+  dt - interval '1-2' year to month,
+  dt - interval_year_month(str1),
+  dt + interval '1 2:3:4' day to second,
+  dt + interval_day_time(str2),
+  interval '1 2:3:4' day to second + dt,
+  interval_day_time(str2) + dt,
+  dt - interval '1 2:3:4' day to second,
+  dt - interval_day_time(str2)
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2001-01-01	2002-03-01	2002-03-01	2002-03-01	2002-03-01	1999-11-01	1999-11-01	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2000-12-30 21:56:56	2000-12-30 21:56:56
+PREHOOK: query: -- timestamp-interval arithmetic
+explain
+select
+  ts,
+  ts + interval '1-2' year to month,
+  ts + interval_year_month(str1),
+  interval '1-2' year to month + ts,
+  interval_year_month(str1) + ts,
+  ts - interval '1-2' year to month,
+  ts - interval_year_month(str1),
+  ts + interval '1 2:3:4' day to second,
+  ts + interval_day_time(str2),
+  interval '1 2:3:4' day to second + ts,
+  interval_day_time(str2) + ts,
+  ts - interval '1 2:3:4' day to second,
+  ts - interval_day_time(str2)
+from vector_interval_1 order by ts
+PREHOOK: type: QUERY
+POSTHOOK: query: -- timestamp-interval arithmetic
+explain
+select
+  ts,
+  ts + interval '1-2' year to month,
+  ts + interval_year_month(str1),
+  interval '1-2' year to month + ts,
+  interval_year_month(str1) + ts,
+  ts - interval '1-2' year to month,
+  ts - interval_year_month(str1),
+  ts + interval '1 2:3:4' day to second,
+  ts + interval_day_time(str2),
+  interval '1 2:3:4' day to second + ts,
+  interval_day_time(str2) + ts,
+  ts - interval '1 2:3:4' day to second,
+  ts - interval_day_time(str2)
+from vector_interval_1 order by ts
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ts (type: timestamp), (ts + 1-2) (type: timestamp), (ts + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (1-2 + ts) (type: timestamp), (CAST( str1 AS INTERVAL YEAR TO MONTH) + ts) (type: timestamp), (ts - 1-2) (type: timestamp), (ts - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (ts + 1 02:03:04.000000000) (type: timestamp), (ts + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (1 02:03:04.000000000 + ts) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + ts) (type: timestamp), (ts - 1 02:03:04.000000000) (type: timestamp), (ts - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: timestamp), _col2 (type: timestamp), _col3 (type: timestamp), _col4 (type: timestamp), _col5 (type: timestamp), _col6 (type: timestamp), _col7 (type: timestamp), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp), VALUE._col0 (type: timestamp), VALUE._col1 (type: timestamp), VALUE._col2 (type: timestamp), VALUE._col3 (type: timestamp), VALUE._col4 (type: timestamp), VALUE._col5 (type: timestamp), VALUE._col6 (type: timestamp), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  ts,
+  ts + interval '1-2' year to month,
+  ts + interval_year_month(str1),
+  interval '1-2' year to month + ts,
+  interval_year_month(str1) + ts,
+  ts - interval '1-2' year to month,
+  ts - interval_year_month(str1),
+  ts + interval '1 2:3:4' day to second,
+  ts + interval_day_time(str2),
+  interval '1 2:3:4' day to second + ts,
+  interval_day_time(str2) + ts,
+  ts - interval '1 2:3:4' day to second,
+  ts - interval_day_time(str2)
+from vector_interval_1 order by ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  ts,
+  ts + interval '1-2' year to month,
+  ts + interval_year_month(str1),
+  interval '1-2' year to month + ts,
+  interval_year_month(str1) + ts,
+  ts - interval '1-2' year to month,
+  ts - interval_year_month(str1),
+  ts + interval '1 2:3:4' day to second,
+  ts + interval_day_time(str2),
+  interval '1 2:3:4' day to second + ts,
+  interval_day_time(str2) + ts,
+  ts - interval '1 2:3:4' day to second,
+  ts - interval_day_time(str2)
+from vector_interval_1 order by ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2001-01-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	1999-11-01 01:02:03	1999-11-01 01:02:03	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2000-12-30 22:58:59	2000-12-30 22:58:59
+PREHOOK: query: -- timestamp-timestamp arithmetic
+explain
+select
+  ts,
+  ts - ts,
+  timestamp '2001-01-01 01:02:03' - ts,
+  ts - timestamp '2001-01-01 01:02:03'
+from vector_interval_1 order by ts
+PREHOOK: type: QUERY
+POSTHOOK: query: -- timestamp-timestamp arithmetic
+explain
+select
+  ts,
+  ts - ts,
+  timestamp '2001-01-01 01:02:03' - ts,
+  ts - timestamp '2001-01-01 01:02:03'
+from vector_interval_1 order by ts
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ts (type: timestamp), (ts - ts) (type: interval_day_time), (2001-01-01 01:02:03.0 - ts) (type: interval_day_time), (ts - 2001-01-01 01:02:03.0) (type: interval_day_time)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  ts,
+  ts - ts,
+  timestamp '2001-01-01 01:02:03' - ts,
+  ts - timestamp '2001-01-01 01:02:03'
+from vector_interval_1 order by ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  ts,
+  ts - ts,
+  timestamp '2001-01-01 01:02:03' - ts,
+  ts - timestamp '2001-01-01 01:02:03'
+from vector_interval_1 order by ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+2001-01-01 01:02:03	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+PREHOOK: query: -- date-date arithmetic
+explain
+select
+  dt,
+  dt - dt,
+  date '2001-01-01' - dt,
+  dt - date '2001-01-01'
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- date-date arithmetic
+explain
+select
+  dt,
+  dt - dt,
+  date '2001-01-01' - dt,
+  dt - date '2001-01-01'
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date), (dt - dt) (type: interval_day_time), (2001-01-01 - dt) (type: interval_day_time), (dt - 2001-01-01) (type: interval_day_time)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  dt,
+  dt - dt,
+  date '2001-01-01' - dt,
+  dt - date '2001-01-01'
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  dt,
+  dt - dt,
+  date '2001-01-01' - dt,
+  dt - date '2001-01-01'
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+2001-01-01	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+PREHOOK: query: -- date-timestamp arithmetic
+explain
+select
+  dt,
+  ts - dt,
+  timestamp '2001-01-01 01:02:03' - dt,
+  ts - date '2001-01-01',
+  dt - ts,
+  dt - timestamp '2001-01-01 01:02:03',
+  date '2001-01-01' - ts
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- date-timestamp arithmetic
+explain
+select
+  dt,
+  ts - dt,
+  timestamp '2001-01-01 01:02:03' - dt,
+  ts - date '2001-01-01',
+  dt - ts,
+  dt - timestamp '2001-01-01 01:02:03',
+  date '2001-01-01' - ts
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_interval_1
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dt (type: date), (ts - dt) (type: interval_day_time), (2001-01-01 01:02:03.0 - dt) (type: interval_day_time), (ts - 2001-01-01) (type: interval_day_time), (dt - ts) (type: interval_day_time), (dt - 2001-01-01 01:02:03.0) (type: interval_day_time), (2001-01-01 - ts) (type: interval_day_time)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time), _col4 (type: interval_day_time), _col5 (type: interval_day_time), _col6 (type: interval_day_time)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time), VALUE._col4 (type: interval_day_time), VALUE._col5 (type: interval_day_time)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  dt,
+  ts - dt,
+  timestamp '2001-01-01 01:02:03' - dt,
+  ts - date '2001-01-01',
+  dt - ts,
+  dt - timestamp '2001-01-01 01:02:03',
+  date '2001-01-01' - ts
+from vector_interval_1 order by dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  dt,
+  ts - dt,
+  timestamp '2001-01-01 01:02:03' - dt,
+  ts - date '2001-01-01',
+  dt - ts,
+  dt - timestamp '2001-01-01 01:02:03',
+  date '2001-01-01' - ts
+from vector_interval_1 order by dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2001-01-01	0 01:02:03.000000000	0 01:02:03.000000000	0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000

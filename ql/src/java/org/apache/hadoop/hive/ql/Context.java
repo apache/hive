@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +85,7 @@ public class Context {
   private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
+  protected String cboInfo;
   protected boolean explainLogical = false;
   protected String cmd = "";
   // number of previous attempts
@@ -695,4 +697,13 @@ public class Context {
   public AcidUtils.Operation getAcidOperation() {
     return acidOperation;
   }
+
+  public String getCboInfo() {
+    return cboInfo;
+  }
+
+  public void setCboInfo(String cboInfo) {
+    this.cboInfo = cboInfo;
+  }
+
 }

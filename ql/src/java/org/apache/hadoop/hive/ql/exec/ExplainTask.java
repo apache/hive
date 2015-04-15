@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
+import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -47,7 +49,9 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -288,9 +292,24 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           JSONObject jsonDependencies = getJSONDependencies(work);
           out.print(jsonDependencies);
         } else {
-          JSONObject jsonPlan = getJSONPlan(out, work);
-          if (work.isFormatted()) {
-            out.print(jsonPlan);
+          if (work.isUserLevelExplain()) {
+            JsonParser jsonParser = JsonParserFactory.getParser(conf);
+            if (jsonParser != null) {
+              work.setFormatted(true);
+              JSONObject jsonPlan = getJSONPlan(out, work);
+              if (work.getCboInfo() != null) {
+                jsonPlan.put("cboInfo", work.getCboInfo());
+              }
+              jsonParser.print(jsonPlan, out);
+            } else {
+              throw new SemanticException(
+                  "Hive UserLevelExplain only supports tez engine right now.");
+            }
+          } else {
+            JSONObject jsonPlan = getJSONPlan(out, work);
+            if (work.isFormatted()) {
+              out.print(jsonPlan);
+            }
           }
         }
       }
@@ -566,7 +585,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (note instanceof Explain) {
       Explain xpl_note = (Explain) note;
-      if (extended || xpl_note.normalExplain()) {
+      boolean invokeFlag = false;
+      if (this.work.isUserLevelExplain()) {
+        invokeFlag = Level.USER.in(xpl_note.explainLevels());
+      } else {
+        if (extended) {
+          invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
+        } else {
+          invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+        }
+      }
+      if (invokeFlag) {
         keyJSONObject = xpl_note.displayName();
         if (out != null) {
           out.print(indentString(indent));
@@ -589,6 +618,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent, appender);
+        if (this.work.isUserLevelExplain()) {
+          if (jsonOut != null && jsonOut.length() > 0) {
+            ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
+                operator.getOperatorId());
+          }
+        }
         if (jsonOutput) {
             json = jsonOut;
         }
@@ -623,8 +658,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       if (note instanceof Explain) {
         Explain xpl_note = (Explain) note;
-
-        if (extended || xpl_note.normalExplain()) {
+        boolean invokeFlag = false;
+        if (this.work.isUserLevelExplain()) {
+          invokeFlag = Level.USER.in(xpl_note.explainLevels());
+        } else {
+          if (extended) {
+            invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
+          } else {
+            invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+          }
+        }
+        if (invokeFlag) {
 
           Object val = null;
           try {

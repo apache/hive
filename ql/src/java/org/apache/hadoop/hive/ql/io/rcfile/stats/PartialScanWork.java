@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.mapred.Mapper;
 
 /**
@@ -88,7 +89,7 @@ public class PartialScanWork extends MapWork implements Serializable {
   /**
    * @return the aggKey
    */
-  @Explain(displayName = "Stats Aggregation Key Prefix", normalExplain = false)
+  @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getAggKey() {
     return aggKey;
   }

@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 
 /**
  * ShowTblPropertiesDesc.
  *
  */
-@Explain(displayName = "Show Table Properties")
+@Explain(displayName = "Show Table Properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowTblPropertiesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String resFile;
@@ -77,7 +79,7 @@ public class ShowTblPropertiesDesc extends DDLDesc implements Serializable {
     return resFile;
   }
 
-  @Explain(displayName = "result file", normalExplain = false)
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFileString() {
     return getResFile();
   }
@@ -93,7 +95,7 @@ public class ShowTblPropertiesDesc extends DDLDesc implements Serializable {
   /**
    * @return the tableName
    */
-  @Explain(displayName = "table name")
+  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
