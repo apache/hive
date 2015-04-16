@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -83,29 +84,29 @@ public class HiveGBOpConvUtil {
     private boolean                 isDistinctUDAF;
     private String                  udafName;
     private GenericUDAFEvaluator    udafEvaluator;
-    private ArrayList<ExprNodeDesc> udafParams                      = new ArrayList<ExprNodeDesc>();
+    private final ArrayList<ExprNodeDesc> udafParams                      = new ArrayList<ExprNodeDesc>();
     private List<Integer>           udafParamsIndxInGBInfoDistExprs = new ArrayList<Integer>();
   };
 
   private static class GBInfo {
-    private List<String>        outputColNames       = new ArrayList<String>();
+    private final List<String>        outputColNames       = new ArrayList<String>();
 
-    private List<String>        gbKeyColNamesInInput = new ArrayList<String>();
-    private List<TypeInfo>      gbKeyTypes           = new ArrayList<TypeInfo>();
-    private List<ExprNodeDesc>  gbKeys               = new ArrayList<ExprNodeDesc>();
+    private final List<String>        gbKeyColNamesInInput = new ArrayList<String>();
+    private final List<TypeInfo>      gbKeyTypes           = new ArrayList<TypeInfo>();
+    private final List<ExprNodeDesc>  gbKeys               = new ArrayList<ExprNodeDesc>();
 
-    private List<Integer>       grpSets              = new ArrayList<Integer>();
+    private final List<Integer>       grpSets              = new ArrayList<Integer>();
     private boolean             grpSetRqrAdditionalMRJob;
     private boolean             grpIdFunctionNeeded;
 
-    private List<String>        distExprNames        = new ArrayList<String>();
-    private List<TypeInfo>      distExprTypes        = new ArrayList<TypeInfo>();
-    private List<ExprNodeDesc>  distExprNodes        = new ArrayList<ExprNodeDesc>();
-    private List<List<Integer>> distColIndices       = new ArrayList<List<Integer>>();
+    private final List<String>        distExprNames        = new ArrayList<String>();
+    private final List<TypeInfo>      distExprTypes        = new ArrayList<TypeInfo>();
+    private final List<ExprNodeDesc>  distExprNodes        = new ArrayList<ExprNodeDesc>();
+    private final List<List<Integer>> distColIndices       = new ArrayList<List<Integer>>();
 
-    private List<ExprNodeDesc>  deDupedNonDistIrefs  = new ArrayList<ExprNodeDesc>();
+    private final List<ExprNodeDesc>  deDupedNonDistIrefs  = new ArrayList<ExprNodeDesc>();
 
-    private List<UDAFAttrs>     udafAttrs            = new ArrayList<UDAFAttrs>();
+    private final List<UDAFAttrs>     udafAttrs            = new ArrayList<UDAFAttrs>();
     private boolean             containsDistinctAggr = false;
 
     float                       groupByMemoryUsage;
@@ -144,7 +145,7 @@ public class HiveGBOpConvUtil {
 
   // For each of the GB op in the logical GB this should be called seperately;
   // otherwise GBevaluator and expr nodes may get shared among multiple GB ops
-  private static GBInfo getGBInfo(HiveAggregate aggRel, OpAttr inputOpAf, HiveConf hc) {
+  private static GBInfo getGBInfo(HiveAggregate aggRel, OpAttr inputOpAf, HiveConf hc) throws SemanticException {
     GBInfo gbInfo = new GBInfo();
 
     // 0. Collect AggRel output col Names
@@ -157,7 +158,7 @@ public class HiveGBOpConvUtil {
 
     ExprNodeDesc tmpExprNodeDesc;
     for (int i : aggRel.getGroupSet()) {
-      RexInputRef iRef = new RexInputRef(i, (RelDataType) aggInputRel.getRowType().getFieldList()
+      RexInputRef iRef = new RexInputRef(i, aggInputRel.getRowType().getFieldList()
           .get(i).getType());
       tmpExprNodeDesc = iRef.accept(exprConv);
       gbInfo.gbKeys.add(tmpExprNodeDesc);
@@ -250,13 +251,12 @@ public class HiveGBOpConvUtil {
         udafAttrs.udafParamsIndxInGBInfoDistExprs = distUDAFParamsIndxInDistExprs;
         gbInfo.distColIndices.add(distColIndicesOfUDAF);
       }
-      try {
+
+      // special handling for count, similar to PlanModifierForASTConv::replaceEmptyGroupAggr()
         udafAttrs.udafEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator(udafAttrs.udafName,
             new ArrayList<ExprNodeDesc>(udafAttrs.udafParams), new ASTNode(),
-            udafAttrs.isDistinctUDAF, false);
-      } catch (SemanticException e) {
-        throw new RuntimeException(e);
-      }
+            udafAttrs.isDistinctUDAF, udafAttrs.udafParams.size() == 0 &&
+            "count".equalsIgnoreCase(udafAttrs.udafName) ? true : false);
       gbInfo.udafAttrs.add(udafAttrs);
     }
 
@@ -301,10 +301,10 @@ public class HiveGBOpConvUtil {
 
   /**
    * GB-RS-GB1
-   * 
+   *
    * Construct GB-RS-GB Pipe line. User has enabled Map Side GB, specified no
    * skew and Grp Set is below the threshold.
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -361,7 +361,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * GB-RS-GB1-RS-GB2
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -384,7 +384,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * GB-RS-GB1-RS-GB2
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -407,7 +407,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * GB-RS-GB2
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -442,7 +442,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * RS-Gb1
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -465,7 +465,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * RS-GB1-RS-GB2
-   * 
+   *
    * @param inputOpAf
    * @param aggRel
    * @param gbInfo
@@ -940,7 +940,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * RS-GB0
-   * 
+   *
    * @param inputOpAf
    * @param gbInfo
    * @param gbMode
@@ -1141,7 +1141,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * Get Reduce Keys for RS following MapSide GB
-   * 
+   *
    * @param reduceKeys
    *          assumed to be deduped list of exprs
    * @param outputKeyColumnNames
@@ -1181,7 +1181,7 @@ public class HiveGBOpConvUtil {
 
   /**
    * Get Value Keys for RS following MapSide GB
-   * 
+   *
    * @param GroupByOperator
    *          MapSide GB
    * @param outputKeyColumnNames
