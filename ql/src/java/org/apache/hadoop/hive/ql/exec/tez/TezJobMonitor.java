@@ -20,9 +20,24 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -49,21 +64,6 @@ import org.fusesource.jansi.Ansi;
 
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import jline.TerminalFactory;
 
 /**
@@ -74,17 +74,17 @@ import jline.TerminalFactory;
 public class TezJobMonitor {
 
   private static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final int MIN_TERMINAL_WIDTH = 89;
+  private static final int MIN_TERMINAL_WIDTH = 90;
   private static final int COLUMN_1_WIDTH = 16;
   private static final int SEPARATOR_WIDTH = MIN_TERMINAL_WIDTH;
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and separator width accordingly
-  private static final String HEADER_FORMAT = "%16s%11s %9s  %5s  %9s  %7s  %7s  %6s  %6s";
-  private static final String VERTEX_FORMAT = "%-16s%11s %9s  %5s  %9s  %7s  %7s  %6s  %6s";
+  private static final String HEADER_FORMAT = "%16s%10s %11s  %5s  %9s  %7s  %7s  %6s  %6s";
+  private static final String VERTEX_FORMAT = "%-16s%10s %11s  %5s  %9s  %7s  %7s  %6s  %6s";
   private static final String FOOTER_FORMAT = "%-15s  %-30s %-4s  %-25s";
   private static final String HEADER = String.format(HEADER_FORMAT,
-      "VERTICES", "EXECUTOR", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
+      "VERTICES", "MODE", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
 
   // method and dag summary format
   private static final String SUMMARY_HEADER_FORMAT = "%-16s %-12s %-12s %-12s %-19s %-19s %-15s %-15s %-15s";
