@@ -508,7 +508,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: null (type: void)
+            expressions: null (type: date)
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink

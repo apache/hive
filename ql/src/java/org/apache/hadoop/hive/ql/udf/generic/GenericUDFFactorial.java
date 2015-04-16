@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.NUMERIC_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -60,7 +61,7 @@ public class GenericUDFFactorial extends GenericUDF {
 
     checkArgPrimitive(arguments, 0);
 
-    checkArgGroups(arguments, 0, inputTypes, NUMERIC_GROUP);
+    checkArgGroups(arguments, 0, inputTypes, NUMERIC_GROUP, VOID_GROUP);
 
     obtainIntConverter(arguments, 0, inputTypes, converters);
 

@@ -82,7 +82,7 @@ public abstract class GenericUDF implements Closeable {
    * Object reference.
    */
   public static class DeferredJavaObject implements DeferredObject {
-    private Object value;
+    private final Object value;
 
     public DeferredJavaObject(Object value) {
       this.value = value;
@@ -208,6 +208,7 @@ public abstract class GenericUDF implements Closeable {
    * Close GenericUDF.
    * This is only called in runtime of MapRedTask.
    */
+  @Override
   public void close() throws IOException {
   }
 
@@ -314,7 +315,7 @@ public abstract class GenericUDF implements Closeable {
     PrimitiveCategory inputType = inOi.getPrimitiveCategory();
 
     Converter converter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+        arguments[i],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
@@ -328,6 +329,7 @@ public abstract class GenericUDF implements Closeable {
     case BYTE:
     case SHORT:
     case INT:
+    case VOID:
       break;
     default:
       throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
@@ -335,7 +337,7 @@ public abstract class GenericUDF implements Closeable {
     }
 
     Converter converter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+        arguments[i],
         PrimitiveObjectInspectorFactory.writableIntObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
@@ -358,7 +360,7 @@ public abstract class GenericUDF implements Closeable {
     }
 
     Converter converter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+        arguments[i],
         PrimitiveObjectInspectorFactory.writableIntObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
@@ -369,7 +371,7 @@ public abstract class GenericUDF implements Closeable {
     PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
     PrimitiveCategory inputType = inOi.getPrimitiveCategory();
     Converter converter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+        arguments[i],
         PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
@@ -388,6 +390,7 @@ public abstract class GenericUDF implements Closeable {
       break;
     case TIMESTAMP:
     case DATE:
+    case VOID:
       outOi = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
       break;
     default:
