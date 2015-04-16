@@ -42,9 +42,10 @@ public class HttpBasicAuthInterceptor implements HttpRequestInterceptor {
   CookieStore cookieStore;
   boolean isCookieEnabled;
   String cookieName;
+  boolean isSSL;
 
   public HttpBasicAuthInterceptor(String username, String password, CookieStore cookieStore,
-                           String cn) {
+                           String cn, boolean isSSL) {
     if(username != null){
       credentials = new UsernamePasswordCredentials(username, password);
     }
@@ -52,6 +53,7 @@ public class HttpBasicAuthInterceptor implements HttpRequestInterceptor {
     this.cookieStore = cookieStore;
     isCookieEnabled = (cookieStore != null);
     cookieName = cn;
+    this.isSSL = isSSL;
   }
 
   @Override
@@ -64,9 +66,10 @@ public class HttpBasicAuthInterceptor implements HttpRequestInterceptor {
     // 1. Cookie Authentication is disabled OR
     // 2. The first time when the request is sent OR
     // 3. The server returns a 401, which sometimes means the cookie has expired
+    // 4. The cookie is secured where as the client connect does not use SSL
     if (!isCookieEnabled || ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
         (cookieStore == null || (cookieStore != null &&
-        Utils.needToSendCredentials(cookieStore, cookieName)))) ||
+        Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
         (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
          httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
          equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {

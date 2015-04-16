@@ -157,7 +157,7 @@ public class TestOrcTimezone1 {
     rows.close();
   }
 
-  //@Test
+  @Test
   public void testReadTimestampFormat_0_11() throws Exception {
     TimeZone.setDefault(TimeZone.getTimeZone(readerTimeZone));
     Path oldFilePath =

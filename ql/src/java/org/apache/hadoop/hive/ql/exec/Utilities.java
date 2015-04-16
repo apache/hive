@@ -181,8 +181,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -1375,7 +1375,7 @@ public final class Utilities {
     if (isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat.getOutputCompressorClass(jc,
           DefaultCodec.class);
-      CompressionCodec codec = ReflectionUtils.newInstance(codecClass, jc);
+      CompressionCodec codec = ReflectionUtil.newInstance(codecClass, jc);
       return codec.createOutputStream(out);
     } else {
       return (out);
@@ -1424,7 +1424,7 @@ public final class Utilities {
     if ((hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) && isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat.getOutputCompressorClass(jc,
           DefaultCodec.class);
-      CompressionCodec codec = ReflectionUtils.newInstance(codecClass, jc);
+      CompressionCodec codec = ReflectionUtil.newInstance(codecClass, jc);
       return codec.getDefaultExtension();
     }
     return "";
@@ -1476,7 +1476,7 @@ public final class Utilities {
     if (isCompressed) {
       compressionType = SequenceFileOutputFormat.getOutputCompressionType(jc);
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
+      codec = (CompressionCodec) ReflectionUtil.newInstance(codecClass, jc);
     }
     return SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
       progressable);
@@ -1500,7 +1500,7 @@ public final class Utilities {
     CompressionCodec codec = null;
     if (isCompressed) {
       Class<?> codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
+      codec = (CompressionCodec) ReflectionUtil.newInstance(codecClass, jc);
     }
     return new RCFile.Writer(fs, jc, file, progressable, codec);
   }
@@ -2948,7 +2948,7 @@ public final class Utilities {
 
         if (reworkInputFormats.size() > 0) {
           for (Class<? extends InputFormat> inputFormatCls : reworkInputFormats) {
-            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtils
+            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtil
                 .newInstance(inputFormatCls, null);
             inst.rework(conf, mapredWork);
           }

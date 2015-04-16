@@ -36,6 +36,26 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: ds (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Group By Operator
+                aggregations: max(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  tag: -1
+                  value expressions: _col0 (type: string)
+                  auto parallelism: false
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

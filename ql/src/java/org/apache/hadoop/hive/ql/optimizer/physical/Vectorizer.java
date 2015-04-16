@@ -365,6 +365,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
+      if ((mapWork.getAliasToWork() == null) || (mapWork.getAliasToWork().size() == 0)) {
+        return false;
+      } else {
+        for (Operator<?> op : mapWork.getAliasToWork().values()) {
+          if (op == null) {
+            LOG.warn("Map work has invalid aliases to work with. Fail validation!");
+            return false;
+          }
+        }
+      }
+
       // iterator the mapper operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(mapWork.getAliasToWork().values());

@@ -44,18 +44,28 @@ public class HttpKerberosRequestInterceptor implements HttpRequestInterceptor {
   boolean assumeSubject;
   CookieStore cookieStore;
   boolean isCookieEnabled;
+  // NB: The purpose of isSSL flag is as follows:
+  // This flag is useful when the HS2 server sends a secure cookie and
+  // the client is in a non-ssl mode. Here, the client replay of the cookie
+  // doesnt reach the server. If we don't send credentials in such a scenario,
+  // the server  would send a 401 error back to the client.
+  // Thus, we would need 2 cycles instead of 1 cycle to process an incoming request if
+  // isSSL is absent.
+  boolean isSSL;
   String cookieName;
 
   // A fair reentrant lock
   private static ReentrantLock kerberosLock = new ReentrantLock(true);
 
   public HttpKerberosRequestInterceptor(String principal, String host,
-      String serverHttpUrl, boolean assumeSubject, CookieStore cs, String cn) {
+      String serverHttpUrl, boolean assumeSubject, CookieStore cs, String cn,
+      boolean isSSL) {
     this.principal = principal;
     this.host = host;
     this.serverHttpUrl = serverHttpUrl;
     this.assumeSubject = assumeSubject;
     this.cookieStore = cs;
+    this.isSSL = isSSL;
     isCookieEnabled = (cs != null);
     cookieName = cn;
   }
@@ -79,10 +89,12 @@ public class HttpKerberosRequestInterceptor implements HttpRequestInterceptor {
       // Generate the kerberos ticket under the following scenarios:
       // 1. Cookie Authentication is disabled OR
       // 2. The first time when the request is sent OR
-      // 3. The server returns a 401, which sometimes means the cookie has expired
-      if (!isCookieEnabled || ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
+      // 3. The server returns a 401, which sometimes means the cookie has expired OR
+      // 4. The cookie is secured where as the client connect does not use SSL
+      if (!isCookieEnabled ||
+         ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
           (cookieStore == null || (cookieStore != null &&
-          Utils.needToSendCredentials(cookieStore, cookieName)))) ||
+          Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
           (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
           httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
           equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {

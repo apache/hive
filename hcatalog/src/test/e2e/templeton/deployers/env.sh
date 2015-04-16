@@ -50,6 +50,11 @@ if [ -z ${HADOOP_HOME} ]; then
   export HADOOP_HOME=/Users/${USER}/dev/hwxhadoop/hadoop-dist/target/hadoop-${HADOOP_VERSION}
 fi
 
+if [ -z ${MYSQL_CLIENT_JAR} ]; then
+  #if using MySQL backed metastore
+  export MYSQL_CLIENT_JAR=/Users/${USER}/dev/mysql-connector-java-5.1.30/mysql-connector-java-5.1.30-bin.jar
+fi
+
 export TEZ_CLIENT_HOME=/Users/ekoifman/dev/apache-tez-client-${TEZ_VERSION}
 #Make sure Pig is built for the Hadoop version you are running
 export PIG_TAR_PATH=/Users/${USER}/dev/pig-${PIG_VERSION}-src/build

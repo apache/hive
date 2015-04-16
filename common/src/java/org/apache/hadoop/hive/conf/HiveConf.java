@@ -1730,6 +1730,21 @@ public class HiveConf extends Configuration {
         "Keepalive time for an idle http worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
 
+    // Cookie based authentication
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
+        "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE("hive.server2.thrift.http.cookie.max.age", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum age in seconds for server side cookie used by HS2 in HTTP mode."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_DOMAIN("hive.server2.thrift.http.cookie.domain", null,
+        "Domain for the HS2 generated cookies"),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_PATH("hive.server2.thrift.http.cookie.path", null,
+        "Path for the HS2 generated cookies"),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_SECURE("hive.server2.thrift.http.cookie.is.secure", true,
+        "Secure attribute of the HS2 generated cookie."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY("hive.server2.thrift.http.cookie.is.httponly", true,
+        "HttpOnly attribute of the HS2 generated cookie."),
+
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),

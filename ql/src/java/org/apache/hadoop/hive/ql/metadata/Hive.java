@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -174,8 +175,9 @@ public class Hive {
       for (String functionName : db.getFunctions(dbName, "*")) {
         Function function = db.getFunction(dbName, functionName);
         try {
-          FunctionRegistry.registerPermanentFunction(functionName, function.getClassName(), false,
-              FunctionTask.toFunctionResource(function.getResourceUris()));
+	  FunctionRegistry.registerPermanentFunction(
+	      FunctionUtils.qualifyFunctionName(functionName, dbName), function.getClassName(),
+	      false, FunctionTask.toFunctionResource(function.getResourceUris()));
         } catch (Exception e) {
           LOG.warn("Failed to register persistent function " +
               functionName + ":" + function.getClassName() + ". Ignore and continue.");

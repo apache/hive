@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -96,9 +95,10 @@ public class GenericUDFTrunc extends GenericUDF {
     case STRING:
     case VARCHAR:
     case CHAR:
+    case VOID:
       inputType1 = PrimitiveCategory.STRING;
       textConverter1 = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
+          arguments[0],
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       break;
     case TIMESTAMP:
@@ -107,7 +107,7 @@ public class GenericUDFTrunc extends GenericUDF {
       break;
     case DATE:
       dateWritableConverter = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[0],
+          arguments[0],
           PrimitiveObjectInspectorFactory.writableDateObjectInspector);
       break;
     default:
@@ -118,7 +118,8 @@ public class GenericUDFTrunc extends GenericUDF {
 
     inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
     if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputType2)
-        != PrimitiveGrouping.STRING_GROUP) {
+        != PrimitiveGrouping.STRING_GROUP && PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputType2)
+        != PrimitiveGrouping.VOID_GROUP) {
       throw new UDFArgumentTypeException(1,
           "trunk() only takes STRING/CHAR/VARCHAR types as second argument, got " + inputType2);
     }
@@ -130,7 +131,7 @@ public class GenericUDFTrunc extends GenericUDF {
       fmtInput = obj != null ? obj.toString() : null;
     } else {
       textConverter2 = ObjectInspectorConverters.getConverter(
-          (PrimitiveObjectInspector) arguments[1],
+          arguments[1],
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }
 

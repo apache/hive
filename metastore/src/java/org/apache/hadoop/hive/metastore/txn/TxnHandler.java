@@ -533,18 +533,29 @@ public class TxnHandler {
     }
   }
 
+  /**
+   * used to sort entries in {@link org.apache.hadoop.hive.metastore.api.ShowLocksResponse}
+   */
+  private static class LockInfoExt extends LockInfo {
+    private final ShowLocksResponseElement e;
+    LockInfoExt(ShowLocksResponseElement e, long intLockId) {
+      super(e, intLockId);
+      this.e = e;
+    }
+  }
   public ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException {
     try {
       Connection dbConn = null;
       ShowLocksResponse rsp = new ShowLocksResponse();
       List<ShowLocksResponseElement> elems = new ArrayList<ShowLocksResponseElement>();
+      List<LockInfoExt> sortedList = new ArrayList<LockInfoExt>();
       Statement stmt = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
 
         String s = "select hl_lock_ext_id, hl_txnid, hl_db, hl_table, hl_partition, hl_lock_state, " +
-          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host from HIVE_LOCKS";
+          "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id from HIVE_LOCKS";
         LOG.debug("Doing to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -572,7 +583,7 @@ public class TxnHandler {
           if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
           e.setUser(rs.getString(10));
           e.setHostname(rs.getString(11));
-          elems.add(e);
+          sortedList.add(new LockInfoExt(e, rs.getLong(12)));
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
@@ -583,6 +594,12 @@ public class TxnHandler {
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
+      }
+      //this ensures that "SHOW LOCKS" prints the locks in the same order as they are examined
+      //by checkLock() - makes diagnostics easier.
+      Collections.sort(sortedList, new LockInfoComparator());
+      for(LockInfoExt lockInfoExt : sortedList) {
+        elems.add(lockInfoExt.e);
       }
       rsp.setLocks(elems);
       return rsp;
@@ -1086,17 +1103,17 @@ public class TxnHandler {
   }
 
   private static class LockInfo {
-    long extLockId;
-    long intLockId;
-    long txnId;
-    String db;
-    String table;
-    String partition;
-    LockState state;
-    LockType type;
+    private final long extLockId;
+    private final long intLockId;
+    private final long txnId;
+    private final String db;
+    private final String table;
+    private final String partition;
+    private final LockState state;
+    private final LockType type;
 
     // Assumes the result set is set to a valid row
-    LockInfo(ResultSet rs) throws SQLException {
+    LockInfo(ResultSet rs) throws SQLException, MetaException {
       extLockId = rs.getLong("hl_lock_ext_id"); // can't be null
       intLockId = rs.getLong("hl_lock_int_id"); // can't be null
       db = rs.getString("hl_db"); // can't be null
@@ -1107,12 +1124,27 @@ public class TxnHandler {
       switch (rs.getString("hl_lock_state").charAt(0)) {
         case LOCK_WAITING: state = LockState.WAITING; break;
         case LOCK_ACQUIRED: state = LockState.ACQUIRED; break;
+        default:
+          throw new MetaException("Unknown lock state " + rs.getString("hl_lock_state").charAt(0));
       }
       switch (rs.getString("hl_lock_type").charAt(0)) {
         case LOCK_EXCLUSIVE: type = LockType.EXCLUSIVE; break;
         case LOCK_SHARED: type = LockType.SHARED_READ; break;
         case LOCK_SEMI_SHARED: type = LockType.SHARED_WRITE; break;
+        default:
+          throw new MetaException("Unknown lock type " + rs.getString("hl_lock_type").charAt(0));
       }
+      txnId = rs.getLong("hl_txnid");
+    }
+    LockInfo(ShowLocksResponseElement e, long intLockId) {
+      extLockId = e.getLockid();
+      this.intLockId = intLockId;
+      db = e.getDbname();
+      table = e.getTablename();
+      partition = e.getPartname();
+      state = e.getState();
+      type = e.getType();
+      txnId = e.getTxnid();
     }
 
     public boolean equals(Object other) {
@@ -1130,15 +1162,22 @@ public class TxnHandler {
         partition + " state:" + (state == null ? "null" : state.toString())
         + " type:" + (type == null ? "null" : type.toString());
     }
+    private boolean isDbLock() {
+      return db != null && table == null && partition == null;
+    }
+    private boolean isTableLock() {
+      return db != null && table != null && partition == null;
+    }
   }
 
   private static class LockInfoComparator implements Comparator<LockInfo> {
+    private static final LockTypeComparator lockTypeComparator = new LockTypeComparator();
     public boolean equals(Object other) {
       return this == other;
     }
 
     public int compare(LockInfo info1, LockInfo info2) {
-      // We sort by state (acquired vs waiting) and then by extLockId.
+      // We sort by state (acquired vs waiting) and then by LockType, they by id
       if (info1.state == LockState.ACQUIRED &&
         info2.state != LockState .ACQUIRED) {
         return -1;
@@ -1146,6 +1185,11 @@ public class TxnHandler {
       if (info1.state != LockState.ACQUIRED &&
         info2.state == LockState .ACQUIRED) {
         return 1;
+      }
+
+      int sortByType = lockTypeComparator.compare(info1.type, info2.type);
+      if(sortByType != 0) {
+        return sortByType;
       }
       if (info1.extLockId < info2.extLockId) {
         return -1;
@@ -1163,6 +1207,41 @@ public class TxnHandler {
     }
   }
 
+  /**
+   * Sort more restrictive locks after less restrictive ones
+   */
+  private final static class LockTypeComparator implements Comparator<LockType> {
+    public boolean equals(Object other) {
+      return this == other;
+    }
+    public int compare(LockType t1, LockType t2) {
+      switch (t1) {
+        case EXCLUSIVE:
+          if(t2 == LockType.EXCLUSIVE) {
+            return 0;
+          }
+          return 1;
+        case SHARED_WRITE:
+          switch (t2) {
+            case EXCLUSIVE:
+              return -1;
+            case SHARED_WRITE:
+              return 0;
+            case SHARED_READ:
+              return 1;
+            default:
+              throw new RuntimeException("Unexpected LockType: " + t2);
+          }
+        case SHARED_READ:
+          if(t2 == LockType.SHARED_READ) {
+            return 0;
+          }
+          return -1;
+        default:
+          throw new RuntimeException("Unexpected LockType: " + t1);
+      }
+    }
+  }
   private enum LockAction {ACQUIRE, WAIT, KEEP_LOOKING}
 
   // A jump table to figure out whether to wait, acquire,
@@ -1362,11 +1441,11 @@ public class TxnHandler {
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
-    LOG.debug("Setting savepoint");
+    LOG.debug("checkLock(): Setting savepoint. extLockId=" + extLockId);
     Savepoint save = dbConn.setSavepoint();
     StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
       "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
-      "hl_lock_type from HIVE_LOCKS where hl_db in (");
+      "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
 
     Set<String> strings = new HashSet<String>(locksBeingChecked.size());
     for (LockInfo info : locksBeingChecked) {
@@ -1431,19 +1510,26 @@ public class TxnHandler {
         query.append("))");
       }
     }
+    query.append(" and hl_lock_ext_id <= ").append(extLockId);
 
     LOG.debug("Going to execute query <" + query.toString() + ">");
     Statement stmt = null;
     try {
       stmt = dbConn.createStatement();
       ResultSet rs = stmt.executeQuery(query.toString());
-      SortedSet lockSet = new TreeSet(new LockInfoComparator());
+      SortedSet<LockInfo> lockSet = new TreeSet<LockInfo>(new LockInfoComparator());
       while (rs.next()) {
         lockSet.add(new LockInfo(rs));
       }
       // Turn the tree set into an array so we can move back and forth easily
       // in it.
-      LockInfo[] locks = (LockInfo[])lockSet.toArray(new LockInfo[1]);
+      LockInfo[] locks = lockSet.toArray(new LockInfo[lockSet.size()]);
+      if(LOG.isDebugEnabled()) {
+        LOG.debug("Locks to check(full): ");
+        for(LockInfo info : locks) {
+          LOG.debug("  " + info);
+        }
+      }
 
       for (LockInfo info : locksBeingChecked) {
         // Find the lock record we're checking
@@ -1496,22 +1582,27 @@ public class TxnHandler {
 
           // We've found something that matches what we're trying to lock,
           // so figure out if we can lock it too.
-          switch (jumpTable.get(locks[index].type).get(locks[i].type).get
-            (locks[i].state)) {
+          LockAction lockAction = jumpTable.get(locks[index].type).get(locks[i].type).get(locks[i].state);
+          LOG.debug("desired Lock: " + info + " checked Lock: " + locks[i] + " action: " + lockAction);
+          switch (lockAction) {
+            case WAIT:
+              if(!ignoreConflict(info, locks[i])) {
+                wait(dbConn, save);
+                if (alwaysCommit) {
+                  // In the case where lockNoWait has been called we don't want to commit because
+                  // it's going to roll everything back. In every other case we want to commit here.
+                  LOG.debug("Going to commit");
+                  dbConn.commit();
+                }
+                response.setState(LockState.WAITING);
+                LOG.debug("Lock(" + info + ") waiting for Lock(" + locks[i] + ")");
+                return response;
+              }
+              //fall through to ACQUIRE
             case ACQUIRE:
               acquire(dbConn, stmt, extLockId, info.intLockId);
               acquired = true;
               break;
-            case WAIT:
-              wait(dbConn, save);
-              if (alwaysCommit) {
-                // In the case where lockNoWait has been called we don't want to commit because
-                // it's going to roll everything back. In every other case we want to commit here.
-                LOG.debug("Going to commit");
-                dbConn.commit();
-              }
-              response.setState(LockState.WAITING);
-              return response;
             case KEEP_LOOKING:
               continue;
           }
@@ -1532,6 +1623,19 @@ public class TxnHandler {
       closeStmt(stmt);
     }
     return response;
+  }
+
+  /**
+   * the {@link #jumpTable} only deals with LockState/LockType.  In some cases it's not
+   * sufficient.  For example, an EXCLUSIVE lock on partition should prevent SHARED_READ
+   * on the table, but there is no reason for EXCLUSIVE on a table to prevent SHARED_READ
+   * on a database.
+   */
+  private boolean ignoreConflict(LockInfo desiredLock, LockInfo existingLock) {
+    return (desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
+      existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
+      (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
+        desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE);
   }
 
   private void wait(Connection dbConn, Savepoint save) throws SQLException {
@@ -1654,7 +1758,7 @@ public class TxnHandler {
     try {
       stmt = dbConn.createStatement();
       String s = "select hl_lock_ext_id, hl_lock_int_id, hl_db, hl_table, " +
-        "hl_partition, hl_lock_state, hl_lock_type from HIVE_LOCKS where " +
+        "hl_partition, hl_lock_state, hl_lock_type, hl_txnid from HIVE_LOCKS where " +
         "hl_lock_ext_id = " + extLockId;
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);

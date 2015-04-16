@@ -6059,11 +6059,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // Wrap the start of the threads in a catch Throwable loop so that any failures
         // don't doom the rest of the metastore.
         startLock.lock();
-        try {
-          startPauseMonitor(conf);
-        } catch (Throwable t) {
-          LOG.warn("Error starting the JVM pause monitor", t);
-        }
+        ShimLoader.getHadoopShims().startPauseMonitor(conf);
+
         try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
@@ -6081,18 +6078,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     t.start();
-  }
-
-  private static void startPauseMonitor(HiveConf conf) throws Exception {
-    try {
-      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
-      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
-        new org.apache.hadoop.util.JvmPauseMonitor(conf);
-      pauseMonitor.start();
-    } catch (Throwable t) {
-      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
-               " GCs and Pauses may not be warned upon.", t);
-    }
   }
 
   private static void startCompactorInitiator(HiveConf conf) throws Exception {
