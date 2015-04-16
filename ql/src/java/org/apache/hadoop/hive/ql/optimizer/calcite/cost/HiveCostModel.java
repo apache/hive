@@ -85,7 +85,7 @@ public abstract class HiveCostModel {
    * Interface for join algorithm.
    */
   public interface JoinAlgorithm {
-    public String getName();
+    public String toString();
     public boolean isExecutable(HiveJoin join);
     public RelOptCost getCost(HiveJoin join);
     public ImmutableList<RelCollation> getCollation(HiveJoin join);

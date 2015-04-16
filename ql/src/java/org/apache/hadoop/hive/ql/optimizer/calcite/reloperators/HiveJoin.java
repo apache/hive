@@ -112,10 +112,6 @@ public class HiveJoin extends Join implements HiveRelNode {
     this.joinAlgorithm = joinAlgorithm;
   }
 
-  public String getJoinAlgorithmName() {
-    return joinAlgorithm.getName();
-  }
-
   public ImmutableList<RelCollation> getCollation() {
     return joinAlgorithm.getCollation(this);
   }
@@ -212,9 +208,10 @@ public class HiveJoin extends Join implements HiveRelNode {
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
-        .item("joinAlgorithm", joinAlgorithm == null ?
-                "None" : joinAlgorithm.getName())
-        .item("cost", joinCost);
+        .item("algorithm", joinAlgorithm == null ?
+                "none" : joinAlgorithm)
+        .item("cost", joinCost == null ?
+                "not available" : joinCost);
   }
 
   /**

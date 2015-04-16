@@ -106,7 +106,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
 
     @Override
-    public String getName() {
+    public String toString() {
       return ALGORITHM_NAME;
     }
 
@@ -197,7 +197,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
 
     @Override
-    public String getName() {
+    public String toString() {
       return ALGORITHM_NAME;
     }
 
@@ -321,7 +321,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
 
     @Override
-    public String getName() {
+    public String toString() {
       return ALGORITHM_NAME;
     }
 
@@ -475,7 +475,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
 
     @Override
-    public String getName() {
+    public String toString() {
       return ALGORITHM_NAME;
     }
 

@@ -21,7 +21,6 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
@@ -65,11 +64,11 @@ public class HiveDefaultCostModel extends HiveCostModel {
   public static class DefaultJoinAlgorithm implements JoinAlgorithm {
 
     public static final JoinAlgorithm INSTANCE = new DefaultJoinAlgorithm();
-    private static final String ALGORITHM_NAME = "None";
+    private static final String ALGORITHM_NAME = "none";
 
 
     @Override
-    public String getName() {
+    public String toString() {
       return ALGORITHM_NAME;
     }
 
