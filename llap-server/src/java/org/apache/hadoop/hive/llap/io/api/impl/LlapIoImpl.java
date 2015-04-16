@@ -53,6 +53,7 @@ import org.apache.hadoop.metrics2.util.MBeans;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
@@ -106,7 +107,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     }
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
-    executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads));
+    executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads,
+        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").build()));
 
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
