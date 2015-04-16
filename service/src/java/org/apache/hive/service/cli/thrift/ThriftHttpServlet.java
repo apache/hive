@@ -19,18 +19,26 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.NewCookie;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -41,6 +49,7 @@ import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.CookieSigner;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
@@ -63,6 +72,18 @@ public class ThriftHttpServlet extends TServlet {
   private final String authType;
   private final UserGroupInformation serviceUGI;
   private final UserGroupInformation httpUGI;
+  private HiveConf hiveConf = new HiveConf();
+
+  // Class members for cookie based authentication.
+  private CookieSigner signer;
+  public static final String AUTH_COOKIE = "hive.server2.auth";
+  private static final Random RAN = new Random();
+  private boolean isCookieAuthEnabled;
+  private String cookieDomain;
+  private String cookiePath;
+  private int cookieMaxAge;
+  private boolean isCookieSecure;
+  private boolean isHttpOnlyCookie;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI) {
@@ -70,34 +91,80 @@ public class ThriftHttpServlet extends TServlet {
     this.authType = authType;
     this.serviceUGI = serviceUGI;
     this.httpUGI = httpUGI;
+    this.isCookieAuthEnabled = hiveConf.getBoolVar(
+      ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED);
+    // Initialize the cookie based authentication related variables.
+    if (isCookieAuthEnabled) {
+      // Generate the signer with secret.
+      String secret = Long.toString(RAN.nextLong());
+      LOG.debug("Using the random number as the secret for cookie generation " + secret);
+      this.signer = new CookieSigner(secret.getBytes());
+      this.cookieMaxAge = (int) hiveConf.getTimeVar(
+        ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE, TimeUnit.SECONDS);
+      this.cookieDomain = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_DOMAIN);
+      this.cookiePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_PATH);
+      this.isCookieSecure = hiveConf.getBoolVar(
+        ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_SECURE);
+      this.isHttpOnlyCookie = hiveConf.getBoolVar(
+        ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY);
+    }
   }
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String clientUserName;
+    String clientUserName = null;
     String clientIpAddress;
+    boolean requireNewCookie = false;
+
     try {
-      // For a kerberos setup
-      if(isKerberosAuthMode(authType)) {
-        clientUserName = doKerberosAuth(request);
-        String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
-        if (doAsQueryParam != null) {
-          SessionManager.setProxyUserName(doAsQueryParam);
+      // If the cookie based authentication is already enabled, parse the
+      // request and validate the request cookies.
+      if (isCookieAuthEnabled) {
+        clientUserName = validateCookie(request);
+        requireNewCookie = (clientUserName == null);
+        if (requireNewCookie) {
+          LOG.info("Could not validate cookie sent, will try to generate a new cookie");
         }
       }
-      else {
-        clientUserName = doPasswdAuth(request, authType);
+      // If the cookie based authentication is not enabled or the request does
+      // not have a valid cookie, use the kerberos or password based authentication
+      // depending on the server setup.
+      if (clientUserName == null) {
+        // For a kerberos setup
+        if (isKerberosAuthMode(authType)) {
+          clientUserName = doKerberosAuth(request);
+          String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
+
+          if (doAsQueryParam != null) {
+            SessionManager.setProxyUserName(doAsQueryParam);
+          }
+        }
+        // For password based authentication
+        else {
+          clientUserName = doPasswdAuth(request, authType);
+        }
       }
       LOG.debug("Client username: " + clientUserName);
       // Set the thread local username to be used for doAs if true
       SessionManager.setUserName(clientUserName);
-
       clientIpAddress = request.getRemoteAddr();
       LOG.debug("Client IP Address: " + clientIpAddress);
       // Set the thread local ip address
       SessionManager.setIpAddress(clientIpAddress);
+      // Generate new cookie and add it to the response
+      if (requireNewCookie &&
+          !authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
+        String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
+        Cookie hs2Cookie = createCookie(signer.signCookie(cookieToken));
 
+        if (isHttpOnlyCookie) {
+          response.setHeader("SET-COOKIE", getHttpOnlyCookieHeader(hs2Cookie));
+        } else {
+          response.addCookie(hs2Cookie);
+        }
+        LOG.info("Cookie added for clientUserName " + clientUserName);
+      }
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
@@ -115,6 +182,127 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearIpAddress();
       SessionManager.clearProxyUserName();
     }
+  }
+
+  /**
+   * Retrieves the client name from cookieString. If the cookie does not
+   * correspond to a valid client, the function returns null.
+   * @param cookies HTTP Request cookies.
+   * @return Client Username if cookieString has a HS2 Generated cookie that is currently valid.
+   * Else, returns null.
+   */
+  private String getClientNameFromCookie(Cookie[] cookies) {
+    // Current Cookie Name, Current Cookie Value
+    String currName, currValue;
+
+    // Following is the main loop which iterates through all the cookies send by the client.
+    // The HS2 generated cookies are of the format hive.server2.auth=<value>
+    // A cookie which is identified as a hiveserver2 generated cookie is validated
+    // by calling signer.verifyAndExtract(). If the validation passes, send the
+    // username for which the cookie is validated to the caller. If no client side
+    // cookie passes the validation, return null to the caller.
+    for (Cookie currCookie : cookies) {
+      // Get the cookie name
+      currName = currCookie.getName();
+      if (!currName.equals(AUTH_COOKIE)) {
+        // Not a HS2 generated cookie, continue.
+        continue;
+      }
+      // If we reached here, we have match for HS2 generated cookie
+      currValue = currCookie.getValue();
+      // Validate the value.
+      currValue = signer.verifyAndExtract(currValue);
+      // Retrieve the user name, do the final validation step.
+      if (currValue != null) {
+        String userName = HttpAuthUtils.getUserNameFromCookieToken(currValue);
+
+        if (userName == null) {
+          LOG.warn("Invalid cookie token " + currValue);
+          continue;
+        }
+        //We have found a valid cookie in the client request.
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Validated the cookie for user " + userName);
+        }
+        return userName;
+	  }
+    }
+    // No valid HS2 generated cookies found, return null
+    return null;
+  }
+
+  /**
+   * Convert cookie array to human readable cookie string
+   * @param cookies Cookie Array
+   * @return String containing all the cookies separated by a newline character.
+   * Each cookie is of the format [key]=[value]
+   */
+  private String toCookieStr(Cookie[] cookies) {
+	String cookieStr = "";
+
+	for (Cookie c : cookies) {
+     cookieStr += c.getName() + "=" + c.getValue() + " ;\n";
+    }
+    return cookieStr;
+  }
+
+  /**
+   * Validate the request cookie. This function iterates over the request cookie headers
+   * and finds a cookie that represents a valid client/server session. If it finds one, it
+   * returns the client name associated with the session. Else, it returns null.
+   * @param request The HTTP Servlet Request send by the client
+   * @return Client Username if the request has valid HS2 cookie, else returns null
+   * @throws UnsupportedEncodingException
+   */
+  private String validateCookie(HttpServletRequest request) throws UnsupportedEncodingException {
+    // Find all the valid cookies associated with the request.
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies == null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No valid cookies associated with the request " + request);
+      }
+      return null;
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Received cookies: " + toCookieStr(cookies));
+    }
+    return getClientNameFromCookie(cookies);
+  }
+
+  /**
+   * Generate a server side cookie given the cookie value as the input.
+   * @param str Input string token.
+   * @return The generated cookie.
+   * @throws UnsupportedEncodingException
+   */
+  private Cookie createCookie(String str) throws UnsupportedEncodingException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cookie name = " + AUTH_COOKIE + " value = " + str);
+    }
+    Cookie cookie = new Cookie(AUTH_COOKIE, str);
+
+    cookie.setMaxAge(cookieMaxAge);
+    if (cookieDomain != null) {
+      cookie.setDomain(cookieDomain);
+    }
+    if (cookiePath != null) {
+      cookie.setPath(cookiePath);
+    }
+    cookie.setSecure(isCookieSecure);
+    return cookie;
+  }
+
+  /**
+   * Generate httponly cookie from HS2 cookie
+   * @param cookie HS2 generated cookie
+   * @return The httponly cookie
+   */
+  private static String getHttpOnlyCookieHeader(Cookie cookie) {
+    NewCookie newCookie = new NewCookie(cookie.getName(), cookie.getValue(),
+      cookie.getPath(), cookie.getDomain(), cookie.getVersion(),
+      cookie.getComment(), cookie.getMaxAge(), cookie.getSecure());
+    return newCookie + "; HttpOnly";
   }
 
   /**

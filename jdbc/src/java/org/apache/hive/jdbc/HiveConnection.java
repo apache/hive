@@ -291,7 +291,7 @@ public class HiveConnection implements java.sql.Connection {
        */
       requestInterceptor =
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName);
+              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl);
     }
     else {
       /**
@@ -299,7 +299,7 @@ public class HiveConnection implements java.sql.Connection {
        * In https mode, the entire information is encrypted
        */
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
-                                                        cookieStore, cookieName);
+                                                        cookieStore, cookieName, useSsl);
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {

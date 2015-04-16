@@ -579,10 +579,11 @@ public class Utils {
    * has a valid cookie and the client need not send Credentials for validation purpose.
    * @param cookieStore The cookie Store
    * @param cookieName Name of the cookie which needs to be validated
+   * @param isSSL Whether this is a http/https connection
    * @return true or false based on whether the client needs to send the credentials or
    * not to the server.
    */
-  static boolean needToSendCredentials(CookieStore cookieStore, String cookieName) {
+  static boolean needToSendCredentials(CookieStore cookieStore, String cookieName, boolean isSSL) {
     if (cookieName == null || cookieStore == null) {
       return true;
     }
@@ -590,6 +591,12 @@ public class Utils {
     List<Cookie> cookies = cookieStore.getCookies();
 
     for (Cookie c : cookies) {
+      // If this is a secured cookie and the current connection is non-secured,
+      // then, skip this cookie. We need to skip this cookie because, the cookie
+      // replay will not be transmitted to the server.
+      if (c.isSecure() && !isSSL) {
+        continue;
+      }
       if (c.getName().equals(cookieName)) {
         return false;
       }
