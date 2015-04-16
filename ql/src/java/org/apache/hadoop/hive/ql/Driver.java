@@ -1316,7 +1316,7 @@ public class Driver implements CommandProcessor {
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     try {
-      LOG.info("Starting command: " + queryStr);
+      LOG.info("Starting command(queryId=" + queryId + "): " + queryStr);
 
       plan.setStarted();
 

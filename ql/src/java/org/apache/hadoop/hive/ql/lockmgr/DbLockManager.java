@@ -72,12 +72,21 @@ public class DbLockManager implements HiveLockManager{
    * Send a lock request to the metastore.  This is intended for use by
    * {@link DbTxnManager}.
    * @param lock lock request
+   * @param isBlocking if true, will block until locks have been acquired
    * @throws LockException
+   * @return the result of the lock attempt
    */
-  List<HiveLock> lock(LockRequest lock) throws LockException {
+  LockState lock(LockRequest lock, String queryId, boolean isBlocking, List<HiveLock> acquiredLocks) throws LockException {
     try {
-      LOG.debug("Requesting lock");
+      LOG.debug("Requesting: queryId=" + queryId + " " + lock);
       LockResponse res = client.lock(lock);
+      //link lockId to queryId
+      LOG.debug("Response " + res);
+      if(!isBlocking) {
+        if(res.getState() == LockState.WAITING) {
+          return LockState.WAITING;
+        }
+      }
       while (res.getState() == LockState.WAITING) {
         backoff();
         res = client.checkLock(res.getLockid());
@@ -88,9 +97,8 @@ public class DbLockManager implements HiveLockManager{
       if (res.getState() != LockState.ACQUIRED) {
         throw new LockException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
       }
-      List<HiveLock> locks = new ArrayList<HiveLock>(1);
-      locks.add(hl);
-      return locks;
+      acquiredLocks.add(hl);
+      return res.getState();
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find txnid " + lock.getTxnid());
       throw new LockException(ErrorMsg.TXNMGR_NOT_INSTANTIATED.getMsg(), e);
@@ -100,6 +108,20 @@ public class DbLockManager implements HiveLockManager{
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
+    }
+  }
+  /**
+   * Used to make another attempt to acquire a lock (in Waiting state)
+   * @param extLockId
+   * @return result of the attempt
+   * @throws LockException
+   */
+  LockState checkLock(long extLockId) throws LockException {
+    try {
+      return client.checkLock(extLockId).getState();
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
+        e);
     }
   }
 
