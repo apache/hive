@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -60,8 +61,8 @@ public class GenericUDFLevenshtein extends GenericUDF {
     checkArgPrimitive(arguments, 0);
     checkArgPrimitive(arguments, 1);
 
-    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP);
-    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, VOID_GROUP);
+    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP, VOID_GROUP);
 
     obtainStringConverter(arguments, 0, inputTypes, converters);
     obtainStringConverter(arguments, 1, inputTypes, converters);

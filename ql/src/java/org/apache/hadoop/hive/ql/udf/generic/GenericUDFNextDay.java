@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.
 import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay.DayOfWeek.WED;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -68,8 +69,8 @@ public class GenericUDFNextDay extends GenericUDF {
     checkArgPrimitive(arguments, 0);
     checkArgPrimitive(arguments, 1);
 
-    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP);
-    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP, VOID_GROUP);
+    checkArgGroups(arguments, 1, inputTypes, STRING_GROUP, VOID_GROUP);
 
     obtainDateConverter(arguments, 0, inputTypes, converters);
     obtainStringConverter(arguments, 1, inputTypes, converters);
@@ -168,9 +169,9 @@ public class GenericUDFNextDay extends GenericUDF {
         "TH", "THU", "THURSDAY"), FRI("FR", "FRI", "FRIDAY"), SAT("SA", "SAT", "SATURDAY"), SUN(
         "SU", "SUN", "SUNDAY");
 
-    private String name2;
-    private String name3;
-    private String fullName;
+    private final String name2;
+    private final String name3;
+    private final String fullName;
 
     private DayOfWeek(String name2, String name3, String fullName) {
       this.name2 = name2;

@@ -62,7 +62,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
       assertTrue("levenshtein test. UDFArgumentTypeException is expected", false);
     } catch (UDFArgumentTypeException e) {
       assertEquals("levenshtein test",
-          "levenshtein only takes STRING_GROUP types as 1st argument, got INT", e.getMessage());
+          "levenshtein only takes STRING_GROUP, VOID_GROUP types as 1st argument, got INT", e.getMessage());
     }
   }
 
@@ -78,7 +78,7 @@ public class TestGenericUDFLevenshtein extends TestCase {
       assertTrue("levenshtein test. UDFArgumentTypeException is expected", false);
     } catch (UDFArgumentTypeException e) {
       assertEquals("levenshtein test",
-          "levenshtein only takes STRING_GROUP types as 2nd argument, got FLOAT", e.getMessage());
+          "levenshtein only takes STRING_GROUP, VOID_GROUP types as 2nd argument, got FLOAT", e.getMessage());
     }
   }
 

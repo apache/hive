@@ -31,3 +31,7 @@ select * from (select key from src union all select src.key from src left outer 
 explain extended 
 select * from src s1, src s2 where false and s1.value = s2.value;
 select * from src s1, src s2 where false and s1.value = s2.value;
+
+explain extended
+select count(1) from src where null = 1;
+select count(1) from src where null = 1;

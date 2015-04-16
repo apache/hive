@@ -493,9 +493,8 @@ public final class ConstantPropagateProcFactory {
             ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(),
                 writableValue);
       } else if (desc instanceof ExprNodeNullDesc) {
-
-        // FIXME: add null support.
-        return null;
+         argois[i] = desc.getWritableObjectInspector();
+         arguments[i] = new DeferredJavaObject(((ExprNodeNullDesc) desc).getValue());
       } else if (desc instanceof ExprNodeGenericFuncDesc) {
         ExprNodeDesc evaluatedFn = foldExpr((ExprNodeGenericFuncDesc)desc);
         if (null == evaluatedFn || !(evaluatedFn instanceof ExprNodeConstantDesc)) {
@@ -516,6 +515,10 @@ public final class ConstantPropagateProcFactory {
       Object o = udf.evaluate(arguments);
       LOG.debug(udf.getClass().getName() + "(" + exprs + ")=" + o);
       if (o == null) {
+        if (oi instanceof PrimitiveObjectInspector) {
+
+          return new ExprNodeConstantDesc(((PrimitiveObjectInspector) oi).getTypeInfo(), o);
+        }
         return new ExprNodeNullDesc();
       }
       Class<?> clz = o.getClass();
@@ -612,6 +615,10 @@ public final class ConstantPropagateProcFactory {
         } else if (Boolean.FALSE.equals(c.getValue())) {
           LOG.warn("Filter expression " + condn + " holds false!");
         }
+      }
+      if (newCondn instanceof ExprNodeNullDesc || (newCondn instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)newCondn).getValue() == null)) {
+        // where null is same as where false
+        newCondn = new ExprNodeConstantDesc(Boolean.FALSE);
       }
       LOG.debug("New filter FIL[" + op.getIdentifier() + "] conditions:" + newCondn.getExprString());
 
