@@ -302,7 +302,7 @@ public class TypeCheckProcFactory {
             scale = hd.scale();
           }
           DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-          return new ExprNodeConstantDesc(typeInfo, strVal);
+          return new ExprNodeConstantDesc(typeInfo, hd);
         } else {
           v = Double.valueOf(expr.getText());
           v = Long.valueOf(expr.getText());

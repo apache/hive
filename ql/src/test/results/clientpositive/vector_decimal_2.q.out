@@ -922,6 +922,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(4,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(4,2))
@@ -976,6 +977,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(4,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(4,2))
@@ -1030,6 +1032,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(30,8))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(30,8))
@@ -1460,6 +1463,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(20,20))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(20,20))
