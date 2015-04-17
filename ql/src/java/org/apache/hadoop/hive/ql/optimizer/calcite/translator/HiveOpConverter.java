@@ -35,7 +35,6 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.SortExchange;
-import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -47,7 +46,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -116,7 +114,6 @@ public class HiveOpConverter {
   private final UnparseTranslator                             unparseTranslator;
   private final Map<String, Operator<? extends OperatorDesc>> topOps;
   private final boolean                                       strictMode;
-  private int                                                 reduceSinkTagGenerator;
 
   public HiveOpConverter(SemanticAnalyzer semanticAnalyzer, HiveConf hiveConf,
       UnparseTranslator unparseTranslator, Map<String, Operator<? extends OperatorDesc>> topOps,
@@ -126,7 +123,6 @@ public class HiveOpConverter {
     this.unparseTranslator = unparseTranslator;
     this.topOps = topOps;
     this.strictMode = strictMode;
-    this.reduceSinkTagGenerator = 0;
   }
 
   static class OpAttr {
@@ -314,7 +310,12 @@ public class HiveOpConverter {
     // 3. Extract join keys from condition
     ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs());
 
-    // 4. Generate Join operator
+    // 4.a Generate tags
+    for (int tag=0; tag<children.size(); tag++) {
+      ReduceSinkOperator reduceSinkOp = (ReduceSinkOperator) children.get(tag);
+      reduceSinkOp.getConf().setTag(tag);
+    }
+    // 4.b Generate Join operator
     JoinOperator joinOp = genJoin(joinRel, joinPredInfo, children, joinKeys);
 
     // 5. TODO: Extract condition for non-equi join elements (if any) and
@@ -331,7 +332,7 @@ public class HiveOpConverter {
       }
     }
 
-    // 8. Return result
+    // 7. Return result
     return new OpAttr(null, vcolMap, joinOp);
   }
 
@@ -394,7 +395,7 @@ public class HiveOpConverter {
 
       // 1.b. Generate reduce sink and project operator
       resultOp = genReduceSinkAndBacktrackSelect(resultOp,
-          sortCols.toArray(new ExprNodeDesc[sortCols.size()]), -1, new ArrayList<ExprNodeDesc>(),
+          sortCols.toArray(new ExprNodeDesc[sortCols.size()]), 0, new ArrayList<ExprNodeDesc>(),
           order.toString(), numReducers, Operation.NOT_ACID, strictMode);
     }
 
@@ -494,7 +495,7 @@ public class HiveOpConverter {
     }
 
     ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0), expressions,
-        reduceSinkTagGenerator++, -1, Operation.NOT_ACID, strictMode);
+        -1, -1, Operation.NOT_ACID, strictMode);
 
     return inputOpAf.clone(rsOp);
   }
@@ -541,7 +542,7 @@ public class HiveOpConverter {
       }
 
       SelectOperator selectOp = genReduceSinkAndBacktrackSelect(input,
-          keyCols.toArray(new ExprNodeDesc[keyCols.size()]), reduceSinkTagGenerator++, partCols,
+          keyCols.toArray(new ExprNodeDesc[keyCols.size()]), 0, partCols,
           order.toString(), -1, Operation.NOT_ACID, strictMode);
 
       // 2. Finally create PTF
