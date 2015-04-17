@@ -28,6 +28,7 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -58,14 +59,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
-  private final String qbID;
+  private final String concatQbIDAlias;
+  private final boolean useQBIdInDigest;
 
   public String getTableAlias() {
     return tblAlias;
   }
 
-  public String getQbID() {
-    return qbID;
+  public String getConcatQbIDAlias() {
+    return concatQbIDAlias;
   }
 
   /**
@@ -80,18 +82,20 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @param table
    *          HiveDB table
    */
-  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias, String qbID) {
-    this(cluster, traitSet, table,  alias, qbID, table.getRowType());
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest) {
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest);
   }
 
-  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias, String qbID,
-      RelDataType newRowtype) {
+  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
+      String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
-    this.qbID = qbID;
+    this.concatQbIDAlias = concatQbIDAlias;
     this.hiveTableScanRowType = newRowtype;
     this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
+    this.useQBIdInDigest = useQBIdInDigest;
   }
 
   @Override
@@ -108,13 +112,23 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.qbID,
-            newRowtype);
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
+            newRowtype, this.useQBIdInDigest);
   }
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
     return RelMetadataQuery.getNonCumulativeCost(this);
+  }
+
+  @Override public RelWriter explainTerms(RelWriter pw) {
+    if (this.useQBIdInDigest) {
+      // TODO: Only the qualified name should be left here
+      return super.explainTerms(pw).item("table", table.getQualifiedName())
+          .item("qbid:alias", concatQbIDAlias);
+    } else {
+      return super.explainTerms(pw);
+    }
   }
 
   @Override
