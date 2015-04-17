@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -262,19 +263,14 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private PartitioningSpec getPSpec(RexWindow window) {
     PartitioningSpec partitioning = new PartitioningSpec();
 
+    Schema schema = new Schema(tabAlias, inputRowType.getFieldList());
+
     if (window.partitionKeys != null && !window.partitionKeys.isEmpty()) {
       PartitionSpec pSpec = new PartitionSpec();
       for (RexNode pk : window.partitionKeys) {
         PartitionExpression exprSpec = new PartitionExpression();
-        RexInputRef inputRef = (RexInputRef) pk;
-        RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
-        ASTNode astCol;
-        if (tabAlias == null || tabAlias.isEmpty()) {
-          astCol = ASTBuilder.unqualifiedName(f.getName());
-        } else {
-          astCol = ASTBuilder.qualifiedName(tabAlias, f.getName());
-        }
-        exprSpec.setExpression(astCol);
+        ASTNode astNode = pk.accept(new RexVisitor(schema));
+        exprSpec.setExpression(astNode);
         pSpec.addExpression(exprSpec);
       }
       partitioning.setPartSpec(pSpec);
@@ -287,15 +283,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         Order order = ok.getDirection() == RelFieldCollation.Direction.ASCENDING ?
                 Order.ASC : Order.DESC;
         exprSpec.setOrder(order);
-        RexInputRef inputRef = (RexInputRef) ok.left;
-        RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
-        ASTNode astCol;
-        if (tabAlias == null || tabAlias.isEmpty()) {
-          astCol = ASTBuilder.unqualifiedName(f.getName());
-        } else {
-          astCol = ASTBuilder.qualifiedName(tabAlias, f.getName());
-        }
-        exprSpec.setExpression(astCol);
+        ASTNode astNode = ok.left.accept(new RexVisitor(schema));
+        exprSpec.setExpression(astNode);
         oSpec.addExpression(exprSpec);
       }
       partitioning.setOrderSpec(oSpec);
