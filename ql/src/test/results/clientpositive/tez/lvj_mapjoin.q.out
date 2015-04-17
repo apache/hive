@@ -144,6 +144,7 @@ STAGE PLANS:
                               input vertices:
                                 1 Map 2
                               Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                              HybridGraceHashJoin: true
                               Filter Operator
                                 predicate: (_col0 = _col2) (type: boolean)
                                 Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE
@@ -182,6 +183,7 @@ STAGE PLANS:
                                 input vertices:
                                   1 Map 2
                                 Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                                HybridGraceHashJoin: true
                                 Filter Operator
                                   predicate: (_col0 = _col2) (type: boolean)
                                   Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: NONE

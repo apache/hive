@@ -70,6 +70,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private float hashtableMemoryUsage;
   protected boolean genJoinKeys = true;
 
+  private boolean isHybridHashJoin;
+
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
@@ -90,6 +92,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.parentToInput = clone.parentToInput;
     this.parentKeyCounts = clone.parentKeyCounts;
     this.parentDataSizes = clone.parentDataSizes;
+    this.isBucketMapJoin = clone.isBucketMapJoin;
+    this.isHybridHashJoin = clone.isHybridHashJoin;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -320,6 +324,15 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setBucketMapJoin(boolean isBucketMapJoin) {
     this.isBucketMapJoin = isBucketMapJoin;
+  }
+
+  @Explain(displayName = "HybridGraceHashJoin", displayOnlyOnTrue = true)
+  public boolean isHybridHashJoin() {
+    return isHybridHashJoin;
+  }
+
+  public void setHybridHashJoin(boolean isHybridHashJoin) {
+    this.isHybridHashJoin = isHybridHashJoin;
   }
 
   public void setHashTableMemoryUsage(float hashtableMemoryUsage) {

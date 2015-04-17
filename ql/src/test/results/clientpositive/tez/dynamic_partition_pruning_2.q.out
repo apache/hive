@@ -176,6 +176,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 4
                     Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -337,6 +338,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 4
                     Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -473,6 +475,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                     Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -579,6 +582,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                     Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
@@ -677,6 +681,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 4
                     Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -827,6 +832,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5
                     input vertices:
                       1 Map 3
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
                       Select Operator
@@ -881,6 +887,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5
                     input vertices:
                       1 Map 5
+                    HybridGraceHashJoin: true
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
                       Select Operator

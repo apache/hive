@@ -626,6 +626,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, joinOp,
             joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), bigTablePosition, true);
+    mapJoinOp.getConf().setHybridHashJoin(HiveConf.getBoolVar(context.conf,
+      HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN));
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

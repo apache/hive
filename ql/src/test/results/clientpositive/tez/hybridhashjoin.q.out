@@ -168,6 +168,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 4505 Data size: 968719 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -398,6 +399,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -615,6 +617,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -864,6 +867,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 289 Data size: 6872 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1082,6 +1086,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 289 Data size: 6872 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1402,6 +1407,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                       Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col9 (type: decimal(23,14))
                         outputColumnNames: _col0, _col1, _col2, _col3

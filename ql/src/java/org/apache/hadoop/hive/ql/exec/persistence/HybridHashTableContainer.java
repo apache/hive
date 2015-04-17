@@ -19,7 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 
-import com.esotericsoftware.kryo.Kryo;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,26 +40,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryStruct;
+import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import com.esotericsoftware.kryo.Kryo;
 
 /**
  * Hash table container that can have many partitions -- each partition has its own hashmap,
@@ -67,16 +68,16 @@ import java.util.*;
 public class HybridHashTableContainer implements MapJoinTableContainer {
   private static final Log LOG = LogFactory.getLog(HybridHashTableContainer.class);
 
-  private HashPartition[] hashPartitions; // an array of partitions holding the triplets
+  private final HashPartition[] hashPartitions; // an array of partitions holding the triplets
   private int totalInMemRowCount = 0;     // total number of small table rows in memory
-  private long memoryThreshold;           // the max memory limit allocated
-  private long tableRowSize;              // row size of the small table
+  private final long memoryThreshold;           // the max memory limit allocated
+  private final long tableRowSize;              // row size of the small table
   private boolean isSpilled;              // whether there's any spilled partition
   private int toSpillPartitionId;         // the partition into which to spill the big table row;
                                           // This may change after every setMapJoinKey call
   private int numPartitionsSpilled;       // number of spilled partitions
   private boolean lastPartitionInMem;     // only one (last one) partition is left in memory
-  private int memoryCheckFrequency;       // how often (# of rows apart) to check if memory is full
+  private final int memoryCheckFrequency;       // how often (# of rows apart) to check if memory is full
 
   /** The OI used to deserialize values. We never deserialize keys. */
   private LazyBinaryStructObjectInspector internalValueOi;
@@ -182,6 +183,11 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
                                    long noConditionalTaskThreshold, int memCheckFreq, long tableSize,
                                    long keyCount, long memUsage) throws SerDeException {
 
+    if (wbSize > noConditionalTaskThreshold) {
+      LOG.warn("adjusting hash table write buffer size to be smaller than noconditionaltasksize");
+      wbSize = (int) noConditionalTaskThreshold;
+    }
+
     int newKeyCount = HashMapWrapper.calculateTableSize(
         keyCountAdj, threshold, loadFactor, keyCount);
 
@@ -204,6 +210,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
       if (isHashMapSpilledOnCreation(i)) {
         numPartitionsSpilledOnCreation++;
         numPartitionsSpilled++;
+        this.setSpill(true);
       } else {
         memoryAllocated += hashPartitions[i].hashMap.memorySize();
       }
@@ -398,8 +405,8 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
    */
   private int calcNumPartitions(long dataSize, int wbSize) {
     if (memoryThreshold < wbSize) {
-      throw new RuntimeException("Available memory is less than hashtable writebuffer size!" +
-          " Try increasing hive.auto.convert.join.noconditionaltask.size.");
+      throw new IllegalStateException("Available memory is less than hashtable writebuffer size!"
+          + " Try increasing hive.auto.convert.join.noconditionaltask.size.");
     }
 
     int lowerLimit = 2;
