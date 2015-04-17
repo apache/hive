@@ -922,6 +922,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(4,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(4,2))
@@ -976,6 +977,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(4,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(4,2))
@@ -1030,6 +1032,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: decimal(30,8))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(30,8))
@@ -1452,22 +1455,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 0.99999999999999999999 (type: decimal(20,20))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 0.99999999999999999999 (type: decimal(20,20))
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(20,20))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(20,20))
+          expressions: KEY.reducesinkkey0 (type: decimal(20,20))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
