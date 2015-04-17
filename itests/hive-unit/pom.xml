@@ -254,6 +254,73 @@
           <artifactId>jersey-servlet</artifactId>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-archives</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-hs</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+          <version>${commons-logging.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-tests</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+          <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-client</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-tests</artifactId>
+          <version>${tez.version}</version>
+          <type>test-jar</type>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-api</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-runtime-library</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-mapreduce</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-dag</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

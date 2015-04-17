@@ -3821,4 +3821,16 @@ public final class Utilities {
   public static boolean isDefaultNameNode(HiveConf conf) {
     return !conf.getChangedProperties().containsKey(HiveConf.ConfVars.HADOOPFS.varname);
   }
+
+  /**
+   * Checks if the current HiveServer2 logging operation level is >= PERFORMANCE.
+   * @param conf Hive configuration.
+   * @return true if current HiveServer2 logging operation level is >= PERFORMANCE.
+   * Else, false.
+   */
+  public static boolean isPerfOrAboveLogging(HiveConf conf) {
+    String loggingLevel = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
+    return conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) &&
+      (loggingLevel.equalsIgnoreCase("PERFORMANCE") || loggingLevel.equalsIgnoreCase("VERBOSE"));
+  }
 }
