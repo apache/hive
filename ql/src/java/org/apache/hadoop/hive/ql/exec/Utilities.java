@@ -2398,7 +2398,7 @@ public final class Utilities {
    * @param job
    *          configuration which receives configured properties
    */
-  public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
+  public static void copyTableJobPropertiesToConf(TableDesc tbl, Configuration job) {
     Properties tblProperties = tbl.getProperties();
     for(String name: tblProperties.stringPropertyNames()) {
       if (job.get(name) == null) {

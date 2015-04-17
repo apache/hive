@@ -380,6 +380,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     // do this for reconciling HBaseStorageHandler for use in HCatalog
     // check to see if this an input job or an outputjob
     if (this.configureInputJobProps) {
+      LOG.info("Configuring input job properties");
       String snapshotName = HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_NAME);
       if (snapshotName != null) {
         HBaseTableSnapshotInputFormatUtil.assertSupportsTableSnapshots();
@@ -428,6 +429,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       } //input job properties
     }
     else {
+      LOG.info("Configuring output job properties");
       if (isHBaseGenerateHFiles(jobConf)) {
         // only support bulkload when a hfile.family.path has been specified.
         // TODO: support detecting cf's from column mapping
