@@ -23,7 +23,6 @@
 # in order to execute the metastore-upgrade-tests for different
 # server configurations.
 
-set -e
 cd $(dirname $0)
 
 OUT_LOG="/tmp/$(basename $0).log"
@@ -152,7 +151,10 @@ do
 	# Execute metastore upgrade tests
 	echo "Running metastore upgrade tests for $name..."
 	run_tests $name
-	log "$(lxc_print_metastore_log $name)"
+	rc=$?
 
+	log "$(lxc_print_metastore_log $name)"
 	lxc_stop $name
+
+	[ $rc != 0 ] && exit 1
 done
