@@ -978,8 +978,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     final int maxDepth = 20;
     Throwable curErr = err;
     for (int idx = 0; curErr != null && idx < maxDepth; ++idx) {
+      // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
+      // Hadoop versions may still see this exception .. have to reference by name.
       if (curErr instanceof org.apache.hadoop.security.AccessControlException
-          || curErr instanceof org.apache.hadoop.fs.permission.AccessControlException) {
+          || curErr.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
         Exception newErr = new AccessControlException(curErr.getMessage());
         newErr.initCause(err);
         return newErr;
