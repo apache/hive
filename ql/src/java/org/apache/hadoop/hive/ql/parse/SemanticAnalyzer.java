@@ -7654,6 +7654,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 keys[i][k].getTypeInfo(), commonType)) {
           keys[i][k] = ParseUtils.createConversionCast(
                   keys[i][k], (PrimitiveTypeInfo)commonType);
+        } else {
+          // For the case no implicit type conversion, e.g., varchar(5) and varchar(10),
+          // pick the common type for all the keys since during run-time, same key type is assumed.
+          keys[i][k].setTypeInfo(commonType);
         }
       }
     }
