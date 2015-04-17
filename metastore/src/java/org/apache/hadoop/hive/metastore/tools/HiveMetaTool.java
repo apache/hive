@@ -253,15 +253,12 @@ public class HiveMetaTool {
     }
   }
 
-  private void printTblPropURIUpdateSummary(
-    ObjectStore.UpdateMStorageDescriptorTblPropURIRetVal retVal, String tablePropKey,
-    boolean isDryRun) {
-    String tblName = new String("SD_PARAMS");
-
+  private void printPropURIUpdateSummary(ObjectStore.UpdatePropURIRetVal retVal, String
+      tablePropKey, boolean isDryRun, String tblName, String methodName) {
     if (retVal == null) {
-      System.err.println("Encountered error while executing updateMStorageDescriptorTblPropURI - " +
-        "commit of JDO transaction failed. Failed to update FSRoot locations in " +
-        "value field corresponding to" + tablePropKey + " in " + tblName + " table.");
+      System.err.println("Encountered error while executing " + methodName + " - " +
+          "commit of JDO transaction failed. Failed to update FSRoot locations in " +
+          "value field corresponding to" + tablePropKey + " in " + tblName + " table.");
     } else {
       Map<String, String> updateLocations = retVal.getUpdateLocations();
       if (isDryRun) {
@@ -278,7 +275,7 @@ public class HiveMetaTool {
       List<String> badRecords = retVal.getBadRecords();
       if (badRecords.size() > 0) {
         System.err.println("Warning: Found records with bad " + tablePropKey +  " key in " +
-        tblName + " table.. ");
+            tblName + " table.. ");
         for (String badRecord:badRecords) {
           System.err.println("bad location URI: " + badRecord);
         }
@@ -318,8 +315,8 @@ public class HiveMetaTool {
     }
   }
 
-  public void updateFSRootLocation(URI oldURI, URI newURI, String serdePropKey,
-      String tablePropKey, boolean isDryRun) {
+  public void updateFSRootLocation(URI oldURI, URI newURI, String serdePropKey, String
+      tablePropKey, boolean isDryRun) {
     HiveConf hiveConf = new HiveConf(HiveMetaTool.class);
     initObjectStore(hiveConf);
 
@@ -334,12 +331,20 @@ public class HiveMetaTool {
     printTblURIUpdateSummary(updateTblURIRetVal, isDryRun);
 
     if (tablePropKey != null) {
+      System.out.println("Looking for value of " + tablePropKey + " key in TABLE_PARAMS table " +
+          "to update..");
+      ObjectStore.UpdatePropURIRetVal updateTblPropURIRetVal =
+          objStore.updateTblPropURI(oldURI, newURI,
+              tablePropKey, isDryRun);
+      printPropURIUpdateSummary(updateTblPropURIRetVal, tablePropKey, isDryRun, "TABLE_PARAMS",
+          "updateTblPropURI");
+
       System.out.println("Looking for value of " + tablePropKey + " key in SD_PARAMS table " +
         "to update..");
-      ObjectStore.UpdateMStorageDescriptorTblPropURIRetVal updateTblPropURIRetVal =
-                           objStore.updateMStorageDescriptorTblPropURI(oldURI, newURI,
-                               tablePropKey, isDryRun);
-      printTblPropURIUpdateSummary(updateTblPropURIRetVal, tablePropKey, isDryRun);
+      ObjectStore.UpdatePropURIRetVal updatePropURIRetVal = objStore
+          .updateMStorageDescriptorTblPropURI(oldURI, newURI, tablePropKey, isDryRun);
+      printPropURIUpdateSummary(updatePropURIRetVal, tablePropKey, isDryRun, "SD_PARAMS",
+          "updateMStorageDescriptorTblPropURI");
     }
 
     if (serdePropKey != null) {
