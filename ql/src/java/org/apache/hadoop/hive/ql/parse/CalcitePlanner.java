@@ -1357,10 +1357,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
             rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-            partitionCache, noColsMissingStats, getAliasId(tableAlias, qb));
+            partitionCache, noColsMissingStats);
 
         // 5. Build Hive Table Scan Rel
-        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias);
+        tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias, getAliasId(tableAlias, qb));
 
         // 6. Add Schema(RR) to RelNode-Schema map
         ImmutableMap<String, Integer> hiveToCalciteColMap = buildHiveToCalciteColumnMap(rr,

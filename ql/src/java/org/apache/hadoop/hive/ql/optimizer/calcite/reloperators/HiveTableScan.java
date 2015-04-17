@@ -58,9 +58,14 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
+  private final String qbID;
 
   public String getTableAlias() {
     return tblAlias;
+  }
+
+  public String getQbID() {
+    return qbID;
   }
 
   /**
@@ -75,15 +80,16 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @param table
    *          HiveDB table
    */
-  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias) {
-    this(cluster, traitSet, table,  alias, table.getRowType());
+  public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias, String qbID) {
+    this(cluster, traitSet, table,  alias, qbID, table.getRowType());
   }
 
-  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias,
+  private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table, String alias, String qbID,
       RelDataType newRowtype) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
+    this.qbID = qbID;
     this.hiveTableScanRowType = newRowtype;
     this.neededColIndxsFrmReloptHT = buildNeededColIndxsFrmReloptHT(table.getRowType(), newRowtype);
   }
@@ -102,7 +108,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * @return
    */
   public HiveTableScan copy(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.qbID,
             newRowtype);
   }
 

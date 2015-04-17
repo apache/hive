@@ -243,7 +243,7 @@ public class HiveOpConverter {
     // 2. Setup TableScan
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
 
-    topOps.put(ht.getQBID(), ts);
+    topOps.put(scanRel.getQbID(), ts);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");

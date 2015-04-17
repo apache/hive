@@ -78,7 +78,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   PrunedPartitionList                             partitionList;
   Map<String, PrunedPartitionList>                partitionCache;
   AtomicInteger                                   noColsMissingStats;
-  private final String qbID;
 
   protected static final Log                      LOG             = LogFactory
                                                                       .getLog(RelOptHiveTable.class
@@ -87,8 +86,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
-      Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats,
-      String qbID) {
+      Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats) {
     super(calciteSchema, qualifiedTblName, rowType);
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
@@ -100,7 +98,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     this.hiveConf = hconf;
     this.partitionCache = partitionCache;
     this.noColsMissingStats = noColsMissingStats;
-    this.qbID = qbID;
   }
 
   public RelOptHiveTable copy(RelDataType newRowType) {
@@ -136,7 +133,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     // 3. Build new Table
     return new RelOptHiveTable(this.schema, this.name, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
-        this.hiveConf, this.partitionCache, this.noColsMissingStats, qbID);
+        this.hiveConf, this.partitionCache, this.noColsMissingStats);
   }
 
   @Override
@@ -441,10 +438,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   public List<ColumnInfo> getNonPartColumns() {
     return this.hiveNonPartitionCols;
-  }
-
-  public String getQBID() {
-    return qbID;
   }
 
   public int getNoOfNonVirtualCols() {
