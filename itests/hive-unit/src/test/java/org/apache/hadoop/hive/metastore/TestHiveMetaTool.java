@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -102,6 +103,9 @@ public class TestHiveMetaTool extends TestCase {
       Table tbl = new Table();
       tbl.setDbName(dbName);
       tbl.setTableName(tblName);
+      Map<String, String> parameters = new HashMap<>();
+      parameters.put(AvroSerdeUtils.SCHEMA_URL, avroUri);
+      tbl.setParameters(parameters);
       StorageDescriptor sd = new StorageDescriptor();
       tbl.setSd(sd);
       sd.setCols(typ1.getFields());
@@ -206,10 +210,12 @@ public class TestHiveMetaTool extends TestCase {
   }
 
   public void testUpdateFSRootLocation() throws Exception {
-
     redirectOutputStream();
     String oldLocationUri = "hdfs://nn.example.com/";
     String newLocationUri = "hdfs://nn-ha-uri/";
+    String oldSchemaUri = "hdfs://nn.example.com/warehouse/hive/ab.avsc";
+    String newSchemaUri = "hdfs://nn-ha-uri/warehouse/hive/ab.avsc";
+
     String[] args = new String[5];
     args[0] = new String("-updateLocation");
     args[1] = new String(newLocationUri);
@@ -218,23 +224,32 @@ public class TestHiveMetaTool extends TestCase {
     args[4] = new String("avro.schema.url");
 
     try {
+      checkAvroSchemaURLProps(client.getTable(dbName, tblName), oldSchemaUri);
+
       // perform HA upgrade
       HiveMetaTool.main(args);
       String out = os.toString();
       boolean b = out.contains(newLocationUri);
       restoreOutputStream();
       assertTrue(b);
+      checkAvroSchemaURLProps(client.getTable(dbName,tblName), newSchemaUri);
 
       //restore the original HDFS root
       args[1] = new String(oldLocationUri);
       args[2] = new String(newLocationUri);
       redirectOutputStream();
       HiveMetaTool.main(args);
+      checkAvroSchemaURLProps(client.getTable(dbName,tblName), oldSchemaUri);
       restoreOutputStream();
     } finally {
       restoreOutputStream();
       System.out.println("Completed testUpdateFSRootLocation..");
     }
+  }
+
+  private void checkAvroSchemaURLProps(Table table, String expectedURL) {
+    assertEquals(expectedURL, table.getParameters().get(AvroSerdeUtils.SCHEMA_URL));
+    assertEquals(expectedURL, table.getSd().getParameters().get(AvroSerdeUtils.SCHEMA_URL));
   }
 
   @Override

@@ -5596,12 +5596,11 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public class UpdateMStorageDescriptorTblPropURIRetVal {
+  public class UpdatePropURIRetVal {
     private List<String> badRecords;
     private Map<String, String> updateLocations;
 
-    UpdateMStorageDescriptorTblPropURIRetVal(List<String> badRecords,
-      Map<String, String> updateLocations) {
+    UpdatePropURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
       this.badRecords = badRecords;
       this.updateLocations = updateLocations;
     }
@@ -5623,6 +5622,72 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void updatePropURIHelper(URI oldLoc, URI newLoc, String tblPropKey, boolean isDryRun,
+                                   List<String> badRecords, Map<String, String> updateLocations,
+                                   Map<String, String> parameters) {
+    URI tablePropLocationURI = null;
+    if (parameters.containsKey(tblPropKey)) {
+      String tablePropLocation = parameters.get(tblPropKey);
+      try {
+        tablePropLocationURI = new URI(tablePropLocation);
+      } catch (URISyntaxException e) {
+        badRecords.add(tablePropLocation);
+      } catch (NullPointerException e) {
+        badRecords.add(tablePropLocation);
+      }
+      // if tablePropKey that was passed in lead to a valid URI resolution, update it if
+      //parts of it match the old-NN-loc, else add to badRecords
+      if (tablePropLocationURI == null) {
+        badRecords.add(tablePropLocation);
+      } else {
+        if (shouldUpdateURI(tablePropLocationURI, oldLoc)) {
+          String tblPropLoc = parameters.get(tblPropKey).replaceAll(oldLoc.toString(), newLoc
+              .toString());
+          updateLocations.put(tablePropLocationURI.toString(), tblPropLoc);
+          if (!isDryRun) {
+            parameters.put(tblPropKey, tblPropLoc);
+          }
+        }
+      }
+    }
+  }
+
+  /** The following APIs
+   *
+   *  - updateMStorageDescriptorTblPropURI
+   *
+   * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+   *
+   */
+  public UpdatePropURIRetVal updateTblPropURI(URI oldLoc, URI newLoc, String tblPropKey, boolean
+      isDryRun) {
+    boolean committed = false;
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
+    UpdatePropURIRetVal retVal = null;
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MTable.class);
+      List<MTable> mTbls = (List<MTable>) query.execute();
+      pm.retrieveAll(mTbls);
+
+      for (MTable mTbl : mTbls) {
+        updatePropURIHelper(oldLoc, newLoc, tblPropKey, isDryRun, badRecords, updateLocations,
+            mTbl.getParameters());
+      }
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdatePropURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
   /** The following APIs
   *
   *  - updateMStorageDescriptorTblPropURI
@@ -5630,12 +5695,13 @@ public class ObjectStore implements RawStore, Configurable {
   * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
   *
   */
-  public UpdateMStorageDescriptorTblPropURIRetVal updateMStorageDescriptorTblPropURI(URI oldLoc,
+  @Deprecated
+  public UpdatePropURIRetVal updateMStorageDescriptorTblPropURI(URI oldLoc,
       URI newLoc, String tblPropKey, boolean isDryRun) {
     boolean committed = false;
     Map<String, String> updateLocations = new HashMap<String, String>();
     List<String> badRecords = new ArrayList<String>();
-    UpdateMStorageDescriptorTblPropURIRetVal retVal = null;
+    UpdatePropURIRetVal retVal = null;
 
     try {
       openTransaction();
@@ -5644,35 +5710,12 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(mSDSs);
 
       for(MStorageDescriptor mSDS:mSDSs) {
-        URI tablePropLocationURI = null;
-        if (mSDS.getParameters().containsKey(tblPropKey)) {
-          String tablePropLocation = mSDS.getParameters().get(tblPropKey);
-          try {
-              tablePropLocationURI = new URI(tablePropLocation);
-            } catch (URISyntaxException e) {
-              badRecords.add(tablePropLocation);
-            } catch (NullPointerException e) {
-              badRecords.add(tablePropLocation);
-            }
-            // if tablePropKey that was passed in lead to a valid URI resolution, update it if
-            //parts of it match the old-NN-loc, else add to badRecords
-            if (tablePropLocationURI == null) {
-              badRecords.add(tablePropLocation);
-            } else {
-              if (shouldUpdateURI(tablePropLocationURI, oldLoc)) {
-                String tblPropLoc = mSDS.getParameters().get(tblPropKey).replaceAll(oldLoc.toString(),
-                    newLoc.toString());
-                updateLocations.put(tablePropLocationURI.toString(), tblPropLoc);
-                if (!isDryRun) {
-                  mSDS.getParameters().put(tblPropKey, tblPropLoc);
-                }
-             }
-           }
-         }
+        updatePropURIHelper(oldLoc, newLoc, tblPropKey, isDryRun, badRecords, updateLocations,
+            mSDS.getParameters());
       }
       committed = commitTransaction();
       if (committed) {
-        retVal = new UpdateMStorageDescriptorTblPropURIRetVal(badRecords, updateLocations);
+        retVal = new UpdatePropURIRetVal(badRecords, updateLocations);
       }
       return retVal;
      } finally {
