@@ -23,6 +23,7 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
@@ -53,10 +54,14 @@ public class HiveDefaultCostModel extends HiveCostModel {
   }
 
   @Override
-  public RelOptCost getAggregateCost(HiveAggregate aggregate) {
+  public RelOptCost getScanCost(HiveTableScan ts) {
     return HiveCost.FACTORY.makeZeroCost();
   }
 
+  @Override
+  public RelOptCost getAggregateCost(HiveAggregate aggregate) {
+    return HiveCost.FACTORY.makeZeroCost();
+  }
 
   /**
    * Default join algorithm. Cost is based on cardinality.

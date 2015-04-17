@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 
 import com.google.common.collect.ImmutableList;
@@ -68,6 +69,11 @@ public class HiveOnTezCostModel extends HiveCostModel {
   @Override
   public RelOptCost getDefaultCost() {
     return HiveCost.FACTORY.makeZeroCost();
+  }
+
+  @Override
+  public RelOptCost getScanCost(HiveTableScan ts) {
+    return algoUtils.computeScanCost(ts.getRows(), RelMetadataQuery.getAverageRowSize(ts));
   }
 
   @Override
@@ -166,12 +172,18 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public Double getCumulativeMemoryWithinPhaseSplit(HiveJoin join) {
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezCommonJoinAlgorithm.INSTANCE);
+
       final Double memoryWithinPhase =
           RelMetadataQuery.cumulativeMemoryWithinPhase(join);
       final Integer splitCount = RelMetadataQuery.splitCount(join);
+      join.setJoinAlgorithm(oldAlgo);
+
       if (memoryWithinPhase == null || splitCount == null) {
         return null;
       }
+      
       return memoryWithinPhase / splitCount;
     }
 
@@ -252,8 +264,11 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(new Pair<Double,Double>(leftRCount,leftRAverageSize)).
               add(new Pair<Double,Double>(rightRCount,rightRAverageSize)).
               build();
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezMapJoinAlgorithm.INSTANCE);
       final int parallelism = RelMetadataQuery.splitCount(join) == null
               ? 1 : RelMetadataQuery.splitCount(join);
+      join.setJoinAlgorithm(oldAlgo);
       final double ioCost = algoUtils.computeMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
@@ -346,7 +361,13 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
       // Requirements: for Bucket, bucketed by their keys on both sides and fitting in memory
       // Obtain number of buckets
+      //TODO: Incase of non bucketed splits would be computed based on data size/max part size
+      // What we need is a way to get buckets not splits
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezBucketJoinAlgorithm.INSTANCE);
       Integer buckets = RelMetadataQuery.splitCount(smallInput);
+      join.setJoinAlgorithm(oldAlgo);
+
       if (buckets == null) {
         return false;
       }
@@ -406,8 +427,13 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(new Pair<Double,Double>(leftRCount,leftRAverageSize)).
               add(new Pair<Double,Double>(rightRCount,rightRAverageSize)).
               build();
+      //TODO: No Of buckets is not same as no of splits
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezBucketJoinAlgorithm.INSTANCE);
       final int parallelism = RelMetadataQuery.splitCount(join) == null
               ? 1 : RelMetadataQuery.splitCount(join);
+      join.setJoinAlgorithm(oldAlgo);
+
       final double ioCost = algoUtils.computeBucketMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
@@ -550,8 +576,14 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(new Pair<Double,Double>(leftRCount,leftRAverageSize)).
               add(new Pair<Double,Double>(rightRCount,rightRAverageSize)).
               build();
-      final int parallelism = RelMetadataQuery.splitCount(join) == null
-              ? 1 : RelMetadataQuery.splitCount(join);
+
+      // TODO: Split count is not the same as no of buckets
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezSMBJoinAlgorithm.INSTANCE);
+      final int parallelism = RelMetadataQuery.splitCount(join) == null ? 1 : RelMetadataQuery
+          .splitCount(join);
+      join.setJoinAlgorithm(oldAlgo);
+
       final double ioCost = algoUtils.computeSMBMapJoinIOCost(relationInfos, streaming, parallelism);
       // 4. Result
       return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
@@ -575,9 +607,14 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public Double getCumulativeMemoryWithinPhaseSplit(HiveJoin join) {
-      final Double memoryWithinPhase =
-          RelMetadataQuery.cumulativeMemoryWithinPhase(join);
+      // TODO: Split count is not same as no of buckets
+      JoinAlgorithm oldAlgo = join.getJoinAlgorithm();
+      join.setJoinAlgorithm(TezSMBJoinAlgorithm.INSTANCE);
+
+      final Double memoryWithinPhase = RelMetadataQuery.cumulativeMemoryWithinPhase(join);
       final Integer splitCount = RelMetadataQuery.splitCount(join);
+      join.setJoinAlgorithm(oldAlgo);
+
       if (memoryWithinPhase == null || splitCount == null) {
         return null;
       }

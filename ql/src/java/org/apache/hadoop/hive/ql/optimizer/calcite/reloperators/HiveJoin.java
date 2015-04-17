@@ -112,6 +112,10 @@ public class HiveJoin extends Join implements HiveRelNode {
     this.joinAlgorithm = joinAlgorithm;
   }
 
+  public JoinAlgorithm getJoinAlgorithm() {
+    return this.joinAlgorithm;
+  }
+
   public ImmutableList<RelCollation> getCollation() {
     return joinAlgorithm.getCollation(this);
   }

@@ -65,9 +65,8 @@ public class HiveAlgorithmsUtil {
     return new HiveCost(hr.getRows(), 0, 0);
   }
 
-  public HiveCost computeCost(HiveTableScan t) {
-    double cardinality = t.getRows();
-    return new HiveCost(cardinality, 0, hdfsWrite * cardinality * 0);
+  public HiveCost computeScanCost(double cardinality, double avgTupleSize) {
+    return new HiveCost(cardinality, 0, hdfsRead * cardinality * avgTupleSize);
   }
 
   public double computeSortMergeCPUCost(

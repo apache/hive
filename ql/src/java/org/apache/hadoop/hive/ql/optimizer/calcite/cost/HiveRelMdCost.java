@@ -26,6 +26,7 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import com.google.common.collect.ImmutableList;
 
@@ -54,6 +55,10 @@ public class HiveRelMdCost {
 
   public RelOptCost getNonCumulativeCost(HiveJoin join) {
     return hiveCostModel.getJoinCost(join);
+  }
+
+  public RelOptCost getNonCumulativeCost(HiveTableScan ts) {
+    return hiveCostModel.getScanCost(ts);
   }
 
   // Default case

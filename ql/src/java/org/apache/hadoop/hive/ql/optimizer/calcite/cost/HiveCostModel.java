@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import com.google.common.collect.ImmutableList;
 
@@ -47,6 +48,8 @@ public abstract class HiveCostModel {
   public abstract RelOptCost getDefaultCost();
 
   public abstract RelOptCost getAggregateCost(HiveAggregate aggregate);
+
+  public abstract RelOptCost getScanCost(HiveTableScan ts);
 
   public RelOptCost getJoinCost(HiveJoin join) {
     // Select algorithm with min cost

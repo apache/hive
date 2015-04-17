@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.util.List;
+
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdParallelism;
@@ -61,8 +63,21 @@ public class HiveRelMdParallelism extends RelMdParallelism {
   }
 
   public Integer splitCount(HiveTableScan scan) {
+    Integer splitCount;
+
     RelOptHiveTable table = (RelOptHiveTable) scan.getTable();
-    return table.getHiveTableMD().getNumBuckets();
+    List<String> bucketCols = table.getHiveTableMD().getBucketCols();
+    if (bucketCols != null && !bucketCols.isEmpty()) {
+      splitCount = table.getHiveTableMD().getNumBuckets();
+    } else {
+      splitCount = splitCountRepartition(scan);
+      if (splitCount == null) {
+        throw new RuntimeException("Could not get split count for table: "
+            + scan.getTable().getQualifiedName());
+      }
+    }
+
+    return splitCount;
   }
 
   public Integer splitCount(RelNode rel) {
