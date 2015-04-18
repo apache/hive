@@ -18,4 +18,4 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx6
-FAILED: SemanticException Partition spec {v=val_86} contains non-partition columns
+FAILED: ValidationFailureSemanticException Partition spec {v=val_86} contains non-partition columns

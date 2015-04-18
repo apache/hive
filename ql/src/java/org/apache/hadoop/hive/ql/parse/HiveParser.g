@@ -96,6 +96,8 @@ TOK_CROSSJOIN;
 TOK_LOAD;
 TOK_EXPORT;
 TOK_IMPORT;
+TOK_REPLICATION;
+TOK_METADATA;
 TOK_NULL;
 TOK_ISNULL;
 TOK_ISNOTNULL;
@@ -687,17 +689,30 @@ loadStatement
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
     ;
 
+replicationClause
+@init { pushMsg("replication clause", state); }
+@after { popMsg(state); }
+    : KW_FOR (isMetadataOnly=KW_METADATA)? KW_REPLICATION LPAREN (replId=StringLiteral) RPAREN
+    -> ^(TOK_REPLICATION $replId $isMetadataOnly?)
+    ;
+
 exportStatement
 @init { pushMsg("export statement", state); }
 @after { popMsg(state); }
-    : KW_EXPORT KW_TABLE (tab=tableOrPartition) KW_TO (path=StringLiteral)
-    -> ^(TOK_EXPORT $tab $path)
+    : KW_EXPORT
+      KW_TABLE (tab=tableOrPartition)
+      KW_TO (path=StringLiteral)
+      replicationClause?
+    -> ^(TOK_EXPORT $tab $path replicationClause?)
     ;
 
 importStatement
 @init { pushMsg("import statement", state); }
 @after { popMsg(state); }
-	: KW_IMPORT ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))? KW_FROM (path=StringLiteral) tableLocation?
+       : KW_IMPORT
+         ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))?
+         KW_FROM (path=StringLiteral)
+         tableLocation?
     -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
 
@@ -958,7 +973,8 @@ dropIndexStatement
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE?)
+    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? replicationClause?
+    -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE? replicationClause?)
     ;
 
 alterStatement
@@ -1135,9 +1151,9 @@ partitionLocation
 alterStatementSuffixDropPartitions[boolean table]
 @init { pushMsg("drop partition statement", state); }
 @after { popMsg(state); }
-    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection? KW_PURGE?
-    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? KW_PURGE?)
-    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection?)
+    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection? replicationClause?
+    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? replicationClause?)
+    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? replicationClause?)
     ;
 
 alterStatementSuffixProperties
