@@ -124,7 +124,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   @Override public RelWriter explainTerms(RelWriter pw) {
     if (this.useQBIdInDigest) {
       // TODO: Only the qualified name should be left here
-      return super.explainTerms(pw).item("table", table.getQualifiedName())
+      return super.explainTerms(pw)
           .item("qbid:alias", concatQbIDAlias);
     } else {
       return super.explainTerms(pw);

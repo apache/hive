@@ -53,7 +53,6 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
@@ -489,7 +488,7 @@ public class HiveCalciteUtil {
       int rightOffSet = j.getLeft().getRowType().getFieldCount();
 
       // 1. Split leaf join predicate to expressions from left, right
-      RelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
+      HiveRelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
           joinKeyExprsFromLeft, joinKeyExprsFromRight, filterNulls, null);
 
       // 2. For left expressions, collect child projection indexes used
