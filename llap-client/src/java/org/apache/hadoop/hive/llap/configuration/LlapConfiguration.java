@@ -81,5 +81,11 @@ public class LlapConfiguration extends Configuration {
       LLAP_DAEMON_PREFIX + "task.scheduler.node.re-enable.timeout.ms";
   public static final long LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT = 2000l;
 
+  public static final String LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE =
+      LLAP_DAEMON_PREFIX + "task.scheduler.wait.queue.size";
+  public static final int LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT = 10;
 
+  public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION =
+      LLAP_DAEMON_PREFIX + "task.scheduler.enable.preemption";
+  public static final boolean LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION_DEFAULT = false;
 }
