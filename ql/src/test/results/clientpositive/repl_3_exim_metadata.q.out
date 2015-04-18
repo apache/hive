@@ -1,0 +1,222 @@
+PREHOOK: query: drop table if exists replsrc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists replsrc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists repldst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists repldst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists repldst_md
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists repldst_md
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table replsrc (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@replsrc
+POSTHOOK: query: create table replsrc (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@replsrc
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table replsrc partition (emp_country="us",emp_state="ca")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@replsrc
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table replsrc partition (emp_country="us",emp_state="ca")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@replsrc
+POSTHOOK: Output: default@replsrc@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: export table replsrc to 'ql/test/data/exports/repldst' for replication('repldst')
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@replsrc@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: export table replsrc to 'ql/test/data/exports/repldst' for replication('repldst')
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@replsrc@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: export table replsrc to 'ql/test/data/exports/repldst_md' for metadata replication('repldst md-only')
+PREHOOK: type: EXPORT
+POSTHOOK: query: export table replsrc to 'ql/test/data/exports/repldst_md' for metadata replication('repldst md-only')
+POSTHOOK: type: EXPORT
+PREHOOK: query: drop table replsrc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@replsrc
+PREHOOK: Output: default@replsrc
+POSTHOOK: query: drop table replsrc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@replsrc
+POSTHOOK: Output: default@replsrc
+PREHOOK: query: import table repldst from 'ql/test/data/exports/repldst'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@repldst
+POSTHOOK: query: import table repldst from 'ql/test/data/exports/repldst'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repldst
+POSTHOOK: Output: default@repldst@emp_country=us/emp_state=ca
+PREHOOK: query: describe extended repldst
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@repldst
+POSTHOOK: query: describe extended repldst
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@repldst
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like repldst
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repldst
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repldst
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: show create table repldst
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@repldst
+POSTHOOK: query: show create table repldst
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@repldst
+CREATE TABLE `repldst`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'repl.last.id'='0', 
+#### A masked pattern was here ####
+PREHOOK: query: select * from repldst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repldst
+PREHOOK: Input: default@repldst@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repldst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repldst
+POSTHOOK: Input: default@repldst@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+1	us	ca
+2	us	ca
+3	us	ca
+4	us	ca
+5	us	ca
+6	us	ca
+PREHOOK: query: -- should be similar, except that select will return no results
+import table repldst_md from 'ql/test/data/exports/repldst_md'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@repldst_md
+POSTHOOK: query: -- should be similar, except that select will return no results
+import table repldst_md from 'ql/test/data/exports/repldst_md'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repldst_md
+PREHOOK: query: describe extended repldst_md
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@repldst_md
+POSTHOOK: query: describe extended repldst_md
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@repldst_md
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like repldst_md
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repldst_md
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repldst_md
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+PREHOOK: query: show create table repldst_md
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@repldst_md
+POSTHOOK: query: show create table repldst_md
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@repldst_md
+CREATE TABLE `repldst_md`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'repl.last.id'='0', 
+#### A masked pattern was here ####
+PREHOOK: query: select * from repldst_md
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repldst_md
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repldst_md
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repldst_md
+#### A masked pattern was here ####
+PREHOOK: query: drop table repldst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repldst
+PREHOOK: Output: default@repldst
+POSTHOOK: query: drop table repldst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repldst
+POSTHOOK: Output: default@repldst
+PREHOOK: query: drop table repldst_md
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repldst_md
+PREHOOK: Output: default@repldst_md
+POSTHOOK: query: drop table repldst_md
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repldst_md
+POSTHOOK: Output: default@repldst_md

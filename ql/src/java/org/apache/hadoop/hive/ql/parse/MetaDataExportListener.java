@@ -86,7 +86,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     Path outFile = new Path(metaPath, name + ImportSemanticAnalyzer.METADATA_NAME);
     try {
       SessionState.getConsole().printInfo("Beginning metadata export");
-      EximUtil.createExportDump(fs, outFile, mTbl, null);
+      EximUtil.createExportDump(fs, outFile, mTbl, null, null);
       if (moveMetadataToTrash == true) {
         wh.deleteDir(metaPath, true);
       }

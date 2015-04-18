@@ -1581,6 +1581,11 @@ public class HiveConf extends Configuration {
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
     // once the feature is stable
+    HIVE_EXIM_RESTRICT_IMPORTS_INTO_REPLICATED_TABLES("hive.exim.strict.repl.tables",true,
+        "Parameter that determines if 'regular' (non-replication) export dumps can be\n" +
+        "imported on to tables that are the target of replication. If this parameter is\n" +
+        "set, regular imports will check if the destination table(if it exists) has a " +
+        "'repl.last.id' set on it. If so, it will fail."),
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false, ""),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +

@@ -23,6 +23,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOExceptionWithCause;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hive.hcatalog.api.HCatDatabase;
 import org.apache.hive.hcatalog.api.HCatPartition;
 import org.apache.hive.hcatalog.api.HCatTable;
@@ -40,7 +41,7 @@ import java.util.Map;
 
 public class ReplicationUtils {
 
-  private final static String REPL_STATE_ID = "repl.last.id"; // TODO : define in ReplicationSpec, and point this to that once that's patched in.
+  private final static String REPL_STATE_ID = ReplicationSpec.KEY.CURR_STATE_ID.toString();
 
   private ReplicationUtils(){
     // dummy private constructor, since this class is a collection of static utility methods.

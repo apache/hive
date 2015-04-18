@@ -151,6 +151,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   String dbName;
   boolean ifNotExists;
   List<OnePartitionDesc> partitions = null;
+  boolean replaceMode = false;
 
 
   /**
@@ -286,5 +287,19 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
 
   public OnePartitionDesc getPartition(int i) {
     return this.partitions.get(i);
+  }
+
+  /**
+   * @param replaceMode Determine if this AddPartition should behave like a replace-into alter instead
+   */
+  public void setReplaceMode(boolean replaceMode){
+    this.replaceMode = replaceMode;
+  }
+
+  /**
+   * @return true if this AddPartition should behave like a replace-into alter instead
+   */
+  public boolean getReplaceMode() {
+    return this.replaceMode;
   }
 }

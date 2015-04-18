@@ -1,0 +1,494 @@
+PREHOOK: query: drop table if exists managed_t
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists managed_t
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ext_t
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ext_t
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists managed_t_imported
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists managed_t_imported
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists managed_t_r_imported
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists managed_t_r_imported
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ext_t_imported
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ext_t_imported
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ext_t_r_imported
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ext_t_r_imported
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table managed_t (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@managed_t
+POSTHOOK: query: create table managed_t (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@managed_t
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table managed_t partition (emp_country="us",emp_state="ca")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@managed_t
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table managed_t partition (emp_country="us",emp_state="ca")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@managed_t
+POSTHOOK: Output: default@managed_t@emp_country=us/emp_state=ca
+PREHOOK: query: create external table ext_t (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+        tblproperties("EXTERNAL"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_t
+POSTHOOK: query: create external table ext_t (emp_id int comment "employee id")
+        partitioned by (emp_country string, emp_state string)
+        stored as textfile
+        tblproperties("EXTERNAL"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_t
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table ext_t partition (emp_country="us",emp_state="ca")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ext_t
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+        into table ext_t partition (emp_country="us",emp_state="ca")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ext_t
+POSTHOOK: Output: default@ext_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: -- verifying difference between normal export of a external table
+-- and a replication export of an ext table
+-- the replication export will have squashed the "EXTERNAL" flag
+-- this is because the destination of all replication exports are
+-- managed tables. The managed tables should be similar except
+-- for the repl.last.id values
+
+export table managed_t to 'ql/test/data/exports/managed_t'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: -- verifying difference between normal export of a external table
+-- and a replication export of an ext table
+-- the replication export will have squashed the "EXTERNAL" flag
+-- this is because the destination of all replication exports are
+-- managed tables. The managed tables should be similar except
+-- for the repl.last.id values
+
+export table managed_t to 'ql/test/data/exports/managed_t'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: export table managed_t to 'ql/test/data/exports/managed_t_r' for replication('managed_t_r')
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: export table managed_t to 'ql/test/data/exports/managed_t_r' for replication('managed_t_r')
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: export table ext_t to 'ql/test/data/exports/ext_t'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@ext_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: export table ext_t to 'ql/test/data/exports/ext_t'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@ext_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: export table ext_t to 'ql/test/data/exports/ext_t_r' for replication('ext_t_r')
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@ext_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: export table ext_t to 'ql/test/data/exports/ext_t_r' for replication('ext_t_r')
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@ext_t@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+PREHOOK: query: drop table ext_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_t
+PREHOOK: Output: default@ext_t
+POSTHOOK: query: drop table ext_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_t
+POSTHOOK: Output: default@ext_t
+PREHOOK: query: drop table managed_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@managed_t
+PREHOOK: Output: default@managed_t
+POSTHOOK: query: drop table managed_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@managed_t
+POSTHOOK: Output: default@managed_t
+PREHOOK: query: import table managed_t_imported from 'ql/test/data/exports/managed_t'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: query: import table managed_t_imported from 'ql/test/data/exports/managed_t'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@managed_t_imported
+POSTHOOK: Output: default@managed_t_imported@emp_country=us/emp_state=ca
+PREHOOK: query: describe extended managed_t_imported
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@managed_t_imported
+POSTHOOK: query: describe extended managed_t_imported
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@managed_t_imported
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like managed_t_imported
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like managed_t_imported
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:managed_t_imported
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: show create table managed_t_imported
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@managed_t_imported
+POSTHOOK: query: show create table managed_t_imported
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@managed_t_imported
+CREATE TABLE `managed_t_imported`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: select * from managed_t_imported
+PREHOOK: type: QUERY
+PREHOOK: Input: default@managed_t_imported
+PREHOOK: Input: default@managed_t_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: select * from managed_t_imported
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@managed_t_imported
+POSTHOOK: Input: default@managed_t_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+1	us	ca
+2	us	ca
+3	us	ca
+4	us	ca
+5	us	ca
+6	us	ca
+PREHOOK: query: -- should have repl.last.id
+import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@managed_t_r_imported
+POSTHOOK: query: -- should have repl.last.id
+import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@managed_t_r_imported
+POSTHOOK: Output: default@managed_t_r_imported@emp_country=us/emp_state=ca
+PREHOOK: query: describe extended managed_t_r_imported
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@managed_t_r_imported
+POSTHOOK: query: describe extended managed_t_r_imported
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@managed_t_r_imported
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like managed_t_r_imported
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like managed_t_r_imported
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:managed_t_r_imported
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: show create table managed_t_r_imported
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@managed_t_r_imported
+POSTHOOK: query: show create table managed_t_r_imported
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@managed_t_r_imported
+CREATE TABLE `managed_t_r_imported`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'repl.last.id'='0', 
+#### A masked pattern was here ####
+PREHOOK: query: select * from managed_t_r_imported
+PREHOOK: type: QUERY
+PREHOOK: Input: default@managed_t_r_imported
+PREHOOK: Input: default@managed_t_r_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: select * from managed_t_r_imported
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@managed_t_r_imported
+POSTHOOK: Input: default@managed_t_r_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+1	us	ca
+2	us	ca
+3	us	ca
+4	us	ca
+5	us	ca
+6	us	ca
+PREHOOK: query: import table ext_t_imported from 'ql/test/data/exports/ext_t'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: query: import table ext_t_imported from 'ql/test/data/exports/ext_t'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ext_t_imported
+POSTHOOK: Output: default@ext_t_imported@emp_country=us/emp_state=ca
+PREHOOK: query: describe extended ext_t_imported
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ext_t_imported
+POSTHOOK: query: describe extended ext_t_imported
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ext_t_imported
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like ext_t_imported
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like ext_t_imported
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:ext_t_imported
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: show create table ext_t_imported
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ext_t_imported
+POSTHOOK: query: show create table ext_t_imported
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ext_t_imported
+CREATE EXTERNAL TABLE `ext_t_imported`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: select * from ext_t_imported
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_t_imported
+PREHOOK: Input: default@ext_t_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ext_t_imported
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_t_imported
+POSTHOOK: Input: default@ext_t_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+1	us	ca
+2	us	ca
+3	us	ca
+4	us	ca
+5	us	ca
+6	us	ca
+PREHOOK: query: -- should have repl.last.id
+-- also - importing an external table replication export would turn the new table into a managed table
+import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@ext_t_r_imported
+POSTHOOK: query: -- should have repl.last.id
+-- also - importing an external table replication export would turn the new table into a managed table
+import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ext_t_r_imported
+POSTHOOK: Output: default@ext_t_r_imported@emp_country=us/emp_state=ca
+PREHOOK: query: describe extended ext_t_imported
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ext_t_imported
+POSTHOOK: query: describe extended ext_t_imported
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ext_t_imported
+emp_id              	int                 	employee id         
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	                    
+emp_state           	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like ext_t_r_imported
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like ext_t_r_imported
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:ext_t_r_imported
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: show create table ext_t_r_imported
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ext_t_r_imported
+POSTHOOK: query: show create table ext_t_r_imported
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ext_t_r_imported
+CREATE TABLE `ext_t_r_imported`(
+  `emp_id` int COMMENT 'employee id')
+PARTITIONED BY ( 
+  `emp_country` string, 
+  `emp_state` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'EXTERNAL'='FALSE', 
+  'repl.last.id'='0', 
+#### A masked pattern was here ####
+PREHOOK: query: select * from ext_t_r_imported
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_t_r_imported
+PREHOOK: Input: default@ext_t_r_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ext_t_r_imported
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_t_r_imported
+POSTHOOK: Input: default@ext_t_r_imported@emp_country=us/emp_state=ca
+#### A masked pattern was here ####
+1	us	ca
+2	us	ca
+3	us	ca
+4	us	ca
+5	us	ca
+6	us	ca
+PREHOOK: query: drop table managed_t_imported
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@managed_t_imported
+PREHOOK: Output: default@managed_t_imported
+POSTHOOK: query: drop table managed_t_imported
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@managed_t_imported
+POSTHOOK: Output: default@managed_t_imported
+PREHOOK: query: drop table managed_t_r_imported
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@managed_t_r_imported
+PREHOOK: Output: default@managed_t_r_imported
+POSTHOOK: query: drop table managed_t_r_imported
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@managed_t_r_imported
+POSTHOOK: Output: default@managed_t_r_imported
+PREHOOK: query: drop table ext_t_imported
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_t_imported
+PREHOOK: Output: default@ext_t_imported
+POSTHOOK: query: drop table ext_t_imported
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_t_imported
+POSTHOOK: Output: default@ext_t_imported
+PREHOOK: query: drop table ext_t_r_imported
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_t_r_imported
+PREHOOK: Output: default@ext_t_r_imported
+POSTHOOK: query: drop table ext_t_r_imported
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_t_r_imported
+POSTHOOK: Output: default@ext_t_r_imported

@@ -430,6 +430,8 @@ public enum ErrorMsg {
 
   DROP_NATIVE_FUNCTION(10301, "Cannot drop native function"),
   COMPILE_LOCK_TIMED_OUT(10308, "Attempt to acquire compile lock timed out.", true),
+  UPDATE_CANNOT_UPDATE_BUCKET_VALUE(10302, "Updating values of bucketing columns is not supported.  Column {0}.", true),
+  IMPORT_INTO_STRICT_REPL_TABLE(10303,"Non-repl import disallowed against table that is a destination of replication."),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

@@ -827,6 +827,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // configured not to fail silently
     boolean throwException =
         !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+
+    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
+
     Table tab = getTable(tableName, throwException);
     if (tab != null) {
       inputs.add(new ReadEntity(tab));
@@ -834,7 +837,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     boolean ifPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists, ifPurge);
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists, ifPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
   }
@@ -2628,7 +2631,29 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean canGroupExprs = ifExists;
 
     boolean mustPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    Table tab = getTable(qualified);
+    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
+
+    Table tab = null;
+    try {
+      tab = getTable(qualified);
+    } catch (SemanticException se){
+      if (replicationSpec.isInReplicationScope() &&
+            (
+                (se.getCause() instanceof InvalidTableException)
+                ||  (se.getMessage().contains(ErrorMsg.INVALID_TABLE.getMsg()))
+            )){
+        // If we're inside a replication scope, then the table not existing is not an error.
+        // We just return in that case, no drop needed.
+        return;
+        // TODO : the contains message check is fragile, we should refactor SemanticException to be
+        // queriable for error code, and not simply have a message
+        // NOTE : IF_EXISTS might also want to invoke this, but there's a good possibility
+        // that IF_EXISTS is stricter about table existence, and applies only to the ptn.
+        // Therefore, ignoring IF_EXISTS here.
+      } else {
+        throw se;
+      }
+    }
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
         getFullPartitionSpecs(ast, tab, canGroupExprs);
     if (partSpecs.isEmpty()) return; // nothing to do
@@ -2642,7 +2667,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
 
     DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView, ignoreProtection, mustPurge);
+        new DropTableDesc(getDotName(qualified), partSpecs, expectView, ignoreProtection, mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 

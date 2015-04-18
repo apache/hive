@@ -1,0 +1,345 @@
+PREHOOK: query: create table repl_employee ( emp_id int comment "employee id")
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile
+	tblproperties("repl.last.id"="43")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: create table repl_employee ( emp_id int comment "employee id")
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile
+	tblproperties("repl.last.id"="43")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ca")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ca")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ca
+PREHOOK: query: show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+emp_country=us/emp_state=ca
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: drop table repl_employee for replication('33')
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: drop table repl_employee for replication('33')
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: -- drop 33 => table does not get dropped, but ca will be
+
+show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: -- drop 33 => table does not get dropped, but ca will be
+
+show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ak")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ak")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ak
+PREHOOK: query: show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+emp_country=us/emp_state=ak
+PREHOOK: query: drop table repl_employee for replication('')
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: drop table repl_employee for replication('')
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: -- drop '' => ptns would be dropped, but not tables
+
+show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: -- drop '' => ptns would be dropped, but not tables
+
+show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+PREHOOK: query: drop table repl_employee for replication('49')
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: drop table repl_employee for replication('49')
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: -- table and ptns should have been dropped, so next create can succeed
+
+create table repl_employee ( emp_id int comment "employee id")
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: -- table and ptns should have been dropped, so next create can succeed
+
+create table repl_employee ( emp_id int comment "employee id")
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: -- created table without a repl.last.id
+
+load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ca")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: -- created table without a repl.last.id
+
+load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ca")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ca
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ak")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="ak")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ak
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="wa")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
+	into table repl_employee partition (emp_country="us", emp_state="wa")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=wa
+PREHOOK: query: show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+emp_country=us/emp_state=ak
+emp_country=us/emp_state=ca
+emp_country=us/emp_state=wa
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:3
+totalFileSize:33
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="ca")
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee@emp_country=us/emp_state=ca
+POSTHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="ca")
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ca
+PREHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="wa") for replication('59')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee@emp_country=us/emp_state=wa
+POSTHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="wa") for replication('59')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=wa
+PREHOOK: query: -- should have dropped ca, wa
+
+show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: -- should have dropped ca, wa
+
+show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+emp_country=us/emp_state=ak
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+#### A masked pattern was here ####
+
+PREHOOK: query: alter table repl_employee set tblproperties ("repl.last.id" = "42")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: alter table repl_employee set tblproperties ("repl.last.id" = "42")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="ak")
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee@emp_country=us/emp_state=ak
+POSTHOOK: query: alter table repl_employee drop partition (emp_country="us", emp_state="ak")
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ak
+PREHOOK: query: -- should have dropped ak
+
+show partitions repl_employee
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repl_employee
+POSTHOOK: query: -- should have dropped ak
+
+show partitions repl_employee
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repl_employee
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+PREHOOK: query: drop table repl_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: drop table repl_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: -- should drop the whole table, and this can be verified by trying to create another table with the same name
+
+create table repl_employee( a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: -- should drop the whole table, and this can be verified by trying to create another table with the same name
+
+create table repl_employee( a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repl_employee
+PREHOOK: query: show table extended like repl_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like repl_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:repl_employee
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string a}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+PREHOOK: query: drop table repl_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repl_employee
+PREHOOK: Output: default@repl_employee
+POSTHOOK: query: drop table repl_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repl_employee
+POSTHOOK: Output: default@repl_employee

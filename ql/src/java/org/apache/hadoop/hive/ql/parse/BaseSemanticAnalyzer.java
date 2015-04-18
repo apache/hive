@@ -37,6 +37,7 @@ import java.util.Set;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -302,16 +303,28 @@ public abstract class BaseSemanticAnalyzer {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
+  public static Map.Entry<String,String> getDbTableNamePair(ASTNode tableNameNode) {
+    assert(tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME);
+    if (tableNameNode.getChildCount() == 2) {
+      String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+      return Pair.of(dbName, tableName);
+    } else {
+      String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      return Pair.of(null,tableName);
+    }
+  }
+
   public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
     int tokenType = tableOrColumnNode.getToken().getType();
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
-      if (tableOrColumnNode.getChildCount() == 2) {
-        String dbName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
-        String tableName = unescapeIdentifier(tableOrColumnNode.getChild(1).getText());
+      Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
+      String dbName = dbTablePair.getKey();
+      String tableName = dbTablePair.getValue();
+      if (dbName != null){
         return dbName + "." + tableName;
       }
-      String tableName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
       if (currentDatabase != null) {
         return currentDatabase + "." + tableName;
       }
