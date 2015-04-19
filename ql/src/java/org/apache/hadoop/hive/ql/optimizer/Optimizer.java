@@ -64,10 +64,10 @@ public class Optimizer {
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
-    transformations.add(new PredicateTransitivePropagate());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      transformations.add(new ConstantPropagate());
-    }
+      transformations.add(new PredicateTransitivePropagate());
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+        transformations.add(new ConstantPropagate());
+      }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
     }

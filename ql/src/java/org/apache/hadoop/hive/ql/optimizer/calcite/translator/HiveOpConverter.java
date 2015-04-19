@@ -261,12 +261,16 @@ public class HiveOpConverter {
     }
 
     WindowingSpec windowingSpec = new WindowingSpec();
+    List<String> exprNames = new ArrayList<String>(projectRel.getRowType().getFieldNames());
     List<ExprNodeDesc> exprCols = new ArrayList<ExprNodeDesc>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     for (int pos = 0; pos < projectRel.getChildExps().size(); pos++) {
       ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias, projectRel
           .getRowType().getFieldNames().get(pos), projectRel.getInput().getRowType(),
           projectRel.getRowType(), false, projectRel.getCluster().getTypeFactory());
-      exprCols.add(projectRel.getChildExps().get(pos).accept(converter));
+      ExprNodeDesc exprCol = projectRel.getChildExps().get(pos).accept(converter);
+      colExprMap.put(exprNames.get(pos), exprCol);
+      exprCols.add(exprCol);
       if (converter.getWindowFunctionSpec() != null) {
         windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
       }
@@ -276,12 +280,12 @@ public class HiveOpConverter {
       inputOpAf = genPTF(inputOpAf, windowingSpec);
     }
     // TODO: is this a safe assumption (name collision, external names...)
-    List<String> exprNames = new ArrayList<String>(projectRel.getRowType().getFieldNames());
     SelectDesc sd = new SelectDesc(exprCols, exprNames);
     Pair<ArrayList<ColumnInfo>, Map<Integer, VirtualColumn>> colInfoVColPair = createColInfos(
         projectRel.getChildExps(), exprCols, exprNames, inputOpAf);
     SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(
         colInfoVColPair.getKey()), inputOpAf.inputs.get(0));
+    selOp.setColumnExprMap(colExprMap);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + selOp + " with row schema: [" + selOp.getSchema() + "]");
