@@ -2429,6 +2429,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
          */
         tmpColAlias = qualifiedColNames[1];
 
+        if (tmpColAlias.contains(".") || tmpColAlias.contains(":")) {
+          tmpColAlias = cInfo.getInternalName();
+        }
         // Prepend column names with '_o_' if it starts with '_c'
         /*
          * Hive treats names that start with '_c' as internalNames; so change
