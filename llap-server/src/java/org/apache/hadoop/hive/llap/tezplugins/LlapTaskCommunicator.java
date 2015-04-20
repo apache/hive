@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -176,12 +177,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       resetCurrentDag(taskSpec.getDAGName());
     }
 
-    SubmitWorkRequestProto requestProto;
-    try {
-      requestProto = constructSubmitWorkRequest(containerId, taskSpec);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to construct request", e);
-    }
+
     ContainerInfo containerInfo = getContainerInfo(containerId);
     String host;
     int port;
@@ -198,7 +194,16 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     entityTracker.registerTaskAttempt(containerId, taskSpec.getTaskAttemptID(), host, port);
 
-    sourceStateTracker.addTask(host, port, taskSpec.getInputs());
+    sourceStateTracker.registerTaskForStateUpdates(host, port, taskSpec.getInputs());
+    FragmentRuntimeInfo fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(taskSpec.getDAGName(),
+        taskSpec.getVertexName(), taskSpec.getTaskAttemptID().getTaskID().getId(), priority);
+    SubmitWorkRequestProto requestProto;
+
+    try {
+      requestProto = constructSubmitWorkRequest(containerId, taskSpec, fragmentRuntimeInfo);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to construct request", e);
+    }
 
     // Have to register this up front right now. Otherwise, it's possible for the task to start
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
@@ -296,7 +301,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequest(ContainerId containerId,
-                                                            TaskSpec taskSpec) throws
+                                                            TaskSpec taskSpec,
+                                                            FragmentRuntimeInfo fragmentRuntimeInfo) throws
       IOException {
     SubmitWorkRequestProto.Builder builder =
         SubmitWorkRequestProto.newBuilder(BASE_SUBMIT_WORK_REQUEST);
@@ -316,6 +322,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     builder.setFragmentSpec(Converters.convertTaskSpecToProto(taskSpec));
+    builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
     return builder.build();
   }
 

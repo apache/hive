@@ -5535,6 +5535,800 @@ public final class LlapDaemonProtocolProtos {
     // @@protoc_insertion_point(class_scope:FragmentSpecProto)
   }
 
+  public interface FragmentRuntimeInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional int32 num_self_and_upstream_tasks = 1;
+    /**
+     * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+     */
+    boolean hasNumSelfAndUpstreamTasks();
+    /**
+     * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+     */
+    int getNumSelfAndUpstreamTasks();
+
+    // optional int32 num_self_and_upstream_completed_tasks = 2;
+    /**
+     * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+     */
+    boolean hasNumSelfAndUpstreamCompletedTasks();
+    /**
+     * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+     */
+    int getNumSelfAndUpstreamCompletedTasks();
+
+    // optional int32 within_dag_priority = 3;
+    /**
+     * <code>optional int32 within_dag_priority = 3;</code>
+     */
+    boolean hasWithinDagPriority();
+    /**
+     * <code>optional int32 within_dag_priority = 3;</code>
+     */
+    int getWithinDagPriority();
+
+    // optional int64 dag_start_time = 4;
+    /**
+     * <code>optional int64 dag_start_time = 4;</code>
+     */
+    boolean hasDagStartTime();
+    /**
+     * <code>optional int64 dag_start_time = 4;</code>
+     */
+    long getDagStartTime();
+
+    // optional int64 first_attempt_start_time = 5;
+    /**
+     * <code>optional int64 first_attempt_start_time = 5;</code>
+     */
+    boolean hasFirstAttemptStartTime();
+    /**
+     * <code>optional int64 first_attempt_start_time = 5;</code>
+     */
+    long getFirstAttemptStartTime();
+  }
+  /**
+   * Protobuf type {@code FragmentRuntimeInfo}
+   */
+  public static final class FragmentRuntimeInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements FragmentRuntimeInfoOrBuilder {
+    // Use FragmentRuntimeInfo.newBuilder() to construct.
+    private FragmentRuntimeInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private FragmentRuntimeInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final FragmentRuntimeInfo defaultInstance;
+    public static FragmentRuntimeInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public FragmentRuntimeInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private FragmentRuntimeInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              numSelfAndUpstreamTasks_ = input.readInt32();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              numSelfAndUpstreamCompletedTasks_ = input.readInt32();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              withinDagPriority_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              dagStartTime_ = input.readInt64();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              firstAttemptStartTime_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_FragmentRuntimeInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_FragmentRuntimeInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<FragmentRuntimeInfo> PARSER =
+        new com.google.protobuf.AbstractParser<FragmentRuntimeInfo>() {
+      public FragmentRuntimeInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new FragmentRuntimeInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<FragmentRuntimeInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional int32 num_self_and_upstream_tasks = 1;
+    public static final int NUM_SELF_AND_UPSTREAM_TASKS_FIELD_NUMBER = 1;
+    private int numSelfAndUpstreamTasks_;
+    /**
+     * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+     */
+    public boolean hasNumSelfAndUpstreamTasks() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+     */
+    public int getNumSelfAndUpstreamTasks() {
+      return numSelfAndUpstreamTasks_;
+    }
+
+    // optional int32 num_self_and_upstream_completed_tasks = 2;
+    public static final int NUM_SELF_AND_UPSTREAM_COMPLETED_TASKS_FIELD_NUMBER = 2;
+    private int numSelfAndUpstreamCompletedTasks_;
+    /**
+     * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+     */
+    public boolean hasNumSelfAndUpstreamCompletedTasks() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+     */
+    public int getNumSelfAndUpstreamCompletedTasks() {
+      return numSelfAndUpstreamCompletedTasks_;
+    }
+
+    // optional int32 within_dag_priority = 3;
+    public static final int WITHIN_DAG_PRIORITY_FIELD_NUMBER = 3;
+    private int withinDagPriority_;
+    /**
+     * <code>optional int32 within_dag_priority = 3;</code>
+     */
+    public boolean hasWithinDagPriority() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int32 within_dag_priority = 3;</code>
+     */
+    public int getWithinDagPriority() {
+      return withinDagPriority_;
+    }
+
+    // optional int64 dag_start_time = 4;
+    public static final int DAG_START_TIME_FIELD_NUMBER = 4;
+    private long dagStartTime_;
+    /**
+     * <code>optional int64 dag_start_time = 4;</code>
+     */
+    public boolean hasDagStartTime() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int64 dag_start_time = 4;</code>
+     */
+    public long getDagStartTime() {
+      return dagStartTime_;
+    }
+
+    // optional int64 first_attempt_start_time = 5;
+    public static final int FIRST_ATTEMPT_START_TIME_FIELD_NUMBER = 5;
+    private long firstAttemptStartTime_;
+    /**
+     * <code>optional int64 first_attempt_start_time = 5;</code>
+     */
+    public boolean hasFirstAttemptStartTime() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional int64 first_attempt_start_time = 5;</code>
+     */
+    public long getFirstAttemptStartTime() {
+      return firstAttemptStartTime_;
+    }
+
+    private void initFields() {
+      numSelfAndUpstreamTasks_ = 0;
+      numSelfAndUpstreamCompletedTasks_ = 0;
+      withinDagPriority_ = 0;
+      dagStartTime_ = 0L;
+      firstAttemptStartTime_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, numSelfAndUpstreamTasks_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, numSelfAndUpstreamCompletedTasks_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, withinDagPriority_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt64(4, dagStartTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt64(5, firstAttemptStartTime_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, numSelfAndUpstreamTasks_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, numSelfAndUpstreamCompletedTasks_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, withinDagPriority_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, dagStartTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(5, firstAttemptStartTime_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo) obj;
+
+      boolean result = true;
+      result = result && (hasNumSelfAndUpstreamTasks() == other.hasNumSelfAndUpstreamTasks());
+      if (hasNumSelfAndUpstreamTasks()) {
+        result = result && (getNumSelfAndUpstreamTasks()
+            == other.getNumSelfAndUpstreamTasks());
+      }
+      result = result && (hasNumSelfAndUpstreamCompletedTasks() == other.hasNumSelfAndUpstreamCompletedTasks());
+      if (hasNumSelfAndUpstreamCompletedTasks()) {
+        result = result && (getNumSelfAndUpstreamCompletedTasks()
+            == other.getNumSelfAndUpstreamCompletedTasks());
+      }
+      result = result && (hasWithinDagPriority() == other.hasWithinDagPriority());
+      if (hasWithinDagPriority()) {
+        result = result && (getWithinDagPriority()
+            == other.getWithinDagPriority());
+      }
+      result = result && (hasDagStartTime() == other.hasDagStartTime());
+      if (hasDagStartTime()) {
+        result = result && (getDagStartTime()
+            == other.getDagStartTime());
+      }
+      result = result && (hasFirstAttemptStartTime() == other.hasFirstAttemptStartTime());
+      if (hasFirstAttemptStartTime()) {
+        result = result && (getFirstAttemptStartTime()
+            == other.getFirstAttemptStartTime());
+      }
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasNumSelfAndUpstreamTasks()) {
+        hash = (37 * hash) + NUM_SELF_AND_UPSTREAM_TASKS_FIELD_NUMBER;
+        hash = (53 * hash) + getNumSelfAndUpstreamTasks();
+      }
+      if (hasNumSelfAndUpstreamCompletedTasks()) {
+        hash = (37 * hash) + NUM_SELF_AND_UPSTREAM_COMPLETED_TASKS_FIELD_NUMBER;
+        hash = (53 * hash) + getNumSelfAndUpstreamCompletedTasks();
+      }
+      if (hasWithinDagPriority()) {
+        hash = (37 * hash) + WITHIN_DAG_PRIORITY_FIELD_NUMBER;
+        hash = (53 * hash) + getWithinDagPriority();
+      }
+      if (hasDagStartTime()) {
+        hash = (37 * hash) + DAG_START_TIME_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getDagStartTime());
+      }
+      if (hasFirstAttemptStartTime()) {
+        hash = (37 * hash) + FIRST_ATTEMPT_START_TIME_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getFirstAttemptStartTime());
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code FragmentRuntimeInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_FragmentRuntimeInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_FragmentRuntimeInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        numSelfAndUpstreamTasks_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        numSelfAndUpstreamCompletedTasks_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        withinDagPriority_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        dagStartTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        firstAttemptStartTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_FragmentRuntimeInfo_descriptor;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo build() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo buildPartial() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.numSelfAndUpstreamTasks_ = numSelfAndUpstreamTasks_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.numSelfAndUpstreamCompletedTasks_ = numSelfAndUpstreamCompletedTasks_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.withinDagPriority_ = withinDagPriority_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.dagStartTime_ = dagStartTime_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.firstAttemptStartTime_ = firstAttemptStartTime_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo) {
+          return mergeFrom((org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo other) {
+        if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance()) return this;
+        if (other.hasNumSelfAndUpstreamTasks()) {
+          setNumSelfAndUpstreamTasks(other.getNumSelfAndUpstreamTasks());
+        }
+        if (other.hasNumSelfAndUpstreamCompletedTasks()) {
+          setNumSelfAndUpstreamCompletedTasks(other.getNumSelfAndUpstreamCompletedTasks());
+        }
+        if (other.hasWithinDagPriority()) {
+          setWithinDagPriority(other.getWithinDagPriority());
+        }
+        if (other.hasDagStartTime()) {
+          setDagStartTime(other.getDagStartTime());
+        }
+        if (other.hasFirstAttemptStartTime()) {
+          setFirstAttemptStartTime(other.getFirstAttemptStartTime());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional int32 num_self_and_upstream_tasks = 1;
+      private int numSelfAndUpstreamTasks_ ;
+      /**
+       * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+       */
+      public boolean hasNumSelfAndUpstreamTasks() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+       */
+      public int getNumSelfAndUpstreamTasks() {
+        return numSelfAndUpstreamTasks_;
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+       */
+      public Builder setNumSelfAndUpstreamTasks(int value) {
+        bitField0_ |= 0x00000001;
+        numSelfAndUpstreamTasks_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_tasks = 1;</code>
+       */
+      public Builder clearNumSelfAndUpstreamTasks() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        numSelfAndUpstreamTasks_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 num_self_and_upstream_completed_tasks = 2;
+      private int numSelfAndUpstreamCompletedTasks_ ;
+      /**
+       * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+       */
+      public boolean hasNumSelfAndUpstreamCompletedTasks() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+       */
+      public int getNumSelfAndUpstreamCompletedTasks() {
+        return numSelfAndUpstreamCompletedTasks_;
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+       */
+      public Builder setNumSelfAndUpstreamCompletedTasks(int value) {
+        bitField0_ |= 0x00000002;
+        numSelfAndUpstreamCompletedTasks_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 num_self_and_upstream_completed_tasks = 2;</code>
+       */
+      public Builder clearNumSelfAndUpstreamCompletedTasks() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        numSelfAndUpstreamCompletedTasks_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 within_dag_priority = 3;
+      private int withinDagPriority_ ;
+      /**
+       * <code>optional int32 within_dag_priority = 3;</code>
+       */
+      public boolean hasWithinDagPriority() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int32 within_dag_priority = 3;</code>
+       */
+      public int getWithinDagPriority() {
+        return withinDagPriority_;
+      }
+      /**
+       * <code>optional int32 within_dag_priority = 3;</code>
+       */
+      public Builder setWithinDagPriority(int value) {
+        bitField0_ |= 0x00000004;
+        withinDagPriority_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 within_dag_priority = 3;</code>
+       */
+      public Builder clearWithinDagPriority() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        withinDagPriority_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 dag_start_time = 4;
+      private long dagStartTime_ ;
+      /**
+       * <code>optional int64 dag_start_time = 4;</code>
+       */
+      public boolean hasDagStartTime() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int64 dag_start_time = 4;</code>
+       */
+      public long getDagStartTime() {
+        return dagStartTime_;
+      }
+      /**
+       * <code>optional int64 dag_start_time = 4;</code>
+       */
+      public Builder setDagStartTime(long value) {
+        bitField0_ |= 0x00000008;
+        dagStartTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 dag_start_time = 4;</code>
+       */
+      public Builder clearDagStartTime() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        dagStartTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 first_attempt_start_time = 5;
+      private long firstAttemptStartTime_ ;
+      /**
+       * <code>optional int64 first_attempt_start_time = 5;</code>
+       */
+      public boolean hasFirstAttemptStartTime() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int64 first_attempt_start_time = 5;</code>
+       */
+      public long getFirstAttemptStartTime() {
+        return firstAttemptStartTime_;
+      }
+      /**
+       * <code>optional int64 first_attempt_start_time = 5;</code>
+       */
+      public Builder setFirstAttemptStartTime(long value) {
+        bitField0_ |= 0x00000010;
+        firstAttemptStartTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 first_attempt_start_time = 5;</code>
+       */
+      public Builder clearFirstAttemptStartTime() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        firstAttemptStartTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:FragmentRuntimeInfo)
+    }
+
+    static {
+      defaultInstance = new FragmentRuntimeInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:FragmentRuntimeInfo)
+  }
+
   public interface SubmitWorkRequestProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -5656,6 +6450,20 @@ public final class LlapDaemonProtocolProtos {
      * <code>optional .FragmentSpecProto fragment_spec = 9;</code>
      */
     org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProtoOrBuilder getFragmentSpecOrBuilder();
+
+    // optional .FragmentRuntimeInfo fragment_runtime_info = 10;
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    boolean hasFragmentRuntimeInfo();
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo getFragmentRuntimeInfo();
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder getFragmentRuntimeInfoOrBuilder();
   }
   /**
    * Protobuf type {@code SubmitWorkRequestProto}
@@ -5759,6 +6567,19 @@ public final class LlapDaemonProtocolProtos {
                 fragmentSpec_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000100;
+              break;
+            }
+            case 82: {
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000200) == 0x00000200)) {
+                subBuilder = fragmentRuntimeInfo_.toBuilder();
+              }
+              fragmentRuntimeInfo_ = input.readMessage(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(fragmentRuntimeInfo_);
+                fragmentRuntimeInfo_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000200;
               break;
             }
           }
@@ -6086,6 +6907,28 @@ public final class LlapDaemonProtocolProtos {
       return fragmentSpec_;
     }
 
+    // optional .FragmentRuntimeInfo fragment_runtime_info = 10;
+    public static final int FRAGMENT_RUNTIME_INFO_FIELD_NUMBER = 10;
+    private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo fragmentRuntimeInfo_;
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    public boolean hasFragmentRuntimeInfo() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo getFragmentRuntimeInfo() {
+      return fragmentRuntimeInfo_;
+    }
+    /**
+     * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+     */
+    public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder getFragmentRuntimeInfoOrBuilder() {
+      return fragmentRuntimeInfo_;
+    }
+
     private void initFields() {
       containerIdString_ = "";
       amHost_ = "";
@@ -6096,6 +6939,7 @@ public final class LlapDaemonProtocolProtos {
       applicationIdString_ = "";
       appAttemptNumber_ = 0;
       fragmentSpec_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto.getDefaultInstance();
+      fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6135,6 +6979,9 @@ public final class LlapDaemonProtocolProtos {
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeMessage(9, fragmentSpec_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeMessage(10, fragmentRuntimeInfo_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -6180,6 +7027,10 @@ public final class LlapDaemonProtocolProtos {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, fragmentSpec_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, fragmentRuntimeInfo_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6249,6 +7100,11 @@ public final class LlapDaemonProtocolProtos {
         result = result && getFragmentSpec()
             .equals(other.getFragmentSpec());
       }
+      result = result && (hasFragmentRuntimeInfo() == other.hasFragmentRuntimeInfo());
+      if (hasFragmentRuntimeInfo()) {
+        result = result && getFragmentRuntimeInfo()
+            .equals(other.getFragmentRuntimeInfo());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -6297,6 +7153,10 @@ public final class LlapDaemonProtocolProtos {
       if (hasFragmentSpec()) {
         hash = (37 * hash) + FRAGMENT_SPEC_FIELD_NUMBER;
         hash = (53 * hash) + getFragmentSpec().hashCode();
+      }
+      if (hasFragmentRuntimeInfo()) {
+        hash = (37 * hash) + FRAGMENT_RUNTIME_INFO_FIELD_NUMBER;
+        hash = (53 * hash) + getFragmentRuntimeInfo().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -6400,6 +7260,7 @@ public final class LlapDaemonProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getFragmentSpecFieldBuilder();
+          getFragmentRuntimeInfoFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6430,6 +7291,12 @@ public final class LlapDaemonProtocolProtos {
           fragmentSpecBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000100);
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+        } else {
+          fragmentRuntimeInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -6498,6 +7365,14 @@ public final class LlapDaemonProtocolProtos {
         } else {
           result.fragmentSpec_ = fragmentSpecBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          result.fragmentRuntimeInfo_ = fragmentRuntimeInfo_;
+        } else {
+          result.fragmentRuntimeInfo_ = fragmentRuntimeInfoBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6550,6 +7425,9 @@ public final class LlapDaemonProtocolProtos {
         }
         if (other.hasFragmentSpec()) {
           mergeFragmentSpec(other.getFragmentSpec());
+        }
+        if (other.hasFragmentRuntimeInfo()) {
+          mergeFragmentRuntimeInfo(other.getFragmentRuntimeInfo());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7165,6 +8043,123 @@ public final class LlapDaemonProtocolProtos {
           fragmentSpec_ = null;
         }
         return fragmentSpecBuilder_;
+      }
+
+      // optional .FragmentRuntimeInfo fragment_runtime_info = 10;
+      private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder> fragmentRuntimeInfoBuilder_;
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public boolean hasFragmentRuntimeInfo() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo getFragmentRuntimeInfo() {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          return fragmentRuntimeInfo_;
+        } else {
+          return fragmentRuntimeInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public Builder setFragmentRuntimeInfo(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo value) {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          fragmentRuntimeInfo_ = value;
+          onChanged();
+        } else {
+          fragmentRuntimeInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public Builder setFragmentRuntimeInfo(
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder builderForValue) {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          fragmentRuntimeInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          fragmentRuntimeInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public Builder mergeFragmentRuntimeInfo(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo value) {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+              fragmentRuntimeInfo_ != org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance()) {
+            fragmentRuntimeInfo_ =
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.newBuilder(fragmentRuntimeInfo_).mergeFrom(value).buildPartial();
+          } else {
+            fragmentRuntimeInfo_ = value;
+          }
+          onChanged();
+        } else {
+          fragmentRuntimeInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public Builder clearFragmentRuntimeInfo() {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          fragmentRuntimeInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
+        return this;
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder getFragmentRuntimeInfoBuilder() {
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return getFragmentRuntimeInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder getFragmentRuntimeInfoOrBuilder() {
+        if (fragmentRuntimeInfoBuilder_ != null) {
+          return fragmentRuntimeInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return fragmentRuntimeInfo_;
+        }
+      }
+      /**
+       * <code>optional .FragmentRuntimeInfo fragment_runtime_info = 10;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder> 
+          getFragmentRuntimeInfoFieldBuilder() {
+        if (fragmentRuntimeInfoBuilder_ == null) {
+          fragmentRuntimeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder>(
+                  fragmentRuntimeInfo_,
+                  getParentForChildren(),
+                  isClean());
+          fragmentRuntimeInfo_ = null;
+        }
+        return fragmentRuntimeInfoBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:SubmitWorkRequestProto)
@@ -8956,6 +9951,11 @@ public final class LlapDaemonProtocolProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_FragmentSpecProto_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_FragmentRuntimeInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_FragmentRuntimeInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_SubmitWorkRequestProto_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -9003,25 +10003,32 @@ public final class LlapDaemonProtocolProtos {
       "\003(\0132\014.IOSpecProto\0221\n\023grouped_input_specs" +
       "\030\007 \003(\0132\024.GroupInputSpecProto\022\032\n\022vertex_p" +
       "arallelism\030\010 \001(\005\022\027\n\017fragment_number\030\t \001(" +
-      "\005\022\026\n\016attempt_number\030\n \001(\005\"\201\002\n\026SubmitWork",
-      "RequestProto\022\033\n\023container_id_string\030\001 \001(" +
-      "\t\022\017\n\007am_host\030\002 \001(\t\022\017\n\007am_port\030\003 \001(\005\022\030\n\020t" +
-      "oken_identifier\030\004 \001(\t\022\032\n\022credentials_bin" +
-      "ary\030\005 \001(\014\022\014\n\004user\030\006 \001(\t\022\035\n\025application_i" +
-      "d_string\030\007 \001(\t\022\032\n\022app_attempt_number\030\010 \001" +
-      "(\005\022)\n\rfragment_spec\030\t \001(\0132\022.FragmentSpec" +
-      "Proto\"\031\n\027SubmitWorkResponseProto\"f\n\036Sour" +
-      "ceStateUpdatedRequestProto\022\020\n\010dag_name\030\001" +
-      " \001(\t\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030\003 \001(\0162\021." +
-      "SourceStateProto\"!\n\037SourceStateUpdatedRe",
-      "sponseProto*2\n\020SourceStateProto\022\017\n\013S_SUC" +
-      "CEEDED\020\001\022\r\n\tS_RUNNING\020\0022\256\001\n\022LlapDaemonPr" +
-      "otocol\022?\n\nsubmitWork\022\027.SubmitWorkRequest" +
-      "Proto\032\030.SubmitWorkResponseProto\022W\n\022sourc" +
-      "eStateUpdated\022\037.SourceStateUpdatedReques" +
-      "tProto\032 .SourceStateUpdatedResponseProto" +
-      "BH\n&org.apache.hadoop.hive.llap.daemon.r" +
-      "pcB\030LlapDaemonProtocolProtos\210\001\001\240\001\001"
+      "\005\022\026\n\016attempt_number\030\n \001(\005\"\300\001\n\023FragmentRu",
+      "ntimeInfo\022#\n\033num_self_and_upstream_tasks" +
+      "\030\001 \001(\005\022-\n%num_self_and_upstream_complete" +
+      "d_tasks\030\002 \001(\005\022\033\n\023within_dag_priority\030\003 \001" +
+      "(\005\022\026\n\016dag_start_time\030\004 \001(\003\022 \n\030first_atte" +
+      "mpt_start_time\030\005 \001(\003\"\266\002\n\026SubmitWorkReque" +
+      "stProto\022\033\n\023container_id_string\030\001 \001(\t\022\017\n\007" +
+      "am_host\030\002 \001(\t\022\017\n\007am_port\030\003 \001(\005\022\030\n\020token_" +
+      "identifier\030\004 \001(\t\022\032\n\022credentials_binary\030\005" +
+      " \001(\014\022\014\n\004user\030\006 \001(\t\022\035\n\025application_id_str" +
+      "ing\030\007 \001(\t\022\032\n\022app_attempt_number\030\010 \001(\005\022)\n",
+      "\rfragment_spec\030\t \001(\0132\022.FragmentSpecProto" +
+      "\0223\n\025fragment_runtime_info\030\n \001(\0132\024.Fragme" +
+      "ntRuntimeInfo\"\031\n\027SubmitWorkResponseProto" +
+      "\"f\n\036SourceStateUpdatedRequestProto\022\020\n\010da" +
+      "g_name\030\001 \001(\t\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030" +
+      "\003 \001(\0162\021.SourceStateProto\"!\n\037SourceStateU" +
+      "pdatedResponseProto*2\n\020SourceStateProto\022" +
+      "\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\0022\256\001\n\022Llap" +
+      "DaemonProtocol\022?\n\nsubmitWork\022\027.SubmitWor" +
+      "kRequestProto\032\030.SubmitWorkResponseProto\022",
+      "W\n\022sourceStateUpdated\022\037.SourceStateUpdat" +
+      "edRequestProto\032 .SourceStateUpdatedRespo" +
+      "nseProtoBH\n&org.apache.hadoop.hive.llap." +
+      "daemon.rpcB\030LlapDaemonProtocolProtos\210\001\001\240" +
+      "\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9058,26 +10065,32 @@ public final class LlapDaemonProtocolProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_FragmentSpecProto_descriptor,
               new java.lang.String[] { "TaskAttemptIdString", "DagName", "VertexName", "ProcessorDescriptor", "InputSpecs", "OutputSpecs", "GroupedInputSpecs", "VertexParallelism", "FragmentNumber", "AttemptNumber", });
-          internal_static_SubmitWorkRequestProto_descriptor =
+          internal_static_FragmentRuntimeInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);
+          internal_static_FragmentRuntimeInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_FragmentRuntimeInfo_descriptor,
+              new java.lang.String[] { "NumSelfAndUpstreamTasks", "NumSelfAndUpstreamCompletedTasks", "WithinDagPriority", "DagStartTime", "FirstAttemptStartTime", });
+          internal_static_SubmitWorkRequestProto_descriptor =
+            getDescriptor().getMessageTypes().get(6);
           internal_static_SubmitWorkRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkRequestProto_descriptor,
-              new java.lang.String[] { "ContainerIdString", "AmHost", "AmPort", "TokenIdentifier", "CredentialsBinary", "User", "ApplicationIdString", "AppAttemptNumber", "FragmentSpec", });
+              new java.lang.String[] { "ContainerIdString", "AmHost", "AmPort", "TokenIdentifier", "CredentialsBinary", "User", "ApplicationIdString", "AppAttemptNumber", "FragmentSpec", "FragmentRuntimeInfo", });
           internal_static_SubmitWorkResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_SubmitWorkResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkResponseProto_descriptor,
               new java.lang.String[] { });
           internal_static_SourceStateUpdatedRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_SourceStateUpdatedRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SourceStateUpdatedRequestProto_descriptor,
               new java.lang.String[] { "DagName", "SrcName", "State", });
           internal_static_SourceStateUpdatedResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_SourceStateUpdatedResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SourceStateUpdatedResponseProto_descriptor,

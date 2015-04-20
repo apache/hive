@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
@@ -267,6 +269,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
         sb.append(group.getGroupVerticesList());
       }
     }
+    sb.append("}");
+
+    FragmentRuntimeInfo fragmentRuntimeInfo = request.getFragmentRuntimeInfo();
+    sb.append(", FragmentRuntimeInfo={");
+    sb.append("taskCount=").append(fragmentRuntimeInfo.getNumSelfAndUpstreamTasks());
+    sb.append(", completedTaskCount=").append(fragmentRuntimeInfo.getNumSelfAndUpstreamCompletedTasks());
+    sb.append(", dagStartTime=").append(fragmentRuntimeInfo.getDagStartTime());
+    sb.append(", firstAttemptStartTime=").append(fragmentRuntimeInfo.getFirstAttemptStartTime());
     sb.append("}");
     return sb.toString();
   }
