@@ -1357,17 +1357,17 @@ STAGE PLANS:
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: _wcol0
+                        alias: first_value_window_0
                         arguments: _col1
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
                         window frame: PRECEDING(MAX)~
             Statistics: Num rows: 15 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: _wcol0 is not null (type: boolean)
+              predicate: first_value_window_0 is not null (type: boolean)
               Statistics: Num rows: 8 Data size: 1692 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: _wcol0 (type: string)
+                expressions: first_value_window_0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 8 Data size: 1692 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
