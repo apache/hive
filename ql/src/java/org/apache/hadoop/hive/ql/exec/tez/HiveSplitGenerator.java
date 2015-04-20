@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -56,6 +55,7 @@ import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
 import org.apache.tez.runtime.api.events.InputDataInformationEvent;
 import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
@@ -139,8 +139,9 @@ public class HiveSplitGenerator extends InputInitializer {
         LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
             + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
 
-        Multimap<Integer, InputSplit> groupedSplits =
-            splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots);
+        Multimap<Integer, InputSplit> groupedSplits = splitGrouper.generateGroupedSplits(jobConf,
+            splits, waves, availableSlots);
+
         // And finally return them in a flat array
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of grouped splits: " + flatSplits.length);

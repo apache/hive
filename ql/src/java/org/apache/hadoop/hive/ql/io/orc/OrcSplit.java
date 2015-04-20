@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
@@ -38,7 +39,7 @@ import org.apache.hadoop.mapred.FileSplit;
  * OrcFileSplit. Holds file meta info
  *
  */
-public class OrcSplit extends FileSplit {
+public class OrcSplit extends FileSplit implements ColumnarSplit {
   private static final Log LOG = LogFactory.getLog(OrcSplit.class);
 
   private FileMetaInfo fileMetaInfo;
@@ -55,7 +56,7 @@ public class OrcSplit extends FileSplit {
   static final int ORIGINAL_FLAG = 2;
   static final int FOOTER_FLAG = 1;
 
-  protected OrcSplit(){
+  protected OrcSplit() {
     //The FileSplit() constructor in hadoop 0.20 and 1.x is package private so can't use it.
     //This constructor is used to create the object and then call readFields()
     // so just pass nulls to this super constructor.
@@ -74,7 +75,7 @@ public class OrcSplit extends FileSplit {
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.deltas.addAll(deltas);
-    this.projColsUncompressedSize = projectedDataSize;
+    this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
   }
 
   @Override
@@ -173,8 +174,8 @@ public class OrcSplit extends FileSplit {
     return fileId;
   }
 
-  public long getProjectedColumnsUncompressedSize() {
+  @Override
+  public long getColumnarProjectionSize() {
     return projColsUncompressedSize;
   }
-
 }
