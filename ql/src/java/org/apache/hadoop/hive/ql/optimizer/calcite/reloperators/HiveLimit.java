@@ -25,9 +25,9 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.SingleRel;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 
 public class HiveLimit extends SingleRel implements HiveRelNode {
   private final RexNode offset;
@@ -52,6 +52,6 @@ public class HiveLimit extends SingleRel implements HiveRelNode {
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return HiveCost.FACTORY.makeZeroCost();
+    return RelMetadataQuery.getNonCumulativeCost(this);
   }
 }

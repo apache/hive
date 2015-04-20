@@ -28,8 +28,10 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -50,13 +52,17 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -319,11 +325,11 @@ public class HiveCalciteUtil {
       return this.mapOfProjIndxInJoinSchemaToLeafPInfo;
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveJoin j) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j) {
       return constructJoinPredicateInfo(j, j.getCondition());
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveJoin j, RexNode predicate) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j, RexNode predicate) {
       JoinPredicateInfo jpi = null;
       JoinLeafPredicateInfo jlpi = null;
       List<JoinLeafPredicateInfo> equiLPIList = new ArrayList<JoinLeafPredicateInfo>();
@@ -432,6 +438,16 @@ public class HiveCalciteUtil {
           .copyOf(projsFromRightPartOfJoinKeysInJoinSchema);
     }
 
+    public List<RexNode> getJoinKeyExprs(int input) {
+      if (input == 0) {
+        return this.joinKeyExprsFromLeft;
+      }
+      if (input == 1) {
+        return this.joinKeyExprsFromRight;
+      }
+      return null;
+    }
+
     public List<RexNode> getJoinKeyExprsFromLeft() {
       return this.joinKeyExprsFromLeft;
     }
@@ -461,7 +477,7 @@ public class HiveCalciteUtil {
       return this.projsFromRightPartOfJoinKeysInJoinSchema;
     }
 
-    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(HiveJoin j, RexNode pe) {
+    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(Join j, RexNode pe) {
       JoinLeafPredicateInfo jlpi = null;
       List<Integer> filterNulls = new ArrayList<Integer>();
       List<RexNode> joinKeyExprsFromLeft = new ArrayList<RexNode>();
@@ -472,7 +488,7 @@ public class HiveCalciteUtil {
       int rightOffSet = j.getLeft().getRowType().getFieldCount();
 
       // 1. Split leaf join predicate to expressions from left, right
-      RelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
+      HiveRelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
           joinKeyExprsFromLeft, joinKeyExprsFromRight, filterNulls, null);
 
       // 2. For left expressions, collect child projection indexes used
@@ -560,6 +576,107 @@ public class HiveCalciteUtil {
 
     return deterministic;
   }
+
+  public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
+      int startIndx) {
+    Builder<Integer, T> bldr = ImmutableMap.<Integer, T> builder();
+
+    int indx = startIndx;
+    for (T ci : hiveCols) {
+      bldr.put(indx, ci);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+  
+  public static ImmutableMap<Integer, VirtualColumn> shiftVColsMap(Map<Integer, VirtualColumn> hiveVCols,
+      int shift) {
+    Builder<Integer, VirtualColumn> bldr = ImmutableMap.<Integer, VirtualColumn> builder();
+
+    for (Integer pos : hiveVCols.keySet()) {
+      bldr.put(shift + pos, hiveVCols.get(pos));
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<Integer, VirtualColumn> getVColsMap(List<VirtualColumn> hiveVCols,
+      int startIndx) {
+    Builder<Integer, VirtualColumn> bldr = ImmutableMap.<Integer, VirtualColumn> builder();
+
+    int indx = startIndx;
+    for (VirtualColumn vc : hiveVCols) {
+      bldr.put(indx, vc);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<String, Integer> getColNameIndxMap(List<FieldSchema> tableFields) {
+    Builder<String, Integer> bldr = ImmutableMap.<String, Integer> builder();
+
+    int indx = 0;
+    for (FieldSchema fs : tableFields) {
+      bldr.put(fs.getName(), indx);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableMap<String, Integer> getRowColNameIndxMap(List<RelDataTypeField> rowFields) {
+    Builder<String, Integer> bldr = ImmutableMap.<String, Integer> builder();
+
+    int indx = 0;
+    for (RelDataTypeField rdt : rowFields) {
+      bldr.put(rdt.getName(), indx);
+      indx++;
+    }
+
+    return bldr.build();
+  }
+
+  public static ImmutableList<RexNode> getInputRef(List<Integer> inputRefs, RelNode inputRel) {
+    ImmutableList.Builder<RexNode> bldr = ImmutableList.<RexNode> builder();
+    for (int i : inputRefs) {
+      bldr.add(new RexInputRef(i, (RelDataType) inputRel.getRowType().getFieldList().get(i).getType()));
+    }
+    return bldr.build();
+  }
+
+  public static ExprNodeDesc getExprNode(Integer inputRefIndx, RelNode inputRel,
+      ExprNodeConverter exprConv) {
+    ExprNodeDesc exprNode = null;
+    RexNode rexInputRef = new RexInputRef(inputRefIndx, (RelDataType) inputRel.getRowType()
+        .getFieldList().get(inputRefIndx).getType());
+    exprNode = rexInputRef.accept(exprConv);
+
+    return exprNode;
+  }
+
+  public static List<ExprNodeDesc> getExprNodes(List<Integer> inputRefs, RelNode inputRel,
+      String inputTabAlias) {
+    List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
+    List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
+    // TODO: Change ExprNodeConverter to be independent of Partition Expr
+    ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(), false, inputRel.getCluster().getTypeFactory());
+    for (RexNode iRef : rexInputRefs) {
+      exprNodes.add(iRef.accept(exprConv));
+    }
+    return exprNodes;
+  }
+  
+  public static List<String> getFieldNames(List<Integer> inputRefs, RelNode inputRel) {
+    List<String> fieldNames = new ArrayList<String>();
+    List<String> schemaNames = inputRel.getRowType().getFieldNames();
+    for (Integer iRef : inputRefs) {
+      fieldNames.add(schemaNames.get(iRef));
+    }
+    
+    return fieldNames;
+  }  
 
   /**
    * Walks over an expression and determines whether it is constant.

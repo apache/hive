@@ -30,6 +30,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -68,7 +69,7 @@ class ASTBuilder {
     // However in HIVE DB name can not appear in select list; in case of join
     // where table names differ only in DB name, Hive would require user
     // introducing explicit aliases for tbl.
-    b.add(HiveParser.Identifier, hTbl.getTableAlias());
+    b.add(HiveParser.Identifier, ((HiveTableScan)scan).getTableAlias());
     return b.node();
   }
 

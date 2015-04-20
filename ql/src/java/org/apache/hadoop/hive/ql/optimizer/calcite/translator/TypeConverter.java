@@ -240,7 +240,7 @@ public class TypeConverter {
     } else if (rType.getKeyType() != null) {
       return convertMapType(rType);
     } else {
-      return convertPrimtiveType(rType);
+      return convertPrimitiveType(rType);
     }
   }
 
@@ -271,7 +271,7 @@ public class TypeConverter {
     return TypeInfoFactory.getListTypeInfo(convert(rType.getComponentType()));
   }
 
-  public static TypeInfo convertPrimtiveType(RelDataType rType) {
+  public static TypeInfo convertPrimitiveType(RelDataType rType) {
     switch (rType.getSqlTypeName()) {
     case BOOLEAN:
       return TypeInfoFactory.booleanTypeInfo;

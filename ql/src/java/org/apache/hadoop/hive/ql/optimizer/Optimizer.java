@@ -64,10 +64,10 @@ public class Optimizer {
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
-    transformations.add(new PredicateTransitivePropagate());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      transformations.add(new ConstantPropagate());
-    }
+      transformations.add(new PredicateTransitivePropagate());
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+        transformations.add(new ConstantPropagate());
+      }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
     }
@@ -142,8 +142,11 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       transformations.add(new ReduceSinkDeDuplication());
     }
-    transformations.add(new NonBlockingOpDeDupProc());
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)) {
+    if(!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+      transformations.add(new NonBlockingOpDeDupProc());
+    }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)
+        && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
       transformations.add(new IdentityProjectRemover());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVELIMITOPTENABLE)) {
