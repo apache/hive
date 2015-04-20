@@ -60,6 +60,14 @@ message FragmentSpecProto {
   optional int32 attempt_number = 10;
 }
 
+message FragmentRuntimeInfo {
+  optional int32 num_self_and_upstream_tasks = 1;
+  optional int32 num_self_and_upstream_completed_tasks = 2;
+  optional int32 within_dag_priority = 3;
+  optional int64 dag_start_time = 4;
+  optional int64 first_attempt_start_time = 5;
+}
+
 enum SourceStateProto {
   S_SUCCEEDED = 1;
   S_RUNNING = 2;
@@ -75,6 +83,7 @@ message SubmitWorkRequestProto {
   optional string application_id_string = 7;
   optional int32 app_attempt_number = 8;
   optional FragmentSpecProto fragment_spec = 9;
+  optional FragmentRuntimeInfo fragment_runtime_info = 10;
 }
 
 message SubmitWorkResponseProto {

@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.llap.LlapNodeId;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.tezplugins.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
@@ -49,7 +51,6 @@ public class SourceStateTracker {
 
   private volatile String currentDagName;
 
-
   public SourceStateTracker(TaskCommunicatorContext taskCommunicatorContext,
                             LlapTaskCommunicator taskCommunicator) {
     this.taskCommunicatorContext = taskCommunicatorContext;
@@ -66,7 +67,14 @@ public class SourceStateTracker {
     this.currentDagName = newDagName;
   }
 
-  public synchronized void addTask(String host, int port, List<InputSpec> inputSpecList) {
+  /**
+   * Used to register a task for state updates. Effectively registers for state updates to go to the specific node.
+   * @param host
+   * @param port
+   * @param inputSpecList
+   */
+  public synchronized void registerTaskForStateUpdates(String host, int port,
+                                                       List<InputSpec> inputSpecList) {
 
     // Add tracking information. Check if source state already known and send out an update if it is.
 
@@ -102,8 +110,18 @@ public class SourceStateTracker {
     }
   }
 
+  /**
+   * Handled notifications on state updates for sources
+   * @param sourceName
+   * @param sourceState
+   */
   public synchronized void sourceStateUpdated(String sourceName, VertexState sourceState) {
     SourceInfo sourceInfo = getSourceInfo(sourceName);
+    // Update source info if the state is SUCCEEDED
+    if (sourceState == VertexState.SUCCEEDED) {
+      sourceInfo.numCompletedTasks = taskCommunicatorContext.getVertexCompletedTaskCount(sourceName);
+      sourceInfo.numTasks = taskCommunicatorContext.getVertexTotalTaskCount(sourceName);
+    }
     sourceInfo.lastKnownState = sourceState;
     // Checking state per node for future failure handling scenarios, where an update
     // to a single node may fail.
@@ -119,10 +137,64 @@ public class SourceStateTracker {
   }
 
 
+  /**
+   * Constructs FragmentRuntimeInfo for scheduling within LLAP daemons.
+   * Also caches state based on state updates.
+   * @param dagName
+   * @param vertexName
+   * @param fragmentNumber
+   * @param priority
+   * @return
+   */
+  public synchronized FragmentRuntimeInfo getFragmentRuntimeInfo(String dagName, String vertexName, int fragmentNumber,
+                                                                 int priority) {
+    FragmentRuntimeInfo.Builder builder = FragmentRuntimeInfo.newBuilder();
+    maybeRegisterForVertexUpdates(vertexName);
+
+    MutableInt totalTaskCount = new MutableInt(0);
+    MutableInt completedTaskCount = new MutableInt(0);
+    computeUpstreamTaskCounts(completedTaskCount, totalTaskCount, vertexName);
+
+    builder.setNumSelfAndUpstreamCompletedTasks(completedTaskCount.intValue());
+    builder.setNumSelfAndUpstreamTasks(totalTaskCount.intValue());
+    builder.setDagStartTime(taskCommunicatorContext.getDagStartTime());
+    builder.setWithinDagPriority(priority);
+    builder.setFirstAttemptStartTime(taskCommunicatorContext.getFirstAttemptStartTime(vertexName, fragmentNumber));
+    return builder.build();
+  }
+
+  private void computeUpstreamTaskCounts(MutableInt completedTaskCount, MutableInt totalTaskCount, String sourceName) {
+    SourceInfo sourceInfo = getSourceInfo(sourceName);
+    if (sourceInfo.lastKnownState == VertexState.SUCCEEDED) {
+      // Some of the information in the source is complete. Don't need to fetch it from the context.
+      completedTaskCount.add(sourceInfo.numCompletedTasks);
+      totalTaskCount.add(sourceInfo.numTasks);
+    } else {
+      completedTaskCount.add(taskCommunicatorContext.getVertexCompletedTaskCount(sourceName));
+      int totalCount =taskCommunicatorContext.getVertexTotalTaskCount(sourceName);
+      // Uninitialized vertices will report count as 0.
+      totalCount = totalCount == -1 ? 0 : totalCount;
+      totalTaskCount.add(totalCount);
+    }
+
+    // Walk through all the source vertices
+    for (String up : taskCommunicatorContext.getInputVertexNames(sourceName)) {
+      computeUpstreamTaskCounts(completedTaskCount, totalTaskCount, up);
+    }
+  }
+
   private static class SourceInfo {
-    private final List<LlapNodeId> interestedNodes = new LinkedList<>();
+
     // Always start in the running state. Requests for state updates will be sent out after registration.
     private VertexState lastKnownState = VertexState.RUNNING;
+
+    // Used for sending notifications about a vertex completed. For canFinish
+    // Can be converted to a Tez event, if this is sufficient to decide on pre-emption
+    private final List<LlapNodeId> interestedNodes = new LinkedList<>();
+
+    // Used for sending information for scheduling priority.
+    private int numTasks;
+    private int numCompletedTasks;
 
     void addNode(LlapNodeId nodeId) {
       interestedNodes.add(nodeId);
@@ -131,6 +203,9 @@ public class SourceStateTracker {
     List<LlapNodeId> getInterestedNodes() {
       return this.interestedNodes;
     }
+
+
+
   }
 
   private synchronized SourceInfo getSourceInfo(String srcName) {
