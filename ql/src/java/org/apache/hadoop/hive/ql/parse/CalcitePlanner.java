@@ -1827,7 +1827,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // 3.3.2 Get UDAF Info using UDAF Evaluator
             GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo(genericUDAFEvaluator, amode,
                 aggParameters);
-            udafRetType = udaf.returnType;
+            if (FunctionRegistry.pivotResult(aggName)) {
+              udafRetType = ((ListTypeInfo)udaf.returnType).getListElementTypeInfo();
+            } else {
+              udafRetType = udaf.returnType;
+            }
           }
         } catch (Exception e) {
           LOG.debug("CBO: Couldn't Obtain UDAF evaluators for " + aggName

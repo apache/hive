@@ -1535,6 +1535,14 @@ public final class FunctionRegistry {
     return false;
   }
 
+  public static boolean pivotResult(String functionName) throws SemanticException {
+    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
+    if (windowInfo != null) {
+      return windowInfo.isPivotResult();
+    }
+    return false;
+  }
+
   public static boolean isTableFunction(String functionName)
       throws SemanticException {
     FunctionInfo tFInfo = getFunctionInfo(functionName);
