@@ -21,6 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
@@ -48,8 +48,6 @@ import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
-import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
@@ -78,15 +76,11 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   // interface into the registry service
   private ServiceInstanceSet activeInstances;
 
+  // Tracks all instances, including ones which have been disabled in the past.
+  // LinkedHashMap to provide the same iteration order when selecting a random host.
   @VisibleForTesting
-  final Map<ServiceInstance, NodeInfo> instanceToNodeMap = new HashMap<>();
-  
-  @VisibleForTesting
-  final Set<ServiceInstance> instanceBlackList = new HashSet<ServiceInstance>();
-
-  @VisibleForTesting
-  // Tracks currently allocated containers.
-  final Map<ContainerId, String> containerToInstanceMap = new HashMap<>();
+  final Map<ServiceInstance, NodeInfo> instanceToNodeMap = new LinkedHashMap<>();
+  // TODO Ideally, remove elements from this once it's known that no tasks are linked to the instance (all deallocated)
 
   // Tracks tasks which could not be allocated immediately.
   @VisibleForTesting
@@ -100,8 +94,9 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   // Tracks running and queued tasks. Cleared after a task completes.
   private final ConcurrentMap<Object, TaskInfo> knownTasks = new ConcurrentHashMap<>();
 
+  // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
-  final DelayQueue<NodeInfo> disabledNodes = new DelayQueue<>();
+  final DelayQueue<NodeInfo> disabledNodesQueue = new DelayQueue<>();
 
   private final ContainerFactory containerFactory;
   private final Random random = new Random();
@@ -263,9 +258,9 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     int vcores = 0;
     readLock.lock();
     try {
-      for (ServiceInstance inst : instanceToNodeMap.keySet()) {
-        if (inst.isAlive()) {
-          Resource r = inst.getResource();
+      for (Entry<ServiceInstance, NodeInfo> entry : instanceToNodeMap.entrySet()) {
+        if (entry.getKey().isAlive() && !entry.getValue().isDisabled()) {
+          Resource r = entry.getKey().getResource();
           memory += r.getMemory();
           vcores += r.getVirtualCores();
         }
@@ -375,8 +370,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         }
         return false;
       }
-      String hostForContainer = containerToInstanceMap.remove(taskInfo.containerId);
-      assert hostForContainer != null;
       ServiceInstance assignedInstance = taskInfo.assignedInstance;
       assert assignedInstance != null;
 
@@ -410,6 +403,8 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   @Override
   public Object deallocateContainer(ContainerId containerId) {
     LOG.info("DEBUG: Ignoring deallocateContainer for containerId: " + containerId);
+    // Containers are not being tracked for re-use.
+    // This is safe to ignore since a deallocate task should have come in earlier.
     return null;
   }
 
@@ -435,7 +430,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   }
 
   /**
-   * @param requestedHosts the list of preferred hosts. null implies any host
+   * @param request the list of preferred hosts. null implies any host
    * @return
    */
   private ServiceInstance selectHost(TaskInfo request) {
@@ -444,6 +439,9 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     try {
       // Check if any hosts are active.
       if (getAvailableResources().getMemory() <= 0) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Refreshing instances since total memory is 0");
+        }
         refreshInstances();
       }
 
@@ -453,16 +451,20 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       }
 
       if (requestedHosts != null) {
+        int prefHostCount = -1;
         for (String host : requestedHosts) {
+          prefHostCount++;
           // Pick the first host always. Weak attempt at cache affinity.
           Set<ServiceInstance> instances = activeInstances.getByHost(host);
           if (!instances.isEmpty()) {
             for (ServiceInstance inst : instances) {
-              if (inst.isAlive() && instanceToNodeMap.containsKey(inst)) {
-                // only allocate from the "available" list
+              NodeInfo nodeInfo = instanceToNodeMap.get(inst);
+              if (inst.isAlive() && nodeInfo != null && !nodeInfo.isDisabled()) {
                 // TODO Change this to work off of what we think is remaining capacity for an
                 // instance
-                LOG.info("Assigning " + inst + " when looking for " + host);
+                LOG.info(
+                    "Assigning " + inst + " when looking for " + host + ". FirstRequestedHost=" +
+                        (prefHostCount == 0));
                 return inst;
               }
             }
@@ -470,16 +472,16 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         }
       }
       /* fall through - miss in locality (random scheduling) */
-      ServiceInstance[] all = instanceToNodeMap.keySet().toArray(new ServiceInstance[0]);
+      Entry<ServiceInstance, NodeInfo> [] all = instanceToNodeMap.entrySet().toArray(new Entry[instanceToNodeMap.size()]);
       // Check again
       if (all.length > 0) {
         int n = random.nextInt(all.length);
         // start at random offset and iterate whole list
         for (int i = 0; i < all.length; i++) {
-          ServiceInstance inst = all[(i + n) % all.length];
-          if (inst.isAlive()) {
-            LOG.info("Assigning " + inst + " when looking for any host");
-            return inst;
+          Entry<ServiceInstance, NodeInfo> inst = all[(i + n) % all.length];
+          if (inst.getKey().isAlive() && !inst.getValue().isDisabled()) {
+            LOG.info("Assigning " + inst + " when looking for any host, from #hosts=" + all.length);
+            return inst.getKey();
           }
         }
       }
@@ -487,15 +489,27 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       readLock.unlock();
     }
 
+    // TODO Ideally, each refresh operation should addNodes if they don't already exist.
+    // Even better would be to get notifications from the service impl when a node gets added or removed.
+    // Instead of having to walk through the entire list. The computation of a node getting added or
+    // removed already exists in the DynamicRegistry implementation.
+
+
+    // This will only happen if no allocations are possible, which means all other nodes have
+    // been blacklisted.
+    // TODO Look for new nodes more often. See comment above.
+
     /* check again whether nodes are disabled or just missing */
     writeLock.lock();
     try {
       for (ServiceInstance inst : activeInstances.getAll().values()) {
-        if (inst.isAlive() && instanceBlackList.contains(inst) == false
-            && instanceToNodeMap.containsKey(inst) == false) {
+        if (inst.isAlive() && instanceToNodeMap.containsKey(inst) == false) {
           /* that's a good node, not added to the allocations yet */
+          LOG.info("Found a new node: " + inst + ". Adding to node list and disabling to trigger scheduling");
           addNode(inst, new NodeInfo(inst, BACKOFF_FACTOR, clock));
           // mark it as disabled to let the pending tasks go there
+          // TODO If disabling the instance, have it wake up immediately instead of waiting.
+          // Ideally get rid of this requirement, by having all tasks allocated via a queue.
           disableInstance(inst, true);
         }
       }
@@ -515,19 +529,22 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   }
 
   private void addNode(ServiceInstance inst, NodeInfo node) {
+    LOG.info("Adding node: " + inst);
     instanceToNodeMap.put(inst, node);
+    // TODO Trigger a scheduling run each time a new node is added.
   }
 
   private void reenableDisabledNode(NodeInfo nodeInfo) {
     writeLock.lock();
     try {
       if (!nodeInfo.isBusy()) {
+        // If the node being re-enabled was not marked busy previously, then it was disabled due to
+        // some other failure. Refresh the service list to see if it's been removed permanently.
         refreshInstances();
       }
+      LOG.info("Attempting to re-enable node: " + nodeInfo.host);
       if (nodeInfo.host.isAlive()) {
         nodeInfo.enableNode();
-        instanceBlackList.remove(nodeInfo.host);
-        instanceToNodeMap.put(nodeInfo.host, nodeInfo);
       } else {
         if (LOG.isInfoEnabled()) {
           LOG.info("Removing dead node " + nodeInfo);
@@ -541,19 +558,18 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   private void disableInstance(ServiceInstance instance, boolean busy) {
     writeLock.lock();
     try {
-      NodeInfo nodeInfo = instanceToNodeMap.remove(instance);
-      if (nodeInfo == null) {
+      NodeInfo nodeInfo = instanceToNodeMap.get(instance);
+      if (nodeInfo == null || nodeInfo.isDisabled()) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Node: " + instance + " already disabled, or invalid. Not doing anything.");
         }
       } else {
-        instanceBlackList.add(instance);
         nodeInfo.disableNode(nodeReEnableTimeout);
         nodeInfo.setBusy(busy); // daemon failure vs daemon busy
         // TODO: handle task to container map events in case of hard failures
-        disabledNodes.add(nodeInfo);
+        disabledNodesQueue.add(nodeInfo);
         if (LOG.isInfoEnabled()) {
-          LOG.info("Disabling instance " + instance + " for " + nodeReEnableTimeout + " seconds");
+          LOG.info("Disabling instance " + instance + " for " + nodeReEnableTimeout + " milli-seconds");
         }
       }
     } finally {
@@ -640,7 +656,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
             host.getHost());
         taskInfo.setAssignmentInfo(host, container.getId());
         knownTasks.putIfAbsent(taskInfo.task, taskInfo);
-        containerToInstanceMap.put(container.getId(), host.getWorkerIdentity());
       } finally {
         writeLock.unlock();
       }
@@ -660,7 +675,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
           while (true) {
-            NodeInfo nodeInfo = disabledNodes.take();
+            NodeInfo nodeInfo = disabledNodesQueue.take();
             // A node became available. Enable the node and try scheduling.
             reenableDisabledNode(nodeInfo);
             schedulePendingTasks();
@@ -694,7 +709,11 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     private long numSuccessfulTasks = 0;
     private long numSuccessfulTasksAtLastBlacklist = -1;
     float cumulativeBackoffFactor = 1.0f;
+    // A node could be disabled for reasons other than being busy.
+    private boolean disabled = false;
+    // If disabled, the node could be marked as busy.
     private boolean busy;
+
 
     NodeInfo(ServiceInstance host, float backoffFactor, Clock clock) {
       this.host = host;
@@ -704,10 +723,12 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
 
     void enableNode() {
       expireTimeMillis = -1;
+      disabled = false;
     }
 
     void disableNode(long duration) {
       long currentTime = clock.getTime();
+      disabled = true;
       if (numSuccessfulTasksAtLastBlacklist == numSuccessfulTasks) {
         // Blacklisted again, without any progress. Will never kick in for the first run.
         cumulativeBackoffFactor = cumulativeBackoffFactor * constBackOffFactor;
@@ -721,7 +742,12 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     }
 
     void registerTaskSuccess() {
-      this.busy = false; // if a task exited, we might have free slots
+      // TODO If a task succeeds, we may have free slots. Mark the node as !busy. Ideally take it out
+      // of the queue for more allocations.
+      // For now, not chanigng the busy status,
+
+      // this.busy = false;
+      // this.disabled = false;
       numSuccessfulTasks++;
     }
 
@@ -733,9 +759,13 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       return busy;
     }
 
+    public boolean isDisabled() {
+      return disabled;
+    }
+
     @Override
     public long getDelay(TimeUnit unit) {
-      return expireTimeMillis - clock.getTime();
+      return unit.convert(expireTimeMillis - clock.getTime(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -869,31 +899,4 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     }
   }
 
-  static class ContainerFactory {
-    final ApplicationAttemptId customAppAttemptId;
-    AtomicLong nextId;
-
-    public ContainerFactory(AppContext appContext, long appIdLong) {
-      this.nextId = new AtomicLong(1);
-      ApplicationId appId =
-          ApplicationId.newInstance(appIdLong, appContext.getApplicationAttemptId()
-              .getApplicationId().getId());
-      this.customAppAttemptId =
-          ApplicationAttemptId.newInstance(appId, appContext.getApplicationAttemptId()
-              .getAttemptId());
-    }
-
-    public Container createContainer(Resource capability, Priority priority, String hostname,
-        int port) {
-      ContainerId containerId =
-          ContainerId.newContainerId(customAppAttemptId, nextId.getAndIncrement());
-      NodeId nodeId = NodeId.newInstance(hostname, port);
-      String nodeHttpAddress = "hostname:0"; // TODO: include UI ports
-
-      Container container =
-          Container.newInstance(containerId, nodeId, nodeHttpAddress, capability, priority, null);
-
-      return container;
-    }
-  }
 }

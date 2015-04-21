@@ -22,9 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +36,6 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.tez.dag.api.TaskAttemptEndReason;
 import org.apache.tez.dag.app.AppContext;
@@ -46,7 +43,6 @@ import org.apache.tez.dag.app.ControlledClock;
 import org.apache.tez.dag.app.rm.TaskSchedulerService.TaskSchedulerAppCallback;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mortbay.log.Log;
 
 public class TestLlapTaskSchedulerService {
 
@@ -112,7 +108,7 @@ public class TestLlapTaskSchedulerService {
       // Verify that the node is blacklisted
       assertEquals(1, tsWrapper.ts.dagStats.numRejectedTasks);
       assertEquals(2, tsWrapper.ts.instanceToNodeMap.size());
-      LlapTaskSchedulerService.NodeInfo disabledNodeInfo = tsWrapper.ts.disabledNodes.peek();
+      LlapTaskSchedulerService.NodeInfo disabledNodeInfo = tsWrapper.ts.disabledNodesQueue.peek();
       assertNotNull(disabledNodeInfo);
       assertEquals(HOST1, disabledNodeInfo.host.getHost());
       assertEquals((10000l), disabledNodeInfo.getDelay(TimeUnit.NANOSECONDS));
@@ -164,7 +160,7 @@ public class TestLlapTaskSchedulerService {
       // Verify that the node is blacklisted
       assertEquals(3, tsWrapper.ts.dagStats.numRejectedTasks);
       assertEquals(0, tsWrapper.ts.instanceToNodeMap.size());
-      assertEquals(3, tsWrapper.ts.disabledNodes.size());
+      assertEquals(3, tsWrapper.ts.disabledNodesQueue.size());
 
 
       Object task4 = new Object();
