@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -26,8 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.PathNotFoundException;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
@@ -37,7 +38,6 @@ import org.apache.hadoop.registry.client.binding.RegistryPathUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
-import org.apache.hadoop.registry.client.exceptions.InvalidRecordException;
 import org.apache.hadoop.registry.client.impl.zk.RegistryOperationsService;
 import org.apache.hadoop.registry.client.types.AddressTypes;
 import org.apache.hadoop.registry.client.types.Endpoint;
@@ -55,9 +55,10 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
   private static final Logger LOG = Logger.getLogger(LlapYarnRegistryImpl.class);
 
   private RegistryOperationsService client;
-  private String instanceName;
-  private Configuration conf;
-  private ServiceRecordMarshal encoder;
+  private final String instanceName;
+  private final Configuration conf;
+  private final ServiceRecordMarshal encoder;
+  private final String path;
 
   private final DynamicServiceInstanceSet instances = new DynamicServiceInstanceSet();
 
@@ -68,7 +69,8 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
   private final static String SERVICE_CLASS = "org-apache-hive";
 
-  final ScheduledExecutorService refresher = Executors.newScheduledThreadPool(1);
+  final ScheduledExecutorService refresher = Executors.newScheduledThreadPool(1,
+      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapYarnRegistryRefresher").build());
   final long refreshDelay;
 
   static {
@@ -90,6 +92,8 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     // registry reference
     client = (RegistryOperationsService) RegistryOperationsFactory.createInstance(conf);
     encoder = new RegistryUtils.ServiceRecordMarshal();
+    this.path = RegistryPathUtils.join(RegistryUtils.componentPath(RegistryUtils.currentUser(),
+        SERVICE_CLASS, instanceName, "workers"), "worker-");
     refreshDelay =
         conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL,
             LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL_DEFAULT);
@@ -114,8 +118,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
   }
 
   private final String getPath() {
-    return RegistryPathUtils.join(RegistryUtils.componentPath(RegistryUtils.currentUser(),
-        SERVICE_CLASS, instanceName, "workers"), "worker-");
+    return this.path;
   }
 
   @Override
@@ -199,7 +202,8 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     }
 
     public void kill() {
-      LOG.info("Killing " + this);
+      // May be possible to generate a notification back to the scheduler from here.
+      LOG.info("Killing service instance: " + this);
       this.alive = false;
     }
 
@@ -217,74 +221,90 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
     @Override
     public String toString() {
-      return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort + "]";
+      return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort + " with resources=" + getResource() +"]";
     }
+
+    // Relying on the identity hashCode and equality, since refreshing instances retains the old copy
+    // of an already known instance.
   }
 
   private class DynamicServiceInstanceSet implements ServiceInstanceSet {
 
-    Map<String, ServiceInstance> instances;
+    // LinkedHashMap to retain iteration order.
+    private final Map<String, ServiceInstance> instances = new LinkedHashMap<>();
 
     @Override
-    public Map<String, ServiceInstance> getAll() {
-      return instances;
+    public synchronized Map<String, ServiceInstance> getAll() {
+      // Return a copy. Instances may be modified during a refresh.
+      return new LinkedHashMap<>(instances);
     }
 
     @Override
-    public ServiceInstance getInstance(String name) {
+    public synchronized ServiceInstance getInstance(String name) {
       return instances.get(name);
     }
 
     @Override
-    public synchronized void refresh() throws IOException {
+    public  void refresh() throws IOException {
       /* call this from wherever */
       Map<String, ServiceInstance> freshInstances = new HashMap<String, ServiceInstance>();
 
       String path = getPath();
       Map<String, ServiceRecord> records =
           RegistryUtils.listServiceRecords(client, RegistryPathUtils.parentOf(path));
-      Set<String> latestKeys = new HashSet<String>();
-      LOG.info("Starting to refresh ServiceInstanceSet " + System.identityHashCode(this));
-      for (ServiceRecord rec : records.values()) {
-        ServiceInstance instance = new DynamicServiceInstance(rec);
-        if (instance != null) {
-          if (instances != null && instances.containsKey(instance.getWorkerIdentity()) == false) {
-            // add a new object
-            freshInstances.put(instance.getWorkerIdentity(), instance);
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Adding new worker " + instance.getWorkerIdentity() + " which mapped to "
-                  + instance);
+      // Synchronize after reading the service records from the external service (ZK)
+      synchronized (this) {
+        Set<String> latestKeys = new HashSet<String>();
+        LOG.info("Starting to refresh ServiceInstanceSet " + System.identityHashCode(this));
+        for (ServiceRecord rec : records.values()) {
+          ServiceInstance instance = new DynamicServiceInstance(rec);
+          if (instance != null) {
+            if (instances != null && instances.containsKey(instance.getWorkerIdentity()) == false) {
+              // add a new object
+              freshInstances.put(instance.getWorkerIdentity(), instance);
+              if (LOG.isInfoEnabled()) {
+                LOG.info("Adding new worker " + instance.getWorkerIdentity() + " which mapped to "
+                    + instance);
+              }
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Retaining running worker " + instance.getWorkerIdentity() +
+                    " which mapped to " + instance);
+              }
             }
-          } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Retaining running worker " + instance.getWorkerIdentity() + " which mapped to " + instance);
           }
+          latestKeys.add(instance.getWorkerIdentity());
         }
-        latestKeys.add(instance.getWorkerIdentity());
-      }
 
-      if (instances != null) {
-        // deep-copy before modifying
-        Set<String> oldKeys = new HashSet(instances.keySet());
-        if (oldKeys.removeAll(latestKeys)) {
-          for (String k : oldKeys) {
-            // this is so that people can hold onto ServiceInstance references as placeholders for tasks
-            final DynamicServiceInstance dead = (DynamicServiceInstance) instances.get(k);
-            dead.kill();
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Deleting dead worker " + k + " which mapped to " + dead);
+        if (instances != null) {
+          // deep-copy before modifying
+          Set<String> oldKeys = new HashSet(instances.keySet());
+          if (oldKeys.removeAll(latestKeys)) {
+            // This is all the records which have not checked in, and are effectively dead.
+            for (String k : oldKeys) {
+              // this is so that people can hold onto ServiceInstance references as placeholders for tasks
+              final DynamicServiceInstance dead = (DynamicServiceInstance) instances.get(k);
+              dead.kill();
+              if (LOG.isInfoEnabled()) {
+                LOG.info("Deleting dead worker " + k + " which mapped to " + dead);
+              }
             }
           }
+          // oldKeys contains the set of dead instances at this point.
+          this.instances.keySet().removeAll(oldKeys);
+          this.instances.putAll(freshInstances);
+        } else {
+          this.instances.putAll(freshInstances);
         }
-        this.instances.keySet().removeAll(oldKeys);
-        this.instances.putAll(freshInstances);
-      } else {
-        this.instances = freshInstances;
       }
     }
 
     @Override
-    public Set<ServiceInstance> getByHost(String host) {
+    public synchronized Set<ServiceInstance> getByHost(String host) {
+      // TODO Maybe store this as a map which is populated during construction, to avoid walking
+      // the map on each request.
       Set<ServiceInstance> byHost = new HashSet<ServiceInstance>();
+
       for (ServiceInstance i : instances.values()) {
         if (host.equals(i.getHost())) {
           // all hosts in instances should be alive in this impl

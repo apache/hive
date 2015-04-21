@@ -218,7 +218,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
           @Override
           public void indicateError(Throwable t) {
-            LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
             if (t instanceof ServiceException) {
               ServiceException se = (ServiceException) t;
               t = se.getCause();
@@ -228,10 +227,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
               String message = re.toString();
               // RejectedExecutions from the remote service treated as KILLED
               if (message.contains(RejectedExecutionException.class.getName())) {
+                LOG.info(
+                    "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                        containerId + ", Service Busy");
                 getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
                     TaskAttemptEndReason.SERVICE_BUSY, "Service Busy");
               } else {
                 // All others from the remote service cause the task to FAIL.
+                LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
                 getTaskCommunicatorContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.toString());
@@ -239,10 +242,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
             } else {
               // Exception from the RPC layer - communication failure, consider as KILLED / service down.
               if (t instanceof IOException) {
+                LOG.info(
+                    "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                        containerId + ", Communication Error");
                 getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
                     TaskAttemptEndReason.COMMUNICATION_ERROR, "Communication Error");
               } else {
                 // Anything else is a FAIL.
+                LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
                 getTaskCommunicatorContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.getMessage());
