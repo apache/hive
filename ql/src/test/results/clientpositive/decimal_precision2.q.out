@@ -37,7 +37,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: 100.000 (type: decimal(3,0))
+            expressions: 100 (type: decimal(3,0))
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
@@ -59,7 +59,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: 0.000 (type: decimal(1,0))
+            expressions: 0 (type: decimal(1,0))
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
@@ -81,7 +81,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: 0.100 (type: decimal(1,1))
+            expressions: 0.1 (type: decimal(1,1))
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
@@ -103,7 +103,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
           Select Operator
-            expressions: 0.010 (type: decimal(2,2))
+            expressions: 0.01 (type: decimal(2,2))
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
             ListSink
