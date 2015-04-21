@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
@@ -68,34 +69,36 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 /*
  * convert a RexNode to an ExprNodeDesc
  */
 public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
-  String             tabAlias;
-  String             columnAlias;
-  RelDataType        inputRowType;
-  RelDataType        outputRowType;
-  boolean            partitioningExpr;
-  WindowFunctionSpec wfs;
+  private final String             tabAlias;
+  private final String             columnAlias;
+  private final RelDataType        inputRowType;
+  private final RelDataType        outputRowType;
+  private final ImmutableSet<Integer>       inputVCols;
+  private WindowFunctionSpec wfs;
   private final RelDataTypeFactory dTFactory;
   protected final Log LOG = LogFactory.getLog(this.getClass().getName());
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
-          boolean partitioningExpr, RelDataTypeFactory dTFactory) {
-    this(tabAlias, null, inputRowType, null, partitioningExpr, dTFactory);
+      Set<Integer> vCols, RelDataTypeFactory dTFactory) {
+    this(tabAlias, null, inputRowType, null, vCols, dTFactory);
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
-          RelDataType outputRowType, boolean partitioningExpr, RelDataTypeFactory dTFactory) {
+          RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory) {
     super(true);
     this.tabAlias = tabAlias;
     this.columnAlias = columnAlias;
     this.inputRowType = inputRowType;
     this.outputRowType = outputRowType;
-    this.partitioningExpr = partitioningExpr;
-    this.dTFactory = dTFactory;    
+    this.inputVCols = ImmutableSet.copyOf(inputVCols);
+    this.dTFactory = dTFactory;
   }
 
   public WindowFunctionSpec getWindowFunctionSpec() {
@@ -106,7 +109,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   public ExprNodeDesc visitInputRef(RexInputRef inputRef) {
     RelDataTypeField f = inputRowType.getFieldList().get(inputRef.getIndex());
     return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), f.getName(), tabAlias,
-        partitioningExpr);
+        inputVCols.contains(inputRef.getIndex()));
   }
 
   /**
@@ -257,7 +260,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
     RelDataTypeField f = outputRowType.getField(columnAlias, false, false);
     return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), columnAlias, tabAlias,
-            partitioningExpr);
+            false);
   }
 
   private PartitioningSpec getPSpec(RexWindow window) {

@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 public class HiveOpConverter {
 
@@ -128,16 +129,16 @@ public class HiveOpConverter {
   static class OpAttr {
     final String                         tabAlias;
     ImmutableList<Operator>              inputs;
-    ImmutableMap<Integer, VirtualColumn> vcolMap;
+    ImmutableSet<Integer>                vcolsInCalcite;
 
-    OpAttr(String tabAlias, Map<Integer, VirtualColumn> vcolMap, Operator... inputs) {
+    OpAttr(String tabAlias, Set<Integer> vcols, Operator... inputs) {
       this.tabAlias = tabAlias;
-      this.vcolMap = ImmutableMap.copyOf(vcolMap);
       this.inputs = ImmutableList.copyOf(inputs);
+      this.vcolsInCalcite = ImmutableSet.copyOf(vcols);
     }
 
     private OpAttr clone(Operator... inputs) {
-      return new OpAttr(tabAlias, this.vcolMap, inputs);
+      return new OpAttr(tabAlias, vcolsInCalcite, inputs);
     }
   }
 
@@ -192,13 +193,13 @@ public class HiveOpConverter {
     // 1. Setup TableScan Desc
     // 1.1 Build col details used by scan
     ArrayList<ColumnInfo> colInfos = new ArrayList<ColumnInfo>();
-    List<VirtualColumn> virtualCols = new ArrayList<VirtualColumn>(ht.getVirtualCols());
-    Map<Integer, VirtualColumn> hiveScanVColMap = new HashMap<Integer, VirtualColumn>();
-    List<String> partColNames = new ArrayList<String>();
+    List<VirtualColumn> virtualCols = new ArrayList<VirtualColumn>();
     List<Integer> neededColumnIDs = new ArrayList<Integer>();
-    List<String> neededColumns = new ArrayList<String>();
+    List<String> neededColumnNames = new ArrayList<String>();
+    Set<Integer> vcolsInCalcite = new HashSet<Integer>();
 
-    Map<Integer, VirtualColumn> posToVColMap = HiveCalciteUtil.getVColsMap(virtualCols,
+    List<String> partColNames = new ArrayList<String>();
+    Map<Integer, VirtualColumn> VColsMap = HiveCalciteUtil.getVColsMap(ht.getVirtualCols(),
         ht.getNoOfNonVirtualCols());
     Map<Integer, ColumnInfo> posToPartColInfo = ht.getPartColInfoMap();
     Map<Integer, ColumnInfo> posToNonPartColInfo = ht.getNonPartColInfoMap();
@@ -214,19 +215,20 @@ public class HiveOpConverter {
     for (int i = 0; i < neededColIndxsFrmReloptHT.size(); i++) {
       colName = scanColNames.get(i);
       posInRHT = neededColIndxsFrmReloptHT.get(i);
-      if (posToVColMap.containsKey(posInRHT)) {
-        vc = posToVColMap.get(posInRHT);
+      if (VColsMap.containsKey(posInRHT)) {
+        vc = VColsMap.get(posInRHT);
         virtualCols.add(vc);
         colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden());
-        hiveScanVColMap.put(i, vc);
+        vcolsInCalcite.add(posInRHT);
       } else if (posToPartColInfo.containsKey(posInRHT)) {
         partColNames.add(colName);
         colInfo = posToPartColInfo.get(posInRHT);
+        vcolsInCalcite.add(posInRHT);
       } else {
         colInfo = posToNonPartColInfo.get(posInRHT);
       }
       neededColumnIDs.add(posInRHT);
-      neededColumns.add(colName);
+      neededColumnNames.add(colName);
       colInfos.add(colInfo);
     }
 
@@ -238,7 +240,7 @@ public class HiveOpConverter {
 
     // 1.4. Set needed cols in TSDesc
     tsd.setNeededColumnIDs(neededColumnIDs);
-    tsd.setNeededColumns(neededColumns);
+    tsd.setNeededColumns(neededColumnNames);
 
     // 2. Setup TableScan
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
@@ -249,7 +251,7 @@ public class HiveOpConverter {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");
     }
 
-    return new OpAttr(tableAlias, hiveScanVColMap, ts);
+    return new OpAttr(tableAlias, vcolsInCalcite, ts);
   }
 
   OpAttr visit(HiveProject projectRel) throws SemanticException {
@@ -267,10 +269,11 @@ public class HiveOpConverter {
     for (int pos = 0; pos < projectRel.getChildExps().size(); pos++) {
       ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias, projectRel
           .getRowType().getFieldNames().get(pos), projectRel.getInput().getRowType(),
-          projectRel.getRowType(), false, projectRel.getCluster().getTypeFactory());
+          projectRel.getRowType(), inputOpAf.vcolsInCalcite, projectRel.getCluster().getTypeFactory());
       ExprNodeDesc exprCol = projectRel.getChildExps().get(pos).accept(converter);
       colExprMap.put(exprNames.get(pos), exprCol);
       exprCols.add(exprCol);
+      //TODO: Cols that come through PTF should it retain (VirtualColumness)?
       if (converter.getWindowFunctionSpec() != null) {
         windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
       }
@@ -281,7 +284,7 @@ public class HiveOpConverter {
     }
     // TODO: is this a safe assumption (name collision, external names...)
     SelectDesc sd = new SelectDesc(exprCols, exprNames);
-    Pair<ArrayList<ColumnInfo>, Map<Integer, VirtualColumn>> colInfoVColPair = createColInfos(
+    Pair<ArrayList<ColumnInfo>, Set<Integer>> colInfoVColPair = createColInfos(
         projectRel.getChildExps(), exprCols, exprNames, inputOpAf);
     SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(
         colInfoVColPair.getKey()), inputOpAf.inputs.get(0));
@@ -312,7 +315,7 @@ public class HiveOpConverter {
     JoinPredicateInfo joinPredInfo = JoinPredicateInfo.constructJoinPredicateInfo(joinRel);
 
     // 3. Extract join keys from condition
-    ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs());
+    ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs(), inputs);
 
     // 4.a Generate tags
     for (int tag=0; tag<children.size(); tag++) {
@@ -326,18 +329,18 @@ public class HiveOpConverter {
     // add it
 
     // 6. Virtual columns
-    Map<Integer, VirtualColumn> vcolMap = new HashMap<Integer, VirtualColumn>();
-    vcolMap.putAll(inputs[0].vcolMap);
+    Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
+    newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
     if (extractJoinType(joinRel) != JoinType.LEFTSEMI) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
-        vcolMap.putAll(HiveCalciteUtil.shiftVColsMap(inputs[i].vcolMap, shift));
+        newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
         shift += inputs[i].inputs.get(0).getSchema().getSignature().size();
       }
     }
 
     // 7. Return result
-    return new OpAttr(null, vcolMap, joinOp);
+    return new OpAttr(null, newVcolsInCalcite, joinOp);
   }
 
   OpAttr visit(HiveAggregate aggRel) throws SemanticException {
@@ -433,7 +436,7 @@ public class HiveOpConverter {
     }
 
     ExprNodeDesc filCondExpr = filterRel.getCondition().accept(
-        new ExprNodeConverter(inputOpAf.tabAlias, filterRel.getInput().getRowType(), false,
+        new ExprNodeConverter(inputOpAf.tabAlias, filterRel.getInput().getRowType(), inputOpAf.vcolsInCalcite,
             filterRel.getCluster().getTypeFactory()));
     FilterDesc filDesc = new FilterDesc(filCondExpr, false);
     ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOpAf.inputs.get(0));
@@ -474,6 +477,7 @@ public class HiveOpConverter {
       LOG.debug("Generated " + unionOp + " with row schema: [" + unionOp.getSchema() + "]");
     }
 
+    //TODO: Can columns retain virtualness out of union
     // 3. Return result
     return inputs[0].clone(unionOp);
   }
@@ -570,14 +574,14 @@ public class HiveOpConverter {
     return inputOpAf.clone(input);
   }
 
-  private ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo, List<RelNode> inputs) {
+  private ExprNodeDesc[][] extractJoinKeys(JoinPredicateInfo joinPredInfo, List<RelNode> inputs, OpAttr[] inputAttr) {
     ExprNodeDesc[][] joinKeys = new ExprNodeDesc[inputs.size()][];
     for (int i = 0; i < inputs.size(); i++) {
       joinKeys[i] = new ExprNodeDesc[joinPredInfo.getEquiJoinPredicateElements().size()];
       for (int j = 0; j < joinPredInfo.getEquiJoinPredicateElements().size(); j++) {
         JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.getEquiJoinPredicateElements().get(j);
         RexNode key = joinLeafPredInfo.getJoinKeyExprs(j).get(0);
-        joinKeys[i][j] = convertToExprNode(key, inputs.get(j), null);
+        joinKeys[i][j] = convertToExprNode(key, inputs.get(j), null, inputAttr[i]);
       }
     }
     return joinKeys;
@@ -853,8 +857,8 @@ public class HiveOpConverter {
     return columnDescriptors;
   }
 
-  private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel, String tabAlias) {
-    return rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), false,
+  private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel, String tabAlias, OpAttr inputAttr) {
+    return rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), inputAttr.vcolsInCalcite,
         inputRel.getCluster().getTypeFactory()));
   }
 
@@ -866,7 +870,7 @@ public class HiveOpConverter {
     return cInfoLst;
   }
 
-  private static Pair<ArrayList<ColumnInfo>, Map<Integer, VirtualColumn>> createColInfos(
+  private static Pair<ArrayList<ColumnInfo>, Set<Integer>> createColInfos(
       List<RexNode> calciteExprs, List<ExprNodeDesc> hiveExprs, List<String> projNames,
       OpAttr inpOpAf) {
     if (hiveExprs.size() != projNames.size()) {
@@ -876,22 +880,22 @@ public class HiveOpConverter {
     RexNode rexN;
     ExprNodeDesc pe;
     ArrayList<ColumnInfo> colInfos = new ArrayList<ColumnInfo>();
-    VirtualColumn vc;
-    Map<Integer, VirtualColumn> newVColMap = new HashMap<Integer, VirtualColumn>();
+    boolean vc;
+    Set<Integer> newVColSet = new HashSet<Integer>();
     for (int i = 0; i < hiveExprs.size(); i++) {
       pe = hiveExprs.get(i);
       rexN = calciteExprs.get(i);
-      vc = null;
+      vc = false;
       if (rexN instanceof RexInputRef) {
-        vc = inpOpAf.vcolMap.get(((RexInputRef) rexN).getIndex());
-        if (vc != null) {
-          newVColMap.put(i, vc);
+        if (inpOpAf.vcolsInCalcite.contains(((RexInputRef) rexN).getIndex())) {
+          newVColSet.add(i);
+          vc = true;
         }
       }
       colInfos
-          .add(new ColumnInfo(projNames.get(i), pe.getTypeInfo(), inpOpAf.tabAlias, vc != null));
+          .add(new ColumnInfo(projNames.get(i), pe.getTypeInfo(), inpOpAf.tabAlias, vc));
     }
 
-    return new Pair<ArrayList<ColumnInfo>, Map<Integer, VirtualColumn>>(colInfos, newVColMap);
+    return new Pair<ArrayList<ColumnInfo>, Set<Integer>>(colInfos, newVColSet);
   }
 }

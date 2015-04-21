@@ -589,13 +589,12 @@ public class HiveCalciteUtil {
 
     return bldr.build();
   }
-  
-  public static ImmutableMap<Integer, VirtualColumn> shiftVColsMap(Map<Integer, VirtualColumn> hiveVCols,
-      int shift) {
-    Builder<Integer, VirtualColumn> bldr = ImmutableMap.<Integer, VirtualColumn> builder();
 
-    for (Integer pos : hiveVCols.keySet()) {
-      bldr.put(shift + pos, hiveVCols.get(pos));
+  public static ImmutableSet<Integer> shiftVColsSet(Set<Integer> hiveVCols, int shift) {
+    ImmutableSet.Builder<Integer> bldr = ImmutableSet.<Integer> builder();
+
+    for (Integer pos : hiveVCols) {
+      bldr.add(shift + pos);
     }
 
     return bldr.build();
@@ -661,13 +660,14 @@ public class HiveCalciteUtil {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
-    ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(), false, inputRel.getCluster().getTypeFactory());
+    ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
+        new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
     for (RexNode iRef : rexInputRefs) {
       exprNodes.add(iRef.accept(exprConv));
     }
     return exprNodes;
   }
-  
+
   public static List<String> getFieldNames(List<Integer> inputRefs, RelNode inputRel) {
     List<String> fieldNames = new ArrayList<String>();
     List<String> schemaNames = inputRel.getRowType().getFieldNames();
@@ -730,6 +730,29 @@ public class HiveCalciteUtil {
     public Boolean visitFieldAccess(RexFieldAccess fieldAccess) {
       // "<expr>.FIELD" is constant iff "<expr>" is constant.
       return fieldAccess.getReferenceExpr().accept(this);
+    }
+  }
+
+  public static Set<Integer> getInputRefs(RexNode expr) {
+    InputRefsCollector irefColl = new InputRefsCollector(true);
+    return irefColl.getInputRefSet();
+  }
+
+  private static class InputRefsCollector extends RexVisitorImpl<Void> {
+
+    private Set<Integer> inputRefSet = new HashSet<Integer>();
+
+    private InputRefsCollector(boolean deep) {
+      super(deep);
+    }
+
+    public Void visitInputRef(RexInputRef inputRef) {
+      inputRefSet.add(inputRef.getIndex());
+      return null;
+    }
+
+    public Set<Integer> getInputRefSet() {
+      return inputRefSet;
     }
   }
 }

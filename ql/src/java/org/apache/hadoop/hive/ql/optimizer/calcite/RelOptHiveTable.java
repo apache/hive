@@ -248,7 +248,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
       // We have valid pruning expressions, only retrieve qualifying partitions
       ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(),
-          true, this.getRelOptSchema().getTypeFactory()));
+          HiveCalciteUtil.getInputRefs(pruneNode), this.getRelOptSchema().getTypeFactory()));
 
       partitionList = PartitionPruner.prune(hiveTblMetadata, pruneExpr, conf, getName(),
           partitionCache);

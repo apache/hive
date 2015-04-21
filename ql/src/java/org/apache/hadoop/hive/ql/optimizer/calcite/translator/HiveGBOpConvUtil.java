@@ -154,7 +154,7 @@ public class HiveGBOpConvUtil {
     // 1. Collect GB Keys
     RelNode aggInputRel = aggRel.getInput();
     ExprNodeConverter exprConv = new ExprNodeConverter(inputOpAf.tabAlias,
-        aggInputRel.getRowType(), false, aggRel.getCluster().getTypeFactory());
+        aggInputRel.getRowType(), new HashSet<Integer>(), aggRel.getCluster().getTypeFactory());
 
     ExprNodeDesc tmpExprNodeDesc;
     for (int i : aggRel.getGroupSet()) {
@@ -639,7 +639,7 @@ public class HiveGBOpConvUtil {
 
     rsOp.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsOp);
+    return new OpAttr("", new HashSet<Integer>(), rsOp);
   }
 
   private static OpAttr genMapSideGBRS(OpAttr inputOpAf, GBInfo gbInfo) throws SemanticException {
@@ -677,7 +677,7 @@ public class HiveGBOpConvUtil {
 
     rsOp.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsOp);
+    return new OpAttr("", new HashSet<Integer>(), rsOp);
   }
 
   private static OpAttr genMapSideRS(OpAttr inputOpAf, GBInfo gbInfo) throws SemanticException {
@@ -732,7 +732,7 @@ public class HiveGBOpConvUtil {
 
     rsOp.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsOp);
+    return new OpAttr("", new HashSet<Integer>(), rsOp);
   }
 
   private static OpAttr genReduceSideGB2(OpAttr inputOpAf, GBInfo gbInfo) throws SemanticException {
@@ -799,7 +799,7 @@ public class HiveGBOpConvUtil {
     rsGBOp2.setColumnExprMap(colExprMap);
 
     // TODO: Shouldn't we propgate vc? is it vc col from tab or all vc
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsGBOp2);
+    return new OpAttr("", new HashSet<Integer>(), rsGBOp2);
   }
 
   private static OpAttr genReduceSideGB1(OpAttr inputOpAf, GBInfo gbInfo, boolean computeGrpSet,
@@ -935,7 +935,7 @@ public class HiveGBOpConvUtil {
 
     rsGBOp.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsGBOp);
+    return new OpAttr("", new HashSet<Integer>(), rsGBOp);
   }
 
   /**
@@ -1035,7 +1035,7 @@ public class HiveGBOpConvUtil {
         false, -1, numDistinctUDFs > 0), new RowSchema(colInfoLst), rs);
     rsGB1.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), rsGB1);
+    return new OpAttr("", new HashSet<Integer>(), rsGB1);
   }
 
   @SuppressWarnings("unchecked")
@@ -1111,7 +1111,7 @@ public class HiveGBOpConvUtil {
     // NOTE: UDAF is not included in ExprColMap
     gbOp.setColumnExprMap(colExprMap);
 
-    return new OpAttr("", new HashMap<Integer, VirtualColumn>(), gbOp);
+    return new OpAttr("", new HashSet<Integer>(), gbOp);
   }
 
   private static void addGrpSetCol(boolean createConstantExpr, String grpSetIDExprName,
