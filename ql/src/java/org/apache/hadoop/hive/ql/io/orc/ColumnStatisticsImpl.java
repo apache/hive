@@ -825,6 +825,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     if (stats.hasHasNull()) {
       hasNull = stats.getHasNull();
+    } else {
+      hasNull = true;
     }
   }
 
