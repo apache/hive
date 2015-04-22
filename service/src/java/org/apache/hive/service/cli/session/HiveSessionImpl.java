@@ -563,10 +563,22 @@ public class HiveSessionImpl implements HiveSession {
       if (null != hiveHist) {
         hiveHist.closeStream();
       }
-      sessionState.close();
+      try {
+        sessionState.close();
+      } finally {
+        sessionState = null;
+      }
     } catch (IOException ioe) {
       throw new HiveSQLException("Failure to close", ioe);
     } finally {
+      if (sessionState != null) {
+        try {
+          sessionState.close();
+        } catch (Throwable t) {
+          LOG.warn("Error closing session", t);
+        }
+        sessionState = null;
+      }
       release(true);
     }
   }

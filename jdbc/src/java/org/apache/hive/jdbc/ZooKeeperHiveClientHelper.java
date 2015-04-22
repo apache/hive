@@ -64,8 +64,8 @@ public class ZooKeeperHiveClientHelper {
     CuratorFramework zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
             .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
-    zooKeeperClient.start();
     try {
+      zooKeeperClient.start();
       serverHosts = zooKeeperClient.getChildren().forPath("/" + zooKeeperNamespace);
       // Remove the znodes we've already tried from this list
       serverHosts.removeAll(connParams.getRejectedHostZnodePaths());
