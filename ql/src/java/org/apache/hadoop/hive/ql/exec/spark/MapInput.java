@@ -85,4 +85,14 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
     }
 
   }
+
+  @Override
+  public String getName() {
+    return "MapInput";
+  }
+
+  @Override
+  public Boolean isCacheEnable() {
+    return new Boolean(toCache);
+  }
 }

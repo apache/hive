@@ -25,4 +25,8 @@ import org.apache.spark.api.java.JavaPairRDD;
 public interface SparkTran<KI extends WritableComparable, VI, KO extends WritableComparable, VO> {
   JavaPairRDD<KO, VO> transform(
       JavaPairRDD<KI, VI> input);
+
+  public String getName();
+
+  public Boolean isCacheEnable();
 }

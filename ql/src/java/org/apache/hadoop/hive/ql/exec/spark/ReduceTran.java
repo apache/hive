@@ -34,4 +34,15 @@ public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, H
   public void setReduceFunction(HiveReduceFunction redFunc) {
     this.reduceFunc = redFunc;
   }
+
+  @Override
+  public String getName() {
+    return "Reduce";
+  }
+
+  @Override
+  public Boolean isCacheEnable() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

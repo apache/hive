@@ -35,4 +35,14 @@ public class MapTran implements SparkTran<BytesWritable, BytesWritable, HiveKey,
     this.mapFunc = mapFunc;
   }
 
+  @Override
+  public String getName() {
+    return "MapTran";
+  }
+
+  @Override
+  public Boolean isCacheEnable() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }
