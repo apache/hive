@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.io.BytesWritable;
@@ -36,6 +38,7 @@ import com.google.common.base.Preconditions;
 @SuppressWarnings("rawtypes")
 public class SparkPlan {
   private static final String CLASS_NAME = SparkPlan.class.getName();
+  private static final Log LOG = LogFactory.getLog(SparkPlan.class);
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
@@ -72,6 +75,8 @@ public class SparkPlan {
       tranToOutputRDDMap.put(tran, rdd);
     }
 
+    logSparkPlan();
+
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = null;
     for (SparkTran leafTran : leafTrans) {
       JavaPairRDD<HiveKey, BytesWritable> rdd = tranToOutputRDDMap.get(leafTran);
@@ -84,6 +89,59 @@ public class SparkPlan {
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     return finalRDD;
+  }
+
+  private void logSparkPlan() {
+    LOG.info("------------------------------ Spark Plan -----------------------------");
+    Set<SparkTran> keySet = invertedTransGraph.keySet();
+    for (SparkTran sparkTran : keySet) {
+      if (sparkTran instanceof ReduceTran) {
+	String sparkPlan = "	" + sparkTran.getName();
+	sparkPlan = getSparkPlan(sparkTran, sparkPlan);
+	LOG.info(sparkPlan);
+      }
+    }
+    LOG.info("------------------------------ Spark Plan -----------------------------");
+  }
+
+  private String getSparkPlan(SparkTran leaf, String sparkPlanMsg) {
+    if (leaf != null) {
+      List<SparkTran> parents = getParents(leaf);
+      if (parents.size() > 0) {
+	sparkPlanMsg = sparkPlanMsg + " <-- ";
+	boolean isFirst = true;
+	SparkTran parent = null;
+	for (SparkTran sparkTran : parents) {
+	  if (isFirst) {
+	    sparkPlanMsg = sparkPlanMsg + "( " + sparkTran.getName();
+	    sparkPlanMsg = logCacheStatus(sparkPlanMsg, sparkTran);
+	    isFirst = false;
+	  } else {
+	    sparkPlanMsg = sparkPlanMsg + "," + sparkTran.getName();
+	    sparkPlanMsg = logCacheStatus(sparkPlanMsg, sparkTran);
+	  }
+	  if (getParents(sparkTran).size() > 0 && !(sparkTran instanceof ReduceTran)) {
+	    parent = sparkTran;
+	  }
+	}
+	sparkPlanMsg = sparkPlanMsg + " ) ";
+	return getSparkPlan(parent, sparkPlanMsg);
+      } else {
+	return sparkPlanMsg;
+      }
+    }
+    return sparkPlanMsg;
+  }
+
+  private String logCacheStatus(String sparkPlanMsg, SparkTran sparkTran) {
+    if (sparkTran.isCacheEnable() != null) {
+      if (sparkTran.isCacheEnable().booleanValue()) {
+	sparkPlanMsg = sparkPlanMsg + " (cache on) ";
+      } else {
+	sparkPlanMsg = sparkPlanMsg + " (cache off) ";
+      }
+    }
+    return sparkPlanMsg;
   }
 
   public void addTran(SparkTran tran) {

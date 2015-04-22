@@ -49,4 +49,14 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
     }
     return result;
   }
+
+  @Override
+  public String getName() {
+    return "Shuffle";
+  }
+
+  @Override
+  public Boolean isCacheEnable() {
+    return new Boolean(toCache);
+  }
 }
