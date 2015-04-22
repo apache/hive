@@ -45,6 +45,15 @@ public class IdentityExpression extends VectorExpression {
     }
   }
 
+  public static boolean isColumnOnly(VectorExpression ve) {
+    if (ve instanceof IdentityExpression) {
+      VectorExpression identityExpression = (IdentityExpression) ve;
+      return (identityExpression.childExpressions == null);
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public int getOutputColumn() {
     return colNum;

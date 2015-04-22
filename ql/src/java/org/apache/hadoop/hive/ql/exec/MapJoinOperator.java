@@ -84,14 +84,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
   private transient boolean hashTblInitedOnce;
-  private transient ReusableGetAdaptor[] hashMapRowGetters;
+  protected transient ReusableGetAdaptor[] hashMapRowGetters;
 
   private UnwrapRowContainer[] unwrapContainer;
   private transient Configuration hconf;
   private transient boolean hybridMapJoinLeftover;  // whether there's spilled data to be processed
-  private transient MapJoinBytesTableContainer currentSmallTable; // reloaded hashmap from disk
-  private transient int tag;        // big table alias
-  private transient int smallTable; // small table alias
+  protected transient MapJoinBytesTableContainer currentSmallTable; // reloaded hashmap from disk
+  protected transient int tag;        // big table alias
+  protected transient int smallTable; // small table alias
 
   public MapJoinOperator() {
   }
@@ -115,6 +115,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     defaultStartGroup();
   }
 
+  protected HashTableLoader getHashTableLoader(Configuration hconf) {
+    return HashTableLoaderFactory.getLoader(hconf);
+  }
+
   @Override
   protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     this.hconf = hconf;
@@ -133,7 +137,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       + "__HASH_MAP_"+this.getOperatorId()+"_container";
 
     cache = ObjectCacheFactory.getCache(hconf);
-    loader = HashTableLoaderFactory.getLoader(hconf);
+    loader = getHashTableLoader(hconf);
 
     hashMapRowGetters = null;
 
@@ -266,7 +270,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
-  private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
+  protected Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
       ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
 
     loadCalled = true;
@@ -518,7 +522,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
    * @throws HiveException
    * @throws SerDeException
    */
-  private void reloadHashTable(HashPartition partition,
+  protected void reloadHashTable(HashPartition partition,
                                HybridHashTableContainer hybridHtContainer)
       throws IOException, ClassNotFoundException, HiveException, SerDeException {
 
@@ -566,8 +570,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
    * Iterate over the big table row container and feed process() with leftover rows
    * @param partition the hash partition being brought back to memory at the moment
    * @throws HiveException
+   * @throws IOException
    */
-  protected void reProcessBigTable(HashPartition partition) throws HiveException {
+  protected void reProcessBigTable(HashPartition partition) throws HiveException, IOException {
     ObjectContainer bigTable = partition.getMatchfileObjContainer();
     while (bigTable.hasNext()) {
       Object row = bigTable.next();

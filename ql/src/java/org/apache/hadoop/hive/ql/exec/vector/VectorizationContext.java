@@ -286,8 +286,9 @@ public class VectorizationContext {
     return projectionColumnMap.get(name);
   }
 
-  protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) {
-    return projectionColumnMap.get(colExpr.getColumn());
+  protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) throws HiveException {
+    // Call the regular method since it does error checking.
+    return getInputColumnIndex(colExpr.getColumn());
   }
 
   private static class OutputColumnManager {

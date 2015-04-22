@@ -40,4 +40,6 @@ INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 explain
 select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc;
 
+-- SORT_QUERY_RESULTS
+
 select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc;

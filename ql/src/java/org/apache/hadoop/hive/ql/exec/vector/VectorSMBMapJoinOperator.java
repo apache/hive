@@ -73,7 +73,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
 
   private transient VectorHashKeyWrapperBatch keyWrapperBatch;
 
-  private transient Map<ObjectInspector, VectorColumnAssign[]> outputVectorAssigners;
+  private transient Map<ObjectInspector, VectorAssignRowSameBatch> outputVectorAssignRowMap;
 
   private transient int batchIndex = -1;
 
@@ -141,7 +141,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
 
     keyWrapperBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
 
-    outputVectorAssigners = new HashMap<ObjectInspector, VectorColumnAssign[]>();
+    outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRowSameBatch>();
 
     // This key evaluator translates from the vectorized VectorHashKeyWrapper format
     // into the row-mode MapJoinKey
@@ -270,15 +270,16 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   @Override
   protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
     Object[] values = (Object[]) row;
-    VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
-    if (null == vcas) {
-      vcas = VectorColumnAssignFactory.buildAssigners(
-          outputBatch, outputOI, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
-      outputVectorAssigners.put(outputOI, vcas);
+    VectorAssignRowSameBatch va = outputVectorAssignRowMap.get(outputOI);
+    if (va == null) {
+      va = new VectorAssignRowSameBatch();
+      va.init((StructObjectInspector) outputOI, vOutContext.getProjectedColumns());
+      va.setOneBatch(outputBatch);
+      outputVectorAssignRowMap.put(outputOI, va);
     }
-    for (int i = 0; i < values.length; ++i) {
-      vcas[i].assignObjectValue(values[i], outputBatch.size);
-    }
+
+    va.assignRow(outputBatch.size, values);
+
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
       flushOutput();

@@ -110,6 +110,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           if (!MapJoinBytesTableContainer.isSupportedKey(keyOi)) {
             if (isFirstKey) {
               useOptimizedTables = false;
+              LOG.info(describeOi("Not using optimized hash table. " +
+                           "Only a subset of mapjoin keys is supported. Unsupported key: ", keyOi));
             } else {
               throw new HiveException(describeOi(
                   "Only a subset of mapjoin keys is supported. Unsupported key: ", keyOi));
@@ -125,6 +127,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
                                                                      desc.getParentDataSizes().get(pos))
                                       : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, memUsage))
             : new HashMapWrapper(hconf, keyCount);
+        LOG.info("Using tableContainer " + tableContainer.getClass().getSimpleName());
 
         while (kvReader.next()) {
           tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),

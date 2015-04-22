@@ -35,9 +35,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinRowBytesContainer;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
@@ -65,7 +67,8 @@ import com.esotericsoftware.kryo.Kryo;
  * Partitions that can fit in memory will be processed first, and then every spilled partition will
  * be restored and processed one by one.
  */
-public class HybridHashTableContainer implements MapJoinTableContainer {
+public class HybridHashTableContainer
+      implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
   private static final Log LOG = LogFactory.getLog(HybridHashTableContainer.class);
 
   private final HashPartition[] hashPartitions; // an array of partitions holding the triplets
@@ -83,6 +86,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
   private LazyBinaryStructObjectInspector internalValueOi;
   private boolean[] sortableSortOrders;
   private MapJoinBytesTableContainer.KeyValueHelper writeHelper;
+  private MapJoinBytesTableContainer.DirectKeyValueWriter directWriteHelper;
 
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
@@ -94,6 +98,8 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     BytesBytesMultiHashMap hashMap;         // In memory hashMap
     KeyValueContainer sidefileKVContainer;  // Stores small table key/value pairs
     ObjectContainer matchfileObjContainer;  // Stores big table rows
+    VectorMapJoinRowBytesContainer matchfileRowBytesContainer;
+                                            // Stores big table rows as bytes for native vector map join.
     Path hashMapLocalPath;                  // Local file system path for spilled hashMap
     boolean hashMapOnDisk;                  // Status of hashMap. true: on disk, false: in memory
     boolean hashMapSpilledOnCreation;       // When there's no enough memory, cannot create hashMap
@@ -162,6 +168,14 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
       return matchfileObjContainer;
     }
 
+    /* Get the big table row bytes container for native vector map join */
+    public VectorMapJoinRowBytesContainer getMatchfileRowBytesContainer() {
+      if (matchfileRowBytesContainer == null) {
+        matchfileRowBytesContainer = new VectorMapJoinRowBytesContainer();
+      }
+      return matchfileRowBytesContainer;
+    }
+
     /* Check if hashmap is on disk or in memory */
     public boolean isHashMapOnDisk() {
       return hashMapOnDisk;
@@ -187,6 +201,8 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
       LOG.warn("adjusting hash table write buffer size to be smaller than noconditionaltasksize");
       wbSize = (int) noConditionalTaskThreshold;
     }
+
+    directWriteHelper = new MapJoinBytesTableContainer.DirectKeyValueWriter();
 
     int newKeyCount = HashMapWrapper.calculateTableSize(
         keyCountAdj, threshold, loadFactor, keyCount);
@@ -272,9 +288,14 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
       }
     }
     writeHelper.setKeyValue(currentKey, currentValue);
+    return internalPutRow(writeHelper, currentKey, currentValue);
+  }
+
+  private MapJoinKey internalPutRow(KeyValueHelper keyValueHelper,
+          Writable currentKey, Writable currentValue) throws SerDeException, IOException {
 
     // Next, put row into corresponding hash partition
-    int keyHash = writeHelper.getHashFromKey();
+    int keyHash = keyValueHelper.getHashFromKey();
     int partitionId = keyHash & (hashPartitions.length - 1);
     HashPartition hashPartition = hashPartitions[partitionId];
 
@@ -282,7 +303,7 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
       KeyValueContainer kvContainer = hashPartition.getSidefileKVContainer();
       kvContainer.add((HiveKey) currentKey, (BytesWritable) currentValue);
     } else {
-      hashPartition.hashMap.put(writeHelper, keyHash); // Pass along hashcode to avoid recalculation
+      hashPartition.hashMap.put(keyValueHelper, keyHash); // Pass along hashcode to avoid recalculation
       totalInMemRowCount++;
 
       if ((totalInMemRowCount & (this.memoryCheckFrequency - 1)) == 0 &&  // check periodically
@@ -499,9 +520,18 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     }
   }
 
+
+  // Direct access interfaces.
+
+  @Override
+  public void put(Writable currentKey, Writable currentValue) throws SerDeException, IOException {
+    directWriteHelper.setKeyValue(currentKey, currentValue);
+    internalPutRow(directWriteHelper, currentKey, currentValue);
+  }
+
   /** Implementation of ReusableGetAdaptor that has Output for key serialization; row
    * container is also created once and reused for every row. */
-  private class GetAdaptor implements ReusableGetAdaptor {
+  private class GetAdaptor implements ReusableGetAdaptor, ReusableGetAdaptorDirectAccess {
 
     private Object[] currentKey;
     private boolean[] nulls;
@@ -580,6 +610,19 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     @Override
     public Object[] getCurrentKey() {
       return currentKey;
+    }
+
+    // Direct access interfaces.
+
+    @Override
+    public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
+        BytesBytesMultiHashMap.Result hashMapResult) {
+      return currentValue.setDirect(bytes, offset, length, hashMapResult);
+    }
+
+    @Override
+    public int directSpillPartitionId() {
+      return currentValue.directSpillPartitionId();
     }
   }
 
@@ -742,6 +785,34 @@ public class HybridHashTableContainer implements MapJoinTableContainer {
     @Override
     public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out) {
       throw new RuntimeException(this.getClass().getCanonicalName() + " cannot be serialized");
+    }
+
+    // Direct access.
+
+    public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
+        BytesBytesMultiHashMap.Result hashMapResult) {
+
+      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
+      partitionId = keyHash & (hashPartitions.length - 1);
+
+      // If the target hash table is on disk, spill this row to disk as well to be processed later
+      if (isOnDisk(partitionId)) {
+        return JoinUtil.JoinResult.SPILL;
+      }
+      else {
+        aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(bytes, offset, length, hashMapResult);
+        dummyRow = null;
+        if (hashMapResult.hasRows()) {
+          return JoinUtil.JoinResult.MATCH;
+        } else {
+          aliasFilter = (byte) 0xff;
+          return JoinUtil.JoinResult.NOMATCH;
+        }
+      }
+    }
+
+    public int directSpillPartitionId() {
+      return partitionId;
     }
   }
 

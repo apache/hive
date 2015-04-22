@@ -72,12 +72,17 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private boolean isHybridHashJoin;
 
+  // Extra parameters only for vectorization.
+  private VectorMapJoinDesc vectorDesc;
+
   public MapJoinDesc() {
+    vectorDesc = new VectorMapJoinDesc();
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
 
   public MapJoinDesc(MapJoinDesc clone) {
     super(clone);
+    vectorDesc = new VectorMapJoinDesc(clone.vectorDesc);
     this.keys = clone.keys;
     this.keyTblDesc = clone.keyTblDesc;
     this.valueTblDescs = clone.valueTblDescs;
@@ -102,6 +107,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       final int posBigTable, final JoinCondDesc[] conds,
       final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix) {
     super(values, outputColumnNames, noOuterJoin, conds, filters, null);
+    vectorDesc = new VectorMapJoinDesc();
     this.keys = keys;
     this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
@@ -110,6 +116,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
     this.dumpFilePrefix = dumpFilePrefix;
     initRetainExprList();
+  }
+
+  public void setVectorDesc(VectorMapJoinDesc vectorDesc) {
+    this.vectorDesc = vectorDesc;
+  }
+
+  public VectorMapJoinDesc getVectorDesc() {
+    return vectorDesc;
   }
 
   private void initRetainExprList() {

@@ -1967,11 +1967,31 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to enable vectorized mode of query execution.\n" +
         "The default value is false."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
-            "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
-            "The default value is true."),
+        "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
+        "The default value is true."),
     HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED("hive.vectorized.execution.reduce.groupby.enabled", true,
-            "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
-            "The default value is true."),
+        "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
+        "The default value is true."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED("hive.vectorized.execution.mapjoin.native.enabled", true,
+         "This flag should be set to true to enable native (i.e. non-pass through) vectorization\n" +
+         "of queries using MapJoin.\n" +
+         "The default value is true."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_MULTIKEY_ONLY_ENABLED("hive.vectorized.execution.mapjoin.native.multikey.only.enabled", false,
+         "This flag should be set to true to restrict use of native vector map join hash tables to\n" +
+         "the MultiKey in queries using MapJoin.\n" +
+         "The default value is false."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_MINMAX_ENABLED("hive.vectorized.execution.mapjoin.minmax.enabled", false,
+         "This flag should be set to true to enable vector map join hash tables to\n" +
+         "use max / max filtering for integer join queries using MapJoin.\n" +
+         "The default value is false."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_OVERFLOW_REPEATED_THRESHOLD("hive.vectorized.execution.mapjoin.overflow.repeated.threshold", -1,
+         "The number of small table rows for a match in vector map join hash tables\n" +
+         "where we use the repeated field optimization in overflow vectorized row batch for join queries using MapJoin.\n" +
+         "A value of -1 means do use the join result optimization.  Otherwise, threshold value can be 0 to maximum integer."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED("hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled", false,
+         "This flag should be set to true to enable use of native fast vector map join hash tables in\n" +
+         "queries using MapJoin.\n" +
+         "The default value is false."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000,

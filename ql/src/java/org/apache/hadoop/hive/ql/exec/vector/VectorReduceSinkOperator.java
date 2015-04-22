@@ -23,20 +23,24 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   private static final long serialVersionUID = 1L;
 
-  // Writer for producing row from input batch.
-  private VectorExpressionWriter[] rowWriters;
+  private VectorizationContext vContext;
+
+  // The above members are initialized by the constructor and must not be
+  // transient.
+  //---------------------------------------------------------------------------
+
+  private transient boolean firstBatch;
+
+  private transient VectorExtractRowDynBatch vectorExtractRowDynBatch;
 
   protected transient Object[] singleRow;
 
@@ -45,6 +49,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     this();
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
+    this.vContext = vContext;
   }
 
   public VectorReduceSinkOperator() {
@@ -53,48 +58,52 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   @Override
   protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+
     // We need a input object inspector that is for the row we will extract out of the
     // vectorized row batch, not for example, an original inspector for an ORC table, etc.
-    VectorExpressionWriterFactory.processVectorInspector(
-            (StructObjectInspector) inputObjInspectors[0],
-            new VectorExpressionWriterFactory.SingleOIDClosure() {
-              @Override
-              public void assign(VectorExpressionWriter[] writers,
-                  ObjectInspector objectInspector) {
-                rowWriters = writers;
-                inputObjInspectors[0] = objectInspector;
-              }
-            });
-    singleRow = new Object[rowWriters.length];
+    inputObjInspectors[0] =
+        VectorizedBatchUtil.convertToStandardStructObjectInspector((StructObjectInspector) inputObjInspectors[0]);
 
-    return super.initializeOp(hconf);
+    // Call ReduceSinkOperator with new input inspector.
+    Collection<Future<?>> result = super.initializeOp(hconf);
+    assert result.isEmpty();
+
+    firstBatch = true;
+
+    return result;
   }
 
   @Override
   public void process(Object data, int tag) throws HiveException {
-    VectorizedRowBatch vrg = (VectorizedRowBatch) data;
 
-    for (int batchIndex = 0 ; batchIndex < vrg.size; ++batchIndex) {
-      Object row = getRowObject(vrg, batchIndex);
-      super.process(row, tag);
-    }
-  }
+    VectorizedRowBatch batch = (VectorizedRowBatch) data;
+    if (firstBatch) {
+      vectorExtractRowDynBatch = new VectorExtractRowDynBatch();
+      vectorExtractRowDynBatch.init((StructObjectInspector) inputObjInspectors[0], vContext.getProjectedColumns());
 
-  private Object[] getRowObject(VectorizedRowBatch vrg, int rowIndex)
-      throws HiveException {
-    int batchIndex = rowIndex;
-    if (vrg.selectedInUse) {
-      batchIndex = vrg.selected[rowIndex];
+      singleRow = new Object[vectorExtractRowDynBatch.getCount()];
+
+      firstBatch = false;
     }
-    for (int i = 0; i < vrg.projectionSize; i++) {
-      ColumnVector vectorColumn = vrg.cols[vrg.projectedColumns[i]];
-      if (vectorColumn != null) {
-        singleRow[i] = rowWriters[i].writeValue(vectorColumn, batchIndex);
-      } else {
-        // Some columns from tables are not used.
-        singleRow[i] = null;
+
+    vectorExtractRowDynBatch.setBatchOnEntry(batch);
+
+    // VectorizedBatchUtil.debugDisplayBatch( batch, "VectorReduceSinkOperator processOp ");
+
+    if (batch.selectedInUse) {
+      int selected[] = batch.selected;
+      for (int logical = 0 ; logical < batch.size; logical++) {
+        int batchIndex = selected[logical];
+        vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+        super.process(singleRow, tag);
+      }
+    } else {
+      for (int batchIndex = 0 ; batchIndex < batch.size; batchIndex++) {
+        vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+        super.process(singleRow, tag);
       }
     }
-    return singleRow;
+
+    vectorExtractRowDynBatch.forgetBatchOnExit();
   }
 }
