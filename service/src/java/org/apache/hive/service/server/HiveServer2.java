@@ -324,20 +324,20 @@ public class HiveServer2 extends CompositeService {
         }
         break;
       } catch (Throwable throwable) {
+        if (server != null) {
+          try {
+            server.stop();
+          } catch (Throwable t) {
+            LOG.info("Exception caught when calling stop of HiveServer2 before retrying start", t);
+          } finally {
+            server = null;
+          }
+        }
         if (++attempts >= maxAttempts) {
           throw new Error("Max start attempts " + maxAttempts + " exhausted", throwable);
         } else {
           LOG.warn("Error starting HiveServer2 on attempt " + attempts
               + ", will retry in 60 seconds", throwable);
-          try {
-            if (server != null) {
-              server.stop();
-              server = null;
-            }
-          } catch (Exception e) {
-            LOG.info(
-                "Exception caught when calling stop of HiveServer2 before" + " retrying start", e);
-          }
           try {
             Thread.sleep(60L * 1000L);
           } catch (InterruptedException e) {
