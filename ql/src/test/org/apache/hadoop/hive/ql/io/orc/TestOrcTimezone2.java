@@ -120,7 +120,7 @@ public class TestOrcTimezone2 {
     ts.add("1996-08-02 09:00:00.723100809");
     ts.add("1998-11-02 10:00:00.857340643");
     ts.add("2008-10-02 11:00:00.0");
-    ts.add("9999-01-01 00:00:00.000999");
+    ts.add("2037-01-01 00:00:00.000999");
     for (String t : ts) {
       writer.addRow(Timestamp.valueOf(t));
     }
