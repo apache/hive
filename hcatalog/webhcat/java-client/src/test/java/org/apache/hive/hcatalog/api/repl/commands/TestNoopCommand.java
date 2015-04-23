@@ -16,28 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.messaging;
+package org.apache.hive.hcatalog.api.repl.commands;
 
-import java.util.Map;
+import junit.framework.TestCase;
+import org.apache.hive.hcatalog.api.repl.Command;
+import org.apache.hive.hcatalog.api.repl.CommandTestUtils;
+import org.junit.Test;
 
-/**
- * HCat message sent when a table is Altered.
- */
-public abstract class AlterPartitionMessage extends HCatEventMessage {
+public class TestNoopCommand extends TestCase {
 
-  protected AlterPartitionMessage() {
-    super(EventType.ALTER_PARTITION);
+  @Test
+  public static void testCommand(){
+    int evid = 999;
+    Command testCmd = new NoopCommand(evid);
+
+    assertEquals(evid,testCmd.getEventId());
+    assertEquals(0, testCmd.get().size());
+    assertEquals(true,testCmd.isRetriable());
+    assertEquals(true,testCmd.isUndoable());
+    assertEquals(0, testCmd.getUndo().size());
+
+    CommandTestUtils.testCommandSerialization(testCmd);
   }
 
-  public abstract String getTable();
-
-  public abstract Map<String,String> getKeyValues();
-
-  @Override
-  public HCatEventMessage checkValid() {
-    if (getTable() == null) throw new IllegalStateException("Table name unset.");
-    if (getKeyValues() == null) throw new IllegalStateException("Partition values unset");
-    return super.checkValid();
-  }
 }
-

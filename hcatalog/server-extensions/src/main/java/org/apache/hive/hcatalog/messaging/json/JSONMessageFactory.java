@@ -109,9 +109,9 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public AlterPartitionMessage buildAlterPartitionMessage(Partition before, Partition after) {
+  public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before, Partition after) {
     return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
-        before.getDbName(), before.getTableName(), before.getValues(), now());
+        before.getDbName(), before.getTableName(), getPartitionKeyValues(table,before),now());
   }
 
   @Override
@@ -121,9 +121,9 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public InsertMessage buildInsertMessage(String db, String table, List<String> partVals,
+  public InsertMessage buildInsertMessage(String db, String table, Map<String,String> partKeyVals,
                                           List<String> files) {
-    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, partVals,
+    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, partKeyVals,
         files, now());
   }
 

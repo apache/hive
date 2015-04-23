@@ -58,6 +58,7 @@ import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -87,7 +88,7 @@ public class TestHCatClient {
   private static boolean useExternalMS = false;
   private static boolean useExternalMSForReplication = false;
 
-  private static class RunMS implements Runnable {
+  public static class RunMS implements Runnable {
 
     private final String msPort;
     private List<String> args = new ArrayList<String>();
@@ -156,6 +157,11 @@ public class TestHCatClient {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }
+
+  public static HiveConf getConf(){
+    return hcatConf;
+  }
+
   public static String fixPath(String path) {
     if(!Shell.WINDOWS) {
       return path;
@@ -166,6 +172,7 @@ public class TestHCatClient {
     }
     return expectedDir;
   }
+
   @Test
   public void testBasicDDLCommands() throws Exception {
     String db = "testdb";
@@ -830,7 +837,64 @@ public class TestHCatClient {
   @Test
   public void testReplicationTaskIter() throws Exception {
 
-    HCatClient sourceMetastore = HCatClient.create(new Configuration(hcatConf));
+    Configuration cfg = new Configuration(hcatConf);
+    cfg.set(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname,"10"); // set really low batch size to ensure batching
+    HCatClient sourceMetastore = HCatClient.create(cfg);
+
+    String dbName = "testReplicationTaskIter";
+    long baseId = sourceMetastore.getCurrentNotificationEventId();
+
+    {
+      // Perform some operations
+
+      // 1: Create a db after dropping if needed => 1 or 2 events
+      sourceMetastore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      sourceMetastore.createDatabase(HCatCreateDBDesc.create(dbName).ifNotExists(false).build());
+
+      // 2: Create an unpartitioned table T1 => 1 event
+      String tblName1 = "T1";
+      List<HCatFieldSchema> cols1 = HCatSchemaUtils.getHCatSchema("a:int,b:string").getFields();
+      HCatTable table1 = (new HCatTable(dbName, tblName1)).cols(cols1);
+      sourceMetastore.createTable(HCatCreateTableDesc.create(table1).build());
+
+      // 3: Create a partitioned table T2 => 1 event
+
+      String tblName2 = "T2";
+      List<HCatFieldSchema> cols2 = HCatSchemaUtils.getHCatSchema("a:int").getFields();
+      List<HCatFieldSchema> pcols2 = HCatSchemaUtils.getHCatSchema("b:string").getFields();
+      HCatTable table2 = (new HCatTable(dbName, tblName2)).cols(cols2).partCols(pcols2);
+      sourceMetastore.createTable(HCatCreateTableDesc.create(table2).build());
+
+      // 4: Add a partition P1 to T2 => 1 event
+
+      Map<String, String> ptnDesc1 = new HashMap<String,String>();
+      ptnDesc1.put("b","test1");
+      HCatPartition ptn1 = (new HCatPartition(table2, ptnDesc1, ""));
+      sourceMetastore.addPartition(HCatAddPartitionDesc.create(ptn1).build());
+
+      // 5 : Create and drop partition P2 to T2 10 times => 20 events
+
+      for (int i = 0; i < 20; i++){
+        Map<String, String> ptnDesc = new HashMap<String,String>();
+        ptnDesc.put("b","testmul"+i);
+        HCatPartition ptn = (new HCatPartition(table2, ptnDesc, ""));
+        sourceMetastore.addPartition(HCatAddPartitionDesc.create(ptn).build());
+        sourceMetastore.dropPartitions(dbName,tblName2,ptnDesc,true);
+      }
+
+      // 6 : Drop table T1 => 1 event
+      sourceMetastore.dropTable(dbName, tblName1, true);
+
+      // 7 : Drop table T2 => 1 event
+      sourceMetastore.dropTable(dbName, tblName2, true);
+
+      // verify that the number of events since we began is at least 25 more
+      long currId = sourceMetastore.getCurrentNotificationEventId();
+      assertTrue("currId[" + currId + "] must be more than 25 greater than baseId[" + baseId + "]", currId > baseId + 25);
+
+    }
+
+    // do rest of tests on db we just picked up above.
 
     List<HCatNotificationEvent> notifs = sourceMetastore.getNextNotification(
         0, 0, new IMetaStoreClient.NotificationFilter() {
@@ -844,7 +908,7 @@ public class TestHCatClient {
           + ":" + n.getEventTime() + ",t:" + n.getEventType() + ",o:" + n.getDbName() + "." + n.getTableName());
     }
 
-    Iterator<ReplicationTask> taskIter = sourceMetastore.getReplicationTasks(0, 0, "mydb", null);
+    Iterator<ReplicationTask> taskIter = sourceMetastore.getReplicationTasks(0, -1, dbName, null);
     while(taskIter.hasNext()){
       ReplicationTask task = taskIter.next();
       HCatNotificationEvent n = task.getEvent();

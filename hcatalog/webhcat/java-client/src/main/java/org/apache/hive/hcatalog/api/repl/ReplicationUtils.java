@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class ReplicationUtils {
 
-  private final static String REPL_STATE_ID = ReplicationSpec.KEY.CURR_STATE_ID.toString();
+  public final static String REPL_STATE_ID = ReplicationSpec.KEY.CURR_STATE_ID.toString();
 
   private ReplicationUtils(){
     // dummy private constructor, since this class is a collection of static utility methods.
@@ -155,13 +155,32 @@ public class ReplicationUtils {
   }
 
   /**
+   * Utility function to use in conjunction with .withDbNameMapping / .withTableNameMapping,
+   * if we desire usage of a Map<String,String> instead of implementing a Function<String,String>
+   */
+  Function<String,String> mapBasedFunction(final Map<String,String> m){
+    return new Function<String,String>(){
+
+      @Nullable
+      @Override
+      public String apply(@Nullable String s) {
+        if ((m == null) || (!m.containsKey(s))){
+          return s;
+        }
+        return m.get(s);
+      }
+    };
+  }
+
+  /**
    * Return a mapping from a given map function if available, and the key itself if not.
    */
   public static String mapIfMapAvailable(String s, Function<String, String> mapping){
     try {
       return mapping.apply(s);
     } catch (IllegalArgumentException iae){
-      // The key wasn't present in the mapping, return the key itself, since no mapping was available
+      // The key wasn't present in the mapping, and the function didn't take care of returning
+      // a default value. We return the key itself, since no mapping was available
       return s;
     }
   }

@@ -826,6 +826,11 @@ public class HCatClientHMSImpl extends HCatClient {
 
   }
 
+  @Override
+  public String getConfVal(String key, String defaultVal) {
+    return hiveConfig.get(key,defaultVal);
+  }
+
   private Table getHiveTableLike(String dbName, String existingTblName,
                    String newTableName, boolean isExternal, String location)
     throws HCatException {
