@@ -33,6 +33,37 @@ public class TestReplicationTask extends TestCase{
   private static MessageFactory msgFactory = MessageFactory.getInstance();
 
 
+  public static class NoopFactory implements ReplicationTask.Factory {
+    @Override
+    public ReplicationTask create(HCatClient client, HCatNotificationEvent event) {
+      // TODO : Java 1.7+ support using String with switches, but IDEs don't all seem to know that.
+      // If casing is fine for now. But we should eventually remove this. Also, I didn't want to
+      // create another enum just for this.
+      String eventType = event.getEventType();
+      if (eventType.equals(HCatConstants.HCAT_CREATE_DATABASE_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_DROP_DATABASE_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_CREATE_TABLE_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_DROP_TABLE_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_ADD_PARTITION_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_DROP_PARTITION_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_ALTER_TABLE_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_ALTER_PARTITION_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else if (eventType.equals(HCatConstants.HCAT_INSERT_EVENT)) {
+        return new NoopReplicationTask(event);
+      } else {
+        throw new IllegalStateException("Unrecognized Event type, no replication task available");
+      }
+    }
+  }
+
   @Test
   public static void testCreate() throws HCatException {
     Table t = new Table();
@@ -44,9 +75,20 @@ public class TestReplicationTask extends TestCase{
     event.setTableName(t.getTableName());
 
     ReplicationTask.resetFactory(null);
-    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    Exception caught = null;
+    try {
+      ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    } catch (Exception e){
+      caught = e;
+    }
+    assertNotNull("By default, without a ReplicationTaskFactory instantiated, replication tasks should fail.",caught);
 
-    assertTrue("Default factory instantiation should yield NoopReplicationTask", rtask instanceof NoopReplicationTask);
+    ReplicationTask.resetFactory(NoopFactory.class);
+
+    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    assertTrue("Provided factory instantiation should yield NoopReplicationTask", rtask instanceof NoopReplicationTask);
+
+    ReplicationTask.resetFactory(null);
   }
 
 }

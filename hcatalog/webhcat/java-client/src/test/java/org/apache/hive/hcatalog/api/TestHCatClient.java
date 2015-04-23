@@ -52,6 +52,7 @@ import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
 import org.apache.hive.hcatalog.api.repl.StagingDirectoryProvider;
+import org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -839,6 +840,7 @@ public class TestHCatClient {
 
     Configuration cfg = new Configuration(hcatConf);
     cfg.set(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname,"10"); // set really low batch size to ensure batching
+    cfg.set(HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname, EximReplicationTaskFactory.class.getName());
     HCatClient sourceMetastore = HCatClient.create(cfg);
 
     String dbName = "testReplicationTaskIter";
