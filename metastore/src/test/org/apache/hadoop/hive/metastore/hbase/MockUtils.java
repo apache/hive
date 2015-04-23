@@ -83,6 +83,26 @@ public class MockUtils {
       }
     });
 
+    Mockito.when(htable.get(Mockito.anyListOf(Get.class))).thenAnswer(new Answer<Result[]>() {
+      @Override
+      public Result[] answer(InvocationOnMock invocation) throws Throwable {
+        @SuppressWarnings("unchecked")
+        List<Get> gets = (List<Get>) invocation.getArguments()[0];
+        Result[] results = new Result[gets.size()];
+        for (int i = 0; i < gets.size(); i++) {
+          Cell cell = rows.get(new String(gets.get(i).getRow()));
+          Result result;
+          if (cell == null) {
+            result = new Result();
+          } else {
+            result = Result.create(new Cell[]{cell});
+          }
+          results[i] = result;
+        }
+        return results;
+      }
+    });
+
     Mockito.when(htable.getScanner(Mockito.any(Scan.class))).thenAnswer(new Answer<ResultScanner>() {
       @Override
       public ResultScanner answer(InvocationOnMock invocation) throws Throwable {

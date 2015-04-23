@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,8 +48,7 @@ class AggregateStatsCache {
   // Cache size
   private final int maxCacheNodes;
   // Current nodes in the cache
-  // TODO: Make access threadsafe!!!
-  private int currentNodes = 0;
+  private AtomicInteger currentNodes = new AtomicInteger(0);
   // Run the cleaner thread when the cache is maxFull% full
   private final float maxFull;
   // Run the cleaner thread until cache is cleanUntil% occupied
@@ -124,8 +124,9 @@ class AggregateStatsCache {
     return maxCacheNodes;
   }
 
+  // Don't want to lock on this, so this may return approximate value
   int getCurrentNodes() {
-    return currentNodes;
+    return currentNodes.intValue();
   }
 
   int getMaxPartsPerCacheNode() {
@@ -265,7 +266,7 @@ class AggregateStatsCache {
   void add(String dbName, String tblName, String colName, int numPartsCached,
       ColumnStatisticsObj colStats, BloomFilter bloomFilter) {
     // If we have no space in the cache, run cleaner thread
-    if (currentNodes / maxCacheNodes > maxFull) {
+    if (getCurrentNodes() / maxCacheNodes > maxFull) {
       clean();
     }
     // Cache key
@@ -286,7 +287,7 @@ class AggregateStatsCache {
         nodeList.nodes.add(node);
         node.updateLastAccessTime();
         nodeList.updateLastAccessTime();
-        ++currentNodes;
+        currentNodes.getAndIncrement();
       }
     } catch (InterruptedException e) {
       LOG.debug(e);
@@ -333,7 +334,7 @@ class AggregateStatsCache {
                 // Remove the node if it has expired
                 if (isExpired(node)) {
                   listIterator.remove();
-                  --currentNodes;
+                  currentNodes.getAndDecrement();
                 }
               }
             }
@@ -349,7 +350,7 @@ class AggregateStatsCache {
         }
         // If the expired nodes did not result in cache being cleanUntil% in size,
         // start removing LRU nodes
-        while (currentNodes / maxCacheNodes > cleanUntil) {
+        while (getCurrentNodes() / maxCacheNodes > cleanUntil) {
           evictOneNode();
         }
       }
@@ -395,7 +396,7 @@ class AggregateStatsCache {
           // return
           if (isExpired(candidate)) {
             iterator.remove();
-            --currentNodes;
+            currentNodes.getAndDecrement();
             return;
           }
           // Sorry, too many ifs but this form looks optimal
@@ -413,7 +414,7 @@ class AggregateStatsCache {
           }
         }
         candidateList.nodes.remove(deleteIndex);
-        --currentNodes;
+        currentNodes.getAndDecrement();
       }
     } catch (InterruptedException e) {
       LOG.debug(e);
@@ -436,7 +437,7 @@ class AggregateStatsCache {
   /**
    * Key object for the stats cache hashtable
    */
-  private static class Key {
+  static class Key {
     private final String dbName;
     private final String tblName;
     private final String colName;
@@ -527,13 +528,6 @@ class AggregateStatsCache {
   }
 
   /**
-   * TODO: capture some metrics for the cache
-   */
-  class Metrics {
-
-  }
-
-  /**
    * Intermediate object, used to collect hits & misses for each cache node that is evaluate for an
    * incoming request
    */
@@ -547,6 +541,13 @@ class AggregateStatsCache {
       this.misses = misses;
       this.shouldSkip = shouldSkip;
     }
+  }
+
+  /**
+   * TODO: capture some metrics for the cache
+   */
+  class Metrics {
+
   }
 
   /**
