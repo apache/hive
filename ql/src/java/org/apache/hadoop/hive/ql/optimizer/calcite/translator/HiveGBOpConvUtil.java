@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -222,18 +220,21 @@ public class HiveGBOpConvUtil {
       }
 
       UDAFAttrs udafAttrs = new UDAFAttrs();
-      udafAttrs.udafParams.addAll(HiveCalciteUtil.getExprNodes(aggCall.getArgList(), aggInputRel,
-          inputOpAf.tabAlias));
+      List<ExprNodeDesc> argExps = HiveCalciteUtil.getExprNodes(aggCall.getArgList(), aggInputRel,
+          inputOpAf.tabAlias);
+      udafAttrs.udafParams.addAll(argExps);
       udafAttrs.udafName = aggCall.getAggregation().getName();
       udafAttrs.isDistinctUDAF = aggCall.isDistinct();
       List<Integer> argLst = new ArrayList<Integer>(aggCall.getArgList());
       List<Integer> distColIndicesOfUDAF = new ArrayList<Integer>();
       List<Integer> distUDAFParamsIndxInDistExprs = new ArrayList<Integer>();
       for (int i = 0; i < argLst.size(); i++) {
-        // NOTE: distinct expr can not be part of of GB key (we assume plan
-        // gen would have prevented it)
+        // NOTE: distinct expr can be part of of GB key
         if (udafAttrs.isDistinctUDAF) {
-          distColIndicesOfUDAF.add(distParamInRefsToOutputPos.get(argLst.get(i)));
+          ExprNodeDesc argExpr = argExps.get(i);
+          Integer found = ExprNodeDescUtils.indexOf(argExpr, gbInfo.gbKeys);
+          distColIndicesOfUDAF.add(found < 0 ? distParamInRefsToOutputPos.get(argLst.get(i)) + gbInfo.gbKeys.size() +
+              (gbInfo.grpSets.size() > 0 ? 1 : 0) : found);
           distUDAFParamsIndxInDistExprs.add(distParamInRefsToOutputPos.get(argLst.get(i)));
         } else {
           // TODO: this seems wrong (following what Hive Regular does)
@@ -648,7 +649,6 @@ public class HiveGBOpConvUtil {
     List<String> outputValueColumnNames = new ArrayList<String>();
     ArrayList<ColumnInfo> colInfoLst = new ArrayList<ColumnInfo>();
     GroupByOperator mapGB = (GroupByOperator) inputOpAf.inputs.get(0);
-    int distColStartIndx = gbInfo.gbKeys.size() + (gbInfo.grpSets.size() > 0 ? 1 : 0);
 
     ArrayList<ExprNodeDesc> reduceKeys = getReduceKeysForRS(mapGB, 0, gbInfo.gbKeys.size() - 1,
         outputKeyColumnNames, false, colInfoLst, colExprMap, false, false);
@@ -663,14 +663,17 @@ public class HiveGBOpConvUtil {
       // NOTE: All dist cols have single output col name;
       reduceKeys.addAll(getReduceKeysForRS(mapGB, reduceKeys.size(), mapGB.getConf().getKeys()
           .size() - 1, outputKeyColumnNames, true, colInfoLst, colExprMap, false, false));
+    } else if (!gbInfo.distColIndices.isEmpty()) {
+      // This is the case where distinct cols are part of GB Keys in which case
+      // we still need to add it to out put col names
+      outputKeyColumnNames.add(SemanticAnalyzer.getColumnInternalName(reduceKeys.size()));
     }
 
     ArrayList<ExprNodeDesc> reduceValues = getValueKeysForRS(mapGB, mapGB.getConf().getKeys()
         .size(), outputValueColumnNames, colInfoLst, colExprMap, false, false);
-    List<List<Integer>> distinctColIndices = getDistColIndices(gbInfo, distColStartIndx);
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(PlanUtils
-        .getReduceSinkDesc(reduceKeys, keyLength, reduceValues, distinctColIndices,
+        .getReduceSinkDesc(reduceKeys, keyLength, reduceValues, gbInfo.distColIndices,
             outputKeyColumnNames, outputValueColumnNames, true, -1,
             getNumPartFieldsForMapSideRS(gbInfo), getParallelismForMapSideRS(gbInfo),
             AcidUtils.Operation.NOT_ACID), new RowSchema(colInfoLst), mapGB);
@@ -685,7 +688,6 @@ public class HiveGBOpConvUtil {
     List<String> outputKeyColumnNames = new ArrayList<String>();
     List<String> outputValueColumnNames = new ArrayList<String>();
     ArrayList<ColumnInfo> colInfoLst = new ArrayList<ColumnInfo>();
-    int distColStartIndx = gbInfo.gbKeys.size() + (gbInfo.grpSets.size() > 0 ? 1 : 0);
     String outputColName;
 
     // 1. Add GB Keys to reduce keys
@@ -725,7 +727,7 @@ public class HiveGBOpConvUtil {
     // 4. Gen RS
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(reduceKeys, keyLength, reduceValues,
-            getDistColIndices(gbInfo, distColStartIndx), outputKeyColumnNames,
+            gbInfo.distColIndices, outputKeyColumnNames,
             outputValueColumnNames, true, -1, getNumPartFieldsForMapSideRS(gbInfo),
             getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID), new RowSchema(
         colInfoLst), inputOpAf.inputs.get(0));
@@ -860,6 +862,7 @@ public class HiveGBOpConvUtil {
           .get(rs.getConf().getOutputKeyColumnNames().size() - 1);
     }
     int numDistinctUDFs = 0;
+
     int distinctStartPosInReduceKeys = gbKeys.size();
     List<ExprNodeDesc> reduceValues = rs.getConf().getValueCols();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
@@ -882,6 +885,7 @@ public class HiveGBOpConvUtil {
             rsDistUDAFParamName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
                 + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
           }
+
           distinctUDAFParam = new ExprNodeColumnDesc(rsDistUDAFParamColInfo.getType(),
               rsDistUDAFParamName, rsDistUDAFParamColInfo.getTabAlias(),
               rsDistUDAFParamColInfo.getIsVirtualCol());
@@ -1213,21 +1217,6 @@ public class HiveGBOpConvUtil {
     }
 
     return valueKeys;
-  }
-
-  private static List<List<Integer>> getDistColIndices(GBInfo gbAttrs, int distOffSet)
-      throws SemanticException {
-    List<List<Integer>> distColIndices = new ArrayList<List<Integer>>();
-
-    for (List<Integer> udafDistCols : gbAttrs.distColIndices) {
-      List<Integer> udfAdjustedDistColIndx = new ArrayList<Integer>();
-      for (Integer distIndx : udafDistCols) {
-        udfAdjustedDistColIndx.add(distIndx + distOffSet);
-      }
-      distColIndices.add(udfAdjustedDistColIndx);
-    }
-
-    return distColIndices;
   }
 
   // TODO: Implement this
