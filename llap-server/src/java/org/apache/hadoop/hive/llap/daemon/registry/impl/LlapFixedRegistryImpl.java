@@ -55,7 +55,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
     for (Map.Entry<String, String> kv : conf) {
       if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)
-          || kv.getKey().startsWith("hive.llap.")) {
+          || kv.getKey().startsWith("hive.llap.")
+          || kv.getKey().startsWith(LlapConfiguration.LLAP_PREFIX)) {
         // TODO: read this somewhere useful, like the task scheduler
         srv.put(kv.getKey(), kv.getValue());
       }
@@ -152,6 +153,14 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
       return Resource.newInstance(memory, vcores);
     }
 
+    @Override
+    public String toString() {
+      return "FixedServiceInstance{" +
+          "host=" + host +
+          ", memory=" + memory +
+          ", vcores=" + vcores +
+          '}';
+    }
   }
 
   private final class FixedServiceInstanceSet implements ServiceInstanceSet {
