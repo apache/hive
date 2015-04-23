@@ -177,12 +177,15 @@ public class ReplicationUtils {
    */
   public static String mapIfMapAvailable(String s, Function<String, String> mapping){
     try {
-      return mapping.apply(s);
+      if (mapping != null){
+        return mapping.apply(s);
+      }
     } catch (IllegalArgumentException iae){
-      // The key wasn't present in the mapping, and the function didn't take care of returning
-      // a default value. We return the key itself, since no mapping was available
-      return s;
+      // The key wasn't present in the mapping, and the function didn't
+      // return a default value - ignore, and use our default.
     }
+    // We return the key itself, since no mapping was available/returned
+    return s;
   }
 
   public static String partitionDescriptor(Map<String,String> ptnDesc) {

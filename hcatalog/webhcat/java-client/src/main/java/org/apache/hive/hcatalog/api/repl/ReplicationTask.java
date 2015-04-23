@@ -22,7 +22,6 @@ import com.google.common.base.Function;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
-import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
 
@@ -45,42 +44,6 @@ public abstract class ReplicationTask {
     public ReplicationTask create(HCatClient client, HCatNotificationEvent event);
   }
 
-  /**
-   * Dummy NoopFactory for testing, returns a NoopReplicationTask for all recognized events.
-   * Warning : this will eventually go away or move to the test section - it's intended only
-   * for integration testing purposes.
-   */
-  public static class NoopFactory implements Factory {
-    @Override
-    public ReplicationTask create(HCatClient client, HCatNotificationEvent event) {
-      // TODO : Java 1.7+ support using String with switches, but IDEs don't all seem to know that.
-      // If casing is fine for now. But we should eventually remove this. Also, I didn't want to
-      // create another enum just for this.
-      String eventType = event.getEventType();
-      if (eventType.equals(HCatConstants.HCAT_CREATE_DATABASE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_DATABASE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_CREATE_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ADD_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ALTER_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ALTER_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_INSERT_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else {
-        throw new IllegalStateException("Unrecognized Event type, no replication task available");
-      }
-    }
-  }
-
   private static Factory getFactoryInstance(HCatClient client) {
     if (factoryInstance == null){
       createFactoryInstance(client);
@@ -95,10 +58,9 @@ public abstract class ReplicationTask {
    *
    * a) If a factory has already been instantiated, and is valid, use it.
    * b) If a factoryClassName has been provided, through .resetFactory(), attempt to instantiate that.
-   *    Throw an exception if instantiation fails. (This is useful for testing)
-   * c) If a hive.repl.task.factory has been set in the default hive conf, use that. Throw an
-   *    exception if instantiation fails.
-   * d) Default to NoopFactory.
+   * c) If a hive.repl.task.factory has been set in the default hive conf, use that.
+   * d) If none of the above methods work, instantiate an anoymous factory that will return an error
+   *    whenever called, till a user calls resetFactory.
    */
   private synchronized static void createFactoryInstance(HCatClient client) {
     if (factoryInstance == null){
@@ -107,18 +69,18 @@ public abstract class ReplicationTask {
         // figure out which factory we're instantiating from HiveConf iff it's not been set on us directly.
         factoryClassName = client.getConfVal(HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname,"");
       }
-      if ((factoryClassName != null) && (!factoryClassName.isEmpty())){
-        try {
-          Class<? extends Factory> factoryClass = (Class<? extends Factory>) Class.forName(factoryClassName);
-          factoryInstance = factoryClass.newInstance();
-        } catch (Exception e) {
-          factoryClassName = null; // reset the classname for future evaluations.
-          throw new RuntimeException("Error instantiating ReplicationTask.Factory " +
-              HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname+"="+factoryClassName);
-        }
-      } else {
-        // default to NoopFactory.
-        factoryInstance = new NoopFactory();
+      try {
+        Class<? extends Factory> factoryClass = (Class<? extends Factory>) Class.forName(factoryClassName);
+        factoryInstance = factoryClass.newInstance();
+      } catch (Exception e) {
+        factoryInstance = new Factory() {
+            @Override
+            public ReplicationTask create(HCatClient client, HCatNotificationEvent event) {
+              throw new IllegalStateException("Error instantiating ReplicationTask.Factory " +
+                  HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname+"="+factoryClassName +
+                  ". Call resetFactory() if you need to reset to a valid one.");
+            }
+        };
       }
     }
   }
