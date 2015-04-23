@@ -497,7 +497,7 @@ public abstract class GenericUDF implements Closeable {
     return date;
   }
 
-  protected Date getTimestampValue(DeferredObject[] arguments, int i, Converter[] converters)
+  protected Timestamp getTimestampValue(DeferredObject[] arguments, int i, Converter[] converters)
       throws HiveException {
     Object obj;
     if ((obj = arguments[i].get()) == null) {
