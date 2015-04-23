@@ -29,6 +29,8 @@ public class LlapConfiguration extends Configuration {
   }
 
 
+  public static final String LLAP_PREFIX = "llap.";
+
   public static final String LLAP_DAEMON_PREFIX = "llap.daemon.";
   private static final String LLAP_DAEMON_SITE = "llap-daemon-site.xml";
 
@@ -74,12 +76,38 @@ public class LlapConfiguration extends Configuration {
   public static final int LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
 
   /**
-   * Time after which a previously disabled node will be re-enabled for scheduling. This may be
-   * modified by an exponential back-off if failures persist
+   * Minimum time after which a previously disabled node will be re-enabled for scheduling. This may
+   * be modified by an exponential back-off if failures persist
    */
-  public static final String LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS =
-      LLAP_DAEMON_PREFIX + "task.scheduler.node.re-enable.timeout.ms";
-  public static final long LLAP_DAEMON_TASK_SCHEDULER_NODE_REENABLE_TIMEOUT_MILLIS_DEFAULT = 2000l;
+  public static final String LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MILLIS =
+      LLAP_PREFIX + "task.scheduler.node.re-enable.min.timeout.ms";
+  public static final long LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MILLIS_DEFAULT = 200l;
+
+  /**
+   * Maximum time after which a previously disabled node will be re-enabled for scheduling. This may
+   * be modified by an exponential back-off if failures persist
+   */
+  public static final String LLAP_TASK_SCHEDULER_NODE_REENABLE_MAX_TIMEOUT_MILLIS =
+      LLAP_PREFIX + "task.scheduler.node.re-enable.max.timeout.ms";
+  public static final long LLAP_TASK_SCHEDULER_NODE_REENABLE_MAX_TIMEOUT_MILLIS_DEFAULT = 10000l;
+
+  /**
+   * Backoff factor on successive blacklists of a node. Blacklists timeouts start at the min timeout
+   * and go up to the max timeout based on this backoff factor
+   */
+  public static final String LLAP_TASK_SCHEDULER_NODE_DISABLE_BACK_OFF_FACTOR =
+      LLAP_PREFIX + "task.scheduler.node.disable.backoff.factor";
+  public static final float LLAP_TASK_SCHEDULER_NODE_DISABLE_BACK_OFF_FACTOR_DEFAULT = 1.5f;
+
+  /**
+   * The number of tasks the AM TaskScheduler will try allocating per node.
+   * 0 indicates that this should be picked up from the Registry.
+   * -1 indicates unlimited capacity
+   * >0 indicates a specific bound
+   */
+  public static final String LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE =
+      LLAP_PREFIX + "task.scheduler.num.schedulable.tasks.per.node";
+  public static final int LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE_DEFAULT = 0;
 
   public static final String LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE =
       LLAP_DAEMON_PREFIX + "task.scheduler.wait.queue.size";
