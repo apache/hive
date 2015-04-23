@@ -182,14 +182,14 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         AlterPartitionMessage message = deserializer.getAlterPartitionMessage(messageBody);
         Assert.assertEquals("mytbl", message.getTable());
         Assert.assertEquals("mydb", message.getDB());
-        Assert.assertEquals(1, message.getValues().size());
-        Assert.assertEquals("2011", message.getValues().get(0));
+        Assert.assertEquals(1, message.getKeyValues().size());
+        Assert.assertTrue(message.getKeyValues().values().contains("2011"));
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof AlterPartitionMessage);
         Assert.assertEquals("mydb", message2.getDB());
         Assert.assertEquals("mytbl", ((AlterPartitionMessage) message2).getTable());
-        Assert.assertEquals(1, ((AlterPartitionMessage) message2).getValues().size());
-        Assert.assertEquals("2011", ((AlterPartitionMessage) message2).getValues().get(0));
+        Assert.assertEquals(1, ((AlterPartitionMessage) message2).getKeyValues().size());
+        Assert.assertTrue(((AlterPartitionMessage) message2).getKeyValues().values().contains("2011"));
       } else if (event.equals(HCatConstants.HCAT_DROP_PARTITION_EVENT)) {
 
         Assert.assertEquals("topic://hcat.mydb.mytbl", msg.getJMSDestination()

@@ -76,6 +76,19 @@ public abstract class HCatClient {
   abstract void initialize(Configuration conf) throws HCatException;
 
   /**
+   * Fetch configuration value on conf that the HCatClient is instantiated
+   * against. We do not want to expose the conf itself via a getConf(), because
+   * we do not want it modifiable after instantiation of the HCatClient, but
+   * modules that get called from HCatClient often need to know about how
+   * HCatClient is configured, so we want a read-only interface for it.
+   *
+   * @param key keyname to look up
+   * @param defaultVal default value to furnish in case the key does not exist
+   * @return value for given key, and defaultVal if key is not present in conf
+   */
+  public abstract String getConfVal(String key, String defaultVal);
+
+  /**
    * Get all existing databases that match the given
    * pattern. The matching occurs as per Java regular expressions
    *

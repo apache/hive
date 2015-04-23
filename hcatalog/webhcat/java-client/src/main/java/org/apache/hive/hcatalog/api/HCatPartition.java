@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,6 +258,17 @@ public class HCatPartition {
    */
   public Map<String, String> getSerdeParams() {
     return this.sd.getSerdeInfo().getParameters();
+  }
+
+  public HCatPartition parameters(Map<String,String> parameters){
+    if (this.parameters == null){
+      this.parameters = new HashMap<String,String>();
+    }
+    if (!this.parameters.equals(parameters)) {
+      this.parameters.clear();
+      this.parameters.putAll(parameters);
+    }
+    return this;
   }
 
   public Map<String, String> getParameters() {

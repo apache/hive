@@ -19,13 +19,14 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InsertEvent extends ListenerEvent {
 
@@ -33,24 +34,30 @@ public class InsertEvent extends ListenerEvent {
   // we have just the string names, but that's fine for what we need.
   private final String db;
   private final String table;
-  private final List<String> partVals;
+  private final Map<String,String> keyValues;
   private final List<String> files;
 
   /**
    *
    * @param db name of the database the table is in
    * @param table name of the table being inserted into
-   * @param partitions list of partition values, can be null
+   * @param partVals list of partition values, can be null
    * @param status status of insert, true = success, false = failure
    * @param handler handler that is firing the event
    */
-  public InsertEvent(String db, String table, List<String> partitions, List<String> files,
-                     boolean status, HMSHandler handler) {
+  public InsertEvent(String db, String table, List<String> partVals, List<String> files,
+                     boolean status, HMSHandler handler) throws MetaException, NoSuchObjectException {
     super(status, handler);
     this.db = db;
     this.table = table;
-    this.partVals = partitions;
     this.files = files;
+    Table t = handler.get_table(db,table);
+    keyValues = new LinkedHashMap<String, String>();
+    if (partVals != null) {
+      for (int i = 0; i < partVals.size(); i++) {
+        keyValues.put(t.getPartitionKeys().get(i).getName(), partVals.get(i));
+      }
+    }
   }
 
   public String getDb() {
@@ -64,10 +71,10 @@ public class InsertEvent extends ListenerEvent {
   }
 
   /**
-   * @return List of partitions.
+   * @return List of values for the partition keys.
    */
-  public List<String> getPartitions() {
-    return partVals;
+  public Map<String,String> getPartitionKeyValues() {
+    return keyValues;
   }
 
   /**

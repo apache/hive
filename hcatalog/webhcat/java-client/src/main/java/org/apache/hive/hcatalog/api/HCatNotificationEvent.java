@@ -34,7 +34,7 @@ public class HCatNotificationEvent {
 
   public enum Scope { DB, TABLE, UNKNOWN };
 
-  HCatNotificationEvent(NotificationEvent event) {
+  public HCatNotificationEvent(NotificationEvent event) {
     eventId = event.getEventId();
     eventTime = event.getEventTime();
     eventType = event.getEventType();

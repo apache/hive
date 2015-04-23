@@ -17,61 +17,40 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.api.repl;
+package org.apache.hive.hcatalog.api.repl.exim;
 
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
+import org.apache.hive.hcatalog.api.repl.Command;
+import org.apache.hive.hcatalog.api.repl.ReplicationTask;
+import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
+import org.apache.hive.hcatalog.api.repl.commands.DropDatabaseCommand;
 import org.apache.hive.hcatalog.api.repl.commands.NoopCommand;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
-/**
- * Noop replication task - a replication task that is actionable,
- * does not need any further info, and returns NoopCommands.
- *
- * Useful for testing, and also for tasks that need to be represented
- * but actually do nothing.
- */
+public class DropDatabaseReplicationTask extends ReplicationTask {
+  private DropDatabaseMessage dropDatabaseMessage = null;
 
-public class NoopReplicationTask extends ReplicationTask {
-
-  List<Command> noopReturn = null;
-
-  public NoopReplicationTask(HCatNotificationEvent event) {
+  public DropDatabaseReplicationTask(HCatNotificationEvent event) {
     super(event);
-    noopReturn = new ArrayList<Command>();
-    noopReturn.add(new NoopCommand(event.getEventId()));
+    validateEventType(event, HCatConstants.HCAT_DROP_DATABASE_EVENT);
+    dropDatabaseMessage = messageFactory.getDeserializer().getDropDatabaseMessage(event.getMessage());
   }
 
-  @Override
-  public boolean needsStagingDirs() {
+  public boolean needsStagingDirs(){
     return false;
   }
 
-  @Override
-  public boolean isActionable(){
-    return true;
-  }
-
-  /**
-   * Returns a list of commands to send to a hive driver on the source warehouse
-   * @return a list of commands to send to a hive driver on the source warehouse
-   */
-  @Override
   public Iterable<? extends Command> getSrcWhCommands() {
     verifyActionable();
-    return noopReturn;
+    return Collections.singletonList(new NoopCommand(event.getEventId()));
   }
 
-  /**
-   * Returns a list of commands to send to a hive driver on the dest warehouse
-   * @return a list of commands to send to a hive driver on the dest warehouse
-   */
-  @Override
   public Iterable<? extends Command> getDstWhCommands() {
     verifyActionable();
-    return noopReturn;
+    final String dstDbName = ReplicationUtils.mapIfMapAvailable(dropDatabaseMessage.getDB(), dbNameMapping);
+    return Collections.singletonList(new DropDatabaseCommand(dstDbName, event.getEventId()));
   }
-
 }
-

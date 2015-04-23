@@ -19,8 +19,8 @@
 
 package org.apache.hive.hcatalog.api.repl.commands;
 
-
 import org.apache.hive.hcatalog.api.repl.Command;
+import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
 import org.apache.hive.hcatalog.data.ReaderWriter;
 
 import java.io.DataInput;
@@ -28,33 +28,47 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-/**
- * This class is there to help testing, and to help initial development
- * and will be the default Command for NoopReplicationTask
- *
- * This is not intended to be a permanent class, and will likely move to the test
- * package after initial implementation.
- */
-
-public class NoopCommand implements Command {
+public class DropPartitionCommand implements Command {
   private long eventId;
+  private String dbName;
+  private String tableName;
+  private Map<String,String> ptnDesc;
+  private boolean isReplicatedEvent = false;
+
+  public DropPartitionCommand(String dbName, String tableName, Map<String, String> ptnDesc, boolean isReplicatedEvent, long eventId) {
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.ptnDesc = ptnDesc;
+    this.isReplicatedEvent = isReplicatedEvent;
+    this.eventId = eventId;
+  }
 
   /**
    * Trivial ctor to support Writable reflections instantiation
    * do not expect to use this object as-is, unless you call
    * readFields after using this ctor
    */
-  public NoopCommand(){
-  }
-
-  public NoopCommand(long eventId){
-    this.eventId = eventId;
+  public DropPartitionCommand(){
   }
 
   @Override
   public List<String> get() {
-    return Collections.emptyList();
+    // ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec, PARTITION partition_spec,...;
+    StringBuilder sb = new StringBuilder();
+    sb.append("ALTER TABLE ");
+    sb.append(dbName);
+    sb.append('.');
+    sb.append(tableName);
+    sb.append(" DROP IF EXISTS");
+    sb.append(ReplicationUtils.partitionDescriptor(ptnDesc));
+    if (isReplicatedEvent){
+      sb.append(" FOR REPLICATION(\'");
+      sb.append(eventId);
+      sb.append("\')");
+    }
+    return Collections.singletonList(sb.toString());
   }
 
   @Override
@@ -64,12 +78,12 @@ public class NoopCommand implements Command {
 
   @Override
   public boolean isUndoable() {
-    return true;
+    return false;
   }
 
   @Override
   public List<String> getUndo() {
-    return Collections.emptyList();
+    throw new UnsupportedOperationException("getUndo called on command that does returned false for isUndoable");
   }
 
   @Override
@@ -89,12 +103,20 @@ public class NoopCommand implements Command {
 
   @Override
   public void write(DataOutput dataOutput) throws IOException {
+    ReaderWriter.writeDatum(dataOutput, dbName);
+    ReaderWriter.writeDatum(dataOutput, tableName);
+    ReaderWriter.writeDatum(dataOutput, ptnDesc);
+    ReaderWriter.writeDatum(dataOutput, isReplicatedEvent);
     ReaderWriter.writeDatum(dataOutput, eventId);
   }
 
   @Override
   public void readFields(DataInput dataInput) throws IOException {
+    dbName = (String)ReaderWriter.readDatum(dataInput);
+    tableName = (String)ReaderWriter.readDatum(dataInput);
+    ptnDesc = (Map<String,String>)ReaderWriter.readDatum(dataInput);
+    isReplicatedEvent = (Boolean) ReaderWriter.readDatum(dataInput);
     eventId = (Long) ReaderWriter.readDatum(dataInput);
   }
-}
 
+}

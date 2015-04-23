@@ -263,9 +263,10 @@ public class TestDbNotificationListener {
     assertEquals(HCatConstants.HCAT_ALTER_PARTITION_EVENT, event.getEventType());
     assertEquals("default", event.getDbName());
     assertEquals("alterparttable", event.getTableName());
-    assertTrue(event.getMessage().matches( "\\{\"eventType\":\"ALTER_PARTITION\",\"server\":\"\"," +
+    assertTrue(event.getMessage(),
+        event.getMessage().matches("\\{\"eventType\":\"ALTER_PARTITION\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"alterparttable\"," +
-        "\"timestamp\":[0-9]+,\"values\":\\[\"today\"]}"));
+        "\"timestamp\":[0-9]+,\"keyValues\":\\{\"ds\":\"today\"}}"));
   }
 
   @Test
@@ -303,55 +304,81 @@ public class TestDbNotificationListener {
 
   @Test
   public void insertTable() throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table table = new Table("insertTable", "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    msClient.createTable(table);
+
     FireEventRequestData data = new FireEventRequestData();
     InsertEventRequestData insertData = new InsertEventRequestData();
     data.setInsertData(insertData);
     insertData.addToFilesAdded("/warehouse/mytable/b1");
     FireEventRequest rqst = new FireEventRequest(true, data);
-    rqst.setDbName("mydb");
-    rqst.setTableName("mytable");
+    rqst.setDbName("default");
+    rqst.setTableName("insertTable");
     msClient.fireListenerEvent(rqst);
 
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(1, rsp.getEventsSize());
+    assertEquals(2, rsp.getEventsSize());
 
-    NotificationEvent event = rsp.getEvents().get(0);
-    assertEquals(firstEventId + 1, event.getEventId());
+    NotificationEvent event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
-    assertEquals("mydb", event.getDbName());
-    assertEquals("mytable", event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"mydb\",\"table\":" +
-        "\"mytable\",\"timestamp\":[0-9]+,\"partitionValues\":null," +
-        "\"files\":\\[\"/warehouse/mytable/b1\"]}"));
+    assertEquals("default", event.getDbName());
+    assertEquals("insertTable", event.getTableName());
+    assertTrue(event.getMessage(),
+        event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
+        "\"insertTable\",\"timestamp\":[0-9]+,\"files\":\\[\"/warehouse/mytable/b1\"]," +
+        "\"partKeyVals\":\\{},\"partitionKeyValues\":\\{}}"));
   }
 
   @Test
   public void insertPartition() throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("ds", "string", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table table = new Table("insertPartition", "default", "me", startTime, startTime, 0, sd,
+        partCols, emptyParameters, null, null, null);
+    msClient.createTable(table);
+    Partition partition = new Partition(Arrays.asList("today"), "default", "insertPartition",
+        startTime, startTime, sd, emptyParameters);
+    msClient.add_partition(partition);
+
     FireEventRequestData data = new FireEventRequestData();
     InsertEventRequestData insertData = new InsertEventRequestData();
     data.setInsertData(insertData);
     insertData.addToFilesAdded("/warehouse/mytable/today/b1");
     FireEventRequest rqst = new FireEventRequest(true, data);
-    rqst.setDbName("mydb");
-    rqst.setTableName("mytable");
+    rqst.setDbName("default");
+    rqst.setTableName("insertPartition");
     rqst.setPartitionVals(Arrays.asList("today"));
     msClient.fireListenerEvent(rqst);
 
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(1, rsp.getEventsSize());
+    assertEquals(3, rsp.getEventsSize());
 
-    NotificationEvent event = rsp.getEvents().get(0);
-    assertEquals(firstEventId + 1, event.getEventId());
+    NotificationEvent event = rsp.getEvents().get(2);
+    assertEquals(firstEventId + 3, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
-    assertEquals("mydb", event.getDbName());
-    assertEquals("mytable", event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"mydb\",\"table\":" +
-        "\"mytable\",\"timestamp\":[0-9]+,\"partitionValues\":\\[\"today\"]," +
-        "\"files\":\\[\"/warehouse/mytable/today/b1\"]}"));
+    assertEquals("default", event.getDbName());
+    assertEquals("insertPartition", event.getTableName());
+    assertTrue(event.getMessage(),
+        event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
+        "\"insertPartition\",\"timestamp\":[0-9]+," +
+        "\"files\":\\[\"/warehouse/mytable/today/b1\"],\"partKeyVals\":\\{\"ds\":\"today\"}," +
+        "\"partitionKeyValues\":\\{\"ds\":\"today\"}}"));
   }
 
   @Test

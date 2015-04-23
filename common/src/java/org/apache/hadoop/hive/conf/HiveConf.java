@@ -1586,6 +1586,9 @@ public class HiveConf extends Configuration {
         "imported on to tables that are the target of replication. If this parameter is\n" +
         "set, regular imports will check if the destination table(if it exists) has a " +
         "'repl.last.id' set on it. If so, it will fail."),
+    HIVE_REPL_TASK_FACTORY("hive.repl.task.factory","",
+        "Parameter that can be used to override which ReplicationTaskFactory will be\n" +
+        "used to instantiate ReplicationTask events. Override for third party repl plugins"),
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false, ""),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
