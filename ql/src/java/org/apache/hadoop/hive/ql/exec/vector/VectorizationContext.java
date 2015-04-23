@@ -1152,8 +1152,9 @@ public class VectorizationContext {
       return getCastToChar(childExpr, returnType);
     } else if (udf instanceof GenericUDFToVarchar) {
       return getCastToVarChar(childExpr, returnType);
+    } else if (udf instanceof GenericUDFTimestamp) {
+      return getCastToTimestamp((GenericUDFTimestamp)udf, childExpr, mode, returnType);
     }
-
     // Now do a general lookup
     Class<?> udfClass = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1164,6 +1165,19 @@ public class VectorizationContext {
 
     if (ve == null) {
       throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+    }
+
+    return ve;
+  }
+
+  private VectorExpression getCastToTimestamp(GenericUDFTimestamp udf,
+      List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType) throws HiveException {
+    VectorExpression ve = getVectorExpressionForUdf(udf.getClass(), childExpr, mode, returnType);
+
+    // Replace with the milliseconds conversion
+    if (!udf.isIntToTimestampInSeconds() && ve instanceof CastLongToTimestampViaLongToLong) {
+      ve = createVectorExpression(CastMillisecondsLongToTimestampViaLongToLong.class,
+          childExpr, Mode.PROJECTION, returnType);
     }
 
     return ve;
