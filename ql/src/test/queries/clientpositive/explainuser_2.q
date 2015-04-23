@@ -305,3 +305,25 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key;
 
+explain
+FROM (
+      select key, value from (
+      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+                         UNION all 
+      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub
+                         UNION all
+      select key, value from src s0
+                             ) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+GROUP BY unionsrc.key, unionsrc.value;
+
+explain
+FROM (
+      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+                         UNION all 
+      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
+                             ) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+GROUP BY unionsrc.key, unionsrc.value;
