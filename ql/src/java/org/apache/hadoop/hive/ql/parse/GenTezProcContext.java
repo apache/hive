@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.UnionWork;
 
 /**
  * GenTezProcContext. GenTezProcContext maintains information
@@ -124,7 +125,8 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   // used to hook up unions
   public final Map<Operator<?>, BaseWork> unionWorkMap;
-  public final List<UnionOperator> currentUnionOperators;
+  public final Map<Operator<?>, UnionWork> rootUnionWorkMap;
+  public List<UnionOperator> currentUnionOperators;
   public final Set<BaseWork> workWithUnionOperators;
   public final Set<ReduceSinkOperator> clonedReduceSinks;
 
@@ -171,6 +173,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.dependencyTask = (DependencyCollectionTask)
         TaskFactory.get(new DependencyCollectionWork(), conf);
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
+    this.rootUnionWorkMap = new LinkedHashMap<Operator<?>, UnionWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();
     this.workWithUnionOperators = new LinkedHashSet<BaseWork>();
     this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();

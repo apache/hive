@@ -87,9 +87,10 @@ public class GenTezUtils {
     sequenceNumber = 0;
   }
 
-  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> operator, TezWork tezWork) {
+  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> root, Operator<?> leaf, TezWork tezWork) {
     UnionWork unionWork = new UnionWork("Union "+ (++sequenceNumber));
-    context.unionWorkMap.put(operator, unionWork);
+    context.rootUnionWorkMap.put(root, unionWork);
+    context.unionWorkMap.put(leaf, unionWork);
     tezWork.add(unionWork);
     return unionWork;
   }
