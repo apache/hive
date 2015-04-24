@@ -109,7 +109,7 @@ publish_results() {
 
 	# Avoid showing this information on Jira
 	set +x
-	java -cp "hive/build/ptest2/target/*:hive/build/ptest2/target/lib/*" org.apache.hive.ptest.execution.JIRAService \
+	java -cp "hive/build/testutils/ptest2/target/*:hive/build/testutils/ptest2/target/lib/*" org.apache.hive.ptest.execution.JIRAService \
 			--user "$JIRA_USER" \
 			--password "$JIRA_PASS" \
 			--file "$file"
