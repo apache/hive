@@ -231,7 +231,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
       eventsToSend.drainTo(events);
 
       if (!task.isTaskDone() && !task.hadFatalError()) {
-        TezCounters counters = null;
+        boolean sendCounters = false;
         /**
          * Increasing the heartbeat interval can delay the delivery of events. Sending just updated
          * records would save CPU in DAG AM, but certain counters are updated very frequently. Until
@@ -239,11 +239,10 @@ public class LlapTaskReporter implements TaskReporterInterface {
          */
         // Not completely accurate, since OOB heartbeats could go out.
         if ((nonOobHeartbeatCounter.get() - prevCounterSendHeartbeatNum) * pollInterval >= sendCounterInterval) {
-          counters = task.getCounters();
+          sendCounters = true;
           prevCounterSendHeartbeatNum = nonOobHeartbeatCounter.get();
         }
-        updateEvent = new TezEvent(new TaskStatusUpdateEvent(counters, task.getProgress()),
-            updateEventMetadata);
+        updateEvent = new TezEvent(getStatusUpdateEvent(sendCounters), updateEventMetadata);
         events.add(updateEvent);
       }
 
@@ -321,11 +320,15 @@ public class LlapTaskReporter implements TaskReporterInterface {
      *           indicates an exception somewhere in the AM.
      */
     private boolean taskSucceeded(TezTaskAttemptID taskAttemptID) throws IOException, TezException {
-      TezEvent statusUpdateEvent = new TezEvent(new TaskStatusUpdateEvent(task.getCounters(),
-          task.getProgress()), updateEventMetadata);
+      TezEvent statusUpdateEvent = new TezEvent(getStatusUpdateEvent(true), updateEventMetadata);
       TezEvent taskCompletedEvent = new TezEvent(new TaskAttemptCompletedEvent(),
           updateEventMetadata);
       return !heartbeat(Lists.newArrayList(statusUpdateEvent, taskCompletedEvent)).shouldDie;
+    }
+
+    private TaskStatusUpdateEvent getStatusUpdateEvent(boolean sendCounters) {
+      return new TaskStatusUpdateEvent((sendCounters ? task.getCounters() : null),
+          task.getProgress(), task.getTaskStatistics());
     }
 
     /**
@@ -342,8 +345,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
      */
     private boolean taskFailed(TezTaskAttemptID taskAttemptID, Throwable t, String diagnostics,
                                EventMetaData srcMeta) throws IOException, TezException {
-      TezEvent statusUpdateEvent = new TezEvent(new TaskStatusUpdateEvent(task.getCounters(),
-          task.getProgress()), updateEventMetadata);
+      TezEvent statusUpdateEvent = new TezEvent(getStatusUpdateEvent(true), updateEventMetadata);
       if (diagnostics == null) {
         diagnostics = ExceptionUtils.getStackTrace(t);
       } else {
@@ -382,18 +384,18 @@ public class LlapTaskReporter implements TaskReporterInterface {
     }
   }
 
-  public boolean taskSucceeded(TezTaskAttemptID taskAttemptID) throws IOException, TezException {
+  public synchronized boolean taskSucceeded(TezTaskAttemptID taskAttemptID) throws IOException, TezException {
     return currentCallable.taskSucceeded(taskAttemptID);
   }
 
   @Override
-  public boolean taskFailed(TezTaskAttemptID taskAttemptID, Throwable t, String diagnostics,
+  public synchronized boolean taskFailed(TezTaskAttemptID taskAttemptID, Throwable t, String diagnostics,
                             EventMetaData srcMeta) throws IOException, TezException {
     return currentCallable.taskFailed(taskAttemptID, t, diagnostics, srcMeta);
   }
 
   @Override
-  public void addEvents(TezTaskAttemptID taskAttemptID, Collection<TezEvent> events) {
+  public synchronized void addEvents(TezTaskAttemptID taskAttemptID, Collection<TezEvent> events) {
     currentCallable.addEvents(taskAttemptID, events);
   }
 
