@@ -180,7 +180,7 @@ class SparkClientImpl implements SparkClient {
     protocol.cancel(jobId);
   }
 
-  private Thread startDriver(RpcServer rpcServer, final String clientId, final String secret)
+  private Thread startDriver(final RpcServer rpcServer, final String clientId, final String secret)
       throws IOException {
     Runnable runnable;
     final String serverAddress = rpcServer.getAddress();
@@ -424,6 +424,7 @@ class SparkClientImpl implements SparkClient {
           try {
             int exitCode = child.waitFor();
             if (exitCode != 0) {
+              rpcServer.cancelClient(clientId, "Child process exited before connecting back");
               LOG.warn("Child process exited with code {}.", exitCode);
             }
           } catch (InterruptedException ie) {
