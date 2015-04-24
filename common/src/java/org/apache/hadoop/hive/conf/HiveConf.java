@@ -79,7 +79,7 @@ public class HiveConf extends Configuration {
   private final List<String> restrictList = new ArrayList<String>();
 
   private Pattern modWhiteListPattern = null;
-  private boolean isSparkConfigUpdated = false;
+  private volatile boolean isSparkConfigUpdated = false;
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -2273,8 +2273,13 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
-    isSparkConfigUpdated = isSparkRelatedConfig(name);
-    set(name, value);
+    String oldValue = name != null ? get(name) : null;
+    if (name == null || value == null || !value.equals(oldValue)) {
+      // When either name or value is null, the set method below will fail,
+      // and throw IllegalArgumentException
+      set(name, value);
+      isSparkConfigUpdated = isSparkRelatedConfig(name);
+    }
   }
 
   /**
