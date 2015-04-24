@@ -109,8 +109,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
           // Print a message if we reached at least 1000 rows for a join operand
           // We won't print a message for the last join operand since the size
           // will never goes to joinEmitInterval.
-	  LOG.info("table " + alias + " has " + sz + " rows for join key "
-	      + keyObject);
+          LOG.info("table " + alias + " has " + sz + " rows for join key " + keyObject);
           nextSz = getNextSize(nextSz);
         }
       }
