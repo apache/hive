@@ -16,19 +16,12 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.llap.cache;
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-
-import com.google.common.annotations.VisibleForTesting;
 /**
  * Buffer that can be managed by LowLevelEvictionPolicy.
  */
 public abstract class LlapCacheableBuffer {
+  protected static final int IN_LIST = -2, NOT_IN_CACHE = -1;
 
   /** Priority for cache policy (should be pretty universal). */
   public double priority;
@@ -43,8 +36,6 @@ public abstract class LlapCacheableBuffer {
    * that might be better than external linked list. Or not, since this is not concurrent. */
   public LlapCacheableBuffer next = null;
   /** Index in heap for LRFU/LFU cache policies. */
-  protected static final int IN_LIST = -2;
-  protected static final int NOT_IN_CACHE = -1;
   public int indexInHeap = NOT_IN_CACHE;
 
   protected abstract boolean invalidate();

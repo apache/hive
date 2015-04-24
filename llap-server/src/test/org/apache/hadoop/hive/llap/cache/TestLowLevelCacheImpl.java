@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.CacheChunkFactory;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -53,7 +52,7 @@ public class TestLowLevelCacheImpl {
     }
   };
 
-  private static class DummyAllocator implements Allocator {
+  private static class DummyAllocator implements EvictionAwareAllocator {
     @Override
     public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
@@ -69,8 +68,17 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
+    public void deallocateEvicted(LlapMemoryBuffer buffer) {
+    }
+
+    @Override
     public boolean isDirectAlloc() {
       return false;
+    }
+
+    @Override
+    public int getMaxAllocation() {
+      return 0;
     }
   }
 

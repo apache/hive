@@ -91,7 +91,6 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   }
 
   @Override
-  // Not used by the data cache.
   public void releaseMemory(long memoryToRelease) {
     long oldV;
     do {

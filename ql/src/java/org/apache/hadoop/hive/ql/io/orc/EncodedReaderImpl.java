@@ -149,7 +149,7 @@ public class EncodedReaderImpl implements EncodedReader {
     this.rowIndexStride = strideRate;
     this.cache = cache;
     this.consumer = consumer;
-    if (zcr != null && !cache.isDirectAlloc()) {
+    if (zcr != null && !cache.getAllocator().isDirectAlloc()) {
       throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
           + "buffers; either disable zero-copy or enable direct cache allocation");
     }
@@ -340,26 +340,45 @@ public class EncodedReaderImpl implements EncodedReader {
       LOG.info("Resulting disk ranges to read (file " + fileId + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
-    if (cache != null) {
-      cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY);
-      if (DebugUtils.isTraceOrcEnabled()) {
-        LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
-      }
+    cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
+          + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
     // Force direct buffers if we will be decompressing to direct cache.
-    RecordReaderUtils.readDiskRanges(file, zcr, stripeOffset, toRead.next, cache.isDirectAlloc());
+    RecordReaderUtils.readDiskRanges(
+        file, zcr, stripeOffset, toRead.next, cache.getAllocator().isDirectAlloc());
 
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Disk ranges after disk read (file " + fileId + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
-    // 3. Finally, decompress data, map per RG, and return to caller.
+    // 3. For uncompressed case, we need some special processing before read.
+    DiskRangeList iter = toRead.next;  // Keep "toRead" list for future use, don't extract().
+    if (codec == null) {
+      for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
+        ColumnReadContext ctx = colCtxs[colIxMod];
+        for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
+          StreamContext sctx = ctx.streams[streamIx];
+          DiskRangeList newIter = InStream.preReadUncompressedStream(fileId, stripeOffset,
+              iter, sctx.offset, sctx.offset + sctx.length, zcr, cache);
+          if (newIter != null) {
+            iter = newIter;
+          }
+        }
+      }
+      if (DebugUtils.isTraceOrcEnabled()) {
+        LOG.info("Disk ranges after pre-read (file " + fileId + ", base offset "
+            + stripeOffset + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+      }
+      iter = toRead.next; // Reset the iter to start.
+    }
+
+    // 4. Finally, decompress data, map per RG, and return to caller.
     // We go by RG and not by column because that is how data is processed.
     int rgCount = (int)Math.ceil((double)stripe.getNumberOfRows() / rowIndexStride);
-    DiskRangeList iter = toRead.next; // Keep "toRead" list for future use, don't extract().
     for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
       boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
@@ -393,9 +412,10 @@ public class EncodedReaderImpl implements EncodedReader {
               // it when building the last RG, so each RG processing will decref once, and the
               // last one will unlock the buffers.
               sctx.stripeLevelStream.incRef();
-              // For stripe-level streams we don't need the extra refcount on the block. See class comment about refcounts.
+              // For stripe-level streams we don't need the extra refcount on the block.
+              // See class comment about refcounts.
               long unlockUntilCOffset = sctx.offset + sctx.length;
-              DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, iter,
+              DiskRangeList lastCached = InStream.readEncodedStream(fileId, stripeOffset, iter,
                   sctx.offset, sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
                   sctx.stripeLevelStream, unlockUntilCOffset, sctx.offset);
               if (lastCached != null) {
@@ -411,24 +431,16 @@ public class EncodedReaderImpl implements EncodedReader {
             long cOffset = sctx.offset + index.getPositions(sctx.streamIndexOffset);
             long nextCOffsetRel = isLastRg ? sctx.length
                 : nextIndex.getPositions(sctx.streamIndexOffset);
+            // We estimate the same way for compressed and uncompressed for now.
             long endCOffset = sctx.offset + RecordReaderUtils.estimateRgEndOffset(
-                    isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
-            // See class comment about refcounts.
+                isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
             long unlockUntilCOffset = sctx.offset + nextCOffsetRel;
-            cb = SB_POOL.take();
-            cb.init(sctx.kind.getNumber());
-            cb.incRef();
-            if (DebugUtils.isTraceOrcEnabled()) {
-              LOG.info("Getting data for column "+ ctx.colIx + " " + (isLastRg ? "last " : "")
-                  + "RG " + rgIx + " stream " + sctx.kind  + " at " + sctx.offset + ", "
-                  + sctx.length + " index position " + sctx.streamIndexOffset + ": compressed ["
-                  + cOffset + ", " + endCOffset + ")");
-            }
+            cb = createRgStreamBuffer(
+                rgIx, isLastRg, ctx.colIx, sctx, cOffset, endCOffset, isCompressed);
             boolean isStartOfStream = sctx.bufferIter == null;
-            DiskRangeList range = isStartOfStream ? iter : sctx.bufferIter;
-            DiskRangeList lastCached = InStream.uncompressStream(fileId, stripeOffset, range,
-                cOffset, endCOffset, zcr, codec, bufferSize, cache, cb, unlockUntilCOffset,
-                sctx.offset);
+            DiskRangeList lastCached = InStream.readEncodedStream(fileId, stripeOffset,
+                (isStartOfStream ? iter : sctx.bufferIter), cOffset, endCOffset, zcr, codec,
+                bufferSize, cache, cb, unlockUntilCOffset, sctx.offset);
             if (lastCached != null) {
               sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid
             }
@@ -450,6 +462,22 @@ public class EncodedReaderImpl implements EncodedReader {
     // Release the unreleased buffers. See class comment about refcounts.
     releaseInitialRefcounts(toRead.next);
     InStream.releaseCacheChunksIntoObjectPool(toRead.next);
+  }
+
+
+  private StreamBuffer createRgStreamBuffer(int rgIx, boolean isLastRg,
+      int colIx, StreamContext sctx, long cOffset, long endCOffset, boolean isCompressed) {
+    StreamBuffer cb;
+    cb = SB_POOL.take();
+    cb.init(sctx.kind.getNumber());
+    cb.incRef();
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Getting data for column "+ colIx + " " + (isLastRg ? "last " : "")
+          + "RG " + rgIx + " stream " + sctx.kind  + " at " + sctx.offset + ", "
+          + sctx.length + " index position " + sctx.streamIndexOffset + ": " +
+          (isCompressed ? "" : "un") + "compressed [" + cOffset + ", " + endCOffset + ")");
+    }
+    return cb;
   }
 
 

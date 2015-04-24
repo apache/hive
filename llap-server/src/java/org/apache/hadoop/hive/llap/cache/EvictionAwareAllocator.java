@@ -15,30 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.llap.cache;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeInfo;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
 /**
- * An uncompressed stream whose underlying byte buffer can be set.
+ * An allocator that has additional, internal-only call to deallocate evicted buffer.
+ * When we evict buffers, we do not release memory to the system; that is because we want it for
+ * ourselves, so we set the value atomically to account for both eviction and the new demand.
  */
-public class SettableUncompressedStream extends InStream.UncompressedStream {
-
-  public SettableUncompressedStream(Long fileId, String name,
-      List<DiskRange> input, long length) {
-    super(fileId, name, input, length);
-    setOffset(input);
-  }
-
-  public void setBuffers(DiskRangeInfo diskRangeInfo) {
-    reset(diskRangeInfo.getDiskRanges(), diskRangeInfo.getTotalLength());
-    setOffset(diskRangeInfo.getDiskRanges());
-  }
-
-  private void setOffset(List<DiskRange> list) {
-    currentOffset = list.isEmpty() ? 0 : list.get(0).getOffset();
-  }
+public interface EvictionAwareAllocator extends Allocator {
+  void deallocateEvicted(LlapMemoryBuffer buffer);
 }

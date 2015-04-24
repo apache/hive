@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReader;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
@@ -138,13 +139,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     try {
       fileMetadata = getOrReadFileMetadata();
       consumer.setFileMetadata(fileMetadata);
-      int bufferSize = fileMetadata.getCompressionBufferSize();
-      int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
-      if (bufferSize < minAllocSize) {
-        throw new IOException("ORC compression buffer size (" + bufferSize + ") is smaller than" +
-            " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease the" +
-            " value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());
-      }
+      validateFileMetadata();
       if (columnIds == null) {
         columnIds = createColumnIds(fileMetadata);
       }
@@ -314,6 +309,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Close the stripe reader, we are done reading.
     cleanupReaders();
     return null;
+  }
+
+  private void validateFileMetadata() throws IOException {
+    if (fileMetadata.getCompressionKind() == CompressionKind.NONE) return;
+    int bufferSize = fileMetadata.getCompressionBufferSize();
+    int minAllocSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
+    if (bufferSize < minAllocSize) {
+      throw new IOException("ORC compression buffer size (" + bufferSize + ") is smaller than"
+          + " LLAP low-level cache minimum allocation size (" + minAllocSize + "). Decrease"
+          + " the value for " + HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.toString());
+    }
   }
 
   private boolean processStop() {

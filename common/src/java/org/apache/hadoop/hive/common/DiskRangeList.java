@@ -109,7 +109,7 @@ public class DiskRangeList extends DiskRange {
   }
 
   /** Splits current element in the list, using DiskRange::slice */
-  public DiskRangeList split(long cOffset) {
+  public final DiskRangeList split(long cOffset) {
     insertAfter((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
     return replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
   }
@@ -127,11 +127,6 @@ public class DiskRangeList extends DiskRange {
       current = current.next;
     }
     return result;
-  }
-
-  @Override
-  public int getLength() {
-    return super.getLength();
   }
 
   public long getTotalLength() {

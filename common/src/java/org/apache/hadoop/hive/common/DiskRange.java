@@ -41,8 +41,11 @@ public class DiskRange {
     if (other == null || other.getClass() != getClass()) {
       return false;
     }
-    DiskRange otherR = (DiskRange) other;
-    return otherR.offset == offset && otherR.end == end;
+    return equalRange((DiskRange) other);
+  }
+
+  public boolean equalRange(DiskRange other) {
+    return other.offset == offset && other.end == end;
   }
 
   @Override

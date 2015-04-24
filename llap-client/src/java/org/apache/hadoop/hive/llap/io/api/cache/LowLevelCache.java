@@ -22,12 +22,12 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
+import  org.apache.hadoop.hive.llap.cache.Allocator;
 
 public interface LowLevelCache {
   public enum Priority {
     NORMAL,
     HIGH
-    // TODO: we could add more priorities, e.g. tiered-high, where we always evict it last.
   }
 
   /**
@@ -60,23 +60,18 @@ public interface LowLevelCache {
   long[] putFileData(
       long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base, Priority priority);
 
+  Allocator getAllocator();
+
   /**
    * Releases the buffer returned by getFileData or allocateMultiple.
    */
   void releaseBuffer(LlapMemoryBuffer buffer);
-
-  /**
-   * Allocate dest.length new blocks of size into dest.
-   */
-  void allocateMultiple(LlapMemoryBuffer[] dest, int size);
 
   void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers);
 
   LlapMemoryBuffer createUnallocated();
 
   boolean notifyReused(LlapMemoryBuffer buffer);
-
-  boolean isDirectAlloc();
 
   public interface CacheChunkFactory {
     DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long startOffset, long endOffset);

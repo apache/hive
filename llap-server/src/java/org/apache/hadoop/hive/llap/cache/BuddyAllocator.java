@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
-public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
+public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAllocatorMXBean {
   private final Arena[] arenas;
   private AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -141,9 +141,22 @@ public final class BuddyAllocator implements Allocator, BuddyAllocatorMXBean {
 
   @Override
   public void deallocate(LlapMemoryBuffer buffer) {
+    deallocateInternal(buffer, true);
+  }
+
+  @Override
+  public void deallocateEvicted(LlapMemoryBuffer buffer) {
+    deallocateInternal(buffer, false);
+  }
+
+  private void deallocateInternal(LlapMemoryBuffer buffer, boolean doReleaseMemory) {
     LlapDataBuffer buf = (LlapDataBuffer)buffer;
+    long memUsage = buf.getMemoryUsage();
     metrics.decrCacheCapacityUsed(buf.byteBuffer.capacity());
     arenas[buf.arenaIndex].deallocate(buf);
+    if (doReleaseMemory) {
+      memoryManager.releaseMemory(memUsage);
+    }
   }
 
   @Override

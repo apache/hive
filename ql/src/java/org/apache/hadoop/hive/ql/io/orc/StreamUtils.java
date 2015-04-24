@@ -55,8 +55,9 @@ public class StreamUtils {
    * @return - total length of disk ranges
    */
   public static DiskRangeInfo createDiskRangeInfo(EncodedColumnBatch.StreamBuffer streamBuffer) {
-    DiskRangeInfo diskRangeInfo = new DiskRangeInfo();
-    long offset = 0;
+    DiskRangeInfo diskRangeInfo = new DiskRangeInfo(streamBuffer.indexBaseOffset);
+    long offset = diskRangeInfo.getTotalLength(); // See ctor comment.
+    // TODO: we should get rid of this
     for (LlapMemoryBuffer memoryBuffer : streamBuffer.cacheBuffers) {
       ByteBuffer buffer = memoryBuffer.getByteBufferDup();
       diskRangeInfo.addDiskRange(new RecordReaderImpl.BufferChunk(buffer, offset));
