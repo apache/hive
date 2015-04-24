@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
@@ -38,6 +37,7 @@ import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -367,6 +367,7 @@ public class HiveOpConverter {
 
     Operator<?> inputOp = inputOpAf.inputs.get(0);
     Operator<?> resultOp = inputOpAf.inputs.get(0);
+
     // 1. If we need to sort tuples based on the value of some
     // of their columns
     if (sortRel.getCollation() != RelCollations.EMPTY) {
@@ -379,30 +380,51 @@ public class HiveOpConverter {
 
       // 1.a. Extract order for each column from collation
       // Generate sortCols and order
+      ImmutableBitSet.Builder sortColsPosBuilder = new ImmutableBitSet.Builder();
+      ImmutableBitSet.Builder sortOutputColsPosBuilder = new ImmutableBitSet.Builder();
+      Map<Integer, RexNode> obRefToCallMap = sortRel.getInputRefToCallMap();
       List<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
       StringBuilder order = new StringBuilder();
-      for (RelCollation collation : sortRel.getCollationList()) {
-        for (RelFieldCollation sortInfo : collation.getFieldCollations()) {
-          int sortColumnPos = sortInfo.getFieldIndex();
-          ColumnInfo columnInfo = new ColumnInfo(inputOp.getSchema().getSignature()
-              .get(sortColumnPos));
-          ExprNodeColumnDesc sortColumn = new ExprNodeColumnDesc(columnInfo.getType(),
-              columnInfo.getInternalName(), columnInfo.getTabAlias(), columnInfo.getIsVirtualCol());
-          sortCols.add(sortColumn);
-          if (sortInfo.getDirection() == RelFieldCollation.Direction.DESCENDING) {
-            order.append("-");
-          } else {
-            order.append("+");
+      for (RelFieldCollation sortInfo : sortRel.getCollation().getFieldCollations()) {
+        int sortColumnPos = sortInfo.getFieldIndex();
+        ColumnInfo columnInfo = new ColumnInfo(inputOp.getSchema().getSignature()
+            .get(sortColumnPos));
+        ExprNodeColumnDesc sortColumn = new ExprNodeColumnDesc(columnInfo.getType(),
+            columnInfo.getInternalName(), columnInfo.getTabAlias(), columnInfo.getIsVirtualCol());
+        sortCols.add(sortColumn);
+        if (sortInfo.getDirection() == RelFieldCollation.Direction.DESCENDING) {
+          order.append("-");
+        } else {
+          order.append("+");
+        }
+
+        if (obRefToCallMap != null) {
+          RexNode obExpr = obRefToCallMap.get(sortColumnPos);
+          sortColsPosBuilder.set(sortColumnPos);
+          if (obExpr == null) {
+            sortOutputColsPosBuilder.set(sortColumnPos);
           }
         }
       }
       // Use only 1 reducer for order by
       int numReducers = 1;
 
+      // We keep the columns only the columns that are part of the final output
+      List<String> keepColumns = new ArrayList<String>();
+      final ImmutableBitSet sortColsPos = sortColsPosBuilder.build();
+      final ImmutableBitSet sortOutputColsPos = sortOutputColsPosBuilder.build();
+      final ArrayList<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
+      for (int pos=0; pos<inputSchema.size(); pos++) {
+        if ((sortColsPos.get(pos) && sortOutputColsPos.get(pos)) ||
+                (!sortColsPos.get(pos) && !sortOutputColsPos.get(pos))) {
+          keepColumns.add(inputSchema.get(pos).getInternalName());
+        }
+      }
+
       // 1.b. Generate reduce sink and project operator
       resultOp = genReduceSinkAndBacktrackSelect(resultOp,
           sortCols.toArray(new ExprNodeDesc[sortCols.size()]), 0, new ArrayList<ExprNodeDesc>(),
-          order.toString(), numReducers, Operation.NOT_ACID, strictMode);
+          order.toString(), numReducers, Operation.NOT_ACID, strictMode, keepColumns);
     }
 
     // 2. If we need to generate limit
@@ -587,18 +609,27 @@ public class HiveOpConverter {
   }
 
   private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
+          ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
+          int numReducers, Operation acidOperation, boolean strictMode) throws SemanticException {
+    return genReduceSinkAndBacktrackSelect(input, keys, tag, partitionCols, order,
+        numReducers, acidOperation, strictMode, input.getSchema().getColumnNames());
+  }
+
+  private static SelectOperator genReduceSinkAndBacktrackSelect(Operator<?> input,
       ExprNodeDesc[] keys, int tag, ArrayList<ExprNodeDesc> partitionCols, String order,
-      int numReducers, Operation acidOperation, boolean strictMode) throws SemanticException {
+      int numReducers, Operation acidOperation, boolean strictMode,
+      List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
     ReduceSinkOperator rsOp = genReduceSink(input, keys, tag, partitionCols, order, numReducers,
         acidOperation, strictMode);
 
     // 2. Generate backtrack Select operator
-    Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(rsOp,
-        input);
+    Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(keepColNames,
+        rsOp.getConf().getOutputKeyColumnNames(), rsOp.getConf().getOutputValueColumnNames(),
+        rsOp.getValueIndex(), input);
     SelectDesc selectDesc = new SelectDesc(new ArrayList<ExprNodeDesc>(descriptors.values()),
         new ArrayList<String>(descriptors.keySet()));
-    ArrayList<ColumnInfo> cinfoLst = createColInfos(input);
+    ArrayList<ColumnInfo> cinfoLst = createColInfosSubset(input, keepColNames);
     SelectOperator selectOp = (SelectOperator) OperatorFactory.getAndMakeChild(selectDesc,
         new RowSchema(cinfoLst), rsOp);
     selectOp.setColumnExprMap(descriptors);
@@ -766,7 +797,7 @@ public class HiveOpConverter {
 
       posToAliasMap.put(pos, new HashSet<String>(inputRS.getSchema().getTableNames()));
 
-      Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(outputPos,
+      Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSinkForJoin(outputPos,
           outputColumnNames, keyColNames, valColNames, index, parent);
 
       List<ColumnInfo> parentColumns = parent.getSchema().getSignature();
@@ -830,14 +861,7 @@ public class HiveOpConverter {
     return resultJoinType;
   }
 
-  private static Map<String, ExprNodeDesc> buildBacktrackFromReduceSink(ReduceSinkOperator rsOp,
-      Operator<?> inputOp) {
-    return buildBacktrackFromReduceSink(0, inputOp.getSchema().getColumnNames(), rsOp.getConf()
-        .getOutputKeyColumnNames(), rsOp.getConf().getOutputValueColumnNames(),
-        rsOp.getValueIndex(), inputOp);
-  }
-
-  private static Map<String, ExprNodeDesc> buildBacktrackFromReduceSink(int initialPos,
+  private static Map<String, ExprNodeDesc> buildBacktrackFromReduceSinkForJoin(int initialPos,
       List<String> outputColumnNames, List<String> keyColNames, List<String> valueColNames,
       int[] index, Operator<?> inputOp) {
     Map<String, ExprNodeDesc> columnDescriptors = new LinkedHashMap<String, ExprNodeDesc>();
@@ -856,6 +880,29 @@ public class HiveOpConverter {
     return columnDescriptors;
   }
 
+  private static Map<String, ExprNodeDesc> buildBacktrackFromReduceSink(List<String> keepColNames,
+      List<String> keyColNames, List<String> valueColNames, int[] index, Operator<?> inputOp) {
+    Map<String, ExprNodeDesc> columnDescriptors = new LinkedHashMap<String, ExprNodeDesc>();
+    int pos = 0;
+    for (int i = 0; i < index.length; i++) {
+      ColumnInfo info = inputOp.getSchema().getSignature().get(i);
+      if (pos < keepColNames.size() &&
+              info.getInternalName().equals(keepColNames.get(pos))) {
+        String field;
+        if (index[i] >= 0) {
+          field = Utilities.ReduceField.KEY + "." + keyColNames.get(index[i]);
+        } else {
+          field = Utilities.ReduceField.VALUE + "." + valueColNames.get(-index[i] - 1);
+        }
+        ExprNodeColumnDesc desc = new ExprNodeColumnDesc(info.getType(), field, info.getTabAlias(),
+            info.getIsVirtualCol());
+        columnDescriptors.put(keepColNames.get(pos), desc);
+        pos++;
+      }
+    }
+    return columnDescriptors;
+  }
+
   private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel, String tabAlias, OpAttr inputAttr) {
     return rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), inputAttr.vcolsInCalcite,
         inputRel.getCluster().getTypeFactory()));
@@ -865,6 +912,20 @@ public class HiveOpConverter {
     ArrayList<ColumnInfo> cInfoLst = new ArrayList<ColumnInfo>();
     for (ColumnInfo ci : input.getSchema().getSignature()) {
       cInfoLst.add(new ColumnInfo(ci));
+    }
+    return cInfoLst;
+  }
+
+  private static ArrayList<ColumnInfo> createColInfosSubset(Operator<?> input,
+          List<String> keepColNames) {
+    ArrayList<ColumnInfo> cInfoLst = new ArrayList<ColumnInfo>();
+    int pos = 0;
+    for (ColumnInfo ci : input.getSchema().getSignature()) {
+      if (pos < keepColNames.size() &&
+              ci.getInternalName().equals(keepColNames.get(pos))) {
+        cInfoLst.add(new ColumnInfo(ci));
+        pos++;
+      }
     }
     return cInfoLst;
   }
