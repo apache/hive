@@ -18,99 +18,55 @@
 
 package org.apache.hive.jdbc;
 
-import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.protocol.HttpContext;
 
 /**
- *
  * Authentication interceptor which adds Base64 encoded payload,
  * containing the username and kerberos service ticket,
  * to the outgoing http request header.
- *
  */
-public class HttpKerberosRequestInterceptor implements HttpRequestInterceptor {
+public class HttpKerberosRequestInterceptor extends HttpRequestInterceptorBase {
 
   String principal;
   String host;
   String serverHttpUrl;
   boolean assumeSubject;
-  CookieStore cookieStore;
-  boolean isCookieEnabled;
-  // NB: The purpose of isSSL flag is as follows:
-  // This flag is useful when the HS2 server sends a secure cookie and
-  // the client is in a non-ssl mode. Here, the client replay of the cookie
-  // doesnt reach the server. If we don't send credentials in such a scenario,
-  // the server  would send a 401 error back to the client.
-  // Thus, we would need 2 cycles instead of 1 cycle to process an incoming request if
-  // isSSL is absent.
-  boolean isSSL;
-  String cookieName;
 
   // A fair reentrant lock
   private static ReentrantLock kerberosLock = new ReentrantLock(true);
 
   public HttpKerberosRequestInterceptor(String principal, String host,
       String serverHttpUrl, boolean assumeSubject, CookieStore cs, String cn,
-      boolean isSSL) {
+      boolean isSSL, Map<String, String> additionalHeaders) {
+    super(cs, cn, isSSL, additionalHeaders);
     this.principal = principal;
     this.host = host;
     this.serverHttpUrl = serverHttpUrl;
     this.assumeSubject = assumeSubject;
-    this.cookieStore = cs;
-    this.isSSL = isSSL;
-    isCookieEnabled = (cs != null);
-    cookieName = cn;
   }
 
   @Override
-  public void process(HttpRequest httpRequest, HttpContext httpContext)
-      throws HttpException, IOException {
-    String kerberosAuthHeader;
-
-    try {
+  protected void addHttpAuthHeader(HttpRequest httpRequest,
+    HttpContext httpContext) throws Exception {
+	try {
       // Generate the service ticket for sending to the server.
       // Locking ensures the tokens are unique in case of concurrent requests
       kerberosLock.lock();
-      // If cookie based authentication is allowed, generate ticket only when necessary.
-      // The necessary condition is either when there are no server side cookies in the
-      // cookiestore which can be send back or when the server returns a 401 error code
-      // indicating that the previous cookie has expired.
-      if (isCookieEnabled) {
-        httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-      }
-      // Generate the kerberos ticket under the following scenarios:
-      // 1. Cookie Authentication is disabled OR
-      // 2. The first time when the request is sent OR
-      // 3. The server returns a 401, which sometimes means the cookie has expired OR
-      // 4. The cookie is secured where as the client connect does not use SSL
-      if (!isCookieEnabled ||
-         ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
-          (cookieStore == null || (cookieStore != null &&
-          Utils.needToSendCredentials(cookieStore, cookieName, isSSL)))) ||
-          (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
-          httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
-          equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {
-        kerberosAuthHeader = HttpAuthUtils.getKerberosServiceTicket(
-            principal, host, serverHttpUrl, assumeSubject);
-        // Set the session key token (Base64 encoded) in the headers
-        httpRequest.addHeader(HttpAuthUtils.AUTHORIZATION + ": " +
-            HttpAuthUtils.NEGOTIATE + " ", kerberosAuthHeader);
-      }
-      if (isCookieEnabled) {
-        httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_FALSE);
-      }
+      String kerberosAuthHeader = HttpAuthUtils.getKerberosServiceTicket(
+        principal, host, serverHttpUrl, assumeSubject);
+      // Set the session key token (Base64 encoded) in the headers
+      httpRequest.addHeader(HttpAuthUtils.AUTHORIZATION + ": " +
+        HttpAuthUtils.NEGOTIATE + " ", kerberosAuthHeader);
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);
-    }
-    finally {
+    } finally {
       kerberosLock.unlock();
     }
   }

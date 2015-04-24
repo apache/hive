@@ -280,7 +280,17 @@ public class HiveConnection implements java.sql.Connection {
     HttpClientBuilder httpClientBuilder;
     // Request interceptor for any request pre-processing logic
     HttpRequestInterceptor requestInterceptor;
+    Map<String, String> additionalHttpHeaders = new HashMap<String, String>();
 
+    // Retrieve the additional HttpHeaders
+    for (Map.Entry<String, String> entry : sessConfMap.entrySet()) {
+      String key = entry.getKey();
+
+      if (key.startsWith(JdbcConnectionParams.HTTP_HEADER_PREFIX)) {
+        additionalHttpHeaders.put(key.substring(JdbcConnectionParams.HTTP_HEADER_PREFIX.length()),
+          entry.getValue());
+      }
+    }
     // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
       /**
@@ -291,7 +301,8 @@ public class HiveConnection implements java.sql.Connection {
        */
       requestInterceptor =
           new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl);
+              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl,
+              additionalHttpHeaders);
     }
     else {
       /**
@@ -299,7 +310,8 @@ public class HiveConnection implements java.sql.Connection {
        * In https mode, the entire information is encrypted
        */
       requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
-                                                        cookieStore, cookieName, useSsl);
+                                                        cookieStore, cookieName, useSsl,
+                                                        additionalHttpHeaders);
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {

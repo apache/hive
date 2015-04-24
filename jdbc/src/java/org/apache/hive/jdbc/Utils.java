@@ -110,6 +110,8 @@ public class Utils {
     static final String COOKIE_NAME = "cookieName";
     // The default value of the cookie name when CookieAuth=true
     static final String DEFAULT_COOKIE_NAMES_HS2 = "hive.server2.auth";
+    // The http header prefix for additional headers which have to be appended to the request
+    static final String HTTP_HEADER_PREFIX = "http.header.";
 
     // Non-configurable params:
     // Currently supports JKS keystore format
