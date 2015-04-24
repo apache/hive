@@ -348,17 +348,20 @@ public class HiveConnection implements java.sql.Connection {
         // If Kerberos
         Map<String, String> saslProps = new HashMap<String, String>();
         SaslQOP saslQOP = SaslQOP.AUTH;
-        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
-          if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_QOP)) {
-            try {
-              saslQOP = SaslQOP.fromString(sessConfMap.get(JdbcConnectionParams.AUTH_QOP));
-            } catch (IllegalArgumentException e) {
-              throw new SQLException("Invalid " + JdbcConnectionParams.AUTH_QOP +
-                  " parameter. " + e.getMessage(), "42000", e);
-            }
+        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_QOP)) {
+          try {
+            saslQOP = SaslQOP.fromString(sessConfMap.get(JdbcConnectionParams.AUTH_QOP));
+          } catch (IllegalArgumentException e) {
+            throw new SQLException("Invalid " + JdbcConnectionParams.AUTH_QOP +
+                " parameter. " + e.getMessage(), "42000", e);
           }
           saslProps.put(Sasl.QOP, saslQOP.toString());
-          saslProps.put(Sasl.SERVER_AUTH, "true");
+        } else {
+          // If the client did not specify qop then just negotiate the one supported by server
+          saslProps.put(Sasl.QOP, "auth-conf,auth-int,auth");
+        }
+        saslProps.put(Sasl.SERVER_AUTH, "true");
+        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
           transport = KerberosSaslHelper.getKerberosTransport(
               sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
               HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps,
