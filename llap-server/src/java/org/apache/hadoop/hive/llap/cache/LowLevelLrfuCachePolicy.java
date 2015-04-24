@@ -250,7 +250,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       if (DebugUtils.isTraceCachingEnabled()) {
         LlapIoImpl.LOG.info("Evicting " + result + " at " + time);
       }
-      result.indexInHeap = -1;
+      result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
       --heapSize;
       boolean canEvict = result.invalidate();
       if (heapSize > 0) {
@@ -324,7 +324,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   private void removeFromListAndUnlock(LlapCacheableBuffer buffer) {
     try {
-      if (buffer.indexInHeap == LlapCacheableBuffer.IN_LIST) return;
+      if (buffer.indexInHeap != LlapCacheableBuffer.IN_LIST) return;
       removeFromListUnderLock(buffer);
       buffer.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
     } finally {

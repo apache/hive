@@ -50,7 +50,6 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
     }
   }
 
-//TODO#: THIS
   private SerDe initializeSerde(Configuration conf, Properties props) throws Exception {
     String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
     Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,

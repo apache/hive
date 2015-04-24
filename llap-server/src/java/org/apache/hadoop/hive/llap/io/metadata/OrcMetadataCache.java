@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
-public class OrcMetadataCache implements EvictionListener {
+public class OrcMetadataCache {
   private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =
       new ConcurrentHashMap<Long, OrcFileMetadata>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
@@ -90,15 +90,5 @@ public class OrcMetadataCache implements EvictionListener {
   public void notifyEvicted(OrcStripeMetadata buffer) {
     stripeMetadata.remove(buffer.getKey());
     // See OrcStripeMetadata - we don't clear the object, it will be GCed when released by users.
-  }
-
-  @Override
-  public void notifyEvicted(LlapCacheableBuffer buffer) {
-    if (buffer instanceof OrcStripeMetadata) {
-      notifyEvicted((OrcStripeMetadata)buffer);
-    } else {
-      assert buffer instanceof OrcFileMetadata;
-      notifyEvicted((OrcFileMetadata)buffer);
-    }
   }
 }

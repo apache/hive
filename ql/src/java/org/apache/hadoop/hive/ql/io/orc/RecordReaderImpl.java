@@ -865,6 +865,12 @@ public class RecordReaderImpl implements RecordReader {
     public String toString() {
       return "start: " + offset + " end: " + end + " cache buffer: " + buffer;
     }
+
+    @Override
+    public DiskRange sliceAndShift(long offset, long end, long shiftBy) {
+      throw new UnsupportedOperationException("Cache chunk cannot be sliced - attempted ["
+          + this.offset + ", " + this.end + ") to [" + offset + ", " + end + ") ");
+    }
   }
 
   /**

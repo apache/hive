@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
+public class LowLevelCacheImpl implements LowLevelCache {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
-  private final Allocator allocator;
+  private final EvictionAwareAllocator allocator;
   private AtomicInteger newEvictions = new AtomicInteger(0);
   private Thread cleanupThread = null;
   private final ConcurrentHashMap<Long, FileCache> cache =
@@ -49,13 +49,13 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   private final boolean doAssumeGranularBlocks;
 
   public LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
-      Allocator allocator, boolean doAssumeGranularBlocks) {
+      EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks) {
     this(metrics, cachePolicy, allocator, doAssumeGranularBlocks, DEFAULT_CLEANUP_INTERVAL);
   }
 
   @VisibleForTesting
   LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
-      Allocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
+      EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
     }
@@ -70,11 +70,6 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     if (cleanupInterval < 0) return;
     cleanupThread = new CleanupThread(cleanupInterval);
     cleanupThread.start();
-  }
-
-  @Override
-  public void allocateMultiple(LlapMemoryBuffer[] dest, int size) {
-    allocator.allocateMultiple(dest, size);
   }
 
   @Override
@@ -137,9 +132,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       long cacheOffset = e.getKey();
       if (cacheEnd > cacheOffset) { // compare with old cacheEnd
         throw new AssertionError("Cache has overlapping buffers: " + cacheEnd + ") and ["
-            + cacheOffset + ", " + (cacheOffset + buffer.declaredLength) + ")");
+            + cacheOffset + ", " + (cacheOffset + buffer.declaredCachedLength) + ")");
       }
-      cacheEnd = cacheOffset + buffer.declaredLength;
+      cacheEnd = cacheOffset + buffer.declaredCachedLength;
       DiskRangeList currentCached = factory.createCacheChunk(buffer,
           cacheOffset - baseOffset, cacheEnd - baseOffset);
       currentNotCached = addCachedBufferToIter(currentNotCached, currentCached);
@@ -209,7 +204,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         boolean canLock = lockBuffer(buffer, false);
         assert canLock;
         long offset = ranges[i].getOffset() + baseOffset;
-        buffer.declaredLength = ranges[i].getLength();
+        assert buffer.declaredCachedLength == LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
+        buffer.declaredCachedLength = ranges[i].getLength();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
           if (oldVal == null) {
@@ -228,9 +224,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           if (lockBuffer(oldVal, true)) {
             // We don't do proper overlap checking because it would cost cycles and we
             // think it will never happen. We do perform the most basic check here.
-            if (oldVal.declaredLength != buffer.declaredLength) {
+            if (oldVal.declaredCachedLength != buffer.declaredCachedLength) {
               throw new RuntimeException("Found a block with different length at the same offset: "
-                  + oldVal.declaredLength + " vs " + buffer.declaredLength + " @" + offset
+                  + oldVal.declaredCachedLength + " vs " + buffer.declaredCachedLength + " @" + offset
                   + " (base " + baseOffset + ")");
             }
             // We found an old, valid block for this key in the cache.
@@ -238,7 +234,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
               LlapIoImpl.LOG.info("Unlocking " + buffer + " due to cache collision with " + oldVal);
             }
 
-            unlockBuffer(buffer);
+            unlockBuffer(buffer, false);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
@@ -294,19 +290,26 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   @Override
   public void releaseBuffer(LlapMemoryBuffer buffer) {
-    unlockBuffer((LlapDataBuffer)buffer);
+    unlockBuffer((LlapDataBuffer)buffer, true);
   }
 
   @Override
   public void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers) {
     for (LlapMemoryBuffer b : cacheBuffers) {
-      unlockBuffer((LlapDataBuffer)b);
+      unlockBuffer((LlapDataBuffer)b, true);
     }
   }
 
-  public void unlockBuffer(LlapDataBuffer buffer) {
-    if (buffer.decRef() == 0) {
-      cachePolicy.notifyUnlock(buffer);
+  private void unlockBuffer(LlapDataBuffer buffer, boolean handleLastDecRef) {
+    boolean isLastDecref = (buffer.decRef() == 0);
+    if (handleLastDecRef && isLastDecref) {
+      // This is kind of not pretty, but this is how we detect whether buffer was cached.
+      // We would always set this for lookups at put time.
+      if (buffer.declaredCachedLength != LlapDataBuffer.UNKNOWN_CACHED_LENGTH) {
+        cachePolicy.notifyUnlock(buffer);
+      } else {
+        allocator.deallocate(buffer);
+      }
     }
     metrics.decrCacheNumLockedBuffers();
   }
@@ -318,9 +321,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     return fake;
   }
 
-  @Override
-  public final void notifyEvicted(LlapCacheableBuffer buffer) {
-    allocator.deallocate((LlapDataBuffer)buffer);
+  public final void notifyEvicted(LlapDataBuffer buffer) {
+    allocator.deallocateEvicted(buffer);
     newEvictions.incrementAndGet();
   }
 
@@ -464,7 +466,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public boolean isDirectAlloc() {
-    return allocator.isDirectAlloc();
+  public Allocator getAllocator() {
+    return allocator;
   }
 }

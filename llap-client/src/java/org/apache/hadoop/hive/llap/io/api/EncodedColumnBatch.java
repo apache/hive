@@ -31,6 +31,9 @@ public class EncodedColumnBatch<BatchKey> {
     // so he can figure out the offsets from metadata.
     public List<LlapMemoryBuffer> cacheBuffers;
     public int streamKind;
+    /** Base offset from the beginning of the indexable unit;
+     * CB in compressed, stream in uncompressed file. */
+    public int indexBaseOffset;
 
     // StreamBuffer can be reused for many RGs (e.g. dictionary case). To avoid locking every
     // LlapMemoryBuffer 500 times, have a separate refcount on StreamBuffer itself.
@@ -38,6 +41,7 @@ public class EncodedColumnBatch<BatchKey> {
 
     public void init(int kind) {
       streamKind = kind;
+      indexBaseOffset = 0;
     }
 
     public void reset() {

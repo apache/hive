@@ -28,9 +28,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LogLevels;
-import org.apache.hadoop.hive.llap.cache.Allocator;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
+import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelFifoCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.cache.Allocator;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
@@ -64,7 +65,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private LlapDaemonCacheMetrics cacheMetrics;
   private LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
-  private Allocator allocator;
+  private EvictionAwareAllocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
@@ -103,7 +104,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
       orcCache.init();
     } else {
-      cachePolicy.setEvictionListener(metadataCache);
+      cachePolicy.setEvictionListener(new EvictionDispatcher(null, metadataCache));
     }
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);

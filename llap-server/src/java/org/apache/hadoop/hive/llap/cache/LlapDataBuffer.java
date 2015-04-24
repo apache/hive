@@ -33,16 +33,17 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements LlapMem
   // basically rely on GC to remove them. So, refcount only applies to data blocks. If that
   // changes, refcount management should be move to LlapCacheableBuffer to be shared.
   private static final int EVICTED_REFCOUNT = -1;
+  public static final int UNKNOWN_CACHED_LENGTH = -1;
   protected final AtomicInteger refCount = new AtomicInteger(0);
 
   public ByteBuffer byteBuffer;
-  /** Allocator uses this to remember which arena to alloc from.
-   * TODO Could wrap ByteBuffer instead? This needs reference anyway. */
+  /** Allocator uses this to remember which arena to alloc from. */
   public int arenaIndex = -1;
+  /** Allocator uses this to remember the allocation size. */
+  public int allocSize;
   /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
    * the lookup is on compressed ranges, so we need to know this. */
-  public int declaredLength;
-  public int allocSize;
+  public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
 
   public void initialize(
       int arenaIndex, ByteBuffer byteBuffer, int offset, int length) {

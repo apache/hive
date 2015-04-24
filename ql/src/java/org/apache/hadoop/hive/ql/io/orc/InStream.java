@@ -96,7 +96,7 @@ public abstract class InStream extends InputStream {
   static class UncompressedStream extends InStream {
     private List<DiskRange> bytes;
     private long length;
-    private long currentOffset;
+    protected long currentOffset;
     private ByteBuffer range;
     private int currentRange;
 
@@ -248,7 +248,7 @@ public abstract class InStream extends InputStream {
         uncompressed = allocateBuffer(size, isDirect);
       } else {
         singleAllocDest[0] = null;
-        cache.allocateMultiple(singleAllocDest, size);
+        cache.getAllocator().allocateMultiple(singleAllocDest, size);
         cacheBuffer = singleAllocDest[0];
         uncompressed = cacheBuffer.getByteBufferDup();
       }
@@ -571,6 +571,7 @@ public abstract class InStream extends InputStream {
 
   /** Cache chunk which tracks whether it has been fully read. See
       EncodedReaderImpl class comment about refcounts. */
+  // TODO: these classes need some cleanup. Find every cast and field access and change to OO;
   public static class TrackedCacheChunk extends CacheChunk {
     public boolean isReleased = false;
     public TrackedCacheChunk() {
@@ -587,6 +588,56 @@ public abstract class InStream extends InputStream {
       this.buffer = null;
       this.next = this.prev = null;
       this.isReleased = false;
+    }
+
+    public void handleCacheCollision(LowLevelCache cache,
+        LlapMemoryBuffer replacementBuffer, List<LlapMemoryBuffer> cacheBuffers) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  // TODO: should we pool these? only used for uncompressed.
+  private static class UncompressedCacheChunk extends TrackedCacheChunk {
+    private BufferChunk chunk;
+    private int count;
+
+    public UncompressedCacheChunk(BufferChunk bc) {
+      super();
+      init(null, bc.getOffset(), bc.getEnd());
+      chunk = bc;
+      count = 1;
+    }
+
+    public void addChunk(BufferChunk bc) {
+      assert bc.getOffset() == this.getEnd();
+      this.end = bc.getEnd();
+      ++count;
+    }
+
+    public BufferChunk getChunk() {
+      return chunk;
+    }
+
+    public int getCount() {
+      return count;
+    }
+
+    @Override
+    public void handleCacheCollision(LowLevelCache cache,
+        LlapMemoryBuffer replacementBuffer, List<LlapMemoryBuffer> cacheBuffers) {
+      assert cacheBuffers == null;
+      // This is done at pre-read stage where there's nothing special w/refcounts. Just release.
+      if (DebugUtils.isTraceCachingEnabled()) {
+        LOG.info("Deallocating " + buffer + " due to cache collision during pre-read");
+      }
+      cache.getAllocator().deallocate(buffer);
+      // Replace the buffer in our big range list, as well as in current results.
+      this.buffer = replacementBuffer;
+    }
+
+    public void clear() {
+      this.chunk = null;
+      this.count = -1;
     }
   }
 
@@ -609,6 +660,24 @@ public abstract class InStream extends InputStream {
     public void reset() {
       super.reset();
       this.originalData = null;
+    }
+
+    @Override
+    public void handleCacheCollision(LowLevelCache cache, LlapMemoryBuffer replacementBuffer,
+        List<LlapMemoryBuffer> cacheBuffers) {
+      assert originalCbIndex >= 0;
+      // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
+      // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
+      // is not in cache.
+      if (DebugUtils.isTraceCachingEnabled()) {
+        LOG.info("Deallocating " + buffer + " due to cache collision");
+      }
+      cache.getAllocator().deallocate(buffer);
+      cache.notifyReused(replacementBuffer);
+      // Replace the buffer in our big range list, as well as in current results.
+      this.buffer = replacementBuffer;
+      cacheBuffers.set(originalCbIndex, replacementBuffer);
+      originalCbIndex = -1; // This can only happen once at decompress time.
     }
 
     boolean isCompressed;
@@ -636,86 +705,48 @@ public abstract class InStream extends InputStream {
    *         the master list, so they are safe to keep as iterators for various streams.
    */
   // TODO: move to EncodedReaderImpl
-  public static DiskRangeList uncompressStream(long fileId, long baseOffset, DiskRangeList start,
+  // TODO: this method has too many arguments... perhaps we can clean it up
+  public static DiskRangeList readEncodedStream(long fileId, long baseOffset, DiskRangeList start,
       long cOffset, long endCOffset, ZeroCopyReaderShim zcr, CompressionCodec codec,
       int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset,
-      long streamStartOffset) throws IOException {
+      long streamOffset) throws IOException {
     if (streamBuffer.cacheBuffers == null) {
       streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     } else {
       streamBuffer.cacheBuffers.clear();
     }
     if (cOffset == endCOffset) return null;
+    boolean isCompressed = codec != null;
     List<ProcCacheChunk> toDecompress = null;
     List<ByteBuffer> toRelease = null;
+    if (isCompressed) {
+      toRelease = zcr == null ? null : new ArrayList<ByteBuffer>();
+      toDecompress = new ArrayList<ProcCacheChunk>();
+    }
 
     // 1. Find our bearings in the stream. Normally, iter will already point either to where we
     // want to be, or just before. However, RGs can overlap due to encoding, so we may have
     // to return to a previous block.
-    DiskRangeList current = findCompressedPosition(start, cOffset);
+    DiskRangeList current = findExactPosition(start, cOffset);
     if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Starting uncompressStream for [" + cOffset + "," + endCOffset + ") at " + current);
+      LOG.info("Starting read for [" + cOffset + "," + endCOffset + ") at " + current);
     }
+
+    TrackedCacheChunk lastUncompressed = null;
 
     // 2. Go thru the blocks; add stuff to results and prepare the decompression work (see below).
-    if (cOffset > current.getOffset()) {
-      // Target compression block is in the middle of the range; slice the range in two.
-      current = current.split(cOffset).next;
-    }
-    long currentCOffset = cOffset;
-    TrackedCacheChunk lastCached = null;
-    while (true) {
-      DiskRangeList next = null;
-      if (current instanceof TrackedCacheChunk) {
-        // 2a. This is a cached compression buffer, add as is.
-        TrackedCacheChunk cc = (TrackedCacheChunk)current;
-        if (DebugUtils.isTraceLockingEnabled()) {
-          LOG.info("Locking " + cc.buffer + " due to reuse");
-        }
-        boolean canReuse = cache.notifyReused(cc.buffer);
-        assert canReuse;
-        streamBuffer.cacheBuffers.add(cc.buffer);
-        currentCOffset = cc.getEnd();
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
-        }
-        ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamStartOffset, cc);
-        lastCached = cc;
-        next = current.next;
-      } else if (current instanceof IncompleteCb)  {
-        // 2b. This is a known incomplete CB caused by ORC CB end boundaries being estimates.
-        if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Cannot read " + current);
-        }
-        next = null;
-        currentCOffset = -1;
-      } else {
-        // 2c. This is a compressed buffer. We need to uncompress it; the buffer can comprise
-        // several disk ranges, so we might need to combine them.
-        BufferChunk bc = (BufferChunk)current;
-        if (toDecompress == null) {
-          toDecompress = new ArrayList<ProcCacheChunk>();
-          toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
-        }
-        ProcCacheChunk newCached = addOneCompressionBuffer(bc, zcr, bufferSize,
-            cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
-        lastCached = (newCached == null) ? lastCached : newCached;
-        next = (newCached != null) ? newCached.next : null;
-        currentCOffset = (next != null) ? next.getOffset() : -1;
-      }
-
-      if (next == null || (endCOffset >= 0 && currentCOffset >= endCOffset)) {
-        break;
-      }
-      current = next;
-    }
+    lastUncompressed = isCompressed ?
+        prepareRangesForCompressedRead(cOffset, endCOffset, streamOffset, unlockUntilCOffset,
+            bufferSize, current, zcr, cache, streamBuffer, toRelease, toDecompress)
+      : prepareRangesForUncompressedRead(
+          cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, cache, streamBuffer);
 
     // 3. Allocate the buffers, prepare cache keys.
     // At this point, we have read all the CBs we need to read. cacheBuffers contains some cache
     // data and some unallocated membufs for decompression. toDecompress contains all the work we
     // need to do, and each item points to one of the membufs in cacheBuffers as target. The iter
     // has also been adjusted to point to these buffers instead of compressed data for the ranges.
-    if (toDecompress == null) return lastCached; // Nothing to decompress.
+    if (toDecompress == null) return lastUncompressed; // Nothing to decompress.
 
     LlapMemoryBuffer[] targetBuffers = new LlapMemoryBuffer[toDecompress.size()];
     DiskRange[] cacheKeys = new DiskRange[toDecompress.size()];
@@ -725,31 +756,18 @@ public abstract class InStream extends InputStream {
       targetBuffers[ix] = chunk.buffer;
       ++ix;
     }
-    cache.allocateMultiple(targetBuffers, bufferSize);
+    boolean canAlloc = cache.getAllocator().allocateMultiple(targetBuffers, bufferSize);
+    if (!canAlloc) {
+      throw new AssertionError("Cannot allocate");
+    }
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
       ByteBuffer dest = chunk.buffer.getByteBufferRaw();
-      int startPos = dest.position(), startLim = dest.limit();
       if (chunk.isCompressed) {
-        codec.decompress(chunk.originalData, dest);
-        // Codec resets the position to 0 and limit to correct limit.
-        dest.position(startPos);
-        int newLim = dest.limit();
-        if (newLim > startLim) {
-          throw new AssertionError("After codec, buffer [" + startPos + ", " + startLim
-              + ") became [" + dest.position() + ", " + newLim + ")");
-        }
+        decompressChunk(chunk.originalData, codec, dest);
       } else {
-        dest.put(chunk.originalData); // Copy uncompressed data to cache.
-        // Put moves position forward by the size of the data.
-        int newPos = dest.position();
-        if (newPos > startLim) {
-          throw new AssertionError("After copying, buffer [" + startPos + ", " + startLim
-              + ") became [" + newPos + ", " + dest.limit() + ")");
-        }
-        dest.position(startPos);
-        dest.limit(newPos);
+        copyUncompressedChunk(chunk.originalData, dest);
       }
 
       chunk.originalData = null;
@@ -767,7 +785,7 @@ public abstract class InStream extends InputStream {
       }
     }
 
-    // 6. Finally, put data to cache.
+    // 6. Finally, put uncompressed data to cache.
     long[] collisionMask = cache.putFileData(
         fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
     processCacheCollisions(
@@ -775,10 +793,350 @@ public abstract class InStream extends InputStream {
 
     // 7. It may happen that we only use new compression buffers once. Release initial refcounts.
     for (ProcCacheChunk chunk : toDecompress) {
-      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamStartOffset, chunk);
+      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamOffset, chunk);
     }
 
-    return lastCached;
+    return lastUncompressed;
+  }
+
+  private static TrackedCacheChunk prepareRangesForCompressedRead(long cOffset, long endCOffset,
+      long streamOffset, long unlockUntilCOffset, int bufferSize, DiskRangeList current,
+      ZeroCopyReaderShim zcr, LowLevelCache cache, StreamBuffer streamBuffer,
+      List<ByteBuffer> toRelease, List<ProcCacheChunk> toDecompress) throws IOException {
+    if (cOffset > current.getOffset()) {
+      // Target compression block is in the middle of the range; slice the range in two.
+      current = current.split(cOffset).next;
+    }
+    long currentOffset = cOffset;
+    TrackedCacheChunk lastUncompressed = null;
+    while (true) {
+      DiskRangeList next = null;
+      if (current instanceof TrackedCacheChunk) {
+        // 2a. This is a decoded compression buffer, add as is.
+        TrackedCacheChunk cc = (TrackedCacheChunk)current;
+        if (DebugUtils.isTraceLockingEnabled()) {
+          LOG.info("Locking " + cc.buffer + " due to reuse");
+        }
+        boolean canReuse = cache.notifyReused(cc.buffer);
+        assert canReuse;
+        streamBuffer.cacheBuffers.add(cc.buffer);
+        currentOffset = cc.getEnd();
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Adding an already-uncompressed buffer " + cc.buffer);
+        }
+        ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamOffset, cc);
+        lastUncompressed = cc;
+        next = current.next;
+      } else if (current instanceof IncompleteCb)  {
+        // 2b. This is a known incomplete CB caused by ORC CB end boundaries being estimates.
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Cannot read " + current);
+        }
+        next = null;
+        currentOffset = -1;
+      } else {
+        // 2c. This is a compressed buffer. We need to uncompress it; the buffer can comprise
+        // several disk ranges, so we might need to combine them.
+        BufferChunk bc = (BufferChunk)current;
+        ProcCacheChunk newCached = addOneCompressionBuffer(bc, zcr, bufferSize,
+            cache, streamBuffer.cacheBuffers, toDecompress, toRelease);
+        lastUncompressed = (newCached == null) ? lastUncompressed : newCached;
+        next = (newCached != null) ? newCached.next : null;
+        currentOffset = (next != null) ? next.getOffset() : -1;
+      }
+
+      if (next == null || (endCOffset >= 0 && currentOffset >= endCOffset)) {
+        break;
+      }
+      current = next;
+    }
+    return lastUncompressed;
+  }
+
+  private static TrackedCacheChunk prepareRangesForUncompressedRead(long cOffset, long endCOffset,
+      long streamOffset, long unlockUntilCOffset, DiskRangeList current, LowLevelCache cache,
+      StreamBuffer streamBuffer) throws IOException {
+    long currentOffset = cOffset;
+    TrackedCacheChunk lastUncompressed = null;
+    boolean isFirst = true;
+    while (true) {
+      DiskRangeList next = null;
+      assert current instanceof TrackedCacheChunk;
+      lastUncompressed = (TrackedCacheChunk)current;
+      if (DebugUtils.isTraceLockingEnabled()) {
+        LOG.info("Locking " + lastUncompressed.buffer + " due to reuse");
+      }
+      boolean canReuse = cache.notifyReused(lastUncompressed.buffer);
+      assert canReuse;
+      if (isFirst) {
+        streamBuffer.indexBaseOffset = (int)(lastUncompressed.getOffset() - streamOffset);
+        isFirst = false;
+      }
+      streamBuffer.cacheBuffers.add(lastUncompressed.buffer);
+      currentOffset = lastUncompressed.getEnd();
+      if (DebugUtils.isTraceOrcEnabled()) {
+        LOG.info("Adding an uncompressed buffer " + lastUncompressed.buffer);
+      }
+      ponderReleaseInitialRefcount(cache, unlockUntilCOffset, streamOffset, lastUncompressed);
+      next = current.next;
+      if (next == null || (endCOffset >= 0 && currentOffset >= endCOffset)) {
+        break;
+      }
+      current = next;
+    }
+    return lastUncompressed;
+  }
+
+  /**
+   * To achieve some sort of consistent cache boundaries, we will cache streams deterministically;
+   * in segments starting w/stream start, and going for either stream size or maximum allocation.
+   * If we are not reading the entire segment's worth of data, then we will not cache the partial
+   * RGs; the breakage of cache assumptions (no interleaving blocks, etc.) is way too much PITA
+   * to handle just for this case.
+   * We could avoid copy in non-zcr case and manage the buffer that was not allocated by our
+   * allocator. Uncompressed case is not mainline though so let's not complicate it.
+   */
+  public static DiskRangeList preReadUncompressedStream(long fileId,
+      long baseOffset, DiskRangeList start, long streamOffset, long streamEnd,
+      ZeroCopyReaderShim zcr, LowLevelCache cache) throws IOException {
+    if (streamOffset == streamEnd) return null;
+    List<UncompressedCacheChunk> toCache = null;
+    List<ByteBuffer> toRelease = null;
+
+    // 1. Find our bearings in the stream.
+    DiskRangeList current = findIntersectingPosition(start, streamOffset, streamEnd);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Starting pre-read for [" + streamOffset + "," + streamEnd + ") at " + current);
+    }
+
+    if (streamOffset > current.getOffset()) {
+      // Target compression block is in the middle of the range; slice the range in two.
+      current = current.split(streamOffset).next;
+    }
+    // Account for maximum cache buffer size.
+    long streamLen = streamEnd - streamOffset;
+    int partSize = cache.getAllocator().getMaxAllocation(),
+        partCount = (int)((streamLen / partSize) + (((streamLen % partSize) != 0) ? 1 : 0));
+    long partOffset = streamOffset, partEnd = Math.min(partOffset + partSize, streamEnd);
+
+    TrackedCacheChunk lastUncompressed = null;
+    LlapMemoryBuffer[] singleAlloc = new LlapMemoryBuffer[1];
+    for (int i = 0; i < partCount; ++i) {
+      long hasEntirePartTo = -1;
+      if (partOffset == current.getOffset()) {
+        hasEntirePartTo = partOffset;
+        // We assume cache chunks would always match the way we read, so check and skip it.
+        if (current instanceof TrackedCacheChunk) {
+          lastUncompressed = (TrackedCacheChunk)current;
+          assert current.getOffset() == partOffset && current.getEnd() == partEnd;
+          partOffset = partEnd;
+          partEnd = Math.min(partOffset + partSize, streamEnd);
+          continue;
+        }
+      }
+      if (current.getOffset() >= partEnd) {
+        // We have no data at all for this part of the stream (could be unneeded), skip.
+        partOffset = partEnd;
+        partEnd = Math.min(partOffset + partSize, streamEnd);
+        continue;
+      }
+      if (toRelease == null && zcr != null) {
+        toRelease = new ArrayList<ByteBuffer>();
+      }
+      // We have some disk buffers... see if we have entire part, etc.
+      UncompressedCacheChunk candidateCached = null;
+      DiskRangeList next = current;
+      while (true) {
+        if (next == null || next.getOffset() >= partEnd) {
+          if (hasEntirePartTo < partEnd && candidateCached != null) {
+            // We are missing a section at the end of the part...
+            lastUncompressed = copyAndReplaceCandidateToNonCached(
+                candidateCached, partOffset, hasEntirePartTo, cache, singleAlloc);
+            candidateCached = null;
+          }
+          break;
+        }
+        current = next;
+        boolean wasSplit = (current.getEnd() > partEnd);
+        if (wasSplit) {
+          current = current.split(partEnd);
+        }
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Processing uncompressed file data at ["
+              + current.getOffset() + ", " + current.getEnd() + ")");
+        }
+        BufferChunk bc = (BufferChunk)current;
+        if (!wasSplit && toRelease != null) {
+          toRelease.add(bc.chunk); // TODO: is it valid to give zcr the modified 2nd part?
+        }
+
+        // Track if we still have the entire part.
+        long hadEntirePartTo = hasEntirePartTo;
+        if (hasEntirePartTo != -1) {
+          hasEntirePartTo = (hasEntirePartTo == current.getOffset()) ? current.getEnd() : -1;
+        }
+        if (candidateCached != null && hasEntirePartTo == -1) {
+          lastUncompressed = copyAndReplaceCandidateToNonCached(
+              candidateCached, partOffset, hadEntirePartTo, cache, singleAlloc);
+          candidateCached = null;
+        }
+
+        if (hasEntirePartTo != -1) {
+          // So far we have all the data from the beginning of the part.
+          if (candidateCached == null) {
+            candidateCached = new UncompressedCacheChunk(bc);
+          } else {
+            candidateCached.addChunk(bc);
+          }
+          // We will take care of this at the end of the part, or if we find a gap.
+          next = current.next;
+          continue;
+        }
+        // We don't have the entire part; just copy to an allocated buffer. We could try to
+        // optimize a bit if we have contiguous buffers with gaps, but it's probably not needed.
+        lastUncompressed = copyAndReplaceUncompressedToNonCached(bc, cache, singleAlloc);
+        next = lastUncompressed.next;
+      }
+      if (candidateCached != null) {
+        if (toCache == null) {
+          toCache = new ArrayList<>(partCount - i);
+        }
+        toCache.add(candidateCached);
+      }
+    }
+
+    // 3. Allocate the buffers, prepare cache keys.
+    if (toCache == null) return lastUncompressed; // Nothing to copy and cache.
+
+    LlapMemoryBuffer[] targetBuffers =
+        toCache.size() == 1 ? singleAlloc : new LlapMemoryBuffer[toCache.size()];
+    targetBuffers[0] = null;
+    DiskRange[] cacheKeys = new DiskRange[toCache.size()];
+    int ix = 0;
+    for (UncompressedCacheChunk chunk : toCache) {
+      cacheKeys[ix] = chunk; // Relies on the fact that cache does not actually store these.
+      ++ix;
+    }
+    boolean canAlloc = cache.getAllocator().allocateMultiple(
+        targetBuffers, (int)(partCount == 1 ? streamLen : partSize));
+    if (!canAlloc) {
+      throw new AssertionError("Cannot allocate");
+    }
+
+    // 4. Now copy the data into cache buffers.
+    ix = 0;
+    for (UncompressedCacheChunk candidateCached : toCache) {
+      candidateCached.buffer = targetBuffers[ix];
+      ByteBuffer dest = candidateCached.buffer.getByteBufferRaw();
+      copyAndReplaceUncompressedChunks(candidateCached, dest, candidateCached);
+      candidateCached.clear();
+      lastUncompressed = candidateCached;
+      ++ix;
+    }
+
+    // 5. Release original compressed buffers to zero-copy reader if needed.
+    if (toRelease != null) {
+      assert zcr != null;
+      for (ByteBuffer buf : toRelease) {
+        zcr.releaseBuffer(buf);
+      }
+    }
+
+    // 6. Finally, put uncompressed data to cache.
+    long[] collisionMask = cache.putFileData(
+        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
+    processCacheCollisions(cache, collisionMask, toCache, targetBuffers, null);
+
+    return lastUncompressed;
+  }
+
+  private static void copyUncompressedChunk(ByteBuffer src, ByteBuffer dest) {
+    int startPos = dest.position(), startLim = dest.limit();
+    dest.put(src); // Copy uncompressed data to cache.
+    // Put moves position forward by the size of the data.
+    int newPos = dest.position();
+    if (newPos > startLim) {
+      throw new AssertionError("After copying, buffer [" + startPos + ", " + startLim
+          + ") became [" + newPos + ", " + dest.limit() + ")");
+    }
+    dest.position(startPos);
+    dest.limit(newPos);
+  }
+
+
+  private static TrackedCacheChunk copyAndReplaceCandidateToNonCached(
+      UncompressedCacheChunk candidateCached, long partOffset,
+      long candidateEnd, LowLevelCache cache, LlapMemoryBuffer[] singleAlloc) {
+    // We thought we had the entire part to cache, but we don't; convert start to
+    // non-cached. Since we are at the first gap, the previous stuff must be contiguous.
+    singleAlloc[0] = null;
+    boolean canAlloc = cache.getAllocator().allocateMultiple(
+        singleAlloc, (int)(candidateEnd - partOffset));
+    if (!canAlloc) {
+      throw new AssertionError("Cannot allocate");
+    }
+
+    LlapMemoryBuffer buffer = singleAlloc[0];
+    cache.notifyReused(buffer);
+    ByteBuffer dest = buffer.getByteBufferRaw();
+    TrackedCacheChunk tcc = TCC_POOL.take();
+    tcc.init(buffer, partOffset, candidateEnd);
+    copyAndReplaceUncompressedChunks(candidateCached, dest, tcc);
+    return tcc;
+  }
+
+  private static TrackedCacheChunk copyAndReplaceUncompressedToNonCached(
+      BufferChunk bc, LowLevelCache cache, LlapMemoryBuffer[] singleAlloc) {
+    singleAlloc[0] = null;
+    boolean canAlloc = cache.getAllocator().allocateMultiple(singleAlloc, bc.getLength());
+    if (!canAlloc) {
+      throw new AssertionError("Cannot allocate");
+    }
+
+    LlapMemoryBuffer buffer = singleAlloc[0];
+    cache.notifyReused(buffer);
+    ByteBuffer dest = buffer.getByteBufferRaw();
+    TrackedCacheChunk tcc = TCC_POOL.take();
+    tcc.init(buffer, bc.getOffset(), bc.getEnd());
+    copyUncompressedChunk(bc.chunk, dest);
+    bc.replaceSelfWith(tcc);
+    return tcc;
+  }
+
+  private static void copyAndReplaceUncompressedChunks(
+      UncompressedCacheChunk candidateCached, ByteBuffer dest, TrackedCacheChunk tcc) {
+    int startPos = dest.position(), startLim = dest.limit();
+    BufferChunk chunk = candidateCached.getChunk();
+    for (int i = 0; i < candidateCached.getCount(); ++i) {
+      dest.put(chunk.getData());
+      BufferChunk next = (BufferChunk)(chunk.next);
+      if (i == 0) {
+        chunk.replaceSelfWith(tcc);
+      } else {
+        chunk.removeSelf();
+      }
+      chunk = next;
+    }
+    int newPos = dest.position();
+    if (newPos > startLim) {
+      throw new AssertionError("After copying, buffer [" + startPos + ", " + startLim
+          + ") became [" + newPos + ", " + dest.limit() + ")");
+    }
+    dest.position(startPos);
+    dest.limit(newPos);
+  }
+
+  private static void decompressChunk(
+      ByteBuffer src, CompressionCodec codec, ByteBuffer dest) throws IOException {
+    int startPos = dest.position(), startLim = dest.limit();
+    codec.decompress(src, dest);
+    // Codec resets the position to 0 and limit to correct limit.
+    dest.position(startPos);
+    int newLim = dest.limit();
+    if (newLim > startLim) {
+      throw new AssertionError("After codec, buffer [" + startPos + ", " + startLim
+          + ") became [" + dest.position() + ", " + newLim + ")");
+    }
   }
 
   public static void releaseCacheChunksIntoObjectPool(DiskRangeList current) {
@@ -821,7 +1179,7 @@ public abstract class InStream extends InputStream {
   }
 
   private static void processCacheCollisions(LowLevelCache cache, long[] collisionMask,
-      List<ProcCacheChunk> toDecompress, LlapMemoryBuffer[] targetBuffers,
+      List<? extends TrackedCacheChunk> toDecompress, LlapMemoryBuffer[] targetBuffers,
       List<LlapMemoryBuffer> cacheBuffers) {
     if (collisionMask == null) return;
     assert collisionMask.length >= (toDecompress.size() >>> 6);
@@ -833,7 +1191,7 @@ public abstract class InStream extends InputStream {
       }
       if ((maskVal & 1) == 1) {
         // Cache has found an old buffer for the key and put it into array instead of our new one.
-        ProcCacheChunk replacedChunk = toDecompress.get(i);
+        TrackedCacheChunk replacedChunk = toDecompress.get(i);
         LlapMemoryBuffer replacementBuffer = targetBuffers[i];
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Discarding data due to cache collision: " + replacedChunk.buffer
@@ -841,16 +1199,7 @@ public abstract class InStream extends InputStream {
         }
         assert replacedChunk.buffer != replacementBuffer : i + " was not replaced in the results "
             + "even though mask is [" + Long.toBinaryString(maskVal) + "]";
-        assert replacedChunk.originalCbIndex >= 0;
-        // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
-        // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
-        // is unchanged at 1 from notifyReused. Make it all consistent.
-        cache.releaseBuffer(replacedChunk.buffer);
-        cache.notifyReused(replacementBuffer);
-        // Replace the buffer in our big range list, as well as in current results.
-        replacedChunk.buffer = replacementBuffer;
-        cacheBuffers.set(replacedChunk.originalCbIndex, replacementBuffer);
-        replacedChunk.originalCbIndex = -1; // This can only happen once at decompress time.
+        replacedChunk.handleCacheCollision(cache, replacementBuffer, cacheBuffers);
       }
       maskVal >>= 1;
     }
@@ -859,14 +1208,22 @@ public abstract class InStream extends InputStream {
 
   /** Finds compressed offset in a stream and makes sure iter points to its position.
      This may be necessary for obscure combinations of compression and encoding boundaries. */
-  private static DiskRangeList findCompressedPosition(
-      DiskRangeList ranges, long cOffset) {
-    if (cOffset < 0) return ranges;
+  private static DiskRangeList findExactPosition(DiskRangeList ranges, long offset) {
+    if (offset < 0) return ranges;
+    return findIntersectingPosition(ranges, offset, offset);
+  }
+
+  private static DiskRangeList findIntersectingPosition(DiskRangeList ranges, long offset, long end) {
+    if (offset < 0) return ranges;
     // We expect the offset to be valid TODO: rather, validate
-    while (ranges.getEnd() <= cOffset) {
+    while (ranges.getEnd() <= offset) {
       ranges = ranges.next;
     }
-    while (ranges.getOffset() > cOffset) {
+    while (ranges.getOffset() > end) {
+      ranges = ranges.prev;
+    }
+    // We are now on some intersecting buffer, find the first intersecting buffer.
+    while (ranges.prev != null && ranges.prev.getEnd() > offset) {
       ranges = ranges.prev;
     }
     return ranges;

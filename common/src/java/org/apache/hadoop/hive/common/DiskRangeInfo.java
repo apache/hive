@@ -25,12 +25,20 @@ import com.google.common.collect.Lists;
  * Disk range information class containing disk ranges and total length.
  */
 public class DiskRangeInfo {
-  List<DiskRange> diskRanges;
+  List<DiskRange> diskRanges; // TODO: use DiskRangeList instead
   long totalLength;
 
-  public DiskRangeInfo() {
+  public DiskRangeInfo(int indexBaseOffset) {
     this.diskRanges = Lists.newArrayList();
-    this.totalLength = 0;
+    // Some data is missing from the stream for PPD uncompressed read (because index offset is
+    // relative to the entire stream and we only read part of stream if RGs are filtered; unlike
+    // with compressed data where PPD only filters CBs, so we always get full CB, and index offset
+    // is relative to CB). To take care of the case when UncompressedStream goes seeking around by
+    // its incorrect (relative to partial stream) index offset, we will increase the length by our
+    // offset-relative-to-the-stream, and also account for it in buffers (see createDiskRangeInfo).
+    // So, index offset now works; as long as noone seeks into this data before the RG (why would
+    // they), everything works. This is hacky... Stream shouldn't depend on having all the data.
+    this.totalLength = indexBaseOffset;
   }
 
   public void addDiskRange(DiskRange diskRange) {
