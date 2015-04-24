@@ -30,6 +30,7 @@ import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
+import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 
 public class MiniLlapCluster extends AbstractService {
   private static final Log LOG = LogFactory.getLog(MiniLlapCluster.class);
@@ -138,6 +139,10 @@ public class MiniLlapCluster extends AbstractService {
         numExecutorsPerService);
     clusterSpecificConfiguration.setLong(
         LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, execBytesPerService);
+    // Optimize local fetch does not work with LLAP due to different local directories
+    // used by containers and LLAP
+    clusterSpecificConfiguration
+        .setBoolean(TezRuntimeConfiguration.TEZ_RUNTIME_OPTIMIZE_LOCAL_FETCH, false);
   }
 
   @Override
