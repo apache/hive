@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.index.RewriteGBUsingIndex;
@@ -60,6 +61,12 @@ public class Optimizer {
     boolean bucketMapJoinOptimizer = false;
 
     transformations = new ArrayList<Transform>();
+
+    // If we are translating Calcite operators into Hive operators, we need
+    // additional postprocessing
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+      transformations.add(new HiveOpConverterPostProc());
+    }
 
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
