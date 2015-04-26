@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -1339,5 +1340,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public Path getPathWithoutSchemeAndAuthority(Path path) {
     return Path.getPathWithoutSchemeAndAuthority(path);
+  }
+
+  @Override
+  public int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException {
+    int pos = dest.position();
+    int result = file.read(dest);
+    if (result > 0) {
+      // Ensure this explicitly since versions before 2.7 read doesn't do it.
+      dest.position(pos + result);
+    }
+    return result;
   }
 }
