@@ -17,6 +17,8 @@ create table over10k(
 
 load data local inpath '../../data/files/over10k' into table over10k;
 
+select row_number() over()  from src where key = '238';
+
 select s, row_number() over (partition by d order by dec) from over10k limit 100;
 
 select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100;
