@@ -708,4 +708,13 @@ public interface HadoopShims {
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
 
   public Path getPathWithoutSchemeAndAuthority(Path path);
+
+  /**
+   * Reads data into ByteBuffer.
+   * @param file File.
+   * @param dest Buffer.
+   * @return Number of bytes read, just like file.read. If any bytes were read, dest position
+   *         will be set to old position + number of bytes read.
+   */
+  int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException;
 }
