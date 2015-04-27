@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -47,6 +48,9 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
@@ -348,11 +352,13 @@ public class HiveConnection implements java.sql.Connection {
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
     // Configure http client for SSL
     if (useSsl) {
+      String useTwoWaySSL = sessConfMap.get(JdbcConnectionParams.USE_TWO_WAY_SSL);
       String sslTrustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
       String sslTrustStorePassword = sessConfMap.get(
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       KeyStore sslTrustStore;
       SSLSocketFactory socketFactory;
+
       /**
        * The code within the try block throws:
        * 1. SSLInitializationException
@@ -366,11 +372,13 @@ public class HiveConnection implements java.sql.Connection {
        * and throw a SQLException.
        */
       try {
-        if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
+        if (useTwoWaySSL != null &&
+            useTwoWaySSL.equalsIgnoreCase(JdbcConnectionParams.TRUE)) {
+          socketFactory = getTwoWaySSLSocketFactory();
+        } else if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
           // Create a default socket factory based on standard JSSE trust material
           socketFactory = SSLSocketFactory.getSocketFactory();
-        }
-        else {
+        } else {
           // Pick trust store config from the given path
           sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
           sslTrustStore.load(new FileInputStream(sslTrustStorePath),
@@ -451,7 +459,9 @@ public class HiveConnection implements java.sql.Connection {
             if (isSslConnection()) {
               // get SSL socket
               String sslTrustStore = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-              String sslTrustStorePassword = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+              String sslTrustStorePassword = sessConfMap.get(
+                JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+
               if (sslTrustStore == null || sslTrustStore.isEmpty()) {
                 transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
               } else {
@@ -475,6 +485,49 @@ public class HiveConnection implements java.sql.Connection {
           + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
     }
     return transport;
+  }
+
+  SSLSocketFactory getTwoWaySSLSocketFactory() throws SQLException {
+    SSLSocketFactory socketFactory = null;
+
+    try {
+      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
+        JdbcConnectionParams.SUNX509_ALGORITHM_STRING,
+        JdbcConnectionParams.SUNJSSE_ALGORITHM_STRING);
+      String keyStorePath = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE);
+      String keyStorePassword = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE_PASSWORD);
+      KeyStore sslKeyStore = KeyStore.getInstance(JdbcConnectionParams.SSL_KEY_STORE_TYPE);
+
+      if (keyStorePath == null || keyStorePath.isEmpty()) {
+        throw new IllegalArgumentException(JdbcConnectionParams.SSL_KEY_STORE
+        + " Not configured for 2 way SSL connection, keyStorePath param is empty");
+      }
+      sslKeyStore.load(new FileInputStream(keyStorePath),
+        keyStorePassword.toCharArray());
+      keyManagerFactory.init(sslKeyStore, keyStorePassword.toCharArray());
+
+      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+        JdbcConnectionParams.SUNX509_ALGORITHM_STRING);
+      String trustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
+      String trustStorePassword = sessConfMap.get(
+        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+      KeyStore sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+
+      if (trustStorePath == null || trustStorePath.isEmpty()) {
+        throw new IllegalArgumentException(JdbcConnectionParams.SSL_TRUST_STORE
+        + " Not configured for 2 way SSL connection");
+      }
+      sslTrustStore.load(new FileInputStream(trustStorePath),
+        trustStorePassword.toCharArray());
+      trustManagerFactory.init(sslTrustStore);
+      SSLContext context = SSLContext.getInstance("TLS");
+      context.init(keyManagerFactory.getKeyManagers(),
+        trustManagerFactory.getTrustManagers(), new SecureRandom());
+      socketFactory = new SSLSocketFactory(context);
+    } catch (Exception e) {
+      throw new SQLException("Error while initializing 2 way ssl socket factory ", e);
+    }
+    return socketFactory;
   }
 
   // Lookup the delegation token. First in the connection URL, then Configuration
