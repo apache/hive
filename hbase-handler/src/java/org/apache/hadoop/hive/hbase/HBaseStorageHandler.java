@@ -76,6 +76,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.zookeeper.KeeperException;
 
+import com.yammer.metrics.core.MetricsRegistry;
+
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
@@ -511,6 +513,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       } else {
         TableMapReduceUtil.addDependencyJars(
           jobConf, HBaseStorageHandler.class, TableInputFormatBase.class);
+      }
+      if (HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_NAME) != null) {
+        // There is an extra dependency on MetricsRegistry for snapshot IF.
+        TableMapReduceUtil.addDependencyJars(jobConf, MetricsRegistry.class);
       }
       Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
 
