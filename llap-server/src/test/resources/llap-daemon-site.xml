@@ -54,4 +54,20 @@
     <description>Comma separate list of nodes running daemons</description>
   </property>
 
+  <!-- hadoop IPC options -->
+  <property>
+    <name>ipc.client.low-latency</name>
+    <value>true</value>
+    <description> </description>
+  </property>
+  <property>
+    <name>ipc.client.tcpnodelay</name>
+    <value>true</value>
+    <description> </description>
+  </property>
+  <property>
+    <name>ipc.clients-per-factory</name>
+    <value>4</value>
+    <description> </description>
+  </property>
 </configuration>

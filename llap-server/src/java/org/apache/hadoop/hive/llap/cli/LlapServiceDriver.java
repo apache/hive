@@ -79,7 +79,7 @@ public class LlapServiceDriver {
     Configuration slice = new Configuration(false);
     // for everything in defaults, slice out those from the configured
     for (Map.Entry<String, String> kv : defaults) {
-      slice.set(kv.getKey(), configured.getRaw(kv.getKey()));
+      slice.set(kv.getKey(), configured.get(kv.getKey()));
     }
 
     return slice;
