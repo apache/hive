@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -81,6 +82,10 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
+                          serdeConstants.LIST_COLUMN_TYPES,
+                          serdeConstants.TIMESTAMP_FORMATS})
 
 public class JsonSerDe implements SerDe {
 
@@ -492,7 +497,7 @@ public class JsonSerDe implements SerDe {
           break;
         }
         case STRING: {
-          String s = 
+          String s =
                   SerDeUtils.escapeString(((StringObjectInspector) poi).getPrimitiveJavaObject(o));
           appendWithQuotes(sb, s);
           break;
