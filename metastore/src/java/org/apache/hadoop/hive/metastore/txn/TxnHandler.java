@@ -73,7 +73,7 @@ public class TxnHandler {
   static final protected char LOCK_SHARED = 'r';
   static final protected char LOCK_SEMI_SHARED = 'w';
 
-  static final private int ALLOWED_REPEATED_DEADLOCKS = 5;
+  static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
@@ -84,6 +84,7 @@ public class TxnHandler {
    * Number of consecutive deadlocks we have seen
    */
   protected int deadlockCnt;
+  private long deadlockRetryInterval;
   protected HiveConf conf;
   protected DatabaseProduct dbProduct;
 
@@ -130,6 +131,7 @@ public class TxnHandler {
     buildJumpTable();
     retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
     retryLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HMSHANDLERATTEMPTS);
+    deadlockRetryInterval = retryInterval / 10;
 
   }
 
@@ -270,6 +272,7 @@ public class TxnHandler {
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
+    deadlockCnt = 0;  // Reset deadlock count since this is a new transaction
     int numTxns = rqst.getNum_txns();
     try {
       Connection dbConn = null;
@@ -410,6 +413,7 @@ public class TxnHandler {
 
   public LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException {
+    deadlockCnt = 0;
     try {
       Connection dbConn = null;
       try {
@@ -931,6 +935,12 @@ public class TxnHandler {
         || e.getMessage().contains("can't serialize access for this transaction")))) {
       if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
         LOG.warn("Deadlock detected in " + caller + ", trying again.");
+        // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
+        try {
+          Thread.sleep(deadlockRetryInterval * deadlockCnt);
+        } catch (InterruptedException ie) {
+          // NOP
+        }
         throw new RetryException();
       } else {
         LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
