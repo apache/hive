@@ -2566,6 +2566,7 @@ public class HiveConf extends Configuration {
     isSparkConfigUpdated = other.isSparkConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
+    modWhiteListPattern = other.modWhiteListPattern;
   }
 
   public Properties getAllProperties() {
