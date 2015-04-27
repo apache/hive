@@ -88,6 +88,7 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
@@ -1351,5 +1352,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       dest.position(pos + result);
     }
     return result;
+  }
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
+    // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
+    fs.addDelegationTokens(uname, cred);
   }
 }
