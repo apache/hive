@@ -1,0 +1,51 @@
+PREHOOK: query: -- protect mode: syntax to change protect mode works and queries to drop partitions are blocked if it is marked no drop
+
+create database if not exists db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: -- protect mode: syntax to change protect mode works and queries to drop partitions are blocked if it is marked no drop
+
+create database if not exists db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: create table tbl_protectmode_no_drop2  (c1 string,c2 string) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@tbl_protectmode_no_drop2
+POSTHOOK: query: create table tbl_protectmode_no_drop2  (c1 string,c2 string) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@tbl_protectmode_no_drop2
+PREHOOK: query: alter table tbl_protectmode_no_drop2 add partition (p='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: db1@tbl_protectmode_no_drop2
+POSTHOOK: query: alter table tbl_protectmode_no_drop2 add partition (p='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: db1@tbl_protectmode_no_drop2
+POSTHOOK: Output: db1@tbl_protectmode_no_drop2@p=p1
+PREHOOK: query: alter table tbl_protectmode_no_drop2 partition (p='p1') enable no_drop
+PREHOOK: type: ALTERPARTITION_PROTECTMODE
+PREHOOK: Input: db1@tbl_protectmode_no_drop2
+PREHOOK: Output: db1@tbl_protectmode_no_drop2@p=p1
+POSTHOOK: query: alter table tbl_protectmode_no_drop2 partition (p='p1') enable no_drop
+POSTHOOK: type: ALTERPARTITION_PROTECTMODE
+POSTHOOK: Input: db1@tbl_protectmode_no_drop2
+POSTHOOK: Input: db1@tbl_protectmode_no_drop2@p=p1
+POSTHOOK: Output: db1@tbl_protectmode_no_drop2@p=p1
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop table db1.tbl_protectmode_no_drop2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: db1@tbl_protectmode_no_drop2
+PREHOOK: Output: db1@tbl_protectmode_no_drop2
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Table tbl_protectmode_no_drop2 Partitionp=p1 is protected from being dropped
