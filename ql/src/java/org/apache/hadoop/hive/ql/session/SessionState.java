@@ -530,8 +530,6 @@ public class SessionState {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    } else {
-      LOG.info("No Tez session required at this point. hive.execution.engine=mr.");
     }
     return startSs;
   }
