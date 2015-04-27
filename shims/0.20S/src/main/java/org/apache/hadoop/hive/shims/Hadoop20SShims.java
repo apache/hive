@@ -67,7 +67,9 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.KerberosName;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
@@ -718,5 +720,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
       }
       return result;
     }
+  }
+
+  @Override
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
+    Token<?> fsToken = fs.getDelegationToken(uname);
+    cred.addToken(fsToken.getService(), fsToken);
   }
 }
