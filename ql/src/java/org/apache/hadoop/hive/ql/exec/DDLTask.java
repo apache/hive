@@ -3710,7 +3710,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // We should check that all the partitions of the table can be dropped
     if (tbl != null && tbl.isPartitioned()) {
-      List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
+      List<String> partitionNames = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short)-1);
 
       for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
         List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
