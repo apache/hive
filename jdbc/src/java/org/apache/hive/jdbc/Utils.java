@@ -113,6 +113,17 @@ public class Utils {
     // The http header prefix for additional headers which have to be appended to the request
     static final String HTTP_HEADER_PREFIX = "http.header.";
 
+    // --------------- Begin 2 way ssl options -------------------------
+    // Use two way ssl. This param will take effect only when ssl=true
+    static final String USE_TWO_WAY_SSL = "twoWay";
+    static final String TRUE = "true";
+    static final String SSL_KEY_STORE = "sslKeyStore";
+    static final String SSL_KEY_STORE_PASSWORD = "keyStorePassword";
+    static final String SSL_KEY_STORE_TYPE = "JKS";
+    static final String SUNX509_ALGORITHM_STRING = "SunX509";
+    static final String SUNJSSE_ALGORITHM_STRING = "SunJSSE";
+   // --------------- End 2 way ssl options ----------------------------
+
     // Non-configurable params:
     // Currently supports JKS keystore format
     static final String SSL_TRUST_STORE_TYPE = "JKS";
