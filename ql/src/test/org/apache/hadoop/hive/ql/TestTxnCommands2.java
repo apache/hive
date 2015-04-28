@@ -58,6 +58,7 @@ public class TestTxnCommands2 {
 
   @Before
   public void setUp() throws Exception {
+    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -106,6 +107,19 @@ public class TestTxnCommands2 {
     List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(2,3)");
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+  }
+  @Test
+  public void testUpdateMixedCase() throws Exception {
+    int[][] tableData = {{1,2},{3,3},{5,3}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("update " + Table.ACIDTBL + " set B = 7 where A=1");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] updatedData = {{1,7},{3,3},{5,3}};
+    Assert.assertEquals("Update failed", stringifyValues(updatedData), rs);
+    runStatementOnDriver("update " + Table.ACIDTBL + " set B = B + 1 where A=1");
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] updatedData2 = {{1,8},{3,3},{5,3}};
+    Assert.assertEquals("Update failed", stringifyValues(updatedData2), rs2);
   }
   @Test
   public void testDeleteIn() throws Exception {
