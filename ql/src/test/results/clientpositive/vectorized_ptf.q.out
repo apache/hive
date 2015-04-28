@@ -681,7 +681,6 @@ STAGE PLANS:
             name: default.part_orc
       Truncated Path -> Alias:
         /part_orc [j:p1, j:p2]
-      Execution mode: vectorized
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
