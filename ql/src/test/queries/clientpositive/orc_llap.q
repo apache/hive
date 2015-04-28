@@ -55,6 +55,8 @@ explain
 select count(1) from orc_llap_small y join orc_llap_small x;
 select count(1) from orc_llap_small y join orc_llap_small x;
 
+-- All row groups pruned
+select count(*) from orc_llap_small where cint < 60000000;
 
 -- Hash cannot be vectorized, so run hash as the last step on a temp table
 drop table llap_temp_table;
