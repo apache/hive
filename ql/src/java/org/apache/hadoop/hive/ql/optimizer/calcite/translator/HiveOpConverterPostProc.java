@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
@@ -63,6 +64,7 @@ public class HiveOpConverterPostProc implements Transform {
     // 2. Trigger transformation
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", JoinOperator.getOperatorName() + "%"), new JoinAnnotate());
+    opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + "%"), new TableScanAnnotate());
 
     Dispatcher disp = new DefaultRuleDispatcher(new DefaultAnnotate(), opRules, null);
     GraphWalker ogw = new ForwardWalker(disp);
@@ -112,6 +114,31 @@ public class HiveOpConverterPostProc implements Transform {
 
   }
 
+  private class TableScanAnnotate implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      TableScanOperator tableScanOp = (TableScanOperator) nd;
+
+      // 1. Get alias from topOps
+      String opAlias = null;
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry : pctx.getTopOps().entrySet()) {
+        if (topOpEntry.getValue() == tableScanOp) {
+          opAlias = topOpEntry.getKey();
+        }
+      }
+
+      assert opAlias != null;
+
+      // 2. Add alias to 1) aliasToOpInfo and 2) opToAlias
+      aliasToOpInfo.put(opAlias, tableScanOp);
+      opToAlias.put(tableScanOp.toString(), opAlias);
+
+      return null;
+    }
+  }
+
   private class DefaultAnnotate implements NodeProcessor {
 
     @Override
@@ -119,10 +146,14 @@ public class HiveOpConverterPostProc implements Transform {
         Object... nodeOutputs) throws SemanticException {
       Operator<? extends OperatorDesc> op = (Operator<?>) nd;
 
-      // 1. Generate self alias
-      final String opAlias = genUniqueAlias();
-      aliasToOpInfo.put(opAlias, op);
-      opToAlias.put(op.toString(), opAlias);
+      // 1. Copy or generate alias
+      if(op.getParentOperators().size() == 1) {
+        final String opAlias = opToAlias.get(op.getParentOperators().get(0).toString());
+        opToAlias.put(op.toString(), opAlias);
+      } else {
+        final String opAlias = genUniqueAlias();
+        opToAlias.put(op.toString(), opAlias);
+      }
 
       return null;
     }
