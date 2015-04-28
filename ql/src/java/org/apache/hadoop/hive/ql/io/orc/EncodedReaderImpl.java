@@ -323,7 +323,7 @@ public class EncodedReaderImpl implements EncodedReader {
 
     if (listToRead.get() == null) {
       // No data to read for this stripe. Check if we have some included index-only columns.
-      if (hasIndexOnlyCols) {
+      if (hasIndexOnlyCols && (includedRgs == null)) {
         OrcEncodedColumnBatch ecb = ECB_POOL.take();
         ecb.init(fileId, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
         consumer.consumeData(ecb);

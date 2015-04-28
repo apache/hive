@@ -212,6 +212,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 225
+PREHOOK: query: -- All row groups pruned
+select count(*) from orc_llap_small where cint < 60000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+POSTHOOK: query: -- All row groups pruned
+select count(*) from orc_llap_small where cint < 60000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+0
 PREHOOK: query: -- Hash cannot be vectorized, so run hash as the last step on a temp table
 drop table llap_temp_table
 PREHOOK: type: DROPTABLE
