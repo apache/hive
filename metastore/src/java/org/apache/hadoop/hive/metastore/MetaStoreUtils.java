@@ -1115,6 +1115,17 @@ public class MetaStoreUtils {
     return sb.toString();
   }
 
+  public static String getColumnCommentsFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(SerDeUtils.COLUMN_COMMENTS_DELIMITER);
+      }
+      sb.append(fieldSchemas.get(i).getComment());
+    }
+    return sb.toString();
+  }
+
   public static void makeDir(Path path, HiveConf hiveConf) throws MetaException {
     FileSystem fs;
     try {
