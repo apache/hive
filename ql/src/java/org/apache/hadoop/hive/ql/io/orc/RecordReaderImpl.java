@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -333,9 +333,9 @@ class RecordReaderImpl implements RecordReader {
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(statsProto);
     Object minValue = getMin(cs);
     Object maxValue = getMax(cs);
-    BloomFilter bf = null;
+    BloomFilterIO bf = null;
     if (bloomFilter != null) {
-      bf = new BloomFilter(bloomFilter);
+      bf = new BloomFilterIO(bloomFilter);
     }
     return evaluatePredicateRange(predicate, minValue, maxValue, cs.hasNull(), bf);
   }
@@ -349,14 +349,14 @@ class RecordReaderImpl implements RecordReader {
    *   predicate.
    */
   static TruthValue evaluatePredicate(ColumnStatistics stats,
-      PredicateLeaf predicate, BloomFilter bloomFilter) {
+      PredicateLeaf predicate, BloomFilterIO bloomFilter) {
     Object minValue = getMin(stats);
     Object maxValue = getMax(stats);
     return evaluatePredicateRange(predicate, minValue, maxValue, stats.hasNull(), bloomFilter);
   }
 
   static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object min,
-      Object max, boolean hasNull, BloomFilter bloomFilter) {
+      Object max, boolean hasNull, BloomFilterIO bloomFilter) {
     // if we didn't have any values, everything must have been null
     if (min == null) {
       if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
@@ -490,7 +490,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static TruthValue evaluatePredicateBloomFilter(PredicateLeaf predicate, Object predObj,
-      BloomFilter bloomFilter, boolean hasNull) {
+      BloomFilterIO bloomFilter, boolean hasNull) {
     switch (predicate.getOperator()) {
       case NULL_SAFE_EQUALS:
         // null safe equals does not return *_NULL variant. So set hasNull to false
@@ -511,7 +511,7 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static TruthValue checkInBloomFilter(BloomFilter bf, Object predObj, boolean hasNull) {
+  private static TruthValue checkInBloomFilter(BloomFilterIO bf, Object predObj, boolean hasNull) {
     TruthValue result = hasNull ? TruthValue.NO_NULL : TruthValue.NO;
 
     if (predObj instanceof Long) {

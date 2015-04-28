@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.filters;
+package org.apache.hive.common.util;
 
 import static org.junit.Assert.assertEquals;
 
