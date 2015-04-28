@@ -209,26 +209,26 @@ public class HiveOpConverter {
     String colName;
     ColumnInfo colInfo;
     VirtualColumn vc;
-    Integer posInRHT;
 
-    for (int i = 0; i < neededColIndxsFrmReloptHT.size(); i++) {
-      colName = scanColNames.get(i);
-      posInRHT = neededColIndxsFrmReloptHT.get(i);
-      if (VColsMap.containsKey(posInRHT)) {
-        vc = VColsMap.get(posInRHT);
+    for (int index = 0; index < scanRel.getRowType().getFieldList().size(); index++) {
+      colName = scanColNames.get(index);
+      if (VColsMap.containsKey(index)) {
+        vc = VColsMap.get(index);
         virtualCols.add(vc);
         colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden());
-        vcolsInCalcite.add(posInRHT);
-      } else if (posToPartColInfo.containsKey(posInRHT)) {
+        vcolsInCalcite.add(index);
+      } else if (posToPartColInfo.containsKey(index)) {
         partColNames.add(colName);
-        colInfo = posToPartColInfo.get(posInRHT);
-        vcolsInCalcite.add(posInRHT);
+        colInfo = posToPartColInfo.get(index);
+        vcolsInCalcite.add(index);
       } else {
-        colInfo = posToNonPartColInfo.get(posInRHT);
+        colInfo = posToNonPartColInfo.get(index);
       }
-      neededColumnIDs.add(posInRHT);
-      neededColumnNames.add(colName);
       colInfos.add(colInfo);
+      if (neededColIndxsFrmReloptHT.contains(index)) {
+        neededColumnIDs.add(index);
+        neededColumnNames.add(colName);
+      }
     }
 
     // 1.2 Create TableScanDesc
