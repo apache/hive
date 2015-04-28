@@ -62,6 +62,7 @@ public final class SerDeUtils {
   public static final char QUOTE = '"';
   public static final char COLON = ':';
   public static final char COMMA = ',';
+  public static final char COLUMN_COMMENTS_DELIMITER = '\0';
   public static final String LBRACKET = "[";
   public static final String RBRACKET = "]";
   public static final String LBRACE = "{";
