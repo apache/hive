@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -1148,7 +1148,7 @@ public class TestRecordReaderImpl {
   public void testIntNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
@@ -1163,7 +1163,7 @@ public class TestRecordReaderImpl {
   public void testIntEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
@@ -1182,7 +1182,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
@@ -1200,7 +1200,7 @@ public class TestRecordReaderImpl {
   public void testDoubleNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
@@ -1215,7 +1215,7 @@ public class TestRecordReaderImpl {
   public void testDoubleEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
@@ -1234,7 +1234,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.FLOAT,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
@@ -1252,7 +1252,7 @@ public class TestRecordReaderImpl {
   public void testStringNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.STRING, "x", "str_15", null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
@@ -1267,7 +1267,7 @@ public class TestRecordReaderImpl {
   public void testStringEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.STRING, "x", "str_15", null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
@@ -1286,7 +1286,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.STRING,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
@@ -1305,7 +1305,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DATE, "x", new DateWritable(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
@@ -1320,7 +1320,7 @@ public class TestRecordReaderImpl {
   public void testDateWritableEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
@@ -1339,7 +1339,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DATE,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
@@ -1359,7 +1359,7 @@ public class TestRecordReaderImpl {
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.TIMESTAMP, "x",
         new Timestamp(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
@@ -1374,7 +1374,7 @@ public class TestRecordReaderImpl {
   public void testTimestampEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
@@ -1393,7 +1393,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.TIMESTAMP,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
@@ -1413,7 +1413,7 @@ public class TestRecordReaderImpl {
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DECIMAL, "x",
         HiveDecimal.create(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
@@ -1429,7 +1429,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
@@ -1448,7 +1448,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
@@ -1471,7 +1471,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }

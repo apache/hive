@@ -16,15 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.filters;
+package org.apache.hive.common.util;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
-
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-
-import com.google.common.primitives.Longs;
 
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
@@ -46,9 +42,12 @@ import com.google.common.primitives.Longs;
  */
 public class BloomFilter {
   public static final double DEFAULT_FPP = 0.05;
-  private BitSet bitSet;
-  private int m;
-  private int k;
+  protected BitSet bitSet;
+  protected int numBits;
+  protected int numHashFunctions;
+
+  public BloomFilter() {
+  }
 
   public BloomFilter(long expectedEntries) {
     this(expectedEntries, DEFAULT_FPP);
@@ -59,15 +58,9 @@ public class BloomFilter {
     checkArgument(fpp > 0.0 && fpp < 1.0, "False positive probability should be > 0.0 & < 1.0");
     int nb = optimalNumOfBits(expectedEntries, fpp);
     // make 'm' multiple of 64
-    this.m = nb + (Long.SIZE - (nb % Long.SIZE));
-    this.k = optimalNumOfHashFunctions(expectedEntries, m);
-    this.bitSet = new BitSet(m);
-  }
-
-  public BloomFilter(OrcProto.BloomFilter bloomFilter) {
-    this.bitSet = new BitSet(Longs.toArray(bloomFilter.getBitsetList()));
-    this.k = bloomFilter.getNumHashFunctions();
-    this.m = (int) this.bitSet.bitSize();
+    this.numBits = nb + (Long.SIZE - (nb % Long.SIZE));
+    this.numHashFunctions = optimalNumOfHashFunctions(expectedEntries, numBits);
+    this.bitSet = new BitSet(numBits);
   }
 
   static int optimalNumOfHashFunctions(long n, long m) {
@@ -101,13 +94,13 @@ public class BloomFilter {
     int hash1 = (int) hash64;
     int hash2 = (int) (hash64 >>> 32);
 
-    for (int i = 1; i <= k; i++) {
+    for (int i = 1; i <= numHashFunctions; i++) {
       int combinedHash = hash1 + (i * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
       }
-      int pos = combinedHash % m;
+      int pos = combinedHash % numBits;
       bitSet.set(pos);
     }
   }
@@ -144,13 +137,13 @@ public class BloomFilter {
     int hash1 = (int) hash64;
     int hash2 = (int) (hash64 >>> 32);
 
-    for (int i = 1; i <= k; i++) {
+    for (int i = 1; i <= numHashFunctions; i++) {
       int combinedHash = hash1 + (i * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
       }
-      int pos = combinedHash % m;
+      int pos = combinedHash % numBits;
       if (!bitSet.get(pos)) {
         return false;
       }
@@ -196,7 +189,7 @@ public class BloomFilter {
   }
 
   public int getNumHashFunctions() {
-    return k;
+    return numHashFunctions;
   }
 
   public long[] getBitSet() {
@@ -205,7 +198,7 @@ public class BloomFilter {
 
   @Override
   public String toString() {
-    return "m: " + m + " k: " + k;
+    return "m: " + numBits + " k: " + numHashFunctions;
   }
 
   /**
@@ -214,7 +207,7 @@ public class BloomFilter {
    * @param that - bloom filter to merge
    */
   public void merge(BloomFilter that) {
-    if (this != that && this.m == that.m && this.k == that.k) {
+    if (this != that && this.numBits == that.numBits && this.numHashFunctions == that.numHashFunctions) {
       this.bitSet.putAll(that.bitSet);
     } else {
       throw new IllegalArgumentException("BloomFilters are not compatible for merging." +
@@ -230,10 +223,10 @@ public class BloomFilter {
    * Bare metal bit set implementation. For performance reasons, this implementation does not check
    * for index bounds nor expand the bit set size if the specified index is greater than the size.
    */
-  private class BitSet {
-    final long[] data;
+  public class BitSet {
+    private final long[] data;
 
-    BitSet(long bits) {
+    public BitSet(long bits) {
       this(new long[(int) Math.ceil((double) bits / (double) Long.SIZE)]);
     }
 
@@ -242,7 +235,7 @@ public class BloomFilter {
      *
      * @param data - bit array
      */
-    BitSet(long[] data) {
+    public BitSet(long[] data) {
       assert data.length > 0 : "data length is zero!";
       this.data = data;
     }
@@ -252,7 +245,7 @@ public class BloomFilter {
      *
      * @param index - position
      */
-    void set(int index) {
+    public void set(int index) {
       data[index >>> 6] |= (1L << index);
     }
 
@@ -262,25 +255,25 @@ public class BloomFilter {
      * @param index - position
      * @return - value at the bit position
      */
-    boolean get(int index) {
+    public boolean get(int index) {
       return (data[index >>> 6] & (1L << index)) != 0;
     }
 
     /**
      * Number of bits
      */
-    long bitSize() {
+    public long bitSize() {
       return (long) data.length * Long.SIZE;
     }
 
-    long[] getData() {
+    public long[] getData() {
       return data;
     }
 
     /**
      * Combines the two BitArrays using bitwise OR.
      */
-    void putAll(BitSet array) {
+    public void putAll(BitSet array) {
       assert data.length == array.data.length :
           "BitArrays must be of equal length (" + data.length + "!= " + array.data.length + ")";
       for (int i = 0; i < data.length; i++) {

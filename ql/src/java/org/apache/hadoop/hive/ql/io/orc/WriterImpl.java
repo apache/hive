@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
@@ -638,7 +638,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
     private final PositionedOutputStream rowIndexStream;
     private final PositionedOutputStream bloomFilterStream;
-    protected final BloomFilter bloomFilter;
+    protected final BloomFilterIO bloomFilter;
     protected final boolean createBloomFilter;
     private final OrcProto.BloomFilterIndex.Builder bloomFilterIndex;
     private final OrcProto.BloomFilter.Builder bloomFilterEntry;
@@ -686,7 +686,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         bloomFilterEntry = OrcProto.BloomFilter.newBuilder();
         bloomFilterIndex = OrcProto.BloomFilterIndex.newBuilder();
         bloomFilterStream = streamFactory.createStream(id, OrcProto.Stream.Kind.BLOOM_FILTER);
-        bloomFilter = new BloomFilter(streamFactory.getRowIndexStride(),
+        bloomFilter = new BloomFilterIO(streamFactory.getRowIndexStride(),
             streamFactory.getBloomFilterFPP());
       } else {
         bloomFilterEntry = null;
