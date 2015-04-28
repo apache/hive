@@ -365,6 +365,26 @@ public class Vectorizer implements PhysicalPlanResolver {
     private boolean validateMapWork(MapWork mapWork, boolean isTez) throws SemanticException {
       LOG.info("Validating MapWork...");
 
+      // Eliminate MR plans with more than one TableScanOperator.
+      LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+      if ((aliasToWork == null) || (aliasToWork.size() == 0)) {
+        return false;
+      }
+      int tableScanCount = 0;
+      for (Operator<?> op : aliasToWork.values()) {
+        if (op == null) {
+          LOG.warn("Map work has invalid aliases to work with. Fail validation!");
+          return false;
+        }
+        if (op instanceof TableScanOperator) {
+          tableScanCount++;
+        }
+      }
+      if (tableScanCount > 1) {
+        LOG.warn("Map work has more than 1 TableScanOperator aliases to work with. Fail validation!");
+        return false;
+      }
+
       // Validate the input format
       for (String path : mapWork.getPathToPartitionInfo().keySet()) {
         PartitionDesc pd = mapWork.getPathToPartitionInfo().get(path);
@@ -381,16 +401,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
-      if ((mapWork.getAliasToWork() == null) || (mapWork.getAliasToWork().size() == 0)) {
-        return false;
-      } else {
-        for (Operator<?> op : mapWork.getAliasToWork().values()) {
-          if (op == null) {
-            LOG.warn("Map work has invalid aliases to work with. Fail validation!");
-            return false;
-          }
-        }
-      }
 
       // iterator the mapper operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
