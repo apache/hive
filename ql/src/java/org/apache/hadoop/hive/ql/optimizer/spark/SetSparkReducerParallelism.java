@@ -115,6 +115,8 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             sparkSession = SparkUtilities.getSparkSession(
               context.getConf(), sparkSessionManager);
             sparkMemoryAndCores = sparkSession.getMemoryAndCores();
+          } catch (HiveException e) {
+            throw new SemanticException("Failed to get a spark session: " + e);
           } catch (Exception e) {
             LOG.warn("Failed to get spark memory/core info", e);
           } finally {
