@@ -8,7 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESC FUNCTION EXTENDED decode
 POSTHOOK: type: DESCFUNCTION
 decode(bin, str) - Decode the first argument using the second argument character set
-Possible options for the character set are 'US_ASCII', 'ISO-8859-1',
+Possible options for the character set are 'US-ASCII', 'ISO-8859-1',
 'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument
 is null, the result will also be null
 PREHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')
