@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -46,8 +47,8 @@ import parquet.hadoop.ParquetOutputFormat;
  * A Parquet OutputFormat for Hive (with the deprecated package mapred)
  *
  */
-public class MapredParquetOutputFormat extends FileOutputFormat<Void, ParquetHiveRecord> implements
-  HiveOutputFormat<Void, ParquetHiveRecord> {
+public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, ParquetHiveRecord>
+    implements HiveOutputFormat<NullWritable, ParquetHiveRecord> {
 
   private static final Log LOG = LogFactory.getLog(MapredParquetOutputFormat.class);
 
@@ -67,7 +68,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ParquetHiv
   }
 
   @Override
-  public RecordWriter<Void, ParquetHiveRecord> getRecordWriter(
+  public RecordWriter<NullWritable, ParquetHiveRecord> getRecordWriter(
       final FileSystem ignored,
       final JobConf job,
       final String name,
