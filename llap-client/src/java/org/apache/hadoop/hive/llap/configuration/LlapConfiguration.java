@@ -65,8 +65,14 @@ public class LlapConfiguration extends Configuration {
   public static final String LLAP_DAEMON_VCPUS_PER_INSTANCE = LLAP_DAEMON_PREFIX + "vcpus.per.instance";
   public static final int LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT = 4;
 
+  public static final String LLAP_DAEMON_NUM_FILE_CLEANER_THREADS = LLAP_DAEMON_PREFIX + "num.file.cleaner.threads";
+  public static final int LLAP_DAEMON_NUM_FILE_CLEANER_THREADS_DEFAULT = 1;
+
 
   // Section for configs used in the AM //
+  public static final String LLAP_FILE_CLEANUP_DELAY_SECONDS = LLAP_PREFIX + "file.cleanup.delay-seconds";
+  public static final long LLAP_FILE_CLEANUP_DELAY_SECONDS_DEFAULT = 300; // 5 minutes by default
+
   public static final String LLAP_DAEMON_SERVICE_HOSTS = LLAP_DAEMON_PREFIX + "service.hosts";
 
   public static final String LLAP_DAEMON_SERVICE_REFRESH_INTERVAL = LLAP_DAEMON_PREFIX + "service.refresh.interval";

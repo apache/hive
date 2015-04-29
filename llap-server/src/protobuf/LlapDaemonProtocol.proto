@@ -98,7 +98,30 @@ message SourceStateUpdatedRequestProto {
 message SourceStateUpdatedResponseProto {
 }
 
+message QueryCompleteRequestProto {
+  optional string query_id = 1;
+  optional string dag_name = 2;
+  optional int64 delete_delay = 3 [default = 0];
+}
+
+message QueryCompleteResponseProto {
+}
+
+message TerminateFragmentRequestProto {
+  optional string query_id = 1;
+  optional string dag_name = 2;
+  optional int32 dag_attempt_number = 3;
+  optional string vertex_name = 4;
+  optional int32 fragment_number = 5;
+  optional int32 attempt_number = 6;
+}
+
+message TerminateFragmentResponseProto {
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
+  rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
+  rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
 }

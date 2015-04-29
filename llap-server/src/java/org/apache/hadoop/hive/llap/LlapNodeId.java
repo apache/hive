@@ -81,9 +81,6 @@ public class LlapNodeId {
 
   @Override
   public String toString() {
-    return "LlapNodeId{" +
-        "hostname='" + hostname + '\'' +
-        ", port=" + port +
-        '}';
+    return hostname + ":" + port;
   }
 }
