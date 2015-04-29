@@ -19,6 +19,8 @@
 package org.apache.hive.hcatalog.api.repl;
 
 import com.google.common.base.Function;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
@@ -29,6 +31,7 @@ import org.apache.hive.hcatalog.messaging.MessageFactory;
  * ReplicationTask captures the concept of what it'd take to replicate changes from
  * one warehouse to another given a notification event that captures what changed.
  */
+@InterfaceStability.Evolving
 public abstract class ReplicationTask {
   protected HCatNotificationEvent event;
   protected StagingDirectoryProvider srcStagingDirProvider = null;
