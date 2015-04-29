@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
@@ -854,10 +855,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         // run rules to aid in translation from Optiq tree -> Hive tree
-        hepPgm = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP)
-            .addRuleInstance(new HiveInsertExchange4JoinRule()).build();
-        hepPlanner = new HepPlanner(hepPgm);
+        hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+        hepPgmBldr.addRuleInstance(HiveJoinToMultiJoinRule.INSTANCE);
+        hepPlanner = new HepPlanner(hepPgmBldr.build());
+        hepPlanner.registerMetadataProviders(list);
+        cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+        hepPlanner.setRoot(calciteOptimizedPlan);
+        calciteOptimizedPlan = hepPlanner.findBestExp();
 
+        hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+        hepPgmBldr.addRuleInstance(HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN);
+        hepPgmBldr.addRuleInstance(HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+        hepPlanner = new HepPlanner(hepPgmBldr.build());
         hepPlanner.registerMetadataProviders(list);
         cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
         hepPlanner.setRoot(calciteOptimizedPlan);
