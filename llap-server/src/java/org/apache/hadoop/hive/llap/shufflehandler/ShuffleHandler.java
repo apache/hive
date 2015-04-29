@@ -408,11 +408,13 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   /**
    * Register an application and it's associated credentials and user information.
    * @param applicationIdString
+   * @param dagIdentifier
    * @param appToken
    * @param user
    */
-  public void registerApplication(String applicationIdString, Token<JobTokenIdentifier> appToken,
-                                  String user, String [] appDirs) {
+  public void registerDag(String applicationIdString, int dagIdentifier,
+                          Token<JobTokenIdentifier> appToken,
+                          String user, String[] appDirs) {
     // TODO Fix this. There's a race here, where an app may think everything is registered, finish really fast, send events and the consumer will not find the registration.
     Boolean registered = registeredApps.putIfAbsent(applicationIdString, Boolean.valueOf(true));
     if (registered == null) {
@@ -421,7 +423,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       if (dirWatcher != null) {
         for (String appDir : appDirs) {
           try {
-            dirWatcher.registerApplicationDir(appDir, applicationIdString, user, 5 * 60 * 1000);
+            dirWatcher.registerDagDir(appDir, applicationIdString, dagIdentifier, user,
+                5 * 60 * 1000);
           } catch (IOException e) {
             LOG.warn("Unable to register dir: " + appDir + " with watcher");
           }
@@ -430,9 +433,13 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
   }
 
+  public void unregisterDag(String dir, String applicationIdString, int dagIdentifier) {
+    dirWatcher.unregisterDagDir(dir, applicationIdString, dagIdentifier);
+    // TODO Cleanup registered tokens and dag info
+  }
+
   public void unregisterApplication(String applicationIdString) {
     removeJobShuffleInfo(applicationIdString);
-    // TOOD Unregister from the dirWatcher
   }
 
 
@@ -546,7 +553,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
           @Override
           public AttemptPathInfo load(AttemptPathIdentifier key) throws
               Exception {
-            String base = getBaseLocation(key.jobId, key.user);
+            String base = getBaseLocation(key.jobId, key.dagId, key.user);
             String attemptBase = base + key.attemptId;
             Path indexFileName =
                 lDirAlloc.getLocalPathToRead(attemptBase + "/" + INDEX_FILE_NAME, conf);
@@ -633,27 +640,31 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       final List<String> mapIds = splitMaps(q.get("map"));
       final List<String> reduceQ = q.get("reduce");
       final List<String> jobQ = q.get("job");
+      final List<String> dagIdQ = q.get("dag");
       if (LOG.isDebugEnabled()) {
         LOG.debug("RECV: " + request.getUri() +
             "\n  mapId: " + mapIds +
             "\n  reduceId: " + reduceQ +
             "\n  jobId: " + jobQ +
+            "\n  dagId: " + dagIdQ +
             "\n  keepAlive: " + keepAliveParam);
       }
 
-      if (mapIds == null || reduceQ == null || jobQ == null) {
+      if (mapIds == null || reduceQ == null || jobQ == null | dagIdQ == null) {
         sendError(ctx, "Required param job, map and reduce", BAD_REQUEST);
         return;
       }
-      if (reduceQ.size() != 1 || jobQ.size() != 1) {
+      if (reduceQ.size() != 1 || jobQ.size() != 1 || dagIdQ.size() != 1) {
         sendError(ctx, "Too many job/reduce parameters", BAD_REQUEST);
         return;
       }
       int reduceId;
       String jobId;
+      int dagId;
       try {
         reduceId = Integer.parseInt(reduceQ.get(0));
         jobId = jobQ.get(0);
+        dagId = Integer.parseInt(dagIdQ.get(0));
       } catch (NumberFormatException e) {
         sendError(ctx, "Bad reduce parameter", BAD_REQUEST);
         return;
@@ -683,7 +694,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       String user = userRsrc.get(jobId);
 
       try {
-        populateHeaders(mapIds, jobId, user, reduceId,
+        populateHeaders(mapIds, jobId, dagId, user, reduceId,
             response, keepAliveParam, mapOutputInfoMap);
       } catch(IOException e) {
         ch.write(response);
@@ -701,7 +712,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
           // This will be hit if there's a large number of mapIds in a single request
           // (Determined by the cache size further up), in which case we go to disk again.
           if (info == null) {
-            info = getMapOutputInfo(jobId, mapId, reduceId, user);
+            info = getMapOutputInfo(jobId, dagId, mapId, reduceId, user);
           }
           lastMap =
               sendMapOutput(ctx, ch, user, mapId,
@@ -730,11 +741,11 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
 
 
-    protected MapOutputInfo getMapOutputInfo(String jobId, String mapId,
+    protected MapOutputInfo getMapOutputInfo(String jobId, int dagId, String mapId,
                                              int reduce, String user) throws IOException {
       AttemptPathInfo pathInfo;
       try {
-        AttemptPathIdentifier identifier = new AttemptPathIdentifier(jobId, user, mapId);
+        AttemptPathIdentifier identifier = new AttemptPathIdentifier(jobId, dagId, user, mapId);
         pathInfo = pathCache.get(identifier);
         LOG.info("DEBUG: Retrieved pathInfo for " + identifier + " check for corresponding loaded messages to determine whether it was loaded or cached");
       } catch (ExecutionException e) {
@@ -758,7 +769,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       return outputInfo;
     }
 
-    protected void populateHeaders(List<String> mapIds, String jobId,
+    protected void populateHeaders(List<String> mapIds, String jobId, int dagId,
         String user, int reduce, HttpResponse response,
         boolean keepAliveParam, Map<String, MapOutputInfo> mapOutputInfoMap)
         throws IOException {
@@ -767,7 +778,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
       long contentLength = 0;
       for (String mapId : mapIds) {
-        MapOutputInfo outputInfo = getMapOutputInfo(jobId, mapId, reduce, user);
+        MapOutputInfo outputInfo = getMapOutputInfo(jobId, dagId, mapId, reduce, user);
         // mapOutputInfoMap is used to share the lookups with the caller
         if (mapOutputInfoMap.size() < mapOutputMetaInfoCacheSize) {
           mapOutputInfoMap.put(mapId, outputInfo);
@@ -952,8 +963,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   private static final String USERCACHE_CONSTANT = "usercache";
   private static final String APPCACHE_CONSTANT = "appcache";
 
-  private static String getBaseLocation(String jobIdString, String user) {
-    // $x/$user/appcache/$appId/output/$mapId
+  private static String getBaseLocation(String jobIdString, int dagId, String user) {
+    // $x/$user/appcache/$appId/${dagId}/output/$mapId
     // TODO: Once Shuffle is out of NM, this can use MR APIs to convert
     // between App and Job
     String parts[] = jobIdString.split("_");
@@ -963,7 +974,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     final String baseStr =
         USERCACHE_CONSTANT + "/" + user + "/"
             + APPCACHE_CONSTANT + "/"
-            + ConverterUtils.toString(appID) + "/output" + "/";
+            + ConverterUtils.toString(appID)
+            +  "/" + dagId
+            +  "/output" + "/";
     return baseStr;
   }
 
@@ -980,11 +993,13 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   static class AttemptPathIdentifier {
     private final String jobId;
+    private final int dagId;
     private final String user;
     private final String attemptId;
 
-    public AttemptPathIdentifier(String jobId, String user, String attemptId) {
+    public AttemptPathIdentifier(String jobId, int dagId, String user, String attemptId) {
       this.jobId = jobId;
+      this.dagId = dagId;
       this.user = user;
       this.attemptId = attemptId;
     }
@@ -1000,19 +1015,20 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
       AttemptPathIdentifier that = (AttemptPathIdentifier) o;
 
-      if (!attemptId.equals(that.attemptId)) {
+      if (dagId != that.dagId) {
         return false;
       }
       if (!jobId.equals(that.jobId)) {
         return false;
       }
+      return attemptId.equals(that.attemptId);
 
-      return true;
     }
 
     @Override
     public int hashCode() {
       int result = jobId.hashCode();
+      result = 31 * result + dagId;
       result = 31 * result + attemptId.hashCode();
       return result;
     }
@@ -1020,11 +1036,11 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     @Override
     public String toString() {
       return "AttemptPathIdentifier{" +
-          "attemptId='" + attemptId + '\'' +
-          ", jobId='" + jobId + '\'' +
+          "jobId='" + jobId + '\'' +
+          ", dagId=" + dagId +
+          ", user='" + user + '\'' +
+          ", attemptId='" + attemptId + '\'' +
           '}';
     }
   }
-
-
 }

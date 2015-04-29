@@ -27,7 +27,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
@@ -252,15 +255,25 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   @Override
-  public void submitWork(LlapDaemonProtocolProtos.SubmitWorkRequestProto request) throws
+  public void submitWork(SubmitWorkRequestProto request) throws
       IOException {
     numSubmissions.incrementAndGet();
     containerRunner.submitWork(request);
   }
 
   @Override
-  public void sourceStateUpdated(LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto request) {
+  public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
     containerRunner.sourceStateUpdated(request);
+  }
+
+  @Override
+  public void queryComplete(QueryCompleteRequestProto request) {
+    containerRunner.queryComplete(request);
+  }
+
+  @Override
+  public void terminateFragment(TerminateFragmentRequestProto request) {
+    containerRunner.terminateFragment(request);
   }
 
   @VisibleForTesting

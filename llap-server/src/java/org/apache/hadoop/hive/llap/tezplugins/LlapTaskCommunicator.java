@@ -16,7 +16,9 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -26,12 +28,12 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -61,10 +63,12 @@ import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
-  private static final Log LOG = LogFactory.getLog(LlapTaskCommunicator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapTaskCommunicator.class);
 
   private final SubmitWorkRequestProto BASE_SUBMIT_WORK_REQUEST;
   private final ConcurrentMap<String, ByteBuffer> credentialMap;
@@ -73,8 +77,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   // When DAG specific cleanup happens, it'll be better to link this to a DAG though.
   private final EntityTracker entityTracker = new EntityTracker();
   private final SourceStateTracker sourceStateTracker;
+  private final Set<LlapNodeId> nodesForQuery = new HashSet<>();
 
   private TaskCommunicator communicator;
+  private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
 
   private volatile String currentDagName;
@@ -106,6 +112,11 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     int numThreads = conf.getInt(LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS,
         LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT);
     this.communicator = new TaskCommunicator(numThreads);
+    this.deleteDelayOnDagComplete = conf.getLong(LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS,
+        LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS_DEFAULT);
+    LOG.info("Running LlapTaskCommunicator with "
+        + "fileCleanupDelay=" + deleteDelayOnDagComplete
+        + ", numCommunicatorThreads=" + numThreads);
     this.communicator.init(conf);
   }
 
@@ -131,21 +142,23 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
           new JobTokenSecretManager();
       jobTokenSecretManager.addTokenForJob(tokenIdentifier, sessionToken);
 
+      int numHandlers = conf.getInt(TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT,
+          TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT_DEFAULT);
       server = new RPC.Builder(conf)
           .setProtocol(LlapTaskUmbilicalProtocol.class)
           .setBindAddress("0.0.0.0")
           .setPort(0)
           .setInstance(umbilical)
-          .setNumHandlers(
-              conf.getInt(TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT,
-                  TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT_DEFAULT))
+          .setNumHandlers(numHandlers)
           .setSecretManager(jobTokenSecretManager).build();
 
       // Do serviceACLs need to be refreshed, like in Tez ?
 
       server.start();
       this.address = NetUtils.getConnectAddress(server);
-      LOG.info("Started LlapUmbilical: " + umbilical.getClass().getName() + " at address: " + address);
+      LOG.info(
+          "Started LlapUmbilical: " + umbilical.getClass().getName() + " at address: " + address +
+              " with numHandlers=" + numHandlers);
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
@@ -192,7 +205,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
           ", while trying to launch task: " + taskSpec.getTaskAttemptID());
     }
 
+    LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
     entityTracker.registerTaskAttempt(containerId, taskSpec.getTaskAttemptID(), host, port);
+    nodesForQuery.add(nodeId);
 
     sourceStateTracker.registerTaskForStateUpdates(host, port, taskSpec.getInputs());
     FragmentRuntimeInfo fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(taskSpec.getDAGName(),
@@ -269,6 +284,29 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   @Override
+  public void dagComplete(final String dagName) {
+    QueryCompleteRequestProto request = QueryCompleteRequestProto.newBuilder().setDagName(
+        dagName).setDeleteDelay(deleteDelayOnDagComplete).build();
+    for (final LlapNodeId llapNodeId : nodesForQuery) {
+      LOG.info("Sending dagComplete message for {}, to {}", dagName, llapNodeId);
+      communicator.sendQueryComplete(request, llapNodeId.getHostname(), llapNodeId.getPort(),
+          new TaskCommunicator.ExecuteRequestCallback<LlapDaemonProtocolProtos.QueryCompleteResponseProto>() {
+            @Override
+            public void setResponse(LlapDaemonProtocolProtos.QueryCompleteResponseProto response) {
+            }
+
+            @Override
+            public void indicateError(Throwable t) {
+              LOG.warn("Failed to indicate dag complete dagId={} to node {}", dagName, llapNodeId);
+            }
+          });
+    }
+
+    nodesForQuery.clear();
+    // TODO Ideally move some of the other cleanup code from resetCurrentDag over here
+  }
+
+  @Override
   public void onVertexStateUpdated(VertexStateUpdate vertexStateUpdate) {
     // Delegate updates over to the source state tracker.
     sourceStateTracker
@@ -301,9 +339,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // Working on the assumption that a single DAG runs at a time per AM.
     currentDagName = newDagName;
     sourceStateTracker.resetState(newDagName);
+    nodesForQuery.clear();
     LOG.info("CurrentDag set to: " + newDagName);
-    // TODO Additional state reset. Potentially sending messages to node to reset.
-    // Is it possible for heartbeats to come in from lost tasks - those should be told to die, which
+    // TODO Is it possible for heartbeats to come in from lost tasks - those should be told to die, which
     // is likely already happening.
   }
 

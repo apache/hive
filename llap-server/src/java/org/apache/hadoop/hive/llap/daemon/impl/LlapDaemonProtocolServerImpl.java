@@ -27,10 +27,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
@@ -81,6 +85,22 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
       ServiceException {
     containerRunner.sourceStateUpdated(request);
     return SourceStateUpdatedResponseProto.getDefaultInstance();
+  }
+
+  @Override
+  public QueryCompleteResponseProto queryComplete(RpcController controller,
+                                                  QueryCompleteRequestProto request) throws
+      ServiceException {
+    containerRunner.queryComplete(request);
+    return QueryCompleteResponseProto.getDefaultInstance();
+  }
+
+  @Override
+  public TerminateFragmentResponseProto terminateFragment(
+      RpcController controller,
+      TerminateFragmentRequestProto request) throws ServiceException {
+    containerRunner.terminateFragment(request);
+    return TerminateFragmentResponseProto.getDefaultInstance();
   }
 
   @Override

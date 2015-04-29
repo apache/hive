@@ -31,6 +31,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemonProtocolClientImpl;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -74,7 +76,8 @@ public class TaskCommunicator extends AbstractService {
 
   }
 
-  public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final String host, final int port,
+  public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final String host,
+                                    final int port,
                                     final ExecuteRequestCallback<SourceStateUpdatedResponseProto> callback) {
     ListenableFuture<SourceStateUpdatedResponseProto> future =
         executor.submit(new SendSourceStateUpdateCallable(host, port, request));
@@ -91,7 +94,26 @@ public class TaskCommunicator extends AbstractService {
     });
   }
 
-  private static abstract class CallableRequest<REQUEST extends  Message, RESPONSE extends Message> implements Callable {
+  public void sendQueryComplete(final QueryCompleteRequestProto request, final String host,
+                                final int port,
+                                final ExecuteRequestCallback<QueryCompleteResponseProto> callback) {
+    ListenableFuture<QueryCompleteResponseProto> future =
+        executor.submit(new SendQueryCompleteCallable(host, port, request));
+    Futures.addCallback(future, new FutureCallback<QueryCompleteResponseProto>() {
+      @Override
+      public void onSuccess(QueryCompleteResponseProto result) {
+        callback.setResponse(result);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        callback.indicateError(t);
+      }
+    });
+  }
+
+  private static abstract class CallableRequest<REQUEST extends Message, RESPONSE extends Message>
+      implements Callable {
 
     final String hostname;
     final int port;
@@ -131,6 +153,20 @@ public class TaskCommunicator extends AbstractService {
     @Override
     public SourceStateUpdatedResponseProto call() throws Exception {
       return getProxy(hostname, port).sourceStateUpdated(null, request);
+    }
+  }
+
+  private class SendQueryCompleteCallable
+      extends CallableRequest<QueryCompleteRequestProto, QueryCompleteResponseProto> {
+
+    protected SendQueryCompleteCallable(String hostname, int port,
+                                        QueryCompleteRequestProto queryCompleteRequestProto) {
+      super(hostname, port, queryCompleteRequestProto);
+    }
+
+    @Override
+    public QueryCompleteResponseProto call() throws Exception {
+      return getProxy(hostname, port).queryComplete(null, request);
     }
   }
 

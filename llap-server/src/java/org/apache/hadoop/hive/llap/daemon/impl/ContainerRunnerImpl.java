@@ -14,7 +14,6 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -26,19 +25,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -53,6 +51,7 @@ import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezConstants;
+import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 
 import com.google.common.base.Preconditions;
@@ -64,11 +63,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private static final Logger LOG = Logger.getLogger(ContainerRunnerImpl.class);
 
   private volatile AMReporter amReporter;
+  private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
   private final String[] localDirsBase;
   private final Map<String, String> localEnv = new HashMap<>();
-  private final FileSystem localFs;
   private final long memoryPerExecutor;
   private final LlapDaemonExecutorMetrics metrics;
   private final Configuration conf;
@@ -89,6 +88,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     this.localDirsBase = localDirsBase;
     this.localAddress = localAddress;
 
+    this.queryTracker = new QueryTracker(conf, localDirsBase);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, enablePreemption);
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
@@ -99,11 +99,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes * 0.8 / (float) numExecutors);
     this.metrics = metrics;
 
-    try {
-      localFs = FileSystem.getLocal(conf);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to setup local filesystem instance", e);
-    }
     confParams = new TaskRunnerCallable.ConfParams(
         conf.getInt(TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS,
             TezConfiguration.TEZ_TASK_AM_HEARTBEAT_INTERVAL_MS_DEFAULT),
@@ -135,17 +130,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       amReporter.stop();
       amReporter = null;
     }
+    queryTracker.shutdown();
     super.serviceStop();
-  }
-
-  // TODO Move this into a utilities class
-  private static String createAppSpecificLocalDir(String baseDir, String applicationIdString,
-                                                  String user) {
-    // TODO This is broken for secure clusters. The app will not have permission to create these directories.
-    // May work via Slider - since the directory would already exist. Otherwise may need a custom shuffle handler.
-    // TODO This should be the process user - and not the user on behalf of whom the query is being submitted.
-    return baseDir + File.separator + "usercache" + File.separator + user + File.separator +
-        "appcache" + File.separator + applicationIdString;
   }
 
   @Override
@@ -170,15 +156,20 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       env.putAll(localEnv);
       env.put(ApplicationConstants.Environment.USER.name(), request.getUser());
 
-      String[] localDirs = new String[localDirsBase.length];
+      FragmentSpecProto fragmentSpec = request.getFragmentSpec();
+      TezTaskAttemptID taskAttemptId = TezTaskAttemptID.fromString(
+          fragmentSpec.getTaskAttemptIdString());
+      int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
 
-      // Setup up local dirs to be application specific, and create them.
-      for (int i = 0; i < localDirsBase.length; i++) {
-        localDirs[i] = createAppSpecificLocalDir(localDirsBase[i], request.getApplicationIdString(),
-            request.getUser());
-        localFs.mkdirs(new Path(localDirs[i]));
-      }
-      // TODO Avoid this directory creation on each work-unit submission.
+      queryTracker
+          .registerFragment(null, request.getApplicationIdString(), fragmentSpec.getDagName(),
+              dagIdentifier,
+              fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
+              fragmentSpec.getAttemptNumber(), request.getUser());
+
+      String []localDirs = queryTracker.getLocalDirs(null, fragmentSpec.getDagName(), request.getUser());
+      Preconditions.checkNotNull(localDirs);
+
       if (LOG.isDebugEnabled()) {
         LOG.debug("Dirs are: " + Arrays.toString(localDirs));
       }
@@ -195,7 +186,9 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
       // TODO Unregistering does not happen at the moment, since there's no signals on when an app completes.
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
-      ShuffleHandler.get().registerApplication(request.getApplicationIdString(), jobToken, request.getUser(), localDirs);
+      ShuffleHandler.get()
+          .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
+              request.getUser(), localDirs);
 
       ConcurrentMap<String, SourceStateProto> sourceCompletionMap = getSourceCompletionMap(request.getFragmentSpec().getDagName());
       TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
@@ -209,15 +202,26 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     }
   }
 
-  private void notifyAMOfRejection(TaskRunnerCallable callable) {
-    LOG.error("Notifying AM of request rejection is not implemented yet!");
-  }
-
   @Override
   public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
     LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
     ConcurrentMap<String, SourceStateProto> dagMap = getSourceCompletionMap(request.getDagName());
     dagMap.put(request.getSrcName(), request.getState());
+  }
+
+  @Override
+  public void queryComplete(QueryCompleteRequestProto request) {
+    queryTracker.queryComplete(null, request.getDagName(), request.getDeleteDelay());
+  }
+
+  @Override
+  public void terminateFragment(TerminateFragmentRequestProto request) {
+    // TODO Implement when this gets used.
+  }
+
+
+  private void notifyAMOfRejection(TaskRunnerCallable callable) {
+    LOG.error("Notifying AM of request rejection is not implemented yet!");
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {

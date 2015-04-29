@@ -50,7 +50,7 @@ class DirWatcher {
   private static final Log LOG = LogFactory.getLog(DirWatcher.class);
 
   private static enum Type {
-    BASE, // App Base Dir
+    BASE, // App Base Dir / ${dagDir}
     OUTPUT, // appBase/output/
     FINAL, // appBase/output/attemptDir
   }
@@ -95,15 +95,22 @@ class DirWatcher {
    * @param expiry when to expire the watch - in ms
    * @throws IOException
    */
-  void registerApplicationDir(String pathString, String appId, String user, long expiry) throws IOException {
+  void registerDagDir(String pathString, String appId, int dagIdentifier, String user, long expiry) throws IOException {
+    // The path string contains the dag Identifier
     Path path = FileSystems.getDefault().getPath(pathString);
-    WatchedPathInfo watchedPathInfo = new WatchedPathInfo(System.currentTimeMillis() + expiry, Type.BASE, appId, user);
+    WatchedPathInfo watchedPathInfo =
+        new WatchedPathInfo(System.currentTimeMillis() + expiry, Type.BASE, appId, dagIdentifier,
+            user);
     watchedPaths.put(path, watchedPathInfo);
     WatchKey watchKey = path.register(watchService, ENTRY_CREATE);
     watchedPathInfo.setWatchKey(watchKey);
     watchedPathQueue.add(watchedPathInfo);
 
     // TODO Watches on the output dirs need to be cancelled at some point. For now - via the expiry.
+  }
+
+  void unregisterDagDir(String pathString, String appId, int dagIdentifier) {
+    // TODO Implement to remove all watches for the specified pathString and it's sub-tree
   }
 
   /**
@@ -226,7 +233,7 @@ class DirWatcher {
               cancelledWatch = true;
               watchKey.cancel();
             } else {
-              LOG.warn("DEBUG: Found unexpected directory: " + event.context() + " under " + watchedPath);
+              LOG.warn("DEBUG: Found unexpected directory while looking for OUTPUT: " + event.context() + " under " + watchedPath);
             }
             break;
           case OUTPUT:
@@ -349,15 +356,17 @@ class DirWatcher {
     final long expiry;
     final Type type;
     final String appId;
+    final int dagId;
     final String user;
     final String attemptId;
     final AttemptPathIdentifier pathIdentifier;
     WatchKey watchKey;
 
-    public WatchedPathInfo(long expiry, Type type, String jobId, String user) {
+    public WatchedPathInfo(long expiry, Type type, String jobId, int dagId, String user) {
       this.expiry = expiry;
       this.type = type;
       this.appId = jobId;
+      this.dagId = dagId;
       this.user = user;
       this.attemptId = null;
       this.pathIdentifier = null;
@@ -367,10 +376,11 @@ class DirWatcher {
       this.expiry = other.expiry;
       this.appId = other.appId;
       this.user = other.user;
+      this.dagId = other.dagId;
       this.type = type;
       this.attemptId = attemptId;
       if (attemptId != null) {
-        pathIdentifier = new AttemptPathIdentifier(appId, user, attemptId);
+        pathIdentifier = new AttemptPathIdentifier(appId, dagId, user, attemptId);
       } else {
         pathIdentifier = null;
       }
