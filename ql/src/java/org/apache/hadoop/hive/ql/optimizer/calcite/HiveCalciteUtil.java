@@ -31,6 +31,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -65,6 +66,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Generic utility functions needed for Calcite based Hive CBO.
@@ -269,25 +271,21 @@ public class HiveCalciteUtil {
   public static class JoinPredicateInfo {
     private final ImmutableList<JoinLeafPredicateInfo>                        nonEquiJoinPredicateElements;
     private final ImmutableList<JoinLeafPredicateInfo>                        equiJoinPredicateElements;
-    private final ImmutableSet<Integer>                                       projsFromLeftPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>                                       projsFromRightPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>                                       projsFromRightPartOfJoinKeysInJoinSchema;
+    private final ImmutableList<Set<Integer>>                                 projsJoinKeysInChildSchema;
+    private final ImmutableList<Set<Integer>>                                 projsJoinKeysInJoinSchema;
     private final ImmutableMap<Integer, ImmutableList<JoinLeafPredicateInfo>> mapOfProjIndxInJoinSchemaToLeafPInfo;
 
     public JoinPredicateInfo(List<JoinLeafPredicateInfo> nonEquiJoinPredicateElements,
         List<JoinLeafPredicateInfo> equiJoinPredicateElements,
-        Set<Integer> projsFromLeftPartOfJoinKeysInChildSchema,
-        Set<Integer> projsFromRightPartOfJoinKeysInChildSchema,
-        Set<Integer> projsFromRightPartOfJoinKeysInJoinSchema,
+        List<Set<Integer>> projsJoinKeysInChildSchema,
+        List<Set<Integer>> projsJoinKeysInJoinSchema,
         Map<Integer, ImmutableList<JoinLeafPredicateInfo>> mapOfProjIndxInJoinSchemaToLeafPInfo) {
       this.nonEquiJoinPredicateElements = ImmutableList.copyOf(nonEquiJoinPredicateElements);
       this.equiJoinPredicateElements = ImmutableList.copyOf(equiJoinPredicateElements);
-      this.projsFromLeftPartOfJoinKeysInChildSchema = ImmutableSet
-          .copyOf(projsFromLeftPartOfJoinKeysInChildSchema);
-      this.projsFromRightPartOfJoinKeysInChildSchema = ImmutableSet
-          .copyOf(projsFromRightPartOfJoinKeysInChildSchema);
-      this.projsFromRightPartOfJoinKeysInJoinSchema = ImmutableSet
-          .copyOf(projsFromRightPartOfJoinKeysInJoinSchema);
+      this.projsJoinKeysInChildSchema = ImmutableList
+          .copyOf(projsJoinKeysInChildSchema);
+      this.projsJoinKeysInJoinSchema = ImmutableList
+          .copyOf(projsJoinKeysInJoinSchema);
       this.mapOfProjIndxInJoinSchemaToLeafPInfo = ImmutableMap
           .copyOf(mapOfProjIndxInJoinSchemaToLeafPInfo);
     }
@@ -301,11 +299,17 @@ public class HiveCalciteUtil {
     }
 
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInChildSchema() {
-      return this.projsFromLeftPartOfJoinKeysInChildSchema;
+      assert projsJoinKeysInChildSchema.size() == 2;
+      return this.projsJoinKeysInChildSchema.get(0);
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInChildSchema() {
-      return this.projsFromRightPartOfJoinKeysInChildSchema;
+      assert projsJoinKeysInChildSchema.size() == 2;
+      return this.projsJoinKeysInChildSchema.get(1);
+    }
+
+    public Set<Integer> getProjsJoinKeysInChildSchema(int i) {
+      return this.projsJoinKeysInChildSchema.get(i);
     }
 
     /**
@@ -314,11 +318,17 @@ public class HiveCalciteUtil {
      * schema.
      */
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInJoinSchema() {
-      return this.projsFromLeftPartOfJoinKeysInChildSchema;
+      assert projsJoinKeysInJoinSchema.size() == 2;
+      return this.projsJoinKeysInJoinSchema.get(0);
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInJoinSchema() {
-      return this.projsFromRightPartOfJoinKeysInJoinSchema;
+      assert projsJoinKeysInJoinSchema.size() == 2;
+      return this.projsJoinKeysInJoinSchema.get(1);
+    }
+
+    public Set<Integer> getProjsJoinKeysInJoinSchema(int i) {
+      return this.projsJoinKeysInJoinSchema.get(i);
     }
 
     public Map<Integer, ImmutableList<JoinLeafPredicateInfo>> getMapOfProjIndxToLeafPInfo() {
@@ -328,20 +338,39 @@ public class HiveCalciteUtil {
     public static JoinPredicateInfo constructJoinPredicateInfo(Join j) {
       return constructJoinPredicateInfo(j, j.getCondition());
     }
+    
+    public static JoinPredicateInfo constructJoinPredicateInfo(MultiJoin mj) {
+      return constructJoinPredicateInfo(mj, mj.getJoinFilter());
+    }
 
     public static JoinPredicateInfo constructJoinPredicateInfo(Join j, RexNode predicate) {
+      return constructJoinPredicateInfo(j.getInputs(), j.getSystemFieldList(), predicate);
+    }
+
+    public static JoinPredicateInfo constructJoinPredicateInfo(MultiJoin mj, RexNode predicate) {
+      final List<RelDataTypeField> systemFieldList = ImmutableList.of();
+      return constructJoinPredicateInfo(mj.getInputs(), systemFieldList, predicate);
+    }
+
+    public static JoinPredicateInfo constructJoinPredicateInfo(List<RelNode> inputs,
+            List<RelDataTypeField> systemFieldList, RexNode predicate) {
       JoinPredicateInfo jpi = null;
       JoinLeafPredicateInfo jlpi = null;
       List<JoinLeafPredicateInfo> equiLPIList = new ArrayList<JoinLeafPredicateInfo>();
       List<JoinLeafPredicateInfo> nonEquiLPIList = new ArrayList<JoinLeafPredicateInfo>();
-      Set<Integer> projsFromLeftPartOfJoinKeys = new HashSet<Integer>();
-      Set<Integer> projsFromRightPartOfJoinKeys = new HashSet<Integer>();
-      Set<Integer> projsFromRightPartOfJoinKeysInJoinSchema = new HashSet<Integer>();
+      List<Set<Integer>> projsJoinKeys = new ArrayList<Set<Integer>>();
+      for (int i=0; i<inputs.size(); i++) {
+        Set<Integer> projsJoinKeysInput = Sets.newHashSet();
+        projsJoinKeys.add(projsJoinKeysInput);
+      }
+      List<Set<Integer>> projsJoinKeysInJoinSchema = new ArrayList<Set<Integer>>();
+      for (int i=0; i<inputs.size(); i++) {
+        Set<Integer> projsJoinKeysInJoinSchemaInput = Sets.newHashSet();
+        projsJoinKeysInJoinSchema.add(projsJoinKeysInJoinSchemaInput);
+      }
       Map<Integer, List<JoinLeafPredicateInfo>> tmpMapOfProjIndxInJoinSchemaToLeafPInfo = new HashMap<Integer, List<JoinLeafPredicateInfo>>();
       Map<Integer, ImmutableList<JoinLeafPredicateInfo>> mapOfProjIndxInJoinSchemaToLeafPInfo = new HashMap<Integer, ImmutableList<JoinLeafPredicateInfo>>();
       List<JoinLeafPredicateInfo> tmpJLPILst = null;
-      int rightOffSet = j.getLeft().getRowType().getFieldCount();
-      int projIndxInJoin;
       List<RexNode> conjuctiveElements;
 
       // 1. Decompose Join condition to a number of leaf predicates
@@ -351,7 +380,7 @@ public class HiveCalciteUtil {
       // 2. Walk through leaf predicates building up JoinLeafPredicateInfo
       for (RexNode ce : conjuctiveElements) {
         // 2.1 Construct JoinLeafPredicateInfo
-        jlpi = JoinLeafPredicateInfo.constructJoinLeafPredicateInfo(j, ce);
+        jlpi = JoinLeafPredicateInfo.constructJoinLeafPredicateInfo(inputs, systemFieldList, ce);
 
         // 2.2 Classify leaf predicate as Equi vs Non Equi
         if (jlpi.comparisonType.equals(SqlKind.EQUALS)) {
@@ -360,34 +389,21 @@ public class HiveCalciteUtil {
           nonEquiLPIList.add(jlpi);
         }
 
-        // 2.3 Maintain join keys coming from left vs right (in child &
-        // Join Schema)
-        projsFromLeftPartOfJoinKeys.addAll(jlpi.getProjsFromLeftPartOfJoinKeysInChildSchema());
-        projsFromRightPartOfJoinKeys.addAll(jlpi.getProjsFromRightPartOfJoinKeysInChildSchema());
-        projsFromRightPartOfJoinKeysInJoinSchema.addAll(jlpi
-            .getProjsFromRightPartOfJoinKeysInJoinSchema());
-
+        // 2.3 Maintain join keys (in child & Join Schema)
         // 2.4 Update Join Key to JoinLeafPredicateInfo map with keys
-        // from left
-        for (Integer projIndx : jlpi.getProjsFromLeftPartOfJoinKeysInChildSchema()) {
-          tmpJLPILst = tmpMapOfProjIndxInJoinSchemaToLeafPInfo.get(projIndx);
-          if (tmpJLPILst == null)
-            tmpJLPILst = new ArrayList<JoinLeafPredicateInfo>();
-          tmpJLPILst.add(jlpi);
-          tmpMapOfProjIndxInJoinSchemaToLeafPInfo.put(projIndx, tmpJLPILst);
-        }
+        for (int i=0; i<inputs.size(); i++) {
+          projsJoinKeys.get(i).addAll(jlpi.getProjsJoinKeysInChildSchema(i));
+          projsJoinKeysInJoinSchema.get(i).addAll(jlpi.getProjsJoinKeysInJoinSchema(i));
 
-        // 2.5 Update Join Key to JoinLeafPredicateInfo map with keys
-        // from right
-        for (Integer projIndx : jlpi.getProjsFromRightPartOfJoinKeysInChildSchema()) {
-          projIndxInJoin = projIndx + rightOffSet;
-          tmpJLPILst = tmpMapOfProjIndxInJoinSchemaToLeafPInfo.get(projIndxInJoin);
-          if (tmpJLPILst == null)
-            tmpJLPILst = new ArrayList<JoinLeafPredicateInfo>();
-          tmpJLPILst.add(jlpi);
-          tmpMapOfProjIndxInJoinSchemaToLeafPInfo.put(projIndxInJoin, tmpJLPILst);
+          for (Integer projIndx : jlpi.getProjsJoinKeysInJoinSchema(i)) {
+            tmpJLPILst = tmpMapOfProjIndxInJoinSchemaToLeafPInfo.get(projIndx);
+            if (tmpJLPILst == null) {
+              tmpJLPILst = new ArrayList<JoinLeafPredicateInfo>();
+            }
+            tmpJLPILst.add(jlpi);
+            tmpMapOfProjIndxInJoinSchemaToLeafPInfo.put(projIndx, tmpJLPILst);
+          }
         }
-
       }
 
       // 3. Update Update Join Key to List<JoinLeafPredicateInfo> to use
@@ -398,9 +414,8 @@ public class HiveCalciteUtil {
       }
 
       // 4. Construct JoinPredicateInfo
-      jpi = new JoinPredicateInfo(nonEquiLPIList, equiLPIList, projsFromLeftPartOfJoinKeys,
-          projsFromRightPartOfJoinKeys, projsFromRightPartOfJoinKeysInJoinSchema,
-          mapOfProjIndxInJoinSchemaToLeafPInfo);
+      jpi = new JoinPredicateInfo(nonEquiLPIList, equiLPIList, projsJoinKeys,
+          projsJoinKeysInJoinSchema, mapOfProjIndxInJoinSchemaToLeafPInfo);
       return jpi;
     }
   }
@@ -416,101 +431,112 @@ public class HiveCalciteUtil {
    * of equi join keys; the indexes are both in child and Join node schema.<br>
    */
   public static class JoinLeafPredicateInfo {
-    private final SqlKind                comparisonType;
-    private final ImmutableList<RexNode> joinKeyExprsFromLeft;
-    private final ImmutableList<RexNode> joinKeyExprsFromRight;
-    private final ImmutableSet<Integer>  projsFromLeftPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>  projsFromRightPartOfJoinKeysInChildSchema;
-    private final ImmutableSet<Integer>  projsFromRightPartOfJoinKeysInJoinSchema;
+    private final SqlKind                               comparisonType;
+    private final ImmutableList<ImmutableList<RexNode>> joinKeyExprs;
+    private final ImmutableList<ImmutableSet<Integer>>  projsJoinKeysInChildSchema;
+    private final ImmutableList<ImmutableSet<Integer>>  projsJoinKeysInJoinSchema;
 
-    public JoinLeafPredicateInfo(SqlKind comparisonType, List<RexNode> joinKeyExprsFromLeft,
-        List<RexNode> joinKeyExprsFromRight, Set<Integer> projsFromLeftPartOfJoinKeysInChildSchema,
-        Set<Integer> projsFromRightPartOfJoinKeysInChildSchema,
-        Set<Integer> projsFromRightPartOfJoinKeysInJoinSchema) {
+    public JoinLeafPredicateInfo(
+            SqlKind comparisonType,
+            List<List<RexNode>> joinKeyExprs,
+            List<Set<Integer>> projsJoinKeysInChildSchema,
+            List<Set<Integer>> projsJoinKeysInJoinSchema) {
       this.comparisonType = comparisonType;
-      this.joinKeyExprsFromLeft = ImmutableList.copyOf(joinKeyExprsFromLeft);
-      this.joinKeyExprsFromRight = ImmutableList.copyOf(joinKeyExprsFromRight);
-      this.projsFromLeftPartOfJoinKeysInChildSchema = ImmutableSet
-          .copyOf(projsFromLeftPartOfJoinKeysInChildSchema);
-      this.projsFromRightPartOfJoinKeysInChildSchema = ImmutableSet
-          .copyOf(projsFromRightPartOfJoinKeysInChildSchema);
-      this.projsFromRightPartOfJoinKeysInJoinSchema = ImmutableSet
-          .copyOf(projsFromRightPartOfJoinKeysInJoinSchema);
+      ImmutableList.Builder<ImmutableList<RexNode>> joinKeyExprsBuilder =
+              ImmutableList.builder();
+      for (int i=0; i<joinKeyExprs.size(); i++) {
+        joinKeyExprsBuilder.add(ImmutableList.copyOf(joinKeyExprs.get(i)));
+      }
+      this.joinKeyExprs = joinKeyExprsBuilder.build();
+      ImmutableList.Builder<ImmutableSet<Integer>> projsJoinKeysInChildSchemaBuilder =
+              ImmutableList.builder();
+      for (int i=0; i<joinKeyExprs.size(); i++) {
+        projsJoinKeysInChildSchemaBuilder.add(
+                ImmutableSet.copyOf(projsJoinKeysInChildSchema.get(i)));
+      }
+      this.projsJoinKeysInChildSchema = projsJoinKeysInChildSchemaBuilder.build();
+      ImmutableList.Builder<ImmutableSet<Integer>> projsJoinKeysInJoinSchemaBuilder =
+              ImmutableList.builder();
+      for (int i=0; i<joinKeyExprs.size(); i++) {
+        projsJoinKeysInJoinSchemaBuilder.add(
+                ImmutableSet.copyOf(projsJoinKeysInJoinSchema.get(i)));
+      }
+      this.projsJoinKeysInJoinSchema = projsJoinKeysInJoinSchemaBuilder.build();
     }
 
     public List<RexNode> getJoinKeyExprs(int input) {
-      if (input == 0) {
-        return this.joinKeyExprsFromLeft;
-      }
-      if (input == 1) {
-        return this.joinKeyExprsFromRight;
-      }
-      return null;
-    }
-
-    public List<RexNode> getJoinKeyExprsFromLeft() {
-      return this.joinKeyExprsFromLeft;
-    }
-
-    public List<RexNode> getJoinKeyExprsFromRight() {
-      return this.joinKeyExprsFromRight;
+      return this.joinKeyExprs.get(input);
     }
 
     public Set<Integer> getProjsFromLeftPartOfJoinKeysInChildSchema() {
-      return this.projsFromLeftPartOfJoinKeysInChildSchema;
-    }
-
-    /**
-     * NOTE: Join Schema = left Schema + (right Schema offset by
-     * left.fieldcount). Hence its ok to return projections from left in child
-     * schema.
-     */
-    public Set<Integer> getProjsFromLeftPartOfJoinKeysInJoinSchema() {
-      return this.projsFromLeftPartOfJoinKeysInChildSchema;
+      assert projsJoinKeysInChildSchema.size() == 2;
+      return this.projsJoinKeysInChildSchema.get(0);
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInChildSchema() {
-      return this.projsFromRightPartOfJoinKeysInChildSchema;
+      assert projsJoinKeysInChildSchema.size() == 2;
+      return this.projsJoinKeysInChildSchema.get(1);
+    }
+
+    public Set<Integer> getProjsJoinKeysInChildSchema(int input) {
+      return this.projsJoinKeysInChildSchema.get(input);
+    }
+
+    public Set<Integer> getProjsFromLeftPartOfJoinKeysInJoinSchema() {
+      assert projsJoinKeysInJoinSchema.size() == 2;
+      return this.projsJoinKeysInJoinSchema.get(0);
     }
 
     public Set<Integer> getProjsFromRightPartOfJoinKeysInJoinSchema() {
-      return this.projsFromRightPartOfJoinKeysInJoinSchema;
+      assert projsJoinKeysInJoinSchema.size() == 2;
+      return this.projsJoinKeysInJoinSchema.get(1);
     }
 
-    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(Join j, RexNode pe) {
+    public Set<Integer> getProjsJoinKeysInJoinSchema(int input) {
+      return this.projsJoinKeysInJoinSchema.get(input);
+    }
+
+    private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(List<RelNode> inputs,
+            List<RelDataTypeField> systemFieldList, RexNode pe) {
       JoinLeafPredicateInfo jlpi = null;
       List<Integer> filterNulls = new ArrayList<Integer>();
-      List<RexNode> joinKeyExprsFromLeft = new ArrayList<RexNode>();
-      List<RexNode> joinKeyExprsFromRight = new ArrayList<RexNode>();
-      Set<Integer> projsFromLeftPartOfJoinKeysInChildSchema = new HashSet<Integer>();
-      Set<Integer> projsFromRightPartOfJoinKeysInChildSchema = new HashSet<Integer>();
-      Set<Integer> projsFromRightPartOfJoinKeysInJoinSchema = new HashSet<Integer>();
-      int rightOffSet = j.getLeft().getRowType().getFieldCount();
+      List<List<RexNode>> joinKeyExprs = new ArrayList<List<RexNode>>();
+      for (int i=0; i<inputs.size(); i++) {
+        joinKeyExprs.add(new ArrayList<RexNode>());
+      }
 
       // 1. Split leaf join predicate to expressions from left, right
-      HiveRelOptUtil.splitJoinCondition(j.getSystemFieldList(), j.getLeft(), j.getRight(), pe,
-          joinKeyExprsFromLeft, joinKeyExprsFromRight, filterNulls, null);
+      HiveRelOptUtil.splitJoinCondition(systemFieldList, inputs, pe,
+          joinKeyExprs, filterNulls, null);
 
-      // 2. For left expressions, collect child projection indexes used
-      InputReferencedVisitor irvLeft = new InputReferencedVisitor();
-      irvLeft.apply(joinKeyExprsFromLeft);
-      projsFromLeftPartOfJoinKeysInChildSchema.addAll(irvLeft.inputPosReferenced);
+      // 2. Collect child projection indexes used
+      List<Set<Integer>> projsJoinKeysInChildSchema =
+              new ArrayList<Set<Integer>>();
+      for (int i=0; i<inputs.size(); i++) {
+        ImmutableSet.Builder<Integer> projsFromInputJoinKeysInChildSchema = ImmutableSet.builder();
+        InputReferencedVisitor irvLeft = new InputReferencedVisitor();
+        irvLeft.apply(joinKeyExprs.get(i));
+        projsFromInputJoinKeysInChildSchema.addAll(irvLeft.inputPosReferenced);
+        projsJoinKeysInChildSchema.add(projsFromInputJoinKeysInChildSchema.build());
+      }
 
-      // 3. For right expressions, collect child projection indexes used
-      InputReferencedVisitor irvRight = new InputReferencedVisitor();
-      irvRight.apply(joinKeyExprsFromRight);
-      projsFromRightPartOfJoinKeysInChildSchema.addAll(irvRight.inputPosReferenced);
-
-      // 3. Translate projection indexes from right to join schema, by adding
-      // offset.
-      for (Integer indx : projsFromRightPartOfJoinKeysInChildSchema) {
-        projsFromRightPartOfJoinKeysInJoinSchema.add(indx + rightOffSet);
+      // 3. Translate projection indexes to join schema, by adding offset.
+      List<Set<Integer>> projsJoinKeysInJoinSchema =
+              new ArrayList<Set<Integer>>();
+      // The offset of the first input does not need to change.
+      projsJoinKeysInJoinSchema.add(projsJoinKeysInChildSchema.get(0));
+      for (int i=1; i<inputs.size(); i++) {
+        int offSet = inputs.get(i-1).getRowType().getFieldCount();
+        ImmutableSet.Builder<Integer> projsFromInputJoinKeysInJoinSchema = ImmutableSet.builder();
+        for (Integer indx : projsJoinKeysInChildSchema.get(i)) {
+          projsFromInputJoinKeysInJoinSchema.add(indx + offSet);
+        }
+        projsJoinKeysInJoinSchema.add(projsFromInputJoinKeysInJoinSchema.build());
       }
 
       // 4. Construct JoinLeafPredicateInfo
-      jlpi = new JoinLeafPredicateInfo(pe.getKind(), joinKeyExprsFromLeft, joinKeyExprsFromRight,
-          projsFromLeftPartOfJoinKeysInChildSchema, projsFromRightPartOfJoinKeysInChildSchema,
-          projsFromRightPartOfJoinKeysInJoinSchema);
+      jlpi = new JoinLeafPredicateInfo(pe.getKind(), joinKeyExprs,
+          projsJoinKeysInChildSchema, projsJoinKeysInJoinSchema);
 
       return jlpi;
     }

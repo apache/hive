@@ -34,6 +34,7 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.SortExchange;
+import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -151,6 +152,8 @@ public class HiveOpConverter {
       return visit((HiveTableScan) rn);
     } else if (rn instanceof HiveProject) {
       return visit((HiveProject) rn);
+    } else if (rn instanceof MultiJoin) {
+      return visit((MultiJoin) rn);
     } else if (rn instanceof HiveJoin) {
       return visit((HiveJoin) rn);
     } else if (rn instanceof SemiJoin) {
@@ -296,7 +299,15 @@ public class HiveOpConverter {
     return new OpAttr(inputOpAf.tabAlias, colInfoVColPair.getValue(), selOp);
   }
 
+  OpAttr visit(MultiJoin joinRel) throws SemanticException {
+    return translateJoin(joinRel);
+  }
+
   OpAttr visit(HiveJoin joinRel) throws SemanticException {
+    return translateJoin(joinRel);
+  }
+
+  private OpAttr translateJoin(RelNode joinRel) throws SemanticException {
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
     List<Operator<?>> children = new ArrayList<Operator<?>>(joinRel.getInputs().size());
@@ -311,7 +322,12 @@ public class HiveOpConverter {
     }
 
     // 2. Convert join condition
-    JoinPredicateInfo joinPredInfo = JoinPredicateInfo.constructJoinPredicateInfo(joinRel);
+    JoinPredicateInfo joinPredInfo;
+    if (joinRel instanceof HiveJoin) {
+      joinPredInfo = JoinPredicateInfo.constructJoinPredicateInfo((HiveJoin)joinRel);
+    } else {
+      joinPredInfo = JoinPredicateInfo.constructJoinPredicateInfo((MultiJoin)joinRel);
+    }
 
     // 3. Extract join keys from condition
     ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs(), inputs);
@@ -330,7 +346,8 @@ public class HiveOpConverter {
     // 6. Virtual columns
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
-    if (extractJoinType(joinRel) != JoinType.LEFTSEMI) {
+    if (joinRel instanceof MultiJoin ||
+            extractJoinType((HiveJoin)joinRel) != JoinType.LEFTSEMI) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -752,18 +769,24 @@ public class HiveOpConverter {
     return rsOp;
   }
 
-  private static JoinOperator genJoin(HiveJoin hiveJoin, JoinPredicateInfo joinPredInfo,
+  private static JoinOperator genJoin(RelNode join, JoinPredicateInfo joinPredInfo,
       List<Operator<?>> children, ExprNodeDesc[][] joinKeys) throws SemanticException {
 
     // Extract join type
-    JoinType joinType = extractJoinType(hiveJoin);
+    JoinType joinType;
+    if (join instanceof MultiJoin) {
+      joinType = JoinType.INNER;
+    } else {
+      joinType = extractJoinType((HiveJoin)join);
+    }
 
-    // NOTE: Currently binary joins only
-    JoinCondDesc[] joinCondns = new JoinCondDesc[1];
-    joinCondns[0] = new JoinCondDesc(new JoinCond(0, 1, joinType));
+    JoinCondDesc[] joinCondns = new JoinCondDesc[children.size()-1];
+    for (int i=1; i<children.size(); i++) {
+      joinCondns[i-1] = new JoinCondDesc(new JoinCond(0, i, joinType));
+    }
 
     ArrayList<ColumnInfo> outputColumns = new ArrayList<ColumnInfo>();
-    ArrayList<String> outputColumnNames = new ArrayList<String>(hiveJoin.getRowType()
+    ArrayList<String> outputColumnNames = new ArrayList<String>(join.getRowType()
         .getFieldNames());
     Operator<?>[] childOps = new Operator[children.size()];
 
