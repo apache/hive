@@ -28,6 +28,7 @@ import org.apache.commons.dbcp.PoolingDataSource;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1073,6 +1074,8 @@ public class TxnHandler {
   private static class LockInfo {
     private final long extLockId;
     private final long intLockId;
+    //0 means there is no transaction, i.e. it a select statement which is not part of
+    //explicit transaction or a IUD statement that is not writing to ACID table
     private final long txnId;
     private final String db;
     private final String table;
@@ -1102,7 +1105,7 @@ public class TxnHandler {
         default:
           throw new MetaException("Unknown lock type " + rs.getString("hl_lock_type").charAt(0));
       }
-      txnId = rs.getLong("hl_txnid");
+      txnId = rs.getLong("hl_txnid");//returns 0 if value is NULL
     }
     LockInfo(ShowLocksResponseElement e, long intLockId) {
       extLockId = e.getLockid();
@@ -1124,7 +1127,7 @@ public class TxnHandler {
 
     @Override
     public String toString() {
-      return "extLockId:" + Long.toString(extLockId) + " intLockId:" +
+      return JavaUtils.lockIdToString(extLockId) + " intLockId:" +
         intLockId + " txnId:" + Long.toString
         (txnId) + " db:" + db + " table:" + table + " partition:" +
         partition + " state:" + (state == null ? "null" : state.toString())
@@ -1600,10 +1603,17 @@ public class TxnHandler {
    * on a database.
    */
   private boolean ignoreConflict(LockInfo desiredLock, LockInfo existingLock) {
-    return (desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
-      existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
-      (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
-        desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE);
+    return
+      ((desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
+          existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
+        (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
+          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE))
+        ||
+      //different locks from same txn should not conflict with each other
+      (desiredLock.txnId != 0 && desiredLock.txnId == existingLock.txnId) ||
+      //txnId=0 means it's a select or IUD which does not write to ACID table, e.g
+      //insert overwrite table T partition(p=1) select a,b from T and autoCommit=true
+      (desiredLock.txnId == 0 &&  desiredLock.extLockId == existingLock.extLockId);
   }
 
   private void wait(Connection dbConn, Savepoint save) throws SQLException {

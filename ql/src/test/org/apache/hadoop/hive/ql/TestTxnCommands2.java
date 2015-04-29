@@ -44,7 +44,9 @@ public class TestTxnCommands2 {
   private Driver d;
   private static enum Table {
     ACIDTBL("acidTbl"),
-    NONACIDORCTBL("nonAcidOrcTbl");
+    ACIDTBLPART("acidTblPart"),
+    NONACIDORCTBL("nonAcidOrcTbl"),
+    NONACIDPART("nonAcidPart");
     
     private final String name;
     @Override
@@ -78,7 +80,9 @@ public class TestTxnCommands2 {
     d = new Driver(hiveConf);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
+    runStatementOnDriver("create table " + Table.NONACIDPART + "(a int, b int) partitioned by (p string) stored as orc TBLPROPERTIES ('transactional'='false')");
   }
   private void dropTables() throws Exception {
     for(Table t : Table.values()) {
@@ -138,6 +142,27 @@ public class TestTxnCommands2 {
     Assert.assertEquals("Bulk update2 failed", stringifyValues(updatedData2), rs2);
   }
 
+  @Test
+  public void testInsertOverwriteWithSelfJoin() throws Exception {
+    int[][] part1Data = {{1,7}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) " + makeValuesClause(part1Data));
+    //this works because logically we need S lock on NONACIDORCTBL to read and X lock to write, but
+    //LockRequestBuilder dedups locks on the same entity to only keep the highest level lock requested
+    runStatementOnDriver("insert overwrite table " + Table.NONACIDORCTBL + " select 2, 9 from " + Table.NONACIDORCTBL + " T inner join " + Table.NONACIDORCTBL + " S on T.a=S.a");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL + " order by a,b");
+    int[][] joinData = {{2,9}};
+    Assert.assertEquals("Self join non-part insert overwrite failed", stringifyValues(joinData), rs);
+    int[][] part2Data = {{1,8}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=1) (a,b) " + makeValuesClause(part1Data));
+    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=2) (a,b) " + makeValuesClause(part2Data));
+    //here we need X lock on p=1 partition to write and S lock on 'table' to read which should
+    //not block each other since they are part of the same txn
+    runStatementOnDriver("insert overwrite table " + Table.NONACIDPART + " partition(p=1) select a,b from " + Table.NONACIDPART);
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.NONACIDPART + " order by a,b");
+    int[][] updatedData = {{1,7},{1,8},{1,8}};
+    Assert.assertEquals("Insert overwrite partition failed", stringifyValues(updatedData), rs2);
+    //insert overwrite not supported for ACID tables
+  }
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
