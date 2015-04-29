@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
@@ -314,9 +316,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
               HiveOperation.ALTERTABLE_ADDPARTS.getOutputRequiredPrivileges());
         }
       }
-    } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
+    } catch (AuthorizationException | NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);
@@ -326,17 +326,19 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
   private void authorizeDropPartition(PreDropPartitionEvent context)
       throws InvalidOperationException, MetaException {
     try {
-      org.apache.hadoop.hive.metastore.api.Partition mapiPart = context.getPartition();
-      org.apache.hadoop.hive.ql.metadata.Partition wrappedPartition = new PartitionWrapper(
-          mapiPart, context);
- for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
-        authorizer.authorize(wrappedPartition,
-            HiveOperation.ALTERTABLE_DROPPARTS.getInputRequiredPrivileges(),
-            HiveOperation.ALTERTABLE_DROPPARTS.getOutputRequiredPrivileges());
+      TableWrapper tableWrapper = new TableWrapper(context.getTable());
+      Iterator<Partition> partitionIterator = context.getPartitionIterator();
+      while (partitionIterator.hasNext()) {
+        org.apache.hadoop.hive.metastore.api.Partition mapiPart = partitionIterator.next();
+        org.apache.hadoop.hive.ql.metadata.Partition wrappedPartition
+            = new PartitionWrapper(tableWrapper, mapiPart);
+        for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+          authorizer.authorize(wrappedPartition,
+              HiveOperation.ALTERTABLE_DROPPARTS.getInputRequiredPrivileges(),
+              HiveOperation.ALTERTABLE_DROPPARTS.getOutputRequiredPrivileges());
+        }
       }
     } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);
@@ -354,9 +356,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
             null,
             new Privilege[]{Privilege.ALTER_METADATA});
       }
-    } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
+    } catch (AuthorizationException | NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);

@@ -157,10 +157,10 @@ public abstract class MessageFactory {
   /**
    * Factory method for DropPartitionMessage.
    * @param table The Table from which the partition is dropped.
-   * @param partition The Partition being dropped.
+   * @param partitions The set of partitions being dropped.
    * @return DropPartitionMessage instance.
    */
-  public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+  public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions);
 
   /**
    * Factory method for building insert message

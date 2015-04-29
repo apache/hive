@@ -53,6 +53,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -400,7 +401,8 @@ public class TestEximReplicationTasks{
     Partition p = createPtn(t, Arrays.asList("102", "lmn"));
 
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_DROP_PARTITION_EVENT, msgFactory.buildDropPartitionMessage(t,p).toString());
+        HCatConstants.HCAT_DROP_PARTITION_EVENT, msgFactory.buildDropPartitionMessage(
+          t, Collections.singletonList(p).iterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 

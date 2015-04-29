@@ -22,35 +22,28 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
+import java.util.Collections;
+import java.util.Iterator;
+
 public class PreDropPartitionEvent extends PreEventContext {
 
-  private final Partition partition;
+  private final Iterable<Partition> partitions;
   private final Table table;
   private final boolean deleteData;
-
-  public PreDropPartitionEvent (Partition partition, boolean deleteData, HMSHandler handler) {
-    super (PreEventType.DROP_PARTITION, handler);
-    this.partition = partition;
-    this.table = null;
-    // In HiveMetaStore, the deleteData flag indicates whether DFS data should be
-    // removed on a drop.
-    this.deleteData = false;
-  }
 
   public PreDropPartitionEvent (Table table,
       Partition partition, boolean deleteData, HMSHandler handler) {
     super (PreEventType.DROP_PARTITION, handler);
-    this.partition = partition;
+    this.partitions = Collections.singletonList(partition);
     this.table = table;
     this.deleteData = false;
   }
 
   /**
-   * @return the partition
+   * @return the partitions
    */
-  public Partition getPartition() {
-
-    return partition;
+  public Iterator<Partition> getPartitionIterator() {
+    return partitions.iterator();
   }
 
  /**

@@ -172,7 +172,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = partitionEvent.getTable();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_DROP_PARTITION_EVENT,
-        msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartition()).toString());
+        msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
