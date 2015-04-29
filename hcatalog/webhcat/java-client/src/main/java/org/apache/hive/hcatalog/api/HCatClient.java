@@ -496,6 +496,7 @@ public abstract class HCatClient {
    * @return an iterator over a list of replication events that can be processed one by one.
    * @throws HCatException
    */
+  @InterfaceStability.Evolving
   public abstract Iterator<ReplicationTask> getReplicationTasks(
       long lastEventId, int maxEvents, String dbName, String tableName) throws HCatException;
 
@@ -512,6 +513,8 @@ public abstract class HCatClient {
    * the order that the operations were done on the database.
    * @throws HCatException
    */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
   public abstract List<HCatNotificationEvent> getNextNotification(long lastEventId,
                                                                   int maxEvents,
                                                                   IMetaStoreClient.NotificationFilter filter)
@@ -522,6 +525,8 @@ public abstract class HCatClient {
    * @return
    * @throws HCatException
    */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
   public abstract long getCurrentNotificationEventId() throws HCatException;
 
   /**

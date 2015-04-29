@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -1382,6 +1383,7 @@ public interface IMetaStoreClient {
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
   interface NotificationFilter {
     /**
      * Whether a notification event should be accepted
@@ -1403,6 +1405,7 @@ public interface IMetaStoreClient {
    * the order that the operations were done on the database.
    * @throws TException
    */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
   NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
                                                 NotificationFilter filter) throws TException;
 
@@ -1411,6 +1414,7 @@ public interface IMetaStoreClient {
    * @return last used id
    * @throws TException
    */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
 
   /**
@@ -1420,6 +1424,8 @@ public interface IMetaStoreClient {
    * @return response, type depends on type of request
    * @throws TException
    */
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
