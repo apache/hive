@@ -115,9 +115,9 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
-    return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
-        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)), now());
+  public DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions) {
+    return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), getPartitionKeyValues(table, partitions), now());
   }
 
   @Override
