@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -206,7 +207,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropPartitionCommand() throws HCatException, CommandNeedRetryException {
+  public void testDropPartitionCommand() throws HCatException, CommandNeedRetryException, MetaException {
     String dbName = "cmd_testdb";
     String tableName = "cmd_testtable";
     int evid = 789;
@@ -242,10 +243,11 @@ public class TestCommands {
     HCatTable table = (new HCatTable(dbName, tableName)).tblProps(props).cols(cols).partCols(pcols);
 
     client.createTable(HCatCreateTableDesc.create(table).build());
-    HCatTable t = client.getTable(dbName, tableName);
-    assertNotNull(t);
+    HCatTable tableCreated = client.getTable(dbName, tableName);
+    assertNotNull(tableCreated);
 
-    HCatPartition ptnToAdd = (new HCatPartition(table, ptnDesc, "")).parameters(props);
+    HCatPartition ptnToAdd = (new HCatPartition(tableCreated, ptnDesc,
+        TestHCatClient.makePartLocation(tableCreated,ptnDesc))).parameters(props);
     client.addPartition(HCatAddPartitionDesc.create(ptnToAdd).build());
 
     HCatPartition p1 = client.getPartition(dbName,tableName,ptnDesc);
@@ -274,7 +276,8 @@ public class TestCommands {
     Map<String, String> props2 = new HashMap<String,String>();
     props2.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid - 5));
 
-    HCatPartition ptnToAdd2 = (new HCatPartition(table, ptnDesc, "")).parameters(props2);
+    HCatPartition ptnToAdd2 = (new HCatPartition(tableCreated, ptnDesc,
+        TestHCatClient.makePartLocation(tableCreated,ptnDesc))).parameters(props2);
     client.addPartition(HCatAddPartitionDesc.create(ptnToAdd2).build());
 
     HCatPartition p3 = client.getPartition(dbName,tableName,ptnDesc);
@@ -296,7 +299,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropTableCommand2() throws HCatException, CommandNeedRetryException {
+  public void testDropTableCommand2() throws HCatException, CommandNeedRetryException, MetaException {
     // Secondary DropTableCommand test for testing repl-drop-tables' effect on partitions inside a partitioned table
     // when there exist partitions inside the table which are older than the drop event.
     // Our goal is this : Create a table t, with repl.last.id=157, say.
@@ -322,21 +325,23 @@ public class TestCommands {
     HCatTable table = (new HCatTable(dbName, tableName)).tblProps(tprops).cols(cols).partCols(pcols);
 
     client.createTable(HCatCreateTableDesc.create(table).build());
-    HCatTable t = client.getTable(dbName, tableName);
-    assertNotNull(t);
+    HCatTable tableCreated = client.getTable(dbName, tableName);
+    assertNotNull(tableCreated);
 
     Map<String, String> ptnDesc1 = new HashMap<String,String>();
     ptnDesc1.put("b","test-older");
     Map<String, String> props1 = new HashMap<String,String>();
     props1.put(ReplicationUtils.REPL_STATE_ID,String.valueOf(evid - 5));
-    HCatPartition ptnToAdd1 = (new HCatPartition(table, ptnDesc1, "")).parameters(props1);
+    HCatPartition ptnToAdd1 = (new HCatPartition(tableCreated, ptnDesc1,
+        TestHCatClient.makePartLocation(tableCreated,ptnDesc1))).parameters(props1);
     client.addPartition(HCatAddPartitionDesc.create(ptnToAdd1).build());
 
     Map<String, String> ptnDesc2 = new HashMap<String,String>();
     ptnDesc2.put("b","test-newer");
     Map<String, String> props2 = new HashMap<String,String>();
     props2.put(ReplicationUtils.REPL_STATE_ID, String.valueOf(evid + 5));
-    HCatPartition ptnToAdd2 = (new HCatPartition(table, ptnDesc2, "")).parameters(props2);
+    HCatPartition ptnToAdd2 = (new HCatPartition(tableCreated, ptnDesc2,
+        TestHCatClient.makePartLocation(tableCreated,ptnDesc2))).parameters(props2);
     client.addPartition(HCatAddPartitionDesc.create(ptnToAdd2).build());
 
     HCatPartition p1 = client.getPartition(dbName,tableName,ptnDesc1);
