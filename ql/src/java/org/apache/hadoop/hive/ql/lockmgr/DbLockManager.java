@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -129,9 +130,9 @@ public class DbLockManager implements HiveLockManager{
   public void unlock(HiveLock hiveLock) throws LockException {
     long lockId = ((DbHiveLock)hiveLock).lockId;
     try {
-      LOG.debug("Unlocking id:" + lockId);
+      LOG.debug("Unlocking " + hiveLock);
       client.unlock(lockId);
-      boolean removed = locks.remove((DbHiveLock)hiveLock);
+      boolean removed = locks.remove(hiveLock);
       LOG.debug("Removed a lock " + removed);
     } catch (NoSuchLockException e) {
       LOG.error("Metastore could find no record of lock " + lockId);
@@ -227,6 +228,10 @@ public class DbLockManager implements HiveLockManager{
     @Override
     public int hashCode() {
       return (int)(lockId % Integer.MAX_VALUE);
+    }
+    @Override
+    public String toString() {
+      return JavaUtils.lockIdToString(lockId);
     }
   }
 
