@@ -2039,7 +2039,10 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
 
-    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, ""),
+    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
+        + "whether to check, convert, and normalize partition value to conform to its column type in "
+        + "partition operations including but not limited to insert, such as alter, describe etc."),
+
     HIVE_HADOOP_CLASSPATH("hive.hadoop.classpath", null,
         "For Windows OS, we need to pass HIVE_HADOOP_CLASSPATH Java parameter while starting HiveServer2 \n" +
         "using \"-hiveconf hive.hadoop.classpath=%HIVE_LIB%\"."),

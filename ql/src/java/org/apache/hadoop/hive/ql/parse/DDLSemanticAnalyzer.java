@@ -245,7 +245,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ast = (ASTNode) input.getChild(1);
       String[] qualified = getQualifiedTableName((ASTNode) input.getChild(0));
       String tableName = getDotName(qualified);
-      HashMap<String, String> partSpec = DDLSemanticAnalyzer.getPartSpec((ASTNode) input.getChild(2));
+      HashMap<String, String> partSpec = null;
+      ASTNode partSpecNode = (ASTNode)input.getChild(2);
+      if (partSpecNode != null) {
+        //  We can use alter table partition rename to convert/normalize the legacy partition
+        //  column values. In so, we should not enable the validation to the old partition spec
+        //  passed in this command.
+        if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
+          partSpec = getPartSpec(partSpecNode);
+        } else {
+          partSpec = getValidatedPartSpec(getTable(tableName), partSpecNode, conf, false);
+        }
+      }
+
       if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAME) {
         analyzeAlterTableRename(qualified, ast, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_TOUCH) {
@@ -667,7 +679,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table sourceTable = getTable(getUnescapedName((ASTNode)ast.getChild(1)));
 
     // Get the partition specs
-    Map<String, String> partSpecs = getPartSpec((ASTNode) ast.getChild(0));
+    Map<String, String> partSpecs = getValidatedPartSpec(sourceTable, (ASTNode)ast.getChild(0), conf, false);
     validatePartitionValues(partSpecs);
     boolean sameColumns = MetaStoreUtils.compareFieldColumns(
         destTable.getAllCols(), sourceTable.getAllCols());
@@ -869,9 +881,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } else {
       if (isFullSpec(table, partSpec)) {
+        validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, true);
         Partition partition = getPartition(table, partSpec, true);
         outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
+        validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : getPartitions(table, partSpec, false)) {
           outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
@@ -1156,7 +1170,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, String> partSpec = null;
     Tree part = ast.getChild(2);
     if (part != null) {
-      partSpec = extractPartitionSpecs(part);
+      partSpec = getValidatedPartSpec(getTable(qualified), (ASTNode)part, conf, false);
     }
     List<Task<?>> indexBuilder = getIndexBuilderMapRed(qualified, indexName, partSpec);
     rootTasks.addAll(indexBuilder);
@@ -1887,18 +1901,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // or DESCRIBE table partition
       // check whether it is DESCRIBE table partition
       if (ast.getChildCount() == 2) {
-        ASTNode partNode = (ASTNode) ast.getChild(1);
-        HashMap<String, String> partSpec = null;
-        try {
-          partSpec = getPartSpec(partNode);
-        } catch (SemanticException e) {
-          // get exception in resolving partition
-          // it could be DESCRIBE table key
-          // return null
-          // continue processing for DESCRIBE table key
-          return null;
-        }
-
         Table tab = null;
         try {
           tab = db.getTable(tableName);
@@ -1908,6 +1910,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         catch (HiveException e) {
           throw new SemanticException(e.getMessage(), e);
+        }
+
+        ASTNode partNode = (ASTNode) ast.getChild(1);
+        HashMap<String, String> partSpec = null;
+        try {
+          partSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
+        } catch (SemanticException e) {
+          // get exception in resolving partition
+          // it could be DESCRIBE table key
+          // return null
+          // continue processing for DESCRIBE table key
+          return null;
         }
 
         if (partSpec != null) {
@@ -2076,10 +2090,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return partSpec;
   }
 
+  public static HashMap<String, String> getValidatedPartSpec(Table table, ASTNode astNode,
+      HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    HashMap<String, String> partSpec = getPartSpec(astNode);
+    if (partSpec != null && !partSpec.isEmpty()) {
+      validatePartSpec(table, partSpec, astNode, conf, shouldBeFull);
+    }
+    return partSpec;
+  }
+
   private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
     ShowPartitionsDesc showPartsDesc;
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    List<Map<String, String>> partSpecs = getPartitionSpecs(getTable(tableName), ast);
     // We only can have a single partition spec
     assert (partSpecs.size() <= 1);
     Map<String, String> partSpec = null;
@@ -2193,7 +2216,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child.getToken().getType() == HiveParser.Identifier) {
           dbName = unescapeIdentifier(child.getText());
         } else if (child.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-          partSpec = getPartSpec(child);
+          partSpec = getValidatedPartSpec(getTable(tableNames), child, conf, false);
         } else {
           throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
         }
@@ -2294,8 +2317,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             QualifiedNameUtil.getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
           // get partition metadata if partition specified
           if (tableTypeExpr.getChildCount() == 2) {
-            ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
-            partSpec = getPartSpec(partspec);
+            ASTNode partSpecNode = (ASTNode) tableTypeExpr.getChild(1);
+            partSpec = getValidatedPartSpec(getTable(tableName), partSpecNode, conf, false);
           }
         } else if (child.getType() == HiveParser.KW_EXTENDED) {
           isExtended = true;
@@ -2371,7 +2394,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     String tableName = getUnescapedName((ASTNode) ast.getChild(0)).toLowerCase();
     String mode = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    List<Map<String, String>> partSpecs = getPartitionSpecs(getTable(tableName), ast);
 
     // We only can have a single partition spec
     assert (partSpecs.size() <= 1);
@@ -2424,7 +2447,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeUnlockTable(ASTNode ast)
       throws SemanticException {
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    List<Map<String, String>> partSpecs = getPartitionSpecs(getTable(tableName), ast);
 
     // We only can have a single partition spec
     assert (partSpecs.size() <= 1);
@@ -2566,12 +2589,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
       HashMap<String, String> oldPartSpec) throws SemanticException {
-    Map<String, String> newPartSpec = extractPartitionSpecs(ast.getChild(0));
+    Table tab = getTable(tblName, true);
+    validateAlterTableType(tab, AlterTableTypes.RENAMEPARTITION);
+    Map<String, String> newPartSpec =
+        getValidatedPartSpec(tab, (ASTNode)ast.getChild(0), conf, false);
     if (newPartSpec == null) {
       throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
     }
-    Table tab = getTable(tblName, true);
-    validateAlterTableType(tab, AlterTableTypes.RENAMEPARTITION);
     ReadEntity re = new ReadEntity(tab);
     re.noLockNeeded();
     inputs.add(re);
@@ -2759,9 +2783,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           addPartitionDesc.addPartition(currentPart, currentLocation);
           currentLocation = null;
         }
-        currentPart = getPartSpec(child);
+        currentPart = getValidatedPartSpec(tab, child, conf, true);
         validatePartitionValues(currentPart); // validate reserved values
-        validatePartSpec(tab, currentPart, child, conf, true);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition
@@ -2826,21 +2849,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Partition getPartitionForOutput(Table tab, Map<String, String> currentPart)
-    throws SemanticException {
-    validatePartitionValues(currentPart);
-    try {
-      Partition partition = db.getPartition(tab, currentPart, false);
-      if (partition != null) {
-        outputs.add(new WriteEntity(partition, WriteEntity.WriteType.INSERT));
-      }
-      return partition;
-    } catch (HiveException e) {
-      LOG.warn("wrong partition spec " + currentPart);
-    }
-    return null;
-  }
-
   /**
    * Rewrite the metadata for one or more partitions in a table. Useful when
    * an external process modifies files on HDFS and you want the pre/post
@@ -2859,7 +2867,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     inputs.add(new ReadEntity(tab));
 
     // partition name to value
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    List<Map<String, String>> partSpecs = getPartitionSpecs(tab, ast);
 
     if (partSpecs.size() == 0) {
       AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
@@ -2887,10 +2895,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.ARCHIVE_METHODS_DISABLED.getMsg());
 
     }
-    // partition name to value
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
-
     Table tab = getTable(qualified);
+    // partition name to value
+    List<Map<String, String>> partSpecs = getPartitionSpecs(tab, ast);
+
     addTablePartsOutputs(tab, partSpecs, true, WriteEntity.WriteType.DDL_NO_LOCK);
     validateAlterTableType(tab, AlterTableTypes.ARCHIVE);
     inputs.add(new ReadEntity(tab));
@@ -2937,7 +2945,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         tableName = getUnescapedName((ASTNode) ast.getChild(1));
       }
     }
-    List<Map<String, String>> specs = getPartitionSpecs(ast);
+    List<Map<String, String>> specs = getPartitionSpecs(getTable(tableName), ast);
     MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(),
         repair);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -2952,16 +2960,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return A list of partition name to value mappings.
    * @throws SemanticException
    */
-  private List<Map<String, String>> getPartitionSpecs(CommonTree ast)
+  private List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
       throws SemanticException {
     List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
     int childIndex = 0;
     // get partition metadata if partition specified
     for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      Tree partspec = ast.getChild(childIndex);
+      ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
       // sanity check
-      if (partspec.getType() == HiveParser.TOK_PARTSPEC) {
-        partSpecs.add(getPartSpec((ASTNode) partspec));
+      if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
+        Map<String,String> partSpec = getValidatedPartSpec(tbl, partSpecNode, conf, false);
+        partSpecs.add(partSpec);
       }
     }
     return partSpecs;
@@ -2993,9 +3002,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
         CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
         assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
+        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
         String operator = partSpecSingleKey.getChild(1).getText();
-        String val = stripQuotes(partSpecSingleKey.getChild(2).getText());
+        ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
+        TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+        ExprNodeConstantDesc valExpr = (ExprNodeConstantDesc)TypeCheckProcFactory
+            .genExprNode(partValNode, typeCheckCtx).get(partValNode);
 
         String type = colTypes.get(key);
         if (type == null) {
@@ -3003,12 +3015,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         // Create the corresponding hive expression to filter on partition columns.
         PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
-        Converter converter = ObjectInspectorConverters.getConverter(
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(TypeInfoFactory.stringTypeInfo),
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
+        Object val = valExpr.getValue();
+        if (!valExpr.getTypeString().equals(type)) {
+          Converter converter = ObjectInspectorConverters.getConverter(
+            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
+            TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
+          val = converter.convert(valExpr.getValue());
+        }
         ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
-        ExprNodeGenericFuncDesc op = makeBinaryPredicate(
-            operator, column, new ExprNodeConstantDesc(pti, converter.convert(val)));
+        ExprNodeGenericFuncDesc op = makeBinaryPredicate(operator, column,
+            new ExprNodeConstantDesc(pti, val));
         // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
         expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
         names.add(key);
