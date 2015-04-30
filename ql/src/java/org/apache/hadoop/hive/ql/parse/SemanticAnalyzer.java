@@ -6043,7 +6043,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean enforceBucketing = false;
     boolean enforceSorting = false;
     ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
     ArrayList<Integer> sortOrders = new ArrayList<Integer>();
     boolean multiFileSpray = false;
@@ -6055,11 +6054,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       enforceBucketing = true;
       if (updating() || deleting()) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
-        partnColsNoConvert = getPartitionColsFromBucketColsForUpdateDelete(input, false);
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
-        partnColsNoConvert = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
-            false);
       }
     }
 
@@ -6071,7 +6067,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         partnCols = sortCols;
-        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
       }
     }
 
@@ -6107,12 +6102,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
-      ctx.setPartnCols(partnColsNoConvert);
       ctx.setTotalFiles(totalFiles);
     }
     return input;
   }
 
+  private void genPartnCols(String dest, Operator input, QB qb,
+      TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
+    boolean enforceBucketing = false;
+    boolean enforceSorting = false;
+    ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
+
+    if ((dest_tab.getNumBuckets() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+      enforceBucketing = true;
+      if (updating() || deleting()) {
+        partnColsNoConvert = getPartitionColsFromBucketColsForUpdateDelete(input, false);
+      } else {
+        partnColsNoConvert = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
+            false);
+      }
+    }
+
+    if ((dest_tab.getSortCols() != null) &&
+        (dest_tab.getSortCols().size() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
+      enforceSorting = true;
+      if (!enforceBucketing) {
+        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
+      }
+    }
+
+    if (enforceBucketing || enforceSorting) {
+      ctx.setPartnCols(partnColsNoConvert);
+    }
+  }
   /**
    * Check for HOLD_DDLTIME hint.
    *
@@ -6555,6 +6579,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If this table is working with ACID semantics, turn off merging
     canBeMerged &= !destTableIsAcid;
+
+    // Generate the partition columns from the parent input
+    if (dest_type.intValue() == QBMetaData.DEST_TABLE
+        || dest_type.intValue() == QBMetaData.DEST_PARTITION) {
+      genPartnCols(dest, input, qb, table_desc, dest_tab, rsCtx);
+    }
 
     FileSinkDesc fileSinkDesc = new FileSinkDesc(
       queryTmpdir,
