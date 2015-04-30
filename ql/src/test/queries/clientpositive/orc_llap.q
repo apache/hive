@@ -55,6 +55,9 @@ explain
 select count(1) from orc_llap_small y join orc_llap_small x;
 select count(1) from orc_llap_small y join orc_llap_small x;
 
+-- All row groups selected, no projection
+select count(*) from orc_llap_small;
+
 -- All row groups pruned
 select count(*) from orc_llap_small where cint < 60000000;
 
