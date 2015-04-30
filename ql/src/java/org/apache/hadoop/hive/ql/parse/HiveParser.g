@@ -37,7 +37,6 @@ TOK_TAB;
 TOK_PARTSPEC;
 TOK_PARTVAL;
 TOK_DIR;
-TOK_LOCAL_DIR;
 TOK_TABREF;
 TOK_SUBQUERY;
 TOK_INSERT_INTO;
@@ -2351,8 +2350,8 @@ destination
 @init { pushMsg("destination specification", state); }
 @after { popMsg(state); }
    :
-     KW_LOCAL KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat? -> ^(TOK_LOCAL_DIR StringLiteral tableRowFormat? tableFileFormat?)
-   | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
+     (local = KW_LOCAL)? KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat?
+       -> ^(TOK_DIR StringLiteral $local? tableRowFormat? tableFileFormat?)
    | KW_TABLE tableOrPartition -> tableOrPartition
    ;
 
