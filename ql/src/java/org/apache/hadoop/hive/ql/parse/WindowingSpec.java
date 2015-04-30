@@ -613,8 +613,10 @@ public class WindowingSpec {
       if (c != 0) {
         return c;
       }
+
       RangeBoundarySpec rb = (RangeBoundarySpec) other;
-      return amt - rb.amt;
+      // Valid range is "range/rows between 10 preceding and 2 preceding" for preceding case
+      return this.direction == Direction.PRECEDING ? rb.amt - amt : amt - rb.amt;
     }
 
   }
@@ -712,7 +714,8 @@ public class WindowingSpec {
         return c;
       }
       ValueBoundarySpec vb = (ValueBoundarySpec) other;
-      return amt - vb.amt;
+      // Valid range is "range/rows between 10 preceding and 2 preceding" for preceding case
+      return this.direction == Direction.PRECEDING ? vb.amt - amt : amt - vb.amt;
     }
 
   }
