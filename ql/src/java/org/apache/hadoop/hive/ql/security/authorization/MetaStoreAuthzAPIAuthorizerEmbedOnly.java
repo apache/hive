@@ -37,7 +37,8 @@ public class MetaStoreAuthzAPIAuthorizerEmbedOnly extends HiveAuthorizationProvi
     implements HiveMetastoreAuthorizationProvider {
 
   public static final String errMsg = "Metastore Authorization api invocation for "
-      + "remote metastore is disabled in this configuration.";
+      + "remote metastore is disabled in this configuration. Run commands via jdbc/odbc clients "
+      + "via HiveServer2 that is using embedded metastore.";
 
   @Override
   public void init(Configuration conf) throws HiveException {
