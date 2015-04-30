@@ -212,6 +212,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 225
+PREHOOK: query: -- All row groups selected, no projection
+select count(*) from orc_llap_small
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+POSTHOOK: query: -- All row groups selected, no projection
+select count(*) from orc_llap_small
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
+15
 PREHOOK: query: -- All row groups pruned
 select count(*) from orc_llap_small where cint < 60000000
 PREHOOK: type: QUERY
