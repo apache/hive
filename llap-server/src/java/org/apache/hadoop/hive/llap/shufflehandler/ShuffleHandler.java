@@ -350,7 +350,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   }
 
   public static ShuffleHandler get() {
-    Preconditions.checkState(started.get(), "ShuffleHandler must be started before invoking started");
+    Preconditions.checkState(started.get(),
+        "ShuffleHandler must be started before invoking get");
     return INSTANCE;
   }
 
@@ -434,7 +435,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   }
 
   public void unregisterDag(String dir, String applicationIdString, int dagIdentifier) {
-    dirWatcher.unregisterDagDir(dir, applicationIdString, dagIdentifier);
+    if (dirWatcher != null) {
+      dirWatcher.unregisterDagDir(dir, applicationIdString, dagIdentifier);
+    }
     // TODO Cleanup registered tokens and dag info
   }
 
