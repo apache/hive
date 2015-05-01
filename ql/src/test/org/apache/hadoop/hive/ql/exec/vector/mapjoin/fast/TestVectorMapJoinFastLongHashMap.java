@@ -35,7 +35,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
     random = new Random(47496);
 
     VectorMapJoinFastLongHashMap map =
-        new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+        new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -55,7 +55,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
   public void testPutGetMultiple() throws Exception {
     random = new Random(2990);
 
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -77,7 +77,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
   public void testGetNonExistent() throws Exception {
     random = new Random(16916);
 
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -101,7 +101,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
     random = new Random(26078);
 
     // Make sure the map does not expand; should be able to find space.
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, 1f, WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, CAPACITY, 1f, WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -126,7 +126,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
     random = new Random(22470);
 
     // Start with capacity 1; make sure we expand on every put.
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -147,7 +147,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
     random = new Random(40719);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
 
@@ -172,7 +172,7 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
     random = new Random(46809);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, 0);
+    VectorMapJoinFastLongHashMap map = new VectorMapJoinFastLongHashMap(false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE);
 
     RandomLongStream randomLongKeyStream = new RandomLongStream(random);
 
