@@ -3858,4 +3858,17 @@ public final class Utilities {
     return conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) &&
       (loggingLevel.equalsIgnoreCase("PERFORMANCE") || loggingLevel.equalsIgnoreCase("VERBOSE"));
   }
+
+  /**
+   * Strips Hive password details from configuration
+   */
+  public static void stripHivePasswordDetails(Configuration conf) {
+    // Strip out all Hive related password information from the JobConf
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.METASTOREPWD, "");
+    }
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "");
+    }
+  }
 }
