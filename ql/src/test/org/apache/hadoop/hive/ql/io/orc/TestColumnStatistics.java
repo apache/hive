@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static junit.framework.Assert.assertEquals;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,12 +40,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.sql.Timestamp;
-import java.util.List;
 
 /**
  * Test ColumnStatisticsImpl for ORC.
@@ -130,14 +130,14 @@ public class TestColumnStatistics {
     stats2.updateDate(new DateWritable(2000));
     stats1.merge(stats2);
     DateColumnStatistics typed = (DateColumnStatistics) stats1;
-    assertEquals(new DateWritable(10), typed.getMinimum());
-    assertEquals(new DateWritable(2000), typed.getMaximum());
+    assertEquals(new DateWritable(10).get(), typed.getMinimum());
+    assertEquals(new DateWritable(2000).get(), typed.getMaximum());
     stats1.reset();
     stats1.updateDate(new DateWritable(-10));
     stats1.updateDate(new DateWritable(10000));
     stats1.merge(stats2);
-    assertEquals(-10, typed.getMinimum().getDays());
-    assertEquals(10000, typed.getMaximum().getDays());
+    assertEquals(new DateWritable(-10).get(), typed.getMinimum());
+    assertEquals(new DateWritable(10000).get(), typed.getMaximum());
   }
 
   @Test

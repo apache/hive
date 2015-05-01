@@ -802,64 +802,55 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("john", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("john", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("john", leaf.getLiteral());
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("greg", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("greg", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("greg", leaf.getLiteral());
 
     leaf = leaves.get(2);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("alan", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("alan", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("alan", leaf.getLiteral());
 
     leaf = leaves.get(3);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(12, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(12, leaf.getLiteral());
 
     leaf = leaves.get(4);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(13L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(13, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(13, leaf.getLiteral());
 
     leaf = leaves.get(5);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(15L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(15, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(15, leaf.getLiteral());
 
     leaf = leaves.get(6);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(16L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(16, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(16, leaf.getLiteral());
 
     leaf = leaves.get(7);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.NULL_SAFE_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(30L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(30, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(30, leaf.getLiteral());
 
     leaf = leaves.get(8);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.NULL_SAFE_EQUALS, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("owen", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("owen", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("owen", leaf.getLiteral());
 
     assertEquals("(and (or leaf-0 (not leaf-1) leaf-2 (not leaf-3)" +
         " (not leaf-4) leaf-5 leaf-6 leaf-7)" +
@@ -1090,31 +1081,26 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.IS_NULL, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals(null, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(null, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
-    assertEquals(null, leaf.getLiteralList(PredicateLeaf.FileFormat.ORC));
-    assertEquals(null, leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(null, leaf.getLiteral());
+    assertEquals(null, leaf.getLiteralList());
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("sue", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("sue", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("sue", leaf.getLiteral());
 
     leaf = leaves.get(2);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(12, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(12, leaf.getLiteral());
 
     leaf = leaves.get(3);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(4L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(4, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(4, leaf.getLiteral());
 
     assertEquals("(or leaf-0 (not leaf-1) (not leaf-2) leaf-3)",
         sarg.getExpression().toString());
@@ -1525,26 +1511,21 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.BETWEEN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(null, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(null, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
-    assertEquals(23L, leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(0));
-    assertEquals(23, leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(0));
-    assertEquals(45L, leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(1));
-    assertEquals(45, leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(1));
+    assertEquals(null, leaf.getLiteral());
+    assertEquals(23, leaf.getLiteralList().get(0));
+    assertEquals(45, leaf.getLiteralList().get(1));
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("alan", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("alan", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("alan", leaf.getLiteral());
 
     leaf = leaves.get(2);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("last_name", leaf.getColumnName());
-    assertEquals("smith", leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals("smith", leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals("smith", leaf.getLiteral());
 
     assertEquals("(and leaf-0 leaf-1 leaf-2)",
         sarg.getExpression().toString());
@@ -1751,26 +1732,21 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(12, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(12, leaf.getLiteral());
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
     assertEquals(PredicateLeaf.Operator.IN, leaf.getOperator());
     assertEquals("first_name", leaf.getColumnName());
-    assertEquals("john", leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(0));
-    assertEquals("sue", leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(1));
-    assertEquals("john", leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(0));
-    assertEquals("sue", leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(1));
+    assertEquals("john", leaf.getLiteralList().get(0));
+    assertEquals("sue", leaf.getLiteralList().get(1));
 
     leaf = leaves.get(2);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.IN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(34L, leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(0));
-    assertEquals(50L, leaf.getLiteralList(PredicateLeaf.FileFormat.ORC).get(1));
-    assertEquals(34, leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(0));
-    assertEquals(50, leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET).get(1));
+    assertEquals(34, leaf.getLiteralList().get(0));
+    assertEquals(50, leaf.getLiteralList().get(1));
 
     assertEquals("(and (not leaf-0) leaf-1 leaf-2)",
         sarg.getExpression().toString());
@@ -2016,8 +1992,6 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Operator.BETWEEN,
         leaves.get(0).getOperator());
     assertEquals("first_name", leaves.get(0).getColumnName());
-    assertEquals("david", leaves.get(0).getLiteralList(PredicateLeaf.FileFormat.ORC).get(0));
-    assertEquals("greg", leaves.get(0).getLiteralList(PredicateLeaf.FileFormat.ORC).get(1));
 
     assertEquals("leaf-0",
         sarg.getExpression().toString());
@@ -2515,64 +2489,55 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(18L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(18, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(18, leaf.getLiteral());
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(10L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(10, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(10, leaf.getLiteral());
 
     leaf = leaves.get(2);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(13L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(13, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(13, leaf.getLiteral());
 
     leaf = leaves.get(3);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(16L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(16, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(16, leaf.getLiteral());
 
     leaf = leaves.get(4);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(11L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(11, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(11, leaf.getLiteral());
 
     leaf = leaves.get(5);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(12, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(12, leaf.getLiteral());
 
     leaf = leaves.get(6);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(14L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(14, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(14, leaf.getLiteral());
 
     leaf = leaves.get(7);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(15L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(15, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(15, leaf.getLiteral());
 
     leaf = leaves.get(8);
     assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(17L, leaf.getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(17, leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(17, leaf.getLiteral());
 
     assertEquals("(and" +
         " (or leaf-0 leaf-1 leaf-2 leaf-3)" +
@@ -2917,8 +2882,7 @@ public class TestSearchArgumentImpl {
     assertEquals(PredicateLeaf.Operator.LESS_THAN,
         leaves.get(0).getOperator());
     assertEquals("id", leaves.get(0).getColumnName());
-    assertEquals(10L, leaves.get(0).getLiteral(PredicateLeaf.FileFormat.ORC));
-    assertEquals(10, leaves.get(0).getLiteral(PredicateLeaf.FileFormat.PARQUET));
+    assertEquals(10, leaves.get(0).getLiteral());
 
     assertEquals("(and (not leaf-0) (not leaf-0))",
         sarg.getExpression().toString());

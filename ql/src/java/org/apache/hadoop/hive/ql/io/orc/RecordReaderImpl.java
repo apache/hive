@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +59,6 @@ import org.apache.hadoop.io.Text;
 class RecordReaderImpl implements RecordReader {
 
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
-  private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
   private final Path path;
@@ -280,9 +278,9 @@ class RecordReaderImpl implements RecordReader {
       return ((TimestampColumnStatistics) index).getMaximum();
     } else if (index instanceof BooleanColumnStatistics) {
       if (((BooleanColumnStatistics)index).getTrueCount()!=0) {
-        return "true";
+        return Boolean.TRUE;
       } else {
-        return "false";
+        return Boolean.FALSE;
       }
     } else {
       return null;
@@ -310,9 +308,9 @@ class RecordReaderImpl implements RecordReader {
       return ((TimestampColumnStatistics) index).getMinimum();
     } else if (index instanceof BooleanColumnStatistics) {
       if (((BooleanColumnStatistics)index).getFalseCount()!=0) {
-        return "false";
+        return Boolean.FALSE;
       } else {
-        return "true";
+        return Boolean.TRUE;
       }
     } else {
       return null;
@@ -367,18 +365,12 @@ class RecordReaderImpl implements RecordReader {
     }
 
     TruthValue result;
-    // Predicate object and stats object can be one of the following base types
-    // LONG, DOUBLE, STRING, DATE, DECIMAL
-    // Out of these DATE is not implicitly convertible to other types and rest
-    // others are implicitly convertible. In cases where DATE cannot be converted
-    // the stats object is converted to text and comparison is performed.
-    // When STRINGs are converted to other base types, NumberFormat exception
-    // can occur in which case TruthValue.YES_NO_NULL value is returned
     try {
-      Object baseObj = predicate.getLiteral(PredicateLeaf.FileFormat.ORC);
-      Object minValue = getConvertedStatsObj(min, baseObj);
-      Object maxValue = getConvertedStatsObj(max, baseObj);
-      Object predObj = getBaseObjectForComparison(baseObj, minValue);
+      // Predicate object and stats objects are converted to the type of the predicate object.
+      Object baseObj = predicate.getLiteral();
+      Object minValue = getBaseObjectForComparison(predicate.getType(), min);
+      Object maxValue = getBaseObjectForComparison(predicate.getType(), max);
+      Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
 
       result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
       if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
@@ -390,7 +382,11 @@ class RecordReaderImpl implements RecordReader {
         LOG.warn("Exception when evaluating predicate. Skipping ORC PPD." +
             " Exception: " + ExceptionUtils.getStackTrace(e));
       }
-      result = hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
+      if (predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS) || !hasNull) {
+        result = TruthValue.YES_NO;
+      } else {
+        result = TruthValue.YES_NO_NULL;
+      }
     }
     return result;
   }
@@ -440,8 +436,8 @@ class RecordReaderImpl implements RecordReader {
         if (minValue.equals(maxValue)) {
           // for a single value, look through to see if that value is in the
           // set
-          for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
-            predObj = getBaseObjectForComparison(arg, minValue);
+          for (Object arg : predicate.getLiteralList()) {
+            predObj = getBaseObjectForComparison(predicate.getType(), arg);
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN) {
               return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
@@ -450,8 +446,8 @@ class RecordReaderImpl implements RecordReader {
           return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
           // are all of the values outside of the range?
-          for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
-            predObj = getBaseObjectForComparison(arg, minValue);
+          for (Object arg : predicate.getLiteralList()) {
+            predObj = getBaseObjectForComparison(predicate.getType(), arg);
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN || loc == Location.MIDDLE ||
                 loc == Location.MAX) {
@@ -461,12 +457,12 @@ class RecordReaderImpl implements RecordReader {
           return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         }
       case BETWEEN:
-        List<Object> args = predicate.getLiteralList(PredicateLeaf.FileFormat.ORC);
-        Object predObj1 = getBaseObjectForComparison(args.get(0), minValue);
+        List<Object> args = predicate.getLiteralList();
+        Object predObj1 = getBaseObjectForComparison(predicate.getType(), args.get(0));
 
         loc = compareToRange((Comparable) predObj1, minValue, maxValue);
         if (loc == Location.BEFORE || loc == Location.MIN) {
-          Object predObj2 = getBaseObjectForComparison(args.get(1), minValue);
+          Object predObj2 = getBaseObjectForComparison(predicate.getType(), args.get(1));
 
           Location loc2 = compareToRange((Comparable) predObj2, minValue, maxValue);
           if (loc2 == Location.AFTER || loc2 == Location.MAX) {
@@ -489,8 +485,8 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private static TruthValue evaluatePredicateBloomFilter(PredicateLeaf predicate, Object predObj,
-      BloomFilterIO bloomFilter, boolean hasNull) {
+  private static TruthValue evaluatePredicateBloomFilter(PredicateLeaf predicate,
+      final Object predObj, BloomFilterIO bloomFilter, boolean hasNull) {
     switch (predicate.getOperator()) {
       case NULL_SAFE_EQUALS:
         // null safe equals does not return *_NULL variant. So set hasNull to false
@@ -498,9 +494,10 @@ class RecordReaderImpl implements RecordReader {
       case EQUALS:
         return checkInBloomFilter(bloomFilter, predObj, hasNull);
       case IN:
-        for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
+        for (Object arg : predicate.getLiteralList()) {
           // if atleast one value in IN list exist in bloom filter, qualify the row group/stripe
-          TruthValue result = checkInBloomFilter(bloomFilter, arg, hasNull);
+          Object predObjItem = getBaseObjectForComparison(predicate.getType(), arg);
+          TruthValue result = checkInBloomFilter(bloomFilter, predObjItem, hasNull);
           if (result == TruthValue.YES_NO_NULL || result == TruthValue.YES_NO) {
             return result;
           }
@@ -527,14 +524,6 @@ class RecordReaderImpl implements RecordReader {
       if (bf.testString(predObj.toString())) {
         result = TruthValue.YES_NO_NULL;
       }
-    } else if (predObj instanceof Date) {
-      if (bf.testLong(DateWritable.dateToDays((Date) predObj))) {
-        result = TruthValue.YES_NO_NULL;
-      }
-    } else if (predObj instanceof DateWritable) {
-      if (bf.testLong(((DateWritable) predObj).getDays())) {
-        result = TruthValue.YES_NO_NULL;
-      }
     } else if (predObj instanceof Timestamp) {
       if (bf.testLong(((Timestamp) predObj).getTime())) {
         result = TruthValue.YES_NO_NULL;
@@ -543,14 +532,18 @@ class RecordReaderImpl implements RecordReader {
       if (bf.testLong(((TimestampWritable) predObj).getTimestamp().getTime())) {
         result = TruthValue.YES_NO_NULL;
       }
-    } else {
-      // if the predicate object is null and if hasNull says there are no nulls then return NO
-      if (predObj == null && !hasNull) {
-        result = TruthValue.NO;
-      } else {
+    } else if (predObj instanceof Date) {
+      if (bf.testLong(DateWritable.dateToDays((Date) predObj))) {
         result = TruthValue.YES_NO_NULL;
       }
-    }
+    } else {
+        // if the predicate object is null and if hasNull says there are no nulls then return NO
+        if (predObj == null && !hasNull) {
+          result = TruthValue.NO;
+        } else {
+          result = TruthValue.YES_NO_NULL;
+        }
+      }
 
     if (result == TruthValue.YES_NO_NULL && !hasNull) {
       result = TruthValue.YES_NO;
@@ -563,58 +556,109 @@ class RecordReaderImpl implements RecordReader {
     return result;
   }
 
-  private static Object getBaseObjectForComparison(Object predObj, Object statsObj) {
-    if (predObj != null) {
-      if (predObj instanceof ExprNodeConstantDesc) {
-        predObj = ((ExprNodeConstantDesc) predObj).getValue();
+  private static Object getBaseObjectForComparison(PredicateLeaf.Type type, Object obj) {
+    if (obj != null) {
+      if (obj instanceof ExprNodeConstantDesc) {
+        obj = ((ExprNodeConstantDesc) obj).getValue();
       }
-      // following are implicitly convertible
-      if (statsObj instanceof Long) {
-        if (predObj instanceof Double) {
-          return ((Double) predObj).longValue();
-        } else if (predObj instanceof HiveDecimal) {
-          return ((HiveDecimal) predObj).longValue();
-        } else if (predObj instanceof String) {
-          return Long.valueOf(predObj.toString());
-        }
-      } else if (statsObj instanceof Double) {
-        if (predObj instanceof Long) {
-          return ((Long) predObj).doubleValue();
-        } else if (predObj instanceof HiveDecimal) {
-          return ((HiveDecimal) predObj).doubleValue();
-        } else if (predObj instanceof String) {
-          return Double.valueOf(predObj.toString());
-        }
-      } else if (statsObj instanceof String) {
-        return predObj.toString();
-      } else if (statsObj instanceof HiveDecimal) {
-        if (predObj instanceof Long) {
-          return HiveDecimal.create(((Long) predObj));
-        } else if (predObj instanceof Double) {
-          return HiveDecimal.create(predObj.toString());
-        } else if (predObj instanceof String) {
-          return HiveDecimal.create(predObj.toString());
-        } else if (predObj instanceof BigDecimal) {
-          return HiveDecimal.create((BigDecimal)predObj);
-        }
-      }
+    } else {
+      return null;
     }
-    return predObj;
-  }
-
-  private static Object getConvertedStatsObj(Object statsObj, Object predObj) {
-
-    // converting between date and other types is not implicit, so convert to
-    // text for comparison
-    if (((predObj instanceof DateWritable) && !(statsObj instanceof DateWritable))
-        || ((statsObj instanceof DateWritable) && !(predObj instanceof DateWritable))) {
-      return StringUtils.stripEnd(statsObj.toString(), null);
+    switch (type) {
+      case BOOLEAN:
+        if (obj instanceof Boolean) {
+          return obj;
+        } else {
+          // will only be true if the string conversion yields "true", all other values are
+          // considered false
+          return Boolean.valueOf(obj.toString());
+        }
+      case DATE:
+        if (obj instanceof Date) {
+          return obj;
+        } else if (obj instanceof String) {
+          return Date.valueOf((String) obj);
+        } else if (obj instanceof Timestamp) {
+          return DateWritable.timeToDate(((Timestamp) obj).getTime() / 1000L);
+        }
+        // always string, but prevent the comparison to numbers (are they days/seconds/milliseconds?)
+        break;
+      case DECIMAL:
+        if (obj instanceof Boolean) {
+          return ((Boolean) obj).booleanValue() ? HiveDecimal.ONE : HiveDecimal.ZERO;
+        } else if (obj instanceof Integer) {
+          return HiveDecimal.create(((Integer) obj).intValue());
+        } else if (obj instanceof Long) {
+          return HiveDecimal.create(((Long) obj));
+        } else if (obj instanceof Float || obj instanceof Double ||
+            obj instanceof String) {
+          return HiveDecimal.create(obj.toString());
+        } else if (obj instanceof BigDecimal) {
+          return HiveDecimal.create((BigDecimal) obj);
+        } else if (obj instanceof HiveDecimal) {
+          return obj;
+        } else if (obj instanceof Timestamp) {
+          return HiveDecimal.create(
+              new Double(new TimestampWritable((Timestamp) obj).getDouble()).toString());
+        }
+        break;
+      case FLOAT:
+        if (obj instanceof Number) {
+          // widening conversion
+          return ((Number) obj).doubleValue();
+        } else if (obj instanceof HiveDecimal) {
+          return ((HiveDecimal) obj).doubleValue();
+        } else if (obj instanceof String) {
+          return Double.valueOf(obj.toString());
+        } else if (obj instanceof Timestamp) {
+          return new TimestampWritable((Timestamp)obj).getDouble();
+        } else if (obj instanceof HiveDecimal) {
+          return ((HiveDecimal) obj).doubleValue();
+        } else if (obj instanceof BigDecimal) {
+          return ((BigDecimal) obj).doubleValue();
+        }
+        break;
+      case INTEGER:
+        // fall through
+      case LONG:
+        if (obj instanceof Number) {
+          // widening conversion
+          return ((Number) obj).longValue();
+        } else if (obj instanceof HiveDecimal) {
+          return ((HiveDecimal) obj).longValue();
+        } else if (obj instanceof String) {
+          return Long.valueOf(obj.toString());
+        }
+        break;
+      case STRING:
+        if (obj != null) {
+          return (obj.toString());
+        }
+        break;
+      case TIMESTAMP:
+        if (obj instanceof Timestamp) {
+          return obj;
+        } else if (obj instanceof Float) {
+          return TimestampWritable.doubleToTimestamp(((Float) obj).doubleValue());
+        } else if (obj instanceof Double) {
+          return TimestampWritable.doubleToTimestamp(((Double) obj).doubleValue());
+        } else if (obj instanceof HiveDecimal) {
+          return TimestampWritable.decimalToTimestamp((HiveDecimal) obj);
+        } else if (obj instanceof Date) {
+          return new Timestamp(((Date) obj).getTime());
+        }
+        // float/double conversion to timestamp is interpreted as seconds whereas integer conversion
+        // to timestamp is interpreted as milliseconds by default. The integer to timestamp casting
+        // is also config driven. The filter operator changes its promotion based on config:
+        // "int.timestamp.conversion.in.seconds". Disable PPD for integer cases.
+        break;
+      default:
+        break;
     }
 
-    if (statsObj instanceof String) {
-      return StringUtils.stripEnd(statsObj.toString(), null);
-    }
-    return statsObj;
+    throw new IllegalArgumentException(String.format(
+        "ORC SARGS could not convert from %s to %s", obj == null ? "(null)" : obj.getClass()
+            .getSimpleName(), type));
   }
 
   public static class SargApplier {
