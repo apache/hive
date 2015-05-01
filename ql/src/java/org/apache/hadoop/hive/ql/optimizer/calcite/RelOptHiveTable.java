@@ -352,4 +352,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
     return true;
   }
+
+  public Map<Integer, ColumnInfo> getPartColInfoMap() {
+    return hivePartitionColsMap;
+  }
 }

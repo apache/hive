@@ -345,10 +345,9 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(DISTINCT _col1)
                       keys: _col0 (type: tinyint), _col1 (type: double)
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: double)
@@ -360,21 +359,26 @@ STAGE PLANS:
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(DISTINCT KEY._col1:0._col0)
-                keys: KEY._col0 (type: tinyint)
+                keys: KEY._col0 (type: tinyint), KEY._col1 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
-                Limit
-                  Number of rows: 20
-                  Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: tinyint)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
                     Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -390,26 +394,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc grou
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	2932
--64	24
--63	19
--62	27
--61	25
--60	27
--59	31
--58	23
--57	35
--56	36
--55	29
--54	26
--53	22
--52	33
--51	21
--50	30
--49	26
--48	29
--47	22
--46	24
+NULL	19
 PREHOOK: query: -- limit zero
 explain
 select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
