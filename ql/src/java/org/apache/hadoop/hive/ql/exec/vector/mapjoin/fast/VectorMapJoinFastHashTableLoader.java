@@ -62,7 +62,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
   @Override
   public void load(MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage)
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException {
 
     Map<Integer, String> parentToInput = desc.getParentToInput();
@@ -91,7 +91,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
 
         VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer =
-                new VectorMapJoinFastTableContainer(desc, hconf, keyCount, memUsage);
+                new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
         while (kvReader.next()) {
           vectorMapJoinFastTableContainer.putRow(

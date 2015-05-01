@@ -38,7 +38,7 @@ public abstract class VectorMapJoinFastHashSet
 
   public VectorMapJoinFastHashSet(
         boolean isOuterJoin,
-        int initialCapacity, float loadFactor, int writeBuffersSize, long memUsage) {
-    super(initialCapacity, loadFactor, writeBuffersSize, memUsage);
+        int initialCapacity, float loadFactor, int writeBuffersSize) {
+    super(initialCapacity, loadFactor, writeBuffersSize);
   }
 }

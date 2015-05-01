@@ -311,8 +311,10 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   }
 
   @Override
-  protected void reProcessBigTable(HybridHashTableContainer.HashPartition partition)
+  protected void reProcessBigTable(int partitionId)
       throws HiveException {
+
+    HybridHashTableContainer.HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
     ObjectContainer bigTable = partition.getMatchfileObjContainer();
 
     DataOutputBuffer dataOutputBuffer = new DataOutputBuffer();

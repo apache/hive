@@ -1,3 +1,11 @@
+-- Hybrid Grace Hash Join
+-- Test basic functionalities:
+-- 1. Various cases when hash partitions spill
+-- 2. Partitioned table spilling
+-- 3. Vectorization
+
+SELECT 1;
+
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask.size=1300000;
 set hive.mapjoin.optimized.hashtable.wbsize=880000;

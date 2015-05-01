@@ -744,10 +744,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     // Setup a scratch batch that will be used to play back big table rows that were spilled
     // to disk for the Hybrid Grace hash partitioning.
     spillReplayBatch = VectorizedBatchUtil.makeLike(batch);
-
-    // TEMPORARY -- Set this up for Hybrid Grace logic in MapJoinOperator.closeOp
-    hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
-    smallTable = posSingleVectorMapJoinSmallTable;
   }
 
   protected void displayBatchColumns(VectorizedRowBatch batch, String batchName) {
