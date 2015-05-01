@@ -98,8 +98,8 @@ public class TestTxnCommands2 {
         d.destroy();
         d.close();
         d = null;
-        TxnDbUtil.cleanDb();
       }
+      TxnDbUtil.cleanDb();
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
@@ -107,15 +107,15 @@ public class TestTxnCommands2 {
   @Ignore("not needed but useful for testing")
   @Test
   public void testNonAcidInsert() throws Exception {
-    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " values(1,2)");
     List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
-    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(2,3)");
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " values(2,3)");
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
   }
   @Test
   public void testUpdateMixedCase() throws Exception {
     int[][] tableData = {{1,2},{3,3},{5,3}};
-    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData));
     runStatementOnDriver("update " + Table.ACIDTBL + " set B = 7 where A=1");
     List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] updatedData = {{1,7},{3,3},{5,3}};
@@ -125,27 +125,27 @@ public class TestTxnCommands2 {
     int[][] updatedData2 = {{1,8},{3,3},{5,3}};
     Assert.assertEquals("Update failed", stringifyValues(updatedData2), rs2);
   }
-  @Test
-  public void testDeleteIn() throws Exception {
-    int[][] tableData = {{1,2},{3,2},{5,2},{1,3},{3,3},{5,3}};
-    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
-    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,7),(3,7)");
-    //todo: once multistatement txns are supported, add a test to run next 2 statements in a single txn
-    runStatementOnDriver("delete from " + Table.ACIDTBL + " where a in(select a from " + Table.NONACIDORCTBL + ")");
-    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) select a,b from " + Table.NONACIDORCTBL);
-    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
-    int[][] updatedData = {{1,7},{3,7},{5,2},{5,3}};
-    Assert.assertEquals("Bulk update failed", stringifyValues(updatedData), rs);
-    runStatementOnDriver("update " + Table.ACIDTBL + " set b=19 where b in(select b from " + Table.NONACIDORCTBL + " where a = 3)");
-    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
-    int[][] updatedData2 = {{1,19},{3,19},{5,2},{5,3}};
-    Assert.assertEquals("Bulk update2 failed", stringifyValues(updatedData2), rs2);
-  }
 
+  /**
+   * https://issues.apache.org/jira/browse/HIVE-10151
+   */
+  @Test
+  public void testBucketizedInputFormat() throws Exception {
+    int[][] tableData = {{1,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=1) " + makeValuesClause(tableData));
+
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " select a,b from " + Table.ACIDTBLPART + " where p = 1");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL);//no order by as it's just 1 row
+    Assert.assertEquals("Insert into " + Table.ACIDTBL + " didn't match:", stringifyValues(tableData), rs);
+
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " select a,b from " + Table.ACIDTBLPART + " where p = 1");
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);//no order by as it's just 1 row
+    Assert.assertEquals("Insert into " + Table.NONACIDORCTBL + " didn't match:", stringifyValues(tableData), rs2);
+  }
   @Test
   public void testInsertOverwriteWithSelfJoin() throws Exception {
     int[][] part1Data = {{1,7}};
-    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) " + makeValuesClause(part1Data));
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(part1Data));
     //this works because logically we need S lock on NONACIDORCTBL to read and X lock to write, but
     //LockRequestBuilder dedups locks on the same entity to only keep the highest level lock requested
     runStatementOnDriver("insert overwrite table " + Table.NONACIDORCTBL + " select 2, 9 from " + Table.NONACIDORCTBL + " T inner join " + Table.NONACIDORCTBL + " S on T.a=S.a");
@@ -153,8 +153,8 @@ public class TestTxnCommands2 {
     int[][] joinData = {{2,9}};
     Assert.assertEquals("Self join non-part insert overwrite failed", stringifyValues(joinData), rs);
     int[][] part2Data = {{1,8}};
-    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=1) (a,b) " + makeValuesClause(part1Data));
-    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=2) (a,b) " + makeValuesClause(part2Data));
+    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=1) " + makeValuesClause(part1Data));
+    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p=2) " + makeValuesClause(part2Data));
     //here we need X lock on p=1 partition to write and S lock on 'table' to read which should
     //not block each other since they are part of the same txn
     runStatementOnDriver("insert overwrite table " + Table.NONACIDPART + " partition(p=1) select a,b from " + Table.NONACIDPART);

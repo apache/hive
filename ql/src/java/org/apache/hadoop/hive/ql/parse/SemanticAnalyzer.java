@@ -12281,7 +12281,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Even if the table is of Acid type, if we aren't working with an Acid compliant TxnManager
   // then return false.
-  private boolean isAcidTable(Table tab) {
+  public static boolean isAcidTable(Table tab) {
     if (tab == null) return false;
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
     String tableIsTransactional =

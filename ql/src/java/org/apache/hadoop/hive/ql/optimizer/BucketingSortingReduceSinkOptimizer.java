@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -216,6 +217,9 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     private void storeBucketPathMapping(TableScanOperator tsOp, FileStatus[] srcs) {
       Map<String, Integer> bucketFileNameMapping = new HashMap<String, Integer>();
       for (int pos = 0; pos < srcs.length; pos++) {
+        if(!srcs[pos].isFile()) {
+          throw new RuntimeException("Was expecting '" + srcs[pos].getPath() + "' to be bucket file.");
+        }
         bucketFileNameMapping.put(srcs[pos].getPath().getName(), pos);
       }
       tsOp.getConf().setBucketFileNameMapping(bucketFileNameMapping);
@@ -378,6 +382,14 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
         return null;
       }
 
+      if(stack.get(0) instanceof TableScanOperator) {
+        TableScanOperator tso = ((TableScanOperator)stack.get(0));
+        if(SemanticAnalyzer.isAcidTable(tso.getConf().getTableMetadata())) {
+          /*ACID tables have complex directory layout and require merging of delta files
+          * on read thus we should not try to read bucket files directly*/
+          return null;
+        }
+      }
       // Support for dynamic partitions can be added later
       if (fsOp.getConf().getDynPartCtx() != null) {
         return null;
