@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -125,6 +126,20 @@ public abstract class VectorMapJoinInnerGenerateResultOperator
   /*
    * Inner join (hash map).
    */
+
+  /**
+   * Do the per-batch setup for an inner join.
+   */
+  protected void innerPerBatchSetup(VectorizedRowBatch batch) {
+
+    // For join operators that can generate small table results, reset their
+    // (target) scratch columns.
+
+    for (int column : smallTableOutputVectorColumns) {
+      ColumnVector smallTableColumn = batch.cols[column];
+      smallTableColumn.reset();
+    }
+  }
 
   /**
    * Generate the inner join output results for one vectorized row batch.

@@ -116,6 +116,11 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
 
       batchCounter++;
 
+      // Do the per-batch setup for an left semi join.
+
+      // (Currently none)
+      // leftSemiPerBatchSetup(batch);
+
       // For left semi joins, we may apply the filter(s) now.
       for(VectorExpression ve : bigTableFilterExpressions) {
         ve.evaluate(batch);
