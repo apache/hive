@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -44,6 +45,7 @@ import org.apache.thrift.transport.TTransportException;
  * each call.
  *
  */
+@Public
 public class RetryingMetaStoreClient implements InvocationHandler {
 
   private static final Log LOG = LogFactory.getLog(RetryingMetaStoreClient.class.getName());
@@ -68,11 +70,19 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         HiveConf.class, HiveMetaHookLoader.class}, new Object[] {hiveConf, hookLoader});
   }
 
+  public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader) throws MetaException {
+    return getProxy(hiveConf, hookLoader, null, HiveMetaStoreClient.class.getName());
+  }
+
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       String mscClassName) throws MetaException {
     return getProxy(hiveConf, hookLoader, null, mscClassName);
   }
 
+  /**
+   * This constructor is meant for Hive internal use only.
+   * Please use getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader) for external purpose.
+   */
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, String mscClassName) throws MetaException {
 

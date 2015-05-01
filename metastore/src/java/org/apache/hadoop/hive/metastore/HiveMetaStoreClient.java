@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -153,6 +152,8 @@ import org.apache.thrift.transport.TTransportException;
  * Hive Metastore Client.
  * The public implementation of IMetaStoreClient. Methods not inherited from IMetaStoreClient
  * are not public and can change. Hence this is marked as unstable.
+ * For users who require retry mechanism when the connection between metastore and client is
+ * broken, RetryingMetaStoreClient class should be used.
  */
 @Public
 @Unstable
