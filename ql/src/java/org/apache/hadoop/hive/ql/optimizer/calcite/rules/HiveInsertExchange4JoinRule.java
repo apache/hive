@@ -29,6 +29,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.rules.MultiJoin;
+import org.apache.calcite.rex.RexNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -91,6 +92,7 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
     List<RelNode> newInputs = new ArrayList<RelNode>();
     for (int i=0; i<call.rel(0).getInputs().size(); i++) {
       List<Integer> joinKeyPositions = new ArrayList<Integer>();
+      ImmutableList.Builder<RexNode> keyListBuilder = new ImmutableList.Builder<RexNode>();
       ImmutableList.Builder<RelFieldCollation> collationListBuilder =
               new ImmutableList.Builder<RelFieldCollation>();
       for (int j = 0; j < joinPredInfo.getEquiJoinPredicateElements().size(); j++) {
@@ -100,12 +102,14 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
           if (!joinKeyPositions.contains(pos)) {
             joinKeyPositions.add(pos);
             collationListBuilder.add(new RelFieldCollation(pos));
+            keyListBuilder.add(joinLeafPredInfo.getJoinKeyExprs(i).get(0));
           }
         }
       }
       HiveSortExchange exchange = HiveSortExchange.create(call.rel(0).getInput(i),
               new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, joinKeyPositions),
-              new HiveRelCollation(collationListBuilder.build()));
+              new HiveRelCollation(collationListBuilder.build()),
+              keyListBuilder.build());
       newInputs.add(exchange);
     }
 
