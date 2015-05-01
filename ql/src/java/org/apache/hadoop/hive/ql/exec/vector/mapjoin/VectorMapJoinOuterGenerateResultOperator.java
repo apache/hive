@@ -126,6 +126,25 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    */
 
   /**
+   * Do the per-batch setup for an outer join.
+   */
+  protected void outerPerBatchSetup(VectorizedRowBatch batch) {
+
+    // For join operators that can generate small table results, reset their
+    // (target) scratch columns.
+
+    for (int column : smallTableOutputVectorColumns) {
+      ColumnVector smallTableColumn = batch.cols[column];
+      smallTableColumn.reset();
+    }
+
+    for (int column : bigTableOuterKeyOutputVectorColumns) {
+      ColumnVector bigTableOuterKeyColumn = batch.cols[column];
+      bigTableOuterKeyColumn.reset();
+    }
+  }
+
+  /**
    * Generate the outer join output results for one vectorized row batch.
    *
    * Any filter expressions will apply now since hash map lookup for outer join is complete.
@@ -413,7 +432,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
        // Mark any scratch small table scratch columns that would normally receive a copy of the
        // key as null and repeating.
-       for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+       for (int column : bigTableOuterKeyOutputVectorColumns) {
          ColumnVector colVector = batch.cols[column];
          colVector.isRepeating = true;
          colVector.noNulls = false;
@@ -421,7 +440,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
        }
 
        // Small table values are set to null and repeating.
-       for (int column : smallTableMapping.getOutputColumns()) {
+       for (int column : smallTableOutputVectorColumns) {
          ColumnVector colVector = batch.cols[column];
          colVector.isRepeating = true;
          colVector.noNulls = false;
@@ -442,14 +461,14 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
          // Mark any scratch small table scratch columns that would normally receive a copy of the
          // key as null, too.
-         for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+         for (int column : bigTableOuterKeyOutputVectorColumns) {
            ColumnVector colVector = batch.cols[column];
            colVector.noNulls = false;
            colVector.isNull[batchIndex] = true;
          }
 
          // Small table values are set to null.
-         for (int column : smallTableMapping.getOutputColumns()) {
+         for (int column : smallTableOutputVectorColumns) {
            ColumnVector colVector = batch.cols[column];
            colVector.noNulls = false;
            colVector.isNull[batchIndex] = true;
@@ -573,7 +592,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       batch.selectedInUse = true;
     }
 
-    for (int column : smallTableMapping.getOutputColumns()) {
+    for (int column : smallTableOutputVectorColumns) {
       ColumnVector colVector = batch.cols[column];
       colVector.noNulls = false;
       colVector.isNull[0] = true;
@@ -582,7 +601,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
     // Mark any scratch small table scratch columns that would normally receive a copy of the key
     // as null, too.
-   for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+   for (int column : bigTableOuterKeyOutputVectorColumns) {
       ColumnVector colVector = batch.cols[column];
       colVector.noNulls = false;
       colVector.isNull[0] = true;

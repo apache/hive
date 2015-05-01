@@ -115,6 +115,10 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
 
       batchCounter++;
 
+      // Do the per-batch setup for an outer join.
+
+      outerPerBatchSetup(batch);
+
       // For outer join, DO NOT apply filters yet.  It is incorrect for outer join to
       // apply the filter before hash table matching.
 

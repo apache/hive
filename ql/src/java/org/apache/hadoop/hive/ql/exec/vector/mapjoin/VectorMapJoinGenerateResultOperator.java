@@ -331,7 +331,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         }
         if (bigTableVectorCopyOuterKeys != null) {
           bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, overflowBatch, 0);
-          for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+          for (int column : bigTableOuterKeyOutputVectorColumns) {
             overflowBatch.cols[column].isRepeating = true;
           }
         }
@@ -347,7 +347,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         }
 
         if (bigTableVectorCopyOuterKeys != null) {
-          for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+          for (int column : bigTableOuterKeyOutputVectorColumns) {
             ColumnVector colVector = overflowBatch.cols[column];
             colVector.reset();
           }

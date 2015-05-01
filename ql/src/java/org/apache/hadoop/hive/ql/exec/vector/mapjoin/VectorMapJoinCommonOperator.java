@@ -132,6 +132,10 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   // to output batch scratch columns for the small table portion.
   protected VectorColumnSourceMapping smallTableMapping;
 
+  // These are the output columns for the small table and the outer small table keys.
+  protected int[] smallTableOutputVectorColumns;
+  protected int[] bigTableOuterKeyOutputVectorColumns;
+
   // These are the columns in the big and small table that are ByteColumnVector columns.
   // We create data buffers for these columns so we can copy strings into those columns by value.
   protected int[] bigTableByteColumnVectorColumns;
@@ -414,6 +418,9 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     bigTableOuterKeyMapping.finalize();
 
     smallTableMapping.finalize();
+
+    bigTableOuterKeyOutputVectorColumns = bigTableOuterKeyMapping.getOutputColumns();
+    smallTableOutputVectorColumns = smallTableMapping.getOutputColumns();
 
     // Which big table and small table columns are ByteColumnVector and need have their data buffer
     // to be manually reset for some join result processing?
