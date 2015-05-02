@@ -512,7 +512,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     final Path finalOutputPath = getFinalPath(fs, file, srcDir, destDir, immutable);
     FileStatus fileStatus = fs.getFileStatus(file);
 
-    if (fileStatus.isFile()) {
+    if (!fileStatus.isDir()) {
       if (dryRun){
         if (immutable){
           // Dryrun checks are meaningless for mutable table - we should always succeed
@@ -542,7 +542,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           }
         }
       }
-    } else if (fileStatus.isDirectory()) {
+    } else {
 
       FileStatus[] children = fs.listStatus(file);
       FileStatus firstChild = null;
@@ -612,10 +612,6 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
         }
       }
-    } else {
-      // Should never happen
-      final String msg = "Unknown file type being asked to be moved, erroring out";
-      throw new HCatException(ErrorType.ERROR_MOVE_FAILED, msg);
     }
   }
 
