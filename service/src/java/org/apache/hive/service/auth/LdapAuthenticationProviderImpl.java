@@ -132,7 +132,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       user  = user + "@" + ldapDomain;
     }
 
-    if (password == null || password.isEmpty()) {
+    if (password == null || password.isEmpty() || password.getBytes()[0] == 0) {
       throw new AuthenticationException("Error validating LDAP user:" +
           " a null or blank password has been provided");
     }
