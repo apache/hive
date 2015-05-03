@@ -782,7 +782,7 @@ public class Hive {
       }
 
       org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
-      if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
+      if (TableType.VIRTUAL_VIEW.toString().equals(baseTbl.getTableType())) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
       if (baseTbl.isTemporary()) {
