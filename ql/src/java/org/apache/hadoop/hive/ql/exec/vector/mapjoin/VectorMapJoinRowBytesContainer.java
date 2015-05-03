@@ -290,7 +290,7 @@ public class VectorMapJoinRowBytesContainer {
     return currentLength;
   }
 
-  public void clear() throws IOException {
+  public void clear() {
     if (fileInputStream != null) {
       try {
         fileInputStream.close();

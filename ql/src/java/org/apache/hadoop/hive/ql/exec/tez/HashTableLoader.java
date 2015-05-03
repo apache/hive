@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -181,10 +180,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
-      } catch (IOException e) {
-        throw new HiveException(e);
-      } catch (SerDeException e) {
-        throw new HiveException(e);
       } catch (Exception e) {
         throw new HiveException(e);
       }

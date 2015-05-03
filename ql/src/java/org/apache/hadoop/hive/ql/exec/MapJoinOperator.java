@@ -284,7 +284,17 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(mapContext, mrContext, hconf, this);
-    loader.load(mapJoinTables, mapJoinTableSerdes);
+    try {
+      loader.load(mapJoinTables, mapJoinTableSerdes);
+    } catch (HiveException e) {
+      if (isLogInfoEnabled) {
+        LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
+      }
+
+      // there could be some spilled partitions which needs to be cleaned up
+      clearAllTableContainers();
+      throw e;
+    }
 
     hashTblInitedOnce = true;
 
@@ -433,7 +443,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   public void closeOp(boolean abort) throws HiveException {
     boolean spilled = false;
-    for (MapJoinTableContainer container: mapJoinTables) {
+    for (MapJoinTableContainer container : mapJoinTables) {
       if (container != null) {
         spilled = spilled || container.hasSpill();
         container.dumpMetrics();
@@ -442,79 +452,93 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // For Hybrid Grace Hash Join, we need to see if there is any spilled data to be processed next
     if (spilled) {
-      if (hashMapRowGetters == null) {
-        hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
-      }
-      int numPartitions = 0;
-      // Find out number of partitions for each small table (should be same across tables)
-      for (byte pos = 0; pos < mapJoinTables.length; pos++) {
-        if (pos != conf.getPosBigTable()) {
-          firstSmallTable = (HybridHashTableContainer)mapJoinTables[pos];
-          numPartitions = firstSmallTable.getHashPartitions().length;
-          break;
+      if (!abort) {
+        if (hashMapRowGetters == null) {
+          hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
         }
-      }
-      assert numPartitions != 0 : "Number of partitions must be greater than 0!";
-
-      if (firstSmallTable.hasSpill()) {
-        spilledMapJoinTables = new MapJoinBytesTableContainer[mapJoinTables.length];
-        hybridMapJoinLeftover = true;
-
-        // Clear all in-memory partitions first
+        int numPartitions = 0;
+        // Find out number of partitions for each small table (should be same across tables)
         for (byte pos = 0; pos < mapJoinTables.length; pos++) {
-          MapJoinTableContainer tableContainer = mapJoinTables[pos];
-          if (tableContainer != null && tableContainer instanceof HybridHashTableContainer) {
-            HybridHashTableContainer hybridHtContainer = (HybridHashTableContainer) tableContainer;
-            hybridHtContainer.dumpStats();
+          if (pos != conf.getPosBigTable()) {
+            firstSmallTable = (HybridHashTableContainer) mapJoinTables[pos];
+            numPartitions = firstSmallTable.getHashPartitions().length;
+            break;
+          }
+        }
+        assert numPartitions != 0 : "Number of partitions must be greater than 0!";
 
-            HashPartition[] hashPartitions = hybridHtContainer.getHashPartitions();
-            // Clear all in memory partitions first
-            for (int i = 0; i < hashPartitions.length; i++) {
-              if (!hashPartitions[i].isHashMapOnDisk()) {
-                hybridHtContainer.setTotalInMemRowCount(
-                    hybridHtContainer.getTotalInMemRowCount() -
-                        hashPartitions[i].getHashMapFromMemory().getNumValues());
-                hashPartitions[i].getHashMapFromMemory().clear();
+        if (firstSmallTable.hasSpill()) {
+          spilledMapJoinTables = new MapJoinBytesTableContainer[mapJoinTables.length];
+          hybridMapJoinLeftover = true;
+
+          // Clear all in-memory partitions first
+          for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+            MapJoinTableContainer tableContainer = mapJoinTables[pos];
+            if (tableContainer != null && tableContainer instanceof HybridHashTableContainer) {
+              HybridHashTableContainer hybridHtContainer = (HybridHashTableContainer) tableContainer;
+              hybridHtContainer.dumpStats();
+
+              HashPartition[] hashPartitions = hybridHtContainer.getHashPartitions();
+              // Clear all in memory partitions first
+              for (int i = 0; i < hashPartitions.length; i++) {
+                if (!hashPartitions[i].isHashMapOnDisk()) {
+                  hybridHtContainer.setTotalInMemRowCount(
+                      hybridHtContainer.getTotalInMemRowCount() -
+                          hashPartitions[i].getHashMapFromMemory().getNumValues());
+                  hashPartitions[i].getHashMapFromMemory().clear();
+                }
+              }
+              assert hybridHtContainer.getTotalInMemRowCount() == 0;
+            }
+          }
+
+          // Reprocess the spilled data
+          for (int i = 0; i < numPartitions; i++) {
+            HashPartition[] hashPartitions = firstSmallTable.getHashPartitions();
+            if (hashPartitions[i].isHashMapOnDisk()) {
+              try {
+                continueProcess(i);     // Re-process spilled data
+              } catch (Exception e) {
+                throw new HiveException(e);
+              }
+              for (byte pos = 0; pos < order.length; pos++) {
+                if (pos != conf.getPosBigTable())
+                  spilledMapJoinTables[pos] = null;
               }
             }
-            assert hybridHtContainer.getTotalInMemRowCount() == 0;
-          }
-        }
-
-        // Reprocess the spilled data
-        for (int i = 0; i < numPartitions; i++) {
-          HashPartition[] hashPartitions = firstSmallTable.getHashPartitions();
-          if (hashPartitions[i].isHashMapOnDisk()) {
-            try {
-              continueProcess(i);     // Re-process spilled data
-            } catch (IOException e) {
-              e.printStackTrace();
-            } catch (SerDeException e) {
-              e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-              e.printStackTrace();
-            }
-            for (byte pos = 0; pos < order.length; pos++) {
-              if (pos != conf.getPosBigTable())
-                spilledMapJoinTables[pos] = null;
-            }
           }
         }
       }
+
+      if (isLogInfoEnabled) {
+        LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
+      }
+
+      // spilled tables are loaded always (no sharing), so clear it
+      clearAllTableContainers();
+      cache.remove(cacheKey);
     }
 
+    // in mapreduce case, we need to always clear up as mapreduce doesn't have object registry.
     if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
-        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
-        && mapJoinTables != null) {
+        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())) {
+      if (isLogInfoEnabled) {
+        LOG.info("MR: Clearing all map join table containers.");
+      }
+      clearAllTableContainers();
+    }
+
+    super.closeOp(abort);
+  }
+
+  private void clearAllTableContainers() {
+    if (mapJoinTables != null) {
       for (MapJoinTableContainer tableContainer : mapJoinTables) {
         if (tableContainer != null) {
           tableContainer.clear();
         }
       }
     }
-    cache.release(cacheKey);
-    this.loader = null;
-    super.closeOp(abort);
   }
 
   /**
