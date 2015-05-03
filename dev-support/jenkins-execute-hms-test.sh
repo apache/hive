@@ -95,7 +95,7 @@ build_ptest2() {
 
 	test -d $path || mkdir -p $path
 	rm -rf $path
-	git clone --depth 1 -b $BRANCH https://git-wip-us.apache.org/repos/asf/hive.git $path/ || return 1
+	git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git $path/ || return 1
 	cd $path/testutils/ptest2
 	mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$WORKSPACE/.m2 || return 1
 
@@ -170,7 +170,7 @@ create_publish_file() {
 if patch_contains_hms_upgrade "$PATCH_URL"; then
 	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_HOST "
 		rm -rf hive/ &&
-		git clone --depth 1 -b $BRANCH https://git-wip-us.apache.org/repos/asf/hive.git &&
+		git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git &&
 		cd hive/ &&
 		curl ${PATCH_URL} | bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh - &&
 		sudo bash -x testutils/metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\" --branch $BRANCH
