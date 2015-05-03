@@ -93,4 +93,10 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
       }
     });
   }
+
+  @Override
+  public void remove(String key) {
+    LOG.info("Removing key: " + key);
+    registry.delete(key);
+  }
 }

@@ -183,6 +183,36 @@ public class HybridHashTableContainer
     public boolean isHashMapOnDisk() {
       return hashMapOnDisk;
     }
+
+    public void clear() {
+      if (hashMap != null) {
+        hashMap.clear();
+        hashMap = null;
+      }
+
+      if (hashMapLocalPath != null) {
+        try {
+          Files.delete(hashMapLocalPath);
+        } catch (Throwable ignored) {
+        }
+        hashMapLocalPath = null;
+      }
+
+      if (sidefileKVContainer != null) {
+        sidefileKVContainer.clear();
+        sidefileKVContainer = null;
+      }
+
+      if (matchfileObjContainer != null) {
+        matchfileObjContainer.clear();
+        matchfileObjContainer = null;
+      }
+
+      if (matchfileRowBytesContainer != null) {
+        matchfileRowBytesContainer.clear();
+        matchfileRowBytesContainer = null;
+      }
+    }
   }
 
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memoryAvailable,
@@ -546,12 +576,11 @@ public class HybridHashTableContainer
     return toSpillPartitionId;
   }
 
-  /* Clean up in memory hashtables */
   @Override
   public void clear() {
     for (HashPartition hp : hashPartitions) {
-      if (hp.hashMap != null) {
-        hp.hashMap.clear();
+      if (hp != null) {
+        hp.clear();
       }
     }
     memoryUsed = 0;

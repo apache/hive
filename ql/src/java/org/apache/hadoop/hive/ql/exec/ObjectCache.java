@@ -53,4 +53,11 @@ public interface ObjectCache {
    * @return the last cached object with the key, null if none.
    */
   public <T> Future<T> retrieveAsync(String key, Callable<T> fn) throws HiveException;
+
+  /**
+   * Removes the specified key from the object cache.
+   *
+   * @param key - key to be removed
+   */
+  public void remove(String key);
 }
