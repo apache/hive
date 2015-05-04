@@ -2024,8 +2024,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!p1.isSetValues() || !p2.isSetValues()) return p1.isSetValues() == p2.isSetValues();
         if (p1.getValues().size() != p2.getValues().size()) return false;
         for (int i = 0; i < p1.getValues().size(); ++i) {
-          String v1 = p1.getValues().get(i), v2 = p2.getValues().get(i);
-          if ((v1 == null && v2 != null) || !v1.equals(v2)) return false;
+          String v1 = p1.getValues().get(i);
+          String v2 = p2.getValues().get(i);
+          if (v1 == null && v2 == null) {
+            continue;
+          }
+          if (v1 == null || !v1.equals(v2)) {
+            return false;
+          }
         }
         return true;
       }
