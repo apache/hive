@@ -76,7 +76,7 @@ public class SpecialCases {
     if (ofclass == RCFileOutputFormat.class) {
       // RCFile specific parameter
       jobProperties.put(HiveConf.ConfVars.HIVE_RCFILE_COLUMN_NUMBER_CONF.varname,
-          Integer.toOctalString(
+          Integer.toString(
               jobInfo.getOutputSchema().getFields().size()));
     } else if (ofclass == OrcOutputFormat.class) {
       // Special cases for ORC
