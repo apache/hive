@@ -804,7 +804,8 @@ public class BeeLine implements Closeable {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
-        line = getOpts().isSilent() ? reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+        line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ?
+                 reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
 
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
