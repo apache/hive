@@ -56,7 +56,7 @@ import org.apache.thrift.TException;
  * - run a keep alive thread so the job doesn't end.
  * - Optionally, store the stdout, stderr, and exit value of the child
  *   in hdfs files.
- *   
+ *
  * A note on security.  When jobs are submitted through WebHCat that use HCatalog, it means that
  * metastore access is required.  Hive queries, of course, need metastore access.  This in turn
  * requires delegation token to be obtained for metastore in a <em>secure cluster</em>.  Since we
@@ -80,6 +80,11 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     this.appConf = conf;
   }
 
+  @Override
+  public Configuration getConf() {
+    return appConf;
+  }
+
   private JobID submittedJobId;
 
   public String getSubmittedId() {
@@ -95,7 +100,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
    * @see org.apache.hive.hcatalog.templeton.CompleteDelegator
    */
   @Override
-  public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException, 
+  public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException,
           TException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Preparing to submit job: " + Arrays.toString(args));
@@ -169,9 +174,11 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
     UserGroupInformation real = ugi.getRealUser();
     return real.doAs(new PrivilegedExceptionAction<String>() {
+      @Override
       public String run() throws IOException, TException, InterruptedException  {
         final HiveMetaStoreClient client = new HiveMetaStoreClient(c);
         return ugi.doAs(new PrivilegedExceptionAction<String>() {
+          @Override
           public String run() throws IOException, TException, InterruptedException {
             String u = ugi.getUserName();
             return client.getDelegationToken(u);
