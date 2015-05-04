@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * This transformation does optimization for enforcing bucketing and sorting.
@@ -216,7 +217,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     private void storeBucketPathMapping(TableScanOperator tsOp, FileStatus[] srcs) {
       Map<String, Integer> bucketFileNameMapping = new HashMap<String, Integer>();
       for (int pos = 0; pos < srcs.length; pos++) {
-        if(!srcs[pos].isFile()) {
+        if (ShimLoader.getHadoopShims().isDirectory(srcs[pos])) {
           throw new RuntimeException("Was expecting '" + srcs[pos].getPath() + "' to be bucket file.");
         }
         bucketFileNameMapping.put(srcs[pos].getPath().getName(), pos);
