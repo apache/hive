@@ -1623,6 +1623,13 @@ public class HiveConf extends Configuration {
         "of updating the original list means that you can append to the defaults\n" +
         "set by SQL standard authorization instead of replacing it entirely."),
 
+    HIVE_AUTHORIZATION_HDFS_LIST_STATUS_BATCH_SIZE(
+      "hive.authprovider.hdfs.liststatus.batch.size", 1000,
+      "Number of FileStatus objects to be queried for when listing files, for HDFS-based authorization.\n" +
+          "Note: If this exceeds dfs.ls.limit (as set in hdfs-site.xml), DFSClient might use the smaller value as \n" +
+          "the batch-size, internally."
+    ),
+
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false, "Whether to print the names of the columns in query output."),
 
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
