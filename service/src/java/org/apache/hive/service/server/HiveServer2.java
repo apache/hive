@@ -23,6 +23,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -35,6 +37,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
+import org.apache.curator.framework.api.BackgroundCallback;
+import org.apache.curator.framework.api.CuratorEvent;
+import org.apache.curator.framework.api.CuratorEventType;
+import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -68,9 +74,11 @@ import org.apache.zookeeper.data.ACL;
  */
 public class HiveServer2 extends CompositeService {
   private static final Log LOG = LogFactory.getLog(HiveServer2.class);
+  private static CountDownLatch deleteSignal;
 
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
+  private PersistentEphemeralNode znode;
   private String znodePath;
   private CuratorFramework zooKeeperClient;
   private boolean registeredWithZooKeeper = false;
@@ -152,12 +160,19 @@ public class HiveServer2 extends CompositeService {
     String instanceURI = getServerInstanceURI(hiveConf);
     byte[] znodeDataUTF8 = instanceURI.getBytes(Charset.forName("UTF-8"));
     setUpZooKeeperAuth(hiveConf);
+    int sessionTimeout =
+        (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
+            TimeUnit.MILLISECONDS);
+    int baseSleepTime =
+        (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+            TimeUnit.MILLISECONDS);
+    int maxRetries = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
     // Create a CuratorFramework instance to be used as the ZooKeeper client
     // Use the zooKeeperAclProvider to create appropriate ACLs
     zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .aclProvider(zooKeeperAclProvider).retryPolicy(new ExponentialBackoffRetry(1000, 3))
-            .build();
+            .sessionTimeoutMs(sessionTimeout).aclProvider(zooKeeperAclProvider)
+            .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries)).build();
     zooKeeperClient.start();
     // Create the parent znodes recursively; ignore if the parent already exists.
     try {
@@ -177,18 +192,28 @@ public class HiveServer2 extends CompositeService {
           ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
               + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "serverUri=" + instanceURI + ";"
               + "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
-      znodePath =
-          zooKeeperClient.create().creatingParentsIfNeeded()
-              .withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(pathPrefix, znodeDataUTF8);
+      znode =
+          new PersistentEphemeralNode(zooKeeperClient,
+              PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL, pathPrefix, znodeDataUTF8);
+      znode.start();
+      // We'll wait for 120s for node creation
+      long znodeCreationTimeout = 120;
+      if (!znode.waitForInitialCreate(znodeCreationTimeout, TimeUnit.SECONDS)) {
+        throw new Exception("Max znode creation wait time: " + znodeCreationTimeout + "s exhausted");
+      }
       setRegisteredWithZooKeeper(true);
+      znodePath = znode.getActualPath();
       // Set a watch on the znode
       if (zooKeeperClient.checkExists().usingWatcher(new DeRegisterWatcher()).forPath(znodePath) == null) {
         // No node exists, throw exception
         throw new Exception("Unable to create znode for this HiveServer2 instance on ZooKeeper.");
       }
       LOG.info("Created a znode on ZooKeeper for HiveServer2 uri: " + instanceURI);
-    } catch (KeeperException e) {
+    } catch (Exception e) {
       LOG.fatal("Unable to create a znode for this server instance", e);
+      if (znode != null) {
+        znode.close();
+      }
       throw (e);
     }
   }
@@ -224,22 +249,33 @@ public class HiveServer2 extends CompositeService {
     @Override
     public void process(WatchedEvent event) {
       if (event.getType().equals(Watcher.Event.EventType.NodeDeleted)) {
-        HiveServer2.this.setRegisteredWithZooKeeper(false);
-        // If there are no more active client sessions, stop the server
-        if (cliService.getSessionManager().getOpenSessionCount() == 0) {
-          LOG.warn("This instance of HiveServer2 has been removed from the list of server "
-              + "instances available for dynamic service discovery. "
-              + "The last client session has ended - will shutdown now.");
-          HiveServer2.this.stop();
+        if (znode != null) {
+          try {
+            znode.close();
+            LOG.warn("This HiveServer2 instance is now de-registered from ZooKeeper. "
+                + "The server will be shut down after the last client sesssion completes.");
+          } catch (IOException e) {
+            LOG.error("Failed to close the persistent ephemeral znode", e);
+          } finally {
+            HiveServer2.this.setRegisteredWithZooKeeper(false);
+            // If there are no more active client sessions, stop the server
+            if (cliService.getSessionManager().getOpenSessionCount() == 0) {
+              LOG.warn("This instance of HiveServer2 has been removed from the list of server "
+                  + "instances available for dynamic service discovery. "
+                  + "The last client session has ended - will shutdown now.");
+              HiveServer2.this.stop();
+            }
+          }
         }
-        LOG.warn("This HiveServer2 instance is now de-registered from ZooKeeper. "
-            + "The server will be shut down after the last client sesssion completes.");
       }
     }
   }
 
   private void removeServerInstanceFromZooKeeper() throws Exception {
     setRegisteredWithZooKeeper(false);
+    if (znode != null) {
+      znode.close();
+    }
     zooKeeperClient.close();
     LOG.info("Server instance removed from ZooKeeper.");
   }
@@ -380,23 +416,51 @@ public class HiveServer2 extends CompositeService {
     HiveConf hiveConf = new HiveConf();
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
+    int baseSleepTime = (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
+    int maxRetries = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
     CuratorFramework zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+            .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries)).build();
     zooKeeperClient.start();
     List<String> znodePaths =
         zooKeeperClient.getChildren().forPath(
             ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
+    List<String> znodePathsUpdated;
     // Now for each path that is for the given versionNumber, delete the znode from ZooKeeper
-    for (String znodePath : znodePaths) {
+    for (int i = 0; i < znodePaths.size(); i++) {
+      String znodePath = znodePaths.get(i);
+      deleteSignal = new CountDownLatch(1);
       if (znodePath.contains("version=" + versionNumber + ";")) {
-        LOG.info("Removing the znode: " + znodePath + " from ZooKeeper");
-        zooKeeperClient.delete().forPath(
+        String fullZnodePath =
             ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
-                + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + znodePath);
+                + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + znodePath;
+        LOG.warn("Will attempt to remove the znode: " + fullZnodePath + " from ZooKeeper");
+        System.out.println("Will attempt to remove the znode: " + fullZnodePath + " from ZooKeeper");
+        zooKeeperClient.delete().guaranteed().inBackground(new DeleteCallBack())
+            .forPath(fullZnodePath);
+        // Wait for the delete to complete
+        deleteSignal.await();
+        // Get the updated path list
+        znodePathsUpdated =
+            zooKeeperClient.getChildren().forPath(
+                ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
+        // Gives a list of any new paths that may have been created to maintain the persistent ephemeral node
+        znodePathsUpdated.removeAll(znodePaths);
+        // Add the new paths to the znodes list. We'll try for their removal as well.
+        znodePaths.addAll(znodePathsUpdated);
       }
     }
     zooKeeperClient.close();
+  }
+
+  private static class DeleteCallBack implements BackgroundCallback {
+    @Override
+    public void processResult(CuratorFramework zooKeeperClient, CuratorEvent event)
+        throws Exception {
+      if (event.getType() == CuratorEventType.DELETE) {
+        deleteSignal.countDown();
+      }
+    }
   }
 
   public static void main(String[] args) {
@@ -568,6 +632,8 @@ public class HiveServer2 extends CompositeService {
       } catch (Exception e) {
         LOG.fatal("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper", e);
+        System.out.println("Error deregistering HiveServer2 instances for version: " + versionNumber
+            + " from ZooKeeper." + e);
         System.exit(-1);
       }
       System.exit(0);
