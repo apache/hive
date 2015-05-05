@@ -85,6 +85,17 @@ cd $workingDir/
   if [[ "${buildTool}" == "maven" ]]
   then
     rm -rf $workingDir/maven/org/apache/hive
+    #if($additionalProfiles)
+    echo "Compile check on additional Profiles: $additionalProfiles"
+    export ADDITIONAL_PROFILES=$additionalProfiles
+    for i in $(echo $ADDITIONAL_PROFILES | tr "," "\n")
+      do
+        mvn clean install -DskipTests -P$i;
+        cd itests
+        mvn clean install -DskipTests -P$i;
+        cd ..
+      done
+    #end
     mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
     mvn -B test -Dmaven.repo.local=$workingDir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
     cd itests

@@ -29,11 +29,11 @@ cd /some/working/dir/
     rm -rf ivy maven
   fi
   mkdir -p maven ivy
-  if [[ "git" = "svn" ]]
+  if [[ "svn" = "svn" ]]
   then
-    if [[ -n "branch-1" ]]
+    if [[ -n "" ]]
     then
-      echo "Illegal argument for svn: branch 'branch-1'."
+      echo "Illegal argument for svn: branch ''."
       exit 1
     fi
     if [[ -d apache-source ]] && [[ ! -d apache-source/.svn ]]
@@ -42,15 +42,15 @@ cd /some/working/dir/
     fi
     if [[ ! -d apache-source ]]
     then
-      svn co git:///repo1 apache-source
+      svn co https://svn.apache.org/repos/asf/hive/trunk apache-source
     fi
     cd apache-source
     svn revert -R .
     rm -rf $(svn status --no-ignore | egrep -v '^X|^Performing status on external' | awk '{print $2}')
     svn update
-  elif [[ "git" = "git" ]]
+  elif [[ "svn" = "git" ]]
   then
-     if [[ -z "branch-1" ]]
+     if [[ -z "" ]]
     then
       echo "Illegal argument for git: branch name is required."
       exit 1
@@ -61,17 +61,17 @@ cd /some/working/dir/
     fi
     if [[ ! -d apache-source ]]
     then
-      git clone git:///repo1 apache-source
+      git clone https://svn.apache.org/repos/asf/hive/trunk apache-source
     fi
     cd apache-source
     git fetch origin
     git reset --hard HEAD && git clean -f -d
-    git checkout branch-1 || git checkout -b branch-1 origin/branch-1
-    git reset --hard origin/branch-1
-    git merge --ff-only origin/branch-1
+    git checkout  || git checkout -b  origin/
+    git reset --hard origin/
+    git merge --ff-only origin/
     git gc
   else
-    echo "Unknown repository type 'git'"
+    echo "Unknown repository type 'svn'"
     exit 1
   fi
   patchCommandPath=/some/working/dir/scratch/smart-apply-patch.sh
@@ -81,21 +81,30 @@ cd /some/working/dir/
     chmod +x $patchCommandPath
     $patchCommandPath $patchFilePath
   fi
-  if [[ "${buildTool}" == "maven" ]]
+  if [[ "maven" == "maven" ]]
   then
     rm -rf /some/working/dir/maven/org/apache/hive
-        mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven -X -Phadoop-2
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy -X -Phadoop-1
+        echo "Compile check on additional Profiles: hadoop-1"
+    export ADDITIONAL_PROFILES=hadoop-1
+    for i in $(echo $ADDITIONAL_PROFILES | tr "," "\n")
+      do
+        mvn clean install -DskipTests -P$i;
+        cd itests
+        mvn clean install -DskipTests -P$i;
+        cd ..
+      done
+        mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
     cd itests
-    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven -X -Phadoop-2
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy -X -Phadoop-1
-  elif [[ "${buildTool}" == "ant" ]]
+    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
+  elif [[ "maven" == "ant" ]]
   then
     ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \
       -Dmvn.local.repo=/some/working/dir/maven clean package test \
       -Dtestcase=nothing
    else
-     echo "Unknown build tool ${buildTool}"
+     echo "Unknown build tool maven"
      exit 127
    fi
 ) 2>&1 | tee /some/log/dir/source-prep.txt
