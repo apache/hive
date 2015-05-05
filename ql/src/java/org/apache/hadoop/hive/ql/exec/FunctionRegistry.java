@@ -258,6 +258,7 @@ public final class FunctionRegistry {
     system.registerUDF("day", UDFDayOfMonth.class, false);
     system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
     system.registerUDF("month", UDFMonth.class, false);
+    system.registerGenericUDF("quarter", GenericUDFQuarter.class);
     system.registerUDF("year", UDFYear.class, false);
     system.registerUDF("hour", UDFHour.class, false);
     system.registerUDF("minute", UDFMinute.class, false);
