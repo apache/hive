@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.Shell;
 
 import com.google.common.base.Preconditions;
 
@@ -1155,7 +1156,7 @@ public class SessionState {
 
         if (getURLType(value).equals("ivy")) {
           // get the key to store in map
-          key = new URI(value).getAuthority();
+          key = createURI(value).getAuthority();
         } else {
           // for local file and hdfs, key and value are same.
           key = downloadedURLs.get(0).toString();
@@ -1196,8 +1197,22 @@ public class SessionState {
     return localized;
   }
 
+  /**
+   * @param path
+   * @return URI corresponding to the path.
+   */
+  private static URI createURI(String path) throws URISyntaxException {
+    if (!Shell.WINDOWS) {
+      // If this is not windows shell, path better follow unix convention.
+      // Else, the below call will throw an URISyntaxException
+      return new URI(path);
+    } else {
+      return new Path(path).toUri();
+    }
+  }
+
   private static String getURLType(String value) throws URISyntaxException {
-    URI uri = new URI(value);
+    URI uri = createURI(value);
     String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
     if (scheme == null || scheme.equals("file")) {
       return "file";
@@ -1210,13 +1225,13 @@ public class SessionState {
 
   List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
       IOException {
-    URI uri = new URI(value);
+    URI uri = createURI(value);
     if (getURLType(value).equals("file")) {
       return Arrays.asList(uri);
     } else if (getURLType(value).equals("ivy")) {
       return dependencyResolver.downloadDependencies(uri);
     } else if (getURLType(value).equals("hdfs")) {
-      return Arrays.asList(new URI(downloadResource(value, convertToUnix)));
+      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
     } else {
       throw new RuntimeException("Invalid url " + uri);
     }
@@ -1247,7 +1262,7 @@ public class SessionState {
         throw new RuntimeException("Couldn't create directory " + resourceDir);
       }
       try {
-        FileSystem fs = FileSystem.get(new URI(value), conf);
+        FileSystem fs = FileSystem.get(createURI(value), conf);
         fs.copyToLocalFile(new Path(value), new Path(destinationFile.getCanonicalPath()));
         value = destinationFile.getCanonicalPath();
 
@@ -1281,7 +1296,7 @@ public class SessionState {
       String key = value;
       try {
         if (getURLType(value).equals("ivy")) {
-          key = new URI(value).getAuthority();
+          key = createURI(value).getAuthority();
         }
       } catch (URISyntaxException e) {
         throw new RuntimeException("Invalid uri string " + value + ", " + e.getMessage());
