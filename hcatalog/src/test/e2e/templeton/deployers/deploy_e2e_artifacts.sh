@@ -25,6 +25,9 @@ source ./env.sh
 
 echo "Deploying artifacts to HDFS..."
 
+rm -rf movielens-data
+mkdir -p movielens-data
+cd movielens-data
 curl -O http://files.grouplens.org/datasets/movielens/ml-1m.zip
 unzip ml-1m.zip
 mv ml-1m/ratings.dat ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/inpdir/ratings.txt
