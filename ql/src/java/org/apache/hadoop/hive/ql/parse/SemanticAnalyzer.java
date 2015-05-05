@@ -6821,7 +6821,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = tableFields.size() + (updating() ? 1 : 0); i < rowFields.size(); ++i) {
         TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
         ExprNodeDesc column = new ExprNodeColumnDesc(
-            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", false);
+            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", true);
         expressions.add(column);
       }
       // converted = true; // [TODO]: should we check & convert type to String and set it to true?
