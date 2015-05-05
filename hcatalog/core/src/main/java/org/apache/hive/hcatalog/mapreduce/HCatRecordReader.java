@@ -63,7 +63,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
 
   private Deserializer deserializer;
 
-  private Map<String, String> valuesNotInDataCols;
+  private Map<String, Object> valuesNotInDataCols;
 
   private HCatSchema outputSchema = null;
   private HCatSchema dataSchema = null;
@@ -72,7 +72,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
    * Instantiates a new hcat record reader.
    */
   public HCatRecordReader(HiveStorageHandler storageHandler,
-              Map<String, String> valuesNotInDataCols) {
+              Map<String, Object> valuesNotInDataCols) {
     this.storageHandler = storageHandler;
     this.valuesNotInDataCols = valuesNotInDataCols;
   }
