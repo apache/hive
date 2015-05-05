@@ -119,6 +119,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
+      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME,
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
@@ -398,6 +399,11 @@ public class HiveConf extends Configuration {
     METASTORE_CLIENT_SOCKET_TIMEOUT("hive.metastore.client.socket.timeout", "600s",
         new TimeValidator(TimeUnit.SECONDS),
         "MetaStore Client socket timeout in seconds"),
+    METASTORE_CLIENT_SOCKET_LIFETIME("hive.metastore.client.socket.lifetime", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MetaStore Client socket lifetime in seconds. After this time is exceeded, client\n" +
+        "reconnects on the next MetaStore operation. A value of 0s means the connection\n" +
+        "has an infinite lifetime."),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", "mine",
         "password to use against metastore database"),
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", "",

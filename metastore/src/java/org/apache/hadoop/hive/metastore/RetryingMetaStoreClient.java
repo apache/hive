@@ -54,9 +54,9 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final int retryLimit;
   private final long retryDelaySeconds;
   private final Map<String, Long> metaCallTimeMap;
-
-
-
+  private final long connectionLifeTimeInMillis;
+  private long lastConnectionTime;
+  private boolean localMetaStore;
 
   protected RetryingMetaStoreClient(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
@@ -64,6 +64,11 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     this.retryDelaySeconds = hiveConf.getTimeVar(
         HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
     this.metaCallTimeMap = metaCallTimeMap;
+    this.connectionLifeTimeInMillis =
+        hiveConf.getTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME, TimeUnit.SECONDS) * 1000;
+    this.lastConnectionTime = System.currentTimeMillis();
+    String msUri = hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS);
+    localMetaStore = (msUri == null) || msUri.trim().isEmpty();
 
     reloginExpiringKeytabUser();
     this.base = MetaStoreUtils.newInstance(msClientClass, new Class[] {
@@ -104,8 +109,9 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     while (true) {
       try {
         reloginExpiringKeytabUser();
-        if(retriesMade > 0){
+        if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
           base.reconnect();
+          lastConnectionTime = System.currentTimeMillis();
         }
         if (metaCallTimeMap == null) {
           ret = method.invoke(base, args);
@@ -169,6 +175,19 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     }
     methodSb.append(")");
     return methodSb.toString();
+  }
+
+  private boolean hasConnectionLifeTimeReached(Method method) {
+    if (connectionLifeTimeInMillis <= 0 || localMetaStore ||
+        method.getName().equalsIgnoreCase("close")) {
+      return false;
+    }
+    boolean shouldReconnect =
+        (System.currentTimeMillis() - lastConnectionTime) >= connectionLifeTimeInMillis;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Reconnection status for Method: " + method.getName() + " is " + shouldReconnect);
+    }
+    return shouldReconnect;
   }
 
   /**
