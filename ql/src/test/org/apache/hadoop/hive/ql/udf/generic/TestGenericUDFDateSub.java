@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -26,28 +26,27 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateDiff;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateSub;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-public class TestGenericUDFDateDiff extends TestCase {
+public class TestGenericUDFDateSub extends TestCase {
   public void testStringToDate() throws HiveException {
-    GenericUDFDateDiff udf = new GenericUDFDateDiff();
+    GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
-    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaIntObjectInspector;
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
     udf.initialize(arguments);
-    DeferredObject valueObj1 = new DeferredJavaObject(new Text("2009-07-20"));
-    DeferredObject valueObj2 = new DeferredJavaObject(new Text("2009-07-22"));
+    DeferredObject valueObj1 = new DeferredJavaObject(new Text("2009-07-20 04:17:52"));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Integer("2"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    IntWritable output = (IntWritable) udf.evaluate(args);
+    Text output = (Text) udf.evaluate(args);
 
-    assertEquals("date_iff() test for STRING failed ", "-2", output.toString());
+    assertEquals("date_sub() test for STRING failed ", "2009-07-18", output.toString());
 
     // Test with null args
     args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
@@ -61,20 +60,19 @@ public class TestGenericUDFDateDiff extends TestCase {
   }
 
   public void testTimestampToDate() throws HiveException {
-    GenericUDFDateDiff udf = new GenericUDFDateDiff();
+    GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaIntObjectInspector;
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
     udf.initialize(arguments);
     DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritable(new Timestamp(109, 06,
-        20, 0, 0, 0, 0)));
-    DeferredObject valueObj2 = new DeferredJavaObject(new TimestampWritable(new Timestamp(109, 06,
-        17, 0, 0, 0, 0)));
+        20, 4, 17, 52, 0)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Integer("3"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    IntWritable output = (IntWritable) udf.evaluate(args);
+    Text output = (Text) udf.evaluate(args);
 
-    assertEquals("datediff() test for TIMESTAMP failed ", "3", output.toString());
+    assertEquals("date_sub() test for TIMESTAMP failed ", "2009-07-17", output.toString());
 
     // Test with null args
     args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
@@ -88,19 +86,19 @@ public class TestGenericUDFDateDiff extends TestCase {
   }
 
   public void testDateWritablepToDate() throws HiveException {
-    GenericUDFDateDiff udf = new GenericUDFDateDiff();
+    GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
-    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaIntObjectInspector;
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
 
     udf.initialize(arguments);
     DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
-    DeferredObject valueObj2 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 10)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Integer("4"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    IntWritable output = (IntWritable) udf.evaluate(args);
+    Text output = (Text) udf.evaluate(args);
 
-    assertEquals("datediff() test for DATEWRITABLE failed ", "10", output.toString());
+    assertEquals("date_sub() test for DATEWRITABLE failed ", "2009-07-16", output.toString());
 
     // Test with null args
     args = new DeferredObject[] { new DeferredJavaObject(null), valueObj2 };
@@ -113,4 +111,33 @@ public class TestGenericUDFDateDiff extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  public void testByteDataTypeAsDays() throws HiveException {
+    GenericUDFDateSub udf = new GenericUDFDateSub();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaByteObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Byte("4"));
+    DeferredObject[] args = {valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+
+    assertEquals("date_add() test for BYTE failed ", "2009-07-16", output.toString());
+  }
+
+  public void testShortDataTypeAsDays() throws HiveException {
+    GenericUDFDateSub udf = new GenericUDFDateSub();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaShortObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Short("4"));
+    DeferredObject[] args = {valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+
+    assertEquals("date_add() test for SHORT failed ", "2009-07-16", output.toString());
+  }
 }

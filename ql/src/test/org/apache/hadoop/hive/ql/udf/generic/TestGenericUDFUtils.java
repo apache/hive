@@ -16,16 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
-public class TestGenericUDFUtils extends TestCase {
+public class TestGenericUDFUtils {
 
   @Test
   public void testFindText() throws Exception {
