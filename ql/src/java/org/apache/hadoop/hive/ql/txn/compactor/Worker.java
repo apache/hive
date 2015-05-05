@@ -73,10 +73,11 @@ public class Worker extends CompactorThread {
 
   @Override
   public void run() {
-    // Make sure nothing escapes this run method and kills the metastore at large,
-    // so wrap it in a big catch Throwable statement.
-    try {
-      do {
+    do {
+      boolean launchedJob = false;
+      // Make sure nothing escapes this run method and kills the metastore at large,
+      // so wrap it in a big catch Throwable statement.
+      try {
         CompactionInfo ci = txnHandler.findNextToCompact(name);
 
         if (ci == null && !stop.get()) {
@@ -143,6 +144,7 @@ public class Worker extends CompactorThread {
         final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
           runJobAsSelf(runAs) ? runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
+        launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
             mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
@@ -163,11 +165,21 @@ public class Worker extends CompactorThread {
               ".  Marking clean to avoid repeated failures, " + StringUtils.stringifyException(e));
           txnHandler.markCleaned(ci);
         }
-      } while (!stop.get());
-    } catch (Throwable t) {
-      LOG.error("Caught an exception in the main loop of compactor worker " + name +
-          ", exiting " + StringUtils.stringifyException(t));
-    }
+      } catch (Throwable t) {
+        LOG.error("Caught an exception in the main loop of compactor worker " + name + ", " +
+            StringUtils.stringifyException(t));
+      }
+
+      // If we didn't try to launch a job it either means there was no work to do or we got
+      // here as the result of a communication failure with the DB.  Either way we want to wait
+      // a bit before we restart the loop.
+      if (!launchedJob && !stop.get()) {
+        try {
+          Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException e) {
+        }
+      }
+    } while (!stop.get());
   }
 
   @Override
