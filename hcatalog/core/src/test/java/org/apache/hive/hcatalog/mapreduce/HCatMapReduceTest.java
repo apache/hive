@@ -381,6 +381,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     readRecords.clear();
 
     Configuration conf = new Configuration();
+    conf.set(HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN.varname,"true");
     Job job = new Job(conf, "hcat mapreduce read test");
     job.setJarByClass(this.getClass());
     job.setMapperClass(HCatMapReduceTest.MapRead.class);

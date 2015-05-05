@@ -30,6 +30,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -43,6 +47,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
@@ -195,7 +200,7 @@ public abstract class HCatBaseInputFormat
     Map<String, String> jobProperties = partitionInfo.getJobProperties();
     HCatUtil.copyJobPropertiesToJobConf(jobProperties, jobConf);
 
-    Map<String, String> valuesNotInDataCols = getColValsNotInDataColumns(
+    Map<String, Object> valuesNotInDataCols = getColValsNotInDataColumns(
       getOutputSchema(conf), partitionInfo
     );
 
@@ -206,17 +211,30 @@ public abstract class HCatBaseInputFormat
   /**
    * gets values for fields requested by output schema which will not be in the data
    */
-  private static Map<String, String> getColValsNotInDataColumns(HCatSchema outputSchema,
-                                  PartInfo partInfo) {
+  private static Map<String, Object> getColValsNotInDataColumns(HCatSchema outputSchema,
+                                  PartInfo partInfo) throws HCatException {
     HCatSchema dataSchema = partInfo.getPartitionSchema();
-    Map<String, String> vals = new HashMap<String, String>();
+    Map<String, Object> vals = new HashMap<String, Object>();
     for (String fieldName : outputSchema.getFieldNames()) {
       if (dataSchema.getPosition(fieldName) == null) {
         // this entry of output is not present in the output schema
         // so, we first check the table schema to see if it is a part col
-
         if (partInfo.getPartitionValues().containsKey(fieldName)) {
-          vals.put(fieldName, partInfo.getPartitionValues().get(fieldName));
+
+          // First, get the appropriate field schema for this field
+          HCatFieldSchema fschema = outputSchema.get(fieldName);
+
+          // For a partition key type, this will be a primitive typeinfo.
+          // Obtain relevant object inspector for this typeinfo
+          ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(fschema.getTypeInfo());
+
+          // get appropriate object from the string representation of the value in partInfo.getPartitionValues()
+          // Essentially, partition values are represented as strings, but we want the actual object type associated
+          Object objVal = ObjectInspectorConverters
+              .getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
+              .convert(partInfo.getPartitionValues().get(fieldName));
+
+          vals.put(fieldName, objVal);
         } else {
           vals.put(fieldName, null);
         }
