@@ -71,7 +71,8 @@ public class TaskCommitContextRegistry {
   public synchronized void commitTask(TaskAttemptContext context) throws IOException {
     String key = generateKey(context);
     if (!taskCommitters.containsKey(key)) {
-      throw new IOException("No callback registered for TaskAttemptID:" + key);
+      LOG.warn("No callback registered for TaskAttemptID:" + key + ". Skipping.");
+      return;
     }
 
     try {
@@ -99,7 +100,8 @@ public class TaskCommitContextRegistry {
   public synchronized void abortTask(TaskAttemptContext context) throws IOException {
     String key = generateKey(context);
     if (!taskCommitters.containsKey(key)) {
-      throw new IOException("No callback registered for TaskAttemptID:" + key);
+      LOG.warn("No callback registered for TaskAttemptID:" + key + ". Skipping.");
+      return;
     }
 
     try {
