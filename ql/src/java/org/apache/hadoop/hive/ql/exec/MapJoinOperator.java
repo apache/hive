@@ -77,7 +77,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private transient String cacheKey;
   private transient ObjectCache cache;
 
-  private HashTableLoader loader;
+  protected HashTableLoader loader;
   private boolean loadCalled;
 
   protected transient MapJoinTableContainer[] mapJoinTables;
@@ -528,6 +528,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       clearAllTableContainers();
     }
 
+    this.loader = null;
     super.closeOp(abort);
   }
 
