@@ -121,6 +121,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month
@@ -321,6 +322,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month
