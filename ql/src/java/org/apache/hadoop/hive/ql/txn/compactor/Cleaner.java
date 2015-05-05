@@ -70,10 +70,10 @@ public class Cleaner extends CompactorThread {
       // and if so remembers that and then sets it to true at the end.  We have to check here
       // first to make sure we go through a complete iteration of the loop before resetting it.
       boolean setLooped = !looped.get();
+      long startedAt = System.currentTimeMillis();
       // Make sure nothing escapes this run method and kills the metastore at large,
       // so wrap it in a big catch Throwable statement.
       try {
-        long startedAt = System.currentTimeMillis();
 
         // First look for all the compactions that are waiting to be cleaned.  If we have not
         // seen an entry before, look for all the locks held on that table or partition and
@@ -134,17 +134,23 @@ public class Cleaner extends CompactorThread {
             }
           }
         }
-
-        // Now, go back to bed until it's time to do this again
-        long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= cleanerCheckInterval || stop.get())  continue;
-        else Thread.sleep(cleanerCheckInterval - elapsedTime);
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
             StringUtils.stringifyException(t));
       }
       if (setLooped) {
         looped.set(true);
+      }
+      // Now, go back to bed until it's time to do this again
+      long elapsedTime = System.currentTimeMillis() - startedAt;
+      if (elapsedTime >= cleanerCheckInterval || stop.get())  {
+        continue;
+      } else {
+        try {
+          Thread.sleep(cleanerCheckInterval - elapsedTime);
+        } catch (InterruptedException ie) {
+          // What can I do about it?
+        }
       }
     } while (!stop.get());
   }
