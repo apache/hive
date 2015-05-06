@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -1114,6 +1115,8 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void cancelDelegationToken(String tokenStrForm) throws MetaException, TException;
+
+  public String getTokenStrForm() throws IOException;
 
   void createFunction(Function func)
       throws InvalidObjectException, MetaException, TException;

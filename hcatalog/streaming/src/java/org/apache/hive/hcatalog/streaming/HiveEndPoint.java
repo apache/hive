@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.common.HCatUtil;
 
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -445,10 +445,13 @@ public class HiveEndPoint {
         conf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,true);
       }
       try {
-        return new HiveMetaStoreClient(conf);
+        return HCatUtil.getHiveMetastoreClient(conf);
       } catch (MetaException e) {
         throw new ConnectionError("Error connecting to Hive Metastore URI: "
-                + endPoint.metaStoreUri, e);
+                + endPoint.metaStoreUri + ". " + e.getMessage(), e);
+      } catch (IOException e) {
+        throw new ConnectionError("Error connecting to Hive Metastore URI: "
+            + endPoint.metaStoreUri + ". " + e.getMessage(), e);
       }
     }
 

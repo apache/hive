@@ -24,7 +24,6 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -63,7 +62,6 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.util.UDFContext;
 import org.apache.pig.impl.util.Utils;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +139,7 @@ class PigHCatUtil {
     return job.getConfiguration().get(HCatConstants.HCAT_METASTORE_PRINCIPAL);
   }
 
-  private static HiveMetaStoreClient getHiveMetaClient(String serverUri,
+  private static IMetaStoreClient getHiveMetaClient(String serverUri,
                              String serverKerberosPrincipal,
                              Class<?> clazz,
                              Job job) throws Exception {
@@ -163,7 +161,7 @@ class PigHCatUtil {
     }
 
     try {
-      return HCatUtil.getHiveClient(hiveConf);
+      return HCatUtil.getHiveMetastoreClient(hiveConf);
     } catch (Exception e) {
       throw new Exception("Could not instantiate a HiveMetaStoreClient connecting to server uri:[" + serverUri + "]", e);
     }
@@ -203,7 +201,7 @@ class PigHCatUtil {
     String dbName = dbTablePair.first;
     String tableName = dbTablePair.second;
     Table table = null;
-    HiveMetaStoreClient client = null;
+    IMetaStoreClient client = null;
     try {
       client = getHiveMetaClient(hcatServerUri, hcatServerPrincipal, PigHCatUtil.class, job);
       table = HCatUtil.getTable(client, dbName, tableName);

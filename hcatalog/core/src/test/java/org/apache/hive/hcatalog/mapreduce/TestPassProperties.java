@@ -109,7 +109,7 @@ public class TestPassProperties {
       new FileOutputCommitterContainer(job, null).cleanupJob(job);
     } catch (Exception e) {
       caughtException = true;
-      assertTrue(e.getMessage().contains(
+      assertTrue(e.getCause().getMessage().contains(
           "Could not connect to meta store using any of the URIs provided"));
     }
     assertTrue(caughtException);
