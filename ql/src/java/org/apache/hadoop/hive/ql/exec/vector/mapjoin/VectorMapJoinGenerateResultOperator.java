@@ -523,6 +523,11 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
     LOG.info(CLASS_NAME + " reProcessBigTable enter...");
 
+    if (spillReplayBatch == null) {
+      // The process method was not called -- no big table rows.
+      return;
+    }
+
     HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
 
     int rowCount = 0;
