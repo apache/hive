@@ -26,7 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.templeton.tool.DelegationTokenCache;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
@@ -94,13 +94,13 @@ public class CompleteDelegator extends TempletonDelegator {
       return new CompleteBean("Callback sent");
     } finally {
       state.close();
-      HiveMetaStoreClient client = null;
+      IMetaStoreClient client = null;
       try {
         if(cancelMetastoreToken) {
           String metastoreTokenStrForm =
                   DelegationTokenCache.getStringFormTokenCache().getDelegationToken(id);
           if(metastoreTokenStrForm != null) {
-            client = HCatUtil.getHiveClient(new HiveConf());
+            client = HCatUtil.getHiveMetastoreClient(new HiveConf());
             client.cancelDelegationToken(metastoreTokenStrForm);
             LOG.debug("Cancelled token for jobId=" + id + " status from JT=" + jobStatus);
             DelegationTokenCache.getStringFormTokenCache().removeDelegationToken(id);

@@ -30,12 +30,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.thrift.TException;
 
 /**
@@ -175,8 +176,8 @@ public class SecureProxySupport {
 
   private String buildHcatDelegationToken(String user)
     throws IOException, InterruptedException, MetaException, TException {
-    HiveConf c = new HiveConf();
-    final HiveMetaStoreClient client = new HiveMetaStoreClient(c);
+    final HiveConf c = new HiveConf();
+    final IMetaStoreClient client = HCatUtil.getHiveMetastoreClient(c);
     LOG.info("user: " + user + " loginUser: " + UserGroupInformation.getLoginUser().getUserName());
     final TokenWrapper twrapper = new TokenWrapper();
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
@@ -184,7 +185,7 @@ public class SecureProxySupport {
       public String run()
         throws IOException, MetaException, TException {
         String u = ugi.getUserName();
-        return client.getDelegationToken(u);
+        return client.getDelegationToken(c.getUser(), u);
       }
     });
     return s;

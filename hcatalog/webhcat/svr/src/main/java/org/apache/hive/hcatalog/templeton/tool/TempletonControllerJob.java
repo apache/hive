@@ -28,7 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
@@ -40,6 +40,7 @@ import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIden
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Tool;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
@@ -176,12 +177,12 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     return real.doAs(new PrivilegedExceptionAction<String>() {
       @Override
       public String run() throws IOException, TException, InterruptedException  {
-        final HiveMetaStoreClient client = new HiveMetaStoreClient(c);
+        final IMetaStoreClient client = HCatUtil.getHiveMetastoreClient(c);
         return ugi.doAs(new PrivilegedExceptionAction<String>() {
           @Override
           public String run() throws IOException, TException, InterruptedException {
             String u = ugi.getUserName();
-            return client.getDelegationToken(u);
+            return client.getDelegationToken(c.getUser(),u);
           }
         });
       }

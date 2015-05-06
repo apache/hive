@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
@@ -103,7 +103,7 @@ final class Security {
   void handleSecurity(
     Credentials credentials,
     OutputJobInfo outputJobInfo,
-    HiveMetaStoreClient client,
+    IMetaStoreClient client,
     Configuration conf,
     boolean harRequested)
     throws IOException, MetaException, TException, Exception {
@@ -136,7 +136,7 @@ final class Security {
         // hcat normally in OutputCommitter.commitJob()
         // when the JobTracker in Hadoop MapReduce starts supporting renewal of
         // arbitrary tokens, the renewer should be the principal of the JobTracker
-        hiveToken = HCatUtil.extractThriftToken(client.getDelegationToken(ugi.getUserName()), tokenSignature);
+        hiveToken = HCatUtil.extractThriftToken(client.getDelegationToken(ugi.getUserName(), ugi.getUserName()), tokenSignature);
 
         if (harRequested) {
           TokenSelector<? extends TokenIdentifier> jtTokenSelector =
@@ -165,7 +165,7 @@ final class Security {
   void handleSecurity(
     Job job,
     OutputJobInfo outputJobInfo,
-    HiveMetaStoreClient client,
+    IMetaStoreClient client,
     Configuration conf,
     boolean harRequested)
     throws IOException, MetaException, TException, Exception {
@@ -175,7 +175,7 @@ final class Security {
   // we should cancel hcat token if it was acquired by hcat
   // and not if it was supplied (ie Oozie). In the latter
   // case the HCAT_KEY_TOKEN_SIGNATURE property in the conf will not be set
-  void cancelToken(HiveMetaStoreClient client, JobContext context) throws IOException, MetaException {
+  void cancelToken(IMetaStoreClient client, JobContext context) throws IOException, MetaException {
     String tokenStrForm = client.getTokenStrForm();
     if (tokenStrForm != null && context.getConfiguration().get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
       try {
