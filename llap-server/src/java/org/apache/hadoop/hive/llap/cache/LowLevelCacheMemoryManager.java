@@ -99,4 +99,9 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     } while (!usedMemory.compareAndSet(oldV, oldV - memoryToRelease));
   }
 
+  @Override
+  public String debugDumpForOom() {
+    return "cache state\n" + evictor.debugDumpForOom();
+  }
+
 }

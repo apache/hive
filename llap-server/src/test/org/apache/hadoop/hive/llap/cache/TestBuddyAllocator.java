@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.cache.Allocator.LlapCacheOutOfMemoryException;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Test;
@@ -47,21 +49,26 @@ public class TestBuddyAllocator {
     @Override
     public void releaseMemory(long memUsage) {
     }
+
+    @Override
+    public String debugDumpForOom() {
+      return "";
+    }
   }
 
   @Test
-  public void testVariableSizeAllocs() {
+  public void testVariableSizeAllocs() throws Exception {
     testVariableSizeInternal(1, 2, 1);
   }
 
   @Test
-  public void testVariableSizeMultiAllocs() {
+  public void testVariableSizeMultiAllocs() throws Exception {
     testVariableSizeInternal(3, 2, 3);
     testVariableSizeInternal(5, 2, 5);
   }
 
   @Test
-  public void testSameSizes() {
+  public void testSameSizes() throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max;
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, maxAlloc);
     BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
@@ -72,7 +79,7 @@ public class TestBuddyAllocator {
   }
 
   @Test
-  public void testMultipleArenas() {
+  public void testMultipleArenas() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
     Configuration conf = createConf(1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount);
     BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
@@ -88,26 +95,29 @@ public class TestBuddyAllocator {
         LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
-    FutureTask<Object> upTask = new FutureTask<Object>(new Runnable() {
-      public void run() {
+    FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
+      public Void call() throws Exception {
         syncThreadStart(cdlIn, cdlOut);
         allocateUp(a, min, max, allocsPerSize, false);
         allocateUp(a, min, max, allocsPerSize, true);
+        return null;
       }
-    }, null), downTask = new FutureTask<Object>(new Runnable() {
-      public void run() {
+    }), downTask = new FutureTask<Void>(new Callable<Void>() {
+      public Void call() throws Exception {
         syncThreadStart(cdlIn, cdlOut);
         allocateDown(a, min, max, allocsPerSize, false);
         allocateDown(a, min, max, allocsPerSize, true);
+        return null;
       }
-    }, null), sameTask = new FutureTask<Object>(new Runnable() {
-      public void run() {
+    }), sameTask = new FutureTask<Void>(new Callable<Void>() {
+      public Void call() throws Exception {
         syncThreadStart(cdlIn, cdlOut);
         for (int i = min; i <= max; ++i) {
           allocSameSize(a, (1 << (max - i)) * allocsPerSize, i);
         }
+        return null;
       }
-    }, null);
+    });
     executor.execute(sameTask);
     executor.execute(upTask);
     executor.execute(downTask);
@@ -131,7 +141,8 @@ public class TestBuddyAllocator {
     }
   }
 
-  private void testVariableSizeInternal(int allocCount, int arenaSizeMult, int arenaCount) {
+  private void testVariableSizeInternal(
+      int allocCount, int arenaSizeMult, int arenaCount) throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
     Configuration conf = createConf(1 << min, maxAlloc, arenaSize, arenaSize * arenaCount);
     BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
@@ -144,7 +155,7 @@ public class TestBuddyAllocator {
     allocateDown(a, min, max, allocCount, true);
   }
 
-  private void allocSameSize(BuddyAllocator a, int allocCount, int sizeLog2) {
+  private void allocSameSize(BuddyAllocator a, int allocCount, int sizeLog2) throws Exception {
     LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[allocCount][];
     long[][] testValues = new long[allocCount][];
     for (int j = 0; j < allocCount; ++j) {
@@ -153,8 +164,8 @@ public class TestBuddyAllocator {
     deallocUpOrDown(a, false, allocs, testValues);
   }
 
-  private void allocateUp(
-      BuddyAllocator a, int min, int max, int allocPerSize, boolean isSameOrderDealloc) {
+  private void allocateUp(BuddyAllocator a, int min, int max, int allocPerSize,
+      boolean isSameOrderDealloc) throws Exception {
     int sizes = max - min + 1;
     LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[sizes][];
     // Put in the beginning; relies on the knowledge of internal implementation. Pave?
@@ -165,8 +176,8 @@ public class TestBuddyAllocator {
     deallocUpOrDown(a, isSameOrderDealloc, allocs, testValues);
   }
 
-  private void allocateDown(
-      BuddyAllocator a, int min, int max, int allocPerSize, boolean isSameOrderDealloc) {
+  private void allocateDown(BuddyAllocator a, int min, int max, int allocPerSize,
+      boolean isSameOrderDealloc) throws Exception {
     int sizes = max - min + 1;
     LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[sizes][];
     // Put in the beginning; relies on the knowledge of internal implementation. Pave?
@@ -178,13 +189,15 @@ public class TestBuddyAllocator {
   }
 
   private void allocateAndUseBuffer(BuddyAllocator a, LlapMemoryBuffer[][] allocs,
-      long[][] testValues, int allocCount, int index, int sizeLog2) {
+      long[][] testValues, int allocCount, int index, int sizeLog2) throws Exception {
     allocs[index] = new LlapMemoryBuffer[allocCount];
     testValues[index] = new long[allocCount];
     int size = (1 << sizeLog2) - 1;
-    if (!a.allocateMultiple(allocs[index], size)) {
+    try {
+      a.allocateMultiple(allocs[index], size);
+    } catch (LlapCacheOutOfMemoryException ex) {
       LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDump());
-      fail();
+      throw ex;
     }
     // LOG.info("Allocated " + allocCount + " of " + size + "; " + a.debugDump());
     for (int j = 0; j < allocCount; ++j) {

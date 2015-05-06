@@ -64,6 +64,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   /** Number of elements. */
   private int heapSize = 0;
   private EvictionListener evictionListener;
+  private LlapOomDebugDump parentDebugDump;
 
   public LowLevelLrfuCachePolicy(Configuration conf) {
     long maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
@@ -168,6 +169,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   public void setEvictionListener(EvictionListener listener) {
     this.evictionListener = listener;
   }
+
+  @Override
+  public void setParentDebugDumper(LlapOomDebugDump dumper) {
+    this.parentDebugDump = dumper;
+  }
+
 
   @Override
   public long evictSomeBlocks(long memoryToReserve) {
@@ -410,5 +417,14 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       result.append("\n");
     }
     return result.toString();
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    String result = debugDumpHeap();
+    if (parentDebugDump != null) {
+      result += "\n" + parentDebugDump.debugDumpForOom();
+    }
+    return result;
   }
 }

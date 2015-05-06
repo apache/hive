@@ -54,13 +54,12 @@ public class TestLowLevelCacheImpl {
 
   private static class DummyAllocator implements EvictionAwareAllocator {
     @Override
-    public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
+    public void allocateMultiple(LlapMemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
         LlapDataBuffer buf = new LlapDataBuffer();
         buf.initialize(0, null, -1, size);
         dest[i] = buf;
       }
-      return true;
     }
 
     @Override
@@ -100,6 +99,13 @@ public class TestLowLevelCacheImpl {
     }
 
     public void setEvictionListener(EvictionListener listener) {
+    }
+
+    public String debugDumpForOom() {
+      return "";
+    }
+
+    public void setParentDebugDumper(LlapOomDebugDump dumper) {
     }
   }
 

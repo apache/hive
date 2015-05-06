@@ -756,10 +756,7 @@ public abstract class InStream extends InputStream {
       targetBuffers[ix] = chunk.buffer;
       ++ix;
     }
-    boolean canAlloc = cache.getAllocator().allocateMultiple(targetBuffers, bufferSize);
-    if (!canAlloc) {
-      throw new AssertionError("Cannot allocate");
-    }
+    cache.getAllocator().allocateMultiple(targetBuffers, bufferSize);
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
@@ -1017,11 +1014,8 @@ public abstract class InStream extends InputStream {
       cacheKeys[ix] = chunk; // Relies on the fact that cache does not actually store these.
       ++ix;
     }
-    boolean canAlloc = cache.getAllocator().allocateMultiple(
+    cache.getAllocator().allocateMultiple(
         targetBuffers, (int)(partCount == 1 ? streamLen : partSize));
-    if (!canAlloc) {
-      throw new AssertionError("Cannot allocate");
-    }
 
     // 4. Now copy the data into cache buffers.
     ix = 0;
@@ -1070,11 +1064,7 @@ public abstract class InStream extends InputStream {
     // We thought we had the entire part to cache, but we don't; convert start to
     // non-cached. Since we are at the first gap, the previous stuff must be contiguous.
     singleAlloc[0] = null;
-    boolean canAlloc = cache.getAllocator().allocateMultiple(
-        singleAlloc, (int)(candidateEnd - partOffset));
-    if (!canAlloc) {
-      throw new AssertionError("Cannot allocate");
-    }
+    cache.getAllocator().allocateMultiple(singleAlloc, (int)(candidateEnd - partOffset));
 
     LlapMemoryBuffer buffer = singleAlloc[0];
     cache.notifyReused(buffer);
@@ -1088,11 +1078,7 @@ public abstract class InStream extends InputStream {
   private static TrackedCacheChunk copyAndReplaceUncompressedToNonCached(
       BufferChunk bc, LowLevelCache cache, LlapMemoryBuffer[] singleAlloc) {
     singleAlloc[0] = null;
-    boolean canAlloc = cache.getAllocator().allocateMultiple(singleAlloc, bc.getLength());
-    if (!canAlloc) {
-      throw new AssertionError("Cannot allocate");
-    }
-
+    cache.getAllocator().allocateMultiple(singleAlloc, bc.getLength());
     LlapMemoryBuffer buffer = singleAlloc[0];
     cache.notifyReused(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();

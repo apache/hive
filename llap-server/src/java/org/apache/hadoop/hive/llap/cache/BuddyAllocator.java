@@ -89,7 +89,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
 
   // TODO: would it make sense to return buffers asynchronously?
   @Override
-  public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
+  public void allocateMultiple(LlapMemoryBuffer[] dest, int size)
+      throws LlapCacheOutOfMemoryException {
     assert size > 0 : "size is " + size;
     if (size > maxAllocation) {
       throw new RuntimeException("Trying to allocate " + size + "; max is " + maxAllocation);
@@ -114,29 +115,54 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       int startIndex = (int)(threadId % arenaCount), index = startIndex;
       do {
         int newIx = arenas[index].allocateFast(index, freeListIx, dest, ix, allocationSize);
-        if (newIx == dest.length) return true;
-        if (newIx != -1) {  // Shouldn't happen.
+        if (newIx == dest.length) return;
+        if (newIx != -1) {  // TODO: check if it can still happen; count should take care of this.
           ix = newIx;
         }
+        ix = newIx;
         if ((++index) == arenaCount) {
           index = 0;
         }
       } while (index != startIndex);
     }
 
-    // Then try to split bigger blocks. TODO: again, ideally we would tryLock at least once
-    for (int i = 0; i < arenaCount; ++i) {
-      int newIx = arenas[i].allocateWithSplit(i, freeListIx, dest, ix, allocationSize);
-      if (newIx == -1) break; // Shouldn't happen.
-      if (newIx == dest.length) return true;
-      ix = newIx;
+    // TODO: this is very hacky.
+    // We called reserveMemory so we know that somewhere in there, there's memory waiting for us.
+    // However, we have a class of rare race conditions related to the order of locking/checking of
+    // different allocation areas. Simple case - say we have 2 arenas, 256Kb available in arena 2.
+    // We look at arena 1; someone deallocs 256Kb from arena 1 and allocs the same from arena 2;
+    // we look at arena 2 and find no memory. Or, for single arena, 2 threads reserve 256k each,
+    // and a single 1Mb block is available. When the 1st thread locks the 1Mb freelist, the 2nd one
+    // might have already examined the 256k and 512k lists, finding nothing. Blocks placed by (1)
+    // into smaller lists after its split is done will not be found by (2); given that freelist
+    // locks don't overlap, (2) may even run completely between the time (1) takes out the 1Mb
+    // block and the time it returns the remaining 768Kb.
+    // Two solutions to this are some form of cross-thread helping (threads putting "demand"
+    // into some sort of queues that deallocate and split will examine), or having and "actor"
+    // allocator thread (or threads per arena).
+    // The 2nd one is probably much simpler and will allow us to get rid of a lot of sync code.
+    // But for now we will just retry 5 times 0_o
+    for (int attempt = 0; attempt < 5; ++attempt) {
+      // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
+      for (int i = 0; i < arenaCount; ++i) {
+        int newIx = arenas[i].allocateWithSplit(i, freeListIx, dest, ix, allocationSize);
+        if (newIx == -1) break; // Shouldn't happen.
+        if (newIx == dest.length) return;
+        ix = newIx;
+      }
+      if (attempt == 0) {
+        // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
+        for (int i = arenaCount; i < arenas.length; ++i) {
+          ix = arenas[i].allocateWithExpand(i, freeListIx, dest, ix, allocationSize);
+          if (ix == dest.length) return;
+        }
+      }
+      LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry " + attempt);
     }
-    // Then try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-    for (int i = arenaCount; i < arenas.length; ++i) {
-      ix = arenas[i].allocateWithExpand(i, freeListIx, dest, ix, allocationSize);
-      if (ix == dest.length) return true;
-    }
-    return false;
+    String msg = "Failed to allocate " + size + "; at " + ix + " out of " + dest.length;
+    LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
+        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
+    throw new LlapCacheOutOfMemoryException(msg);
   }
 
   @Override
@@ -170,7 +196,6 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     for (Arena arena : arenas) {
       arena.debugDump(result);
     }
-    result.append("\n");
     return result.toString();
   }
 
@@ -237,14 +262,6 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       // Try to get as consistent view as we can; make copy of the headers.
       byte[] headers = new byte[this.headers.length];
       System.arraycopy(this.headers, 0, headers, 0, headers.length);
-      for (int i = 0; i < headers.length; ++i) {
-        byte header = headers[i];
-        if (header == 0) continue;
-        int freeListIx = freeListFromHeader(header), offset = offsetFromHeaderIndex(i);
-        boolean isFree = (header & 1) == 0;
-        result.append("\n  block " + i + " at " + offset + ": size "
-        + (1 << (freeListIx + minAllocLog2)) + ", " + (isFree ? "free" : "allocated"));
-      }
       int allocSize = minAllocation;
       for (int i = 0; i < freeLists.length; ++i, allocSize <<= 1) {
         result.append("\n  free list for size " + allocSize + ": ");
@@ -259,6 +276,14 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         } finally {
           freeList.lock.unlock();
         }
+      }
+      for (int i = 0; i < headers.length; ++i) {
+        byte header = headers[i];
+        if (header == 0) continue;
+        int freeListIx = freeListFromHeader(header), offset = offsetFromHeaderIndex(i);
+        boolean isFree = (header & 1) == 0;
+        result.append("\n  block " + i + " at " + offset + ": size "
+            + (1 << (freeListIx + minAllocLog2)) + ", " + (isFree ? "free" : "allocated"));
       }
     }
 
@@ -297,25 +322,30 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       int headerStep = 1 << freeListIx;
       int splitListIx = freeListIx + 1;
       while (remaining > 0 && splitListIx < freeLists.length) {
-        int splitWays = 1 << (splitListIx - freeListIx);
-        int lastSplitBlocksRemaining = -1, lastSplitNextHeader = -1;
+        int splitWaysLog2 = (splitListIx - freeListIx);
+        assert splitWaysLog2 > 0;
+        int splitWays = 1 << splitWaysLog2; // How many ways each block splits into target size.
+        int lastSplitBlocksRemaining = -1; // How many target-sized blocks remain from last split.
+        int lastSplitNextHeader = -1; // The header index for the beginning of the remainder.
         FreeList splitList = freeLists[splitListIx];
         splitList.lock.lock();
         try {
           int headerIx = splitList.listHead;
           while (headerIx >= 0 && remaining > 0) {
             int origOffset = offsetFromHeaderIndex(headerIx), offset = origOffset;
-            int toTake = Math.min(splitWays, remaining);
+            int toTake = Math.min(splitWays, remaining); // We split it splitWays and take toTake.
             remaining -= toTake;
-            lastSplitBlocksRemaining = splitWays - toTake;
+            lastSplitBlocksRemaining = splitWays - toTake; // Whatever remains.
+            // Take toTake blocks by splitting the block at origOffset.
             for (; toTake > 0; ++ix, --toTake, headerIx += headerStep, offset += allocationSize) {
               headers[headerIx] = headerData;
+              // TODO: this could be done out of the lock, we only need to take the blocks out.
               ((LlapDataBuffer)dest[ix]).initialize(arenaIx, data, offset, allocationSize);
             }
-            lastSplitNextHeader = headerIx;
-            headerIx = data.getInt(origOffset + 4);
+            lastSplitNextHeader = headerIx; // If anything remains, this is where it starts.
+            headerIx = data.getInt(origOffset + 4); // Get next item from the free list.
           }
-          replaceListHeadUnderLock(splitList, headerIx);
+          replaceListHeadUnderLock(splitList, headerIx); // In the end, update free list head.
         } finally {
           splitList.lock.unlock();
         }
@@ -449,6 +479,9 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
   }
 
+  private static class Request {
+
+  }
   private static class FreeList {
     ReentrantLock lock = new ReentrantLock(false);
     int listHead = -1; // Index of where the buffer is; in minAllocation units

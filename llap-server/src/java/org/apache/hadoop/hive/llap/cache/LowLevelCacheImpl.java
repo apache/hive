@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class LowLevelCacheImpl implements LowLevelCache {
+public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final EvictionAwareAllocator allocator;
   private AtomicInteger newEvictions = new AtomicInteger(0);
@@ -308,6 +308,9 @@ public class LowLevelCacheImpl implements LowLevelCache {
       if (buffer.declaredCachedLength != LlapDataBuffer.UNKNOWN_CACHED_LENGTH) {
         cachePolicy.notifyUnlock(buffer);
       } else {
+        if (DebugUtils.isTraceCachingEnabled()) {
+          LlapIoImpl.LOG.info("Deallocating " + buffer + " that was not cached");
+        }
         allocator.deallocate(buffer);
       }
     }
@@ -468,5 +471,30 @@ public class LowLevelCacheImpl implements LowLevelCache {
   @Override
   public Allocator getAllocator() {
     return allocator;
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    StringBuilder sb = new StringBuilder("File cache state ");
+    for (Map.Entry<Long, FileCache> e : cache.entrySet()) {
+      if (!e.getValue().incRef()) continue;
+      try {
+        sb.append("\n  file " + e.getKey());
+        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().cache.entrySet()) {
+          if (e2.getValue().incRef() < 0) continue;
+          try {
+            sb.append("\n    [").append(e2.getKey()).append(", ")
+              .append(e2.getKey() + e2.getValue().declaredCachedLength)
+              .append(") => ").append(e2.getValue().toString())
+              .append(" alloc ").append(e2.getValue().byteBuffer.position());
+          } finally {
+            e2.getValue().decRef();
+          }
+        }
+      } finally {
+        e.getValue().decRef();
+      }
+    }
+    return sb.toString();
   }
 }

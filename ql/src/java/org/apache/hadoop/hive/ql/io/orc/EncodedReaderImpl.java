@@ -336,12 +336,14 @@ public class EncodedReaderImpl implements EncodedReader {
 
     // 2. Now, read all of the ranges from cache or disk.
     toRead = new DiskRangeListMutateHelper(listToRead.get());
-    if (DebugUtils.isTraceOrcEnabled()) {
+    if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+        && LOG.isInfoEnabled()) {
       LOG.info("Resulting disk ranges to read (file " + fileId + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY);
-    if (DebugUtils.isTraceOrcEnabled()) {
+    if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+        && LOG.isInfoEnabled()) {
       LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
           + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
@@ -350,7 +352,8 @@ public class EncodedReaderImpl implements EncodedReader {
     RecordReaderUtils.readDiskRanges(
         file, zcr, stripeOffset, toRead.next, cache.getAllocator().isDirectAlloc());
 
-    if (DebugUtils.isTraceOrcEnabled()) {
+    if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+        && LOG.isInfoEnabled()) {
       LOG.info("Disk ranges after disk read (file " + fileId + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
@@ -369,7 +372,8 @@ public class EncodedReaderImpl implements EncodedReader {
           }
         }
       }
-      if (DebugUtils.isTraceOrcEnabled()) {
+      if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+          && LOG.isInfoEnabled()) {
         LOG.info("Disk ranges after pre-read (file " + fileId + ", base offset "
             + stripeOffset + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
@@ -454,8 +458,9 @@ public class EncodedReaderImpl implements EncodedReader {
     }
     releaseContexts(colCtxs);
 
-    if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Disk ranges after processing all the data "
+    if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+        && LOG.isInfoEnabled()) {
+      LOG.info("Disk ranges after preparing all the data "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
