@@ -48,7 +48,7 @@ shift
 
 JAVA=$JAVA_HOME/bin/java
 LOG_LEVEL_DEFAULT="INFO,console"
-JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+UseParallelGC -XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps"
+JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps"
 
 # CLASSPATH initially contains $HADOOP_CONF_DIR & $YARN_CONF_DIR
 if [ ! -d "$HADOOP_CONF_DIR" ]; then
@@ -107,6 +107,14 @@ elif [ "$COMMAND" = "run" ] ; then
 fi
 
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} ${JAVA_OPTS_BASE}"
+
+# Set the default GC option if none set
+if [[ ! "$LLAP_DAEMON_OPTS" =~ \+Use[^[:space:]]+GC ]]
+then
+  LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -XX:+UseParallelGC"
+fi
+
+
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dlog4j.configuration=llap-daemon-log4j.properties"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.dir=${LLAP_DAEMON_LOG_DIR}"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.file=${LLAP_DAEMON_LOG_FILE}"
