@@ -130,16 +130,6 @@ public abstract class HCatBaseInputFormat
       setInputPath(jobConf, partitionInfo.getLocation());
       Map<String, String> jobProperties = partitionInfo.getJobProperties();
 
-      HCatSchema allCols = new HCatSchema(new LinkedList<HCatFieldSchema>());
-      for (HCatFieldSchema field :
-        inputJobInfo.getTableInfo().getDataColumns().getFields()) {
-        allCols.append(field);
-      }
-      for (HCatFieldSchema field :
-        inputJobInfo.getTableInfo().getPartitionColumns().getFields()) {
-        allCols.append(field);
-      }
-
       HCatUtil.copyJobPropertiesToJobConf(jobProperties, jobConf);
 
       storageHandler = HCatUtil.getStorageHandler(
@@ -163,9 +153,7 @@ public abstract class HCatBaseInputFormat
         inputFormat.getSplits(jobConf, desiredNumSplits);
 
       for (org.apache.hadoop.mapred.InputSplit split : baseSplits) {
-        splits.add(new HCatSplit(
-          partitionInfo,
-          split, allCols));
+        splits.add(new HCatSplit(partitionInfo, split));
       }
     }
 
@@ -190,6 +178,12 @@ public abstract class HCatBaseInputFormat
 
     HCatSplit hcatSplit = InternalUtil.castToHCatSplit(split);
     PartInfo partitionInfo = hcatSplit.getPartitionInfo();
+    // Ensure PartInfo's TableInfo is initialized.
+    if (partitionInfo.getTableInfo() == null) {
+      partitionInfo.setTableInfo(((InputJobInfo)HCatUtil.deserialize(
+          taskContext.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO)
+      )).getTableInfo());
+    }
     JobContext jobContext = taskContext;
     Configuration conf = jobContext.getConfiguration();
 

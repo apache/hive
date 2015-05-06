@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
@@ -106,7 +107,7 @@ public class TestHCatOutputFormat extends TestCase {
     tbl.setDbName(dbName);
     tbl.setTableName(tblName);
     StorageDescriptor sd = new StorageDescriptor();
-    sd.setCols(fields);
+    sd.setCols(Lists.newArrayList(new FieldSchema("data_column", serdeConstants.STRING_TYPE_NAME, "")));
     tbl.setSd(sd);
 
     //sd.setLocation("hdfs://tmp");
@@ -151,7 +152,7 @@ public class TestHCatOutputFormat extends TestCase {
     assertEquals(1, jobInfo.getPartitionValues().size());
     assertEquals("p1", jobInfo.getPartitionValues().get("colname"));
     assertEquals(1, jobInfo.getTableInfo().getDataColumns().getFields().size());
-    assertEquals("colname", jobInfo.getTableInfo().getDataColumns().getFields().get(0).getName());
+    assertEquals("data_column", jobInfo.getTableInfo().getDataColumns().getFields().get(0).getName());
 
     publishTest(job);
   }
