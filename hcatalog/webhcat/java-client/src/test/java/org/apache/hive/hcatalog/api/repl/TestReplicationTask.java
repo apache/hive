@@ -19,11 +19,14 @@
 package org.apache.hive.hcatalog.api.repl;
 
 import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
+import org.apache.hive.hcatalog.api.repl.exim.CreateTableReplicationTask;
+import org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
@@ -75,17 +78,12 @@ public class TestReplicationTask extends TestCase{
     event.setTableName(t.getTableName());
 
     ReplicationTask.resetFactory(null);
-    Exception caught = null;
-    try {
-      ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
-    } catch (Exception e){
-      caught = e;
-    }
-    assertNotNull("By default, without a ReplicationTaskFactory instantiated, replication tasks should fail.",caught);
+    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    assertTrue("Provided factory instantiation should yield CreateTableReplicationTask", rtask instanceof CreateTableReplicationTask);
 
     ReplicationTask.resetFactory(NoopFactory.class);
 
-    ReplicationTask rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
+    rtask = ReplicationTask.create(HCatClient.create(new HiveConf()),new HCatNotificationEvent(event));
     assertTrue("Provided factory instantiation should yield NoopReplicationTask", rtask instanceof NoopReplicationTask);
 
     ReplicationTask.resetFactory(null);
