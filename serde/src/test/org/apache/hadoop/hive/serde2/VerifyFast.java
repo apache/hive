@@ -29,15 +29,11 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -247,11 +243,13 @@ public class VerifyFast {
         byte[] byteArray = Arrays.copyOfRange(readBinaryResults.bytes, readBinaryResults.start, readBinaryResults.start + readBinaryResults.length);
         byte[] expected = (byte[]) object;
         if (byteArray.length != expected.length){
-          TestCase.fail("Byte Array field mismatch (expected " + expected + " found " + byteArray + ")");
+          TestCase.fail("Byte Array field mismatch (expected " + Arrays.toString(expected)
+              + " found " + Arrays.toString(byteArray) + ")");
         }
         for (int b = 0; b < byteArray.length; b++) {
           if (byteArray[b] != expected[b]) {
-            TestCase.fail("Byte Array field mismatch (expected " + expected + " found " + byteArray + ")");
+            TestCase.fail("Byte Array field mismatch (expected " + Arrays.toString(expected)
+              + " found " + Arrays.toString(byteArray) + ")");
           }
         }
       }
