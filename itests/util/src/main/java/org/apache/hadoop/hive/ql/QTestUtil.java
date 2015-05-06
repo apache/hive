@@ -430,6 +430,9 @@ public class QTestUtil {
       cleanUp();
     }
 
+    if (clusterType == MiniClusterType.tez) {
+      SessionState.get().getTezSession().close(false);
+    }
     setup.tearDown();
     if (sparkSession != null) {
       try {
