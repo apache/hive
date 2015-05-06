@@ -35,6 +35,7 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   private final Lock lock = new ReentrantLock();
   private final LinkedList<LlapCacheableBuffer> buffers;
   private EvictionListener evictionListener;
+  private LlapOomDebugDump parentDebugDump;
 
   public LowLevelFifoCachePolicy(Configuration conf) {
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
@@ -70,6 +71,11 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
+  public void setParentDebugDumper(LlapOomDebugDump dumper) {
+    this.parentDebugDump = dumper;
+  }
+
+  @Override
   public long evictSomeBlocks(long memoryToReserve) {
     long evicted = 0;
     lock.lock();
@@ -87,5 +93,24 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
       lock.unlock();
     }
     return evicted;
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    StringBuilder sb = new StringBuilder("FIFO eviction list: ");
+    lock.lock();
+    try {
+      sb.append(buffers.size()).append(" elements): ");
+      Iterator<LlapCacheableBuffer> iter = buffers.iterator();
+      while (iter.hasNext()) {
+        sb.append(iter.next().toStringForCache()).append(",\n");
+      }
+    } finally {
+      lock.unlock();
+    }
+    if (parentDebugDump != null) {
+      sb.append("\n").append(parentDebugDump.debugDumpForOom());
+    }
+    return sb.toString();
   }
 }

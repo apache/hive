@@ -28,8 +28,6 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.junit.Test;
 
 public class TestOrcMetadataCache {
-  private static final Log LOG = LogFactory.getLog(TestOrcMetadataCache.class);
-
   private static class DummyCachePolicy implements LowLevelCachePolicy {
     public DummyCachePolicy() {
     }
@@ -49,6 +47,13 @@ public class TestOrcMetadataCache {
 
     public void setEvictionListener(EvictionListener listener) {
     }
+
+    public String debugDumpForOom() {
+      return "";
+    }
+
+    public void setParentDebugDumper(LlapOomDebugDump dumper) {
+    }
   }
 
   private static class DummyMemoryManager implements MemoryManager {
@@ -63,6 +68,11 @@ public class TestOrcMetadataCache {
     @Override
     public void releaseMemory(long memUsage) {
       --allocs;
+    }
+
+    @Override
+    public String debugDumpForOom() {
+      return "";
     }
   }
 

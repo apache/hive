@@ -102,6 +102,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator, true);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
+      cachePolicy.setParentDebugDumper(orcCache);
       orcCache.init();
     } else {
       cachePolicy.setEvictionListener(new EvictionDispatcher(null, metadataCache));

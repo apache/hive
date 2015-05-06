@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
-
-public interface LowLevelCachePolicy extends LlapOomDebugDump {
-  void cache(LlapCacheableBuffer buffer, Priority priority);
-  void notifyLock(LlapCacheableBuffer buffer);
-  void notifyUnlock(LlapCacheableBuffer buffer);
-  long evictSomeBlocks(long memoryToReserve);
-  void setEvictionListener(EvictionListener listener);
-  void setParentDebugDumper(LlapOomDebugDump dumper);
+public interface LlapOomDebugDump {
+  String debugDumpForOom();
 }

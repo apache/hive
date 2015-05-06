@@ -19,9 +19,15 @@ package org.apache.hadoop.hive.llap.cache;
 
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
-
 public interface Allocator {
-  boolean allocateMultiple(LlapMemoryBuffer[] dest, int size);
+  public static class LlapCacheOutOfMemoryException extends RuntimeException {
+    public LlapCacheOutOfMemoryException(String msg) {
+      super(msg);
+    }
+
+    private static final long serialVersionUID = 268124648177151761L;
+  }
+  void allocateMultiple(LlapMemoryBuffer[] dest, int size) throws LlapCacheOutOfMemoryException;
   void deallocate(LlapMemoryBuffer buffer);
   boolean isDirectAlloc();
   int getMaxAllocation();

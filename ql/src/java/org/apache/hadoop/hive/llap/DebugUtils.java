@@ -35,6 +35,10 @@ public class DebugUtils {
     return isTraceOrcEnabled; // TODO: temporary, should be hardcoded false
   }
 
+  public static boolean isTraceRangesEnabled() {
+    return true; // TODO: temporary, should be hardcoded false
+  }
+
   public static boolean isTraceLockingEnabled() {
     return false;
   }
