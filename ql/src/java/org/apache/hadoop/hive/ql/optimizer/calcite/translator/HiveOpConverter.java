@@ -27,14 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
-import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -711,7 +709,7 @@ public class HiveOpConverter {
         continue;
       }
       int vindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
-      if (kindex >= 0) {
+      if (vindex >= 0) {
         index[i] = -vindex - 1;
         continue;
       }

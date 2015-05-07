@@ -7496,7 +7496,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         continue;
       }
       int vindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
-      if (kindex >= 0) {
+      if (vindex >= 0) {
         index[i] = -vindex - 1;
         continue;
       }
