@@ -94,6 +94,12 @@ public class Worker extends CompactorThread {
         Table t1 = null;
         try {
           t1 = resolveTable(ci);
+          if (t1 == null) {
+            LOG.info("Unable to find table " + ci.getFullTableName() +
+                ", assuming it was dropped and moving on.");
+            txnHandler.markCleaned(ci);
+            continue;
+          }
         } catch (MetaException e) {
           txnHandler.markCleaned(ci);
           continue;
@@ -106,6 +112,12 @@ public class Worker extends CompactorThread {
         Partition p = null;
         try {
           p = resolvePartition(ci);
+          if (p == null && ci.partName != null) {
+            LOG.info("Unable to find partition " + ci.getFullPartitionName() +
+                ", assuming it was dropped and moving on.");
+            txnHandler.markCleaned(ci);
+            continue;
+          }
         } catch (Exception e) {
           txnHandler.markCleaned(ci);
           continue;
