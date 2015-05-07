@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
+import org.apache.hadoop.hive.ql.udf.UDFCrc32;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
@@ -216,6 +217,7 @@ public final class FunctionRegistry {
     system.registerUDF("atan", UDFAtan.class, false);
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("e", UDFE.class, false);
+    system.registerUDF("crc32", UDFCrc32.class, false);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);
