@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -83,6 +87,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   transient List<Operator<? extends OperatorDesc>> originalParents =
       new ArrayList<Operator<? extends OperatorDesc>>();
+  transient Set<Integer> fetchInputAtClose;
 
   public CommonMergeJoinOperator() {
     super();
@@ -93,6 +98,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     Collection<Future<?>> result = super.initializeOp(hconf);
     firstFetchHappened = false;
+    fetchInputAtClose = getFetchInputAtCloseList();
 
     int maxAlias = 0;
     for (byte pos = 0; pos < order.length; pos++) {
@@ -145,6 +151,25 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     return result;
   }
 
+  /*
+   * In case of outer joins, we need to push records through even if one of the sides is done
+   * sending records. For e.g. In the case of full outer join, the right side needs to send in data
+   * for the join even after the left side has completed sending all the records on its side. This
+   * can be done once at initialize time and at close, these tags will still forward records until
+   * they have no more to send. Also, subsequent joins need to fetch their data as well since
+   * any join following the outer join could produce results with one of the outer sides depending on
+   * the join condition. We could optimize for the case of inner joins in the future here.
+   */
+  private Set<Integer> getFetchInputAtCloseList() {
+    Set<Integer> retval = new TreeSet<Integer>();
+    for (JoinCondDesc joinCondDesc : conf.getConds()) {
+      retval.add(joinCondDesc.getLeft());
+      retval.add(joinCondDesc.getRight());
+    }
+
+    return retval;
+  }
+
   @Override
   public void endGroup() throws HiveException {
     // we do not want the end group to cause a checkAndGenObject
@@ -173,7 +198,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     List<Object> value = getFilteredValue(alias, row);
     // compute keys and values as StandardObjects
     List<Object> key = mergeJoinComputeKeys(row, alias);
-
     if (!firstFetchHappened) {
       firstFetchHappened = true;
       // fetch the first group for all small table aliases
@@ -405,9 +429,37 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     while (!allFetchDone) {
       List<Byte> ret = joinOneGroup();
+      for (int i = 0; i < fetchDone.length; i++) {
+        // if the fetch is not completed for the big table
+        if (i == posBigTable) {
+          // if we are in close op phase, we have definitely exhausted the big table input
+          fetchDone[i] = true;
+          continue;
+        }
+
+        // in case of outer joins, we need to pull in records from the sides we still
+        // need to produce output for apart from the big table. for e.g. full outer join
+        if ((fetchInputAtClose.contains(i)) && (fetchDone[i] == false)) {
+          // if we have never fetched, we need to fetch before we can do the join
+          if (firstFetchHappened == false) {
+            // we need to fetch all the needed ones at least once to ensure bootstrapping
+            if (i == (fetchDone.length - 1)) {
+              firstFetchHappened = true;
+            }
+            // This is a bootstrap. The joinOneGroup automatically fetches the next rows.
+            fetchNextGroup((byte) i);
+          }
+          // Do the join. It does fetching of next row groups itself.
+          if (i == (fetchDone.length - 1)) {
+            ret = joinOneGroup();
+          }
+        }
+      }
+
       if (ret == null || ret.size() == 0) {
         break;
       }
+
       reportProgress();
       numMapRowsRead++;
       allFetchDone = allFetchDone();
