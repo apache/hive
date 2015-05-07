@@ -90,7 +90,7 @@ public class SplitGrouper {
       InputSplit[] rawSplits = inputSplitCollection.toArray(new InputSplit[0]);
       InputSplit[] groupedSplits =
           tezGrouper.getGroupedSplits(conf, rawSplits, bucketTaskMap.get(bucketId),
-              HiveInputFormat.class.getName());
+              HiveInputFormat.class.getName(), new ColumnarSplitSizeEstimator());
 
       LOG.info("Original split size is " + rawSplits.length + " grouped split size is "
           + groupedSplits.length + ", for bucket: " + bucketId);

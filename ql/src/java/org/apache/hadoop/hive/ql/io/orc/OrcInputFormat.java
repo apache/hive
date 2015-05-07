@@ -1053,7 +1053,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     if (isDebugEnabled) {
       for (OrcSplit split : splits) {
         LOG.debug(split + " projected_columns_uncompressed_size: "
-            + split.getProjectedColumnsUncompressedSize());
+            + split.getColumnarProjectionSize());
       }
     }
     return splits;
