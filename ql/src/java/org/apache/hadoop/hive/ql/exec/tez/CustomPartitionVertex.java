@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.google.common.collect.LinkedListMultimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -47,9 +48,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.dag.api.EdgeManagerPluginDescriptor;
 import org.apache.tez.dag.api.EdgeProperty;
 import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
+import org.apache.tez.dag.api.EdgeManagerPluginDescriptor;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.VertexLocationHint;
@@ -68,7 +69,6 @@ import org.apache.tez.runtime.api.events.VertexManagerEvent;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -275,7 +275,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           InputSplit[] inputSplitArray =
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
           Multimap<Integer, InputSplit> groupedSplit =
-              grouper.generateGroupedSplits(jobConf, inputSplitArray, waves,
+              grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
                   availableSlots, inputName, mainWorkName.isEmpty());
           if (mainWorkName.isEmpty() == false) {
             Multimap<Integer, InputSplit> singleBucketToGroupedSplit =
@@ -283,7 +283,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
             singleBucketToGroupedSplit.putAll(key, groupedSplit.values());
             groupedSplit =
                 grouper.group(jobConf, singleBucketToGroupedSplit, availableSlots,
-                    HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_SMB_NUMBER_WAVES), null);
+                    HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_SMB_NUMBER_WAVES));
             secondLevelGroupingDone = true;
           }
           bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
@@ -297,7 +297,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           InputSplit[] inputSplitArray =
               (bucketToInitialSplitMap.get(key).toArray(new InputSplit[0]));
           Multimap<Integer, InputSplit> groupedSplit =
-              grouper.generateGroupedSplits(jobConf, inputSplitArray, waves,
+              grouper.generateGroupedSplits(jobConf, conf, inputSplitArray, waves,
                     availableSlots, inputName, false);
             bucketToGroupedSplitMap.putAll(key, groupedSplit.values());
         }

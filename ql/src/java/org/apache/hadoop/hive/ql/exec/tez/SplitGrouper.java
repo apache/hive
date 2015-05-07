@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +40,8 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.split.SplitSizeEstimator;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
 import org.apache.hadoop.mapred.split.TezMapredSplitsGrouper;
 import org.apache.tez.dag.api.TaskLocationHint;
@@ -73,8 +72,7 @@ public class SplitGrouper {
    * available slots with tasks
    */
   public Multimap<Integer, InputSplit> group(Configuration conf,
-      Multimap<Integer, InputSplit> bucketSplitMultimap, int availableSlots, float waves,
-      Map<Integer, SplitSizeEstimator> splitSizeEstimatorMap)
+      Multimap<Integer, InputSplit> bucketSplitMultimap, int availableSlots, float waves)
       throws IOException {
 
     // figure out how many tasks we want for each bucket
@@ -88,16 +86,14 @@ public class SplitGrouper {
     // use the tez grouper to combine splits once per bucket
     for (int bucketId : bucketSplitMultimap.keySet()) {
       Collection<InputSplit> inputSplitCollection = bucketSplitMultimap.get(bucketId);
-      SplitSizeEstimator splitSizeEstimator =
-          splitSizeEstimatorMap == null ? null : splitSizeEstimatorMap.get(bucketId);
+
       InputSplit[] rawSplits = inputSplitCollection.toArray(new InputSplit[0]);
       InputSplit[] groupedSplits =
           tezGrouper.getGroupedSplits(conf, rawSplits, bucketTaskMap.get(bucketId),
-              HiveInputFormat.class.getName(), splitSizeEstimator);
+              HiveInputFormat.class.getName());
 
       LOG.info("Original split size is " + rawSplits.length + " grouped split size is "
-          + groupedSplits.length + ", for bucket: " + bucketId + " SplitSizeEstimator: " +
-          splitSizeEstimator.getClass().getSimpleName());
+          + groupedSplits.length + ", for bucket: " + bucketId);
 
       for (InputSplit inSplit : groupedSplits) {
         bucketGroupedSplitMultimap.put(bucketId, inSplit);
@@ -157,61 +153,44 @@ public class SplitGrouper {
 
   /** Generate groups of splits, separated by schema evolution boundaries */
   public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
-      InputSplit[] splits,
-      float waves, int availableSlots)
+                                                                    Configuration conf,
+                                                                    InputSplit[] splits,
+                                                                    float waves, int availableSlots)
       throws Exception {
-    return generateGroupedSplits(jobConf, splits, waves, availableSlots, null, true);
+    return generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, null, true);
   }
 
   /** Generate groups of splits, separated by schema evolution boundaries */
   public Multimap<Integer, InputSplit> generateGroupedSplits(JobConf jobConf,
-      InputSplit[] splits,
-      float waves, int availableSlots,
-      String inputName,
-      boolean groupAcrossFiles) throws Exception {
+                                                                    Configuration conf,
+                                                                    InputSplit[] splits,
+                                                                    float waves, int availableSlots,
+                                                                    String inputName,
+                                                                    boolean groupAcrossFiles) throws
+      Exception {
 
     MapWork work = populateMapWork(jobConf, inputName);
     Multimap<Integer, InputSplit> bucketSplitMultiMap =
         ArrayListMultimap.<Integer, InputSplit> create();
-    Map<Integer, SplitSizeEstimator> splitSizeEstimatorMap = new HashMap<>();
+
     int i = 0;
     InputSplit prevSplit = null;
-    Class<? extends InputFormat> inputFormatClass = null;
     for (InputSplit s : splits) {
       // this is the bit where we make sure we don't group across partition
       // schema boundaries
       if (schemaEvolved(s, prevSplit, groupAcrossFiles, work)) {
         ++i;
         prevSplit = s;
-        inputFormatClass = getInputFormatClassFromSplit(s, work);
-        InputFormat inputFormat = HiveInputFormat.getInputFormatFromCache(inputFormatClass, jobConf);
-        if (inputFormat instanceof SplitSizeEstimator) {
-          LOG.info(inputFormat.getClass().getSimpleName() + " implements SplitSizeEstimator");
-          splitSizeEstimatorMap.put(i, (SplitSizeEstimator) inputFormat);
-        } else {
-          LOG.info(inputFormat.getClass().getSimpleName() + " does not implement SplitSizeEstimator");
-          splitSizeEstimatorMap.put(i, null);
-        }
       }
-
       bucketSplitMultiMap.put(i, s);
     }
     LOG.info("# Src groups for split generation: " + (i + 1));
 
     // group them into the chunks we want
     Multimap<Integer, InputSplit> groupedSplits =
-        this.group(jobConf, bucketSplitMultiMap, availableSlots, waves, splitSizeEstimatorMap);
+        this.group(jobConf, bucketSplitMultiMap, availableSlots, waves);
 
     return groupedSplits;
-  }
-
-  private Class<? extends InputFormat> getInputFormatClassFromSplit(InputSplit s, MapWork work)
-      throws IOException {
-    Path path = ((FileSplit) s).getPath();
-    PartitionDesc pd =
-        HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
-            path, cache);
-    return pd.getInputFileFormatClass();
   }
 
 
