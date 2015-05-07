@@ -84,7 +84,7 @@ cd /some/working/dir/
   if [[ "maven" == "maven" ]]
   then
     rm -rf /some/working/dir/maven/org/apache/hive
-    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+        mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
     mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy $mavenArgs $mavenTestArgs
     cd itests
     mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs

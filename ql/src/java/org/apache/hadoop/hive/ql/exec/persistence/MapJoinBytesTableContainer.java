@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -61,7 +63,8 @@ import org.apache.hadoop.io.Writable;
  * BytesBytesMultiHashMap, with very low memory overhead. However,
  * there may be some perf overhead when retrieving rows.
  */
-public class MapJoinBytesTableContainer implements MapJoinTableContainer {
+public class MapJoinBytesTableContainer
+         implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
   private static final Log LOG = LogFactory.getLog(MapJoinTableContainer.class);
 
   private final BytesBytesMultiHashMap hashMap;
@@ -75,6 +78,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
    */
   private boolean[] sortableSortOrders;
   private KeyValueHelper writeHelper;
+  private DirectKeyValueWriter directWriteHelper;
 
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
@@ -93,6 +97,7 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     int newThreshold = HashMapWrapper.calculateTableSize(
         keyCountAdj, threshold, loadFactor, keyCount);
     hashMap = new BytesBytesMultiHashMap(newThreshold, loadFactor, wbSize, memUsage);
+    directWriteHelper = new DirectKeyValueWriter();
   }
 
   public MapJoinBytesTableContainer(BytesBytesMultiHashMap hashMap) {
@@ -294,6 +299,48 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     }
   }
 
+  /*
+   * An implementation of KvSource that can handle key and value as BytesWritable objects.
+   */
+  protected static class DirectKeyValueWriter implements KeyValueHelper {
+
+    private BytesWritable key;
+    private BytesWritable val;
+
+    @Override
+    public void setKeyValue(Writable key, Writable val) throws SerDeException {
+      this.key = (BytesWritable) key;
+      this.val = (BytesWritable) val;
+    }
+
+    @Override
+    public void writeKey(RandomAccessOutput dest) throws SerDeException {
+      byte[] keyBytes = key.getBytes();
+      int keyLength = key.getLength();
+      dest.write(keyBytes, 0, keyLength);
+    }
+
+    @Override
+    public void writeValue(RandomAccessOutput dest) throws SerDeException {
+      byte[] valueBytes = val.getBytes();
+      int valueLength = val.getLength();
+      dest.write(valueBytes, 0 , valueLength);
+    }
+
+    @Override
+    public byte updateStateByte(Byte previousValue) {
+      // Not used by the direct access client -- native vector map join.
+      throw new UnsupportedOperationException("Updating the state by not supported");
+    }
+
+    @Override
+    public int getHashFromKey() throws SerDeException {
+      byte[] keyBytes = key.getBytes();
+      int keyLength = key.getLength();
+      return WriteBuffers.murmurHash(keyBytes, 0, keyLength);
+    }
+  }
+
   @SuppressWarnings("deprecation")
   @Override
   public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
@@ -342,9 +389,17 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     hashMap.seal();
   }
 
+  // Direct access interfaces.
+
+  @Override
+  public void put(Writable currentKey, Writable currentValue) throws SerDeException {
+    directWriteHelper.setKeyValue(currentKey, currentValue);
+    hashMap.put(directWriteHelper, -1);
+  }
+
   /** Implementation of ReusableGetAdaptor that has Output for key serialization; row
    * container is also created once and reused for every row. */
-  private class GetAdaptor implements ReusableGetAdaptor {
+  private class GetAdaptor implements ReusableGetAdaptor, ReusableGetAdaptorDirectAccess {
 
     private Object[] currentKey;
     private boolean[] nulls;
@@ -423,6 +478,19 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     @Override
     public Object[] getCurrentKey() {
       return currentKey;
+    }
+
+    // Direct access interfaces.
+
+    @Override
+    public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
+        BytesBytesMultiHashMap.Result hashMapResult) {
+      return currentValue.setDirect(bytes, offset, length, hashMapResult);
+    }
+
+    @Override
+    public int directSpillPartitionId() {
+      throw new UnsupportedOperationException("Getting the spill hash partition not supported");
     }
   }
 
@@ -572,6 +640,22 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
     @Override
     public void write(MapJoinObjectSerDeContext valueContext, ObjectOutputStream out) {
       throw new RuntimeException(this.getClass().getCanonicalName() + " cannot be serialized");
+    }
+
+    // Direct access.
+
+    public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
+        BytesBytesMultiHashMap.Result hashMapResult) {
+
+      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
+      aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult);
+      dummyRow = null;
+      if (hashMapResult.hasRows()) {
+        return JoinUtil.JoinResult.MATCH;
+      } else {
+        aliasFilter = (byte) 0xff;
+        return JoinUtil.JoinResult.NOMATCH;
+      }
     }
   }
 

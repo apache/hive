@@ -14,6 +14,8 @@ SELECT count(*) FROM src, orc_src where src.key=orc_src.key;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=3000;
+set hive.mapjoin.hybridgrace.minwbsize=350;
+set hive.mapjoin.hybridgrace.minnumpartitions=8;
 
 explain
 select count(*) from (select x.key as key, y.value as value from

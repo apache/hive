@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -174,8 +175,9 @@ public class Hive {
       for (String functionName : db.getFunctions(dbName, "*")) {
         Function function = db.getFunction(dbName, functionName);
         try {
-          FunctionRegistry.registerPermanentFunction(functionName, function.getClassName(), false,
-              FunctionTask.toFunctionResource(function.getResourceUris()));
+	  FunctionRegistry.registerPermanentFunction(
+	      FunctionUtils.qualifyFunctionName(functionName, dbName), function.getClassName(),
+	      false, FunctionTask.toFunctionResource(function.getResourceUris()));
         } catch (Exception e) {
           LOG.warn("Failed to register persistent function " +
               functionName + ":" + function.getClassName() + ". Ignore and continue.");
@@ -1702,10 +1704,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     List<Partition> out = new ArrayList<Partition>();
     try {
-      // TODO: normally, the result is not necessary; might make sense to pass false
-      for (org.apache.hadoop.hive.metastore.api.Partition outPart
-          : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
-        out.add(new Partition(tbl, outPart));
+      if (!addPartitionDesc.getReplaceMode()){
+        // TODO: normally, the result is not necessary; might make sense to pass false
+        for (org.apache.hadoop.hive.metastore.api.Partition outPart
+            : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
+          out.add(new Partition(tbl, outPart));
+        }
+      } else {
+        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), in);
+        List<String> part_names = new ArrayList<String>();
+        for (org.apache.hadoop.hive.metastore.api.Partition p: in){
+          part_names.add(Warehouse.makePartName(tbl.getPartitionKeys(), p.getValues()));
+        }
+        for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
+        getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
+          out.add(new Partition(tbl,outPart));
+        }
       }
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));

@@ -126,7 +126,8 @@ public class VectorColumnSetInfo {
       doubleIndices[doubleIndicesIndex] = addIndex;
       indexLookup[addIndex].setDouble(doubleIndicesIndex);
       ++doubleIndicesIndex;
-    } else if (VectorizationContext.isStringFamily(outputType)) {
+    } else if (VectorizationContext.isStringFamily(outputType) ||
+        outputType.equalsIgnoreCase("binary")) {
       stringIndices[stringIndicesIndex]= addIndex;
       indexLookup[addIndex].setString(stringIndicesIndex);
       ++stringIndicesIndex;

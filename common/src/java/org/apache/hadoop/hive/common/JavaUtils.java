@@ -136,6 +136,14 @@ public final class JavaUtils {
     LogFactory.release(loader);
   }
 
+  /**
+   * Utility method for ACID to normalize logging info
+   * @param extLockId LockResponse.lockid
+   */
+  public static String lockIdToString(long extLockId) {
+    return "lockid:" + extLockId;
+  }
+
   private JavaUtils() {
     // prevent instantiation
   }

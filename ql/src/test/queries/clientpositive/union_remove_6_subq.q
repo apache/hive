@@ -6,6 +6,8 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set mapred.input.dir.recursive=true;
 
+-- SORT_QUERY_RESULTS
+
 -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (all of which are mapred queries)
 -- followed by select star and a file sink in 2 output tables.

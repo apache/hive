@@ -280,14 +280,15 @@ public class VectorizationContext {
       throw new HiveException("Null column name");
     }
     if (!projectionColumnMap.containsKey(name)) {
-      throw new HiveException(String.format("The column %s is not in the vectorization context column map %s.", 
+      throw new HiveException(String.format("The column %s is not in the vectorization context column map %s.",
                  name, projectionColumnMap.toString()));
     }
     return projectionColumnMap.get(name);
   }
 
-  protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) {
-    return projectionColumnMap.get(colExpr.getColumn());
+  protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) throws HiveException {
+    // Call the regular method since it does error checking.
+    return getInputColumnIndex(colExpr.getColumn());
   }
 
   private static class OutputColumnManager {
@@ -1022,7 +1023,7 @@ public class VectorizationContext {
             arguments[i] = colIndex;
         } else if (child instanceof ExprNodeConstantDesc) {
           Object scalarValue = getVectorTypeScalarValue((ExprNodeConstantDesc) child);
-          arguments[i] = scalarValue;
+          arguments[i] = (null == scalarValue) ? getConstantVectorExpression(null, child.getTypeInfo(), childrenMode) : scalarValue;
         } else {
           throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
         }
@@ -1151,8 +1152,9 @@ public class VectorizationContext {
       return getCastToChar(childExpr, returnType);
     } else if (udf instanceof GenericUDFToVarchar) {
       return getCastToVarChar(childExpr, returnType);
+    } else if (udf instanceof GenericUDFTimestamp) {
+      return getCastToTimestamp((GenericUDFTimestamp)udf, childExpr, mode, returnType);
     }
-
     // Now do a general lookup
     Class<?> udfClass = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1163,6 +1165,19 @@ public class VectorizationContext {
 
     if (ve == null) {
       throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+    }
+
+    return ve;
+  }
+
+  private VectorExpression getCastToTimestamp(GenericUDFTimestamp udf,
+      List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType) throws HiveException {
+    VectorExpression ve = getVectorExpressionForUdf(udf.getClass(), childExpr, mode, returnType);
+
+    // Replace with the milliseconds conversion
+    if (!udf.isIntToTimestampInSeconds() && ve instanceof CastLongToTimestampViaLongToLong) {
+      ve = createVectorExpression(CastMillisecondsLongToTimestampViaLongToLong.class,
+          childExpr, Mode.PROJECTION, returnType);
     }
 
     return ve;
@@ -1337,10 +1352,10 @@ public class VectorizationContext {
     HiveDecimal rawDecimal;
     switch (ptinfo.getPrimitiveCategory()) {
     case FLOAT:
-      rawDecimal = HiveDecimal.create(String.valueOf((Float) scalar));
+      rawDecimal = HiveDecimal.create(String.valueOf(scalar));
       break;
     case DOUBLE:
-      rawDecimal = HiveDecimal.create(String.valueOf((Double) scalar));
+      rawDecimal = HiveDecimal.create(String.valueOf(scalar));
       break;
     case BYTE:
       rawDecimal = HiveDecimal.create((Byte) scalar);
@@ -1504,7 +1519,7 @@ public class VectorizationContext {
       return createVectorExpression(CastStringGroupToChar.class, childExpr, Mode.PROJECTION, returnType);
     }
 
-    /* 
+    /*
      * Timestamp, float, and double types are handled by the legacy code path. See isLegacyPathUDF.
      */
 
@@ -1852,7 +1867,7 @@ public class VectorizationContext {
         return 0;
       }
     } else if (decimalTypePattern.matcher(constDesc.getTypeString()).matches()) {
-      return (HiveDecimal) constDesc.getValue();
+      return constDesc.getValue();
     } else {
       return constDesc.getValue();
     }
@@ -1992,7 +2007,7 @@ public class VectorizationContext {
       return "None";
     }
   }
-  
+
   static String getUndecoratedName(String hiveTypeName) {
     VectorExpressionDescriptor.ArgumentType argType = VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(hiveTypeName);
     switch (argType) {
@@ -2021,7 +2036,7 @@ public class VectorizationContext {
   }
 
   // TODO: When we support vectorized STRUCTs and can handle more in the reduce-side (MERGEPARTIAL):
-  // TODO:   Write reduce-side versions of AVG. Currently, only map-side (HASH) versions are in table. 
+  // TODO:   Write reduce-side versions of AVG. Currently, only map-side (HASH) versions are in table.
   // TODO:   And, investigate if different reduce-side versions are needed for var* and std*, or if map-side aggregate can be used..  Right now they are conservatively
   //         marked map-side (HASH).
   static ArrayList<AggregateDefinition> aggregatesDefinition = new ArrayList<AggregateDefinition>() {{
@@ -2135,6 +2150,7 @@ public class VectorizationContext {
     return map;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(32);
     sb.append("Context name ").append(contextName).append(", level " + level + ", ");

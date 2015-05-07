@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -65,12 +65,13 @@ import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFLog10;
 import org.apache.hadoop.hive.ql.udf.UDFLog2;
+import org.apache.hadoop.hive.ql.udf.UDFMd5;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
-import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftLeft;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftLeft;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRight;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitShiftRightUnsigned;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
@@ -224,6 +225,7 @@ public final class FunctionRegistry {
     system.registerUDF("unhex", UDFUnhex.class, false);
     system.registerUDF("base64", UDFBase64.class, false);
     system.registerUDF("unbase64", UDFUnbase64.class, false);
+    system.registerUDF("md5", UDFMd5.class, false);
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);
@@ -258,6 +260,7 @@ public final class FunctionRegistry {
     system.registerUDF("day", UDFDayOfMonth.class, false);
     system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
     system.registerUDF("month", UDFMonth.class, false);
+    system.registerGenericUDF("quarter", GenericUDFQuarter.class);
     system.registerUDF("year", UDFYear.class, false);
     system.registerUDF("hour", UDFHour.class, false);
     system.registerUDF("minute", UDFMinute.class, false);
@@ -268,6 +271,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("last_day", GenericUDFLastDay.class);
     system.registerGenericUDF("next_day", GenericUDFNextDay.class);
     system.registerGenericUDF("trunc", GenericUDFTrunc.class);
+    system.registerGenericUDF("date_format", GenericUDFDateFormat.class);
 
     system.registerGenericUDF("date_add", GenericUDFDateAdd.class);
     system.registerGenericUDF("date_sub", GenericUDFDateSub.class);
@@ -1527,6 +1531,14 @@ public final class FunctionRegistry {
     WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
     if (windowInfo != null) {
       return windowInfo.isImpliesOrder();
+    }
+    return false;
+  }
+
+  public static boolean pivotResult(String functionName) throws SemanticException {
+    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
+    if (windowInfo != null) {
+      return windowInfo.isPivotResult();
     }
     return false;
   }

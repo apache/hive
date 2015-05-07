@@ -355,6 +355,7 @@ public class VectorSerializeRowNoNulls {
   }
 
   public void init(List<String> typeNames, int[] columnMap) throws HiveException {
+
     writers = new Writer[typeNames.size()];
     for (int i = 0; i < typeNames.size(); i++) {
       String typeName = typeNames.get(i);
@@ -366,11 +367,23 @@ public class VectorSerializeRowNoNulls {
   }
 
   public void init(List<String> typeNames) throws HiveException {
+
     writers = new Writer[typeNames.size()];
     for (int i = 0; i < typeNames.size(); i++) {
       String typeName = typeNames.get(i);
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
       Writer writer = createWriter(typeInfo, i);
+      writers[i] = writer;
+    }
+  }
+
+  public void init(PrimitiveTypeInfo[] primitiveTypeInfos, List<Integer> columnMap)
+      throws HiveException {
+
+    writers = new Writer[primitiveTypeInfos.length];
+    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+      int columnIndex = columnMap.get(i);
+      Writer writer = createWriter(primitiveTypeInfos[i], columnIndex);
       writers[i] = writer;
     }
   }
@@ -381,6 +394,10 @@ public class VectorSerializeRowNoNulls {
 
   public void setOutput(Output output) {
     serializeWrite.set(output);
+  }
+
+  public void setOutputAppend(Output output) {
+    serializeWrite.setAppend(output);
   }
 
   /*

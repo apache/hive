@@ -42,6 +42,7 @@ public class TestSparkSessionManagerImpl {
   @Test
   public void testSingleSessionMultipleUse() throws Exception {
     HiveConf conf = new HiveConf();
+    conf.set("spark.master", "local");
 
     SparkSessionManager sessionManager = SparkSessionManagerImpl.getInstance();
     SparkSession sparkSession1 = sessionManager.getSession(null, conf, true);
@@ -68,6 +69,8 @@ public class TestSparkSessionManagerImpl {
     sessionManagerHS2.shutdown();
 
     HiveConf hiveConf = new HiveConf();
+    hiveConf.set("spark.master", "local");
+
     sessionManagerHS2.setup(hiveConf);
 
     List<Thread> threadList = new ArrayList<Thread>();
@@ -105,6 +108,8 @@ public class TestSparkSessionManagerImpl {
         String threadName = Thread.currentThread().getName();
         System.out.println(threadName + " started.");
         HiveConf conf = new HiveConf();
+        conf.set("spark.master", "local");
+
         SparkSession prevSession = null;
         SparkSession currentSession = null;
 

@@ -1,4 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 -- union of constants, udf outputs, and columns from text table and thrift table
 
 explain
@@ -16,7 +16,7 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- union of constants, udf outputs, and columns from text table and thrift table
 
 explain
@@ -202,7 +202,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
-NULL	2
 0	7
 001	2
 002	2
@@ -728,6 +727,7 @@ NULL	2
 984	4
 991	3
 993	2
+NULL	2
 record_0	1
 record_1	1
 record_2	1

@@ -317,13 +317,14 @@ public class TezSessionState {
   }
 
   /**
-   * Close a tez session. Will cleanup any tez/am related resources. After closing a session
-   * no further DAGs can be executed against it.
-   * @param keepTmpDir whether or not to remove the scratch dir at the same time.
-   * @throws IOException
-   * @throws TezException
+   * Close a tez session. Will cleanup any tez/am related resources. After closing a session no
+   * further DAGs can be executed against it.
+   * 
+   * @param keepTmpDir
+   *          whether or not to remove the scratch dir at the same time.
+   * @throws Exception
    */
-  public void close(boolean keepTmpDir) throws TezException, IOException {
+  public void close(boolean keepTmpDir) throws Exception {
     if (!isOpen()) {
       return;
     }

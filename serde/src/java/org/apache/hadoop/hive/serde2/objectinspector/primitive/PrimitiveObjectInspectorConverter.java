@@ -269,6 +269,7 @@ public class PrimitiveObjectInspectorConverter {
   public static class TimestampConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     SettableTimestampObjectInspector outputOI;
+    boolean intToTimestampInSeconds = false;
     Object r;
 
     public TimestampConverter(PrimitiveObjectInspector inputOI,
@@ -278,12 +279,16 @@ public class PrimitiveObjectInspectorConverter {
       r = outputOI.create(new Timestamp(0));
     }
 
+    public void setIntToTimestampInSeconds(boolean intToTimestampInSeconds) {
+      this.intToTimestampInSeconds = intToTimestampInSeconds;
+    }
+ 
     public Object convert(Object input) {
       if (input == null) {
         return null;
       }
       return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestamp(input,
-          inputOI));
+          inputOI, intToTimestampInSeconds));
     }
   }
 

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 
 @Description(name = "decode",
@@ -48,7 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
         "is null, the result will also be null")
 public class GenericUDFDecode extends GenericUDF {
   private transient CharsetDecoder decoder;
-  private transient BinaryObjectInspector bytesOI;
+  private transient PrimitiveObjectInspector bytesOI;
   private transient PrimitiveObjectInspector charsetOI;
 
   @Override
@@ -57,12 +58,19 @@ public class GenericUDFDecode extends GenericUDF {
       throw new UDFArgumentLengthException("Decode() requires exactly two arguments");
     }
 
-    if (arguments[0].getCategory() != Category.PRIMITIVE ||
-        ((PrimitiveObjectInspector)arguments[0]).getPrimitiveCategory() != PrimitiveCategory.BINARY){
-      throw new UDFArgumentTypeException(0, "The first argument to Decode() must be a binary");
+    if (arguments[0].getCategory() != Category.PRIMITIVE){
+      throw new UDFArgumentTypeException(0, "The first argument to Decode() must be primitive");
     }
 
-    bytesOI = (BinaryObjectInspector) arguments[0];
+    PrimitiveCategory category = ((PrimitiveObjectInspector)arguments[0]).getPrimitiveCategory();
+
+    if (category == PrimitiveCategory.BINARY) {
+      bytesOI = (BinaryObjectInspector) arguments[0];
+    } else if(category == PrimitiveCategory.VOID) {
+      bytesOI = (VoidObjectInspector) arguments[0];
+    } else {
+      throw new UDFArgumentTypeException(0, "The first argument to Decode() must be binary");
+    }
 
     if (arguments[1].getCategory() != Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(1, "The second argument to Decode() must be primitive");
@@ -85,17 +93,17 @@ public class GenericUDFDecode extends GenericUDF {
           .onUnmappableCharacter(CodingErrorAction.REPORT);
     }
 
-    return (ObjectInspector) PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    byte[] value = bytesOI.getPrimitiveJavaObject(arguments[0].get());
+    Object value = bytesOI.getPrimitiveJavaObject(arguments[0].get());
     if (value == null) {
       return null;
     }
 
-    ByteBuffer wrappedBytes = ByteBuffer.wrap(value);
+    ByteBuffer wrappedBytes = ByteBuffer.wrap((byte[])value);
     CharBuffer decoded;
     if (decoder != null){
       try {

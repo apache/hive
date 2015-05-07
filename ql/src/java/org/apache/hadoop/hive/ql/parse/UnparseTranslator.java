@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
  * SemanticAnalyzer.saveViewDefinition() calls TokenRewriteStream.toString().
  *
  */
-class UnparseTranslator {
+public class UnparseTranslator {
   // key is token start index
   private final NavigableMap<Integer, Translation> translations;
   private final List<CopyTranslation> copyTranslations;

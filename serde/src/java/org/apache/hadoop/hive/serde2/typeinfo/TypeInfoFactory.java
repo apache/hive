@@ -22,13 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
@@ -40,7 +37,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * objects that represents the same type.
  */
 public final class TypeInfoFactory {
-  private static Log LOG = LogFactory.getLog(TypeInfoFactory.class);
 
   private TypeInfoFactory() {
     // prevent instantiation
@@ -115,7 +111,10 @@ public final class TypeInfoFactory {
       throw new RuntimeException("Error creating PrimitiveTypeInfo instance for " + typeName);
     }
 
-    cachedPrimitiveTypeInfo.put(typeName, result);
+    PrimitiveTypeInfo prev = cachedPrimitiveTypeInfo.putIfAbsent(typeName, result);
+    if (prev != null) {
+      result = prev;
+    }
     return result;
   }
 
@@ -203,7 +202,10 @@ public final class TypeInfoFactory {
     TypeInfo result = cachedStructTypeInfo.get(signature);
     if (result == null) {
       result = new StructTypeInfo(names, typeInfos);
-      cachedStructTypeInfo.put(signature, result);
+      TypeInfo prev = cachedStructTypeInfo.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -215,7 +217,10 @@ public final class TypeInfoFactory {
     TypeInfo result = cachedUnionTypeInfo.get(typeInfos);
     if (result == null) {
       result = new UnionTypeInfo(typeInfos);
-      cachedUnionTypeInfo.put(typeInfos, result);
+      TypeInfo prev = cachedUnionTypeInfo.putIfAbsent(typeInfos, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -226,7 +231,10 @@ public final class TypeInfoFactory {
     TypeInfo result = cachedListTypeInfo.get(elementTypeInfo);
     if (result == null) {
       result = new ListTypeInfo(elementTypeInfo);
-      cachedListTypeInfo.put(elementTypeInfo, result);
+      TypeInfo prev = cachedListTypeInfo.putIfAbsent(elementTypeInfo, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -242,7 +250,10 @@ public final class TypeInfoFactory {
     TypeInfo result = cachedMapTypeInfo.get(signature);
     if (result == null) {
       result = new MapTypeInfo(keyTypeInfo, valueTypeInfo);
-      cachedMapTypeInfo.put(signature, result);
+      TypeInfo prev = cachedMapTypeInfo.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }

@@ -38,9 +38,9 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -175,7 +175,7 @@ public class HCatUtil {
     }
   }
 
-  public static Table getTable(HiveMetaStoreClient client, String dbName, String tableName)
+  public static Table getTable(IMetaStoreClient client, String dbName, String tableName)
     throws NoSuchObjectException, TException, MetaException {
     return new Table(client.getTable(dbName, tableName));
   }
@@ -538,17 +538,17 @@ public class HCatUtil {
    * @throws MetaException When HiveMetaStoreClient couldn't be created
    * @throws IOException
    */
-  public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf)
-    throws MetaException, IOException {
+  public static IMetaStoreClient getHiveMetastoreClient(HiveConf hiveConf)
+      throws MetaException, IOException {
 
     if (hiveConf.getBoolean(HCatConstants.HCAT_HIVE_CLIENT_DISABLE_CACHE, false)){
       // If cache is disabled, don't use it.
-      return HiveClientCache.getNonCachedHiveClient(hiveConf);
+      return HiveClientCache.getNonCachedHiveMetastoreClient(hiveConf);
     }
 
     // Singleton behaviour: create the cache instance if required.
     if (hiveClientCache == null) {
-      synchronized (HiveMetaStoreClient.class) {
+      synchronized (IMetaStoreClient.class) {
         if (hiveClientCache == null) {
           hiveClientCache = new HiveClientCache(hiveConf);
         }
@@ -561,11 +561,30 @@ public class HCatUtil {
     }
   }
 
-  private static HiveMetaStoreClient getNonCachedHiveClient(HiveConf hiveConf) throws MetaException{
-    return new HiveMetaStoreClient(hiveConf);
+  /**
+   * Get or create a hive client depending on whether it exits in cache or not.
+   * @Deprecated : use {@link #getHiveMetastoreClient(HiveConf)} instead.
+   * This was deprecated in Hive 1.2, slated for removal in two versions
+   * (i.e. 1.2 & 1.3(projected) will have it, but it will be removed after that)
+   * @param hiveConf The hive configuration
+   * @return the client
+   * @throws MetaException When HiveMetaStoreClient couldn't be created
+   * @throws IOException
+   */
+  @Deprecated
+  public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf) throws MetaException, IOException {
+    IMetaStoreClient imsc = getHiveMetastoreClient(hiveConf);
+    // Try piggybacking on the function that returns IMSC. Current implementation of the IMSC cache
+    // has CacheableMetaStoreClients, which are HMSC, so we can return them as-is. If not, it's okay
+    // for us to ignore the caching aspect and return a vanilla HMSC.
+    if (imsc instanceof HiveMetaStoreClient){
+      return (HiveMetaStoreClient)imsc;
+    } else {
+      return new HiveMetaStoreClient(hiveConf);
+    }
   }
 
-  public static void closeHiveClientQuietly(HiveMetaStoreClient client) {
+  public static void closeHiveClientQuietly(IMetaStoreClient client) {
     try {
       if (client != null)
         client.close();

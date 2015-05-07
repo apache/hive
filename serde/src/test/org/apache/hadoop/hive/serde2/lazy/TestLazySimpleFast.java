@@ -17,38 +17,28 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
-import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleSerializeWrite;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import junit.framework.TestCase;
 
 public class TestLazySimpleFast extends TestCase {
 
@@ -161,7 +151,7 @@ public class TestLazySimpleFast extends TestCase {
       if (!Arrays.equals(bytes1, bytes2)) {
         fail("SerializeWrite and SerDe serialization does not match");
       }
-      serdeBytes[i] = serialized.copyBytes();
+      serdeBytes[i] = copyBytes(serialized);
     }
 
     // Try to deserialize using DeserializeRead our Writable row objects created by SerDe.
@@ -184,6 +174,12 @@ public class TestLazySimpleFast extends TestCase {
       TestCase.assertTrue(!lazySimpleDeserializeRead.readBeyondBufferRangeWarned());
       TestCase.assertTrue(!lazySimpleDeserializeRead.bufferRangeHasExtraDataWarned());
     }
+  }
+
+  private byte[] copyBytes(Text serialized) {
+    byte[] result = new byte[serialized.getLength()];
+    System.arraycopy(serialized.getBytes(), 0, result, 0, serialized.getLength());
+    return result;
   }
 
   private Properties createProperties(String fieldNames, String fieldTypes) {

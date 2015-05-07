@@ -39,6 +39,8 @@ import org.apache.spark.scheduler.SparkListenerTaskEnd;
 import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
 import org.apache.spark.scheduler.SparkListenerTaskStart;
 import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
+import org.apache.spark.scheduler.SparkListenerExecutorRemoved;
+import org.apache.spark.scheduler.SparkListenerExecutorAdded;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -50,6 +52,16 @@ public class JobMetricsListener implements SparkListener {
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
   private final Map<Integer, Map<String, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
+
+  @Override
+  public void onExecutorRemoved(SparkListenerExecutorRemoved removed) {
+
+  }
+
+  @Override
+  public void onExecutorAdded(SparkListenerExecutorAdded added) {
+
+  }
 
   @Override
   public void onStageCompleted(SparkListenerStageCompleted stageCompleted) {

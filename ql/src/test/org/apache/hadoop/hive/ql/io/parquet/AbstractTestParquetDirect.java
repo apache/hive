@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -122,12 +123,12 @@ public abstract class AbstractTestParquetDirect {
   public static List<ArrayWritable> read(Path parquetFile) throws IOException {
     List<ArrayWritable> records = new ArrayList<ArrayWritable>();
 
-    RecordReader<Void, ArrayWritable> reader = new MapredParquetInputFormat().
+    RecordReader<NullWritable, ArrayWritable> reader = new MapredParquetInputFormat().
         getRecordReader(new FileSplit(
                 parquetFile, 0, fileLength(parquetFile), (String[]) null),
             new JobConf(), null);
 
-    Void alwaysNull = reader.createKey();
+    NullWritable alwaysNull = reader.createKey();
     ArrayWritable record = reader.createValue();
     while (reader.next(alwaysNull, record)) {
       records.add(record);

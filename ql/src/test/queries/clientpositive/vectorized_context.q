@@ -22,6 +22,7 @@ where cint not in (
 set hive.auto.convert.join=true;
 set hive.vectorized.execution.enabled=true;
 
+set hive.mapjoin.hybridgrace.hashtable=false;
 
 explain 
 select store.s_city, ss_net_profit

@@ -134,6 +134,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
+                BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
                   mode: hash

@@ -154,6 +154,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: varchar(10)), _col5 (type: int), _col6 (type: varchar(10))
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -241,12 +242,13 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 c2 (type: varchar(10))
+                        0 c2 (type: varchar(20))
                         1 c2 (type: varchar(20))
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: varchar(10)), _col5 (type: int), _col6 (type: varchar(20))
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -342,6 +344,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: varchar(10)), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3

@@ -9,7 +9,8 @@ select * from cbo_t1;
 select * from cbo_t1 as cbo_t1;
 select * from cbo_t1 as cbo_t2;
 
-select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1; 
+select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1;
+select * from cbo_t1 where (((key=1) and (c_float=10)) and (c_int=20)); 
 
 -- 2. Test Select + TS + FIL
 select * from cbo_t1 where cbo_t1.c_int >= 0;

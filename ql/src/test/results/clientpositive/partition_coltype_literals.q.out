@@ -1,0 +1,647 @@
+PREHOOK: query: drop table if exists partcoltypenum
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists partcoltypenum
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcoltypenum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcoltypenum
+POSTHOOK: query: create table partcoltypenum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcoltypenum
+PREHOOK: query: -- add partition
+alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@partcoltypenum
+POSTHOOK: query: -- add partition
+alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+PREHOOK: query: -- describe partition
+describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: -- describe partition
+describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100, 20000, 300000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- change partition file format
+alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
+PREHOOK: type: ALTERPARTITION_FILEFORMAT
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: query: -- change partition file format
+alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
+POSTHOOK: type: ALTERPARTITION_FILEFORMAT
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+PREHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100, 20000, 300000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- change partition clusterby, sortby and bucket
+alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: query: -- change partition clusterby, sortby and bucket
+alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+PREHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100, 20000, 300000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[Order(col:key, order:0)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- rename partition
+alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: query: -- rename partition
+alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000, bint='330000000000')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000, bint='330000000000')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[110, 22000, 330000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[Order(col:key, order:0)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- insert partition
+insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: query: -- insert partition
+insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into partcoltypenum partition (tint=110, sint=22000, bint=330000000000) select key, value from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: query: insert into partcoltypenum partition (tint=110, sint=22000, bint=330000000000) select key, value from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- select partition
+select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+POSTHOOK: query: -- select partition
+select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+30
+PREHOOK: query: select count(1) from partcoltypenum where tint=110Y and sint=22000 and bint='330000000000'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from partcoltypenum where tint=110Y and sint=22000 and bint='330000000000'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+30
+PREHOOK: query: -- analyze partition statistics and columns statistics
+analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+PREHOOK: Output: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: query: -- analyze partition statistics and columns statistics
+analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: Output: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+PREHOOK: query: describe extended partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe extended partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+key                 	int                 	                    
+value               	string              	                    
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcoltypenum.key partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum.key partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcoltypenum.value partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum.value partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.766666666666667   	7                   	                    	                    	from deserializer   
+PREHOOK: query: -- change table column type for partition
+alter table partcoltypenum change key key decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum
+POSTHOOK: query: -- change table column type for partition
+alter table partcoltypenum change key key decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum
+PREHOOK: query: alter table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) change key key decimal(10,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: query: alter table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) change key key decimal(10,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[110, 22000, 330000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	30                  
+	rawDataSize         	316                 
+	totalSize           	346                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- change partititon column type
+alter table partcoltypenum partition column (tint decimal(3,0))
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: -- change partititon column type
+alter table partcoltypenum partition column (tint decimal(3,0))
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	decimal(3,0)        	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[110, 22000, 330000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	30                  
+	rawDataSize         	316                 
+	totalSize           	346                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- show partition
+show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: -- show partition
+show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partcoltypenum
+tint=110/sint=22000/bint=330000000000
+PREHOOK: query: -- drop partition
+alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+POSTHOOK: query: -- drop partition
+alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
+PREHOOK: query: show partitions partcoltypenum
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: show partitions partcoltypenum
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partcoltypenum
+PREHOOK: query: -- change partition file location
+insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: query: -- change partition file location
+insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=100,sint=20000,bint=300000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=100,sint=20000,bint=300000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	decimal(3,0)        	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100, 20000, 300000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	104                 
+	totalSize           	114                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+#### A masked pattern was here ####
+PREHOOK: type: ALTERPARTITION_LOCATION
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERPARTITION_LOCATION
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+	 	 
+key                 	decimal(10,0)       	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+tint                	decimal(3,0)        	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100, 20000, 300000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	104                 
+	totalSize           	114                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table partcoltypenum
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: default@partcoltypenum
+POSTHOOK: query: drop table partcoltypenum
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Output: default@partcoltypenum
+PREHOOK: query: drop table if exists partcoltypeothers
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists partcoltypeothers
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcoltypeothers (key int, value string) partitioned by (decpart decimal(6,2), datepart date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcoltypeothers
+POSTHOOK: query: create table partcoltypeothers (key int, value string) partitioned by (decpart decimal(6,2), datepart date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcoltypeothers
+PREHOOK: query: insert into partcoltypeothers partition (decpart = 1000.01BD, datepart = date '2015-4-13') select key, value from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcoltypeothers@decpart=1000.01BD/datepart=2015-4-13
+POSTHOOK: query: insert into partcoltypeothers partition (decpart = 1000.01BD, datepart = date '2015-4-13') select key, value from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcoltypeothers@decpart=1000.01BD/datepart=2015-4-13
+POSTHOOK: Lineage: partcoltypeothers PARTITION(decpart=1000.01BD,datepart=2015-4-13).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcoltypeothers PARTITION(decpart=1000.01BD,datepart=2015-4-13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions partcoltypeothers
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partcoltypeothers
+POSTHOOK: query: show partitions partcoltypeothers
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partcoltypeothers
+decpart=1000.01BD/datepart=2015-4-13
+PREHOOK: query: alter table partcoltypeothers partition(decpart = '1000.01BD', datepart = date '2015-4-13') rename to partition (decpart = 1000.01BD, datepart = date '2015-4-13')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@partcoltypeothers
+PREHOOK: Output: default@partcoltypeothers@decpart=1000.01BD/datepart=2015-4-13
+POSTHOOK: query: alter table partcoltypeothers partition(decpart = '1000.01BD', datepart = date '2015-4-13') rename to partition (decpart = 1000.01BD, datepart = date '2015-4-13')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@partcoltypeothers
+POSTHOOK: Input: default@partcoltypeothers@decpart=1000.01BD/datepart=2015-4-13
+POSTHOOK: Output: default@partcoltypeothers@decpart=1000.01/datepart=2015-04-13
+POSTHOOK: Output: default@partcoltypeothers@decpart=1000.01BD/datepart=2015-4-13
+PREHOOK: query: show partitions partcoltypeothers
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partcoltypeothers
+POSTHOOK: query: show partitions partcoltypeothers
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partcoltypeothers
+decpart=1000.01/datepart=2015-04-13
+PREHOOK: query: drop table partcoltypeothers
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcoltypeothers
+PREHOOK: Output: default@partcoltypeothers
+POSTHOOK: query: drop table partcoltypeothers
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcoltypeothers
+POSTHOOK: Output: default@partcoltypeothers

@@ -1971,3 +1971,156 @@ POSTHOOK: query: select * from src s1, src s2 where false and s1.value = s2.valu
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+PREHOOK: query: explain extended
+select count(1) from src where null = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended
+select count(1) from src where null = 1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            src
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_FUNCTION
+               count
+               1
+      TOK_WHERE
+         =
+            TOK_NULL
+            1
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: false (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: false
+            Path -> Alias:
+              -mr-10003default.src{} [src]
+            Path -> Partition:
+              -mr-10003default.src{} 
+                Partition
+                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value
+                    columns.comments 'default','default'
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    numFiles 1
+                    numRows 500
+                    rawDataSize 5312
+                    serialization.ddl struct src { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      numFiles 1
+                      numRows 500
+                      rawDataSize 5312
+                      serialization.ddl struct src { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 5812
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              -mr-10003default.src{} [src]
+        Reducer 2 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from src where null = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from src where null = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0

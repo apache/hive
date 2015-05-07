@@ -44,7 +44,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: null is null (type: boolean), true (type: boolean), true (type: boolean)
+            expressions: true (type: boolean), true (type: boolean), true (type: boolean)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 500 Data size: 6000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit

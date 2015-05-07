@@ -40,21 +40,25 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   Long timestamp;
 
   @JsonProperty
-  List<String> values;
+  Map<String,String> keyValues;
 
+  /**
+   * Default constructor, needed for Jackson.
+   */
+  public JSONAlterPartitionMessage() {}
 
   public JSONAlterPartitionMessage(String server,
                                    String servicePrincipal,
                                    String db,
                                    String table,
-                                   List<String> values,
+                                   Map<String,String> keyValues,
                                    Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
     this.timestamp = timestamp;
-    this.values = values;
+    this.keyValues = keyValues;
     checkValid();
   }
 
@@ -85,8 +89,8 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   }
 
   @Override
-  public List<String> getValues() {
-    return values;
+  public Map<String,String> getKeyValues() {
+    return keyValues;
   }
 
   @Override

@@ -119,6 +119,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
+      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME,
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
@@ -167,7 +168,17 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_MANAGER,
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
-      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION
+      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL,
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL
       };
 
   /**
@@ -388,6 +399,11 @@ public class HiveConf extends Configuration {
     METASTORE_CLIENT_SOCKET_TIMEOUT("hive.metastore.client.socket.timeout", "600s",
         new TimeValidator(TimeUnit.SECONDS),
         "MetaStore Client socket timeout in seconds"),
+    METASTORE_CLIENT_SOCKET_LIFETIME("hive.metastore.client.socket.lifetime", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MetaStore Client socket lifetime in seconds. After this time is exceeded, client\n" +
+        "reconnects on the next MetaStore operation. A value of 0s means the connection\n" +
+        "has an infinite lifetime."),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", "mine",
         "password to use against metastore database"),
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", "",
@@ -606,6 +622,29 @@ public class HiveConf extends Configuration {
         "Choose whether dropping partitions with HCatClient pushes the partition-predicate to the metastore, " +
             "or drops partitions iteratively"),
 
+    METASTORE_AGGREGATE_STATS_CACHE_ENABLED("hive.metastore.aggregate.stats.cache.enabled", true,
+        "Whether aggregate stats caching is enabled or not."),
+    METASTORE_AGGREGATE_STATS_CACHE_SIZE("hive.metastore.aggregate.stats.cache.size", 10000,
+        "Maximum number of aggregate stats nodes that we will place in the metastore aggregate stats cache."),
+    METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS("hive.metastore.aggregate.stats.cache.max.partitions", 10000,
+        "Maximum number of partitions that are aggregated per cache node."),
+    METASTORE_AGGREGATE_STATS_CACHE_FPP("hive.metastore.aggregate.stats.cache.fpp", (float) 0.01,
+        "Maximum false positive probability for the Bloom Filter used in each aggregate stats cache node (default 1%)."),
+    METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE("hive.metastore.aggregate.stats.cache.max.variance", (float) 0.01,
+        "Maximum tolerable variance in number of partitions between a cached node and our request (default 1%)."),
+    METASTORE_AGGREGATE_STATS_CACHE_TTL("hive.metastore.aggregate.stats.cache.ttl", "600s", new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds for a cached node to be active in the cache before they become stale."),
+    METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT("hive.metastore.aggregate.stats.cache.max.writer.wait", "5000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Number of milliseconds a writer will wait to acquire the writelock before giving up."),
+    METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT("hive.metastore.aggregate.stats.cache.max.reader.wait", "1000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Number of milliseconds a reader will wait to acquire the readlock before giving up."),
+    METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL("hive.metastore.aggregate.stats.cache.max.full", (float) 0.9,
+        "Maximum cache full % after which the cache cleaner thread kicks in."),
+    METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL("hive.metastore.aggregate.stats.cache.clean.until", (float) 0.8,
+        "The cleaner thread cleans until cache reaches this % full size."),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("hive.metadata.export.location", "",
@@ -703,6 +742,21 @@ public class HiveConf extends Configuration {
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_RETPATH_HIVEOP("hive.cbo.returnpath.hiveop", false, "Flag to control calcite plan to hive operator conversion"),
+    HIVE_CBO_EXTENDED_COST_MODEL("hive.cbo.costmodel.extended", false, "Flag to control enabling the extended cost model based on"
+                                 + "CPU, IO and cardinality. Otherwise, the cost model is based on cardinality."),
+    HIVE_CBO_COST_MODEL_CPU("hive.cbo.costmodel.cpu", "0.000001", "Default cost of a comparison"),
+    HIVE_CBO_COST_MODEL_NET("hive.cbo.costmodel.network", "150.0", "Default cost of a transfering a byte over network;"
+                                                                  + " expressed as multiple of CPU cost"),
+    HIVE_CBO_COST_MODEL_LFS_WRITE("hive.cbo.costmodel.local.fs.write", "4.0", "Default cost of writing a byte to local FS;"
+                                                                             + " expressed as multiple of NETWORK cost"),
+    HIVE_CBO_COST_MODEL_LFS_READ("hive.cbo.costmodel.local.fs.read", "4.0", "Default cost of reading a byte from local FS;"
+                                                                           + " expressed as multiple of NETWORK cost"),
+    HIVE_CBO_COST_MODEL_HDFS_WRITE("hive.cbo.costmodel.hdfs.write", "10.0", "Default cost of writing a byte to HDFS;"
+                                                                 + " expressed as multiple of Local FS write cost"),
+    HIVE_CBO_COST_MODEL_HDFS_READ("hive.cbo.costmodel.hdfs.read", "1.5", "Default cost of reading a byte from HDFS;"
+                                                                 + " expressed as multiple of Local FS read cost"),
+
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -711,11 +765,15 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
         "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
         "because memory-optimized hashtable cannot be serialized."),
-    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", false, "Whether to use hybrid" +
-        "grace hash join as the join method for mapjoin."),
+    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", true, "Whether to use hybrid" +
+        "grace hash join as the join method for mapjoin. Tez only."),
     HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +
         "hybrid grace hash join, how often (how many rows apart) we check if memory is full. " +
         "This number should be power of 2."),
+    HIVEHYBRIDGRACEHASHJOINMINWBSIZE("hive.mapjoin.hybridgrace.minwbsize", 524288, "For hybrid grace" +
+        " hash join, the minimum write buffer size used by optimized hashtable. Default is 512 KB."),
+    HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS("hive.mapjoin.hybridgrace.minnumpartitions", 16, "For" +
+        " hybrid grace hash join, the minimum number of partitions to create."),
     HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024,
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
@@ -904,6 +962,9 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
+        "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
+        "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
@@ -1357,7 +1418,7 @@ public class HiveConf extends Configuration {
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
-    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "600000ms",
+    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "1200000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
@@ -1570,6 +1631,13 @@ public class HiveConf extends Configuration {
         "of updating the original list means that you can append to the defaults\n" +
         "set by SQL standard authorization instead of replacing it entirely."),
 
+    HIVE_AUTHORIZATION_HDFS_LIST_STATUS_BATCH_SIZE(
+      "hive.authprovider.hdfs.liststatus.batch.size", 1000,
+      "Number of FileStatus objects to be queried for when listing files, for HDFS-based authorization.\n" +
+          "Note: If this exceeds dfs.ls.limit (as set in hdfs-site.xml), DFSClient might use the smaller value as \n" +
+          "the batch-size, internally."
+    ),
+
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false, "Whether to print the names of the columns in query output."),
 
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
@@ -1586,6 +1654,15 @@ public class HiveConf extends Configuration {
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
     // once the feature is stable
+    HIVE_EXIM_RESTRICT_IMPORTS_INTO_REPLICATED_TABLES("hive.exim.strict.repl.tables",true,
+        "Parameter that determines if 'regular' (non-replication) export dumps can be\n" +
+        "imported on to tables that are the target of replication. If this parameter is\n" +
+        "set, regular imports will check if the destination table(if it exists) has a " +
+        "'repl.last.id' set on it. If so, it will fail."),
+    HIVE_REPL_TASK_FACTORY("hive.repl.task.factory",
+        "org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory",
+        "Parameter that can be used to override which ReplicationTaskFactory will be\n" +
+        "used to instantiate ReplicationTask events. Override for third party repl plugins"),
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false, ""),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
@@ -1716,6 +1793,21 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Keepalive time for an idle http worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
+
+    // Cookie based authentication
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
+        "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE("hive.server2.thrift.http.cookie.max.age", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum age in seconds for server side cookie used by HS2 in HTTP mode."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_DOMAIN("hive.server2.thrift.http.cookie.domain", null,
+        "Domain for the HS2 generated cookies"),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_PATH("hive.server2.thrift.http.cookie.path", null,
+        "Path for the HS2 generated cookies"),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_SECURE("hive.server2.thrift.http.cookie.is.secure", true,
+        "Secure attribute of the HS2 generated cookie."),
+    HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY("hive.server2.thrift.http.cookie.is.httponly", true,
+        "HttpOnly attribute of the HS2 generated cookie."),
 
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
@@ -1938,11 +2030,31 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to enable vectorized mode of query execution.\n" +
         "The default value is false."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
-            "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
-            "The default value is true."),
+        "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
+        "The default value is true."),
     HIVE_VECTORIZATION_REDUCE_GROUPBY_ENABLED("hive.vectorized.execution.reduce.groupby.enabled", true,
-            "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
-            "The default value is true."),
+        "This flag should be set to true to enable vectorized mode of the reduce-side GROUP BY query execution.\n" +
+        "The default value is true."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED("hive.vectorized.execution.mapjoin.native.enabled", true,
+         "This flag should be set to true to enable native (i.e. non-pass through) vectorization\n" +
+         "of queries using MapJoin.\n" +
+         "The default value is true."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_MULTIKEY_ONLY_ENABLED("hive.vectorized.execution.mapjoin.native.multikey.only.enabled", false,
+         "This flag should be set to true to restrict use of native vector map join hash tables to\n" +
+         "the MultiKey in queries using MapJoin.\n" +
+         "The default value is false."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_MINMAX_ENABLED("hive.vectorized.execution.mapjoin.minmax.enabled", false,
+         "This flag should be set to true to enable vector map join hash tables to\n" +
+         "use max / max filtering for integer join queries using MapJoin.\n" +
+         "The default value is false."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_OVERFLOW_REPEATED_THRESHOLD("hive.vectorized.execution.mapjoin.overflow.repeated.threshold", -1,
+         "The number of small table rows for a match in vector map join hash tables\n" +
+         "where we use the repeated field optimization in overflow vectorized row batch for join queries using MapJoin.\n" +
+         "A value of -1 means do use the join result optimization.  Otherwise, threshold value can be 0 to maximum integer."),
+    HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED("hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled", false,
+         "This flag should be set to true to enable use of native fast vector map join hash tables in\n" +
+         "queries using MapJoin.\n" +
+         "The default value is false."),
     HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000,
         "Number of entries added to the group by aggregation hash before a recomputation of average entry size is performed."),
     HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000,
@@ -1951,7 +2063,10 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
 
-    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, ""),
+    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
+        + "whether to check, convert, and normalize partition value to conform to its column type in "
+        + "partition operations including but not limited to insert, such as alter, describe etc."),
+
     HIVE_HADOOP_CLASSPATH("hive.hadoop.classpath", null,
         "For Windows OS, we need to pass HIVE_HADOOP_CLASSPATH Java parameter while starting HiveServer2 \n" +
         "using \"-hiveconf hive.hadoop.classpath=%HIVE_LIB%\"."),
@@ -2592,6 +2707,7 @@ public class HiveConf extends Configuration {
     auxJars = other.auxJars;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
+    modWhiteListPattern = other.modWhiteListPattern;
   }
 
   public Properties getAllProperties() {
@@ -2741,6 +2857,7 @@ public class HiveConf extends Configuration {
     ConfVars.DEFAULTPARTITIONNAME.varname,
     ConfVars.DROPIGNORESNONEXISTENT.varname,
     ConfVars.HIVECOUNTERGROUP.varname,
+    ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
     ConfVars.HIVEENFORCEBUCKETING.varname,
     ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
     ConfVars.HIVEENFORCESORTING.varname,
@@ -2771,13 +2888,17 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
     ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
     ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
+    ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION.varname,
     ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
     ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
     ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
+    ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
+    ConfVars.HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS.varname,
     ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
     ConfVars.JOB_DEBUG_TIMEOUT.varname,
     ConfVars.MAXCREATEDFILES.varname,
     ConfVars.MAXREDUCERS.varname,
+    ConfVars.NWAYJOINREORDER.varname,
     ConfVars.OUTPUT_FILE_EXTENSION.varname,
     ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
     ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
@@ -2797,6 +2918,7 @@ public class HiveConf extends Configuration {
     "hive\\.exec\\.infer\\..*",
     "hive\\.exec\\.mode.local\\..*",
     "hive\\.exec\\.orc\\..*",
+    "hive\\.explain\\..*",
     "hive\\.fetch.task\\..*",
     "hive\\.hbase\\..*",
     "hive\\.index\\..*",
@@ -2804,13 +2926,16 @@ public class HiveConf extends Configuration {
     "hive\\.intermediate\\..*",
     "hive\\.join\\..*",
     "hive\\.limit\\..*",
+    "hive\\.log\\..*",
     "hive\\.mapjoin\\..*",
     "hive\\.merge\\..*",
     "hive\\.optimize\\..*",
     "hive\\.orc\\..*",
     "hive\\.outerjoin\\..*",
+    "hive\\.parquet\\..*",
     "hive\\.ppd\\..*",
     "hive\\.prewarm\\..*",
+    "hive\\.server2\\.proxy\\.user",
     "hive\\.skewjoin\\..*",
     "hive\\.smbjoin\\..*",
     "hive\\.stats\\..*",
@@ -2827,6 +2952,7 @@ public class HiveConf extends Configuration {
     "tez\\.am\\..*",
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",
+    "tez.queue.name",
   };
 
 

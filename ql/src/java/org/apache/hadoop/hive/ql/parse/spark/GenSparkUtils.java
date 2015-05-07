@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -342,9 +343,7 @@ public class GenSparkUtils {
     edgeProperty.setNumPartitions(reduceWork.getNumReduceTasks());
     String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
 
-    // test if we need group-by shuffle
-    if (reduceSink.getChildOperators().size() == 1
-      && reduceSink.getChildOperators().get(0) instanceof GroupByOperator) {
+    if (hasGBYOperator(reduceSink)) {
       edgeProperty.setShuffleGroup();
       // test if the group by needs partition level sort, if so, use the MR style shuffle
       // SHUFFLE_SORT shouldn't be used for this purpose, see HIVE-8542
@@ -369,13 +368,12 @@ public class GenSparkUtils {
       }
     }
 
-    // test if we need total order, if so, we can either use MR shuffle + set #reducer to 1,
-    // or we can use SHUFFLE_SORT
+    // test if we need partition/global order, SHUFFLE_SORT should only be used for global order
     if (edgeProperty.isShuffleNone() && !sortOrder.isEmpty()) {
-      if (reduceSink.getConf().getPartitionCols() == null
-        || reduceSink.getConf().getPartitionCols().isEmpty()
-        || isSame(reduceSink.getConf().getPartitionCols(),
-              reduceSink.getConf().getKeyCols())) {
+      if ((reduceSink.getConf().getPartitionCols() == null
+          || reduceSink.getConf().getPartitionCols().isEmpty()
+          || isSame(reduceSink.getConf().getPartitionCols(), reduceSink.getConf().getKeyCols()))
+          && reduceSink.getConf().hasOrderBy()) {
         edgeProperty.setShuffleSort();
       } else {
         edgeProperty.setMRShuffle();
@@ -474,5 +472,22 @@ public class GenSparkUtils {
 
   public synchronized int getNextSeqNumber() {
     return ++sequenceNumber;
+  }
+
+  // test if we need group-by shuffle
+  private static boolean hasGBYOperator(ReduceSinkOperator rs) {
+    if (rs.getChildOperators().size() == 1) {
+      if (rs.getChildOperators().get(0) instanceof GroupByOperator) {
+        return true;
+      } else if (rs.getChildOperators().get(0) instanceof ForwardOperator) {
+        for (Operator grandChild : rs.getChildOperators().get(0).getChildOperators()) {
+          if (!(grandChild instanceof GroupByOperator)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+    return false;
   }
 }

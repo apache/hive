@@ -205,6 +205,19 @@ Here is the schema of the table writen in MySQL:
 To prevent primary key violation and sqoop import directory conflict, make sure the "PERSON" table is empty
 and the folder hdfs://hostname:8020/sqoopoutputdir doesn't exist before running the test.
 
+Running updateConfig tests
+--------------------------
+ant test-updateConfig -Dinpdir.hdfs=<location of inpdir on hdfs>  -Dtest.user.name=<user the tests should run as> \
+ -Dsecure.mode=<yes/no>   -Dharness.webhdfs.url=<webhdfs url upto port num>  -Dharness.templeton.url=<templeton url upto port num>
+
+This test suite is trying to verify the use of property templeton.mapper.memory.mb in webhcat-site.xml.
+For this, an attempt is made to load data of size greater than 100MB, from one hive table to another hive table,
+with the templeton.mapper.memory.mb set to a very low value. This is a negative test case that expects the failure of map job
+due to insufficient memory.
+
+For running this test suite templeton.mapper.memory.mb property should be set to 0.01 in webhcat-site.xml. This could be done by
+running modify_webhcat_config.sh in deployers/. Once the test run finishes, the change could be reverted by running restore_webhcat_config.sh
+
 Notes
 -----
 It's best to set HADOOP_HOME_WARN_SUPPRESS=true everywhere you can.

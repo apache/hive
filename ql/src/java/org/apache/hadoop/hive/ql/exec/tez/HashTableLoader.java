@@ -29,14 +29,14 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableConf;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
-import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -69,7 +69,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
   @Override
   public void load(MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage)
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException {
 
     Map<Integer, String> parentToInput = desc.getParentToInput();
@@ -77,13 +77,46 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     boolean useOptimizedTables = HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
-    boolean useHybridGraceHashJoin = HiveConf.getBoolVar(
-        hconf, HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
+    boolean useHybridGraceHashJoin = desc.isHybridHashJoin();
     boolean isFirstKey = true;
+    // TODO remove this after memory manager is in
+    long noConditionalTaskThreshold = HiveConf.getLongVar(
+        hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
 
-    // Disable hybrid grace hash join for n-way join
-    if (mapJoinTables.length > 2) {
-      useHybridGraceHashJoin = false;
+    // Only applicable to n-way Hybrid Grace Hash Join
+    HybridHashTableConf nwayConf = null;
+    long totalSize = 0;
+    int biggest = 0;                                // position of the biggest small table
+    if (useHybridGraceHashJoin && mapJoinTables.length > 2) {
+      // Create a Conf for n-way HybridHashTableContainers
+      nwayConf = new HybridHashTableConf();
+
+      // Find the biggest small table; also calculate total data size of all small tables
+      long maxSize = 0; // the size of the biggest small table
+      for (int pos = 0; pos < mapJoinTables.length; pos++) {
+        if (pos == desc.getPosBigTable()) {
+          continue;
+        }
+        totalSize += desc.getParentDataSizes().get(pos);
+        biggest = desc.getParentDataSizes().get(pos) > maxSize ? pos : biggest;
+        maxSize = desc.getParentDataSizes().get(pos) > maxSize ? desc.getParentDataSizes().get(pos)
+                                                               : maxSize;
+      }
+
+      // Using biggest small table, calculate number of partitions to create for each small table
+      float percentage = (float) maxSize / totalSize;
+      long memory = (long) (noConditionalTaskThreshold * percentage);
+      int numPartitions = 0;
+      try {
+        numPartitions = HybridHashTableContainer.calcNumPartitions(memory,
+            desc.getParentDataSizes().get(biggest),
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
+            nwayConf);
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
+      nwayConf.setNumberOfPartitions(numPartitions);
     }
 
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
@@ -111,6 +144,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           if (!MapJoinBytesTableContainer.isSupportedKey(keyOi)) {
             if (isFirstKey) {
               useOptimizedTables = false;
+              LOG.info(describeOi("Not using optimized hash table. " +
+                           "Only a subset of mapjoin keys is supported. Unsupported key: ", keyOi));
             } else {
               throw new HiveException(describeOi(
                   "Only a subset of mapjoin keys is supported. Unsupported key: ", keyOi));
@@ -121,11 +156,23 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         Long keyCountObj = parentKeyCounts.get(pos);
         long keyCount = (keyCountObj == null) ? -1 : keyCountObj.longValue();
 
+        long memory = 0;
+        if (useHybridGraceHashJoin) {
+          if (mapJoinTables.length > 2) {
+            // Allocate n-way join memory proportionally
+            float percentage = (float) desc.getParentDataSizes().get(pos) / totalSize;
+            memory = (long) (noConditionalTaskThreshold * percentage);
+          } else {  // binary join
+            memory = noConditionalTaskThreshold;
+          }
+        }
+
         MapJoinTableContainer tableContainer = useOptimizedTables
-            ? (useHybridGraceHashJoin ? new HybridHashTableContainer(hconf, keyCount, memUsage,
-                                                                     desc.getParentDataSizes().get(pos))
-                                      : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, memUsage))
+            ? (useHybridGraceHashJoin ? new HybridHashTableContainer(hconf, keyCount,
+                                            memory, desc.getParentDataSizes().get(pos), nwayConf)
+                                      : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, 0))
             : new HashMapWrapper(hconf, keyCount);
+        LOG.info("Using tableContainer " + tableContainer.getClass().getSimpleName());
 
         while (kvReader.next()) {
           tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
@@ -133,10 +180,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
-      } catch (IOException e) {
-        throw new HiveException(e);
-      } catch (SerDeException e) {
-        throw new HiveException(e);
       } catch (Exception e) {
         throw new HiveException(e);
       }

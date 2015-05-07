@@ -231,7 +231,7 @@ STAGE PLANS:
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: _wcol0
+                        alias: rank_window_0
                         arguments: _col5
                         name: rank
                         window function: GenericUDAFRankEvaluator
@@ -239,7 +239,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((_wcol0 <= 2) and _col2 is not null) (type: boolean)
+              predicate: ((rank_window_0 <= 2) and _col2 is not null) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: _col2 (type: string), _col5 (type: int)
@@ -399,7 +399,7 @@ STAGE PLANS:
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: _wcol0
+                        alias: rank_window_0
                         arguments: _col5
                         name: rank
                         window function: GenericUDAFRankEvaluator
@@ -407,7 +407,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((_wcol0 <= 2) and _col2 is not null) (type: boolean)
+              predicate: ((rank_window_0 <= 2) and _col2 is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 484 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col2 (type: string), _col5 (type: int)
@@ -842,7 +842,7 @@ STAGE PLANS:
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: _wcol0
+                        alias: rank_window_0
                         arguments: _col5
                         name: rank
                         window function: GenericUDAFRankEvaluator
@@ -850,7 +850,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((_wcol0 <= 2) and (_col1 is null or _col2 is null)) (type: boolean)
+              predicate: ((rank_window_0 <= 2) and (_col1 is null or _col2 is null)) (type: boolean)
               Statistics: Num rows: 8 Data size: 968 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 8 Data size: 968 Basic stats: COMPLETE Column stats: NONE
@@ -997,7 +997,7 @@ STAGE PLANS:
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: _wcol0
+                        alias: rank_window_0
                         arguments: _col5
                         name: rank
                         window function: GenericUDAFRankEvaluator
@@ -1005,7 +1005,7 @@ STAGE PLANS:
                         isPivotResult: true
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (_wcol0 <= 2) (type: boolean)
+              predicate: (rank_window_0 <= 2) (type: boolean)
               Statistics: Num rows: 8 Data size: 968 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col1 (type: string), _col2 (type: string)

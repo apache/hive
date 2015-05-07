@@ -25,7 +25,9 @@ import java.net.URI;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -49,6 +51,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -388,4 +391,13 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
+
+  @Override
+  public void checkFileAccess(FileSystem fs, Iterator<FileStatus> statuses, EnumSet<FsAction> action)
+      throws IOException, AccessControlException, Exception {
+    DefaultFileAccess.checkFileAccess(fs, statuses, action);
+  }
+
+  @Override
+  abstract public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
 }

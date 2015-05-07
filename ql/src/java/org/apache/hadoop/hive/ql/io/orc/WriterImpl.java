@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
@@ -638,7 +638,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
     private final PositionedOutputStream rowIndexStream;
     private final PositionedOutputStream bloomFilterStream;
-    protected final BloomFilter bloomFilter;
+    protected final BloomFilterIO bloomFilter;
     protected final boolean createBloomFilter;
     private final OrcProto.BloomFilterIndex.Builder bloomFilterIndex;
     private final OrcProto.BloomFilter.Builder bloomFilterEntry;
@@ -686,7 +686,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         bloomFilterEntry = OrcProto.BloomFilter.newBuilder();
         bloomFilterIndex = OrcProto.BloomFilterIndex.newBuilder();
         bloomFilterStream = streamFactory.createStream(id, OrcProto.Stream.Kind.BLOOM_FILTER);
-        bloomFilter = new BloomFilter(streamFactory.getRowIndexStride(),
+        bloomFilter = new BloomFilterIO(streamFactory.getRowIndexStride(),
             streamFactory.getBloomFilterFPP());
       } else {
         bloomFilterEntry = null;
@@ -712,7 +712,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       return rowIndexEntry;
     }
 
-    IntegerWriter createIntegerWriter(OutStream output,
+    IntegerWriter createIntegerWriter(PositionedOutputStream output,
                                       boolean signed, boolean isDirectV2,
                                       StreamFactory writer) {
       if (isDirectV2) {
@@ -1281,13 +1281,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         // Write the dictionary by traversing the red-black tree writing out
         // the bytes and lengths; and creating the map from the original order
         // to the final sorted order.
-        if (dictionary.size() == 0) {
-          if (LOG.isWarnEnabled()) {
-            LOG.warn("Empty dictionary. Suppressing dictionary stream.");
-          }
-          stringOutput.suppress();
-          lengthOutput.suppress();
-        }
 
         dictionary.visit(new StringRedBlackTree.Visitor() {
           private int currentId = 0;

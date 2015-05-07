@@ -25,6 +25,7 @@ import junit.framework.TestSuite;
 import java.io.*;
 import java.util.*;
 
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
@@ -34,6 +35,12 @@ public class $className extends TestCase {
   private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private HBaseQTestUtil qt;
   private HBaseTestSetup setup;
+
+  public static class TestHBaseNegativeCliDriverAddTestFromQFiles implements QTestUtil.SuiteAddTestFunctor {
+    public void addTestToSuite(TestSuite suite, Object setup, String tName) {
+      suite.addTest(new $className("testCliDriver_"+tName, (HBaseTestSetup)setup));
+    }
+  }
 
   public $className(String name, HBaseTestSetup setup) {
     super(name);
@@ -83,16 +90,12 @@ public class $className extends TestCase {
         }
       }
     }
+
     TestSuite suite = new TestSuite();
     HBaseTestSetup setup = new HBaseTestSetup(suite);
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-    if(qFilesToExecute.isEmpty() || qFilesToExecute.contains("$fname")) {
-      suite.addTest(new $className("testCliDriver_$tname", setup));
-    }
-#end
+
+    QTestUtil.addTestsToSuiteFromQfileNames("$qFileNamesFile", qFilesToExecute,
+      suite, setup, new TestHBaseNegativeCliDriverAddTestFromQFiles());
     return setup;
   }
 

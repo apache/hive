@@ -851,6 +851,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 4
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count(DISTINCT _col1)
                           keys: _col0 (type: string), _col1 (type: string)
@@ -1690,6 +1691,7 @@ STAGE PLANS:
                         input vertices:
                           1 Reducer 4
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col0 (type: string), _col3 (type: bigint), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col3

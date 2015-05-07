@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -66,7 +67,9 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.KerberosName;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
@@ -708,5 +711,32 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public List<HdfsFileStatusWithId> listLocatedHdfsStatus(
       FileSystem fs, Path path, PathFilter filter) throws IOException {
     throw new UnsupportedOperationException("Not supported on old version");
+  }
+
+  @Override
+  public int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException {
+    // Inefficient for direct buffers; only here for compat.
+    int pos = dest.position();
+    if (dest.hasArray()) {
+      int result = file.read(dest.array(), dest.arrayOffset(), dest.remaining());
+      if (result > 0) {
+        dest.position(pos + result);
+      }
+      return result;
+    } else {
+      byte[] arr = new byte[dest.remaining()];
+      int result = file.read(arr, 0, arr.length);
+      if (result > 0) {
+        dest.put(arr, 0, result);
+        dest.position(pos + result);
+      }
+      return result;
+    }
+  }
+
+  @Override
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
+    Token<?> fsToken = fs.getDelegationToken(uname);
+    cred.addToken(fsToken.getService(), fsToken);
   }
 }

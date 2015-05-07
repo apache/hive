@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -581,6 +582,52 @@ public class VectorizedBatchUtil {
     return result;
   }
 
+  public static PrimitiveTypeInfo[] primitiveTypeInfosFromTypeNames(
+      String[] typeNames) throws HiveException {
+
+    PrimitiveTypeInfo[] result = new PrimitiveTypeInfo[typeNames.length];
+
+    for(int i = 0; i < typeNames.length; i++) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeNames[i]);
+      result[i] =  (PrimitiveTypeInfo) typeInfo;
+    }
+    return result;
+  }
+
+  /**
+   * Make a new (scratch) batch, which is exactly "like" the batch provided, except that it's empty
+   * @param batch the batch to imitate
+   * @return the new batch
+   * @throws HiveException
+   */
+  public static VectorizedRowBatch makeLike(VectorizedRowBatch batch) throws HiveException {
+    VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
+    for (int i = 0; i < batch.numCols; i++) {
+      ColumnVector colVector = batch.cols[i];
+      if (colVector != null) {
+        ColumnVector newColVector;
+        if (colVector instanceof LongColumnVector) {
+          newColVector = new LongColumnVector();
+        } else if (colVector instanceof DoubleColumnVector) {
+          newColVector = new DoubleColumnVector();
+        } else if (colVector instanceof BytesColumnVector) {
+          newColVector = new BytesColumnVector();
+        } else if (colVector instanceof DecimalColumnVector) {
+          DecimalColumnVector decColVector = (DecimalColumnVector) colVector;
+          newColVector = new DecimalColumnVector(decColVector.precision, decColVector.scale);
+        } else {
+          throw new HiveException("Column vector class " + colVector.getClass().getName() +
+          " is not supported!");
+        }
+        newBatch.cols[i] = newColVector;
+        newBatch.cols[i].init();
+      }
+    }
+    newBatch.projectedColumns = Arrays.copyOf(batch.projectedColumns, batch.projectedColumns.length);
+    newBatch.projectionSize = batch.projectionSize;
+    newBatch.reset();
+    return newBatch;
+  }
 
   public static String displayBytes(byte[] bytes, int start, int length) {
     StringBuilder sb = new StringBuilder();
@@ -632,7 +679,7 @@ public class VectorizedBatchUtil {
       }
       sb.append(" ");
     }
-    System.out.println(sb.toString());
+    LOG.info(sb.toString());
   }
 
   public static void debugDisplayBatch(VectorizedRowBatch batch, String prefix) throws HiveException {

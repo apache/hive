@@ -335,6 +335,7 @@ public class GenSparkSkewJoinProcessor {
     if (child != null) {
       currTask.removeDependentTask(child);
       listTasks.add(child);
+      listWorks.add(child.getWork());
     }
     ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx context =
         new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, child);
@@ -412,13 +413,5 @@ public class GenSparkSkewJoinProcessor {
           HiveConf.ConfVars.HIVEHASHTABLEMAXMEMORYUSAGE);
     }
     mapJoinDesc.setHashTableMemoryUsage(hashtableMemoryUsage);
-  }
-
-  // check this before calling processSkewJoin
-  public static boolean supportRuntimeSkewJoin(JoinOperator joinOp,
-      Task<? extends Serializable> currTask, HiveConf hiveConf) {
-    List<Task<? extends Serializable>> children = currTask.getChildTasks();
-    return GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp)
-      && (children == null || children.size() <= 1);
   }
 }

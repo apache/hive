@@ -28,7 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
@@ -40,6 +40,7 @@ import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIden
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Tool;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
@@ -56,7 +57,7 @@ import org.apache.thrift.TException;
  * - run a keep alive thread so the job doesn't end.
  * - Optionally, store the stdout, stderr, and exit value of the child
  *   in hdfs files.
- *   
+ *
  * A note on security.  When jobs are submitted through WebHCat that use HCatalog, it means that
  * metastore access is required.  Hive queries, of course, need metastore access.  This in turn
  * requires delegation token to be obtained for metastore in a <em>secure cluster</em>.  Since we
@@ -80,6 +81,11 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     this.appConf = conf;
   }
 
+  @Override
+  public Configuration getConf() {
+    return appConf;
+  }
+
   private JobID submittedJobId;
 
   public String getSubmittedId() {
@@ -95,7 +101,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
    * @see org.apache.hive.hcatalog.templeton.CompleteDelegator
    */
   @Override
-  public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException, 
+  public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException,
           TException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Preparing to submit job: " + Arrays.toString(args));
@@ -169,12 +175,14 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
     UserGroupInformation real = ugi.getRealUser();
     return real.doAs(new PrivilegedExceptionAction<String>() {
+      @Override
       public String run() throws IOException, TException, InterruptedException  {
-        final HiveMetaStoreClient client = new HiveMetaStoreClient(c);
+        final IMetaStoreClient client = HCatUtil.getHiveMetastoreClient(c);
         return ugi.doAs(new PrivilegedExceptionAction<String>() {
+          @Override
           public String run() throws IOException, TException, InterruptedException {
             String u = ugi.getUserName();
-            return client.getDelegationToken(u);
+            return client.getDelegationToken(c.getUser(),u);
           }
         });
       }

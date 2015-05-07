@@ -23,7 +23,7 @@
 # in order to execute the metastore-upgrade-tests for different
 # server configurations.
 
-set -e -x
+set -x
 . jenkins-common.sh
 
 test -n "$BRANCH" || fail "BRANCH must be specified"
@@ -40,6 +40,10 @@ export JIRA_ROOT_URL="https://issues.apache.org"
 export BUILD_TAG="${BUILD_TAG##jenkins-}"
 
 process_jira
+
+# Jenkins may call this script with BRANCH=trunk to refer to SVN.
+# We use git here, so we change to master.
+[[ "$BRANCH" = "trunk" ]] && BRANCH="master"
 
 PUBLISH_VARS=(
 	BUILD_STATUS=buildStatus
@@ -90,9 +94,9 @@ build_ptest2() {
 	local curpath="$PWD"
 
 	test -d $path || mkdir -p $path
-	rm -rf $path/ptest2
-	svn co http://svn.apache.org/repos/asf/hive/$BRANCH/testutils/ptest2/ $path/ptest2 || return 1
-	cd $path/ptest2
+	rm -rf $path
+	git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git $path/ || return 1
+	cd $path/testutils/ptest2
 	mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$WORKSPACE/.m2 || return 1
 
 	cd $curpath
@@ -105,7 +109,7 @@ publish_results() {
 
 	# Avoid showing this information on Jira
 	set +x
-	java -cp "hive/build/ptest2/target/*:hive/build/ptest2/target/lib/*" org.apache.hive.ptest.execution.JIRAService \
+	java -cp "hive/build/testutils/ptest2/target/*:hive/build/testutils/ptest2/target/lib/*" org.apache.hive.ptest.execution.JIRAService \
 			--user "$JIRA_USER" \
 			--password "$JIRA_PASS" \
 			--file "$file"
@@ -166,7 +170,7 @@ create_publish_file() {
 if patch_contains_hms_upgrade "$PATCH_URL"; then
 	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_HOST "
 		rm -rf hive/ &&
-		svn co http://svn.apache.org/repos/asf/hive/$BRANCH hive &&
+		git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git &&
 		cd hive/ &&
 		curl ${PATCH_URL} | bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh - &&
 		sudo bash -x testutils/metastore/execute-test-on-lxc.sh --patch \"${PATCH_URL}\" --branch $BRANCH
@@ -190,12 +194,14 @@ if patch_contains_hms_upgrade "$PATCH_URL"; then
 
 			MESSAGES+=("$line")
 		done < "$tmp_test_log"
+
+		rm "$tmp_test_log"
 	fi
 
 	json_file=$(create_publish_file)
 	publish_results "$json_file"
 	ret=$?
 
-	rm "$json_file" "$tmp_test_log"
+	rm "$json_file"
 	exit $ret
 fi

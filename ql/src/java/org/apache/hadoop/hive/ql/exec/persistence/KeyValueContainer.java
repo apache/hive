@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 
 import java.io.File;
@@ -64,29 +65,31 @@ public class KeyValueContainer {
     }
     try {
       setupOutput();
-    } catch (IOException e) {
+    } catch (IOException | HiveException e) {
       throw new RuntimeException("Failed to create temporary output file on disk", e);
     }
   }
 
-  private void setupOutput() throws IOException {
-    if (parentFile == null) {
-      parentFile = File.createTempFile("key-value-container", "");
-      if (parentFile.delete() && parentFile.mkdir()) {
-        parentFile.deleteOnExit();
-      }
-    }
-
-    if (tmpFile == null || input != null) {
-      tmpFile = File.createTempFile("KeyValueContainer", ".tmp", parentFile);
-      LOG.info("KeyValueContainer created temp file " + tmpFile.getAbsolutePath());
-      tmpFile.deleteOnExit();
-    }
-
+  private void setupOutput() throws IOException, HiveException {
     FileOutputStream fos = null;
     try {
+      if (parentFile == null) {
+        parentFile = File.createTempFile("key-value-container", "");
+        if (parentFile.delete() && parentFile.mkdir()) {
+          parentFile.deleteOnExit();
+        }
+      }
+
+      if (tmpFile == null || input != null) {
+        tmpFile = File.createTempFile("KeyValueContainer", ".tmp", parentFile);
+        LOG.info("KeyValueContainer created temp file " + tmpFile.getAbsolutePath());
+        tmpFile.deleteOnExit();
+      }
+
       fos = new FileOutputStream(tmpFile);
       output = new Output(fos);
+    } catch (IOException e) {
+      throw new HiveException(e);
     } finally {
       if (output == null && fos != null) {
         fos.close();

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -44,11 +43,6 @@ public class HCatSplit extends InputSplit
   /** The split returned by the underlying InputFormat split. */
   private org.apache.hadoop.mapred.InputSplit baseMapRedSplit;
 
-  /** The schema for the HCatTable */
-  private HCatSchema tableSchema;
-
-  private HiveConf hiveConf;
-
   /**
    * Instantiates a new hcat split.
    */
@@ -60,16 +54,13 @@ public class HCatSplit extends InputSplit
    *
    * @param partitionInfo the partition info
    * @param baseMapRedSplit the base mapred split
-   * @param tableSchema the table level schema
    */
   public HCatSplit(PartInfo partitionInfo,
-           org.apache.hadoop.mapred.InputSplit baseMapRedSplit,
-           HCatSchema tableSchema) {
+           org.apache.hadoop.mapred.InputSplit baseMapRedSplit) {
 
     this.partitionInfo = partitionInfo;
     // dataSchema can be obtained from partitionInfo.getPartitionSchema()
     this.baseMapRedSplit = baseMapRedSplit;
-    this.tableSchema = tableSchema;
   }
 
   /**
@@ -101,7 +92,8 @@ public class HCatSplit extends InputSplit
    * @return the table schema
    */
   public HCatSchema getTableSchema() {
-    return this.tableSchema;
+    assert this.partitionInfo.getTableInfo() != null : "TableInfo should have been set at this point.";
+    return this.partitionInfo.getTableInfo().getAllColumns();
   }
 
   /* (non-Javadoc)
@@ -159,9 +151,6 @@ public class HCatSplit extends InputSplit
     } catch (Exception e) {
       throw new IOException("Exception from " + baseSplitClassName, e);
     }
-
-    String tableSchemaString = WritableUtils.readString(input);
-    tableSchema = (HCatSchema) HCatUtil.deserialize(tableSchemaString);
   }
 
   /* (non-Javadoc)
@@ -178,10 +167,6 @@ public class HCatSplit extends InputSplit
     Writable baseSplitWritable = (Writable) baseMapRedSplit;
     //write  baseSplit into output
     baseSplitWritable.write(output);
-
-    //write the table schema into output
-    String tableSchemaString = HCatUtil.serialize(tableSchema);
-    WritableUtils.writeString(output, tableSchemaString);
   }
 
 }

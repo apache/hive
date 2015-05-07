@@ -23,7 +23,6 @@
 # in order to execute the metastore-upgrade-tests for different
 # server configurations.
 
-set -e
 cd $(dirname $0)
 
 OUT_LOG="/tmp/$(basename $0).log"
@@ -72,12 +71,6 @@ lxc_exists() {
 lxc_create() {
 	lxc-create -n $1 -t download -- --dist "ubuntu" --release "trusty" --arch "amd64" || return 1
 	lxc_start $1 || return 1
-	lxc-attach -n $1 -- apt-get update
-	lxc-attach -n $1 -- apt-get install -y openssh-server subversion patch
-
-	printf "root\nroot" | sudo lxc-attach -n $1 -- passwd
-	lxc-attach -n $1 -- sed -i /etc/ssh/sshd_config 's/^PermitRootLogin without-password/PermitRootLogin yes/'
-	lxc-attach -n $1 -- service ssh restart
 }
 
 lxc_running() {
@@ -97,11 +90,14 @@ lxc_stop() {
 lxc_prepare() {
 	echo "Downloading hive source code from SVN, branch='$BRANCH' ..."
 
+	lxc-attach -n $1 -- apt-get update
+	lxc-attach -n $1 -- apt-get install -y patch git
+
 	tmpfile=$(mktemp)
 	cat>$tmpfile<<EOF
 rm -rf hive
 mkdir hive
-svn co http://svn.apache.org/repos/asf/hive/$BRANCH hive >/dev/null
+git clone --depth 1 -b $BRANCH https://git-wip-us.apache.org/repos/asf/hive.git >/dev/null
 cd hive
 wget $PATCH_URL -O hms.patch
 bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh hms.patch
@@ -152,7 +148,10 @@ do
 	# Execute metastore upgrade tests
 	echo "Running metastore upgrade tests for $name..."
 	run_tests $name
-	log "$(lxc_print_metastore_log $name)"
+	rc=$?
 
+	log "$(lxc_print_metastore_log $name)"
 	lxc_stop $name
+
+	[ $rc != 0 ] && exit 1
 done

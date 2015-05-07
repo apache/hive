@@ -197,6 +197,35 @@
         </exec>
     </target>
 
+    <target name="test-updateConfig" depends="property-check, init-test">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+        <exec executable="perl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="DOAS_USER" value="${doas.user}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <arg value="./test_harness.pl"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/modifyConfiguration.conf"/>
+        </exec>
+    </target>
+
     <target name="clean">
         <delete dir="${test.location}"/>
         <delete file="${tar.name}"/>
