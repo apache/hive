@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSessionHook;
 import org.apache.hive.service.cli.session.HiveSessionHookContext;
@@ -82,7 +83,7 @@ public class TestJdbcWithLocalClusterSpark {
     dataFilePath = new Path(dataFileDir, "kv1.txt");
     DriverManager.setLoginTimeout(0);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    miniHS2 = new MiniHS2(conf, true);
+    miniHS2 = new MiniHS2(conf, MiniClusterType.MR);
     Map<String, String> overlayProps = new HashMap<String, String>();
     overlayProps.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         LocalClusterSparkSessionHook.class.getName());

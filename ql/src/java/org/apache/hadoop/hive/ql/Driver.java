@@ -1322,7 +1322,7 @@ public class Driver implements CommandProcessor {
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     try {
-      LOG.info("Starting command: " + queryStr);
+      LOG.info("Starting command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
       // so clear timing in this thread's Hive object before proceeding.
       Hive.get().clearMetaCallTiming();

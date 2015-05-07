@@ -136,4 +136,10 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
       }
     });
   }
+
+  @Override
+  public void remove(String key) {
+    LOG.info("Removing key: " + key);
+    registry.invalidate(key);
+  }
 }

@@ -57,6 +57,7 @@ current_date
 current_timestamp
 current_user
 date_add
+date_format
 date_sub
 datediff
 day
@@ -122,6 +123,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month
@@ -150,6 +152,7 @@ positive
 pow
 power
 printf
+quarter
 radians
 rand
 rank
@@ -297,6 +300,7 @@ POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
 POSTHOOK: type: SHOWFUNCTIONS
 current_date
 date_add
+date_format
 date_sub
 datediff
 to_date
@@ -324,6 +328,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month

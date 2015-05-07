@@ -87,7 +87,7 @@ STAGE PLANS:
               predicate: ctinyint is null (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: null (type: void), cdouble (type: double), cint (type: int), COALESCE((UDFToInteger(null) + 10),(cdouble + log2(cint)),0) (type: double)
+                expressions: null (type: void), cdouble (type: double), cint (type: int), COALESCE(null,(cdouble + log2(cint)),0) (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                 Limit
@@ -153,7 +153,7 @@ STAGE PLANS:
               predicate: (cfloat is null and cbigint is null) (type: boolean)
               Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: null (type: void), null (type: void), COALESCE(null,null,0) (type: float)
+                expressions: null (type: void), null (type: void), 0 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
                 Limit

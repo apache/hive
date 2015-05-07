@@ -153,21 +153,25 @@ public final class OperatorFactory {
     }
   }
 
+  public static <T extends OperatorDesc> Operator<T> getVectorOperator(
+    Class<? extends Operator<?>> opClass, T conf, VectorizationContext vContext) throws HiveException {
+    try {
+      Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
+          VectorizationContext.class, OperatorDesc.class).newInstance(
+          vContext, conf);
+      return op;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HiveException(e);
+    }
+  }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(T conf,
       VectorizationContext vContext) throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
     for (OpTuple o : vectorOpvec) {
       if (o.descClass == descClass) {
-        try {
-          Operator<T> op = (Operator<T>) o.opClass.getDeclaredConstructor(
-              VectorizationContext.class, OperatorDesc.class).newInstance(
-              vContext, conf);
-          return op;
-        } catch (Exception e) {
-          e.printStackTrace();
-          throw new HiveException(e);
-        }
+        return getVectorOperator(o.opClass, conf, vContext);
       }
     }
     throw new HiveException("No vector operator for descriptor class "

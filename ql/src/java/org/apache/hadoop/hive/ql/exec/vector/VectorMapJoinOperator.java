@@ -74,7 +74,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   private transient VectorizedRowBatch outputBatch;
   private transient VectorizedRowBatch scratchBatch;  // holds restored (from disk) big table rows
   private transient VectorExpressionWriter[] valueWriters;
-  private transient Map<ObjectInspector, VectorColumnAssign[]> outputVectorAssigners;
+  private transient Map<ObjectInspector, VectorAssignRowSameBatch> outputVectorAssignRowMap;
 
   // These members are used as out-of-band params
   // for the inner-loop supper.processOp callbacks
@@ -125,6 +125,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
 
   @Override
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+
     // Code borrowed from VectorReduceSinkOperator.initializeOp
     VectorExpressionWriterFactory.processVectorInspector(
         (StructObjectInspector) inputObjInspectors[0],
@@ -202,7 +203,8 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     // Filtering is handled in the input batch processing
     filterMaps[posBigTable] = null;
 
-    outputVectorAssigners = new HashMap<ObjectInspector, VectorColumnAssign[]>();
+    outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRowSameBatch>();
+
     return result;
   }
 
@@ -212,15 +214,16 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   @Override
   protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
     Object[] values = (Object[]) row;
-    VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
-    if (null == vcas) {
-      vcas = VectorColumnAssignFactory.buildAssigners(
-          outputBatch, outputOI, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
-      outputVectorAssigners.put(outputOI, vcas);
+    VectorAssignRowSameBatch va = outputVectorAssignRowMap.get(outputOI);
+    if (va == null) {
+      va = new VectorAssignRowSameBatch();
+      va.init((StructObjectInspector) outputOI, vOutContext.getProjectedColumns());
+      va.setOneBatch(outputBatch);
+      outputVectorAssignRowMap.put(outputOI, va);
     }
-    for (int i=0; i<values.length; ++i) {
-      vcas[i].assignObjectValue(values[i], outputBatch.size);
-    }
+
+    va.assignRow(outputBatch.size, values);
+
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
       flushOutput();
@@ -254,7 +257,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     // Preparation for hybrid grace hash join
     this.tag = tag;
     if (scratchBatch == null) {
-      scratchBatch = makeLike(inBatch);
+      scratchBatch = VectorizedBatchUtil.makeLike(inBatch);
     }
 
     if (null != bigTableFilterExpressions) {
@@ -303,8 +306,10 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   }
 
   @Override
-  protected void reProcessBigTable(HybridHashTableContainer.HashPartition partition)
+  protected void reProcessBigTable(int partitionId)
       throws HiveException {
+
+    HybridHashTableContainer.HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
     ObjectContainer bigTable = partition.getMatchfileObjContainer();
 
     DataOutputBuffer dataOutputBuffer = new DataOutputBuffer();
@@ -346,40 +351,5 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
       }
     }
     return singleRow;
-  }
-
-  /**
-   * Make a new (scratch) batch, which is exactly "like" the batch provided, except that it's empty
-   * @param batch the batch to imitate
-   * @return the new batch
-   * @throws HiveException
-   */
-  VectorizedRowBatch makeLike(VectorizedRowBatch batch) throws HiveException {
-    VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
-    for (int i = 0; i < batch.numCols; i++) {
-      ColumnVector colVector = batch.cols[i];
-      if (colVector != null) {
-        ColumnVector newColVector;
-        if (colVector instanceof LongColumnVector) {
-          newColVector = new LongColumnVector();
-        } else if (colVector instanceof DoubleColumnVector) {
-          newColVector = new DoubleColumnVector();
-        } else if (colVector instanceof BytesColumnVector) {
-          newColVector = new BytesColumnVector();
-        } else if (colVector instanceof DecimalColumnVector) {
-          DecimalColumnVector decColVector = (DecimalColumnVector) colVector;
-          newColVector = new DecimalColumnVector(decColVector.precision, decColVector.scale);
-        } else {
-          throw new HiveException("Column vector class " + colVector.getClass().getName() +
-          " is not supported!");
-        }
-        newBatch.cols[i] = newColVector;
-        newBatch.cols[i].init();
-      }
-    }
-    newBatch.projectedColumns = Arrays.copyOf(batch.projectedColumns, batch.projectedColumns.length);
-    newBatch.projectionSize = batch.projectionSize;
-    newBatch.reset();
-    return newBatch;
   }
 }

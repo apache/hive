@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -44,6 +45,7 @@ import org.apache.thrift.transport.TTransportException;
  * each call.
  *
  */
+@Public
 public class RetryingMetaStoreClient implements InvocationHandler {
 
   private static final Log LOG = LogFactory.getLog(RetryingMetaStoreClient.class.getName());
@@ -52,9 +54,9 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final int retryLimit;
   private final long retryDelaySeconds;
   private final Map<String, Long> metaCallTimeMap;
-
-
-
+  private final long connectionLifeTimeInMillis;
+  private long lastConnectionTime;
+  private boolean localMetaStore;
 
   protected RetryingMetaStoreClient(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
@@ -62,10 +64,19 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     this.retryDelaySeconds = hiveConf.getTimeVar(
         HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
     this.metaCallTimeMap = metaCallTimeMap;
+    this.connectionLifeTimeInMillis =
+        hiveConf.getTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME, TimeUnit.SECONDS) * 1000;
+    this.lastConnectionTime = System.currentTimeMillis();
+    String msUri = hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS);
+    localMetaStore = (msUri == null) || msUri.trim().isEmpty();
 
     reloginExpiringKeytabUser();
     this.base = MetaStoreUtils.newInstance(msClientClass, new Class[] {
         HiveConf.class, HiveMetaHookLoader.class}, new Object[] {hiveConf, hookLoader});
+  }
+
+  public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader) throws MetaException {
+    return getProxy(hiveConf, hookLoader, null, HiveMetaStoreClient.class.getName());
   }
 
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
@@ -73,6 +84,10 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     return getProxy(hiveConf, hookLoader, null, mscClassName);
   }
 
+  /**
+   * This constructor is meant for Hive internal use only.
+   * Please use getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader) for external purpose.
+   */
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, String mscClassName) throws MetaException {
 
@@ -94,8 +109,9 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     while (true) {
       try {
         reloginExpiringKeytabUser();
-        if(retriesMade > 0){
+        if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
           base.reconnect();
+          lastConnectionTime = System.currentTimeMillis();
         }
         if (metaCallTimeMap == null) {
           ret = method.invoke(base, args);
@@ -115,11 +131,15 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             (e.getCause() instanceof TTransportException)) {
           caughtException = (TException) e.getCause();
         } else if ((e.getCause() instanceof MetaException) &&
-            e.getCause().getMessage().matches("(?s).*JDO[a-zA-Z]*Exception.*")) {
+            e.getCause().getMessage().matches
+            ("(?s).*(JDO[a-zA-Z]*|TApplication|TProtocol|TTransport)Exception.*")) {
           caughtException = (MetaException) e.getCause();
         } else {
           throw e.getCause();
         }
+      } catch (MetaException e) {
+        if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*"));
+        caughtException = e;
       }
 
       if (retriesMade >=  retryLimit) {
@@ -155,6 +175,19 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     }
     methodSb.append(")");
     return methodSb.toString();
+  }
+
+  private boolean hasConnectionLifeTimeReached(Method method) {
+    if (connectionLifeTimeInMillis <= 0 || localMetaStore ||
+        method.getName().equalsIgnoreCase("close")) {
+      return false;
+    }
+    boolean shouldReconnect =
+        (System.currentTimeMillis() - lastConnectionTime) >= connectionLifeTimeInMillis;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Reconnection status for Method: " + method.getName() + " is " + shouldReconnect);
+    }
+    return shouldReconnect;
   }
 
   /**

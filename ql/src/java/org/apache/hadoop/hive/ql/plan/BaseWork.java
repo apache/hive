@@ -60,6 +60,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   private String name;
 
   // Vectorization.
+
   protected Map<String, Integer> vectorColumnNameMap;
   protected Map<Integer, String> vectorColumnTypeMap;
   protected Map<Integer, String> vectorScratchColumnTypeMap;

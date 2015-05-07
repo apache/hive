@@ -29,6 +29,7 @@ import org.apache.hive.hcatalog.messaging.json.JSONMessageFactory;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
@@ -145,20 +146,21 @@ public abstract class MessageFactory {
 
   /**
    * Factory method for building AlterPartitionMessage
+   * @param table The table in which the partition is being altered
    * @param before The partition before it was altered
    * @param after The partition after it was altered
    * @return a new AlterPartitionMessage
    */
-  public abstract AlterPartitionMessage buildAlterPartitionMessage(Partition before,
+  public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
                                                                    Partition after);
 
   /**
    * Factory method for DropPartitionMessage.
    * @param table The Table from which the partition is dropped.
-   * @param partition The Partition being dropped.
+   * @param partitions The set of partitions being dropped.
    * @return DropPartitionMessage instance.
    */
-  public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+  public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions);
 
   /**
    * Factory method for building insert message
@@ -170,5 +172,5 @@ public abstract class MessageFactory {
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-                                                   List<String> partVals, List<String> files);
+                                                   Map<String,String> partVals, List<String> files);
 }

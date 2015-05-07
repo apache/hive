@@ -450,4 +450,24 @@ public class MyTestPrimitiveClass {
       StandardStructObjectInspector rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, primitiveObjectInspectorList);
       return rowOI;
     }
+
+    public void nonRandomFill(int idx, ExtraTypeInfo extraTypeInfo) {
+      myByte = (Byte) MyTestClass.getNonRandValue(MyTestClass.nrByte, idx);
+      myShort = (Short) MyTestClass.getNonRandValue(MyTestClass.nrShort, idx);
+      myInt = (Integer) MyTestClass.getNonRandValue(MyTestClass.nrInt, idx);
+      myLong = (Long) MyTestClass.getNonRandValue(MyTestClass.nrLong, idx);
+      myFloat = (Float) MyTestClass.getNonRandValue(MyTestClass.nrFloat, idx);
+      myDouble = (Double) MyTestClass.getNonRandValue(MyTestClass.nrDouble, idx);
+      myString = (String) MyTestClass.getNonRandValue(MyTestClass.nrString, idx);
+      myHiveChar = new HiveChar(myString, myString.length());
+      extraTypeInfo.hiveCharMaxLength = myString.length();
+      myHiveVarchar = new HiveVarchar(myString, myString.length());
+      extraTypeInfo.hiveVarcharMaxLength = myString.length();
+      myDecimal = (HiveDecimal) MyTestClass.getNonRandValue(MyTestClass.nrDecimal, idx);
+      extraTypeInfo.precision = myDecimal.precision();
+      extraTypeInfo.scale = myDecimal.scale();
+      myDate = (Date) MyTestClass.getNonRandValue(MyTestClass.nrDate, idx);
+      myIntervalYearMonth = (HiveIntervalYearMonth) MyTestClass.getNonRandValue(MyTestClass.nrIntervalYearMonth, idx);
+      myIntervalDayTime = (HiveIntervalDayTime) MyTestClass.getNonRandValue(MyTestClass.nrIntervalDayTime, idx);
+    }
 }

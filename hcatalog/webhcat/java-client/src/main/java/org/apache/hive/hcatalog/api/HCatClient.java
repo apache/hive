@@ -76,6 +76,19 @@ public abstract class HCatClient {
   abstract void initialize(Configuration conf) throws HCatException;
 
   /**
+   * Fetch configuration value on conf that the HCatClient is instantiated
+   * against. We do not want to expose the conf itself via a getConf(), because
+   * we do not want it modifiable after instantiation of the HCatClient, but
+   * modules that get called from HCatClient often need to know about how
+   * HCatClient is configured, so we want a read-only interface for it.
+   *
+   * @param key keyname to look up
+   * @param defaultVal default value to furnish in case the key does not exist
+   * @return value for given key, and defaultVal if key is not present in conf
+   */
+  public abstract String getConfVal(String key, String defaultVal);
+
+  /**
    * Get all existing databases that match the given
    * pattern. The matching occurs as per Java regular expressions
    *
@@ -501,6 +514,7 @@ public abstract class HCatClient {
    * @return an iterator over a list of replication events that can be processed one by one.
    * @throws HCatException
    */
+  @InterfaceStability.Evolving
   public abstract Iterator<ReplicationTask> getReplicationTasks(
       long lastEventId, int maxEvents, String dbName, String tableName) throws HCatException;
 
@@ -517,6 +531,8 @@ public abstract class HCatClient {
    * the order that the operations were done on the database.
    * @throws HCatException
    */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
   public abstract List<HCatNotificationEvent> getNextNotification(long lastEventId,
                                                                   int maxEvents,
                                                                   IMetaStoreClient.NotificationFilter filter)
@@ -527,6 +543,8 @@ public abstract class HCatClient {
    * @return
    * @throws HCatException
    */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
   public abstract long getCurrentNotificationEventId() throws HCatException;
 
   /**

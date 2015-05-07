@@ -35,20 +35,21 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
-import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.persistence.BytesBytesMultiHashMap;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
+import org.apache.hadoop.hive.ql.exec.persistence.KeyValueContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
-import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.BytesBytesMultiHashMap;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.KeyValueContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.persistence.ObjectContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -62,9 +63,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.ReflectionUtil;
-
-import static org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
-import static org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
 
 /**
  * Map side Join operator implementation.
@@ -80,19 +78,20 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private transient ObjectCache cache;
 
   protected HashTableLoader loader;
+  private boolean loadCalled;
 
   protected transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
   private transient boolean hashTblInitedOnce;
-  private transient ReusableGetAdaptor[] hashMapRowGetters;
+  protected transient ReusableGetAdaptor[] hashMapRowGetters;
 
   private UnwrapRowContainer[] unwrapContainer;
   private transient Configuration hconf;
-  private transient boolean useHybridGraceHashJoin; // whether Hybrid Grace Hash Join is enabled
   private transient boolean hybridMapJoinLeftover;  // whether there's spilled data to be processed
-  private transient MapJoinBytesTableContainer currentSmallTable; // reloaded hashmap from disk
-  private transient int tag;        // big table alias
-  private transient int smallTable; // small table alias
+  protected transient MapJoinBytesTableContainer[] spilledMapJoinTables;  // used to hold restored
+                                                                          // spilled small tables
+  protected HybridHashTableContainer firstSmallTable; // The first small table;
+                                                      // Only this table has spilled big table rows
 
   public MapJoinOperator() {
   }
@@ -116,6 +115,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     defaultStartGroup();
   }
 
+  protected HashTableLoader getHashTableLoader(Configuration hconf) {
+    return HashTableLoaderFactory.getLoader(hconf);
+  }
+
   @Override
   protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     this.hconf = hconf;
@@ -134,22 +137,20 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       + "__HASH_MAP_"+this.getOperatorId()+"_container";
 
     cache = ObjectCacheFactory.getCache(hconf);
-    loader = HashTableLoaderFactory.getLoader(hconf);
+    loader = getHashTableLoader(hconf);
 
     hashMapRowGetters = null;
 
     mapJoinTables = new MapJoinTableContainer[tagLen];
     mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
     hashTblInitedOnce = false;
-    useHybridGraceHashJoin =
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
 
     generateMapMetaData();
 
     final ExecMapperContext mapContext = getExecContext();
     final MapredContext mrContext = MapredContext.get();
 
-    if (!conf.isBucketMapJoin() && !useHybridGraceHashJoin) {
+    if (!conf.isBucketMapJoin()) {
       /*
        * The issue with caching in case of bucket map join is that different tasks
        * process different buckets and if the container is reused to join a different bucket,
@@ -187,8 +188,22 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     if (os.length != 0) {
       Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
           (Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>) os[0];
-      mapJoinTables = pair.getLeft();
-      mapJoinTableSerdes = pair.getRight();
+
+      boolean spilled = false;
+      for (MapJoinTableContainer container : pair.getLeft()) {
+        if (container != null) {
+          spilled = spilled || container.hasSpill();
+        }
+      }
+
+      if (!loadCalled && spilled) {
+        // we can't use the cached table because it has spilled.
+        loadHashTable(getExecContext(), MapredContext.get());
+      } else {
+        // let's use the table from the cache.
+        mapJoinTables = pair.getLeft();
+        mapJoinTableSerdes = pair.getRight();
+      }
       hashTblInitedOnce = true;
     }
 
@@ -266,8 +281,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
-  private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
+  protected Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTable(
       ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
+    loadCalled = true;
 
     if (this.hashTblInitedOnce
         && ((mapContext == null) || (mapContext.getLocalWork() == null) || (mapContext
@@ -279,9 +295,17 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(mapContext, mrContext, hconf, this);
-    long memUsage = (long)(MapJoinMemoryExhaustionHandler.getMaxHeapSize()
-        * conf.getHashTableMemoryUsage());
-    loader.load(mapJoinTables, mapJoinTableSerdes, memUsage);
+    try {
+      loader.load(mapJoinTables, mapJoinTableSerdes);
+    } catch (HiveException e) {
+      if (isLogInfoEnabled) {
+        LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
+      }
+
+      // there could be some spilled partitions which needs to be cleaned up
+      clearAllTableContainers();
+      throw e;
+    }
 
     hashTblInitedOnce = true;
 
@@ -319,26 +343,36 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void process(Object row, int tag) throws HiveException {
-    this.tag = tag;
-
-    // As we're calling processOp again to process the leftover triplets, we know the "row" is
-    // coming from the on-disk matchfile. We need to recreate hashMapRowGetter against new hashtable
-    if (hybridMapJoinLeftover) {
-      assert hashMapRowGetters != null;
-      if (hashMapRowGetters[smallTable] == null) {
-        MapJoinKey refKey = getRefKey((byte) tag);
-        hashMapRowGetters[smallTable] = currentSmallTable.createGetter(refKey);
-      }
-    }
-
     try {
+      alias = (byte) tag;
+      if (hashMapRowGetters == null) {
+        hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
+        MapJoinKey refKey = getRefKey(alias);
+        for (byte pos = 0; pos < order.length; pos++) {
+          if (pos != alias) {
+            hashMapRowGetters[pos] = mapJoinTables[pos].createGetter(refKey);
+          }
+        }
+      }
+
+      // As we're calling processOp again to process the leftover "tuples", we know the "row" is
+      // coming from the spilled matchfile. We need to recreate hashMapRowGetter against new hashtables
+      if (hybridMapJoinLeftover) {
+        MapJoinKey refKey = getRefKey(alias);
+        for (byte pos = 0; pos < order.length; pos++) {
+          if (pos != alias && spilledMapJoinTables[pos] != null) {
+            hashMapRowGetters[pos] = spilledMapJoinTables[pos].createGetter(refKey);
+          }
+        }
+      }
+
       // compute keys and values as StandardObjects
       ReusableGetAdaptor firstSetKey = null;
       int fieldCount = joinKeys[alias].size();
       boolean joinNeeded = false;
+      boolean bigTableRowSpilled = false;
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != alias) {
-          smallTable = pos; // record small table alias
           JoinUtil.JoinResult joinResult;
           ReusableGetAdaptor adaptor;
           if (firstSetKey == null) {
@@ -359,8 +393,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (!noOuterJoin) {
               // For Hybrid Grace Hash Join, during the 1st round processing,
               // we only keep the LEFT side if the row is not spilled
-              if (!useHybridGraceHashJoin || hybridMapJoinLeftover ||
-                  (!hybridMapJoinLeftover && joinResult != JoinUtil.JoinResult.SPILL)) {
+              if (!conf.isHybridHashJoin() || hybridMapJoinLeftover
+                  || (!hybridMapJoinLeftover && joinResult != JoinUtil.JoinResult.SPILL)) {
                 joinNeeded = true;
                 storage[pos] = dummyObjVectors[pos];
               }
@@ -372,9 +406,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             storage[pos] = rowContainer.copy();
             aliasFilterTags[pos] = rowContainer.getAliasFilter();
           }
-          // Spill the big table rows into appropriate partition
-          if (joinResult == JoinUtil.JoinResult.SPILL) {
+          // Spill the big table rows into appropriate partition:
+          // When the JoinResult is SPILL, it means the corresponding small table row may have been
+          // spilled to disk (at least the partition that holds this row is on disk). So we need to
+          // postpone the join processing for this pair by also spilling this big table row.
+          if (joinResult == JoinUtil.JoinResult.SPILL &&
+              !bigTableRowSpilled) {  // For n-way join, only spill big table rows once
             spillBigTableRow(mapJoinTables[pos], row);
+            bigTableRowSpilled = true;
           }
         }
       }
@@ -414,76 +453,122 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    for (MapJoinTableContainer tableContainer : mapJoinTables) {
-      if (tableContainer != null) {
-        tableContainer.dumpMetrics();
+    boolean spilled = false;
+    for (MapJoinTableContainer container : mapJoinTables) {
+      if (container != null) {
+        spilled = spilled || container.hasSpill();
+        container.dumpMetrics();
+      }
+    }
 
-        if (tableContainer instanceof HybridHashTableContainer) {
-          // TODO: most of the below code should be moved inside HybridHashTableContainer.
-          //       Ideally, even the instanceof should not exist; instead, an API on MJTC.
-          HybridHashTableContainer hybridHtContainer = (HybridHashTableContainer) tableContainer;
-          hybridHtContainer.dumpStats();
+    // For Hybrid Grace Hash Join, we need to see if there is any spilled data to be processed next
+    if (spilled) {
+      if (!abort) {
+        if (hashMapRowGetters == null) {
+          hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
+        }
+        int numPartitions = 0;
+        // Find out number of partitions for each small table (should be same across tables)
+        for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+          if (pos != conf.getPosBigTable()) {
+            firstSmallTable = (HybridHashTableContainer) mapJoinTables[pos];
+            numPartitions = firstSmallTable.getHashPartitions().length;
+            break;
+          }
+        }
+        assert numPartitions != 0 : "Number of partitions must be greater than 0!";
 
-          HashPartition[] hashPartitions = hybridHtContainer.getHashPartitions();
-          // Clear all in memory partitions first
-          for (int i = 0; i < hashPartitions.length; i++) {
-            if (!hashPartitions[i].isHashMapOnDisk()) {
-              hybridHtContainer.setTotalInMemRowCount(
-                  hybridHtContainer.getTotalInMemRowCount() -
-                      hashPartitions[i].getHashMapFromMemory().getNumValues());
-              hashPartitions[i].getHashMapFromMemory().discardData();
+        if (firstSmallTable.hasSpill()) {
+          spilledMapJoinTables = new MapJoinBytesTableContainer[mapJoinTables.length];
+          hybridMapJoinLeftover = true;
+
+          // Clear all in-memory partitions first
+          for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+            MapJoinTableContainer tableContainer = mapJoinTables[pos];
+            if (tableContainer != null && tableContainer instanceof HybridHashTableContainer) {
+              HybridHashTableContainer hybridHtContainer = (HybridHashTableContainer) tableContainer;
+              hybridHtContainer.dumpStats();
+
+              HashPartition[] hashPartitions = hybridHtContainer.getHashPartitions();
+              // Clear all in memory partitions first
+              for (int i = 0; i < hashPartitions.length; i++) {
+                if (!hashPartitions[i].isHashMapOnDisk()) {
+                  hybridHtContainer.setTotalInMemRowCount(
+                      hybridHtContainer.getTotalInMemRowCount() -
+                          hashPartitions[i].getHashMapFromMemory().getNumValues());
+                  hashPartitions[i].getHashMapFromMemory().clear();
+                }
+              }
+              assert hybridHtContainer.getTotalInMemRowCount() == 0;
             }
           }
-          assert hybridHtContainer.getTotalInMemRowCount() == 0;
 
-          for (int i = 0; i < hashPartitions.length; i++) {
+          // Reprocess the spilled data
+          for (int i = 0; i < numPartitions; i++) {
+            HashPartition[] hashPartitions = firstSmallTable.getHashPartitions();
             if (hashPartitions[i].isHashMapOnDisk()) {
-              // Recursively process on-disk triplets (hash partition, sidefile, matchfile)
               try {
-                hybridMapJoinLeftover = true;
-                hashMapRowGetters[smallTable] = null;
-                continueProcess(hashPartitions[i], hybridHtContainer);
-              } catch (IOException e) {
-                e.printStackTrace();
-              } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-              } catch (SerDeException e) {
-                e.printStackTrace();
+                continueProcess(i);     // Re-process spilled data
+              } catch (Exception e) {
+                throw new HiveException(e);
+              }
+              for (byte pos = 0; pos < order.length; pos++) {
+                if (pos != conf.getPosBigTable())
+                  spilledMapJoinTables[pos] = null;
               }
             }
-            hybridMapJoinLeftover = false;
-            currentSmallTable = null;
           }
         }
       }
+
+      if (isLogInfoEnabled) {
+        LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
+      }
+
+      // spilled tables are loaded always (no sharing), so clear it
+      clearAllTableContainers();
+      cache.remove(cacheKey);
     }
+
+    // in mapreduce case, we need to always clear up as mapreduce doesn't have object registry.
     if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
-        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
-        && mapJoinTables != null) {
+        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())) {
+      if (isLogInfoEnabled) {
+        LOG.info("MR: Clearing all map join table containers.");
+      }
+      clearAllTableContainers();
+    }
+
+    mapJoinTables = null;
+    this.loader = null;
+    super.closeOp(abort);
+  }
+
+  private void clearAllTableContainers() {
+    if (mapJoinTables != null) {
       for (MapJoinTableContainer tableContainer : mapJoinTables) {
         if (tableContainer != null) {
           tableContainer.clear();
         }
       }
     }
-    mapJoinTables = null;
-    cache.release(cacheKey);
-    super.closeOp(abort);
   }
 
   /**
-   * Continue processing each pair of spilled hashtable and big table row container
-   * @param partition hash partition to process
-   * @param hybridHtContainer Hybrid hashtable container
+   * Continue processing join between spilled hashtable(s) and spilled big table
+   * @param partitionId the partition number across all small tables to process
    * @throws HiveException
    * @throws IOException
-   * @throws ClassNotFoundException
    * @throws SerDeException
    */
-  private void continueProcess(HashPartition partition, HybridHashTableContainer hybridHtContainer)
-      throws HiveException, IOException, ClassNotFoundException, SerDeException {
-    reloadHashTable(partition, hybridHtContainer);
-    reProcessBigTable(partition);
+  private void continueProcess(int partitionId)
+      throws HiveException, IOException, SerDeException, ClassNotFoundException {
+    for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+      if (pos != conf.getPosBigTable()) {
+        reloadHashTable(pos, partitionId);
+      }
+    }
+    reProcessBigTable(partitionId);
   }
 
   /**
@@ -491,16 +576,16 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
    * It can have two steps:
    * 1) Deserialize a serialized hash table, and
    * 2) Merge every key/value pair from small table container into the hash table
-   * @param partition hash partition to process
-   * @param hybridHtContainer Hybrid hashtable container
+   * @param pos position of small table
+   * @param partitionId the partition of the small table to be reloaded from
    * @throws IOException
-   * @throws ClassNotFoundException
    * @throws HiveException
    * @throws SerDeException
    */
-  private void reloadHashTable(HashPartition partition,
-                               HybridHashTableContainer hybridHtContainer)
-      throws IOException, ClassNotFoundException, HiveException, SerDeException {
+  protected void reloadHashTable(byte pos, int partitionId)
+      throws IOException, HiveException, SerDeException, ClassNotFoundException {
+    HybridHashTableContainer container = (HybridHashTableContainer)mapJoinTables[pos];
+    HashPartition partition = container.getHashPartitions()[partitionId];
 
     // Merge the sidefile into the newly created hash table
     // This is where the spilling may happen again
@@ -519,11 +604,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // If based on the new key count, keyCount is smaller than a threshold,
     // then just load the entire restored hashmap into memory.
     // The size of deserialized partition shouldn't exceed half of memory limit
-    if (rowCount * hybridHtContainer.getTableRowSize() >= hybridHtContainer.getMemoryThreshold() / 2) {
-      LOG.info("Hybrid Grace Hash Join: Hash table reload can fail since it will be greater than memory limit. Recursive spilling is currently not supported");
+    if (rowCount * container.getTableRowSize() >= container.getMemoryThreshold() / 2) {
+      LOG.warn("Hybrid Grace Hash Join: Hash table cannot be reloaded since it" +
+          " will be greater than memory limit. Recursive spilling is currently not supported");
     }
 
-    KeyValueHelper writeHelper = hybridHtContainer.getWriteHelper();
+    KeyValueHelper writeHelper = container.getWriteHelper();
     while (kvContainer.hasNext()) {
       ObjectPair<HiveKey, BytesWritable> pair = kvContainer.next();
       Writable key = pair.getFirst();
@@ -532,26 +618,30 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       restoredHashMap.put(writeHelper, -1);
     }
 
-    hybridHtContainer.setTotalInMemRowCount(hybridHtContainer.getTotalInMemRowCount()
+    container.setTotalInMemRowCount(container.getTotalInMemRowCount()
         + restoredHashMap.getNumValues() + kvContainer.size());
     kvContainer.clear();
 
-    // Since there's only one hashmap to deal with, it's OK to create a MapJoinBytesTableContainer
-    currentSmallTable = new MapJoinBytesTableContainer(restoredHashMap);
-    currentSmallTable.setInternalValueOi(hybridHtContainer.getInternalValueOi());
-    currentSmallTable.setSortableSortOrders(hybridHtContainer.getSortableSortOrders());
+    spilledMapJoinTables[pos] = new MapJoinBytesTableContainer(restoredHashMap);
+    spilledMapJoinTables[pos].setInternalValueOi(container.getInternalValueOi());
+    spilledMapJoinTables[pos].setSortableSortOrders(container.getSortableSortOrders());
   }
 
   /**
    * Iterate over the big table row container and feed process() with leftover rows
-   * @param partition the hash partition being brought back to memory at the moment
+   * @param partitionId the partition from which to take out spilled big table rows
    * @throws HiveException
    */
-  protected void reProcessBigTable(HashPartition partition) throws HiveException {
+  protected void reProcessBigTable(int partitionId) throws HiveException {
+    // For binary join, firstSmallTable is the only small table; it has reference to spilled big
+    // table rows;
+    // For n-way join, since we only spill once, when processing the first small table, so only the
+    // firstSmallTable has reference to the spilled big table rows.
+    HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
     ObjectContainer bigTable = partition.getMatchfileObjContainer();
     while (bigTable.hasNext()) {
       Object row = bigTable.next();
-      process(row, tag);
+      process(row, conf.getPosBigTable());
     }
     bigTable.clear();
   }

@@ -24,12 +24,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.Resources;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,6 +41,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -246,8 +250,21 @@ class SparkClientImpl implements SparkClient {
       if (!properties.setReadable(false) || !properties.setReadable(true, true)) {
         throw new IOException("Cannot change permissions of job properties file.");
       }
+      properties.deleteOnExit();
 
       Properties allProps = new Properties();
+      // first load the defaults from spark-defaults.conf if available
+      try {
+        URL sparkDefaultsUrl = Thread.currentThread().getContextClassLoader().getResource("spark-defaults.conf");
+        if (sparkDefaultsUrl != null) {
+          LOG.info("Loading spark defaults: " + sparkDefaultsUrl);
+          allProps.load(new ByteArrayInputStream(Resources.toByteArray(sparkDefaultsUrl)));
+        }
+      } catch (Exception e) {
+        String msg = "Exception trying to load spark-defaults.conf: " + e;
+        throw new IOException(msg, e);
+      }
+      // then load the SparkClientImpl config
       for (Map.Entry<String, String> e : conf.entrySet()) {
         allProps.put(e.getKey(), conf.get(e.getKey()));
       }
@@ -350,6 +367,21 @@ class SparkClientImpl implements SparkClient {
         }
       }
 
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+        try {
+          String currentUser = Utils.getUGI().getShortUserName();
+          // do not do impersonation in CLI mode
+          if (!currentUser.equals(System.getProperty("user.name"))) {
+            LOG.info("Attempting impersonation of " + currentUser);
+            argv.add("--proxy-user");
+            argv.add(currentUser);
+          }
+        } catch (Exception e) {
+          String msg = "Cannot obtain username: " + e;
+          throw new IllegalStateException(msg, e);
+        }
+      }
+
       argv.add("--properties-file");
       argv.add(properties.getAbsolutePath());
       argv.add("--class");
@@ -374,7 +406,7 @@ class SparkClientImpl implements SparkClient {
         argv.add(String.format("%s=%s", hiveSparkConfKey, value));
       }
 
-      LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
+      LOG.info("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
       if (isTesting != null) {

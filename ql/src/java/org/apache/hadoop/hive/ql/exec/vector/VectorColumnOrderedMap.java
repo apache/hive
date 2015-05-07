@@ -36,6 +36,8 @@ import org.apache.commons.logging.LogFactory;
 public class VectorColumnOrderedMap {
   protected static transient final Log LOG = LogFactory.getLog(VectorColumnOrderedMap.class);
 
+  protected String name;
+
   private TreeMap<Integer, Value> orderedTreeMap;
 
   private class Value {
@@ -46,6 +48,13 @@ public class VectorColumnOrderedMap {
     Value(int valueColumn, String typeName) {
       this.valueColumn = valueColumn;
       this.typeName = typeName;
+    }
+
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("(value column: " + valueColumn);
+      sb.append(", type name: " + typeName + ")");
+      return sb.toString();
     }
   }
 
@@ -78,13 +87,17 @@ public class VectorColumnOrderedMap {
     }
   }
 
-  public VectorColumnOrderedMap() {
+  public VectorColumnOrderedMap(String name) {
+    this.name = name;
     orderedTreeMap = new TreeMap<Integer, Value>();
   }
 
   public void add(int orderedColumn, int valueColumn, String typeName) {
     if (orderedTreeMap.containsKey(orderedColumn)) {
-      throw new Error("Duplicate column " + orderedColumn + " in ordered column map");
+      throw new RuntimeException(
+          name + " duplicate column " + orderedColumn +
+          " in ordered column map " + orderedTreeMap.toString() +
+          " when adding value column " + valueColumn + ", type " + typeName);
     }
     orderedTreeMap.put(orderedColumn, new Value(valueColumn, typeName));
   }

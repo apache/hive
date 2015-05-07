@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.SequenceInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -808,7 +809,8 @@ public class BeeLine implements Closeable {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
-        line = getOpts().isSilent() ? reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+        line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ?
+                 reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
 
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
@@ -829,7 +831,11 @@ public class BeeLine implements Closeable {
   public ConsoleReader getConsoleReader(InputStream inputStream) throws IOException {
     if (inputStream != null) {
       // ### NOTE: fix for sf.net bug 879425.
-      consoleReader = new ConsoleReader(inputStream, getOutputStream());
+      // Working around an issue in jline-2.1.2, see https://github.com/jline/jline/issues/10
+      // by appending a newline to the end of inputstream
+      InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
+          new ByteArrayInputStream((new String("\n")).getBytes()));
+      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getOutputStream());
     } else {
       consoleReader = new ConsoleReader();
     }

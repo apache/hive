@@ -19,8 +19,11 @@
 package org.apache.hive.hcatalog.api.repl;
 
 import com.google.common.base.Function;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
-import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
 
@@ -28,6 +31,7 @@ import org.apache.hive.hcatalog.messaging.MessageFactory;
  * ReplicationTask captures the concept of what it'd take to replicate changes from
  * one warehouse to another given a notification event that captures what changed.
  */
+@InterfaceStability.Evolving
 public abstract class ReplicationTask {
   protected HCatNotificationEvent event;
   protected StagingDirectoryProvider srcStagingDirProvider = null;
@@ -36,58 +40,65 @@ public abstract class ReplicationTask {
   protected Function<String,String> dbNameMapping = null;
 
   protected static MessageFactory messageFactory = MessageFactory.getInstance();
+  private static Factory factoryInstance = null;
+  private static String factoryClassName = null;
 
   public interface Factory {
-    public ReplicationTask create(HCatNotificationEvent event);
+    public ReplicationTask create(HCatClient client, HCatNotificationEvent event);
+  }
+
+  private static Factory getFactoryInstance(HCatClient client) {
+    if (factoryInstance == null){
+      createFactoryInstance(client);
+    }
+    return factoryInstance;
   }
 
   /**
-   * Dummy NoopFactory for testing, returns a NoopReplicationTask for all recognized events.
-   * Warning : this will eventually go away or move to the test section - it's intended only
-   * for integration testing purposes.
+   * Create factory instance for instantiating ReplicationTasks.
+   *
+   * The order precedence is as follows:
+   *
+   * a) If a factory has already been instantiated, and is valid, use it.
+   * b) If a factoryClassName has been provided, through .resetFactory(), attempt to instantiate that.
+   * c) If a hive.repl.task.factory has been set in the default hive conf, use that.
+   * d) If none of the above methods work, instantiate an anoymous factory that will return an error
+   *    whenever called, till a user calls resetFactory.
    */
-  public static class NoopFactory implements Factory {
-    @Override
-    public ReplicationTask create(HCatNotificationEvent event) {
-      // TODO : Java 1.7+ support using String with switches, but IDEs don't all seem to know that.
-      // If casing is fine for now. But we should eventually remove this. Also, I didn't want to
-      // create another enum just for this.
-      String eventType = event.getEventType();
-      if (eventType.equals(HCatConstants.HCAT_CREATE_DATABASE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_DATABASE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_CREATE_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ADD_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_DROP_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ALTER_TABLE_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_ALTER_PARTITION_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else if (eventType.equals(HCatConstants.HCAT_INSERT_EVENT)) {
-        return new NoopReplicationTask(event);
-      } else {
-        throw new IllegalStateException("Unrecognized Event type, no replication task available");
+  private synchronized static void createFactoryInstance(HCatClient client) {
+    if (factoryInstance == null){
+      // instantiate new factory instance only if current one is not valid.
+      if (factoryClassName == null){
+        // figure out which factory we're instantiating from HiveConf iff it's not been set on us directly.
+        factoryClassName = client.getConfVal(HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname,"");
+      }
+      try {
+        Class<? extends Factory> factoryClass = (Class<? extends Factory>) Class.forName(factoryClassName);
+        factoryInstance = factoryClass.newInstance();
+      } catch (Exception e) {
+        factoryInstance = new Factory() {
+            @Override
+            public ReplicationTask create(HCatClient client, HCatNotificationEvent event) {
+              throw new IllegalStateException("Error instantiating ReplicationTask.Factory " +
+                  HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname+"="+factoryClassName +
+                  ". Call resetFactory() if you need to reset to a valid one.");
+            }
+        };
       }
     }
   }
 
-  private static Factory factoryInstance = null;
-  private static Factory getFactoryInstance() {
-    if (factoryInstance == null){
-      // TODO: Eventually, we'll have a bit here that looks at a config param to instantiate
-      // the appropriate factory, with EXIMFactory being the default - that allows
-      // others to implement their own ReplicationTask.Factory for other replication
-      // implementations.
-      // That addition will be brought in by the EXIMFactory patch.
-      factoryInstance = new NoopFactory();
+  /**
+   * Package scoped method used for testing - allows resetting the ReplicationTaskFactory used
+   * @param factoryClass The new ReplicationTaskFactory to use.
+   */
+  public static void resetFactory(Class<? extends Factory> factoryClass) {
+    if (factoryClass != null){
+      factoryClassName = factoryClass.getName();
+    } else {
+      factoryClassName = null;
     }
-    return factoryInstance;
+    factoryInstance = null;
   }
 
   /**
@@ -95,11 +106,11 @@ public abstract class ReplicationTask {
    * @param event HCatEventMessage returned by the notification subsystem
    * @return corresponding ReplicationTask
    */
-  public static ReplicationTask create(HCatNotificationEvent event){
+  public static ReplicationTask create(HCatClient client, HCatNotificationEvent event){
     if (event == null){
       throw new IllegalArgumentException("event should not be null");
     }
-    return getFactoryInstance().create(event);
+    return getFactoryInstance(client).create(client,event);
   }
 
   // Primary entry point is a factory method instead of ctor
@@ -168,7 +179,7 @@ public abstract class ReplicationTask {
    * That way, the default will then be that the destination db name is the same as the src db name
    *
    * If you want to use a Map<String,String> mapping instead of a Function<String,String>,
-   * simply call this function as .withTableNameMapping(com.google.common.base.Functions.forMap(tableMap))
+   * simply call this function as .withTableNameMapping(ReplicationUtils.mapBasedFunction(tableMap))
    * @param tableNameMapping
    * @return this replication task
    */
@@ -185,7 +196,7 @@ public abstract class ReplicationTask {
    * That way, the default will then be that the destination db name is the same as the src db name
    *
    * If you want to use a Map<String,String> mapping instead of a Function<String,String>,
-   * simply call this function as .withDb(com.google.common.base.Functions.forMap(dbMap))
+   * simply call this function as .withDbNameMapping(ReplicationUtils.mapBasedFunction(dbMap))
    * @param dbNameMapping
    * @return this replication task
    */

@@ -22,8 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 
 /**
  * DropTableDesc.
@@ -56,6 +56,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   boolean ifExists;
   boolean ifPurge;
   boolean ignoreProtection;
+  ReplicationSpec replicationSpec;
 
   public DropTableDesc() {
   }
@@ -64,17 +65,21 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    * @param tableName
    * @param ifPurge
    */
-  public DropTableDesc(String tableName, boolean expectView, boolean ifExists, boolean ifPurge) {
+  public DropTableDesc(
+      String tableName, boolean expectView, boolean ifExists,
+      boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = null;
     this.expectView = expectView;
     this.ifExists = ifExists;
     this.ifPurge = ifPurge;
     this.ignoreProtection = false;
+    this.replicationSpec = replicationSpec;
   }
 
   public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
-      boolean expectView, boolean ignoreProtection, boolean ifPurge) {
+      boolean expectView, boolean ignoreProtection, boolean ifPurge,
+      ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -86,6 +91,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;
     this.ifPurge = ifPurge;
+    this.replicationSpec = replicationSpec;
   }
 
   /**
@@ -169,5 +175,16 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setIfPurge(boolean ifPurge) {
       this.ifPurge = ifPurge;
+  }
+
+  /**
+   * @return what kind of replication scope this drop is running under.
+   * This can result in a "DROP IF OLDER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec(){
+    if (replicationSpec == null){
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
   }
 }

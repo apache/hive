@@ -109,7 +109,7 @@ public class TestVectorizer {
 
     Vectorizer v = new Vectorizer();
     Assert.assertTrue(v.validateMapWorkOperator(gbyOp, null, false));
-    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext);
+    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext, false);
     Assert.assertEquals(VectorUDAFSumLong.class, vectorOp.getAggregators()[0].getClass());
     VectorUDAFSumLong udaf = (VectorUDAFSumLong) vectorOp.getAggregators()[0];
     Assert.assertEquals(FuncAbsLongToLong.class, udaf.getInputExpression().getClass());

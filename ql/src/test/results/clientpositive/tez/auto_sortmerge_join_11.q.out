@@ -239,6 +239,7 @@ STAGE PLANS:
                         0 Map 1
                       Position of Big Table: 1
                       Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -549,6 +550,7 @@ STAGE PLANS:
                         0 Map 1
                       Position of Big Table: 1
                       Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -858,6 +860,7 @@ STAGE PLANS:
                         0 Map 1
                       Position of Big Table: 1
                       Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1185,6 +1188,7 @@ STAGE PLANS:
                         2 Map 4
                       Position of Big Table: 1
                       Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash

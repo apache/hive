@@ -100,7 +100,8 @@ public class GenericUDFSoundex extends GenericUDF {
   protected void checkIfStringGroup(ObjectInspector[] arguments, int i, String argOrder)
       throws UDFArgumentTypeException {
     inputTypes[i] = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
-    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputTypes[i]) != PrimitiveGrouping.STRING_GROUP) {
+    if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputTypes[i]) != PrimitiveGrouping.STRING_GROUP &&
+        PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputTypes[i]) != PrimitiveGrouping.VOID_GROUP) {
       throw new UDFArgumentTypeException(i, getFuncName() + " only takes STRING_GROUP types as "
           + argOrder + " argument, got " + inputTypes[i]);
     }
@@ -109,10 +110,11 @@ public class GenericUDFSoundex extends GenericUDF {
   protected void getStringConverter(ObjectInspector[] arguments, int i, String argOrder)
       throws UDFArgumentTypeException {
     textConverters[i] = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+        arguments[i],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
   }
 
+  @Override
   protected String getFuncName() {
     return "soundex";
   }

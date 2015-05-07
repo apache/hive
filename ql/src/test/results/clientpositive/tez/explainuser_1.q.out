@@ -3665,7 +3665,7 @@ Stage-0
                         outputColumnNames:["_col0"]
                         Statistics:Num rows: 13 Data size: 2392 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator [FIL_26]
-                           predicate:_wcol0 is not null (type: boolean)
+                           predicate:first_value_window_0 is not null (type: boolean)
                            Statistics:Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                            PTF Operator [PTF_11]
                               Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col5"}]
@@ -7596,9 +7596,9 @@ Stage-5
                                     Map-reduce partition columns:_col2 (type: string)
                                     sort order:++
                                     Statistics:Num rows: 26 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                                    value expressions:_wcol0 (type: bigint), _col5 (type: int)
+                                    value expressions:sum_window_0 (type: bigint), _col5 (type: int)
                                     Select Operator [SEL_13]
-                                       outputColumnNames:["_col1","_col2","_col5","_wcol0"]
+                                       outputColumnNames:["_col1","_col2","_col5","sum_window_0"]
                                        Statistics:Num rows: 26 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                                        PTF Operator [PTF_12]
                                           Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col5"}]

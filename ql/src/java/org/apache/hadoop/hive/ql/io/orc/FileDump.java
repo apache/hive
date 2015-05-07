@@ -33,7 +33,7 @@ import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -197,12 +197,12 @@ public final class FileDump {
   private static String getFormattedBloomFilters(int col,
       OrcProto.BloomFilterIndex[] bloomFilterIndex) {
     StringBuilder buf = new StringBuilder();
-    BloomFilter stripeLevelBF = null;
+    BloomFilterIO stripeLevelBF = null;
     if (bloomFilterIndex != null && bloomFilterIndex[col] != null) {
       int idx = 0;
       buf.append("\n    Bloom filters for column ").append(col).append(":");
       for (OrcProto.BloomFilter bf : bloomFilterIndex[col].getBloomFilterList()) {
-        BloomFilter toMerge = new BloomFilter(bf);
+        BloomFilterIO toMerge = new BloomFilterIO(bf);
         buf.append("\n      Entry ").append(idx++).append(":").append(getBloomFilterStats(toMerge));
         if (stripeLevelBF == null) {
           stripeLevelBF = toMerge;
@@ -216,7 +216,7 @@ public final class FileDump {
     return buf.toString();
   }
 
-  private static String getBloomFilterStats(BloomFilter bf) {
+  private static String getBloomFilterStats(BloomFilterIO bf) {
     StringBuilder sb = new StringBuilder();
     int bitCount = bf.getBitSize();
     int popCount = 0;

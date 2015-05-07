@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -257,13 +259,13 @@ public class TestOrcFile {
     assertEquals(7500, stats[1].getNumberOfValues());
     assertEquals(3750, ((BooleanColumnStatistics) stats[1]).getFalseCount());
     assertEquals(3750, ((BooleanColumnStatistics) stats[1]).getTrueCount());
-    assertEquals("count: 7500 hasNull: false true: 3750", stats[1].toString());
+    assertEquals("count: 7500 hasNull: true true: 3750", stats[1].toString());
 
     assertEquals(2048, ((IntegerColumnStatistics) stats[3]).getMaximum());
     assertEquals(1024, ((IntegerColumnStatistics) stats[3]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[3]).isSumDefined());
     assertEquals(11520000, ((IntegerColumnStatistics) stats[3]).getSum());
-    assertEquals("count: 7500 hasNull: false min: 1024 max: 2048 sum: 11520000",
+    assertEquals("count: 7500 hasNull: true min: 1024 max: 2048 sum: 11520000",
         stats[3].toString());
 
     assertEquals(Long.MAX_VALUE,
@@ -272,17 +274,17 @@ public class TestOrcFile {
         ((IntegerColumnStatistics) stats[5]).getMinimum());
     assertEquals(false, ((IntegerColumnStatistics) stats[5]).isSumDefined());
     assertEquals(
-        "count: 7500 hasNull: false min: 9223372036854775807 max: 9223372036854775807",
+        "count: 7500 hasNull: true min: 9223372036854775807 max: 9223372036854775807",
         stats[5].toString());
 
     assertEquals(-15.0, ((DoubleColumnStatistics) stats[7]).getMinimum());
     assertEquals(-5.0, ((DoubleColumnStatistics) stats[7]).getMaximum());
     assertEquals(-75000.0, ((DoubleColumnStatistics) stats[7]).getSum(),
         0.00001);
-    assertEquals("count: 7500 hasNull: false min: -15.0 max: -5.0 sum: -75000.0",
+    assertEquals("count: 7500 hasNull: true min: -15.0 max: -5.0 sum: -75000.0",
         stats[7].toString());
 
-    assertEquals("count: 7500 hasNull: false min: bye max: hi sum: 0", stats[9].toString());
+    assertEquals("count: 7500 hasNull: true min: bye max: hi sum: 0", stats[9].toString());
 
     // check the inspectors
     StructObjectInspector readerInspector = (StructObjectInspector) reader
@@ -489,7 +491,7 @@ public class TestOrcFile {
         OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000)
             .version(OrcFile.Version.V_0_11));
     List<Timestamp> tslist = Lists.newArrayList();
-    tslist.add(Timestamp.valueOf("9999-01-01 00:00:00.000999"));
+    tslist.add(Timestamp.valueOf("2037-01-01 00:00:00.000999"));
     tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.000000222"));
     tslist.add(Timestamp.valueOf("1999-01-01 00:00:00.999999999"));
     tslist.add(Timestamp.valueOf("1995-01-01 00:00:00.688888888"));
@@ -689,7 +691,7 @@ public class TestOrcFile {
     assertEquals("two", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMinimum());
     assertEquals("three", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMinimum());
     assertEquals("one", ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getMaximum());
-    assertEquals("two", ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getMaximum());
+    assertEquals("two", ((StringColumnStatistics) ss2.getColumnStatistics()[2]).getMaximum());
     assertEquals("three", ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getMaximum());
     assertEquals(15000, ((StringColumnStatistics)ss1.getColumnStatistics()[2]).getSum());
     assertEquals(15000, ((StringColumnStatistics)ss2.getColumnStatistics()[2]).getSum());
@@ -710,7 +712,7 @@ public class TestOrcFile {
     assertEquals(3, index.length);
     items = index[1].getEntryList();
     assertEquals(2,
-                 items.get(0).getStatistics().getIntStatistics().getMaximum());
+        items.get(0).getStatistics().getIntStatistics().getMaximum());
   }
 
   @Test
@@ -1110,8 +1112,8 @@ public class TestOrcFile {
                                          .bufferSize(100));
     writer.addUserMetadata("my.meta", byteBuf(1, 2, 3, 4, 5, 6, 7, -1, -2, 127,
                                               -128));
-    writer.addUserMetadata("clobber", byteBuf(1,2,3));
-    writer.addUserMetadata("clobber", byteBuf(4,3,2,1));
+    writer.addUserMetadata("clobber", byteBuf(1, 2, 3));
+    writer.addUserMetadata("clobber", byteBuf(4, 3, 2, 1));
     ByteBuffer bigBuf = ByteBuffer.allocate(40000);
     Random random = new Random(0);
     random.nextBytes(bigBuf.array());
@@ -1150,10 +1152,71 @@ public class TestOrcFile {
   }
 
   /**
-   * We test union, timestamp, and decimal separately since we need to make the
-   * object inspector manually. (The Hive reflection-based doesn't handle
-   * them properly.)
+   * Generate an ORC file with a range of dates and times.
    */
+  public void createOrcDateFile(Path file, int minYear, int maxYear
+                                ) throws IOException {
+    List<OrcProto.Type> types = new ArrayList<OrcProto.Type>();
+    types.add(OrcProto.Type.newBuilder().setKind(OrcProto.Type.Kind.STRUCT).
+        addFieldNames("time").addFieldNames("date").
+        addSubtypes(1).addSubtypes(2).build());
+    types.add(OrcProto.Type.newBuilder().setKind(OrcProto.Type.Kind.TIMESTAMP).
+        build());
+    types.add(OrcProto.Type.newBuilder().setKind(OrcProto.Type.Kind.DATE).
+        build());
+
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = OrcStruct.createObjectInspector(0, types);
+    }
+    Writer writer = OrcFile.createWriter(file,
+        OrcFile.writerOptions(conf)
+            .inspector(inspector)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .blockPadding(false));
+    OrcStruct row = new OrcStruct(2);
+    for (int year = minYear; year < maxYear; ++year) {
+      for (int ms = 1000; ms < 2000; ++ms) {
+        row.setFieldValue(0,
+            new TimestampWritable(Timestamp.valueOf(year + "-05-05 12:34:56."
+                + ms)));
+        row.setFieldValue(1,
+            new DateWritable(new Date(year - 1900, 11, 25)));
+        writer.addRow(row);
+      }
+    }
+    writer.close();
+    Reader reader = OrcFile.createReader(file,
+        OrcFile.readerOptions(conf));
+    RecordReader rows = reader.rows();
+    for (int year = minYear; year < maxYear; ++year) {
+      for(int ms = 1000; ms < 2000; ++ms) {
+        row = (OrcStruct) rows.next(row);
+        assertEquals(new TimestampWritable
+                (Timestamp.valueOf(year + "-05-05 12:34:56." + ms)),
+            row.getFieldValue(0));
+        assertEquals(new DateWritable(new Date(year - 1900, 11, 25)),
+            row.getFieldValue(1));
+      }
+    }
+  }
+
+  @Test
+  public void testDate1900() throws Exception {
+    createOrcDateFile(testFilePath, 1900, 1970);
+  }
+
+  @Test
+  public void testDate2038() throws Exception {
+    createOrcDateFile(testFilePath, 2038, 2250);
+  }
+
+  /**
+     * We test union, timestamp, and decimal separately since we need to make the
+     * object inspector manually. (The Hive reflection-based doesn't handle
+     * them properly.)
+     */
   @Test
   public void testUnionAndTimestamp() throws Exception {
     List<OrcProto.Type> types = new ArrayList<OrcProto.Type>();
@@ -1206,13 +1269,15 @@ public class TestOrcFile {
     union.set((byte) 1, null);
     writer.addRow(row);
     union.set((byte) 0, new IntWritable(200000));
-    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("1900-01-01 00:00:00")));
+    row.setFieldValue(0, new TimestampWritable
+        (Timestamp.valueOf("1970-01-01 00:00:00")));
     value = HiveDecimal.create("10000000000000000000");
     row.setFieldValue(2, new HiveDecimalWritable(value));
     writer.addRow(row);
     Random rand = new Random(42);
-    for(int i=1900; i < 2200; ++i) {
-      row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)));
+    for(int i=1970; i < 2038; ++i) {
+      row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf(i +
+          "-05-05 12:34:56." + i)));
       if ((i & 1) == 0) {
         union.set((byte) 0, new IntWritable(i*i));
       } else {
@@ -1257,10 +1322,10 @@ public class TestOrcFile {
     assertEquals(true, Arrays.equals(expected, included));
 
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
-    assertEquals(5309, reader.getNumberOfRows());
+    assertEquals(5077, reader.getNumberOfRows());
     DecimalColumnStatistics stats =
         (DecimalColumnStatistics) reader.getStatistics()[5];
-    assertEquals(303, stats.getNumberOfValues());
+    assertEquals(71, stats.getNumberOfValues());
     assertEquals(HiveDecimal.create("-5643.234"), stats.getMinimum());
     assertEquals(maxValue, stats.getMaximum());
     // TODO: fix this
@@ -1321,13 +1386,13 @@ public class TestOrcFile {
     assertEquals(null, union.getObject());
     assertEquals(null, row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
-    assertEquals(new TimestampWritable(Timestamp.valueOf("1900-01-01 00:00:00")),
+    assertEquals(new TimestampWritable(Timestamp.valueOf("1970-01-01 00:00:00")),
         row.getFieldValue(0));
     assertEquals(new IntWritable(200000), union.getObject());
     assertEquals(new HiveDecimalWritable(HiveDecimal.create("10000000000000000000")),
                  row.getFieldValue(2));
     rand = new Random(42);
-    for(int i=1900; i < 2200; ++i) {
+    for(int i=1970; i < 2038; ++i) {
       row = (OrcStruct) rows.next(row);
       assertEquals(new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)),
           row.getFieldValue(0));

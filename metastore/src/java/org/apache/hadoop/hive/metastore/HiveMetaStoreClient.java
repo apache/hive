@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -152,6 +152,8 @@ import org.apache.thrift.transport.TTransportException;
  * Hive Metastore Client.
  * The public implementation of IMetaStoreClient. Methods not inherited from IMetaStoreClient
  * are not public and can change. Hence this is marked as unstable.
+ * For users who require retry mechanism when the connection between metastore and client is
+ * broken, RetryingMetaStoreClient class should be used.
  */
 @Public
 @Unstable
@@ -306,6 +308,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throw new MetaException("For direct MetaStore DB connections, we don't support retries" +
           " at the client level.");
     } else {
+      close();
       // Swap the first element of the metastoreUris[] with a random element from the rest
       // of the array. Rationale being that this method will generally be called when the default
       // connection has died and the default connection is likely to be the first array element.
@@ -490,7 +493,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         client.shutdown();
       }
     } catch (TException e) {
-      LOG.error("Unable to shutdown local metastore client", e);
+      LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
     }
     // Transport would have got closed via client.shutdown(), so we dont need this, but
     // just in case, we make this call.
@@ -1787,18 +1790,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public String getDelegationToken(String owner, String renewerKerberosPrincipalName) throws
   MetaException, TException {
-    if(localMetaStore) {
-      throw new UnsupportedOperationException("getDelegationToken() can be " +
-          "called only in thrift (non local) mode");
+    // This is expected to be a no-op, so we will return null when we use local metastore.
+    if (localMetaStore) {
+      return null;
     }
     return client.get_delegation_token(owner, renewerKerberosPrincipalName);
   }
 
   @Override
   public long renewDelegationToken(String tokenStrForm) throws MetaException, TException {
-    if(localMetaStore) {
-      throw new UnsupportedOperationException("renewDelegationToken() can be " +
-          "called only in thrift (non local) mode");
+    if (localMetaStore) {
+      return 0;
     }
     return client.renew_delegation_token(tokenStrForm);
 
@@ -1806,9 +1808,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public void cancelDelegationToken(String tokenStrForm) throws MetaException, TException {
-    if(localMetaStore) {
-      throw new UnsupportedOperationException("renewDelegationToken() can be " +
-          "called only in thrift (non local) mode");
+    if (localMetaStore) {
+      return;
     }
     client.cancel_delegation_token(tokenStrForm);
   }
@@ -1921,6 +1922,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
   }
 
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
                                                        NotificationFilter filter) throws TException {
@@ -1941,11 +1943,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
   }
 
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
     return client.get_current_notificationEventId();
   }
 
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   @Override
   public FireEventResponse fireListenerEvent(FireEventRequest rqst) throws TException {
     return client.fire_listener_event(rqst);

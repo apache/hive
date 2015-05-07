@@ -38,6 +38,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
                           table:
@@ -327,6 +328,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 4
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
@@ -354,6 +356,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 4
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
@@ -494,6 +497,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -506,6 +510,7 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
@@ -575,6 +580,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -587,6 +593,7 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
@@ -629,6 +636,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 8
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -641,6 +649,7 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
@@ -892,6 +901,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 3
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
                           table:
@@ -933,6 +943,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
                           table:
@@ -1063,6 +1074,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
                         table:
@@ -1085,6 +1097,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
                         table:
@@ -1185,6 +1198,7 @@ STAGE PLANS:
                       input vertices:
                         0 Union 2
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE

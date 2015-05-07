@@ -24,15 +24,16 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -90,6 +91,7 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
@@ -447,6 +449,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  private void configureImpersonation(Configuration conf) {
+    String user;
+    try {
+      user = Utils.getUGI().getShortUserName();
+    } catch (Exception e) {
+      String msg = "Cannot obtain username: " + e;
+      throw new IllegalStateException(msg, e);
+    }
+    conf.set("hadoop.proxyuser." + user + ".groups", "*");
+    conf.set("hadoop.proxyuser." + user + ".hosts", "*");
+  }
+
   /**
    * Returns a shim to wrap MiniSparkOnYARNCluster
    */
@@ -466,9 +480,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException {
-
       mr = new MiniSparkOnYARNCluster("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
+      conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
+      configureImpersonation(conf);
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
@@ -523,6 +538,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
+    configureImpersonation(conf);
     MiniDFSCluster miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
 
     // Need to set the client's KeyProvider to the NN's for JKS,
@@ -1041,6 +1057,33 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  @Override
+  public void checkFileAccess(FileSystem fs, Iterator<FileStatus> statuses, EnumSet<FsAction> actions)
+      throws IOException, AccessControlException, Exception {
+    try {
+      if (accessMethod == null) {
+        // Have to rely on Hive implementation of filesystem permission checks.
+        DefaultFileAccess.checkFileAccess(fs, statuses, actions);
+      }
+      else {
+        while (statuses.hasNext()) {
+          accessMethod.invoke(fs, statuses.next(), combine(actions));
+        }
+      }
+
+    } catch (Exception err) {
+      throw wrapAccessException(err);
+    }
+  }
+
+  private static FsAction combine(EnumSet<FsAction> actions) {
+    FsAction resultantAction = FsAction.NONE;
+    for (FsAction action : actions) {
+      resultantAction = resultantAction.or(action);
+    }
+    return resultantAction;
+  }
+
   /**
    * If there is an AccessException buried somewhere in the chain of failures, wrap the original
    * exception in an AccessException. Othewise just return the original exception.
@@ -1049,8 +1092,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     final int maxDepth = 20;
     Throwable curErr = err;
     for (int idx = 0; curErr != null && idx < maxDepth; ++idx) {
+      // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
+      // Hadoop versions may still see this exception .. have to reference by name.
       if (curErr instanceof org.apache.hadoop.security.AccessControlException
-          || curErr instanceof org.apache.hadoop.fs.permission.AccessControlException) {
+          || curErr.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
         Exception newErr = new AccessControlException(curErr.getMessage());
         newErr.initCause(err);
         return newErr;
@@ -1394,5 +1439,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public Path getPathWithoutSchemeAndAuthority(Path path) {
     return Path.getPathWithoutSchemeAndAuthority(path);
+  }
+
+  @Override
+  public int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException {
+    int pos = dest.position();
+    int result = file.read(dest);
+    if (result > 0) {
+      // Ensure this explicitly since versions before 2.7 read doesn't do it.
+      dest.position(pos + result);
+    }
+    return result;
+  }
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
+    // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
+    fs.addDelegationTokens(uname, cred);
   }
 }

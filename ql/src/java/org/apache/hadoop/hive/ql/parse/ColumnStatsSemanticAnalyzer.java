@@ -101,25 +101,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return getTable(names[0], names[1], true);
   }
 
-  private Map<String,String> getPartKeyValuePairsFromAST(ASTNode tree) {
+  private Map<String,String> getPartKeyValuePairsFromAST(Table tbl, ASTNode tree,
+      HiveConf hiveConf) throws SemanticException {
     ASTNode child = ((ASTNode) tree.getChild(0).getChild(1));
     Map<String,String> partSpec = new HashMap<String, String>();
-    if (null == child) {
-      // case of analyze table T compute statistics for columns;
-      return partSpec;
-    }
-    String partKey;
-    String partValue;
-    for (int i = 0; i < child.getChildCount(); i++) {
-      partKey = new String(getUnescapedName((ASTNode) child.getChild(i).getChild(0))).toLowerCase();
-      if (child.getChild(i).getChildCount() > 1) {
-        partValue = new String(getUnescapedName((ASTNode) child.getChild(i).getChild(1)));
-        partValue = partValue.replaceAll("'", "");
-      } else {
-        partValue = null;
-      }
-      partSpec.put(partKey, partValue);
-    }
+    if (child != null) {
+      partSpec = DDLSemanticAnalyzer.getValidatedPartSpec(tbl, child, hiveConf, false);
+    } //otherwise, it is the case of analyze table T compute statistics for columns;
     return partSpec;
   }
 
@@ -426,7 +414,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
       if (isPartitionStats) {
         isTableLevel = false;
-        partSpec = getPartKeyValuePairsFromAST(ast);
+        partSpec = getPartKeyValuePairsFromAST(tbl, ast, conf);
         handlePartialPartitionSpec(partSpec);
       } else {
         isTableLevel = true;

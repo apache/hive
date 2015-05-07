@@ -475,7 +475,10 @@ public final class TypeInfoUtils {
               break;
             }
           }
-          Token name = expect("name");
+          Token name = expect("name",">");
+          if (name.text.equals(">")) {
+            break;
+          }
           fieldNames.add(name.text);
           expect(":");
           fieldTypeInfos.add(parseType());
@@ -530,7 +533,7 @@ public final class TypeInfoUtils {
     return parser.parsePrimitiveParts();
   }
 
-  static Map<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
+  static ConcurrentHashMap<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
       new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
@@ -601,12 +604,16 @@ public final class TypeInfoUtils {
         result = null;
       }
       }
-      cachedStandardObjectInspector.put(typeInfo, result);
+      ObjectInspector prev =
+        cachedStandardObjectInspector.putIfAbsent(typeInfo, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
 
-  static Map<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
+  static ConcurrentHashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
       new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
@@ -678,7 +685,11 @@ public final class TypeInfoUtils {
         result = null;
       }
       }
-      cachedStandardJavaObjectInspector.put(typeInfo, result);
+      ObjectInspector prev =
+        cachedStandardJavaObjectInspector.putIfAbsent(typeInfo, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -768,12 +779,14 @@ public final class TypeInfoUtils {
    * @return
    */
   public static boolean isConversionRequiredForComparison(TypeInfo typeA, TypeInfo typeB) {
-    if (typeA == typeB) {
+    if (typeA.equals(typeB)) {
       return false;
     }
-    if (TypeInfoUtils.doPrimitiveCategoriesMatch(typeA,  typeB)) {
+
+    if (TypeInfoUtils.doPrimitiveCategoriesMatch(typeA, typeB)) {
       return false;
     }
+
     return true;
   }
 

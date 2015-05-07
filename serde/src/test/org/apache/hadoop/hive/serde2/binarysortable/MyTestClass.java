@@ -96,4 +96,109 @@ public class MyTestClass {
       return result;
     }
 
+    public void nonRandomFill(int idx) {
+      myByte = (Byte) getNonRandValue(nrByte, idx);
+      myShort = (Short) getNonRandValue(nrShort, idx);
+      myInt = (Integer) getNonRandValue(nrInt, idx);
+      myLong = (Long) getNonRandValue(nrLong, idx);
+      myFloat = (Float) getNonRandValue(nrFloat, idx);
+      myDouble = (Double) getNonRandValue(nrDouble, idx);
+      myString = (String) getNonRandValue(nrString, idx);
+      myHiveChar = new HiveChar(myString, myString.length());
+      myHiveVarchar = new HiveVarchar(myString, myString.length());
+      myDecimal = (HiveDecimal) getNonRandValue(nrDecimal, idx);
+      myDate = (Date) getNonRandValue(nrDate, idx);
+      myIntervalYearMonth = (HiveIntervalYearMonth) getNonRandValue(nrIntervalYearMonth, idx);
+      myIntervalDayTime = (HiveIntervalDayTime) getNonRandValue(nrIntervalDayTime, idx);
+      myStruct = null;
+      myList = null;
+    }
+
+    public static Object getNonRandValue(Object[] nrArray, int index) {
+      return nrArray[index % nrArray.length];
+    }
+
+    static Object[] nrByte = {
+        Byte.valueOf((byte) 1)
+    };
+
+    static Object[] nrShort = {
+        Short.valueOf((short) 1)
+    };
+
+    static Object[] nrInt = {
+        Integer.valueOf(1)
+    };
+
+    static Object[] nrLong = {
+        Long.valueOf(1)
+    };
+
+    static Object[] nrFloat = {
+        Float.valueOf(1.0f)
+    };
+
+    static Object[] nrDouble = {
+        Double.valueOf(1.0)
+    };
+
+    static Object[] nrDecimal = {
+        HiveDecimal.create("100"),
+        HiveDecimal.create("10"),
+        HiveDecimal.create("1"),
+        HiveDecimal.create("0"),
+        HiveDecimal.create("0.1"),
+        HiveDecimal.create("0.01"),
+        HiveDecimal.create("0.001"),
+        HiveDecimal.create("-100"),
+        HiveDecimal.create("-10"),
+        HiveDecimal.create("-1"),
+        HiveDecimal.create("-0.1"),
+        HiveDecimal.create("-0.01"),
+        HiveDecimal.create("-0.001"),
+        HiveDecimal.create("12345678900"),
+        HiveDecimal.create("1234567890"),
+        HiveDecimal.create("123456789"),
+        HiveDecimal.create("12345678.9"),
+        HiveDecimal.create("1234567.89"),
+        HiveDecimal.create("123456.789"),
+        HiveDecimal.create("12345.6789"),
+        HiveDecimal.create("1234.56789"),
+        HiveDecimal.create("123.456789"),
+        HiveDecimal.create("1.23456789"),
+        HiveDecimal.create("0.123456789"),
+        HiveDecimal.create("0.0123456789"),
+        HiveDecimal.create("0.00123456789"),
+        HiveDecimal.create("0.000123456789"),
+        HiveDecimal.create("-12345678900"),
+        HiveDecimal.create("-1234567890"),
+        HiveDecimal.create("-123456789"),
+        HiveDecimal.create("-12345678.9"),
+        HiveDecimal.create("-1234567.89"),
+        HiveDecimal.create("-123456.789"),
+        HiveDecimal.create("-12345.6789"),
+        HiveDecimal.create("-1234.56789"),
+        HiveDecimal.create("-123.456789"),
+        HiveDecimal.create("-1.23456789"),
+        HiveDecimal.create("-0.123456789"),
+        HiveDecimal.create("-0.0123456789"),
+        HiveDecimal.create("-0.00123456789"),
+        HiveDecimal.create("-0.000123456789"),
+    };
+
+    static Object[] nrString = {
+        "abcdefg"
+    };
+
+    static Object[] nrDate = {
+        Date.valueOf("2001-01-01")
+    };
+
+    static Object[] nrIntervalYearMonth = {
+      HiveIntervalYearMonth.valueOf("1-0")
+    };
+
+    static Object[] nrIntervalDayTime = {
+      HiveIntervalDayTime.valueOf("1 0:0:0")
+    };
 }

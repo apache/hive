@@ -18,14 +18,11 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
-import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.core.Aggregate;
@@ -38,12 +35,8 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,13 +46,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 public class PlanModifierForASTConv {
+
   private static final Log LOG = LogFactory.getLog(PlanModifierForASTConv.class);
+
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
       throws CalciteSemanticException {
@@ -82,7 +77,7 @@ public class PlanModifierForASTConv {
     }
 
     Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
-    fixTopOBSchema(newTopNode, topSelparentPair, resultSchema);
+    PlanModifierUtil.fixTopOBSchema(newTopNode, topSelparentPair, resultSchema, true);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Plan after fixTopOBSchema\n " + RelOptUtil.toString(newTopNode));
     }
@@ -95,6 +90,23 @@ public class PlanModifierForASTConv {
     return newTopNode;
   }
 
+  private static String getTblAlias(RelNode rel) {
+
+    if (null == rel) {
+      return null;
+    }
+    if (rel instanceof HiveTableScan) {
+      return ((HiveTableScan)rel).getTableAlias();
+    }
+    if (rel instanceof Project) {
+      return null;
+    }
+    if (rel.getInputs().size() == 1) {
+      return getTblAlias(rel.getInput(0));
+    }
+    return null;
+  }
+
   private static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof HepRelVertex) {
@@ -102,6 +114,12 @@ public class PlanModifierForASTConv {
     } else if (rel instanceof Join) {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
+      }
+      String leftChild = getTblAlias(((Join)rel).getLeft());
+      if (null != leftChild && leftChild.equalsIgnoreCase(getTblAlias(((Join)rel).getRight()))) {
+        // introduce derived table above one child, if this is self-join
+        // since user provided aliases are lost at this point.
+        introduceDerivedTable(((Join)rel).getLeft(), rel);
       }
     } else if (rel instanceof MultiJoin) {
       throw new RuntimeException("Found MultiJoin");
@@ -151,79 +169,6 @@ public class PlanModifierForASTConv {
     }
   }
 
-  private static void fixTopOBSchema(final RelNode rootRel,
-      Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
-      throws CalciteSemanticException {
-    if (!(topSelparentPair.getKey() instanceof Sort)
-        || !HiveCalciteUtil.orderRelNode(topSelparentPair.getKey())) {
-      return;
-    }
-    HiveSort obRel = (HiveSort) topSelparentPair.getKey();
-    Project obChild = (Project) topSelparentPair.getValue();
-    if (obChild.getRowType().getFieldCount() <= resultSchema.size()) {
-      return;
-    }
-
-    RelDataType rt = obChild.getRowType();
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    Set<Integer> collationInputRefs = new HashSet(
-        RelCollationImpl.ordinals(obRel.getCollation()));
-    ImmutableMap.Builder<Integer, RexNode> inputRefToCallMapBldr = ImmutableMap.builder();
-    for (int i = resultSchema.size(); i < rt.getFieldCount(); i++) {
-      if (collationInputRefs.contains(i)) {
-        RexNode obyExpr = obChild.getChildExps().get(i);
-        if (obyExpr instanceof RexCall) {
-          int a = -1;
-          List<RexNode> operands = new ArrayList<>();
-          for (int k = 0; k< ((RexCall) obyExpr).operands.size(); k++) {
-            RexNode rn = ((RexCall) obyExpr).operands.get(k);
-            for (int j = 0; j < resultSchema.size(); j++) {
-              if( obChild.getChildExps().get(j).toString().equals(rn.toString())) {
-                a = j;
-                break;
-              }
-            } if (a != -1) {
-              operands.add(new RexInputRef(a, rn.getType()));
-            } else {
-              operands.add(rn);
-            }
-            a = -1;
-          }
-          obyExpr = obChild.getCluster().getRexBuilder().makeCall(((RexCall)obyExpr).getOperator(), operands);
-        }
-        inputRefToCallMapBldr.put(i, obyExpr);
-      }
-    }
-    ImmutableMap<Integer, RexNode> inputRefToCallMap = inputRefToCallMapBldr.build();
-
-    if ((obChild.getRowType().getFieldCount() - inputRefToCallMap.size()) != resultSchema.size()) {
-      LOG.error(generateInvalidSchemaMessage(obChild, resultSchema, inputRefToCallMap.size()));
-      throw new CalciteSemanticException("Result Schema didn't match Optimized Op Tree Schema");
-    }
-    // This removes order-by only expressions from the projections.
-    HiveProject replacementProjectRel = HiveProject.create(obChild.getInput(), obChild
-        .getChildExps().subList(0, resultSchema.size()), obChild.getRowType().getFieldNames()
-        .subList(0, resultSchema.size()));
-    obRel.replaceInput(0, replacementProjectRel);
-    obRel.setInputRefToCallMap(inputRefToCallMap);
-  }
-
-  private static String generateInvalidSchemaMessage(Project topLevelProj,
-      List<FieldSchema> resultSchema, int fieldsForOB) {
-    String errorDesc = "Result Schema didn't match Calcite Optimized Op Tree; schema: ";
-    for (FieldSchema fs : resultSchema) {
-      errorDesc += "[" + fs.getName() + ":" + fs.getType() + "], ";
-    }
-    errorDesc += " projection fields: ";
-    for (RexNode exp : topLevelProj.getChildExps()) {
-      errorDesc += "[" + exp.toString() + ":" + exp.getType() + "], ";
-    }
-    if (fieldsForOB != 0) {
-      errorDesc += fieldsForOB + " fields removed due to ORDER BY  ";
-    }
-    return errorDesc.substring(0, errorDesc.length() - 2);
-  }
-
   private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
       Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
       throws CalciteSemanticException {
@@ -235,7 +180,7 @@ public class PlanModifierForASTConv {
     List<RexNode> rootChildExps = originalProjRel.getChildExps();
     if (resultSchema.size() != rootChildExps.size()) {
       // Safeguard against potential issues in CBO RowResolver construction. Disable CBO for now.
-      LOG.error(generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
+      LOG.error(PlanModifierUtil.generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
       throw new CalciteSemanticException("Result Schema didn't match Optimized Op Tree Schema");
     }
 

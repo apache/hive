@@ -21,7 +21,7 @@ where b.p_name not in
   (select p_name 
   from (select p_mfgr, p_name, p_size as r from part) a 
   where r < 10 and b.p_mfgr = a.p_mfgr 
-  )
+  ) order by p_mfgr,p_size
 ;
 
 -- agg, non corr
@@ -48,7 +48,7 @@ select li.l_partkey, count(*)
 from lineitem li 
 where li.l_linenumber = 1 and 
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
-group by li.l_partkey
+group by li.l_partkey order by li.l_partkey
 ;
 
 -- add null check test from sq_notin.q once HIVE-7721 resolved.

@@ -71,7 +71,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   }
 
   /*
-   * Set the buffer that will receive the serialized data.
+   * Set the buffer that will receive the serialized data.  The output buffer will be reset.
    */
   @Override
   public void set(Output output) {
@@ -80,6 +80,17 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     fieldIndex = 0;
     nullByte = 0;
     nullOffset = 0;
+  }
+
+  /*
+   * Set the buffer that will receive the serialized data.  The output buffer will NOT be reset.
+   */
+  @Override
+  public void setAppend(Output output) {
+    this.output = output;
+    fieldIndex = 0;
+    nullByte = 0;
+    nullOffset = output.getLength();
   }
 
   /*
@@ -92,7 +103,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     nullByte = 0;
     nullOffset = 0;
   }
-  
+
   /*
    * General Pattern:
    *

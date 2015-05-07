@@ -295,6 +295,7 @@
         <include>webhcat-default.xml</include>
         <include>webhcat-log4j.properties</include>
       </includes>
+      <filtered>true</filtered>
       <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
     </fileSet>
 

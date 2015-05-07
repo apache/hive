@@ -162,6 +162,7 @@ STAGE PLANS:
                           1 Map 3
                         Position of Big Table: 0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -174,6 +175,7 @@ STAGE PLANS:
                             0 Map 1
                           Position of Big Table: 1
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string)
                             outputColumnNames: _col0
@@ -524,6 +526,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 183 Data size: 1951 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -534,6 +537,7 @@ STAGE PLANS:
                           input vertices:
                             0 Map 1
                           Statistics: Num rows: 201 Data size: 2146 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string)
                             outputColumnNames: _col0
@@ -609,6 +613,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -619,6 +624,7 @@ STAGE PLANS:
                           input vertices:
                             1 Map 4
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col2 (type: string)
                             outputColumnNames: _col0

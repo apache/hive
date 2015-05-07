@@ -97,6 +97,7 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           input vertices:
                             1 Map 5
+                          HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -124,6 +125,7 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           input vertices:
                             1 Map 5
+                          HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -276,6 +278,7 @@ STAGE PLANS:
                         input vertices:
                           0 Reducer 2
                         Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash

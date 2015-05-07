@@ -24,20 +24,13 @@
 <!-- install. -->
 
 <configuration>
-<!--TODO:
-1. make pig/hive versions env variables-->
+<!--TODO:-->
 
   <property>
     <name>templeton.hcat</name>
     <value>${env.HCAT_PREFIX}/bin/hcat</value>
     <description>The path to the hcatalog executable.</description>
   </property>
-
-    <property>
-        <name>templeton.libjars</name>
-        <value>${env.TEMPLETON_HOME}/../lib/zookeeper-3.4.6.jar,${env.TEMPLETON_HOME}/../lib/hive-common-1.2.0-SNAPSHOT.jar</value>
-        <description>Jars to add to the classpath.</description>
-    </property>
 
     <property>
         <name>templeton.pig.archive</name>

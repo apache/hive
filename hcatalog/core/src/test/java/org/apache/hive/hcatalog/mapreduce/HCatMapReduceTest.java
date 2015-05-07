@@ -147,7 +147,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     // Hack to initialize cache with 0 expiry time causing it to return a new hive client every time
     // Otherwise the cache doesn't play well with the second test method with the client gets closed() in the
     // tearDown() of the previous test
-    HCatUtil.getHiveClient(hiveConf);
+    HCatUtil.getHiveMetastoreClient(hiveConf);
 
     MapCreate.writeCount = 0;
     MapRead.readCount = 0;
@@ -381,6 +381,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     readRecords.clear();
 
     Configuration conf = new Configuration();
+    conf.set(HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN.varname,"true");
     Job job = new Job(conf, "hcat mapreduce read test");
     job.setJarByClass(this.getClass());
     job.setMapperClass(HCatMapReduceTest.MapRead.class);

@@ -194,6 +194,16 @@ public class MetaStoreUtils {
       FileStatus[] fileStatus, boolean newDir, boolean forceRecompute) throws MetaException {
 
     Map<String,String> params = tbl.getParameters();
+
+    if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
+      boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
+      params.remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+      tbl.setParameters(params); // to make sure we remove this marker property
+      if (doNotUpdateStats){
+        return false;
+      }
+    }
+
     boolean updated = false;
     if (forceRecompute ||
         params == null ||
@@ -1101,6 +1111,17 @@ public class MetaStoreUtils {
         sb.append(",");
       }
       sb.append(fieldSchemas.get(i).getType());
+    }
+    return sb.toString();
+  }
+
+  public static String getColumnCommentsFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(SerDeUtils.COLUMN_COMMENTS_DELIMITER);
+      }
+      sb.append(fieldSchemas.get(i).getComment());
     }
     return sb.toString();
   }

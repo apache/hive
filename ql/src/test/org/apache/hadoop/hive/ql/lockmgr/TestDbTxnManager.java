@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,6 +40,7 @@ import java.util.*;
 
 /**
  * Unit tests for {@link DbTxnManager}.
+ * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
  */
 public class TestDbTxnManager {
 

@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
@@ -59,15 +60,20 @@ public class MiniHS2 extends AbstractHiveService {
   private MiniMrShim mr;
   private MiniDFSShim dfs;
   private FileSystem localFS;
-  private boolean useMiniMR = false;
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
-  private final String serverKeytab;
   private final boolean isMetastoreRemote;
+  private MiniClusterType miniClusterType = MiniClusterType.DFS_ONLY;
+
+  public enum MiniClusterType {
+    MR,
+    TEZ,
+    DFS_ONLY;
+  }
 
   public static class Builder {
     private HiveConf hiveConf = new HiveConf();
-    private boolean useMiniMR = false;
+    private MiniClusterType miniClusterType = MiniClusterType.DFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
     private String serverKeytab;
@@ -78,7 +84,7 @@ public class MiniHS2 extends AbstractHiveService {
     }
 
     public Builder withMiniMR() {
-      this.useMiniMR = true;
+      this.miniClusterType = MiniClusterType.MR;
       return this;
     }
 
@@ -110,7 +116,7 @@ public class MiniHS2 extends AbstractHiveService {
 
 
     public MiniHS2 build() throws Exception {
-      if (useMiniMR && useMiniKdc) {
+      if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
       }
       if (isHTTPTransMode) {
@@ -118,7 +124,7 @@ public class MiniHS2 extends AbstractHiveService {
       } else {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
-      return new MiniHS2(hiveConf, useMiniMR, useMiniKdc, serverPrincipal, serverKeytab,
+      return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
           isMetastoreRemote);
     }
   }
@@ -143,38 +149,52 @@ public class MiniHS2 extends AbstractHiveService {
     return localFS;
   }
 
-  public boolean isUseMiniMR() {
-    return useMiniMR;
+  public MiniClusterType getMiniClusterType() {
+    return miniClusterType;
   }
 
-  public void setUseMiniMR(boolean useMiniMR) {
-    this.useMiniMR = useMiniMR;
+  public void setMiniClusterType(MiniClusterType miniClusterType) {
+    this.miniClusterType = miniClusterType;
   }
 
   public boolean isUseMiniKdc() {
     return useMiniKdc;
   }
 
-  private MiniHS2(HiveConf hiveConf, boolean useMiniMR, boolean useMiniKdc,
+  private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote) throws Exception {
     super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
-    this.useMiniMR = useMiniMR;
+    this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
-    this.serverKeytab = serverKeytab;
     this.isMetastoreRemote = isMetastoreRemote;
     baseDir = Files.createTempDir();
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
-    if (useMiniMR) {
+
+    if (miniClusterType != MiniClusterType.DFS_ONLY) {
+      // Initialize dfs
       dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null);
       fs = dfs.getFileSystem();
-      mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4,
-          fs.getUri().toString(), 1);
+      String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
+
+      // Initialize the execution engine based on cluster type
+      switch (miniClusterType) {
+      case TEZ:
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, 1, false,
+            baseDir.toString() + "/staging");
+        break;
+      case MR:
+        mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported cluster type " + mr);
+      }
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
       baseDfsDir =  new Path(new Path(fs.getUri()), "/base");
     } else {
+      // This is DFS only mode, just initialize the dfs root directory.
       fs = FileSystem.getLocal(hiveConf);
       baseDfsDir = new Path("file://"+ baseDir.toURI().getPath());
     }
@@ -213,11 +233,11 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {
-    this(hiveConf, false);
+    this(hiveConf, MiniClusterType.DFS_ONLY);
   }
 
-  public MiniHS2(HiveConf hiveConf, boolean useMiniMR) throws Exception {
-    this(hiveConf, useMiniMR, false, null, null, false);
+  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
+    this(hiveConf, clusterType, false, null, null, false);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {

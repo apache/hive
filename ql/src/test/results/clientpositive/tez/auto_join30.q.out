@@ -76,6 +76,7 @@ STAGE PLANS:
                   input vertices:
                     1 Reducer 5
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
                   Group By Operator
                     aggregations: sum(hash(_col2,_col3))
                     mode: hash
@@ -209,6 +210,7 @@ STAGE PLANS:
                   input vertices:
                     1 Reducer 5
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
                   Group By Operator
                     aggregations: sum(hash(_col2,_col3))
                     mode: hash
@@ -353,6 +355,7 @@ STAGE PLANS:
                   input vertices:
                     0 Reducer 2
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
                   Group By Operator
                     aggregations: sum(hash(_col2,_col3))
                     mode: hash
@@ -507,6 +510,7 @@ STAGE PLANS:
                     1 Reducer 5
                     2 Reducer 7
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
                   Group By Operator
                     aggregations: sum(hash(_col2,_col3))
                     mode: hash

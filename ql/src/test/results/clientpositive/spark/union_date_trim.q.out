@@ -1,0 +1,54 @@
+PREHOOK: query: drop table if exists testDate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testDate
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testDate(id int, dt date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testDate
+POSTHOOK: query: create table testDate(id int, dt date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testDate
+PREHOOK: query: insert into table testDate select 1, '2014-04-07' from src where key=100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testdate
+POSTHOOK: query: insert into table testDate select 1, '2014-04-07' from src where key=100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testdate
+POSTHOOK: Lineage: testdate.dt EXPRESSION []
+POSTHOOK: Lineage: testdate.id SIMPLE []
+PREHOOK: query: insert into table testDate select 2, '2014-04-08' from src where key=100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testdate
+POSTHOOK: query: insert into table testDate select 2, '2014-04-08' from src where key=100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testdate
+POSTHOOK: Lineage: testdate.dt EXPRESSION []
+POSTHOOK: Lineage: testdate.id SIMPLE []
+PREHOOK: query: insert into table testDate select 3, '2014-04-09' from src where key=100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testdate
+POSTHOOK: query: insert into table testDate select 3, '2014-04-09' from src where key=100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testdate
+POSTHOOK: Lineage: testdate.dt EXPRESSION []
+POSTHOOK: Lineage: testdate.id SIMPLE []
+PREHOOK: query: --- without the fix following query will throw HiveException: Incompatible types for union operator
+insert into table testDate select id, tm from (select id, dt as tm from testDate where id = 1 union all select id, dt as tm from testDate where id = 2 union all select id, trim(Cast (dt as string)) as tm from testDate where id = 3 ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdate
+PREHOOK: Output: default@testdate
+POSTHOOK: query: --- without the fix following query will throw HiveException: Incompatible types for union operator
+insert into table testDate select id, tm from (select id, dt as tm from testDate where id = 1 union all select id, dt as tm from testDate where id = 2 union all select id, trim(Cast (dt as string)) as tm from testDate where id = 3 ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdate
+POSTHOOK: Output: default@testdate
+POSTHOOK: Lineage: testdate.dt EXPRESSION [(testdate)testdate.FieldSchema(name:dt, type:date, comment:null), (testdate)testdate.FieldSchema(name:dt, type:date, comment:null), (testdate)testdate.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: testdate.id EXPRESSION [(testdate)testdate.FieldSchema(name:id, type:int, comment:null), (testdate)testdate.FieldSchema(name:id, type:int, comment:null), (testdate)testdate.FieldSchema(name:id, type:int, comment:null), ]

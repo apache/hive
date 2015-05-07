@@ -37,7 +37,6 @@ TOK_TAB;
 TOK_PARTSPEC;
 TOK_PARTVAL;
 TOK_DIR;
-TOK_LOCAL_DIR;
 TOK_TABREF;
 TOK_SUBQUERY;
 TOK_INSERT_INTO;
@@ -96,6 +95,8 @@ TOK_CROSSJOIN;
 TOK_LOAD;
 TOK_EXPORT;
 TOK_IMPORT;
+TOK_REPLICATION;
+TOK_METADATA;
 TOK_NULL;
 TOK_ISNULL;
 TOK_ISNOTNULL;
@@ -362,6 +363,7 @@ TOK_SERVER_TYPE;
 @header {
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import org.apache.hadoop.conf.Configuration;
@@ -628,8 +630,20 @@ import org.apache.hadoop.hive.conf.HiveConf;
   private String generateUnionAlias() {
     return "_u" + (++aliasCounter);
   }
+  private char [] excludedCharForColumnName = {'.', ':'};
+  private boolean containExcludedCharForCreateTableColumnName(String input) {
+    for(char c : excludedCharForColumnName) {
+      if(input.indexOf(c)>-1) {
+        return true;
+      }
+    }
+    return false;
+  }
   private CommonTree throwSetOpException() throws RecognitionException {
     throw new FailedPredicateException(input, "orderByClause clusterByClause distributeByClause sortByClause limitClause can only be applied to the whole union.", "");
+  }
+  private CommonTree throwColumnNameException() throws RecognitionException {
+    throw new FailedPredicateException(input, Arrays.toString(excludedCharForColumnName) + " can not be used in column name in create table statement.", "");
   }
   private Configuration hiveConf;
   public void setHiveConf(Configuration hiveConf) {
@@ -687,17 +701,30 @@ loadStatement
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
     ;
 
+replicationClause
+@init { pushMsg("replication clause", state); }
+@after { popMsg(state); }
+    : KW_FOR (isMetadataOnly=KW_METADATA)? KW_REPLICATION LPAREN (replId=StringLiteral) RPAREN
+    -> ^(TOK_REPLICATION $replId $isMetadataOnly?)
+    ;
+
 exportStatement
 @init { pushMsg("export statement", state); }
 @after { popMsg(state); }
-    : KW_EXPORT KW_TABLE (tab=tableOrPartition) KW_TO (path=StringLiteral)
-    -> ^(TOK_EXPORT $tab $path)
+    : KW_EXPORT
+      KW_TABLE (tab=tableOrPartition)
+      KW_TO (path=StringLiteral)
+      replicationClause?
+    -> ^(TOK_EXPORT $tab $path replicationClause?)
     ;
 
 importStatement
 @init { pushMsg("import statement", state); }
 @after { popMsg(state); }
-	: KW_IMPORT ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))? KW_FROM (path=StringLiteral) tableLocation?
+       : KW_IMPORT
+         ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))?
+         KW_FROM (path=StringLiteral)
+         tableLocation?
     -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
 
@@ -958,7 +985,8 @@ dropIndexStatement
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE?)
+    : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? replicationClause?
+    -> ^(TOK_DROPTABLE tableName ifExists? KW_PURGE? replicationClause?)
     ;
 
 alterStatement
@@ -1135,9 +1163,9 @@ partitionLocation
 alterStatementSuffixDropPartitions[boolean table]
 @init { pushMsg("drop partition statement", state); }
 @after { popMsg(state); }
-    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection? KW_PURGE?
-    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? KW_PURGE?)
-    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection?)
+    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection? replicationClause?
+    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? replicationClause?)
+    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? replicationClause?)
     ;
 
 alterStatementSuffixProperties
@@ -2000,6 +2028,7 @@ columnNameType
 @init { pushMsg("column specification", state); }
 @after { popMsg(state); }
     : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
+    -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
@@ -2157,7 +2186,7 @@ regularBody[boolean topLevel]
    i=insertClause
    (
    s=selectStatement[topLevel]
-     {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
+     {$s.tree.getChild(1) !=null}? {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
      |
      valuesClause
       -> ^(TOK_QUERY
@@ -2321,8 +2350,8 @@ destination
 @init { pushMsg("destination specification", state); }
 @after { popMsg(state); }
    :
-     KW_LOCAL KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat? -> ^(TOK_LOCAL_DIR StringLiteral tableRowFormat? tableFileFormat?)
-   | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
+     (local = KW_LOCAL)? KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat?
+       -> ^(TOK_DIR StringLiteral $local? tableRowFormat? tableFileFormat?)
    | KW_TABLE tableOrPartition -> tableOrPartition
    ;
 

@@ -40,6 +40,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), (_col0 + _col1) (type: int)
                           outputColumnNames: _col0, _col1, _col2

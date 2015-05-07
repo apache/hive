@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -85,7 +84,7 @@ import javax.annotation.Nullable;
 public class HCatClientHMSImpl extends HCatClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatClientHMSImpl.class);
-  private HiveMetaStoreClient hmsClient;
+  private IMetaStoreClient hmsClient;
   private Configuration config;
   private HiveConf hiveConfig;
 
@@ -96,7 +95,9 @@ public class HCatClientHMSImpl extends HCatClient {
     try {
       dbNames = hmsClient.getDatabases(pattern);
     } catch (MetaException exp) {
-      throw new HCatException("MetaException while listing db names", exp);
+      throw new HCatException("MetaException while listing db names. " + exp.getMessage(), exp);
+    } catch (TException e) {
+      throw new HCatException("Transport Exception while listing db names. " + e.getMessage(), e);
     }
     return dbNames;
   }
@@ -172,8 +173,12 @@ public class HCatClientHMSImpl extends HCatClient {
     try {
       tableNames = hmsClient.getTables(checkDB(dbName), tablePattern);
     } catch (MetaException e) {
-      throw new HCatException(
-        "MetaException while fetching table names.", e);
+      throw new HCatException("MetaException while fetching table names. " + e.getMessage(), e);
+    } catch (UnknownDBException e) {
+      throw new HCatException("UnknownDB " + dbName + " while fetching table names.", e);
+    } catch (TException e) {
+      throw new HCatException("Transport exception while fetching table names. "
+          + e.getMessage(), e);
     }
     return tableNames;
   }
@@ -815,7 +820,7 @@ public class HCatClientHMSImpl extends HCatClient {
     this.config = conf;
     try {
       hiveConfig = HCatUtil.getHiveConf(config);
-      hmsClient = HCatUtil.getHiveClient(hiveConfig);
+      hmsClient = HCatUtil.getHiveMetastoreClient(hiveConfig);
     } catch (MetaException exp) {
       throw new HCatException("MetaException while creating HMS client",
         exp);
@@ -824,6 +829,11 @@ public class HCatClientHMSImpl extends HCatClient {
         exp);
     }
 
+  }
+
+  @Override
+  public String getConfVal(String key, String defaultVal) {
+    return hiveConfig.get(key,defaultVal);
   }
 
   private Table getHiveTableLike(String dbName, String existingTblName,

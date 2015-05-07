@@ -176,7 +176,8 @@ public class TezTask extends Task<TezWork> {
       TezSessionPoolManager.getInstance().returnSession(session);
 
       if (LOG.isInfoEnabled() && counters != null
-          && conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY)) {
+          && (conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
+          Utilities.isPerfOrAboveLogging(conf))) {
         for (CounterGroup group: counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {

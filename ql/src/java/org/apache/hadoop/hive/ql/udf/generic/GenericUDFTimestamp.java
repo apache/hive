@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -25,6 +28,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToTimestampViaDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToTimestampViaLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
@@ -48,6 +53,14 @@ public class GenericUDFTimestamp extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;
   private transient TimestampConverter tc;
+  /*
+   * Integer value was interpreted to timestamp inconsistently in milliseconds comparing
+   * to float/double in seconds. Since the issue exists for a long time and some users may
+   * use in such inconsistent way, use the following flag to keep backward compatible.
+   * If the flag is set to false, integer value is interpreted as timestamp in milliseconds;
+   * otherwise, it's interpreted as timestamp in seconds.
+   */
+  private boolean intToTimestampInSeconds = false;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -56,6 +69,12 @@ public class GenericUDFTimestamp extends GenericUDF {
           "The function TIMESTAMP requires at least one argument, got "
           + arguments.length);
     }
+
+    SessionState ss = SessionState.get();
+    if (ss != null) {
+      intToTimestampInSeconds = ss.getConf().getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
+    }
+
     try {
       argumentOI = (PrimitiveObjectInspector) arguments[0];
     } catch (ClassCastException e) {
@@ -65,6 +84,8 @@ public class GenericUDFTimestamp extends GenericUDF {
 
     tc = new TimestampConverter(argumentOI,
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
+    tc.setIntToTimestampInSeconds(intToTimestampInSeconds);
+
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
   }
 
@@ -88,4 +109,7 @@ public class GenericUDFTimestamp extends GenericUDF {
     return sb.toString();
   }
 
+  public boolean isIntToTimestampInSeconds() {
+    return intToTimestampInSeconds;
+  }
 }

@@ -35,6 +35,7 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -126,6 +127,12 @@ public class RpcServer implements Closeable {
    */
   public Future<Rpc> registerClient(final String clientId, String secret,
       RpcDispatcher serverDispatcher) {
+    return registerClient(clientId, secret, serverDispatcher, config.getServerConnectTimeoutMs());
+  }
+
+  @VisibleForTesting
+  Future<Rpc> registerClient(final String clientId, String secret,
+      RpcDispatcher serverDispatcher, long clientTimeoutMs) {
     final Promise<Rpc> promise = group.next().newPromise();
 
     Runnable timeout = new Runnable() {
@@ -135,7 +142,7 @@ public class RpcServer implements Closeable {
       }
     };
     ScheduledFuture<?> timeoutFuture = group.schedule(timeout,
-        config.getServerConnectTimeoutMs(),
+        clientTimeoutMs,
         TimeUnit.MILLISECONDS);
     final ClientInfo client = new ClientInfo(clientId, promise, secret, serverDispatcher,
         timeoutFuture);
@@ -147,7 +154,7 @@ public class RpcServer implements Closeable {
     promise.addListener(new GenericFutureListener<Promise<Rpc>>() {
       @Override
       public void operationComplete(Promise<Rpc> p) {
-        if (p.isCancelled()) {
+        if (!p.isSuccess()) {
           pendingClients.remove(clientId);
         }
       }

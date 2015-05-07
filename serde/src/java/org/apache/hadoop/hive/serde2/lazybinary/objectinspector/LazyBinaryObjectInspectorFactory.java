@@ -64,7 +64,11 @@ public final class LazyBinaryObjectInspectorFactory {
     if (result == null) {
       result = new LazyBinaryStructObjectInspector(structFieldNames,
           structFieldObjectInspectors, structFieldComments);
-      cachedLazyBinaryStructObjectInspector.put(signature, result);
+      LazyBinaryStructObjectInspector prev =
+        cachedLazyBinaryStructObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -78,7 +82,11 @@ public final class LazyBinaryObjectInspectorFactory {
             .get(signature);
     if (result == null) {
       result = new LazyBinaryUnionObjectInspector(unionFieldObjectInspectors);
-      cachedLazyBinaryUnionObjectInspector.put(signature, result);
+      LazyBinaryUnionObjectInspector prev =
+        cachedLazyBinaryUnionObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -94,7 +102,11 @@ public final class LazyBinaryObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyBinaryListObjectInspector(listElementObjectInspector);
-      cachedLazyBinaryListObjectInspector.put(signature, result);
+      LazyBinaryListObjectInspector prev =
+        cachedLazyBinaryListObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -113,7 +125,11 @@ public final class LazyBinaryObjectInspectorFactory {
     if (result == null) {
       result = new LazyBinaryMapObjectInspector(mapKeyObjectInspector,
           mapValueObjectInspector);
-      cachedLazyBinaryMapObjectInspector.put(signature, result);
+      LazyBinaryMapObjectInspector prev =
+        cachedLazyBinaryMapObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }

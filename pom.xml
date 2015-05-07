@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -55,7 +55,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>1.2.0</hive.version.shortname>
+    <hive.version.shortname>1.3.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -102,7 +102,7 @@
     <antlr.version>3.4</antlr.version>
     <avro.version>1.7.5</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.1.0-incubating</calcite.version>
+    <calcite.version>1.2.0-incubating</calcite.version>
     <datanucleus-api-jdo.version>3.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>3.2.10</datanucleus-core.version>
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
@@ -150,7 +150,7 @@
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.23.Final</netty.version>
-    <parquet.version>1.6.0rc6</parquet.version>
+    <parquet.version>1.6.0</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
@@ -158,7 +158,7 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.7.0-TEZ-2003-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.2.0</spark.version>
+    <spark.version>1.3.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -213,6 +213,16 @@
        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
        <releases>
          <enabled>false</enabled>
+       </releases>
+       <snapshots>
+         <enabled>false</enabled>
+       </snapshots>
+    </repository>
+     <repository>
+       <id>spark-1.3</id>
+       <url>https://s3-us-west-1.amazonaws.com/hive-spark/maven2/spark_2.10-1.3-rc1/</url>
+       <releases>
+         <enabled>true</enabled>
        </releases>
        <snapshots>
          <enabled>false</enabled>
@@ -496,6 +506,11 @@
       <dependency>
         <groupId>org.apache.curator</groupId>
         <artifactId>curator-framework</artifactId>
+        <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-recipes</artifactId>
         <version>${curator.version}</version>
       </dependency>
       <dependency>

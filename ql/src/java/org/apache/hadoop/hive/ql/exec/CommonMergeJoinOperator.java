@@ -193,6 +193,33 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       if (tag != posBigTable) {
         return;
       }
+    } else {
+      if ((tag == posBigTable) && (candidateStorage[tag].rowCount() == joinEmitInterval)) {
+        boolean canEmit = true;
+        for (byte i = 0; i < foundNextKeyGroup.length; i++) {
+          if (i == posBigTable) {
+            continue;
+          }
+
+          if (foundNextKeyGroup[i] == false) {
+            canEmit = false;
+            break;
+          }
+
+          if (compareKeys(i, key, keyWritables[i]) != 0) {
+            canEmit = false;
+            break;
+          }
+        }
+        // we can save ourselves from spilling once we have join emit interval worth of rows.
+        if (canEmit) {
+          LOG.info("We are emitting rows since we hit the join emit interval of "
+              + joinEmitInterval);
+          joinOneGroup(false);
+          candidateStorage[tag].clearRows();
+          storage[tag].clearRows();
+        }
+      }
     }
 
     reportProgress();
@@ -218,11 +245,15 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   }
 
   private List<Byte> joinOneGroup() throws HiveException {
+    return joinOneGroup(true);
+  }
+
+  private List<Byte> joinOneGroup(boolean clear) throws HiveException {
     int[] smallestPos = findSmallestKey();
     List<Byte> listOfNeedFetchNext = null;
     if (smallestPos != null) {
-      listOfNeedFetchNext = joinObject(smallestPos);
-      if (listOfNeedFetchNext.size() > 0) {
+      listOfNeedFetchNext = joinObject(smallestPos, clear);
+      if ((listOfNeedFetchNext.size() > 0) && clear) {
         // listOfNeedFetchNext contains all tables that we have joined data in their
         // candidateStorage, and we need to clear candidate storage and promote their
         // nextGroupStorage to candidateStorage and fetch data until we reach a
@@ -239,7 +270,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     return listOfNeedFetchNext;
   }
 
-  private List<Byte> joinObject(int[] smallestPos) throws HiveException {
+  private List<Byte> joinObject(int[] smallestPos, boolean clear) throws HiveException {
     List<Byte> needFetchList = new ArrayList<Byte>();
     byte index = (byte) (smallestPos.length - 1);
     for (; index >= 0; index--) {
@@ -248,7 +279,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         continue;
       }
       storage[index] = candidateStorage[index];
-      needFetchList.add(index);
+      if (clear) {
+        needFetchList.add(index);
+      }
       if (smallestPos[index] < 0) {
         break;
       }
@@ -257,9 +290,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       putDummyOrEmpty(index);
     }
     checkAndGenObject();
-    for (Byte pos : needFetchList) {
-      this.candidateStorage[pos].clearRows();
-      this.keyWritables[pos] = null;
+    if (clear) {
+      for (Byte pos : needFetchList) {
+        this.candidateStorage[pos].clearRows();
+        this.keyWritables[pos] = null;
+      }
     }
     return needFetchList;
   }
@@ -419,7 +454,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     this.nextGroupStorage[t] = oldRowContainer;
   }
 
-  @SuppressWarnings("rawtypes")
   private boolean processKey(byte alias, List<Object> key) throws HiveException {
     List<Object> keyWritable = keyWritables[alias];
     if (keyWritable == null) {

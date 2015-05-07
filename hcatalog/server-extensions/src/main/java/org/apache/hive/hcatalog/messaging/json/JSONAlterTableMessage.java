@@ -37,6 +37,11 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   @JsonProperty
   Long timestamp;
 
+  /**
+   * Default constructor, needed for Jackson.
+   */
+  public JSONAlterTableMessage() {}
+
   public JSONAlterTableMessage(String server,
                                String servicePrincipal,
                                String db,

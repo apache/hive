@@ -190,7 +190,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
         addSetRCols((ASTNode) assignment.getChildren().get(1), setRCols);
 
-        String columnName = colName.getText();
+        String columnName = normalizeColName(colName.getText());
 
         // Make sure this isn't one of the partitioning columns, that's not supported.
         if (partCols != null) {
@@ -397,11 +397,20 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       ASTNode colName = (ASTNode)node.getChildren().get(0);
       assert colName.getToken().getType() == HiveParser.Identifier :
           "Expected column name";
-      setRCols.add(colName.getText());
+      setRCols.add(normalizeColName(colName.getText()));
     } else if (node.getChildren() != null) {
       for (Node n : node.getChildren()) {
         addSetRCols((ASTNode)n, setRCols);
       }
     }
+  }
+
+  /**
+   * Column names are stored in metastore in lower case, regardless of the CREATE TABLE statement.
+   * Unfortunately there is no single place that normalizes the input query.
+   * @param colName not null
+   */
+  private static String normalizeColName(String colName) {
+    return colName.toLowerCase();
   }
 }

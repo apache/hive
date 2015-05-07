@@ -14,7 +14,7 @@ POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 -- union case:map-reduce sub-queries followed by multi-table insert
 
 explain 
@@ -24,7 +24,7 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- union case:map-reduce sub-queries followed by multi-table insert
 
 explain 

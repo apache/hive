@@ -21,26 +21,25 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.base.Preconditions;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -51,9 +50,13 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import com.google.common.base.Preconditions;
 
 @SuppressWarnings("rawtypes")
 public class SparkPlanGenerator {
@@ -96,14 +99,20 @@ public class SparkPlanGenerator {
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
 
-    for (BaseWork work : sparkWork.getAllWork()) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
-      SparkTran tran = generate(work);
-      SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
-      sparkPlan.addTran(tran);
-      sparkPlan.connect(parentTran, tran);
-      workToTranMap.put(work, tran);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+    try {
+      for (BaseWork work : sparkWork.getAllWork()) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+        SparkTran tran = generate(work);
+        SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
+        sparkPlan.addTran(tran);
+        sparkPlan.connect(parentTran, tran);
+        workToTranMap.put(work, tran);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+      }
+    } finally {
+      // clear all ThreadLocal cached MapWork/ReduceWork after plan generation
+      // as this may executed in a pool thread.
+      Utilities.clearWorkMap(jobConf);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
@@ -200,6 +209,7 @@ public class SparkPlanGenerator {
   private SparkTran generate(BaseWork work) throws Exception {
     initStatsPublisher(work);
     JobConf newJobConf = cloneJobConf(work);
+    checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     if (work instanceof MapWork) {
       MapTran mapTran = new MapTran();
@@ -214,6 +224,15 @@ public class SparkPlanGenerator {
     } else {
       throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
         + "but found " + work.getClass().getName());
+    }
+  }
+
+  private void checkSpecs(BaseWork work, JobConf jc) throws Exception {
+    Set<Operator<?>> opList = work.getAllOperators();
+    for (Operator<?> op : opList) {
+      if (op instanceof FileSinkOperator) {
+        ((FileSinkOperator) op).checkOutputSpecs(null, jc);
+      }
     }
   }
 

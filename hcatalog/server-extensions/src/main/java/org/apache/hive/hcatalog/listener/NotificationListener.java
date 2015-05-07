@@ -19,9 +19,6 @@
 
 package org.apache.hive.hcatalog.listener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -43,9 +40,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -55,11 +50,8 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
-import org.apache.hadoop.hive.metastore.events.InsertEvent;
-import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.slf4j.Logger;
@@ -150,7 +142,7 @@ public class NotificationListener extends MetaStoreEventListener {
       Partition after = ape.getNewPartition();
 
       String topicName = getTopicName(ape.getTable());
-      send(messageFactory.buildAlterPartitionMessage(before, after), topicName);
+      send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after), topicName);
     }
   }
 
@@ -168,21 +160,14 @@ public class NotificationListener extends MetaStoreEventListener {
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent) throws MetaException {
     if (partitionEvent.getStatus()) {
-      Partition partition = partitionEvent.getPartition();
-      StorageDescriptor sd = partition.getSd();
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setSortCols(new ArrayList<Order>());
-      sd.setParameters(new HashMap<String, String>());
-      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-      sd.getSkewedInfo().setSkewedColNames(new ArrayList<String>());
       String topicName = getTopicName(partitionEvent.getTable());
       if (topicName != null && !topicName.equals("")) {
-        send(messageFactory.buildDropPartitionMessage(partitionEvent.getTable(), partition), topicName);
+        send(messageFactory.buildDropPartitionMessage(partitionEvent.getTable(), partitionEvent.getPartitionIterator()), topicName);
       } else {
         LOG.info("Topic name not found in metastore. Suppressing HCatalog notification for "
-          + partition.getDbName()
+          + partitionEvent.getTable().getDbName()
           + "."
-          + partition.getTableName()
+          + partitionEvent.getTable().getTableName()
           + " To enable notifications for this table, please do alter table set properties ("
           + HCatConstants.HCAT_MSGBUS_TOPIC_NAME
           + "=<dbname>.<tablename>) or whatever you want topic name to be.");

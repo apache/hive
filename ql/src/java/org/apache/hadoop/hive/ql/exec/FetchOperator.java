@@ -605,7 +605,13 @@ public class FetchOperator implements Serializable {
   // if table and all partitions have the same schema and serde, no need to convert
   private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
     Class<?> tableSerDe = tableDesc.getDeserializerClass();
-    String[] schemaProps = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class).schemaProps();
+    SerDeSpec spec = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class);
+    if (null == spec) {
+      // Serde may not have this optional annotation defined in which case be conservative
+      // and say conversion is needed.
+      return true;
+    }
+    String[] schemaProps = spec.schemaProps();
     Properties tableProps = tableDesc.getProperties();
     for (PartitionDesc partitionDesc : partDescs) {
       if (!tableSerDe.getName().equals(partitionDesc.getDeserializerClassName())) {

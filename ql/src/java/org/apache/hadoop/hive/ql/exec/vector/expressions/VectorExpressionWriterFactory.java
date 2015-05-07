@@ -453,8 +453,7 @@ public final class VectorExpressionWriterFactory {
       case UNION:
       case MAP:
       case LIST:
-        throw new IllegalArgumentException("Unsupported complex type: " +
-            fieldObjInspector.getCategory());
+        return genVectorExpressionWritableEmpty();
       default:
         throw new IllegalArgumentException("Unknown type " +
             fieldObjInspector.getCategory());
@@ -1111,6 +1110,32 @@ public final class VectorExpressionWriterFactory {
             .create(0f);
       }
     }.init(fieldObjInspector);
+  }
+
+  // For complex types like STRUCT, MAP, etc we do not support, we need a writer that
+  // does nothing.  We assume the Vectorizer class has not validated the query to actually
+  // try and use the complex types.  They do show up in inputObjInspector[0] and need to be
+  // ignored.
+  private static VectorExpressionWriter genVectorExpressionWritableEmpty() {
+    return new VectorExpressionWriterBase() {
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        return null;
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        return null;
+      }
+
+      @Override
+      public Object initValue(Object ost) throws HiveException {
+        return null;
+      }
+    };
   }
 
   /**

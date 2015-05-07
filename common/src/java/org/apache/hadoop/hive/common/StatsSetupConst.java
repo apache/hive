@@ -135,6 +135,11 @@ public class StatsSetupConst {
   // alterPartition/alterTable is happening via statsTask.
   public static final String STATS_GENERATED_VIA_STATS_TASK = "STATS_GENERATED_VIA_STATS_TASK";
 
+  // This string constant is used by AlterHandler to figure out that it should not attempt to
+  // update stats. It is set by any client-side task which wishes to signal that no stats
+  // update should take place, such as with replication.
+  public static final String DO_NOT_UPDATE_STATS = "DO_NOT_UPDATE_STATS";
+
   // This string constant will be persisted in metastore to indicate whether corresponding
   // table or partition's statistics are accurate or not.
   public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";

@@ -30,6 +30,10 @@ public class VectorColumnOutputMapping extends VectorColumnMapping {
 
   private static final long serialVersionUID = 1L;
 
+  public VectorColumnOutputMapping(String name) {
+    super(name);
+  }
+
   @Override
   public void add(int sourceColumn, int outputColumn, String typeName) {
     // Order on outputColumn.

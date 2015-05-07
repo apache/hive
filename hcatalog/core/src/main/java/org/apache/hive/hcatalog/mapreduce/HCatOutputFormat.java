@@ -31,8 +31,8 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -82,12 +82,12 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
   @SuppressWarnings("unchecked")
   public static void setOutput(Configuration conf, Credentials credentials,
                  OutputJobInfo outputJobInfo) throws IOException {
-    HiveMetaStoreClient client = null;
+    IMetaStoreClient client = null;
 
     try {
 
       HiveConf hiveConf = HCatUtil.getHiveConf(conf);
-      client = HCatUtil.getHiveClient(hiveConf);
+      client = HCatUtil.getHiveMetastoreClient(hiveConf);
       Table table = HCatUtil.getTable(client, outputJobInfo.getDatabaseName(),
         outputJobInfo.getTableName());
 
