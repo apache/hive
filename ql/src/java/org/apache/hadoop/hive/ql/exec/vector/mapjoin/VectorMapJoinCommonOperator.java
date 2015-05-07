@@ -321,7 +321,10 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       projectionMapping.add(nextOutputColumn, batchColumnIndex, typeName);
 
       // Collect columns we copy from the big table batch to the overflow batch.
-      bigTableRetainedMapping.add(batchColumnIndex, batchColumnIndex, typeName);
+      if (!bigTableRetainedMapping.containsOutputColumn(batchColumnIndex)) {
+        // Tolerate repeated use of a big table column.
+        bigTableRetainedMapping.add(batchColumnIndex, batchColumnIndex, typeName);
+      }
 
       nextOutputColumn++;
     }
