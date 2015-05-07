@@ -55,7 +55,7 @@ public class AggregateStatsCache {
   // Run the cleaner thread until cache is cleanUntil% occupied
   private final float cleanUntil;
   // Nodes go stale after this
-  private final long timeToLive;
+  private final long timeToLiveMs;
   // Max time when waiting for write locks on node list
   private final long maxWriterWaitTime;
   // Max time when waiting for read locks on node list
@@ -73,12 +73,12 @@ public class AggregateStatsCache {
   // To track cleaner metrics
   int numRemovedTTL = 0, numRemovedLRU = 0;
 
-  private AggregateStatsCache(int maxCacheNodes, int maxPartsPerCacheNode, long timeToLive,
+  private AggregateStatsCache(int maxCacheNodes, int maxPartsPerCacheNode, long timeToLiveMs,
       float falsePositiveProbability, float maxVariance, long maxWriterWaitTime,
       long maxReaderWaitTime, float maxFull, float cleanUntil) {
     this.maxCacheNodes = maxCacheNodes;
     this.maxPartsPerCacheNode = maxPartsPerCacheNode;
-    this.timeToLive = timeToLive;
+    this.timeToLiveMs = timeToLiveMs;
     this.falsePositiveProbability = falsePositiveProbability;
     this.maxVariance = maxVariance;
     this.maxWriterWaitTime = maxWriterWaitTime;
@@ -97,9 +97,9 @@ public class AggregateStatsCache {
       int maxPartitionsPerCacheNode =
           HiveConf
               .getIntVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS);
-      long timeToLive =
+      long timeToLiveMs =
           HiveConf.getTimeVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL,
-              TimeUnit.SECONDS);
+              TimeUnit.SECONDS)*1000;
       // False positives probability we are ready to tolerate for the underlying bloom filter
       float falsePositiveProbability =
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP);
@@ -120,7 +120,7 @@ public class AggregateStatsCache {
       float cleanUntil =
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL);
       self =
-          new AggregateStatsCache(maxCacheNodes, maxPartitionsPerCacheNode, timeToLive,
+          new AggregateStatsCache(maxCacheNodes, maxPartitionsPerCacheNode, timeToLiveMs,
               falsePositiveProbability, maxVariance, maxWriterWaitTime, maxReaderWaitTime, maxFull,
               cleanUntil);
     }
@@ -213,7 +213,7 @@ public class AggregateStatsCache {
    * @return best matched node or null
    */
   private AggrColStats findBestMatch(List<String> partNames, List<AggrColStats> candidates) {
-    // Hits, misses, shouldSkip for a node
+    // Hits, misses tracked for a candidate node
     MatchStats matchStats;
     // MatchStats for each candidate
     Map<AggrColStats, MatchStats> candidateMatchStats = new HashMap<AggrColStats, MatchStats>();
@@ -227,26 +227,23 @@ public class AggregateStatsCache {
     // Note: we're not creating a copy of the list for saving memory
     for (AggrColStats candidate : candidates) {
       // Variance check
-      if ((float) Math.abs((candidate.getNumPartsCached() - numPartsRequested)
-          / numPartsRequested) > maxVariance) {
+      if ((float) Math.abs((candidate.getNumPartsCached() - numPartsRequested) / numPartsRequested)
+          > maxVariance) {
         continue;
       }
       // TTL check
       if (isExpired(candidate)) {
         continue;
-      }
-      else {
+      } else {
         candidateMatchStats.put(candidate, new MatchStats(0, 0));
       }
     }
     // We'll count misses as we iterate
     int maxMisses = (int) maxVariance * numPartsRequested;
     for (String partName : partNames) {
-      for (AggrColStats candidate : candidates) {
-        matchStats = candidateMatchStats.get(candidate);
-        if (matchStats == null) {
-          continue;
-        }
+      for (Map.Entry<AggrColStats, MatchStats> entry : candidateMatchStats.entrySet()) {
+        AggrColStats candidate = entry.getKey();
+        matchStats = entry.getValue();
         if (candidate.getBloomFilter().test(partName.getBytes())) {
           ++matchStats.hits;
         } else {
@@ -464,7 +461,7 @@ public class AggregateStatsCache {
   }
 
   private boolean isExpired(AggrColStats aggrColStats) {
-    return System.currentTimeMillis() - aggrColStats.lastAccessTime > timeToLive;
+    return (System.currentTimeMillis() - aggrColStats.lastAccessTime) > timeToLiveMs;
   }
 
   /**
@@ -502,7 +499,7 @@ public class AggregateStatsCache {
 
     @Override
     public String toString() {
-      return "Database: " + dbName + ", Table: " + tblName + ", Column: " + colName;
+      return "database:" + dbName + ", table:" + tblName + ", column:" + colName;
     }
 
   }
