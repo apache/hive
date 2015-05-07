@@ -35,6 +35,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -81,7 +82,7 @@ class HiveClientCache {
   }
 
   public static IMetaStoreClient getNonCachedHiveMetastoreClient(HiveConf hiveConf) throws MetaException {
-    return new HiveMetaStoreClient(hiveConf);
+    return RetryingMetaStoreClient.getProxy(hiveConf);
   }
 
   public HiveClientCache(HiveConf hiveConf) {
@@ -226,7 +227,11 @@ class HiveClientCache {
       return hiveCache.get(cacheKey, new Callable<ICacheableMetaStoreClient>() {
         @Override
         public ICacheableMetaStoreClient call() throws MetaException {
-          return new CacheableHiveMetaStoreClient(cacheKey.getHiveConf(), timeout);
+          return
+              (ICacheableMetaStoreClient) RetryingMetaStoreClient.getProxy(cacheKey.getHiveConf(),
+                  new Class<?>[]{HiveConf.class, Integer.class},
+                  new Object[]{cacheKey.getHiveConf(), timeout},
+                  CacheableHiveMetaStoreClient.class.getName());
         }
       });
     } catch (ExecutionException e) {
