@@ -1,6 +1,7 @@
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.metastore.aggregate.stats.cache.enabled=false;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
