@@ -50,9 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -76,7 +74,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.split.SplitSizeEstimator;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.cache.Cache;
@@ -108,10 +105,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
-    AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination,
-    SplitSizeEstimator {
+    AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
 
-  enum SplitStrategyKind{
+  static enum SplitStrategyKind{
     HYBRID,
     BI,
     ETL
@@ -1057,7 +1053,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     if (isDebugEnabled) {
       for (OrcSplit split : splits) {
         LOG.debug(split + " projected_columns_uncompressed_size: "
-            + split.getColumnarProjectionSize());
+            + split.getProjectedColumnsUncompressedSize());
       }
     }
     return splits;
@@ -1067,29 +1063,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     for (Future future : futures) {
       future.cancel(true);
     }
-  }
-
-  @Override
-  public long getEstimatedSize(InputSplit inputSplit) throws IOException {
-    long colProjSize = inputSplit.getLength();
-
-    if (inputSplit instanceof ColumnarSplit) {
-      colProjSize = ((ColumnarSplit) inputSplit).getColumnarProjectionSize();
-      if (isDebugEnabled) {
-        LOG.debug("Estimated column projection size: " + colProjSize);
-      }
-      return colProjSize;
-    } else if (inputSplit instanceof HiveInputFormat.HiveInputSplit) {
-      InputSplit innerInputSplit = ((HiveInputFormat.HiveInputSplit) inputSplit).getInputSplit();
-      if (innerInputSplit instanceof ColumnarSplit) {
-        colProjSize = ((ColumnarSplit) innerInputSplit).getColumnarProjectionSize();
-      }
-      if (isDebugEnabled) {
-        LOG.debug("Estimated column projection size: " + colProjSize);
-      }
-    }
-
-    return colProjSize;
   }
 
   @Override
