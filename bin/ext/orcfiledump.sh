@@ -23,5 +23,12 @@ orcfiledump () {
 }
 
 orcfiledump_help () {
-  echo "usage ./hive orcfiledump [-d] [--rowindex <col_ids>] <path_to_file>"
+  echo "usage ./hive orcfiledump [-h] [-j] [-p] [-t] [-d] [-r <col_ids>] <path_to_file>"
+  echo ""
+  echo "  --json (-j)                 Print metadata in JSON format"
+  echo "  --pretty (-p)               Pretty print json metadata output"
+  echo "  --timezone (-t)             Print writer's time zone"
+  echo "  --data (-d)                 Should the data be printed"
+  echo "  --rowindex (-r) <_col_ids_> Comma separated list of column ids for which row index should be printed"
+  echo "  --help (-h)                 Print help message"
 } 
