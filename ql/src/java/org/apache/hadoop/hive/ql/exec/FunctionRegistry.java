@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
 import org.apache.hadoop.hive.ql.udf.UDFRepeat;
 import org.apache.hadoop.hive.ql.udf.UDFReverse;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSha1;
 import org.apache.hadoop.hive.ql.udf.UDFSign;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFSpace;
@@ -226,6 +227,8 @@ public final class FunctionRegistry {
     system.registerUDF("base64", UDFBase64.class, false);
     system.registerUDF("unbase64", UDFUnbase64.class, false);
     system.registerUDF("md5", UDFMd5.class, false);
+    system.registerUDF("sha1", UDFSha1.class, false);
+    system.registerUDF("sha", UDFSha1.class, false);
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);

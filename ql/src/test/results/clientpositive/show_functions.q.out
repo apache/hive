@@ -170,6 +170,8 @@ rpad
 rtrim
 second
 sentences
+sha
+sha1
 shiftleft
 shiftright
 shiftrightunsigned
