@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -55,6 +56,15 @@ public class HiveOpConverterPostProc implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+    // 0. We check the conditions to apply this transformation,
+    //    if we do not meet them we bail out
+    final boolean cboEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED);
+    final boolean returnPathEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
+    final boolean cboSucceeded = pctx.getContext().isCboSucceeded();
+    if(!(cboEnabled && returnPathEnabled && cboSucceeded)) {
+      return pctx;
+    }
+
     // 1. Initialize aux data structures
     this.pctx = pctx;
     this.aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();

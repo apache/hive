@@ -265,6 +265,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           sinkOp = genPlan(getQB());
           LOG.info("CBO Succeeded; optimized logical plan.");
           this.ctx.setCboInfo("Plan optimized by CBO.");
+          this.ctx.setCboSucceeded(true);
           LOG.debug(newAST.dump());
           } 
         } catch (Exception e) {
