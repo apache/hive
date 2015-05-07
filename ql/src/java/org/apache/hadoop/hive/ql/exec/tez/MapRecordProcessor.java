@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -70,11 +71,11 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  * Just pump the records through the query plan.
  */
 public class MapRecordProcessor extends RecordProcessor {
-
+  public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
+  protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
 
   private MapOperator mapOp;
   private final List<MapOperator> mergeMapOpList = new ArrayList<MapOperator>();
-  public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
   private int position;
@@ -82,11 +83,11 @@ public class MapRecordProcessor extends RecordProcessor {
   MultiMRInput mainWorkMultiMRInput;
   private final ExecMapperContext execContext;
   private boolean abort;
-  protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
   List<MapWork> mergeWorkList;
   List<String> cacheKeys;
   ObjectCache cache;
+  private int nRows;
 
   private static Map<Integer, DummyStoreOperator> connectOps =
     new TreeMap<Integer, DummyStoreOperator>();
@@ -101,6 +102,7 @@ public class MapRecordProcessor extends RecordProcessor {
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
+    nRows = 0;
   }
 
   @Override
@@ -311,7 +313,25 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
-    while (sources[position].pushRecord()) {}
+    while (sources[position].pushRecord()) {
+      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
+        if (abort && Thread.interrupted()) {
+          throw new HiveException("Processing thread interrupted");
+        }
+        nRows = 0;
+      }
+    }
+  }
+
+  @Override
+  public void abort() {
+    // this will stop run() from pushing records
+    abort = true;
+
+    // this will abort initializeOp()
+    if (mapOp != null) {
+      mapOp.abort();
+    }
   }
 
   @Override

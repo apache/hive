@@ -16,26 +16,6 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.tez.mapreduce.processor.MRTaskReporter;
-import org.apache.tez.runtime.api.LogicalInput;
-import org.apache.tez.runtime.api.LogicalOutput;
-import org.apache.tez.runtime.api.ProcessorContext;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,11 +24,30 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.tez.mapreduce.processor.MRTaskReporter;
+import org.apache.tez.runtime.api.LogicalInput;
+import org.apache.tez.runtime.api.LogicalOutput;
+import org.apache.tez.runtime.api.ProcessorContext;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+
 /**
  * Process input from tez LogicalInput and write output
  * It has different subclasses for map and reduce processing
  */
 public abstract class RecordProcessor  {
+  protected static final int CHECK_INTERRUPTION_AFTER_ROWS = 1000;
 
   protected final JobConf jconf;
   protected Map<String, LogicalInput> inputs;
@@ -108,6 +107,7 @@ public abstract class RecordProcessor  {
    */
   abstract void run() throws Exception;
 
+  abstract void abort();
 
   abstract void close();
 
