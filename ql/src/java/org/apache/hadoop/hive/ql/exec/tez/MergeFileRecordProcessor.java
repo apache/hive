@@ -148,10 +148,15 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     while (reader.next()) {
       boolean needMore = processRow(reader.getCurrentKey(),
           reader.getCurrentValue());
-      if (!needMore) {
+      if (!needMore || abort) {
         break;
       }
     }
+  }
+
+  @Override
+  void abort() {
+    abort = true;
   }
 
   @Override

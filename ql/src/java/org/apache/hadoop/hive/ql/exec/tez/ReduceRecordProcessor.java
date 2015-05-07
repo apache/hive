@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -83,6 +84,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private byte bigTablePosition = 0;
 
   private boolean abort;
+  private int nRows = 0;
 
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
@@ -246,12 +248,31 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
     for (Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
       l4j.info("Starting Output: " + outputEntry.getKey());
-      outputEntry.getValue().start();
-      ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
+      if (!abort) {
+        outputEntry.getValue().start();
+        ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
+      }
     }
 
     // run the operator pipeline
     while (sources[bigTablePosition].pushRecord()) {
+      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
+        if (abort && Thread.interrupted()) {
+          throw new HiveException("Processing thread interrupted");
+        }
+        nRows = 0;
+      }
+    }
+  }
+
+  @Override
+  public void abort() {
+    // this will stop run() from pushing records
+    abort = true;
+
+    // this will abort initializeOp()
+    if (reducer != null) {
+      reducer.abort();
     }
   }
 

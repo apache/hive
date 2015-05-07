@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -68,6 +69,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
+  protected AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
 
@@ -106,6 +108,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    abortOp = new AtomicBoolean(false);
   }
 
   public Operator() {
@@ -383,7 +386,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     int i = 0;
     for (Future<?> f : fs) {
       try {
-        os[i++] = f.get();
+        if (abortOp.get()) {
+          f.cancel(true);
+        } else {
+          os[i++] = f.get();
+        }
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -440,6 +447,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         childOperatorsArray[i].setReporter(reporter);
       }
     }
+  }
+
+  public void abort() {
+    abortOp.set(true);
   }
 
   /**
@@ -611,6 +622,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (isLogInfoEnabled) {
       LOG.info(id + " finished. closing... ");
     }
+
+    abort |= abortOp.get();
 
     // call the operator specific close routine
     closeOp(abort);

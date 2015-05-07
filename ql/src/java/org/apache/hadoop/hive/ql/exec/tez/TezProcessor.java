@@ -173,6 +173,10 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
   }
 
+  public void abort() {
+    rproc.abort();
+  }
+
   /**
    * KVOutputCollector. OutputCollector that writes using KVWriter.
    * Must be initialized before it is used.
