@@ -50,6 +50,7 @@ cos
 count
 covar_pop
 covar_samp
+crc32
 create_union
 cume_dist
 current_database
@@ -244,6 +245,7 @@ cos
 count
 covar_pop
 covar_samp
+crc32
 create_union
 cume_dist
 current_database
