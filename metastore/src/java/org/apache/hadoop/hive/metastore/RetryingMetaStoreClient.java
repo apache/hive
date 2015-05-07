@@ -173,8 +173,11 @@ public class RetryingMetaStoreClient implements InvocationHandler {
           throw e.getCause();
         }
       } catch (MetaException e) {
-        if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*"));
-        caughtException = e;
+        if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*")) {
+          caughtException = e;
+        } else {
+          throw e;
+        }
       }
 
       if (retriesMade >=  retryLimit) {
