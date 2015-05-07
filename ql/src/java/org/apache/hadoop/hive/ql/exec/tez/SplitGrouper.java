@@ -94,10 +94,10 @@ public class SplitGrouper {
       InputSplit[] groupedSplits =
           tezGrouper.getGroupedSplits(conf, rawSplits, bucketTaskMap.get(bucketId),
               HiveInputFormat.class.getName(), splitSizeEstimator);
-      String splitSizeEstStr = splitSizeEstimator == null ? "null" : splitSizeEstimator.getClass().getSimpleName();
+
       LOG.info("Original split size is " + rawSplits.length + " grouped split size is "
           + groupedSplits.length + ", for bucket: " + bucketId + " SplitSizeEstimator: " +
-          splitSizeEstStr);
+          splitSizeEstimator.getClass().getSimpleName());
 
       for (InputSplit inSplit : groupedSplits) {
         bucketGroupedSplitMultimap.put(bucketId, inSplit);
