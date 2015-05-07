@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
@@ -70,5 +71,26 @@ public class ZooKeeperHiveLock extends HiveLock {
     return path.equals(zLock.getPath()) &&
       obj.equals(zLock.getHiveLockObject()) &&
       mode == zLock.getHiveLockMode();
+  }
+  
+  @Override
+  public int hashCode() {
+    HashCodeBuilder builder = new HashCodeBuilder();
+    boolean pathPresent = path != null;
+    builder.append(pathPresent);
+    if (pathPresent) {
+      builder.append(path.toCharArray());
+    }
+    boolean lockObjectPresent = obj != null;
+    builder.append(lockObjectPresent);
+    if (lockObjectPresent) {
+      builder.append(obj.hashCode());
+    }
+    boolean modePresent = mode != null;
+    builder.append(modePresent);
+    if (modePresent) {
+      builder.append(mode);
+    }
+    return builder.toHashCode();
   }
 }
