@@ -91,57 +91,146 @@ public class SparkPlan {
     return finalRDD;
   }
 
+  private void addNumberToTrans() {
+    int i = 1;
+    String name = null;
+
+    // Traverse leafTran & transGraph add numbers to trans
+    for (SparkTran leaf : leafTrans) {
+      name = leaf.getName() + " " + i++;
+      leaf.setName(name);
+    }
+    Set<SparkTran> sparkTrans = transGraph.keySet();
+    for (SparkTran tran : sparkTrans) {
+      name = tran.getName() + " " + i++;
+      tran.setName(name);
+    }
+  }
+
   private void logSparkPlan() {
-    LOG.info("------------------------------ Spark Plan -----------------------------");
-    Set<SparkTran> keySet = invertedTransGraph.keySet();
-    for (SparkTran sparkTran : keySet) {
-      if (sparkTran instanceof ReduceTran) {
-	String sparkPlan = "	" + sparkTran.getName();
-	sparkPlan = getSparkPlan(sparkTran, sparkPlan);
-	LOG.info(sparkPlan);
-      }
+    addNumberToTrans();
+    ArrayList<SparkTran> leafTran = new ArrayList<SparkTran>();
+    leafTran.addAll(leafTrans);
+
+    for (SparkTran leaf : leafTrans) {
+      collectLeafTrans(leaf, leafTran);
     }
-    LOG.info("------------------------------ Spark Plan -----------------------------");
+
+    // Start Traverse from the leafTrans and get parents of each leafTrans till
+    // the end
+    StringBuilder sparkPlan = new StringBuilder(
+      "\n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
+    for (SparkTran leaf : leafTran) {
+      sparkPlan.append(leaf.getName());
+      getSparkPlan(leaf, sparkPlan);
+      sparkPlan.append("\n");
+    }
+    sparkPlan
+      .append(" \n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+    LOG.info(sparkPlan);
   }
 
-  private String getSparkPlan(SparkTran leaf, String sparkPlanMsg) {
-    if (leaf != null) {
-      List<SparkTran> parents = getParents(leaf);
-      if (parents.size() > 0) {
-	sparkPlanMsg = sparkPlanMsg + " <-- ";
-	boolean isFirst = true;
-	SparkTran parent = null;
-	for (SparkTran sparkTran : parents) {
-	  if (isFirst) {
-	    sparkPlanMsg = sparkPlanMsg + "( " + sparkTran.getName();
-	    sparkPlanMsg = logCacheStatus(sparkPlanMsg, sparkTran);
-	    isFirst = false;
-	  } else {
-	    sparkPlanMsg = sparkPlanMsg + "," + sparkTran.getName();
-	    sparkPlanMsg = logCacheStatus(sparkPlanMsg, sparkTran);
-	  }
-	  if (getParents(sparkTran).size() > 0 && !(sparkTran instanceof ReduceTran)) {
-	    parent = sparkTran;
-	  }
-	}
-	sparkPlanMsg = sparkPlanMsg + " ) ";
-	return getSparkPlan(parent, sparkPlanMsg);
+  private void collectLeafTrans(SparkTran leaf, List<SparkTran> reduceTrans) {
+    List<SparkTran> parents = getParents(leaf);
+    if (parents.size() > 0) {
+      SparkTran nextLeaf = null;
+      for (SparkTran leafTran : parents) {
+        if (leafTran instanceof ReduceTran) {
+          reduceTrans.add(leafTran);
+        } else {
+          if (getParents(leafTran).size() > 0)
+            nextLeaf = leafTran;
+        }
+      }
+      if (nextLeaf != null)
+        collectLeafTrans(nextLeaf, reduceTrans);
+    }
+  }
+
+  private void getSparkPlan(SparkTran tran, StringBuilder sparkPlan) {
+    List<SparkTran> parents = getParents(tran);
+    List<SparkTran> nextLeaf = new ArrayList<SparkTran>();
+    if (parents.size() > 0) {
+      sparkPlan.append(" <-- ");
+      boolean isFirst = true;
+      for (SparkTran leaf : parents) {
+        if (isFirst) {
+          sparkPlan.append("( " + leaf.getName());
+          if (leaf instanceof ShuffleTran) {
+            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+          } else {
+            logCacheStatus(leaf, sparkPlan);
+          }
+          isFirst = false;
+        } else {
+          sparkPlan.append("," + leaf.getName());
+          if (leaf instanceof ShuffleTran) {
+            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+          } else {
+            logCacheStatus(leaf, sparkPlan);
+          }
+        }
+        // Leave reduceTran it will be expanded in the next line
+        if (getParents(leaf).size() > 0 && !(leaf instanceof ReduceTran)) {
+          nextLeaf.add(leaf);
+        }
+      }
+      sparkPlan.append(" ) ");
+      if (nextLeaf.size() > 1) {
+        logLeafTran(nextLeaf, sparkPlan);
       } else {
-	return sparkPlanMsg;
+        if (nextLeaf.size() != 0)
+          getSparkPlan(nextLeaf.get(0), sparkPlan);
       }
     }
-    return sparkPlanMsg;
   }
 
-  private String logCacheStatus(String sparkPlanMsg, SparkTran sparkTran) {
+  private void logLeafTran(List<SparkTran> parent, StringBuilder sparkPlan) {
+    sparkPlan.append(" <-- ");
+    boolean isFirst = true;
+    for (SparkTran sparkTran : parent) {
+      List<SparkTran> parents = getParents(sparkTran);
+      SparkTran leaf = parents.get(0);
+      if (isFirst) {
+        sparkPlan.append("( " + leaf.getName());
+        if (leaf instanceof ShuffleTran) {
+          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+        } else {
+          logCacheStatus(leaf, sparkPlan);
+        }
+        isFirst = false;
+      } else {
+        sparkPlan.append("," + leaf.getName());
+        if (leaf instanceof ShuffleTran) {
+          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+        } else {
+          logCacheStatus(leaf, sparkPlan);
+        }
+      }
+    }
+    sparkPlan.append(" ) ");
+  }
+
+  private void logShuffleTranStatus(ShuffleTran leaf, StringBuilder sparkPlan) {
+    int noOfPartitions = leaf.getNoOfPartitions();
+    sparkPlan.append(" ( Partitions " + noOfPartitions);
+    SparkShuffler shuffler = leaf.getShuffler();
+    sparkPlan.append(", " + shuffler.getName());
+    if (leaf.isCacheEnable()) {
+      sparkPlan.append(", Cache on");
+    } else {
+      sparkPlan.append(", Cache off");
+    }
+  }
+
+  private void logCacheStatus(SparkTran sparkTran, StringBuilder sparkPlan) {
     if (sparkTran.isCacheEnable() != null) {
       if (sparkTran.isCacheEnable().booleanValue()) {
-	sparkPlanMsg = sparkPlanMsg + " (cache on) ";
+        sparkPlan.append(" (cache on) ");
       } else {
-	sparkPlanMsg = sparkPlanMsg + " (cache off) ";
+        sparkPlan.append(" (cache off) ");
       }
     }
-    return sparkPlanMsg;
   }
 
   public void addTran(SparkTran tran) {

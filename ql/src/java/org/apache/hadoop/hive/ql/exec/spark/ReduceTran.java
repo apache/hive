@@ -24,6 +24,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, HiveKey, BytesWritable> {
   private HiveReduceFunction reduceFunc;
+  private String name = "Reduce";
 
   @Override
   public JavaPairRDD<HiveKey, BytesWritable> transform(
@@ -37,12 +38,16 @@ public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, H
 
   @Override
   public String getName() {
-    return "Reduce";
+    return name;
   }
 
   @Override
   public Boolean isCacheEnable() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
   }
 }

@@ -28,5 +28,7 @@ public interface SparkTran<KI extends WritableComparable, VI, KO extends Writabl
 
   public String getName();
 
+  public void setName(String name);
+
   public Boolean isCacheEnable();
 }
