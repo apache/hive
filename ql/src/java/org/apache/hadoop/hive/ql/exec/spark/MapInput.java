@@ -36,6 +36,7 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
   private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
   private boolean toCache;
   private final SparkPlan sparkPlan;
+  private String name = "MapInput";
 
   public MapInput(SparkPlan sparkPlan, JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
     this(sparkPlan, hadoopRDD, false);
@@ -88,11 +89,16 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
 
   @Override
   public String getName() {
-    return "MapInput";
+    return name;
   }
 
   @Override
   public Boolean isCacheEnable() {
     return new Boolean(toCache);
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
   }
 }

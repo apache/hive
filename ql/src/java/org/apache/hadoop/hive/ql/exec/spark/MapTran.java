@@ -24,6 +24,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class MapTran implements SparkTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
   private HiveMapFunction mapFunc;
+  private String name = "MapTran";
 
   @Override
   public JavaPairRDD<HiveKey, BytesWritable> transform(
@@ -37,12 +38,16 @@ public class MapTran implements SparkTran<BytesWritable, BytesWritable, HiveKey,
 
   @Override
   public String getName() {
-    return "MapTran";
+    return name;
   }
 
   @Override
   public Boolean isCacheEnable() {
-    // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
   }
 }

@@ -28,6 +28,7 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
   private final int numOfPartitions;
   private final boolean toCache;
   private final SparkPlan sparkPlan;
+  private String name = "Shuffle";
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n) {
     this(sparkPlan, sf, n, false);
@@ -50,13 +51,26 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
     return result;
   }
 
+  public int getNoOfPartitions() {
+    return numOfPartitions;
+  }
+
   @Override
   public String getName() {
-    return "Shuffle";
+    return name;
   }
 
   @Override
   public Boolean isCacheEnable() {
     return new Boolean(toCache);
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public SparkShuffler getShuffler() {
+    return shuffler;
   }
 }
