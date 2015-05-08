@@ -223,6 +223,7 @@ public final class FunctionRegistry {
     system.registerUDF("unhex", UDFUnhex.class, false);
     system.registerUDF("base64", UDFBase64.class, false);
     system.registerUDF("unbase64", UDFUnbase64.class, false);
+    system.registerGenericUDF("sha2", GenericUDFSha2.class);
     system.registerUDF("md5", UDFMd5.class, false);
     system.registerUDF("uuid", UDFUUID.class, false);
 
