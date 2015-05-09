@@ -222,6 +222,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
+  public static final String SUBQUERY_TAG_1 = "-subquery1";
+  public static final String SUBQUERY_TAG_2 = "-subquery2";
+
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
@@ -429,16 +432,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbexpr.setOpcode(QBExpr.Opcode.UNION);
       // query 1
       assert (ast.getChild(0) != null);
-      QBExpr qbexpr1 = new QBExpr(alias + "-subquery1");
-      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + "-subquery1",
-          alias + "-subquery1");
+      QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1,
+          alias + SUBQUERY_TAG_1);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
-      QBExpr qbexpr2 = new QBExpr(alias + "-subquery2");
-      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + "-subquery2",
-          alias + "-subquery2");
+      QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2,
+          alias + SUBQUERY_TAG_2);
       qbexpr.setQBExpr2(qbexpr2);
     }
       break;
