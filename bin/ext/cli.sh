@@ -16,13 +16,22 @@
 THISSERVICE=cli
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
+updateCli() {
+  if [ $USE_DEPRECATED_CLI == "true" ]; then
+    CLASS=org.apache.hadoop.hive.cli.CliDriver
+    JAR=hive-cli-*.jar
+  else
+    CLASS=org.apache.hive.beeline.cli.HiveCli
+    JAR=hive-beeline-*.jar
+  fi
+}
+
 cli () {
-  CLASS=org.apache.hadoop.hive.cli.CliDriver
-  execHiveCmd $CLASS "$@"
+  updateCli
+  execHiveCmd $CLASS $JAR "$@"
 }
 
 cli_help () {
-  CLASS=org.apache.hadoop.hive.cli.CliDriver
-  execHiveCmd $CLASS "--help"
-} 
-
+  updateCli
+  execHiveCmd $CLASS $JAR "--help"
+}
