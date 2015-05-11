@@ -238,7 +238,7 @@ public class HybridHashTableContainer
         keyCountAdj, threshold, loadFactor, keyCount);
 
     memoryThreshold = memoryAvailable;
-    tableRowSize = estimatedTableSize / keyCount;
+    tableRowSize = estimatedTableSize / (keyCount != 0 ? keyCount : 1);
     memoryCheckFrequency = memCheckFreq;
 
     this.nwayConf = nwayConf;
