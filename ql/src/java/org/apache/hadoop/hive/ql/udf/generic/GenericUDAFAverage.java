@@ -157,13 +157,9 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     @Override
-    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrameDef) {
 
-      BoundaryDef start = wFrmDef.getStart();
-      BoundaryDef end = wFrmDef.getEnd();
-
-      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Object[]>(this,
-          start.getAmt(), end.getAmt()) {
+      return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Object[]>(this, wFrameDef) {
 
         @Override
         protected DoubleWritable getNextResult(
@@ -172,14 +168,12 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
           AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
           Double r = myagg.count == 0 ? null : myagg.sum;
           long cnt = myagg.count;
-          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
-            Object[] o = ss.intermediateVals.remove(0);
-            if (o != null) {
-              Double d = (Double) o[0];
-              r = r == null ? null : r - d;
-              cnt = cnt - ((Long) o[1]);
-            }
+
+          Object[] o = ss.retrieveNextIntermediateValue();
+          if (o != null) {
+            Double d = (Double) o[0];
+            r = r == null ? null : r - d;
+            cnt = cnt - ((Long) o[1]);
           }
 
           return r == null ? null : new DoubleWritable(r / cnt);
@@ -287,13 +281,10 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     @Override
-    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
-
-      BoundaryDef start = wFrmDef.getStart();
-      BoundaryDef end = wFrmDef.getEnd();
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrameDef) {
 
       return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, Object[]>(
-          this, start.getAmt(), end.getAmt()) {
+          this, wFrameDef) {
 
         @Override
         protected HiveDecimalWritable getNextResult(
@@ -302,14 +293,12 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
           AverageAggregationBuffer<HiveDecimal> myagg = (AverageAggregationBuffer<HiveDecimal>) ss.wrappedBuf;
           HiveDecimal r = myagg.count == 0 ? null : myagg.sum;
           long cnt = myagg.count;
-          if (ss.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-              && (ss.numRows - ss.numFollowing) >= (ss.numPreceding + 1)) {
-            Object[] o = ss.intermediateVals.remove(0);
-            if (o != null) {
-              HiveDecimal d = (HiveDecimal) o[0];
-              r = r == null ? null : r.subtract(d);
-              cnt = cnt - ((Long) o[1]);
-            }
+
+          Object[] o = ss.retrieveNextIntermediateValue();
+          if (o != null) {
+            HiveDecimal d = (HiveDecimal) o[0];
+            r = r == null ? null : r.subtract(d);
+            cnt = cnt - ((Long) o[1]);
           }
 
           return r == null ? null : new HiveDecimalWritable(

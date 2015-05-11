@@ -154,8 +154,8 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       private Object lastValue;
       private int lastIdx;
 
-      public State(int numPreceding, int numFollowing, AggregationBuffer buf) {
-        super(numPreceding, numFollowing, buf);
+      public State(AggregationBuffer buf) {
+        super(buf);
         lastValue = null;
         lastIdx = -1;
       }
@@ -192,7 +192,7 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
       AggregationBuffer underlying = wrappedEval.getNewAggregationBuffer();
-      return new State(numPreceding, numFollowing, underlying);
+      return new State(underlying);
     }
 
     protected ObjectInspector inputOI() {
@@ -219,14 +219,14 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
         s.lastValue = o;
         s.lastIdx = s.numRows;
       } else if (lb.skipNulls && s.lastIdx != -1) {
-        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows > s.lastIdx + s.numPreceding + s.numFollowing) {
+        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows > s.lastIdx + numPreceding + numFollowing) {
           s.lastValue = null;
           s.lastIdx = -1;
         }
       }
 
-      if (s.numRows >= (s.numFollowing)) {
+      if (s.numRows >= (numFollowing)) {
         s.results.add(s.lastValue);
       }
       s.numRows++;
@@ -238,14 +238,14 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       LastValueBuffer lb = (LastValueBuffer) s.wrappedBuf;
 
       if (lb.skipNulls && s.lastIdx != -1) {
-        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows > s.lastIdx + s.numPreceding + s.numFollowing) {
+        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows > s.lastIdx + numPreceding + numFollowing) {
           s.lastValue = null;
           s.lastIdx = -1;
         }
       }
 
-      for (int i = 0; i < s.numFollowing; i++) {
+      for (int i = 0; i < numFollowing; i++) {
         s.results.add(s.lastValue);
       }
 

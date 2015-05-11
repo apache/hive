@@ -50,7 +50,6 @@ import org.junit.Test;
 public class TestStreamingSum {
 
   public static WindowFrameDef wdwFrame(int p, int f) {
-    WindowFrameDef wFrmDef = new WindowFrameDef();
     BoundaryDef start, end;
     if (p == 0) {
       start = new CurrentRowDef();
@@ -69,9 +68,8 @@ public class TestStreamingSum {
       endR.setAmt(f);
       end = endR;
     }
-    wFrmDef.setStart(start);
-    wFrmDef.setEnd(end);
-    return wFrmDef;
+
+    return new WindowFrameDef(start, end);
   }
 
   public void sumDouble(Iterator<Double> inVals, int inSz, int numPreceding,

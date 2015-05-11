@@ -166,8 +166,8 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
     class State extends GenericUDAFStreamingEvaluator<Object>.StreamingState {
       private final Deque<Object[]> maxChain;
 
-      public State(int numPreceding, int numFollowing, AggregationBuffer buf) {
-        super(numPreceding, numFollowing, buf);
+      public State(AggregationBuffer buf) {
+        super(buf);
         maxChain = new ArrayDeque<Object[]>(numPreceding + numFollowing + 1);
       }
 
@@ -209,7 +209,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
       AggregationBuffer underlying = wrappedEval.getNewAggregationBuffer();
-      return new State(numPreceding, numFollowing, underlying);
+      return new State(underlying);
     }
 
     protected ObjectInspector inputOI() {
@@ -240,21 +240,21 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
        * to be tracked. - current max will never become out of range. It can
        * only be replaced by a larger max.
        */
-      if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+      if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
           || s.maxChain.isEmpty()) {
         o = o == null ? null : ObjectInspectorUtils.copyToStandardObject(o,
             inputOI(), ObjectInspectorCopyOption.JAVA);
         s.maxChain.addLast(new Object[] { o, s.numRows });
       }
 
-      if (s.numRows >= (s.numFollowing)) {
+      if (s.numRows >= numFollowing) {
         s.results.add(s.maxChain.getFirst()[0]);
       }
       s.numRows++;
 
       int fIdx = (Integer) s.maxChain.getFirst()[1];
-      if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-          && s.numRows > fIdx + s.numPreceding + s.numFollowing) {
+      if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+          && s.numRows > fIdx + numPreceding + numFollowing) {
         s.maxChain.removeFirst();
       }
     }
@@ -279,12 +279,12 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
       State s = (State) agg;
       Object[] r = s.maxChain.getFirst();
 
-      for (int i = 0; i < s.numFollowing; i++) {
+      for (int i = 0; i < numFollowing; i++) {
         s.results.add(r[0]);
         s.numRows++;
         int fIdx = (Integer) r[1];
-        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows - s.numFollowing + i > fIdx + s.numPreceding
+        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows - numFollowing + i > fIdx + numPreceding
             && !s.maxChain.isEmpty()) {
           s.maxChain.removeFirst();
           r = !s.maxChain.isEmpty() ? s.maxChain.getFirst() : r;

@@ -537,10 +537,7 @@ public class PTFTranslator {
           "Window range invalid, start boundary is greater than end boundary: %s", spec));
     }
 
-    WindowFrameDef wfDef = new WindowFrameDef();
-    wfDef.setStart(translate(inpShape, s));
-    wfDef.setEnd(translate(inpShape, e));
-    return wfDef;
+    return new WindowFrameDef(translate(inpShape, s), translate(inpShape, e));
   }
 
   private BoundaryDef translate(ShapeDetails inpShape, BoundarySpec bndSpec)

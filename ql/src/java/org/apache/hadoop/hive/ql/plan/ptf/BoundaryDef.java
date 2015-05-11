@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 
 public abstract class BoundaryDef {
@@ -32,4 +33,14 @@ public abstract class BoundaryDef {
   }
 
   public abstract int getAmt();
+
+  public boolean isUnbounded() {
+    return this.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
+  }
+
+  @Override
+  public String toString() {
+    return direction == null ? "" :
+        direction + "(" + (getAmt() == Integer.MAX_VALUE ? "MAX" : getAmt()) + ")";
+  }
 }
