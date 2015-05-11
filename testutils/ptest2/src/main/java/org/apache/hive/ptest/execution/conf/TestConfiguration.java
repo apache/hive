@@ -50,6 +50,7 @@ public class TestConfiguration {
   private static final String MAVEN_ARGS = "mavenArgs";
   private static final String MAVEN_BUILD_ARGS = "mavenBuildArgs";
   private static final String MAVEN_TEST_ARGS = "mavenTestArgs";
+  private static final String ADDITIONAL_PROFILES = "additionalProfiles";
   private static final String ANT_ARGS = "antArgs";
   private static final String JIRA_URL = "jiraUrl";
   private static final String JIRA_USER = "jiraUser";
@@ -69,6 +70,7 @@ public class TestConfiguration {
   private String mavenBuildArgs;
   private String mavenTestArgs;
   private String mavenEnvOpts;
+  private String additionalProfiles;
   private String repositoryType;
   private String repository;
   private String repositoryName;
@@ -114,6 +116,7 @@ public class TestConfiguration {
     mavenBuildArgs = context.getString(MAVEN_BUILD_ARGS, "").trim();
     mavenTestArgs =  context.getString(MAVEN_TEST_ARGS, "").trim();
     mavenEnvOpts =  context.getString(MAVEN_ENV_OPTS, "").trim();
+    additionalProfiles = context.getString(ADDITIONAL_PROFILES, "").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
     javaHomeForTests = context.getString(JAVA_HOME_TEST, "").trim();
     patch = Strings.nullToEmpty(null);
@@ -125,6 +128,7 @@ public class TestConfiguration {
     logsURL = context.getString(LOGS_URL, "").trim();
     testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
     sshOpts = context.getString(SSH_OPTS, "").trim();
+
   }
   public Context getContext() {
     return context;
@@ -192,12 +196,11 @@ public class TestConfiguration {
   public String getMavenBuildArgs() {
     return mavenBuildArgs;
   }
-  public String getMavenTestArgs() {
-    return mavenTestArgs;
-  }
+  public String getMavenTestArgs() { return mavenTestArgs; }
   public String getMavenEnvOpts() {
     return mavenEnvOpts;
   }
+  public String getAdditionalProfiles() { return additionalProfiles; }
   public String getJavaHome() {
     return javaHome;
   }
@@ -249,6 +252,7 @@ public class TestConfiguration {
   public void setMavenEnvOpts(String mavenEnvOpts) {
     this.mavenEnvOpts = Strings.nullToEmpty(mavenEnvOpts);
   }
+  public void setAdditionalProfiles(String additionalProfiles) { this.additionalProfiles = additionalProfiles;  }
   @Override
   public String toString() {
     return "TestConfiguration [antArgs=" + antArgs + ", antTestArgs="
@@ -262,7 +266,7 @@ public class TestConfiguration {
         + jiraUrl + ", jiraUser=" + jiraUser + ", jiraPassword=" + jiraPassword
         + ", testCasePropertyName=" + testCasePropertyName + ", buildTool="
         + buildTool + ", jiraName=" + jiraName + ", clearLibraryCache="
-        + clearLibraryCache + "]";
+        + clearLibraryCache + ", additionalProfiles=" + additionalProfiles + "]";
   }
   public static TestConfiguration fromInputStream(InputStream inputStream, Logger logger)
       throws IOException {
