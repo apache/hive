@@ -101,15 +101,19 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   @Override
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
 
+    // Use a final variable to properly parameterize the processVectorInspector closure.
+    // Using a member variable in the closure will not do the right thing...
+    final int parameterizePosBigTable = conf.getPosBigTable();
+
     // Code borrowed from VectorReduceSinkOperator.initializeOp
     VectorExpressionWriterFactory.processVectorInspector(
-        (StructObjectInspector) inputObjInspectors[0],
+        (StructObjectInspector) inputObjInspectors[parameterizePosBigTable],
         new VectorExpressionWriterFactory.SingleOIDClosure() {
           @Override
           public void assign(VectorExpressionWriter[] writers,
                              ObjectInspector objectInspector) {
             rowWriters = writers;
-            inputObjInspectors[0] = objectInspector;
+            inputObjInspectors[parameterizePosBigTable] = objectInspector;
           }
         });
     singleRow = new Object[rowWriters.length];
