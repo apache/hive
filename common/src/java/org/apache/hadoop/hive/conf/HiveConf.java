@@ -115,6 +115,7 @@ public class HiveConf extends Configuration {
   public static final HiveConf.ConfVars[] metaVars = {
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
+      HiveConf.ConfVars.METASTORE_SERVER_PORT,
       HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
       HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
@@ -392,7 +393,7 @@ public class HiveConf extends Configuration {
         "Number of retries while opening a connection to metastore"),
     METASTORETHRIFTFAILURERETRIES("hive.metastore.failure.retries", 1,
         "Number of retries upon failure of Thrift metastore calls"),
-
+    METASTORE_SERVER_PORT("hive.metastore.port", 9083, "Hive metastore listener port"),
     METASTORE_CLIENT_CONNECT_RETRY_DELAY("hive.metastore.client.connect.retry.delay", "1s",
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds for the client to wait between consecutive connection attempts"),
@@ -1023,7 +1024,7 @@ public class HiveConf extends Configuration {
     HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS("hive.orc.splits.include.fileid", true,
         "Include file ID in splits on file systems thaty support it."),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000,
-        "Cache size for keeping meta info about orc splits cached in the client."),
+        "Max cache size for keeping meta info about orc splits cached in the client."),
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10,
         "How many threads orc should use to create splits in parallel."),
     HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false,
@@ -1215,7 +1216,10 @@ public class HiveConf extends Configuration {
     HIVESAMPLINGNUMBERFORORDERBY("hive.optimize.sampling.orderby.number", 1000, "Total number of samples to be obtained."),
     HIVESAMPLINGPERCENTFORORDERBY("hive.optimize.sampling.orderby.percent", 0.1f, new RatioValidator(),
         "Probability with which a row will be chosen."),
-
+    HIVEOPTIMIZEDISTINCTREWRITE("hive.optimize.distinct.rewrite", true, "When applicable this "
+        + "optimization rewrites distinct aggregates from a single stage to multi-stage "
+        + "aggregation. This may not be optimal in all cases. Ideally, whether to trigger it or "
+        + "not should be cost based decision. Until Hive formalizes cost model for this, this is config driven."),
     // whether to optimize union followed by select followed by filesink
     // It creates sub-directories in the final output, so should not be turned on in systems
     // where MAPREDUCE-1501 is not present
@@ -1630,13 +1634,6 @@ public class HiveConf extends Configuration {
         "hive.security.authorization.sqlstd.confwhitelist. Using this list instead\n" +
         "of updating the original list means that you can append to the defaults\n" +
         "set by SQL standard authorization instead of replacing it entirely."),
-
-    HIVE_AUTHORIZATION_HDFS_LIST_STATUS_BATCH_SIZE(
-      "hive.authprovider.hdfs.liststatus.batch.size", 1000,
-      "Number of FileStatus objects to be queried for when listing files, for HDFS-based authorization.\n" +
-          "Note: If this exceeds dfs.ls.limit (as set in hdfs-site.xml), DFSClient might use the smaller value as \n" +
-          "the batch-size, internally."
-    ),
 
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false, "Whether to print the names of the columns in query output."),
 
@@ -2888,7 +2885,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
     ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
     ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
-    ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION.varname,
     ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
     ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
     ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,

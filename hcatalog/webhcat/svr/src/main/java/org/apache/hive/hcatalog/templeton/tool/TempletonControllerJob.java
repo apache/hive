@@ -76,14 +76,9 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
    *                              and added to the job
    */
   public TempletonControllerJob(boolean secureMetastoreAccess, AppConfig conf) {
-    super();
+    super(new Configuration(conf));
     this.secureMetastoreAccess = secureMetastoreAccess;
     this.appConf = conf;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return appConf;
   }
 
   private JobID submittedJobId;

@@ -808,21 +808,6 @@ STAGE PLANS:
             alias: s
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: s_store_sk is not null (type: boolean)
-              Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: s_store_sk (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-          TableScan
-            alias: s
-            Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
               predicate: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
@@ -834,6 +819,21 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: s
+            Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: s_store_sk is not null (type: boolean)
+              Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: s_store_sk (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -843,10 +843,10 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
             2 _col0 (type: int)
-          outputColumnNames: _col2
+          outputColumnNames: _col1
           Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col2 (type: int)
+            expressions: _col1 (type: int)
             outputColumnNames: _col0
             Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator

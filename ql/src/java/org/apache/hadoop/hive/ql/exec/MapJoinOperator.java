@@ -539,7 +539,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       clearAllTableContainers();
     }
 
-    mapJoinTables = null;
     this.loader = null;
     super.closeOp(abort);
   }

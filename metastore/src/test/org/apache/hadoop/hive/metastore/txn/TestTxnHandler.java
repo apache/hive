@@ -937,22 +937,43 @@ public class TestTxnHandler {
   @Test
   public void testLockTimeout() throws Exception {
     long timeout = txnHandler.setTimeout(1);
-    LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
-    comp.setTablename("mytable");
-    comp.setPartitionname("mypartition");
-    List<LockComponent> components = new ArrayList<LockComponent>(1);
-    components.add(comp);
-    LockRequest req = new LockRequest(components, "me", "localhost");
-    LockResponse res = txnHandler.lock(req);
-    assertTrue(res.getState() == LockState.ACQUIRED);
-    Thread.currentThread().sleep(10);
     try {
+      LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+      comp.setTablename("mytable");
+      comp.setPartitionname("mypartition");
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      LockResponse res = txnHandler.lock(req);
+      assertTrue(res.getState() == LockState.ACQUIRED);
+      Thread.currentThread().sleep(10);
       txnHandler.checkLock(new CheckLockRequest(res.getLockid()));
       fail("Told there was a lock, when it should have timed out.");
     } catch (NoSuchLockException e) {
     } finally {
       txnHandler.setTimeout(timeout);
     }
+  }
+
+  @Test
+  public void testRecoverManyTimeouts() throws Exception {
+    long timeout = txnHandler.setTimeout(1);
+    try {
+      txnHandler.openTxns(new OpenTxnRequest(503, "me", "localhost"));
+      Thread.currentThread().sleep(10);
+      txnHandler.getOpenTxns();
+      GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
+      int numAborted = 0;
+      for (TxnInfo txnInfo : rsp.getOpen_txns()) {
+        assertEquals(TxnState.ABORTED, txnInfo.getState());
+        numAborted++;
+      }
+      assertEquals(503, numAborted);
+    } finally {
+      txnHandler.setTimeout(timeout);
+    }
+
+
   }
 
   @Test

@@ -348,18 +348,18 @@ POSTHOOK: Input: default@src
 0	val_0
 0	val_0
 0	val_0
-10	val_10
-10	val_10
+0	val_0
+0	val_0
 100	val_100
 100	val_100
-103	val_103
-103	val_103
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
 104	val_104
 104	val_104
-104	val_104
-104	val_104
-111	val_111
-111	val_111
 PREHOOK: query: -- ctas
 explain
 create table union_top as

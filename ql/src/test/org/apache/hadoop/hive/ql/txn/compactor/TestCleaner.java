@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -427,5 +427,57 @@ public class TestCleaner extends CompactorTest {
     List<Path> paths = getDirectories(conf, t, p);
     Assert.assertEquals(1, paths.size());
     Assert.assertEquals("base_25", paths.get(0).getName());
+  }
+
+  @Test
+  public void droppedTable() throws Exception {
+    Table t = newTable("default", "dt", false);
+
+    addDeltaFile(t, null, 1L, 22L, 22);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    addBaseFile(t, null, 25L, 25);
+
+    burnThroughTransactions(25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MINOR);
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markCompacted(ci);
+    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
+
+    ms.dropTable("default", "dt");
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(0, rsp.getCompactsSize());
+  }
+
+  @Test
+  public void droppedPartition() throws Exception {
+    Table t = newTable("default", "dp", true);
+    Partition p = newPartition(t, "today");
+
+    addDeltaFile(t, p, 1L, 22L, 22);
+    addDeltaFile(t, p, 23L, 24L, 2);
+    addBaseFile(t, p, 25L, 25);
+
+    burnThroughTransactions(25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dp", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markCompacted(ci);
+    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
+
+    ms.dropPartition("default", "dp", Collections.singletonList("today"), true);
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 }

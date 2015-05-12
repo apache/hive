@@ -29,11 +29,11 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -1055,33 +1055,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     } catch (Exception err) {
       throw wrapAccessException(err);
     }
-  }
-
-  @Override
-  public void checkFileAccess(FileSystem fs, Iterator<FileStatus> statuses, EnumSet<FsAction> actions)
-      throws IOException, AccessControlException, Exception {
-    try {
-      if (accessMethod == null) {
-        // Have to rely on Hive implementation of filesystem permission checks.
-        DefaultFileAccess.checkFileAccess(fs, statuses, actions);
-      }
-      else {
-        while (statuses.hasNext()) {
-          accessMethod.invoke(fs, statuses.next(), combine(actions));
-        }
-      }
-
-    } catch (Exception err) {
-      throw wrapAccessException(err);
-    }
-  }
-
-  private static FsAction combine(EnumSet<FsAction> actions) {
-    FsAction resultantAction = FsAction.NONE;
-    for (FsAction action : actions) {
-      resultantAction = resultantAction.or(action);
-    }
-    return resultantAction;
   }
 
   /**

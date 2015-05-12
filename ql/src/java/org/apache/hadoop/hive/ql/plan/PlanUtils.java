@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -975,6 +976,9 @@ public final class PlanUtils {
     // T's parent would be V1
     for (int pos = 0; pos < aliases.length; pos++) {
       currentAlias = currentAlias == null ? aliases[pos] : currentAlias + ":" + aliases[pos];
+
+      currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
+          .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
       ReadEntity input = viewAliasToInput.get(currentAlias);
       if (input == null) {
         return currentInput;

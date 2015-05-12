@@ -21,7 +21,15 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptCostFactory;
 import org.apache.calcite.plan.RelOptUtil;
 
-// TODO: This should inherit from VolcanoCost and should just override isLE method.
+/***
+ * NOTE:<br>
+ * 1. Hivecost normalizes cpu and io in to time.<br>
+ * 2. CPU, IO cost is added together to find the query latency.<br>
+ * 3. If query latency is equal then row count is compared.
+ */
+
+// TODO: This should inherit from VolcanoCost and should just override isLE
+// method.
 public class HiveCost implements RelOptCost {
   // ~ Static fields/initializers ---------------------------------------------
 
@@ -114,8 +122,10 @@ public class HiveCost implements RelOptCost {
   }
 
   public boolean isEqWithEpsilon(RelOptCost other) {
-    return (this == other) || (Math.abs((this.cpu + this.io) -
-            (other.getCpu() + other.getIo())) < RelOptUtil.EPSILON);
+    return (this == other)
+        || ((Math.abs(this.io - other.getIo()) < RelOptUtil.EPSILON)
+            && (Math.abs(this.cpu - other.getCpu()) < RelOptUtil.EPSILON) && (Math
+            .abs(this.rowCount - other.getRows()) < RelOptUtil.EPSILON));
   }
 
   public RelOptCost minus(RelOptCost other) {

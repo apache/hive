@@ -54,6 +54,9 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiString
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -1597,7 +1600,25 @@ public class Vectorizer implements PhysicalPlanResolver {
           boolean specialize = canSpecializeMapJoin(op, desc, isTez);
 
           if (!specialize) {
-            vectorOp = OperatorFactory.getVectorOperator(desc, vContext);
+
+            Class<? extends Operator<?>> opClass = null;
+            if (op instanceof MapJoinOperator) {
+
+              // *NON-NATIVE* vector map differences for LEFT OUTER JOIN and Filtered...
+
+              List<ExprNodeDesc> bigTableFilters = desc.getFilters().get((byte) desc.getPosBigTable());
+              boolean isOuterAndFiltered = (!desc.isNoOuterJoin() && bigTableFilters.size() > 0);
+              if (!isOuterAndFiltered) {
+                opClass = VectorMapJoinOperator.class;
+              } else {
+                opClass = VectorMapJoinOuterFilteredOperator.class;
+              }
+            } else if (op instanceof SMBMapJoinOperator) {
+              opClass = VectorSMBMapJoinOperator.class;
+            }
+
+            vectorOp = OperatorFactory.getVectorOperator(opClass, op.getConf(), vContext);
+
           } else {
 
             // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...

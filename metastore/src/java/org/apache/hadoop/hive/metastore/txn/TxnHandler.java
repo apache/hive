@@ -75,6 +75,7 @@ public class TxnHandler {
   static final protected char LOCK_SEMI_SHARED = 'w';
 
   static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
+  static final private int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 100;
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
@@ -130,7 +131,8 @@ public class TxnHandler {
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     deadlockCnt = 0;
     buildJumpTable();
-    retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
+    retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL,
+        TimeUnit.MILLISECONDS);
     retryLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
 
@@ -334,9 +336,7 @@ public class TxnHandler {
       Connection dbConn = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-        List<Long> txnids = new ArrayList<Long>(1);
-        txnids.add(txnid);
-        if (abortTxns(dbConn, txnids) != 1) {
+        if (abortTxns(dbConn, Collections.singletonList(txnid)) != 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
           throw new NoSuchTxnException("No such transaction: " + txnid);
@@ -1321,8 +1321,6 @@ public class TxnHandler {
       LOG.debug("Going to execute update <" + buf.toString() + ">");
       updateCnt = stmt.executeUpdate(buf.toString());
 
-      LOG.debug("Going to commit");
-      dbConn.commit();
     } finally {
       closeStmt(stmt);
     }
@@ -1818,10 +1816,10 @@ public class TxnHandler {
     }
   }
 
-  // Abort timed out transactions.  This calls abortTxn(), which does a commit,
+  // Abort timed out transactions.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions on the underlying database.
-  private void timeOutTxns(Connection dbConn) throws SQLException, MetaException {
+  private void timeOutTxns(Connection dbConn) throws SQLException, MetaException, RetryException {
     long now = getDbTime(dbConn);
     Statement stmt = null;
     try {
@@ -1834,10 +1832,23 @@ public class TxnHandler {
       List<Long> deadTxns = new ArrayList<Long>();
       // Limit the number of timed out transactions we do in one pass to keep from generating a
       // huge delete statement
-      for (int i = 0; i < 20 && rs.next(); i++) deadTxns.add(rs.getLong(1));
-      // We don't care whether all of the transactions get deleted or not,
-      // if some didn't it most likely means someone else deleted them in the interum
-      if (deadTxns.size() > 0) abortTxns(dbConn, deadTxns);
+      do {
+        deadTxns.clear();
+        for (int i = 0; i <  TIMED_OUT_TXN_ABORT_BATCH_SIZE && rs.next(); i++) {
+          deadTxns.add(rs.getLong(1));
+        }
+        // We don't care whether all of the transactions get deleted or not,
+        // if some didn't it most likely means someone else deleted them in the interum
+        if (deadTxns.size() > 0) abortTxns(dbConn, deadTxns);
+      } while (deadTxns.size() > 0);
+      LOG.debug("Going to commit");
+      dbConn.commit();
+    } catch (SQLException e) {
+      LOG.debug("Going to rollback");
+      rollbackDBConn(dbConn);
+      checkRetryable(dbConn, e, "abortTxn");
+      throw new MetaException("Unable to update transaction database "
+        + StringUtils.stringifyException(e));
     } finally {
       closeStmt(stmt);
     }

@@ -415,8 +415,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         }
 
         if (footerCache == null && cacheStripeDetails) {
-          footerCache = CacheBuilder.newBuilder().concurrencyLevel(numThreads)
-              .initialCapacity(cacheStripeDetailsSize).softValues().build();
+          footerCache = CacheBuilder.newBuilder()
+              .concurrencyLevel(numThreads)
+              .initialCapacity(cacheStripeDetailsSize)
+              .maximumSize(cacheStripeDetailsSize)
+              .softValues()
+              .build();
         }
       }
       String value = conf.get(ValidTxnList.VALID_TXNS_KEY,

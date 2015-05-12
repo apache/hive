@@ -97,7 +97,7 @@ lxc_prepare() {
 	cat>$tmpfile<<EOF
 rm -rf hive
 mkdir hive
-git clone --depth 1 -b $BRANCH https://git-wip-us.apache.org/repos/asf/hive.git >/dev/null
+git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git >/dev/null
 cd hive
 wget $PATCH_URL -O hms.patch
 bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh hms.patch
@@ -153,5 +153,8 @@ do
 	log "$(lxc_print_metastore_log $name)"
 	lxc_stop $name
 
-	[ $rc != 0 ] && exit 1
+	if [[ $rc != 0 ]]; then
+		log "Tests failed. Exiting with error code (1)."
+		exit 1
+	fi
 done

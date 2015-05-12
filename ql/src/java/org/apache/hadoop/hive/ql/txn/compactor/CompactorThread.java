@@ -32,13 +32,13 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -105,13 +105,15 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
    * one partition.
    */
   protected Partition resolvePartition(CompactionInfo ci) throws Exception {
-    Partition p = null;
     if (ci.partName != null) {
-      List<String> names = new ArrayList<String>(1);
-      names.add(ci.partName);
       List<Partition> parts = null;
       try {
-        parts = rs.getPartitionsByNames(ci.dbname, ci.tableName, names);
+        parts = rs.getPartitionsByNames(ci.dbname, ci.tableName,
+            Collections.singletonList(ci.partName));
+        if (parts == null || parts.size() == 0) {
+          // The partition got dropped before we went looking for it.
+          return null;
+        }
       } catch (Exception e) {
         LOG.error("Unable to find partition " + ci.getFullPartitionName() + ", " + e.getMessage());
         throw e;

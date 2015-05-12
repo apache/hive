@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,10 +50,11 @@ import org.codehaus.jettison.json.JSONWriter;
  * A tool for printing out the file structure of ORC files.
  */
 public final class FileDump {
-  private static final String UNKNOWN = "UNKNOWN";
+  public static final String UNKNOWN = "UNKNOWN";
 
   // not used
-  private FileDump() {}
+  private FileDump() {
+  }
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
@@ -69,21 +70,28 @@ public final class FileDump {
     }
 
     boolean dumpData = cli.hasOption('d');
-    if (cli.hasOption("rowindex")) {
-      String[] colStrs = cli.getOptionValue("rowindex").split(",");
+    if (cli.hasOption("r")) {
+      String[] colStrs = cli.getOptionValue("r").split(",");
       rowIndexCols = new ArrayList<Integer>(colStrs.length);
       for (String colStr : colStrs) {
         rowIndexCols.add(Integer.parseInt(colStr));
       }
     }
 
-    boolean printTimeZone = false;
-    if (cli.hasOption('t')) {
-      printTimeZone = true;
-    }
+    boolean printTimeZone = cli.hasOption('t');
+    boolean jsonFormat = cli.hasOption('j');
     String[] files = cli.getArgs();
-    if (dumpData) printData(Arrays.asList(files), conf);
-    else printMetaData(Arrays.asList(files), conf, rowIndexCols, printTimeZone);
+    if (dumpData) {
+      printData(Arrays.asList(files), conf);
+    } else {
+      if (jsonFormat) {
+        boolean prettyPrint = cli.hasOption('p');
+        JsonFileDump.printJsonMetaData(Arrays.asList(files), conf, rowIndexCols, prettyPrint,
+            printTimeZone);
+      } else {
+        printMetaData(Arrays.asList(files), conf, rowIndexCols, printTimeZone);
+      }
+    }
   }
 
   private static void printData(List<String> files, Configuration conf) throws IOException,
@@ -100,7 +108,7 @@ public final class FileDump {
       Path path = new Path(filename);
       Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
       System.out.println("File Version: " + reader.getFileVersion().getName() +
-                         " with " + reader.getWriterVersion());
+          " with " + reader.getWriterVersion());
       RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
       System.out.println("Rows: " + reader.getNumberOfRows());
       System.out.println("Compression: " + reader.getCompression());
@@ -121,7 +129,7 @@ public final class FileDump {
       ColumnStatistics[] stats = reader.getStatistics();
       int colCount = stats.length;
       System.out.println("\nFile Statistics:");
-      for(int i=0; i < stats.length; ++i) {
+      for (int i = 0; i < stats.length; ++i) {
         System.out.println("  Column " + i + ": " + stats[i].toString());
       }
       System.out.println("\nStripes:");
@@ -140,7 +148,7 @@ public final class FileDump {
           System.out.println("  Stripe: " + stripe.toString());
         }
         long sectionStart = stripeStart;
-        for(OrcProto.Stream section: footer.getStreamsList()) {
+        for (OrcProto.Stream section : footer.getStreamsList()) {
           String kind = section.hasKind() ? section.getKind().name() : UNKNOWN;
           System.out.println("    Stream: column " + section.getColumn() +
               " section " + kind + " start: " + sectionStart +
@@ -270,7 +278,7 @@ public final class FileDump {
     return buf.toString();
   }
 
-  private static long getTotalPaddingSize(Reader reader) throws IOException {
+  public static long getTotalPaddingSize(Reader reader) throws IOException {
     long paddedBytes = 0;
     List<org.apache.hadoop.hive.ql.io.orc.StripeInformation> stripes = reader.getStripes();
     for (int i = 1; i < stripes.size(); i++) {
@@ -307,21 +315,30 @@ public final class FileDump {
         .withArgName("comma separated list of column ids for which row index should be printed")
         .withDescription("Dump stats for column number(s)")
         .hasArg()
-        .create());
+        .create('r'));
 
+    result.addOption(OptionBuilder
+        .withLongOpt("json")
+        .withDescription("Print metadata in JSON format")
+        .create('j'));
+
+    result.addOption(OptionBuilder
+            .withLongOpt("pretty")
+            .withDescription("Pretty print json metadata output")
+            .create('p'));
 
     return result;
   }
 
   private static void printMap(JSONWriter writer,
-                               Map<Object, Object> obj,
-                               List<OrcProto.Type> types,
-                               OrcProto.Type type
+      Map<Object, Object> obj,
+      List<OrcProto.Type> types,
+      OrcProto.Type type
   ) throws IOException, JSONException {
     writer.array();
     int keyType = type.getSubtypes(0);
     int valueType = type.getSubtypes(1);
-    for(Map.Entry<Object,Object> item: obj.entrySet()) {
+    for (Map.Entry<Object, Object> item : obj.entrySet()) {
       writer.object();
       writer.key("_key");
       printObject(writer, item.getKey(), types, keyType);
@@ -333,34 +350,34 @@ public final class FileDump {
   }
 
   private static void printList(JSONWriter writer,
-                                List<Object> obj,
-                                List<OrcProto.Type> types,
-                                OrcProto.Type type
+      List<Object> obj,
+      List<OrcProto.Type> types,
+      OrcProto.Type type
   ) throws IOException, JSONException {
     int subtype = type.getSubtypes(0);
     writer.array();
-    for(Object item: obj) {
+    for (Object item : obj) {
       printObject(writer, item, types, subtype);
     }
     writer.endArray();
   }
 
   private static void printUnion(JSONWriter writer,
-                                 OrcUnion obj,
-                                 List<OrcProto.Type> types,
-                                 OrcProto.Type type
+      OrcUnion obj,
+      List<OrcProto.Type> types,
+      OrcProto.Type type
   ) throws IOException, JSONException {
     int subtype = type.getSubtypes(obj.getTag());
     printObject(writer, obj.getObject(), types, subtype);
   }
 
   static void printStruct(JSONWriter writer,
-                          OrcStruct obj,
-                          List<OrcProto.Type> types,
-                          OrcProto.Type type) throws IOException, JSONException {
+      OrcStruct obj,
+      List<OrcProto.Type> types,
+      OrcProto.Type type) throws IOException, JSONException {
     writer.object();
     List<Integer> fieldTypes = type.getSubtypesList();
-    for(int i=0; i < fieldTypes.size(); ++i) {
+    for (int i = 0; i < fieldTypes.size(); ++i) {
       writer.key(type.getFieldNames(i));
       printObject(writer, obj.getFieldValue(i), types, fieldTypes.get(i));
     }
@@ -368,9 +385,9 @@ public final class FileDump {
   }
 
   static void printObject(JSONWriter writer,
-                          Object obj,
-                          List<OrcProto.Type> types,
-                          int typeId) throws IOException, JSONException {
+      Object obj,
+      List<OrcProto.Type> types,
+      int typeId) throws IOException, JSONException {
     OrcProto.Type type = types.get(typeId);
     if (obj == null) {
       writer.value(null);
@@ -417,7 +434,7 @@ public final class FileDump {
   }
 
   static void printJsonData(Configuration conf,
-                            String filename) throws IOException, JSONException {
+      String filename) throws IOException, JSONException {
     Path path = new Path(filename);
     Reader reader = OrcFile.createReader(path.getFileSystem(conf), path);
     OutputStreamWriter out = new OutputStreamWriter(System.out, "UTF-8");

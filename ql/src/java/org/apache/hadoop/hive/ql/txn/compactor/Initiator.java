@@ -86,13 +86,13 @@ public class Initiator extends CompactorThread {
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
-            LOG.debug("Checking to see if we should compact " + ci.getFullPartitionName());
+            LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
               Table t = resolveTable(ci);
               if (t == null) {
                 // Most likely this means it's a temp table
-                LOG.debug("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
-                    "table and moving on.");
+                LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
+                    "table or has been dropped and moving on.");
                 continue;
               }
 
@@ -122,6 +122,11 @@ public class Initiator extends CompactorThread {
 
               // Figure out who we should run the file operations as
               Partition p = resolvePartition(ci);
+              if (p == null && ci.partName != null) {
+                LOG.info("Can't find partition " + ci.getFullPartitionName() +
+                    ", assuming it has been dropped and moving on.");
+                continue;
+              }
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
               String runAs = findUserToRunAs(sd.getLocation(), t);
 

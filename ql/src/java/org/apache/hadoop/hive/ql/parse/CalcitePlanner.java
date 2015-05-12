@@ -137,6 +137,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
@@ -265,8 +266,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           sinkOp = genPlan(getQB());
           LOG.info("CBO Succeeded; optimized logical plan.");
           this.ctx.setCboInfo("Plan optimized by CBO.");
+          this.ctx.setCboSucceeded(true);
           LOG.debug(newAST.dump());
-          } 
+          }
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
@@ -899,6 +901,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
+
+      //0. Distinct aggregate rewrite
+      // Run this optimization early, since it is expanding the operator pipeline.
+      if (conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") &&
+          conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
+        // Its not clear, if this rewrite is always performant on MR, since extra map phase
+        // introduced for 2nd MR job may offset gains of this multi-stage aggregation.
+        // We need a cost model for MR to enable this on MR.
+        basePlan = hepPlan(basePlan, true, mdProvider, HiveExpandDistinctAggregatesRule.INSTANCE);
+      }
 
       // 1. Push Down Semi Joins
       basePlan = hepPlan(basePlan, true, mdProvider, SemiJoinJoinTransposeRule.INSTANCE,

@@ -24,17 +24,19 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
+import javax.security.auth.login.LoginException;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -45,6 +47,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
@@ -534,21 +537,6 @@ public interface HadoopShims {
    */
   public void checkFileAccess(FileSystem fs, FileStatus status, FsAction action)
       throws IOException, AccessControlException, Exception;
-
-  /**
-   * Check if the configured UGI has access to the path for the given file system action.
-   * Method will return successfully if action is permitted. AccessControlExceptoin will
-   * be thrown if user does not have access to perform the action. Other exceptions may
-   * be thrown for non-access related errors.
-   * @param fs The FileSystem instance
-   * @param statuses The FileStatuses for the paths being checked
-   * @param actions The FsActions being checked
-   * @throws IOException
-   * @throws AccessControlException
-   * @throws Exception
-   */
-  public void checkFileAccess(FileSystem fs, Iterator<FileStatus> statuses, EnumSet<FsAction> actions)
-      throws Exception;
 
   /**
    * Use password API (if available) to fetch credentials/password
