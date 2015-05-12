@@ -35,6 +35,8 @@ import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.dag.records.TezTaskID;
 import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
+import org.apache.tez.runtime.task.EndReason;
+import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.apache.tez.runtime.task.TezChild;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
 import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult.ExitStatus;
@@ -58,10 +60,10 @@ public class TestTaskExecutorService {
     }
 
     @Override
-    protected TezChild.ContainerExecutionResult callInternal() throws Exception {
+    protected TaskRunner2Result callInternal() throws Exception {
       System.out.println(requestId + " is executing..");
       Thread.sleep(workTime);
-      return new ContainerExecutionResult(ExitStatus.SUCCESS, null, null);
+      return new TaskRunner2Result(EndReason.SUCCESS, null, false);
     }
 
     @Override
