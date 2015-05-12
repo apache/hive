@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
-import org.apache.tez.runtime.task.TezChild.ContainerExecutionResult;
+import org.apache.tez.runtime.task.TaskRunner2Result;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.FutureCallback;
@@ -187,8 +187,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     boolean scheduled = false;
     try {
-      ListenableFuture<ContainerExecutionResult> future = executorService.submit(task);
-      FutureCallback<ContainerExecutionResult> wrappedCallback =
+      ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
+      FutureCallback<TaskRunner2Result> wrappedCallback =
           new InternalCompletionListener(task.getCallback());
       Futures.addCallback(future, wrappedCallback);
 
@@ -252,8 +252,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           // try to submit the task from wait queue to executor service. If it gets rejected the
           // task from wait queue will hold on to its position for next try.
           try {
-            ListenableFuture<ContainerExecutionResult> future = executorService.submit(task);
-            FutureCallback<ContainerExecutionResult> wrappedCallback =
+            ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
+            FutureCallback<TaskRunner2Result> wrappedCallback =
                 new InternalCompletionListener(task.getCallback());
             Futures.addCallback(future, wrappedCallback);
             numSlotsAvailable.decrementAndGet();
@@ -285,14 +285,14 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   }
 
   private synchronized void addTaskToPreemptionList(TaskRunnerCallable task,
-      ListenableFuture<ContainerExecutionResult> future) {
+      ListenableFuture<TaskRunner2Result> future) {
     idToTaskMap.put(task.getRequestId(), task);
     preemptionMap.put(task, future);
     preemptionQueue.add(task);
   }
 
   private final class InternalCompletionListener implements
-      FutureCallback<ContainerExecutionResult> {
+      FutureCallback<TaskRunner2Result> {
     private TaskRunnerCallable.TaskRunnerCallback wrappedCallback;
 
     public InternalCompletionListener(TaskRunnerCallable.TaskRunnerCallback wrappedCallback) {
@@ -300,7 +300,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     }
 
     @Override
-    public void onSuccess(ContainerExecutionResult result) {
+    public void onSuccess(TaskRunner2Result result) {
       wrappedCallback.onSuccess(result);
       updatePreemptionListAndNotify(true);
     }
