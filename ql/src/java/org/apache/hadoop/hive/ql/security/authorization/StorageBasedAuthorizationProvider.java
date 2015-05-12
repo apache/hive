@@ -18,20 +18,15 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -40,7 +35,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -69,7 +63,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * out to the parent directory recursively to determine its permissions till
  * it finds a parent that does exist.
  */
-public class StorageBasedAuthorizationProvider extends HiveMultiPartitionAuthorizationProviderBase
+public class StorageBasedAuthorizationProvider extends HiveAuthorizationProviderBase
     implements HiveMetastoreAuthorizationProvider {
 
   private Warehouse wh;
@@ -248,89 +242,6 @@ public class StorageBasedAuthorizationProvider extends HiveMultiPartitionAuthori
     }
   }
 
-  @Override
-  public void authorize(Table table, Iterable<Partition> partitions,
-                        Privilege[] requiredReadPrivileges, Privilege[] requiredWritePrivileges)
-       throws HiveException, AuthorizationException {
-
-    try {
-      class MustCheckTablePermissions { // For closure.
-        public boolean value = false;
-      }
-
-      final MustCheckTablePermissions mustCheckTablePermissions = new MustCheckTablePermissions();
-      final FileSystem fs = table.getDataLocation().getFileSystem(getConf());
-
-      // Get partition paths. Filter out null-partitions, and partitions without data-locations.
-      Iterator<Partition> nonNullPartitions
-               = Iterators.filter(partitions.iterator(), new Predicate<Partition>() {
-        @Override
-        public boolean apply(Partition partition) {
-          try {
-            boolean isValidPartitionPath = partition != null
-                                           && partition.getDataLocation() != null
-                                           && fs.exists(partition.getDataLocation());
-            mustCheckTablePermissions.value |= isValidPartitionPath;
-            return isValidPartitionPath;
-          }
-          catch (IOException exception){
-            throw new RuntimeException("Could not find location for partition: " + partition, exception);
-          }
-        }
-      });
-
-      if (mustCheckTablePermissions.value) {
-        // At least one partition was null, or had a non-existent path. So check table-permissions, once.
-        // Partition path can be null in the case of a new create partition - in this case,
-        // we try to default to checking the permissions of the parent table.
-        // Partition itself can also be null, in cases where this gets called as a generic
-        // catch-all call in cases like those with CTAS onto an unpartitioned table (see HIVE-1887)
-
-        // this should be the case only if this is a create partition.
-        // The privilege needed on the table should be ALTER_DATA, and not CREATE
-        authorize(table, new Privilege[]{}, new Privilege[]{Privilege.ALTER_DATA});
-      }
-
-
-      // authorize drops if there was a drop privilege requirement
-      // extract drop privileges
-      DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(requiredReadPrivileges, requiredWritePrivileges);
-      requiredReadPrivileges = privExtractor.getReadReqPriv();
-      requiredWritePrivileges = privExtractor.getWriteReqPriv();
-      EnumSet<FsAction> actions = getFsActions(requiredReadPrivileges);
-      actions.addAll(getFsActions(requiredWritePrivileges));
-
-      ArrayList<Path> allPartitionPaths
-                = Lists.newArrayList(Iterators.transform(nonNullPartitions, new Function<Partition, Path>() {
-        @Override
-        public Path apply(Partition input) {
-          return input.getDataLocation();
-        }
-      }));
-
-      for (List<Path> partitionPaths : Lists.partition(allPartitionPaths, getListStatusBatchSize(getConf()))) {
-
-        List<FileStatus> fileStatuses = Arrays.asList(
-            fs.listStatus(partitionPaths.toArray(new Path[partitionPaths.size()])));
-
-        if (privExtractor.hasDropPrivilege) {
-          FileUtils.checkDeletePermission(fs, fileStatuses, getConf(), authenticator.getUserName());
-        }
-
-        checkPermissions(fs, fileStatuses.iterator(), actions, authenticator.getUserName());
-      }
-
-    }
-    catch (Exception exception) {
-      throw hiveException(exception);
-    }
-  }
-
-  private static int getListStatusBatchSize(Configuration configuration) {
-    return HiveConf.getIntVar(configuration,
-                              HiveConf.ConfVars.HIVE_AUTHORIZATION_HDFS_LIST_STATUS_BATCH_SIZE);
-  }
-
   private void checkDeletePermission(Path dataLocation, Configuration conf, String userName)
       throws HiveException {
     try {
@@ -477,28 +388,17 @@ public class StorageBasedAuthorizationProvider extends HiveMultiPartitionAuthori
   protected static void checkPermissions(final FileSystem fs, final FileStatus stat,
       final EnumSet<FsAction> actions, String user) throws IOException,
       AccessControlException, HiveException {
-    checkPermissions(fs, Iterators.singletonIterator(stat), actions, user);
-  }
 
-  @SuppressWarnings("deprecation")
-  protected static void checkPermissions(final FileSystem fs, Iterator<FileStatus> fileStatuses,
-                                         final EnumSet<FsAction> actions, String user)
-      throws IOException, AccessControlException, HiveException {
-
+    if (stat == null) {
+      // File named by path doesn't exist; nothing to validate.
+      return;
+    }
     FsAction checkActions = FsAction.NONE;
     for (FsAction action : actions) {
       checkActions = checkActions.or(action);
     }
-
-    Iterator<FileStatus> nonNullFileStatuses = Iterators.filter(fileStatuses, new Predicate<FileStatus>() {
-      @Override
-      public boolean apply(FileStatus fileStatus) {
-        return fileStatus != null;
-      }
-    });
-
     try {
-      FileUtils.checkFileAccessWithImpersonation(fs, nonNullFileStatuses, EnumSet.of(checkActions), user);
+      FileUtils.checkFileAccessWithImpersonation(fs, stat, checkActions, user);
     } catch (Exception err) {
       // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
       // Hadoop versions may still see this exception .. have to reference by name.

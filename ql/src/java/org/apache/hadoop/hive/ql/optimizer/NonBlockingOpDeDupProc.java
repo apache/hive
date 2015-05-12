@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -57,6 +58,16 @@ public class NonBlockingOpDeDupProc implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+    // 0. We check the conditions to apply this transformation,
+    //    if we do not meet them we bail out
+    final boolean cboEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED);
+    final boolean returnPathEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
+    final boolean cboSucceeded = pctx.getContext().isCboSucceeded();
+    if(cboEnabled && returnPathEnabled && cboSucceeded) {
+      return pctx;
+    }
+
+    // 1. We apply the transformation
     String SEL = SelectOperator.getOperatorName();
     String FIL = FilterOperator.getOperatorName();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();

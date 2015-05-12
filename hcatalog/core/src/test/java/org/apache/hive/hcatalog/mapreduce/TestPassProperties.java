@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
@@ -109,8 +110,10 @@ public class TestPassProperties {
       new FileOutputCommitterContainer(job, null).cleanupJob(job);
     } catch (Exception e) {
       caughtException = true;
-      assertTrue(e.getCause().getMessage().contains(
+      assertTrue(((InvocationTargetException)e.getCause().getCause().getCause()).getTargetException().getMessage().contains(
           "Could not connect to meta store using any of the URIs provided"));
+      assertTrue(e.getCause().getMessage().contains(
+          "Unable to instantiate org.apache.hive.hcatalog.common.HiveClientCache$CacheableHiveMetaStoreClient"));
     }
     assertTrue(caughtException);
   }

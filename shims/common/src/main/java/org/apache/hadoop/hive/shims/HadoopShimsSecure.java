@@ -25,9 +25,7 @@ import java.net.URI;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -390,12 +388,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   public void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
-  }
-
-  @Override
-  public void checkFileAccess(FileSystem fs, Iterator<FileStatus> statuses, EnumSet<FsAction> action)
-      throws IOException, AccessControlException, Exception {
-    DefaultFileAccess.checkFileAccess(fs, statuses, action);
   }
 
   @Override

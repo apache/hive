@@ -27,18 +27,24 @@ capabilities of the language. QL can also be extended with custom
 scalar functions (UDF's), aggregations (UDAF's), and table
 functions (UDTF's).
 
-Hive users have a choice of 2 runtimes when executing SQL queries.
-Users can choose to use the Apache Hadoop MapReduce framework,
-which is mature and proven at large scales. MapReduce is a purely
-batch framework, and queries run using the MapReduce framework
-may experience higher latencies (tens of seconds), even
-over small datasets. Alternatively, users can choose to use the
-newer Apache Tez framework to process SQL queries. Tez is
-designed for interactive query and has substantially reduced
-overheads versus MapReduce. Users are free to switch back and
-forth between these frameworks at any time. In either case,
-Hive is best suited for use cases where the amount of data
-processed is large enough to require a distributed system.
+Hive users have a choice of 3 runtimes when executing SQL queries.
+Users can choose between Apache Hadoop MapReduce, Apache Tez or
+Apache Spark frameworks as their execution backend. MapReduce is a
+mature framework that is proven at large scales. However, MapReduce
+is a purely batch framework, and queries using it may experience
+higher latencies (tens of seconds), even over small datasets. Apache
+Tez is designed for interactive query, and has substantially reduced
+overheads versus MapReduce. Apache Spark is a cluster computing
+framework that's built outside of MapReduce, but on top of HDFS,
+with a notion of composable and transformable distributed collection
+of items called Resilient Distributed Dataset (RDD) which allows
+processing and analysis without traditional intermediate stages that
+MapReduce introduces.
+
+Users are free to switch back and forth between these frameworks
+at any time. In each case, Hive is best suited for use cases
+where the amount of data processed is large enough to require a
+distributed system.
 
 Hive is not designed for online transaction processing and does
 not support row level insert/updates. It is best used for batch
@@ -73,7 +79,7 @@ Getting Started
 Requirements
 ============
 
-- Java 1.6, 1.7
+- Java 1.7
 
 - Hadoop 1.x, 2.x
 

@@ -26,10 +26,12 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -183,7 +185,23 @@ public class Cleaner extends CompactorThread {
   private void clean(CompactionInfo ci) throws MetaException {
     LOG.info("Starting cleaning for " + ci.getFullPartitionName());
     try {
-      StorageDescriptor sd = resolveStorageDescriptor(resolveTable(ci), resolvePartition(ci));
+      Table t = resolveTable(ci);
+      if (t == null) {
+        // The table was dropped before we got around to cleaning it.
+        LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped");
+        return;
+      }
+      Partition p = null;
+      if (ci.partName != null) {
+        p = resolvePartition(ci);
+        if (p == null) {
+          // The partition was dropped before we got around to cleaning it.
+          LOG.info("Unable to find partition " + ci.getFullPartitionName() +
+              ", assuming it was dropped");
+          return;
+        }
+      }
+      StorageDescriptor sd = resolveStorageDescriptor(t, p);
       final String location = sd.getLocation();
 
       // Create a bogus validTxnList with a high water mark set to MAX_LONG and no open

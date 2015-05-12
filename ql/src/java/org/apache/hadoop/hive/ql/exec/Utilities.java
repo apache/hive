@@ -2246,6 +2246,11 @@ public final class Utilities {
       }
     }
     JavaUtils.closeClassLoader(loader);
+//this loader is closed, remove it from cached registry loaders to avoid remove it again.
+    Registry reg = SessionState.getRegistry();
+    if(reg != null) {
+      reg.removeFromUDFLoaders(loader);
+    }
 
     loader = new URLClassLoader(newPath.toArray(new URL[0]));
     curThread.setContextClassLoader(loader);
