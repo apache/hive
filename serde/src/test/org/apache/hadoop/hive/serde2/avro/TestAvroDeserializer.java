@@ -277,17 +277,72 @@ public class TestAvroDeserializer {
     uoi = (UnionObjectInspector)result.oi;
     assertEquals(0, uoi.getTag(result.unionObject));
   }
+  
+  @Test
+  public void canDeserializeEvolvedUnions1() throws SerDeException, IOException {
+    Schema ws = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA);
+    Schema rs = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA_2);
 
-  private ResultPair unionTester(Schema s, GenericData.Record record)
+    GenericData.Record record = new GenericData.Record(ws);
+
+    record.put("aUnion", "this is a string");
+
+    ResultPair result = unionTester(ws, rs, record);
+    assertTrue(result.value instanceof String);
+    assertEquals("this is a string", result.value);
+    UnionObjectInspector uoi = (UnionObjectInspector)result.oi;
+    assertEquals(2, uoi.getTag(result.unionObject));
+
+    // Now the other enum possibility
+    record = new GenericData.Record(ws);
+    record.put("aUnion", 99);
+    result = unionTester(ws, rs, record);
+    assertTrue(result.value instanceof Integer);
+    assertEquals(99, result.value);
+    uoi = (UnionObjectInspector)result.oi;
+    assertEquals(1, uoi.getTag(result.unionObject));
+  }
+
+  @Test
+  public void canDeserializeEvolvedUnions2() throws SerDeException, IOException {
+    Schema ws = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA_3);
+    Schema rs = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA_4);
+    
+    GenericData.Record record = new GenericData.Record(ws);
+
+    record.put("aUnion", 90);
+
+    ResultPair result = unionTester(ws, rs, record);
+    assertTrue(result.value instanceof Integer);
+    assertEquals(90, result.value);
+    UnionObjectInspector uoi = (UnionObjectInspector)result.oi;
+    assertEquals(0, uoi.getTag(result.unionObject));
+
+    // Now the other enum possibility
+    record = new GenericData.Record(ws);
+    record.put("aUnion", 99.9f);
+    result = unionTester(ws, rs, record);
+    assertTrue(result.value instanceof Float);
+    assertEquals(99.9f, result.value);
+    uoi = (UnionObjectInspector)result.oi;
+    assertEquals(1, uoi.getTag(result.unionObject));
+  }
+
+  private ResultPair unionTester(Schema ws, GenericData.Record record)
           throws SerDeException, IOException {
-    assertTrue(GENERIC_DATA.validate(s, record));
+      return unionTester(ws, ws, record);
+  }
+
+  private ResultPair unionTester(Schema ws, Schema rs, GenericData.Record record)
+          throws SerDeException, IOException {
+    assertTrue(GENERIC_DATA.validate(ws, record));
     AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
 
-    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(rs);
 
     AvroDeserializer de = new AvroDeserializer();
     ArrayList<Object> row =
-            (ArrayList<Object>)de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, s);
+            (ArrayList<Object>)de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, rs);
     assertEquals(1, row.size());
     StandardStructObjectInspector oi = (StandardStructObjectInspector)aoig.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();

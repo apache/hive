@@ -112,6 +112,39 @@ public class TestAvroObjectInspectorGenerator {
       "    }\n" +
       "  ]\n" +
       "}";
+  public static final String UNION_SCHEMA_2 = "{\n" +
+          "  \"namespace\": \"test.a.rossa\",\n" +
+          "  \"name\": \"oneUnion\",\n" +
+          "  \"type\": \"record\",\n" +
+          "  \"fields\": [\n" +
+          "    {\n" +
+          "      \"name\":\"aUnion\",\n" +
+          "      \"type\":[\"null\", \"int\", \"string\"]\n" +
+          "    }\n" +
+          "  ]\n" +
+          "}";
+  public static final String UNION_SCHEMA_3 = "{\n" +
+          "  \"namespace\": \"test.a.rossa\",\n" +
+          "  \"name\": \"oneUnion\",\n" +
+          "  \"type\": \"record\",\n" +
+          "  \"fields\": [\n" +
+          "    {\n" +
+          "      \"name\":\"aUnion\",\n" +
+          "      \"type\":[\"float\",\"int\"]\n" +
+          "    }\n" +
+          "  ]\n" +
+          "}";
+  public static final String UNION_SCHEMA_4 = "{\n" +
+          "  \"namespace\": \"test.a.rossa\",\n" +
+          "  \"name\": \"oneUnion\",\n" +
+          "  \"type\": \"record\",\n" +
+          "  \"fields\": [\n" +
+          "    {\n" +
+          "      \"name\":\"aUnion\",\n" +
+          "      \"type\":[\"int\",\"float\",\"long\"]\n" +
+          "    }\n" +
+          "  ]\n" +
+          "}";
   public static final String ENUM_SCHEMA = "{\n" +
       "  \"namespace\": \"clever.namespace.name.in.space\",\n" +
       "  \"name\": \"oneEnum\",\n" +
