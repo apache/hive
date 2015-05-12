@@ -60,6 +60,7 @@ public final class ObjectInspectorConverters {
    *
    */
   public static class IdentityConverter implements Converter {
+    @Override
     public Object convert(Object input) {
       return input;
     }
@@ -126,7 +127,7 @@ public final class ObjectInspectorConverters {
           (SettableBinaryObjectInspector)outputOI);
     case DECIMAL:
       return new PrimitiveObjectInspectorConverter.HiveDecimalConverter(
-          (PrimitiveObjectInspector) inputOI,
+          inputOI,
           (SettableHiveDecimalObjectInspector) outputOI);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
@@ -229,7 +230,7 @@ public final class ObjectInspectorConverters {
       // Create a writable object inspector for primitive type and return it.
       PrimitiveObjectInspector primOutputOI = (PrimitiveObjectInspector) outputOI;
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          (PrimitiveTypeInfo)primOutputOI.getTypeInfo());
+          primOutputOI.getTypeInfo());
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
       // create a standard settable struct object inspector.

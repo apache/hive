@@ -46,4 +46,9 @@ public class WritableVoidObjectInspector extends
   public Object getPrimitiveJavaObject(Object o) {
     return null;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return null != obj && obj instanceof WritableVoidObjectInspector;
+  }
 }

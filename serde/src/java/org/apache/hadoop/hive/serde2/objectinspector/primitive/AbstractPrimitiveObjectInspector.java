@@ -83,6 +83,7 @@ public abstract class AbstractPrimitiveObjectInspector implements
     return typeInfo.getTypeName();
   }
 
+  @Override
   public PrimitiveTypeInfo getTypeInfo() {
     return this.typeInfo;
   }

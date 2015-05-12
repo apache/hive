@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
@@ -116,9 +115,7 @@ public class RexNodeConverter {
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
-    if (expr instanceof ExprNodeNullDesc) {
-      return createNullLiteral(expr);
-    } else if (expr instanceof ExprNodeGenericFuncDesc) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
       return convert((ExprNodeGenericFuncDesc) expr);
     } else if (expr instanceof ExprNodeConstantDesc) {
       return convert((ExprNodeConstantDesc) expr);

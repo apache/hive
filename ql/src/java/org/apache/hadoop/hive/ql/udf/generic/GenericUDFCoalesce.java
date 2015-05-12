@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * GenericUDF Class for SQL construct "COALESCE(a, b, c)".
- * 
+ *
  * NOTES: 1. a, b and c should have the same TypeInfo, or an exception will be
  * thrown.
  */

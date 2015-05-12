@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
@@ -291,8 +290,7 @@ public class TableAccessAnalyzer {
             continue;
           }
 
-          if ((colExpr instanceof ExprNodeConstantDesc) ||
-            (colExpr instanceof ExprNodeNullDesc)) {
+          if (colExpr instanceof ExprNodeConstantDesc) {
             currColNames.remove(outputColName);
             continue;
           } else if (colExpr instanceof ExprNodeColumnDesc) {
@@ -317,7 +315,7 @@ public class TableAccessAnalyzer {
       if (expr instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc colExpr = (ExprNodeColumnDesc)expr;
         colList.add(colExpr.getColumn());
-      } else if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeNullDesc) {
+      } else if (expr instanceof ExprNodeConstantDesc) {
         continue;
       } else {
         return null;

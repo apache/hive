@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -340,9 +339,6 @@ public class GroupByOptimizer implements Transform {
             }
             else {
               tableColsMapping.remove(outputColumnName);
-              if (selectCol instanceof ExprNodeNullDesc) {
-                newConstantCols.add(outputColumnName);
-              }
               if (selectCol instanceof ExprNodeConstantDesc) {
                 // Lets see if this constant was folded because of optimization.
                 String origCol = ((ExprNodeConstantDesc) selectCol).getFoldedFromCol();
@@ -380,8 +376,7 @@ public class GroupByOptimizer implements Transform {
           }
         }
         // Constants and nulls are OK
-        else if ((expr instanceof ExprNodeConstantDesc) ||
-            (expr instanceof ExprNodeNullDesc)) {
+        else if (expr instanceof ExprNodeConstantDesc) {
           continue;
         } else {
           return GroupByOptimizerSortMatch.NO_MATCH;

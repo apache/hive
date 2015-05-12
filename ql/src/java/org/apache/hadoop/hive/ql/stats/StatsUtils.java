@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -1194,13 +1193,6 @@ public class StatsUtils {
       colType = engfd.getTypeString();
       countDistincts = numRows;
       oi = engfd.getWritableObjectInspector();
-    } else if (end instanceof ExprNodeNullDesc) {
-
-      // null projection
-      ExprNodeNullDesc ennd = (ExprNodeNullDesc) end;
-      colName = ennd.getName();
-      colType = "null";
-      numNulls = numRows;
     } else if (end instanceof ExprNodeColumnListDesc) {
 
       // column list
@@ -1424,7 +1416,7 @@ public class StatsUtils {
     double result = a * b;
     return (result > Long.MAX_VALUE) ? Long.MAX_VALUE : (long)result;
   }
- 
+
   /** Bounded addition - overflows become MAX_VALUE */
   public static long safeAdd(long a, long b) {
     try {
@@ -1433,7 +1425,7 @@ public class StatsUtils {
       return Long.MAX_VALUE;
     }
   }
- 
+
   /** Bounded multiplication - overflows become MAX_VALUE */
   public static long safeMult(long a, long b) {
     try {

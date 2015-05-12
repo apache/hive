@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
     + "  > SELECT _FUNC_(2, 3, 1) FROM src LIMIT 1;\n" + "  3")
 public class GenericUDFGreatest extends GenericUDFBaseNwayCompare {
 
+  @Override
   protected String getFuncName() {
     return "greatest";
   }

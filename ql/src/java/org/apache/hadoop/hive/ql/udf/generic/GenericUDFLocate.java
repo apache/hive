@@ -34,7 +34,7 @@ import org.apache.hadoop.io.Text;
  * Generic UDF for string function <code>LOCATE(substr, str)</code>,
  * <code>LOCATE(substr, str, start)</code>. This mimcs the function from MySQL
  * http://dev.mysql.com/doc/refman/5.1/en/string-functions.html#function_locate
- * 
+ *
  * <pre>
  * usage:
  * LOCATE(substr, str)

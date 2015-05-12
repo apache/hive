@@ -153,7 +153,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CASE WHEN ((key = '238')) THEN (1) ELSE (null) END = 1) (type: boolean)
+              predicate: CASE WHEN ((key = '238')) THEN (true) ELSE (null) END (type: int)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

@@ -133,8 +133,9 @@ public class GenericUDFPrintf extends GenericUDF {
       }
     }
     formatter.format(pattern.toString(), argumentList.toArray());
-
     resultText.set(sb.toString());
+    formatter.close();
+
     return resultText;
   }
 

@@ -17,14 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
 public class HiveVarcharWritable extends HiveBaseCharWritable
@@ -74,6 +68,7 @@ public class HiveVarcharWritable extends HiveBaseCharWritable
     set(getHiveVarchar(), maxLength);
   }
 
+  @Override
   public int compareTo(HiveVarcharWritable rhs) {
     return value.compareTo(rhs.value);
   }

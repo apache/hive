@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Text;
 /**
  * TRANSLATE(string input, string from, string to) is an equivalent function to translate in
  * PostGresSQL. See explain extended annotation below to read more about how this UDF works
- * 
+ *
  */
 @UDFType(deterministic = true)
 //@formatter:off
@@ -188,7 +188,7 @@ public class GenericUDFTranslate extends GenericUDF {
   /**
    * Pre-processes the from and to strings by calling {@link #populateMappings(Text, Text)} if
    * necessary.
-   * 
+   *
    * @param from
    *          from string to be used for translation
    * @param to
@@ -215,7 +215,7 @@ public class GenericUDFTranslate extends GenericUDF {
 
   /**
    * Pre-process the from and to strings populate {@link #replacementMap} and {@link #deletionSet}.
-   * 
+   *
    * @param from
    *          from string to be used for translation
    * @param to
@@ -255,7 +255,7 @@ public class GenericUDFTranslate extends GenericUDF {
   /**
    * Translates the input string based on {@link #replacementMap} and {@link #deletionSet} and
    * returns the translated string.
-   * 
+   *
    * @param input
    *          input string to perform the translation on
    * @return translated string
