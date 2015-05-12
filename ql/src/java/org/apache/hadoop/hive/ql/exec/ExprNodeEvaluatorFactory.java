@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 
@@ -57,12 +56,6 @@ public final class ExprNodeEvaluatorFactory {
     if (desc instanceof ExprNodeFieldDesc) {
       return new ExprNodeFieldEvaluator((ExprNodeFieldDesc) desc);
     }
-    // Null node, a constant node with value NULL and no type information
-    if (desc instanceof ExprNodeNullDesc) {
-      return new ExprNodeConstantEvaluator(new ExprNodeConstantDesc(TypeInfoFactory
-          .getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), null));
-    }
-
     throw new RuntimeException(
         "Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
   }
