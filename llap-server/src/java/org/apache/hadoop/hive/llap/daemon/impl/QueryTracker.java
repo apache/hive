@@ -61,6 +61,8 @@ public class QueryTracker {
       queryInfo = new QueryInfo(queryId, appIdString, dagName, dagIdentifier, user);
       queryInfoMap.putIfAbsent(dagName, queryInfo);
     }
+    // TODO Start tracking individual fragments, so that taskKilled etc messages
+    // can be routed through this layer to simplify the interfaces.
   }
 
   String[] getLocalDirs(String queryId, String dagName, String user) throws IOException {

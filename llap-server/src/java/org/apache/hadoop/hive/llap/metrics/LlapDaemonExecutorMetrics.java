@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalRequestsHandled;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalSuccess;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMetrics;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.PreemptionTimeLost;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -72,11 +73,12 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   @Metric
   MutableCounterLong executorTotalSuccess;
   @Metric
-  MutableCounterLong executorTotalInterrupted;
+  MutableCounterLong executorTotalIKilled;
   @Metric
   MutableCounterLong executorTotalExecutionFailed;
   @Metric
-  MutableCounterLong executorTotalAskedToDie;
+  MutableCounterLong preemptionTimeLost;
+
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
       int numExecutors) {
@@ -141,13 +143,14 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalExecutionFailed.incr();
   }
 
-  public void incrExecutorTotalInterrupted() {
-    executorTotalInterrupted.incr();
+  public void incrPreemptionTimeLost(long value) {
+    preemptionTimeLost.incr(value);
   }
 
-  public void incrExecutorTotalAskedToDie() {
-    executorTotalAskedToDie.incr();
+  public void incrExecutorTotalKilled() {
+    executorTotalIKilled.incr();
   }
+
 
   private void getExecutorStats(MetricsRecordBuilder rb) {
     updateThreadMetrics(rb);
@@ -156,8 +159,8 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addCounter(ExecutorNumQueuedRequests, executorNumQueuedRequests.value())
         .addCounter(ExecutorTotalSuccess, executorTotalSuccess.value())
         .addCounter(ExecutorTotalExecutionFailure, executorTotalExecutionFailed.value())
-        .addCounter(ExecutorTotalInterrupted, executorTotalInterrupted.value())
-        .addCounter(ExecutorTotalAskedToDie, executorTotalAskedToDie.value());
+        .addCounter(ExecutorTotalInterrupted, executorTotalIKilled.value())
+        .addCounter(PreemptionTimeLost, preemptionTimeLost.value());
   }
 
   private void updateThreadMetrics(MetricsRecordBuilder rb) {

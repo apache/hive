@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
+import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
@@ -56,6 +57,7 @@ import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.apache.tez.runtime.internals.api.TaskReporterInterface;
 import org.apache.tez.runtime.library.input.UnorderedKVInput;
+import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 
 import com.google.common.base.Stopwatch;
@@ -88,6 +90,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AMReporter amReporter;
   private final ConcurrentMap<String, LlapDaemonProtocolProtos.SourceStateProto> sourceCompletionMap;
   private final TaskSpec taskSpec;
+  private final KilledTaskHandler killedTaskHandler;
   private volatile TezTaskRunner2 taskRunner;
   private volatile TaskReporterInterface taskReporter;
   private volatile ListeningExecutorService executor;
@@ -96,13 +99,17 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private volatile String threadName;
   private LlapDaemonExecutorMetrics metrics;
   protected String requestId;
+  private boolean shouldRunTask = true;
+  final Stopwatch runtimeWatch = new Stopwatch();
+  final Stopwatch killtimerWatch = new Stopwatch();
 
   TaskRunnerCallable(LlapDaemonProtocolProtos.SubmitWorkRequestProto request, Configuration conf,
       ExecutionContext executionContext, Map<String, String> envMap,
       String[] localDirs, Credentials credentials,
       long memoryAvailable, AMReporter amReporter,
       ConcurrentMap<String, LlapDaemonProtocolProtos.SourceStateProto> sourceCompletionMap,
-      ConfParams confParams, LlapDaemonExecutorMetrics metrics) {
+      ConfParams confParams, LlapDaemonExecutorMetrics metrics,
+      KilledTaskHandler killedTaskHandler) {
     this.request = request;
     this.conf = conf;
     this.executionContext = executionContext;
@@ -123,6 +130,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
     this.metrics = metrics;
     this.requestId = getTaskAttemptId(request);
+    this.killedTaskHandler = killedTaskHandler;
   }
 
   @Override
@@ -146,7 +154,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     executor = MoreExecutors.listeningDecorator(executorReal);
 
     // TODO Consolidate this code with TezChild.
-    Stopwatch sw = new Stopwatch().start();
+    runtimeWatch.start();
     UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser(request.getUser());
     taskUgi.addCredentials(credentials);
 
@@ -177,12 +185,21 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         new AtomicLong(0),
         request.getContainerIdString());
 
-    taskRunner = new TezTaskRunner2(conf, taskUgi, localDirs,
-        taskSpec,
-        request.getAppAttemptNumber(),
-        serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor, objectRegistry,
-        pid,
-        executionContext, memoryAvailable);
+    synchronized (this) {
+      if (shouldRunTask) {
+        taskRunner = new TezTaskRunner2(conf, taskUgi, localDirs,
+            taskSpec,
+            request.getAppAttemptNumber(),
+            serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
+            objectRegistry,
+            pid,
+            executionContext, memoryAvailable);
+      }
+    }
+    if (taskRunner == null) {
+      LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+      return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+    }
 
     try {
       TaskRunner2Result result = taskRunner.run();
@@ -195,11 +212,40 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
       //        FileSystem.closeAllForUGI(taskUgi);
       LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-          sw.stop().elapsed(TimeUnit.MILLISECONDS));
+          runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
       if (LOG.isDebugEnabled()) {
         LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
       }
     }
+  }
+
+  /**
+   * Attempt to kill a running task. If the task has not started running, it will not start.
+   * If it's already running, a kill request will be sent to it.
+   *
+   * The AM will be informed about the task kill.
+   */
+  public void killTask() {
+    synchronized (this) {
+      LOG.info("Killing task with id {}, taskRunnerSetup={}", taskSpec.getTaskAttemptID(), (taskRunner != null));
+      if (taskRunner != null) {
+        killtimerWatch.start();
+        LOG.info("Issuing kill to task {}" + taskSpec.getTaskAttemptID());
+        taskRunner.killTask();
+        shouldRunTask = false;
+      }
+    }
+    // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
+    reportTaskKilled();
+  }
+
+  /**
+   * Inform the AM that this task has been killed.
+   */
+  public void reportTaskKilled() {
+    killedTaskHandler
+        .taskKilled(request.getAmHost(), request.getAmPort(), request.getUser(), jobToken,
+            taskSpec.getTaskAttemptID());
   }
 
   /**
@@ -314,7 +360,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       return requestId;
     }
 
-    // TODO Slightly more useful error handling
+    // Errors are handled on the way over. FAIL/SUCCESS is informed via regular heartbeats. Killed
+    // via a kill message when a task kill is requested by the daemon.
     @Override
     public void onSuccess(TaskRunner2Result result) {
       switch(result.getEndReason()) {
@@ -327,7 +374,14 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.warn("Unexpected CONTAINER_STOP_REQUEST for {}", requestId);
           break;
         case KILL_REQUESTED:
-          // TODO Send a kill out to the AM.
+          LOG.info("Killed task {}", requestId);
+          if (killtimerWatch.isRunning()) {
+            killtimerWatch.stop();
+            long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
+            LOG.info("Time to die for task {}", elapsed);
+          }
+          metrics.incrPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
+          metrics.incrExecutorTotalKilled();
           break;
         case COMMUNICATION_FAILURE:
           LOG.info("Failed to run {} due to communication failure", requestId);

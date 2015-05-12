@@ -46,11 +46,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Sends status updates to various AMs.
+ * Responsible for communicating with various AMs.
  */
 public class AMReporter extends AbstractService {
 
@@ -80,6 +81,8 @@ public class AMReporter extends AbstractService {
   private final DelayQueue<AMNodeInfo> pendingHeartbeatQueeu = new DelayQueue();
   private final long heartbeatInterval;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+  // Tracks appMasters to which heartbeats are being sent. This should not be used for any other
+  // messages like taskKilled, etc.
   private final Map<LlapNodeId, AMNodeInfo> knownAppMasters = new HashMap<>();
   volatile ListenableFuture<Void> queueLookupFuture;
 
@@ -167,6 +170,28 @@ public class AMReporter extends AbstractService {
     }
   }
 
+  public void taskKilled(String amLocation, int port, String user, Token<JobTokenIdentifier> jobToken,
+                         final TezTaskAttemptID taskAttemptId) {
+    // Not re-using the connection for the AM heartbeat - which may or may not be open by this point.
+    // knownAppMasters is used for sending heartbeats for queued tasks. Killed messages use a new connection.
+    LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
+    AMNodeInfo amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, conf);
+    ListenableFuture<Void> future =
+        executor.submit(new KillTaskCallable(taskAttemptId, amNodeInfo));
+    Futures.addCallback(future, new FutureCallback<Void>() {
+      @Override
+      public void onSuccess(Void result) {
+        LOG.info("Sent taskKilled for {}", taskAttemptId);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        LOG.warn("Failed to send taskKilled for {}. The attempt will likely time out.",
+            taskAttemptId);
+      }
+    });
+  }
+
   private class QueueLookupCallable extends CallableWithNdc<Void> {
 
     @Override
@@ -199,6 +224,31 @@ public class AMReporter extends AbstractService {
     }
   }
 
+  private class KillTaskCallable extends CallableWithNdc<Void> {
+    final AMNodeInfo amNodeInfo;
+    final TezTaskAttemptID taskAttemptId;
+
+    public KillTaskCallable(TezTaskAttemptID taskAttemptId,
+                            AMNodeInfo amNodeInfo) {
+      this.taskAttemptId = taskAttemptId;
+      this.amNodeInfo = amNodeInfo;
+    }
+
+    @Override
+    protected Void callInternal() {
+      try {
+        amNodeInfo.getUmbilical().taskKilled(taskAttemptId);
+      } catch (IOException e) {
+        LOG.warn("Failed to send taskKilled message for task {}. Will re-run after it times out", taskAttemptId);
+      } catch (InterruptedException e) {
+        if (!isShutdown.get()) {
+          LOG.info("Interrupted while trying to send taskKilled message for task {}", taskAttemptId);
+        }
+      }
+      return null;
+    }
+  }
+
   private class AMHeartbeatCallable extends CallableWithNdc<Void> {
 
     final AMNodeInfo amNodeInfo;
@@ -224,7 +274,7 @@ public class AMReporter extends AbstractService {
           LOG.warn("Failed to communicate with AM. May retry later: " + amNodeInfo.amNodeId, e);
         } catch (InterruptedException e) {
           if (!isShutdown.get()) {
-            LOG.warn("Failed to communicate with AM: " + amNodeInfo.amNodeId, e);
+            LOG.warn("Interrupted while trying to send heartbeat to AM: " + amNodeInfo.amNodeId, e);
           }
         }
       } else {

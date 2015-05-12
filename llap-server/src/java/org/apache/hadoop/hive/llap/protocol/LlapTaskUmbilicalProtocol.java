@@ -34,4 +34,6 @@ public interface LlapTaskUmbilicalProtocol extends VersionedProtocol {
 
   public void nodeHeartbeat(Text hostname, int port);
 
+  public void taskKilled(TezTaskAttemptID taskAttemptId);
+
 }
