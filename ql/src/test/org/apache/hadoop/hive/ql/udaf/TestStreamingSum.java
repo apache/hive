@@ -54,19 +54,13 @@ public class TestStreamingSum {
     if (p == 0) {
       start = new CurrentRowDef();
     } else {
-      RangeBoundaryDef startR = new RangeBoundaryDef();
-      startR.setDirection(Direction.PRECEDING);
-      startR.setAmt(p);
-      start = startR;
+      start = new RangeBoundaryDef(Direction.PRECEDING, p);
     }
 
     if (f == 0) {
       end = new CurrentRowDef();
     } else {
-      RangeBoundaryDef endR = new RangeBoundaryDef();
-      endR.setDirection(Direction.FOLLOWING);
-      endR.setAmt(f);
-      end = endR;
+      end = new RangeBoundaryDef(Direction.FOLLOWING, f);
     }
 
     return new WindowFrameDef(start, end);

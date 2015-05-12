@@ -18,13 +18,30 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class ValueBoundaryDef extends BoundaryDef {
   private PTFExpressionDef expressionDef;
-  private int amt;
+  private final int amt;
+  private final int relativeOffset;
+
+  public ValueBoundaryDef(Direction direction, int amt) {
+    this.direction = direction;
+    this.amt = amt;
+
+    // Calculate relative offset
+    switch(this.direction) {
+    case PRECEDING:
+      relativeOffset = -amt;
+      break;
+    case FOLLOWING:
+      relativeOffset = amt;
+      break;
+    default:
+      relativeOffset = 0;
+    }
+  }
 
   public int compareTo(BoundaryDef other) {
     int c = getDirection().compareTo(other.getDirection());
@@ -32,7 +49,7 @@ public class ValueBoundaryDef extends BoundaryDef {
       return c;
     }
     ValueBoundaryDef vb = (ValueBoundaryDef) other;
-    return getAmt() - vb.getAmt();
+    return this.direction == Direction.PRECEDING ? vb.amt - this.amt : this.amt - vb.amt;
   }
 
   public PTFExpressionDef getExpressionDef() {
@@ -41,14 +58,6 @@ public class ValueBoundaryDef extends BoundaryDef {
 
   public void setExpressionDef(PTFExpressionDef expressionDef) {
     this.expressionDef = expressionDef;
-  }
-
-  public ExprNodeDesc getExprNode() {
-    return expressionDef == null ? null : expressionDef.getExprNode();
-  }
-
-  public ExprNodeEvaluator getExprEvaluator() {
-    return expressionDef == null ? null : expressionDef.getExprEvaluator();
   }
 
   public ObjectInspector getOI() {
@@ -60,7 +69,18 @@ public class ValueBoundaryDef extends BoundaryDef {
     return amt;
   }
 
-  public void setAmt(int amt) {
-    this.amt = amt;
+  @Override
+  public int getRelativeOffset() {
+    return relativeOffset;
+  }
+
+  @Override
+  public boolean isPreceding() {
+    return this.direction == Direction.PRECEDING;
+  }
+
+  @Override
+  public boolean isFollowing() {
+    return this.direction == Direction.FOLLOWING;
   }
 }
