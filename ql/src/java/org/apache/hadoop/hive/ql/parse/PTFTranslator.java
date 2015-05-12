@@ -545,9 +545,7 @@ public class PTFTranslator {
       throws SemanticException {
     if (bndSpec instanceof ValueBoundarySpec) {
       ValueBoundarySpec vBndSpec = (ValueBoundarySpec) bndSpec;
-      ValueBoundaryDef vbDef = new ValueBoundaryDef();
-      vbDef.setAmt(vBndSpec.getAmt());
-      vbDef.setDirection(vBndSpec.getDirection());
+      ValueBoundaryDef vbDef = new ValueBoundaryDef(vBndSpec.getDirection(), vBndSpec.getAmt());
       PTFTranslator.validateNoLeadLagInValueBoundarySpec(vBndSpec.getExpression());
       PTFExpressionDef exprDef = null;
       try {
@@ -561,10 +559,7 @@ public class PTFTranslator {
     }
     else if (bndSpec instanceof RangeBoundarySpec) {
       RangeBoundarySpec rBndSpec = (RangeBoundarySpec) bndSpec;
-      RangeBoundaryDef rbDef = new RangeBoundaryDef();
-      rbDef.setAmt(rBndSpec.getAmt());
-      rbDef.setDirection(rBndSpec.getDirection());
-      return rbDef;
+      return new RangeBoundaryDef(rBndSpec.getDirection(), rBndSpec.getAmt());
     } else if (bndSpec instanceof CurrentRowSpec) {
       CurrentRowDef cbDef = new CurrentRowDef();
       return cbDef;

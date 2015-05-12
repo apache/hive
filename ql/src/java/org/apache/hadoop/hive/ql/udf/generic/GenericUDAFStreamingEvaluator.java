@@ -65,7 +65,7 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
 
   class StreamingState extends AbstractAggregationBuffer {
     final AggregationBuffer wrappedBuf;
-    final List<T1> results;
+    final List<T1> results; // Hold the aggregation results for each row in the partition
     int numRows;  // Number of rows processed in the partition.
 
     StreamingState(AggregationBuffer buf) {
@@ -127,7 +127,7 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
 
     class SumAvgStreamingState extends StreamingState {
 
-      final List<T2> intermediateVals;
+      final List<T2> intermediateVals;  // Keep track of S[0..x]
 
       SumAvgStreamingState(AggregationBuffer buf) {
         super(buf);
@@ -163,20 +163,23 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       }
 
       /**
-       * After the number of rows processed is more than the size of FOLLOWING window,
-       * we can generate a PTF result for a previous row when a new row gets processed.
+       * For the cases "X preceding and Y preceding" or the number of processed rows
+       * is more than the size of FOLLOWING window, we are able to generate a PTF result
+       * for a previous row.
        * @return
        */
       public boolean hasResultReady() {
-        return this.numRows >= wFrameDef.getEnd().getAmt();
+        return this.numRows >= wFrameDef.getEnd().getRelativeOffset();
       }
 
       /**
-       * Retrieve the next stored intermediate result to generate the result for next available row
+       * Retrieve the next stored intermediate result, i.e.,
+       * Get S[x-1] in the computation of S[x..y] = S[y] - S[x-1].
        */
       public T2 retrieveNextIntermediateValue() {
         if (!wFrameDef.getStart().isUnbounded()
-            && (this.numRows - wFrameDef.getEnd().getAmt()) >= (wFrameDef.getStart().getAmt() + 1)) {
+            && !this.intermediateVals.isEmpty()
+            && this.numRows >= wFrameDef.getWindowSize()) {
           return this.intermediateVals.remove(0);
         }
 
@@ -196,11 +199,20 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       SumAvgStreamingState ss = (SumAvgStreamingState) agg;
 
       wrappedEval.iterate(ss.wrappedBuf, parameters);
-      // Generate the result for a previous row, of whose window all the rows have been processed.
+
+      // We need to insert 'null' before processing first row for the case: X preceding and y preceding
+      if (ss.numRows == 0) {
+        for (int i = wFrameDef.getEnd().getRelativeOffset(); i < 0; i++) {
+          ss.results.add(null);
+        }
+      }
+
+      // Generate the result for the windowing ending at the current row
       if (ss.hasResultReady()) {
         ss.results.add(getNextResult(ss));
       }
-      if (!wFrameDef.isStartUnbounded()) {
+      if (!wFrameDef.isStartUnbounded()
+          && ss.numRows + 1 >= wFrameDef.getStart().getRelativeOffset()) {
         ss.intermediateVals.add(getCurrentIntermediateResult(ss));
       }
 
@@ -212,9 +224,15 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
       SumAvgStreamingState ss = (SumAvgStreamingState) agg;
       Object o = wrappedEval.terminate(ss.wrappedBuf);
 
-      // After all the rows are processed, continue to generate results for the rows that results haven't generate
-      for (int i = 0; i < wFrameDef.getEnd().getAmt(); i++) {
+      // After all the rows are processed, continue to generate results for the rows that results haven't generated.
+      // For the case: X following and Y following, process first Y-X results and then insert X nulls.
+      // For the case X preceding and Y following, process Y results.
+      for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
         ss.results.add(getNextResult(ss));
+        ss.numRows++;
+      }
+      for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
+        ss.results.add(null);
         ss.numRows++;
       }
 

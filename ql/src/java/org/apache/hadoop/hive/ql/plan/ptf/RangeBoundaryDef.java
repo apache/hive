@@ -18,9 +18,28 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 
 public class RangeBoundaryDef extends BoundaryDef {
   private int amt;
+  private final int relativeOffset;
+
+  public RangeBoundaryDef(Direction direction, int amt) {
+    this.direction = direction;
+    this.amt = amt;
+
+    // Calculate relative offset
+    switch(this.direction) {
+    case PRECEDING:
+      relativeOffset = -amt;
+      break;
+    case FOLLOWING:
+      relativeOffset = amt;
+      break;
+    default:
+      relativeOffset = 0;
+    }
+  }
 
   public int compareTo(BoundaryDef other) {
     int c = getDirection().compareTo(other.getDirection());
@@ -28,7 +47,7 @@ public class RangeBoundaryDef extends BoundaryDef {
       return c;
     }
     RangeBoundaryDef rb = (RangeBoundaryDef) other;
-    return getAmt() - rb.getAmt();
+    return this.direction == Direction.PRECEDING ? rb.amt - this.amt : this.amt - rb.amt;
   }
 
   @Override
@@ -36,7 +55,18 @@ public class RangeBoundaryDef extends BoundaryDef {
     return amt;
   }
 
-  public void setAmt(int amt) {
-    this.amt = amt;
+  @Override
+  public boolean isPreceding() {
+    return this.direction == Direction.PRECEDING;
+  }
+
+  @Override
+  public boolean isFollowing() {
+    return this.direction == Direction.FOLLOWING;
+  }
+
+  @Override
+  public int getRelativeOffset() {
+    return relativeOffset;
   }
 }

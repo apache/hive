@@ -35,4 +35,14 @@ public class CurrentRowDef extends BoundaryDef {
   public int getAmt() {
     return 0;
   }
+
+  @Override
+  public boolean isCurrentRow() {
+    return true;
+  }
+
+  @Override
+  public int getRelativeOffset() {
+    return 0;
+  }
 }
