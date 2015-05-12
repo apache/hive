@@ -92,7 +92,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
@@ -441,7 +440,7 @@ public class VectorizationContext {
         ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
             childExpressions, mode, exprDesc.getTypeInfo());
       }
-    } else if (exprDesc instanceof ExprNodeNullDesc) {
+    } else if (exprDesc instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)exprDesc).getValue()) {
       ve = getConstantVectorExpression(null, exprDesc.getTypeInfo(), mode);
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
@@ -1450,7 +1449,7 @@ public class VectorizationContext {
       Object constantValue = ((ExprNodeConstantDesc) child).getValue();
       HiveDecimal decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
       return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
+    } else if (child instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)child).getValue()) {
       return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
@@ -1477,7 +1476,7 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         String strValue = castConstantToString(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(strValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
+    } else if (child instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)child).getValue()) {
       return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (inputType.equals("boolean")) {
@@ -1564,7 +1563,7 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Double doubleValue = castConstantToDouble(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
+    } else if (child instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)child).getValue()) {
       return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
@@ -1590,7 +1589,7 @@ public class VectorizationContext {
       // Don't do constant folding here.  Wait until the optimizer is changed to do it.
       // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
       return null;
-    } else if (child instanceof ExprNodeNullDesc) {
+    } else if (child instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)child).getValue()) {
       return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION);
     }
     // Long and double are handled using descriptors, string needs to be specially handled.
@@ -1620,7 +1619,7 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Long longValue = castConstantToLong(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
+    } else if (child instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)child).getValue()) {
       return getConstantVectorExpression(null, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
     }
     // Float family, timestamp are handled via descriptor based lookup, int family needs
