@@ -111,7 +111,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     super.serviceInit(conf);
     int numThreads = conf.getInt(LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS,
         LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT);
-    this.communicator = new TaskCommunicator(numThreads);
+    this.communicator = new TaskCommunicator(numThreads, conf);
     this.deleteDelayOnDagComplete = conf.getLong(LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS,
         LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS_DEFAULT);
     LOG.info("Running LlapTaskCommunicator with "

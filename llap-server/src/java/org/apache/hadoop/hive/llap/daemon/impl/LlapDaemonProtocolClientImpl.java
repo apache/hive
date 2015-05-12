@@ -14,11 +14,14 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import javax.annotation.Nullable;
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
+import io.netty.util.NetUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
@@ -29,10 +32,14 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.io.retry.RetryPolicies;
+import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
+import org.apache.hadoop.ipc.ProtocolProxy;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
+import org.apache.hadoop.security.UserGroupInformation;
 
 // TODO Change all this to be based on a regular interface instead of relying on the Proto service - Exception signatures cannot be controlled without this for the moment.
 
@@ -41,12 +48,22 @@ public class LlapDaemonProtocolClientImpl implements LlapDaemonProtocolBlockingP
 
   private final Configuration conf;
   private final InetSocketAddress serverAddr;
+  private final RetryPolicy retryPolicy;
+  private final SocketFactory socketFactory;
   LlapDaemonProtocolBlockingPB proxy;
 
 
-  public LlapDaemonProtocolClientImpl(Configuration conf, String hostname, int port) {
+  public LlapDaemonProtocolClientImpl(Configuration conf, String hostname, int port,
+                                      @Nullable RetryPolicy retryPolicy,
+                                      @Nullable SocketFactory socketFactory) {
     this.conf = conf;
     this.serverAddr = NetUtils.createSocketAddr(hostname, port);
+    this.retryPolicy = retryPolicy;
+    if (socketFactory == null) {
+      this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
+    } else {
+      this.socketFactory = socketFactory;
+    }
   }
 
   @Override
@@ -101,10 +118,12 @@ public class LlapDaemonProtocolClientImpl implements LlapDaemonProtocolBlockingP
   }
 
   public LlapDaemonProtocolBlockingPB createProxy() throws IOException {
-    LlapDaemonProtocolBlockingPB p;
     // TODO Fix security
     RPC.setProtocolEngine(conf, LlapDaemonProtocolBlockingPB.class, ProtobufRpcEngine.class);
-    p =  RPC.getProxy(LlapDaemonProtocolBlockingPB.class, 0, serverAddr, conf);
-    return p;
+    ProtocolProxy<LlapDaemonProtocolBlockingPB> proxy =
+        RPC.getProtocolProxy(LlapDaemonProtocolBlockingPB.class, 0, serverAddr,
+            UserGroupInformation.getCurrentUser(), conf, NetUtils.getDefaultSocketFactory(conf), 0,
+            retryPolicy);
+    return proxy.getProxy();
   }
 }
