@@ -14,11 +14,13 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import javax.net.SocketFactory;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -29,6 +31,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemonProtocolClientImpl;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
@@ -37,6 +41,9 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.io.retry.RetryPolicies;
+import org.apache.hadoop.io.retry.RetryPolicy;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.service.AbstractService;
 
 public class TaskCommunicator extends AbstractService {
@@ -46,12 +53,30 @@ public class TaskCommunicator extends AbstractService {
   private final ConcurrentMap<String, LlapDaemonProtocolBlockingPB> hostProxies;
   private ListeningExecutorService executor;
 
-  public TaskCommunicator(int numThreads) {
+  private final RetryPolicy retryPolicy;
+  private final SocketFactory socketFactory;
+
+  public TaskCommunicator(int numThreads, Configuration conf) {
     super(TaskCommunicator.class.getSimpleName());
     ExecutorService localExecutor = Executors.newFixedThreadPool(numThreads,
         new ThreadFactoryBuilder().setNameFormat("TaskCommunicator #%2d").build());
     this.hostProxies = new ConcurrentHashMap<>();
     executor = MoreExecutors.listeningDecorator(localExecutor);
+
+    this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
+
+    long connectionTimeout =
+        conf.getLong(LlapConfiguration.LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MILLIS,
+            LlapConfiguration.LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MILLIS_DEFAULT);
+    long retrySleep = conf.getLong(
+        LlapConfiguration.LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS,
+        LlapConfiguration.LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT);
+    this.retryPolicy = RetryPolicies.retryUpToMaximumTimeWithFixedSleep(connectionTimeout, retrySleep,
+        TimeUnit.MILLISECONDS);
+    LOG.info("Setting up taskCommunicator with" +
+        "numThreads=" + numThreads +
+        "retryTime(millis)=" + connectionTimeout +
+        "retrySleep(millis)=" + retrySleep);
   }
 
   @Override
@@ -180,7 +205,7 @@ public class TaskCommunicator extends AbstractService {
 
     LlapDaemonProtocolBlockingPB proxy = hostProxies.get(hostId);
     if (proxy == null) {
-      proxy = new LlapDaemonProtocolClientImpl(getConfig(), hostname, port);
+      proxy = new LlapDaemonProtocolClientImpl(getConfig(), hostname, port, retryPolicy, socketFactory);
       LlapDaemonProtocolBlockingPB proxyOld = hostProxies.putIfAbsent(hostId, proxy);
       if (proxyOld != null) {
         // TODO Shutdown the new proxy.

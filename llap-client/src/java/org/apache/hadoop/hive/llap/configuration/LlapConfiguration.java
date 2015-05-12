@@ -79,7 +79,7 @@ public class LlapConfiguration extends Configuration {
   public static final int LLAP_DAEMON_SERVICE_REFRESH_INTERVAL_DEFAULT = 60; // seconds
 
   public static final String LLAP_DAEMON_COMMUNICATOR_NUM_THREADS = LLAP_DAEMON_PREFIX + "communicator.num.threads";
-  public static final int LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
+  public static final int LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT = 10;
 
   /**
    * Minimum time after which a previously disabled node will be re-enabled for scheduling. This may
@@ -122,4 +122,15 @@ public class LlapConfiguration extends Configuration {
   public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION =
       LLAP_DAEMON_PREFIX + "task.scheduler.enable.preemption";
   public static final boolean LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION_DEFAULT = false;
+
+
+  /** Amount of time to wait on a connection failure to an LLAP daemon */
+  public static final String LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MILLIS =
+      LLAP_PREFIX + "task.communicator.connection.timeout-millis";
+  public static final long LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MILLIS_DEFAULT = 16000;
+
+  /** Sleep duration while waiting for a connection failure */
+  public static final String LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS =
+      LLAP_PREFIX + "task.communicator.connection.sleep-between-retries-millis";
+  public static final long LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT = 2000l;
 }
