@@ -30,7 +30,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +39,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Task executor service provides method for scheduling tasks. Tasks submitted to executor service
@@ -61,7 +62,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */
 public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
-  private static final Logger LOG = Logger.getLogger(TaskExecutorService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
   private static final boolean isTraceEnabled = LOG.isTraceEnabled();
@@ -183,7 +184,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     }
   }
 
-  private boolean trySchedule(TaskRunnerCallable task) {
+  private boolean trySchedule(final TaskRunnerCallable task) {
 
     boolean scheduled = false;
     try {
@@ -236,7 +237,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
               LOG.debug("Pre-emption invoked for " + pRequest.getRequestId()
                   + " by interrupting the thread.");
             }
-            pFuture.cancel(true);
+            pRequest.killTask();
+            // TODO. Ideally, should wait for the thread to complete and fall off before assuming the
+            // slot is available for the next task.
             removeTaskFromPreemptionList(pRequest, pRequest.getRequestId());
 
             // future is cancelled or completed normally, in which case schedule the new request
@@ -244,8 +247,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
               if (isDebugEnabled) {
                 LOG.debug(pRequest.getRequestId() + " request preempted by " + task.getRequestId());
               }
-
-              notifyAM(pRequest);
             }
           }
 
@@ -331,11 +332,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       }
     }
 
-  }
-
-  private void notifyAM(TaskRunnerCallable request) {
-    // TODO: Report to AM of pre-emption and rejection
-    LOG.info("Notifying to AM of preemption is not implemented yet!");
   }
 
   // TODO: llap daemon should call this to gracefully shutdown the task executor service

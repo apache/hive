@@ -33,7 +33,8 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorTotalSuccess("Total number of requests handled by the container that succeeded"),
   ExecutorTotalExecutionFailure("Total number of requests handled by the container that failed execution"),
   ExecutorTotalInterrupted("Total number of requests handled by the container that got interrupted"),
-  ExecutorTotalAskedToDie("Total number of requests handled by the container that were asked to die");
+  ExecutorTotalAskedToDie("Total number of requests handled by the container that were asked to die"),
+  PreemptionTimeLost("Total time lost due to task preemptions");
 
   private final String desc;
 

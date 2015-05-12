@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
+import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
@@ -72,6 +73,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private final LlapDaemonExecutorMetrics metrics;
   private final Configuration conf;
   private final TaskRunnerCallable.ConfParams confParams;
+  private final KilledTaskHandler killedTaskHandler = new KilledTaskHandlerImpl();
 
   // Map of dagId to vertices and associated state.
   private final ConcurrentMap<String, ConcurrentMap<String, SourceStateProto>> sourceCompletionMap = new ConcurrentHashMap<>();
@@ -110,7 +112,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     );
 
     LOG.info("ContainerRunnerImpl config: " +
-        "memoryPerExecutorDerviced=" + memoryPerExecutor
+            "memoryPerExecutorDerviced=" + memoryPerExecutor
     );
   }
 
@@ -193,7 +195,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       ConcurrentMap<String, SourceStateProto> sourceCompletionMap = getSourceCompletionMap(request.getFragmentSpec().getDagName());
       TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
           new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          credentials, memoryPerExecutor, amReporter, sourceCompletionMap, confParams, metrics);
+          credentials, memoryPerExecutor, amReporter, sourceCompletionMap, confParams, metrics, killedTaskHandler);
       executorService.schedule(callable);
       metrics.incrExecutorTotalRequestsHandled();
       metrics.incrExecutorNumQueuedRequests();
@@ -217,11 +219,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   @Override
   public void terminateFragment(TerminateFragmentRequestProto request) {
     // TODO Implement when this gets used.
-  }
-
-
-  private void notifyAMOfRejection(TaskRunnerCallable callable) {
-    LOG.error("Notifying AM of request rejection is not implemented yet!");
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
@@ -293,5 +290,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       dagMap = (old != null) ? old : dagMap;
     }
     return dagMap;
+  }
+
+  private class KilledTaskHandlerImpl implements KilledTaskHandler {
+
+    @Override
+    public void taskKilled(String amLocation, int port, String user,
+                           Token<JobTokenIdentifier> jobToken, TezTaskAttemptID taskAttemptId) {
+      amReporter.taskKilled(amLocation, port, user, jobToken, taskAttemptId);
+    }
   }
 }

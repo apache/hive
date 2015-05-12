@@ -18,12 +18,14 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
@@ -54,7 +56,7 @@ public class TestTaskExecutorService {
     public MockRequest(LlapDaemonProtocolProtos.SubmitWorkRequestProto requestProto,
         boolean canFinish, int workTime) {
       super(requestProto, conf, new ExecutionContextImpl("localhost"), null, null, cred, 0, null,
-          null, null, null);
+          null, null, null, mock(KilledTaskHandler.class));
       this.workTime = workTime;
       this.canFinish = canFinish;
     }

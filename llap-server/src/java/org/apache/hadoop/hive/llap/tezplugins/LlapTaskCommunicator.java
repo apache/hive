@@ -278,9 +278,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   public void unregisterRunningTaskAttempt(TezTaskAttemptID taskAttemptID) {
     super.unregisterRunningTaskAttempt(taskAttemptID);
     entityTracker.unregisterTaskAttempt(taskAttemptID);
-    // TODO Inform the daemon that this task is no longer running.
-    // Currently, a task will end up moving into the RUNNING queue and will
-    // be told that it needs to die since it isn't recognized.
+    // This will also be invoked for tasks which have been KILLED / rejected by the daemon.
+    // Informing the daemon becomes necessary once the LlapScheduler supports preemption
+    // and/or starts attempting to kill tasks which may be running on a node.
   }
 
   @Override
@@ -404,6 +404,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +"]");
       }
+    }
+
+    @Override
+    public void taskKilled(TezTaskAttemptID taskAttemptId) {
+      // TODO Unregister the task for state updates, which could in turn unregister the node.
+      getTaskCommunicatorContext().taskKilled(taskAttemptId,
+          TaskAttemptEndReason.INTERRUPTED_BY_SYSTEM, "Attempt preempted");
+      entityTracker.unregisterTaskAttempt(taskAttemptId);
     }
 
     @Override
