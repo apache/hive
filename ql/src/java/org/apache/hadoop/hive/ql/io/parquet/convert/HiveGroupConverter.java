@@ -71,6 +71,6 @@ public abstract class HiveGroupConverter extends GroupConverter implements Conve
     return getConverterFromDescription(type.asGroupType(), index, parent);
   }
 
-  public abstract void set(int index, Writable value);
+  public abstract void set(int index, Object value);
 
 }

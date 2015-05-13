@@ -16,10 +16,11 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.Writable;
+
+import java.util.Arrays;
 
 /**
  * The ParquetHiveArrayInspector will inspect an ArrayWritable, considering it as an Hive array.<br />
@@ -55,8 +56,8 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] array = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] array = ((ObjectArrayWritable) data).get();
       if (array == null || array.length == 0) {
         return null;
       }
@@ -77,8 +78,8 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return -1;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] array = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] array = ((ObjectArrayWritable) data).get();
       if (array == null || array.length == 0) {
         return -1;
       }
@@ -95,18 +96,13 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] array = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] array = ((ObjectArrayWritable) data).get();
       if (array == null || array.length == 0) {
         return null;
       }
 
-      final List<Writable> list = new ArrayList<Writable>(array.length);
-      for (final Writable obj : array) {
-        list.add(obj);
-      }
-
-      return list;
+      return Arrays.asList(array);
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());

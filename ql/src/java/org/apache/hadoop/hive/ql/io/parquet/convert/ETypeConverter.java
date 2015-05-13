@@ -48,12 +48,11 @@ public enum ETypeConverter {
 
   EDOUBLE_CONVERTER(Double.TYPE) {
     @Override
-
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addDouble(final double value) {
-          parent.set(index, new DoubleWritable(value));
+          parent.set(index, value);
         }
       };
     }
@@ -64,7 +63,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addBoolean(final boolean value) {
-          parent.set(index, new BooleanWritable(value));
+          parent.set(index, value);
         }
       };
     }
@@ -75,7 +74,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addFloat(final float value) {
-          parent.set(index, new FloatWritable(value));
+          parent.set(index, value);
         }
       };
     }
@@ -86,7 +85,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
-          parent.set(index, new IntWritable(value));
+          parent.set(index, value);
         }
       };
     }
@@ -97,7 +96,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
-          parent.set(index, new LongWritable(value));
+          parent.set(index, value);
         }
       };
     }

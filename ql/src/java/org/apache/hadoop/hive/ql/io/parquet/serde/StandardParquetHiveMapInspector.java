@@ -15,9 +15,8 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.Writable;
 
 /**
  * The StandardParquetHiveMapInspector will inspect an ArrayWritable, considering it as a Hive map.<br />
@@ -36,16 +35,16 @@ public class StandardParquetHiveMapInspector extends AbstractParquetMapInspector
     if (data == null || key == null) {
       return null;
     }
-    if (data instanceof ArrayWritable) {
-      final Writable[] mapArray = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] mapArray = ((ObjectArrayWritable) data).get();
 
       if (mapArray == null || mapArray.length == 0) {
         return null;
       }
 
-      for (final Writable obj : mapArray) {
-        final ArrayWritable mapObj = (ArrayWritable) obj;
-        final Writable[] arr = mapObj.get();
+      for (final Object obj : mapArray) {
+        final ObjectArrayWritable mapObj = (ObjectArrayWritable) obj;
+        final Object[] arr = mapObj.get();
         if (key.equals(arr[0])) {
           return arr[1];
         }

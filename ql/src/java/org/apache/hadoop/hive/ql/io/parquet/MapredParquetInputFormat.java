@@ -20,7 +20,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 
@@ -34,26 +34,26 @@ import parquet.hadoop.ParquetInputFormat;
  * NOTE: With HIVE-9235 we removed "implements VectorizedParquetInputFormat" since all data types
  *       are not currently supported.  Removing the interface turns off vectorization.
  */
-public class MapredParquetInputFormat extends FileInputFormat<Void, ArrayWritable> {
+public class MapredParquetInputFormat extends FileInputFormat<Void, ObjectArrayWritable> {
 
   private static final Log LOG = LogFactory.getLog(MapredParquetInputFormat.class);
 
-  private final ParquetInputFormat<ArrayWritable> realInput;
+  private final ParquetInputFormat<ObjectArrayWritable> realInput;
 
   private final transient VectorizedParquetInputFormat vectorizedSelf;
 
   public MapredParquetInputFormat() {
-    this(new ParquetInputFormat<ArrayWritable>(DataWritableReadSupport.class));
+    this(new ParquetInputFormat<ObjectArrayWritable>(DataWritableReadSupport.class));
   }
 
-  protected MapredParquetInputFormat(final ParquetInputFormat<ArrayWritable> inputFormat) {
+  protected MapredParquetInputFormat(final ParquetInputFormat<ObjectArrayWritable> inputFormat) {
     this.realInput = inputFormat;
     vectorizedSelf = new VectorizedParquetInputFormat(inputFormat);
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
-  public org.apache.hadoop.mapred.RecordReader<Void, ArrayWritable> getRecordReader(
+  public org.apache.hadoop.mapred.RecordReader<Void, ObjectArrayWritable> getRecordReader(
       final org.apache.hadoop.mapred.InputSplit split,
       final org.apache.hadoop.mapred.JobConf job,
       final org.apache.hadoop.mapred.Reporter reporter
@@ -69,7 +69,7 @@ public class MapredParquetInputFormat extends FileInputFormat<Void, ArrayWritabl
         if (LOG.isDebugEnabled()) {
           LOG.debug("Using row-mode record reader");
         }
-        return (RecordReader<Void, ArrayWritable>)
+        return (RecordReader<Void, ObjectArrayWritable>)
           new ParquetRecordReaderWrapper(realInput, split, job, reporter);
       }
     } catch (final InterruptedException e) {

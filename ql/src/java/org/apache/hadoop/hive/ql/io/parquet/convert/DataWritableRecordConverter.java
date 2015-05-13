@@ -13,7 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import parquet.io.api.GroupConverter;
 import parquet.io.api.RecordMaterializer;
 import parquet.schema.GroupType;
@@ -26,7 +26,7 @@ import java.util.Map;
  * A MapWritableReadSupport, encapsulates the tuples
  *
  */
-public class DataWritableRecordConverter extends RecordMaterializer<ArrayWritable> {
+public class DataWritableRecordConverter extends RecordMaterializer<ObjectArrayWritable> {
 
   private final HiveStructConverter root;
 
@@ -38,7 +38,7 @@ public class DataWritableRecordConverter extends RecordMaterializer<ArrayWritabl
   }
 
   @Override
-  public ArrayWritable getCurrentRecord() {
+  public ObjectArrayWritable getCurrentRecord() {
     return root.getCurrentArray();
   }
 

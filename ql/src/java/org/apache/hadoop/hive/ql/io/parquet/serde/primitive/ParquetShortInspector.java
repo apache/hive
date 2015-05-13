@@ -55,6 +55,8 @@ public class ParquetShortInspector extends AbstractPrimitiveJavaObjectInspector 
     // Accept int writables and convert them.
     if (o instanceof IntWritable) {
       return (short) ((IntWritable) o).get();
+    } else if (o instanceof Integer) {
+      return ((Integer) o).shortValue();
     }
 
     return ((ShortWritable) o).get();

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
@@ -64,11 +64,11 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
+    ObjectArrayWritable expected = list(
         record(new Text("lettuce"), new IntWritable(34)),
         record(new Text("cabbage"), new IntWritable(18)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -131,12 +131,12 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
+    ObjectArrayWritable expected = list(
         record(new Text("lettuce"), new IntWritable(34)),
         record(new Text("kale"), null),
         record(new Text("cabbage"), new IntWritable(18)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -212,11 +212,11 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
+    ObjectArrayWritable expected = list(
         record(new Text("green"), record(new Text("lettuce"), new Text("kale"), null)),
         record(new Text("brown"), null));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -307,11 +307,11 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
+    ObjectArrayWritable expected = list(
         record(new Text("low"), record(new IntWritable(34), new IntWritable(35), null)),
         record(new Text("high"), record(new IntWritable(340), new IntWritable(360))));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -368,11 +368,11 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(record(
+    ObjectArrayWritable expected = list(record(
         record(new IntWritable(7), new IntWritable(22)),
         new DoubleWritable(3.14)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -429,11 +429,11 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(record(
+    ObjectArrayWritable expected = list(record(
         new DoubleWritable(3.14),
         record(new IntWritable(7), new IntWritable(22))));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -524,7 +524,7 @@ public class TestMapStructures extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
+    ObjectArrayWritable expected = list(
         record(new Text("a"), record(
             record(new Text("b"), new IntWritable(1)))),
         record(new Text("b"), record(
@@ -532,7 +532,7 @@ public class TestMapStructures extends AbstractTestParquetDirect {
             record(new Text("b"), new IntWritable(-2))))
     );
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));

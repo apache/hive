@@ -17,10 +17,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.Writable;
 
 public abstract class AbstractParquetMapInspector implements SettableMapObjectInspector {
 
@@ -58,16 +57,16 @@ public abstract class AbstractParquetMapInspector implements SettableMapObjectIn
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] mapArray = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] mapArray = ((ObjectArrayWritable) data).get();
       if (mapArray == null || mapArray.length == 0) {
         return null;
       }
 
-      final Map<Writable, Writable> map = new LinkedHashMap<Writable, Writable>();
-      for (final Writable obj : mapArray) {
-        final ArrayWritable mapObj = (ArrayWritable) obj;
-        final Writable[] arr = mapObj.get();
+      final Map<Object, Object> map = new LinkedHashMap<Object, Object>();
+      for (final Object obj : mapArray) {
+        final ObjectArrayWritable mapObj = (ObjectArrayWritable) obj;
+        final Object[] arr = mapObj.get();
         map.put(arr[0], arr[1]);
       }
 
@@ -87,8 +86,8 @@ public abstract class AbstractParquetMapInspector implements SettableMapObjectIn
       return -1;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] mapArray = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] mapArray = ((ObjectArrayWritable) data).get();
 
       if (mapArray == null || mapArray.length == 0) {
         return -1;

@@ -2,11 +2,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.util.List;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.junit.Assert;
 import org.junit.Test;
 import parquet.io.api.RecordConsumer;
@@ -44,10 +40,10 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36));
+    ObjectArrayWritable expected = list(
+        new Integer(34), new Integer(35), new Integer(36));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -91,11 +87,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new FloatWritable(1.0f), new FloatWritable(1.0f)),
-        record(new FloatWritable(2.0f), new FloatWritable(2.0f)));
+    ObjectArrayWritable expected = list(
+        record(new Float(1.0f), new Float(1.0f)),
+        record(new Float(2.0f), new Float(2.0f)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -130,10 +126,10 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36));
+    ObjectArrayWritable expected = list(
+        new Integer(34), new Integer(35), new Integer(36));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record", expected, records.get(0));
   }
@@ -180,11 +176,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new LongWritable(1234L)),
-        record(new LongWritable(2345L)));
+    ObjectArrayWritable expected = list(
+        record(new Long(1234L)),
+        record(new Long(2345L)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -219,10 +215,10 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36));
+    ObjectArrayWritable expected = list(
+        new Integer(34), new Integer(35), new Integer(36));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record", expected, records.get(0));
   }
@@ -269,11 +265,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new LongWritable(1234L)),
-        record(new LongWritable(2345L)));
+    ObjectArrayWritable expected = list(
+        record(new Long(1234L)),
+        record(new Long(2345L)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -321,11 +317,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        new LongWritable(1234L),
-        new LongWritable(2345L));
+    ObjectArrayWritable expected = list(
+        new Long(1234L),
+        new Long(2345L));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -379,11 +375,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0)));
+    ObjectArrayWritable expected = list(
+        record(new Double(0.0), new Double(0.0)),
+        record(new Double(0.0), new Double(180.0)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -455,12 +451,12 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0)),
+    ObjectArrayWritable expected = list(
+        record(new Double(0.0), new Double(0.0)),
         null,
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0)));
+        record(new Double(0.0), new Double(180.0)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -528,11 +524,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0)));
+    ObjectArrayWritable expected = list(
+        record(new Double(0.0), new Double(180.0)),
+        record(new Double(0.0), new Double(0.0)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
@@ -601,11 +597,11 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = list(
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0)));
+    ObjectArrayWritable expected = list(
+        record(new Double(0.0), new Double(180.0)),
+        record(new Double(0.0), new Double(0.0)));
 
-    List<ArrayWritable> records = read(test);
+    List<ObjectArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
     assertEquals("Should match expected record",
         expected, records.get(0));
