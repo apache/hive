@@ -31,10 +31,9 @@ import scala.Tuple2;
 import com.google.common.base.Preconditions;
 
 
-public class MapInput implements SparkTran<WritableComparable, Writable,
+public class MapInput extends CacheTran<WritableComparable, Writable,
     WritableComparable, Writable> {
   private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
-  private boolean toCache;
   private final SparkPlan sparkPlan;
   private String name = "MapInput";
 
@@ -44,25 +43,19 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
 
   public MapInput(SparkPlan sparkPlan,
       JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
+    super(toCache);
     this.hadoopRDD = hadoopRDD;
-    this.toCache = toCache;
     this.sparkPlan = sparkPlan;
   }
 
-  public void setToCache(boolean toCache) {
-    this.toCache = toCache;
-  }
-
   @Override
-  public JavaPairRDD<WritableComparable, Writable> transform(
+  public JavaPairRDD<WritableComparable, Writable> doTransform(
       JavaPairRDD<WritableComparable, Writable> input) {
     Preconditions.checkArgument(input == null,
         "AssertionError: MapInput doesn't take any input");
     JavaPairRDD<WritableComparable, Writable> result;
-    if (toCache) {
+    if (isCacheEnable()) {
       result = hadoopRDD.mapToPair(new CopyFunction());
-      sparkPlan.addCachedRDDId(result.id());
-      result = result.persist(StorageLevel.MEMORY_AND_DISK());
     } else {
       result = hadoopRDD;
     }
@@ -90,11 +83,6 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public Boolean isCacheEnable() {
-    return new Boolean(toCache);
   }
 
   @Override

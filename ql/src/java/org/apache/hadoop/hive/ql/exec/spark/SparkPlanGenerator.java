@@ -22,9 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -69,11 +73,12 @@ public class SparkPlanGenerator {
   private Context context;
   private Path scratchDir;
   private SparkReporter sparkReporter;
-  private Map<BaseWork, BaseWork> cloneToWork;
   private final Map<BaseWork, SparkTran> workToTranMap;
-  private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
   // a map from each BaseWork to its cloned JobConf
   private final Map<BaseWork, JobConf> workToJobConf;
+
+  private Map<BaseWork, Pair<String, Integer>> equivalentWorks;
+  private List<BaseWork> cachingWorks;
 
   public SparkPlanGenerator(
     JavaSparkContext sc,
@@ -87,17 +92,16 @@ public class SparkPlanGenerator {
     this.jobConf = jobConf;
     this.scratchDir = scratchDir;
     this.workToTranMap = new HashMap<BaseWork, SparkTran>();
-    this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
     this.sparkReporter = sparkReporter;
     this.workToJobConf = new HashMap<BaseWork, JobConf>();
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
+    equivalentWorks = sparkWork.getEquivalentWorks();
+    cachingWorks = sparkWork.getCachingWorks();
     SparkPlan sparkPlan = new SparkPlan();
-    cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
-    workToParentWorkTranMap.clear();
 
     try {
       for (BaseWork work : sparkWork.getAllWork()) {
@@ -122,13 +126,6 @@ public class SparkPlanGenerator {
   // Generate (possibly get from a cached result) parent SparkTran
   private SparkTran generateParentTran(SparkPlan sparkPlan, SparkWork sparkWork,
                                        BaseWork work) throws Exception {
-    if (cloneToWork.containsKey(work)) {
-      BaseWork originalWork = cloneToWork.get(work);
-      if (workToParentWorkTranMap.containsKey(originalWork)) {
-        return workToParentWorkTranMap.get(originalWork);
-      }
-    }
-
     SparkTran result;
     if (work instanceof MapWork) {
       result = generateMapInput(sparkPlan, (MapWork)work);
@@ -136,7 +133,7 @@ public class SparkPlanGenerator {
     } else if (work instanceof ReduceWork) {
       List<BaseWork> parentWorks = sparkWork.getParents(work);
       result = generate(sparkPlan,
-        sparkWork.getEdgeProperty(parentWorks.get(0), work), cloneToWork.containsKey(work));
+        sparkWork.getEdgeProperty(parentWorks.get(0), work));
       sparkPlan.addTran(result);
       for (BaseWork parentWork : parentWorks) {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
@@ -144,10 +141,6 @@ public class SparkPlanGenerator {
     } else {
       throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
         + "but found " + work.getClass().getName());
-    }
-
-    if (cloneToWork.containsKey(work)) {
-      workToParentWorkTranMap.put(cloneToWork.get(work), result);
     }
 
     return result;
@@ -185,14 +178,29 @@ public class SparkPlanGenerator {
     JobConf jobConf = cloneJobConf(mapWork);
     Class ifClass = getInputFormat(jobConf, mapWork);
 
-    JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
+    if (equivalentWorks != null && equivalentWorks.containsKey(mapWork)) {
+      Pair<String, Integer> pair = equivalentWorks.get(mapWork);
+      String uuid = pair.getLeft();
+      SparkTran sparkTran = SparkTranContainer.getSparkTran(uuid);
+      if (sparkTran != null) {
+        return (MapInput)sparkTran;
+      } else {
+        JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
+          WritableComparable.class, Writable.class);
+        MapInput result = new MapInput(sparkPlan, hadoopRDD, true);
+        SparkTranContainer.putSparkTran(uuid, result, pair.getRight());
+        result = (MapInput)SparkTranContainer.getSparkTran(uuid);
+        return result;
+      }
+    } else {
+      JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
         WritableComparable.class, Writable.class);
-    // Caching is disabled for MapInput due to HIVE-8920
-    MapInput result = new MapInput(sparkPlan, hadoopRDD, false/*cloneToWork.containsKey(mapWork)*/);
-    return result;
+      MapInput result = new MapInput(sparkPlan, hadoopRDD);
+      return result;
+    }
   }
 
-  private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge, boolean toCache) {
+  private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
@@ -203,7 +211,7 @@ public class SparkPlanGenerator {
     } else {
       shuffler = new GroupByShuffler();
     }
-    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache);
+    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions());
   }
 
   private SparkTran generate(BaseWork work) throws Exception {
@@ -212,12 +220,22 @@ public class SparkPlanGenerator {
     checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     if (work instanceof MapWork) {
-      MapTran mapTran = new MapTran();
+      MapTran mapTran;
+      if (cachingWorks != null && cachingWorks.contains(work)) {
+        mapTran = new MapTran(true);
+      } else {
+        mapTran = new MapTran();
+      }
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
       return mapTran;
     } else if (work instanceof ReduceWork) {
-      ReduceTran reduceTran = new ReduceTran();
+      ReduceTran reduceTran;
+      if (cachingWorks != null && cachingWorks.contains(work)) {
+        reduceTran  = new ReduceTran(true);
+      } else {
+        reduceTran = new ReduceTran();
+      }
       HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;
@@ -296,4 +314,32 @@ public class SparkPlanGenerator {
     }
   }
 
+  /**
+   * RDD may be cached cross SparkTasks, while SparkPlanGenerator is created per SparkTask,
+   * so cached SparkTran is stored in static variables. We add SparkTran container with count
+   * here to make sure it is cleared after all referred SparkJob has generated.
+   */
+  static class SparkTranContainer {
+
+    private static ConcurrentMap<String, SparkTran> sparkTranMap = Maps.newConcurrentMap();
+    private static ConcurrentMap<String, AtomicInteger> sparkTranCount = Maps.newConcurrentMap();
+
+    public static SparkTran getSparkTran(String id) {
+
+      SparkTran sparkTran = sparkTranMap.get(id);
+      if (sparkTran != null) {
+        int count = sparkTranCount.get(id).decrementAndGet();
+        if (count == 0) {
+          sparkTranMap.remove(id);
+          sparkTranCount.remove(id);
+        }
+      }
+      return sparkTran;
+    }
+
+    public static void putSparkTran(String id, SparkTran sparkTran, int count) {
+      sparkTranMap.putIfAbsent(id, sparkTran);
+      sparkTranCount.putIfAbsent(id, new AtomicInteger(count));
+    }
+  }
 }

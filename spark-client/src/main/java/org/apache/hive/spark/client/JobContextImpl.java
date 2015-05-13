@@ -53,8 +53,8 @@ class JobContextImpl implements JobContext {
 
   @Override
   public <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job,
-      SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
-    monitorCb.get().call(job, sparkCounters, cachedRDDIds);
+      SparkCounters sparkCounters) {
+    monitorCb.get().call(job, sparkCounters);
     return job;
   }
 

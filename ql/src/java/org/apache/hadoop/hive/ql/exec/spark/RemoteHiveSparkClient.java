@@ -255,7 +255,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
       // We use Spark RDD async action to submit job as it's the only way to get jobId now.
       JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-      jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
+      jc.monitor(future, sparkCounters);
       return null;
     }
 

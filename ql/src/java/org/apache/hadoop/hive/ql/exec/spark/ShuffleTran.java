@@ -23,10 +23,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
 
-public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, Iterable<BytesWritable>> {
+public class ShuffleTran extends CacheTran<HiveKey, BytesWritable, HiveKey, Iterable<BytesWritable>> {
   private final SparkShuffler shuffler;
   private final int numOfPartitions;
-  private final boolean toCache;
   private final SparkPlan sparkPlan;
   private String name = "Shuffle";
 
@@ -35,19 +34,15 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
   }
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache) {
+    super(toCache);
     shuffler = sf;
     numOfPartitions = n;
-    this.toCache = toCache;
     this.sparkPlan = sparkPlan;
   }
 
   @Override
-  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
+  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> doTransform(JavaPairRDD<HiveKey, BytesWritable> input) {
     JavaPairRDD<HiveKey, Iterable<BytesWritable>> result = shuffler.shuffle(input, numOfPartitions);
-    if (toCache) {
-      sparkPlan.addCachedRDDId(result.id());
-      result = result.persist(StorageLevel.MEMORY_AND_DISK());
-    }
     return result;
   }
 
@@ -58,11 +53,6 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public Boolean isCacheEnable() {
-    return new Boolean(toCache);
   }
 
   @Override

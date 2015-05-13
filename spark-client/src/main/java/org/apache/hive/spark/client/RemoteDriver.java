@@ -318,7 +318,7 @@ public class RemoteDriver {
       jc.setMonitorCb(new MonitorCallback() {
         @Override
         public void call(JavaFutureAction<?> future,
-            SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
+            SparkCounters sparkCounters) {
           throw new IllegalStateException(
             "JobContext.monitor() is not available for synchronous jobs.");
         }
@@ -338,8 +338,6 @@ public class RemoteDriver {
     private final List<JavaFutureAction<?>> jobs;
     private final AtomicInteger completed;
     private SparkCounters sparkCounters;
-    private Set<Integer> cachedRDDIds;
-
     private Future<?> future;
 
     JobWrapper(BaseProtocol.JobRequest<T> req) {
@@ -347,7 +345,6 @@ public class RemoteDriver {
       this.jobs = Lists.newArrayList();
       this.completed = new AtomicInteger();
       this.sparkCounters = null;
-      this.cachedRDDIds = null;
     }
 
     @Override
@@ -358,8 +355,8 @@ public class RemoteDriver {
         jc.setMonitorCb(new MonitorCallback() {
           @Override
           public void call(JavaFutureAction<?> future,
-              SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
-            monitorJob(future, sparkCounters, cachedRDDIds);
+              SparkCounters sparkCounters) {
+            monitorJob(future, sparkCounters);
           }
         });
 
@@ -393,7 +390,6 @@ public class RemoteDriver {
       } finally {
         jc.setMonitorCb(null);
         activeJobs.remove(req.id);
-        releaseCache();
       }
       return null;
     }
@@ -409,30 +405,14 @@ public class RemoteDriver {
       }
     }
 
-    /**
-     * Release cached RDDs as soon as the job is done.
-     * This is different from local Spark client so as
-     * to save a RPC call/trip, avoid passing cached RDD
-     * id information around. Otherwise, we can follow
-     * the local Spark client way to be consistent.
-     */
-    void releaseCache() {
-      if (cachedRDDIds != null) {
-        for (Integer cachedRDDId: cachedRDDIds) {
-          jc.sc().sc().unpersistRDD(cachedRDDId, false);
-        }
-      }
-    }
-
     private void monitorJob(JavaFutureAction<?> job,
-        SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
+        SparkCounters sparkCounters) {
       jobs.add(job);
       if (!jc.getMonitoredJobs().containsKey(req.id)) {
         jc.getMonitoredJobs().put(req.id, new CopyOnWriteArrayList<JavaFutureAction<?>>());
       }
       jc.getMonitoredJobs().get(req.id).add(job);
       this.sparkCounters = sparkCounters;
-      this.cachedRDDIds = cachedRDDIds;
       protocol.jobSubmitted(req.id, job.jobIds().get(0));
     }
 

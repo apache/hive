@@ -121,7 +121,6 @@ public class SparkSkewJoinProcFactory {
       // remove them from current spark work
       for (BaseWork baseWork : newWork.getAllWorkUnsorted()) {
         currentWork.remove(baseWork);
-        currentWork.getCloneToWork().remove(baseWork);
       }
       // create TS to read intermediate data
       Context baseCtx = parseContext.getContext();

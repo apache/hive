@@ -32,10 +32,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Preconditions;
+
+import javax.annotation.Nullable;
 
 /**
  * This class encapsulates all the work objects that can be executed
@@ -60,11 +65,12 @@ public class SparkWork extends AbstractOperatorDesc {
 
   private Map<String, List<String>> requiredCounterPrefix;
 
-  private Map<BaseWork, BaseWork> cloneToWork;
+  private Map<BaseWork, Pair<String, Integer>> equivalentWorks;
+
+  private List<BaseWork> cachingWorks;
 
   public SparkWork(String name) {
     this.name = name + ":" + (++counter);
-    cloneToWork = new HashMap<BaseWork, BaseWork>();
   }
 
 
@@ -416,11 +422,35 @@ public class SparkWork extends AbstractOperatorDesc {
     return result;
   }
 
-  public Map<BaseWork, BaseWork> getCloneToWork() {
-    return cloneToWork;
+  /**
+   * @return all map works of this spark work, in sorted order.
+   */
+  public List<MapWork> getAllMapWork() {
+    List<MapWork> result = Lists.newLinkedList();
+    for (BaseWork work : getAllWork()) {
+      if (work instanceof MapWork) {
+        result.add((MapWork) work);
+      }
+    }
+    return result;
   }
 
-  public void setCloneToWork(Map<BaseWork, BaseWork> cloneToWork) {
-    this.cloneToWork = cloneToWork;
+  public Map<Pair<BaseWork, BaseWork>, SparkEdgeProperty> getEdgeProperties() {
+    return ImmutableMap.copyOf(edgeProperties);
+  }
+
+  public Map<BaseWork, Pair<String, Integer>> getEquivalentWorks() { return equivalentWorks; }
+
+  public void setEquivalentWorks(Map<BaseWork, Pair<String, Integer>> equivalentWorks) {
+    this.equivalentWorks = equivalentWorks;
+  }
+
+
+  public List<BaseWork> getCachingWorks() {
+    return cachingWorks;
+  }
+
+  public void setCachingWorks(List<BaseWork> cachingWorks) {
+    this.cachingWorks = cachingWorks;
   }
 }
