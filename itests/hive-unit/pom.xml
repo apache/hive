@@ -110,7 +110,7 @@
       <classifier>tests</classifier>
     </dependency>
     <!-- test inter-project -->
-   <dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
@@ -125,6 +125,52 @@
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>spark-test</id>
+      <activation>
+        <property>
+          <name>!skipSparkTests</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-core_${scala.binary.version}</artifactId>
+          <version>${spark.version}</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>com.esotericsoftware.kryo</groupId>
+              <artifactId>kryo</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>download-spark</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <exec executable="bash" dir="${basedir}" failonerror="true">
+                      <arg line="../target/download.sh"/>
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>hadoop-1</id>
       <dependencies>
@@ -316,46 +362,6 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
-      <id>spark-test</id>
-      <activation>
-	<property>
-          <name>!skipSparkTests</name>
-	</property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-core_${scala.binary.version}</artifactId>
-          <version>${spark.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>download-spark</id>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <exec executable="bash" dir="${basedir}" failonerror="true">
-                      <arg line="../target/download.sh"/>
-                    </exec>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 
