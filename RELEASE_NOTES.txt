@@ -336,6 +336,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10542] - Full outer joins in tez produce incorrect results in certain cases
     * [HIVE-10543] - improve error message in MetaStoreAuthzAPIAuthorizerEmbedOnly
     * [HIVE-10544] - Beeline/Hive JDBC Driver fails in HTTP mode on Windows with java.lang.NoSuchFieldError: INSTANCE
+    * [HIVE-10548] - Remove dependency to s3 repository in root pom
     * [HIVE-10564] - webhcat should use webhcat-site.xml properties for controller job submission
     * [HIVE-10572] - Improve Hive service test to check empty string
     * [HIVE-10576] - add jar command does not work with Windows OS
