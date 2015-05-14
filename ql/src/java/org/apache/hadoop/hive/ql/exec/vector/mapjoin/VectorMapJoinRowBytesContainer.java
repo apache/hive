@@ -91,7 +91,7 @@ public class VectorMapJoinRowBytesContainer {
     }
 
     tmpFile = File.createTempFile("BytesContainer", ".tmp", parentFile);
-    LOG.info("BytesContainer created temp file " + tmpFile.getAbsolutePath());
+    LOG.debug("BytesContainer created temp file " + tmpFile.getAbsolutePath());
     tmpFile.deleteOnExit();
 
     fileOutputStream = new FileOutputStream(tmpFile);

@@ -79,13 +79,13 @@ public abstract class VectorMapJoinFastBytesHashTable
     while (true) {
       int tripleIndex = 3 * slot;
       if (slotTriples[tripleIndex] == 0) {
-        // LOG.info("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " empty");
+        // LOG.debug("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " empty");
         isNewKey = true;;
         break;
       }
       if (hashCode == slotTriples[tripleIndex + 1] &&
           keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength)) {
-        // LOG.info("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " existing");
+        // LOG.debug("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " existing");
         isNewKey = false;
         break;
       }
@@ -155,7 +155,7 @@ public abstract class VectorMapJoinFastBytesHashTable
         }
 
         // Use old value reference word.
-        // LOG.info("VectorMapJoinFastLongHashTable expandAndRehash key " + tableKey + " slot " + newSlot + " newPairIndex " + newPairIndex + " empty slot (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash key " + tableKey + " slot " + newSlot + " newPairIndex " + newPairIndex + " empty slot (i = " + i + ")");
 
         newSlotTriples[newTripleIndex] = keyRef;
         newSlotTriples[newTripleIndex + 1] = hashCode;
@@ -170,7 +170,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     largestNumberOfSteps = newLargestNumberOfSteps;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
     metricExpands++;
-    // LOG.info("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
+    // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
   }
 
   protected long findReadSlot(byte[] keyBytes, int keyStart, int keyLength, long hashCode) {
@@ -181,7 +181,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     int i = 0;
     while (true) {
       int tripleIndex = slot * 3;
-      // LOG.info("VectorMapJoinFastBytesHashMap findReadSlot slot keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(hashCode) + " entry hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
+      // LOG.debug("VectorMapJoinFastBytesHashMap findReadSlot slot keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(hashCode) + " entry hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
       if (slotTriples[tripleIndex] != 0 && hashCode == slotTriples[tripleIndex + 1]) {
         // Finally, verify the key bytes match.
 

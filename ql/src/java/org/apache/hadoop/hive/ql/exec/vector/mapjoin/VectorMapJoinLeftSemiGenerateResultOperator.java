@@ -111,26 +111,23 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
    * @param batch
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
-   * @param allMatchs
-   *          A subset of the rows of the batch that are matches.
    * @param allMatchCount
    *          Number of matches in allMatchs.
-   * @param spills
-   *          A subset of the rows of the batch that are spills.
-   * @param spillHashMapResultIndices
-   *          For each entry in spills, the index into the hashTableResults.
    * @param spillCount
    *          Number of spills in spills.
    * @param hashTableResults
    *          The array of all hash table results for the batch. We need the
    *          VectorMapJoinHashTableResult for the spill information.
    */
-  protected int finishLeftSemi(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchCount,
-      int[] spills, int[] spillHashMapResultIndices, int spillCount,
+  protected void finishLeftSemi(VectorizedRowBatch batch,
+      int allMatchCount, int spillCount,
       VectorMapJoinHashTableResult[] hashTableResults) throws HiveException, IOException {
 
-    int numSel;
+    // Get rid of spills before we start modifying the batch.
+    if (spillCount > 0) {
+      spillHashMapBatch(batch, hashTableResults,
+          spills, spillHashMapResultIndices, spillCount);
+    }
 
     /*
      * Optimize by running value expressions only over the matched rows.
@@ -139,14 +136,9 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
       performValueExpressions(batch, allMatchs, allMatchCount);
     }
 
-    numSel = generateHashSetResults(batch, allMatchs, allMatchCount);
-
-    if (spillCount > 0) {
-      spillHashMapBatch(batch, hashTableResults,
-          spills, spillHashMapResultIndices, spillCount);
-    }
-
-    return numSel;
+    int numSel = generateHashSetResults(batch, allMatchs, allMatchCount);
+    batch.size = numSel;
+    batch.selectedInUse = true;
   }
 
   /**
@@ -199,10 +191,8 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
     return batch.size;
   }
 
-  protected int finishLeftSemiRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
+  protected void finishLeftSemiRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
       VectorMapJoinHashTableResult hashSetResult) throws HiveException, IOException {
-
-    int numSel = 0;
 
     switch (joinResult) {
     case MATCH:
@@ -215,19 +205,21 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
       }
 
       // Generate special repeated case.
-      numSel = generateHashSetResultRepeatedAll(batch);
+      int numSel = generateHashSetResultRepeatedAll(batch);
+      batch.size = numSel;
+      batch.selectedInUse = true;
       break;
 
     case SPILL:
       // Whole batch is spilled.
       spillBatchRepeated(batch, (VectorMapJoinHashTableResult) hashSetResult);
+      batch.size = 0;
       break;
 
     case NOMATCH:
       // No match for entire batch.
+      batch.size = 0;
       break;
     }
-
-    return numSel;
   }
 }

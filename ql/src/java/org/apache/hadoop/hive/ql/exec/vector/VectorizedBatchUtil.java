@@ -645,8 +645,7 @@ public class VectorizedBatchUtil {
   public static void debugDisplayOneRow(VectorizedRowBatch batch, int index, String prefix) {
     StringBuffer sb = new StringBuffer();
     sb.append(prefix + " row " + index + " ");
-    for (int i = 0; i < batch.projectionSize; i++) {
-      int column = batch.projectedColumns[i];
+    for (int column = 0; column < batch.cols.length; column++) {
       ColumnVector colVector = batch.cols[column];
       if (colVector == null) {
         sb.append("(null colVector " + column + ")");
@@ -666,7 +665,7 @@ public class VectorizedBatchUtil {
             if (bytes == null) {
               sb.append("(Unexpected null bytes with start " + start + " length " + length + ")");
             } else {
-              sb.append(displayBytes(bytes, start, length));
+              sb.append("bytes: '" + displayBytes(bytes, start, length) + "'");
             }
           } else if (colVector instanceof DecimalColumnVector) {
             sb.append(((DecimalColumnVector) colVector).vector[index].toString());

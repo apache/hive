@@ -1069,11 +1069,21 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
+    if (!validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER)) {
+      LOG.info("Cannot vectorize map work filter expression");
+      return false;
+    }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
+    if (!validateExprNodeDesc(keyExprs)) {
+      LOG.info("Cannot vectorize map work key expression");
+      return false;
+    }
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
-    return validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER) &&
-        validateExprNodeDesc(keyExprs) &&
-        validateExprNodeDesc(valueExprs);
+    if (!validateExprNodeDesc(valueExprs)) {
+      LOG.info("Cannot vectorize map work value expression");
+      return false;
+    }
+    return true;
   }
 
   private boolean validateReduceSinkOperator(ReduceSinkOperator op) {
@@ -1089,6 +1099,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (ExprNodeDesc desc : descList) {
       boolean ret = validateExprNodeDesc(desc);
       if (!ret) {
+        LOG.info("Cannot vectorize select expression: " + desc.toString());
         return false;
       }
     }
@@ -1110,10 +1121,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     boolean ret = validateExprNodeDesc(desc.getKeys());
     if (!ret) {
+      LOG.info("Cannot vectorize groupby key expression");
       return false;
     }
     ret = validateAggregationDesc(desc.getAggregators(), isReduce);
     if (!ret) {
+      LOG.info("Cannot vectorize groupby aggregate expression");
       return false;
     }
     if (isReduce) {
@@ -1248,10 +1261,13 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduce) {
-    if (!supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase())) {
+    String udfName = aggDesc.getGenericUDAFName().toLowerCase();
+    if (!supportedAggregationUdfs.contains(udfName)) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
       return false;
     }
     if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters())) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
       return false;
     }
     // See if we can vectorize the aggregation.

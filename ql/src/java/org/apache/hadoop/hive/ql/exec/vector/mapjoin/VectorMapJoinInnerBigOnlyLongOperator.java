@@ -151,9 +151,6 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
         }
       }
 
-      // We rebuild in-place the selected array with rows destine to be forwarded.
-      int numSel = 0;
-
       /*
        * Single-Column Long specific declarations.
        */
@@ -198,7 +195,7 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
-        numSel = finishInnerBigOnlyRepeated(batch, joinResult, hashMultiSetResults[0]);
+        finishInnerBigOnlyRepeated(batch, joinResult, hashMultiSetResults[0]);
       } else {
 
         /*
@@ -358,16 +355,10 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashMultiSetResults, 0, hashMultiSetResultCount)));
         }
 
-        numSel = finishInnerBigOnly(batch,
-            allMatchs, allMatchCount,
-            equalKeySeriesValueCounts, equalKeySeriesAllMatchIndices,
-            equalKeySeriesDuplicateCounts, equalKeySeriesCount,
-            spills, spillHashMapResultIndices, spillCount,
+        finishInnerBigOnly(batch,
+            allMatchCount, equalKeySeriesCount, spillCount,
             (VectorMapJoinHashTableResult[]) hashMultiSetResults, hashMultiSetResultCount);
       }
-
-      batch.selectedInUse = true;
-      batch.size =  numSel;
 
       if (batch.size > 0) {
         // Forward any remaining selected rows.

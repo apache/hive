@@ -129,22 +129,10 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    * @param batch
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
-   * @param allMatchs
-   *          A subset of the rows of the batch that are matches.
    * @param allMatchCount
    *          Number of matches in allMatchs.
-   * @param equalKeySeriesValueCounts
-   *          For each equal key series, whether the number of (empty) small table values.
-   * @param equalKeySeriesAllMatchIndices
-   *          For each equal key series, the logical index into allMatchs.
-   * @param equalKeySeriesDuplicateCounts
-   *          For each equal key series, the number of duplicates or equal keys.
    * @param equalKeySeriesCount
    *          Number of single value matches.
-   * @param spills
-   *          A subset of the rows of the batch that are spills.
-   * @param spillHashMapResultIndices
-   *          For each entry in spills, the index into the hashMapResult.
    * @param spillCount
    *          Number of spills in spills.
    * @param hashTableResults
@@ -154,15 +142,16 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
    *          Number of entries in hashMapResults.
    *
    **/
-  protected int finishInnerBigOnly(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchCount,
-      long[] equalKeySeriesValueCounts, int[] equalKeySeriesAllMatchIndices,
-      int[] equalKeySeriesDuplicateCounts, int equalKeySeriesCount,
-      int[] spills, int[] spillHashMapResultIndices, int spillCount,
+  protected void finishInnerBigOnly(VectorizedRowBatch batch,
+      int allMatchCount, int equalKeySeriesCount, int spillCount,
       VectorMapJoinHashTableResult[] hashTableResults, int hashMapResultCount)
           throws HiveException, IOException {
 
-    int numSel = 0;
+    // Get rid of spills before we start modifying the batch.
+    if (spillCount > 0) {
+      spillHashMapBatch(batch, hashTableResults,
+          spills, spillHashMapResultIndices, spillCount);
+    }
 
     /*
      * Optimize by running value expressions only over the matched rows.
@@ -171,6 +160,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       performValueExpressions(batch, allMatchs, allMatchCount);
     }
 
+    int numSel = 0;
     for (int i = 0; i < equalKeySeriesCount; i++) {
       long count = equalKeySeriesValueCounts[i];
       int allMatchesIndex = equalKeySeriesAllMatchIndices[i];
@@ -185,13 +175,8 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
             duplicateCount, count);
       }
     }
-
-    if (spillCount > 0) {
-      spillHashMapBatch(batch, hashTableResults,
-          spills, spillHashMapResultIndices, spillCount);
-    }
-
-    return numSel;
+    batch.size = numSel;
+    batch.selectedInUse = true;
   }
 
   /**
@@ -215,11 +200,11 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       int[] allMatchs, int allMatchesIndex, int duplicateCount, int numSel)
           throws HiveException, IOException {
 
-    // LOG.info("generateHashMultiSetResultSingleValue enter...");
+    // LOG.debug("generateHashMultiSetResultSingleValue enter...");
 
     // Generate result within big table batch itself.
 
-    // LOG.info("generateHashMultiSetResultSingleValue with big table...");
+    // LOG.debug("generateHashMultiSetResultSingleValue with big table...");
 
     for (int i = 0; i < duplicateCount; i++) {
 
@@ -250,7 +235,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       int[] allMatchs, int allMatchesIndex,
       int duplicateCount, long count) throws HiveException, IOException {
 
-    // LOG.info("generateHashMultiSetResultMultiValue allMatchesIndex " + allMatchesIndex + " duplicateCount " + duplicateCount + " count " + count);
+    // LOG.debug("generateHashMultiSetResultMultiValue allMatchesIndex " + allMatchesIndex + " duplicateCount " + duplicateCount + " count " + count);
 
     // TODO: Look at repeating optimizations...
 
@@ -309,10 +294,8 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
     return 0;
   }
 
-  protected int finishInnerBigOnlyRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
+  protected void finishInnerBigOnlyRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
       VectorMapJoinHashMultiSetResult hashMultiSetResult) throws HiveException, IOException {
-
-    int numSel = 0;
 
     switch (joinResult) {
     case MATCH:
@@ -325,19 +308,21 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
       }
 
       // Generate special repeated case.
-      numSel = generateHashMultiSetResultRepeatedAll(batch, hashMultiSetResult);
+      int numSel = generateHashMultiSetResultRepeatedAll(batch, hashMultiSetResult);
+      batch.size = numSel;
+      batch.selectedInUse = true;
       break;
 
     case SPILL:
       // Whole batch is spilled.
       spillBatchRepeated(batch, (VectorMapJoinHashTableResult) hashMultiSetResult);
+      batch.size = 0;
       break;
 
     case NOMATCH:
       // No match for entire batch.
+      batch.size = 0;
       break;
     }
-
-    return numSel;
   }
 }
