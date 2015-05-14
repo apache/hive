@@ -121,7 +121,7 @@ public class LlapConfiguration extends Configuration {
 
   public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION =
       LLAP_DAEMON_PREFIX + "task.scheduler.enable.preemption";
-  public static final boolean LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION_DEFAULT = false;
+  public static final boolean LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION_DEFAULT = true;
 
 
   /** Amount of time to wait on a connection failure to an LLAP daemon */
