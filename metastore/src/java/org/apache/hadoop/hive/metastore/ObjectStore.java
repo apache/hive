@@ -2758,7 +2758,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       MTable oldt = getMTable(dbname, name);
       if (oldt == null) {
-        throw new MetaException("table " + name + " doesn't exist");
+        throw new MetaException("table " + dbname + "." + name + " doesn't exist");
       }
 
       // For now only alter name, owner, parameters, cols, bucketcols are allowed

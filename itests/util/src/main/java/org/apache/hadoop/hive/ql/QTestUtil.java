@@ -1028,7 +1028,7 @@ public class QTestUtil {
         rc = cliDriver.processLine(command);
       }
 
-      if (rc != 0) {
+      if (rc != 0 && !ignoreErrors()) {
         break;
       }
       command = "";
@@ -1037,6 +1037,14 @@ public class QTestUtil {
       SessionState.get().setLastCommand(null);  // reset
     }
     return rc;
+  }
+
+  /**
+   * This allows a .q file to continue executing after a statement runs into an error which is convenient
+   * if you want to use another hive cmd after the failure to sanity check the state of the system.
+   */
+  private boolean ignoreErrors() {
+    return conf.getBoolVar(HiveConf.ConfVars.CLIIGNOREERRORS);
   }
 
   private boolean isHiveCommand(String command) {
