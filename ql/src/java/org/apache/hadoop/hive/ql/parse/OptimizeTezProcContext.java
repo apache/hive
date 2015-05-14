@@ -49,6 +49,19 @@ public class OptimizeTezProcContext implements NodeProcessorCtx{
   public final Set<ReadEntity> inputs;
   public final Set<WriteEntity> outputs;
 
+  /* Two of the optimization rules, ConvertJoinMapJoin and RemoveDynamicPruningBySize, are put into
+     stats dependent optimizations and run together in TezCompiler. There's no guarantee which one
+     runs first, but in either case, the prior one may have removed a chain which the latter one is
+     not aware of. So we need to remember the leaf node(s) of that chain so it can be skipped.
+
+     For example, as ConvertJoinMapJoin is removing the reduce sink, it may also have removed a
+     dynamic partition pruning operator chain. However, RemoveDynamicPruningBySize doesn't know this
+     and still tries to traverse that removed chain which will cause NPE.
+
+     This may also happen when RemoveDynamicPruningBySize happens first.
+    */
+  public HashSet<AppMasterEventOperator> pruningOpsRemovedByPriorOpt;
+
   public final Set<ReduceSinkOperator> visitedReduceSinks
     = new HashSet<ReduceSinkOperator>();
 
@@ -66,6 +79,7 @@ public class OptimizeTezProcContext implements NodeProcessorCtx{
     this.parseContext = parseContext;
     this.inputs = inputs;
     this.outputs = outputs;
+    this.pruningOpsRemovedByPriorOpt = new HashSet<AppMasterEventOperator>();
   }
 
   public void setRootOperators(Deque<Operator<? extends OperatorDesc>> roots) {
