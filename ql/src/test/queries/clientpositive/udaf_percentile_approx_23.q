@@ -90,7 +90,7 @@ set hive.cbo.enable=false;
 -- NaN
 explain
 select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket;
-select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket;
+select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket;
 
 -- with CBO
 explain

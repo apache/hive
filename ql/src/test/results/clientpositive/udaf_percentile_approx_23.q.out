@@ -556,15 +556,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket
 #### A masked pattern was here ####
-POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket
 #### A masked pattern was here ####
-341.5
+true
 PREHOOK: query: -- with CBO
 explain
 select percentile_approx(key, 0.5) from bucket
