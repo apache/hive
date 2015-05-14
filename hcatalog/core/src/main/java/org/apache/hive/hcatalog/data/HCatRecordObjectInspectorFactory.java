@@ -93,7 +93,7 @@ public class HCatRecordObjectInspectorFactory {
       switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         oi = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
+            (PrimitiveTypeInfo) typeInfo);
         break;
       case STRUCT:
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
