@@ -461,4 +461,20 @@ public class GenTezUtils {
       findRoots(p, ops);
     }
   }
+
+  /**
+   * Remove an operator branch. When we see a fork, we know it's time to do the removal.
+   * @param event the leaf node of which branch to be removed
+   */
+  public void removeBranch(AppMasterEventOperator event) {
+    Operator<?> child = event;
+    Operator<?> curr = event;
+
+    while (curr.getChildOperators().size() <= 1) {
+      child = curr;
+      curr = curr.getParentOperators().get(0);
+    }
+
+    curr.removeChild(child);
+  }
 }

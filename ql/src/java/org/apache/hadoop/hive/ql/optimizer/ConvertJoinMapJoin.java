@@ -636,13 +636,26 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // we might have generated a dynamic partition operator chain. Since
         // we're removing the reduce sink we need do remove that too.
         Set<Operator<?>> dynamicPartitionOperators = new HashSet<Operator<?>>();
+        Map<Operator<?>, AppMasterEventOperator> opEventPairs = new HashMap<>();
         for (Operator<?> c : p.getChildOperators()) {
-          if (hasDynamicPartitionBroadcast(c)) {
+          AppMasterEventOperator event = findDynamicPartitionBroadcast(c);
+          if (event != null) {
             dynamicPartitionOperators.add(c);
+            opEventPairs.put(c, event);
           }
         }
         for (Operator<?> c : dynamicPartitionOperators) {
-          p.removeChild(c);
+          if (context.pruningOpsRemovedByPriorOpt.isEmpty() ||
+              !context.pruningOpsRemovedByPriorOpt.contains(opEventPairs.get(c))) {
+            p.removeChild(c);
+            // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
+            LOG.info("Disabling dynamic pruning for: "
+                + ((DynamicPruningEventDesc) opEventPairs.get(c).getConf()).getTableScan().getName()
+                + ". Need to be removed together with reduce sink");
+          }
+        }
+        for (Operator<?> op : dynamicPartitionOperators) {
+          context.pruningOpsRemovedByPriorOpt.add(opEventPairs.get(op));
         }
       }
       mapJoinOp.getParentOperators().remove(bigTablePosition);
@@ -662,15 +675,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return mapJoinOp;
   }
 
-  private boolean hasDynamicPartitionBroadcast(Operator<?> parent) {
-    boolean hasDynamicPartitionPruning = false;
+  private AppMasterEventOperator findDynamicPartitionBroadcast(Operator<?> parent) {
 
     for (Operator<?> op : parent.getChildOperators()) {
       while (op != null) {
         if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
           // found dynamic partition pruning operator
-          hasDynamicPartitionPruning = true;
-          break;
+          return (AppMasterEventOperator)op;
         }
         if (op instanceof ReduceSinkOperator || op instanceof FileSinkOperator) {
           // crossing reduce sink or file sink means the pruning isn't for this parent.
@@ -686,6 +697,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
-    return hasDynamicPartitionPruning;
+    return null;
   }
 }
