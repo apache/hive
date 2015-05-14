@@ -121,13 +121,13 @@ public abstract class VectorMapJoinFastLongHashTable
       int pairIndex = 2 * slot;
       long valueRef = slotPairs[pairIndex];
       if (valueRef == 0) {
-        // LOG.info("VectorMapJoinFastLongHashTable add key " + key + " slot " + slot + " pairIndex " + pairIndex + " empty slot (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable add key " + key + " slot " + slot + " pairIndex " + pairIndex + " empty slot (i = " + i + ")");
         isNewKey = true;
         break;
       }
       long tableKey = slotPairs[pairIndex + 1];
       if (key == tableKey) {
-        // LOG.info("VectorMapJoinFastLongHashTable add key " + key + " slot " + slot + " pairIndex " + pairIndex + " found key (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable add key " + key + " slot " + slot + " pairIndex " + pairIndex + " found key (i = " + i + ")");
         isNewKey = false;
         break;
       }
@@ -145,7 +145,7 @@ public abstract class VectorMapJoinFastLongHashTable
       // debugDumpKeyProbe(keyOffset, keyLength, hashCode, slot);
     }
 
-    // LOG.info("VectorMapJoinFastLongHashTable add slot " + slot + " hashCode " + Long.toHexString(hashCode));
+    // LOG.debug("VectorMapJoinFastLongHashTable add slot " + slot + " hashCode " + Long.toHexString(hashCode));
 
     assignSlot(slot, key, isNewKey, currentValue);
 
@@ -206,7 +206,7 @@ public abstract class VectorMapJoinFastLongHashTable
         }
 
         // Use old value reference word.
-        // LOG.info("VectorMapJoinFastLongHashTable expandAndRehash key " + tableKey + " slot " + newSlot + " newPairIndex " + newPairIndex + " empty slot (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash key " + tableKey + " slot " + newSlot + " newPairIndex " + newPairIndex + " empty slot (i = " + i + ")");
 
         newSlotPairs[newPairIndex] = valueRef;
         newSlotPairs[newPairIndex + 1] = tableKey;
@@ -220,7 +220,7 @@ public abstract class VectorMapJoinFastLongHashTable
     largestNumberOfSteps = newLargestNumberOfSteps;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
     metricExpands++;
-    // LOG.info("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
+    // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
   }
 
   protected long findReadSlot(long key, long hashCode) {
@@ -235,20 +235,20 @@ public abstract class VectorMapJoinFastLongHashTable
       long valueRef = slotPairs[pairIndex];
       if (valueRef == 0) {
         // Given that we do not delete, an empty slot means no match.
-        // LOG.info("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " empty slot (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " empty slot (i = " + i + ")");
         return -1;
       }
       long tableKey = slotPairs[pairIndex + 1];
       if (key == tableKey) {
-        // LOG.info("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " found key (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " found key (i = " + i + ")");
         return slotPairs[pairIndex];
       }
       // Some other key (collision) - keep probing.
       probeSlot += (++i);
       if (i > largestNumberOfSteps) {
-        // LOG.info("VectorMapJoinFastLongHashTable findReadSlot returning not found");
+        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot returning not found");
         // We know we never went that far when we were inserting.
-        // LOG.info("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " largestNumberOfSteps " + largestNumberOfSteps + " (i = " + i + ")");
+        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " largestNumberOfSteps " + largestNumberOfSteps + " (i = " + i + ")");
         return -1;
       }
       slot = (int)(probeSlot & logicalHashBucketMask);

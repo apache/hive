@@ -81,7 +81,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     int newThreshold = HashMapWrapper.calculateTableSize(
         keyCountAdj, threshold, loadFactor, keyCount);
 
-    // LOG.info("VectorMapJoinFastTableContainer load newThreshold " + newThreshold);
+    // LOG.debug("VectorMapJoinFastTableContainer load newThreshold " + newThreshold);
 
     VectorMapJoinFastHashTable = createHashTable(newThreshold);
   }
