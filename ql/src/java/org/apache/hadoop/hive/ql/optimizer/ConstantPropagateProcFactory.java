@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -233,7 +234,7 @@ public final class ConstantPropagateProcFactory {
       } else {
 
         // Check if the function can be short cut.
-        ExprNodeDesc shortcut = shortcutFunction(udf, newExprs);
+        ExprNodeDesc shortcut = shortcutFunction(udf, newExprs, op);
         if (shortcut != null) {
           LOG.debug("Folding expression:" + desc + " -> " + shortcut);
           return shortcut;
@@ -362,7 +363,8 @@ public final class ConstantPropagateProcFactory {
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 
-  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) throws UDFArgumentException {
+  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs,
+    Operator<? extends Serializable> op) throws UDFArgumentException {
 
     if (udf instanceof GenericUDFOPEqual) {
      assert newExprs.size() == 2;
@@ -486,7 +488,20 @@ public final class ConstantPropagateProcFactory {
         Object thenVal = constThen.getValue();
         Object elseVal = constElse.getValue();
         if (thenVal == null) {
-          return elseVal == null ? thenExpr : null;
+          if (elseVal == null) {
+            // both branches are null.
+            return thenExpr;
+          } else if (op instanceof FilterOperator) {
+            // we can still fold, since here null is equivalent to false.
+            return Boolean.TRUE.equals(elseVal) ?
+              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), newExprs.subList(0, 1)) : Boolean.FALSE.equals(elseVal) ?
+              elseExpr : null;
+          } else {
+            // can't do much, expression is not in context of filter, so we can't treat null as equivalent to false here.
+            return null;
+          }
+        } else if (elseVal == null && op instanceof FilterOperator) {
+          return Boolean.TRUE.equals(thenVal) ? whenExpr : Boolean.FALSE.equals(thenVal) ? thenExpr : null;
         } else if(thenVal.equals(elseVal)){
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
@@ -516,7 +531,17 @@ public final class ConstantPropagateProcFactory {
         Object thenVal = constThen.getValue();
         Object elseVal = constElse.getValue();
         if (thenVal == null) {
-          return elseVal == null ? thenExpr : null;
+          if (null == elseVal) {
+            return thenExpr;
+          } else if (op instanceof FilterOperator) {
+            return Boolean.TRUE.equals(elseVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2)) :
+              Boolean.FALSE.equals(elseVal) ? elseExpr : null;
+          } else {
+            return null;
+          }
+        } else if (null == elseVal && op instanceof FilterOperator) {
+            return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
+              Boolean.FALSE.equals(thenVal) ? thenExpr : null;
         } else if(thenVal.equals(elseVal)){
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
