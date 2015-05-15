@@ -89,6 +89,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
 /**
  * A console SQL shell with command completion.
@@ -127,8 +128,10 @@ public class BeeLine implements Closeable {
   private ConsoleReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector;
+  private String dbName = null;
 
   private History history;
+  private boolean isBeeLine = true;
 
   private static final Options options = new Options();
 
@@ -487,10 +490,14 @@ public class BeeLine implements Closeable {
 
 
   public BeeLine() {
+    this(true);
+  }
+
+  public BeeLine(boolean isBeeLine) {
     beeLineCommandCompleter = new BeeLineCommandCompleter(BeeLineCommandCompleter.getCompleters
         (this));
     reflector = new Reflector(this);
-
+    this.isBeeLine = isBeeLine;
     // attempt to dynamically load signal handler
     /* TODO disable signal handler
     try {
@@ -503,7 +510,6 @@ public class BeeLine implements Closeable {
     }
     */
   }
-
 
   DatabaseConnection getDatabaseConnection() {
     return getDatabaseConnections().current();
@@ -629,7 +635,63 @@ public class BeeLine implements Closeable {
         super.processOption(arg, iter);
       }
     }
+  }
 
+  int initArgsFromCliVars(String[] args) {
+    List<String> commands = Collections.emptyList();
+
+    CliOptionsProcessor optionsProcessor = new CliOptionsProcessor();
+    if (!optionsProcessor.process(args)) {
+      return 1;
+    }
+    CommandLine commandLine = optionsProcessor.getCommandLine();
+
+
+    Properties confProps = commandLine.getOptionProperties("hiveconf");
+    for (String propKey : confProps.stringPropertyNames()) {
+      getOpts().getHiveConfVariables().put(propKey, confProps.getProperty(propKey));
+    }
+
+    Properties hiveVars = commandLine.getOptionProperties("define");
+    for (String propKey : hiveVars.stringPropertyNames()) {
+      getOpts().getHiveConfVariables().put(propKey, hiveVars.getProperty(propKey));
+    }
+
+    Properties hiveVars2 = commandLine.getOptionProperties("hivevar");
+    for (String propKey : hiveVars2.stringPropertyNames()) {
+      getOpts().getHiveConfVariables().put(propKey, hiveVars2.getProperty(propKey));
+    }
+
+    getOpts().setScriptFile(commandLine.getOptionValue("f"));
+
+    dbName = commandLine.getOptionValue("database");
+    getOpts().setVerbose(Boolean.valueOf(commandLine.getOptionValue("verbose")));
+    getOpts().setSilent(Boolean.valueOf(commandLine.getOptionValue("slient")));
+
+    int code = 0;
+    if (commandLine.getOptionValues("e") != null) {
+      commands = Arrays.asList(commandLine.getOptionValues("e"));
+    }
+
+    if (!commands.isEmpty() && getOpts().getScriptFile() != null) {
+      System.err.println("The '-e' and '-f' options cannot be specified simultaneously");
+      optionsProcessor.printCliUsage();
+      return 1;
+    }
+
+    if (!commands.isEmpty()) {
+      embeddedConnect();
+      connectDBInEmbededMode();
+      for (Iterator<String> i = commands.iterator(); i.hasNext(); ) {
+        String command = i.next().toString();
+        debug(loc("executing-command", command));
+        if (!dispatch(command)) {
+          code++;
+        }
+      }
+      exit = true; // execute and exit
+    }
+    return code;
   }
 
   int initArgs(String[] args) {
@@ -682,7 +744,6 @@ public class BeeLine implements Closeable {
     if (cl.getOptionValues('e') != null) {
       commands = Arrays.asList(cl.getOptionValues('e'));
     }
-
 
     // TODO: temporary disable this for easier debugging
     /*
@@ -760,9 +821,15 @@ public class BeeLine implements Closeable {
     }
 
     try {
-      int code = initArgs(args);
-      if (code != 0) {
-        return code;
+      if (isBeeLine) {
+        int code = initArgs(args);
+        if (code != 0) {
+          return code;
+        }
+      } else {
+        int code = initArgsFromCliVars(args);
+        if (code != 0)
+          return code;
       }
 
       if (getOpts().getScriptFile() != null) {
@@ -793,6 +860,33 @@ public class BeeLine implements Closeable {
     return ERRNO_OK;
   }
 
+  private int embeddedConnect() {
+    if (!dispatch("!connect " + BEELINE_DEFAULT_JDBC_URL + " '' ''")) {
+      return ERRNO_OTHER;
+    } else {
+      return ERRNO_OK;
+    }
+  }
+
+  private int connectDBInEmbededMode() {
+    if (dbName != null && !dbName.isEmpty()) {
+      if (!dispatch("use " + dbName + ";")) {
+        return ERRNO_OTHER;
+      }
+    }
+    return ERRNO_OK;
+  }
+
+  public int defaultConnect(boolean exitOnError) {
+    if (embeddedConnect() != ERRNO_OK && exitOnError) {
+      return ERRNO_OTHER;
+    }
+    if (connectDBInEmbededMode() != ERRNO_OK && exitOnError) {
+      return ERRNO_OTHER;
+    }
+    return ERRNO_OK;
+  }
+
   private int executeFile(String fileName) {
     FileInputStream initStream = null;
     try {
@@ -810,13 +904,20 @@ public class BeeLine implements Closeable {
 
   private int execute(ConsoleReader reader, boolean exitOnError) {
     String line;
+    if (!isBeeLine) {
+      if (defaultConnect(exitOnError) != ERRNO_OK && exitOnError) {
+        return ERRNO_OTHER;
+      }
+    }
     while (!exit) {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
         line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ?
                  reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
-
+        if (!isBeeLine) {
+          line = cliToBeelineCmd(line);
+        }
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
         }
@@ -917,6 +1018,30 @@ public class BeeLine implements Closeable {
 
   void usage() {
     output(loc("cmd-usage"));
+  }
+
+  private String[] tokenizeCmd(String cmd) {
+    return cmd.split("\\s+");
+  }
+
+  public String cliToBeelineCmd(String cmd) {
+    if (cmd == null)
+      return null;
+    String cmd_trimmed = cmd.trim();
+    String[] tokens = tokenizeCmd(cmd_trimmed);
+
+    if (cmd_trimmed.equalsIgnoreCase("quit") || cmd_trimmed.equalsIgnoreCase("exit")) {
+      return null;
+    } else if (tokens[0].equalsIgnoreCase("source")) {
+      //TODO
+      return cmd;
+    } else if (cmd_trimmed.startsWith("!")) {
+      String shell_cmd = cmd_trimmed.substring(1);
+      return "!sh " + shell_cmd;
+    } else { // local mode
+      // command like dfs
+      return cmd;
+    }
   }
 
 
