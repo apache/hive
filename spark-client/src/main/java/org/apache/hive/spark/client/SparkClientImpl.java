@@ -97,7 +97,7 @@ class SparkClientImpl implements SparkClient {
     try {
       // The RPC server will take care of timeouts here.
       this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       LOG.warn("Error while waiting for client to connect.", e);
       driverThread.interrupt();
       try {
