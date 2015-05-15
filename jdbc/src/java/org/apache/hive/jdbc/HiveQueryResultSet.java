@@ -468,4 +468,9 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   public int getRow() throws SQLException {
     return rowsFetched;
   }
+
+  @Override
+  public boolean isClosed() {
+    return isClosed;
+  }
 }
