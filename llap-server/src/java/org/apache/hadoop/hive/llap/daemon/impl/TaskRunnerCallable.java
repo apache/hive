@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
@@ -212,7 +211,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
       //        FileSystem.closeAllForUGI(taskUgi);
       LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-          runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
+          runtimeWatch.stop().elapsedMillis();
       if (LOG.isDebugEnabled()) {
         LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
       }
@@ -377,10 +376,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.info("Killed task {}", requestId);
           if (killtimerWatch.isRunning()) {
             killtimerWatch.stop();
-            long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
+            long elapsed = killtimerWatch.elapsedMillis();
             LOG.info("Time to die for task {}", elapsed);
           }
-          metrics.incrPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
+          metrics.incrPreemptionTimeLost(runtimeWatch.elapsedMillis();
           metrics.incrExecutorTotalKilled();
           break;
         case COMMUNICATION_FAILURE:
