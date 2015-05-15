@@ -199,15 +199,19 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public void close() {
-    remoteClient.stop();
+    if (remoteClient != null) {
+      remoteClient.stop();
+    }
   }
 
   private static class JobStatusJob implements Job<Serializable> {
 
+    private static final long serialVersionUID = 1L;
     private final byte[] jobConfBytes;
     private final byte[] scratchDirBytes;
     private final byte[] sparkWorkBytes;
 
+    @SuppressWarnings("unused")
     private JobStatusJob() {
       // For deserialization.
       this(null, null, null);
