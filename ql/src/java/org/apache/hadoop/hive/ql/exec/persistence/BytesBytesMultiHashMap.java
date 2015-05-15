@@ -566,6 +566,7 @@ public final class BytesBytesMultiHashMap {
     this.writeBuffers.clear();
     this.refs = new long[1];
     this.keysAssigned = 0;
+    this.numValues = 0;
   }
 
   public void expandAndRehashToTarget(int estimateNewRowCount) {

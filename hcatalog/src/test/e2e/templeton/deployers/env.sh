@@ -22,6 +22,7 @@
 
 # define necessary env vars here and source it in other files
 
+#todo: most of these variables are defined in pom.xml - see this can be integrated
 echo ${HADOOP_VERSION};
 
 if [ -z ${HADOOP_VERSION} ]; then

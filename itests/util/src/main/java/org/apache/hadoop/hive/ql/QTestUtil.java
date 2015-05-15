@@ -55,6 +55,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
+import junit.framework.TestSuite;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -157,6 +158,10 @@ public class QTestUtil {
 
   private final String initScript;
   private final String cleanupScript;
+
+  public interface SuiteAddTestFunctor {
+    public void addTestToSuite(TestSuite suite, Object setup, String tName);
+  }
 
   static {
     for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
@@ -425,6 +430,9 @@ public class QTestUtil {
       cleanUp();
     }
 
+    if (clusterType == MiniClusterType.tez) {
+      SessionState.get().getTezSession().close(false);
+    }
     setup.tearDown();
     if (sparkSession != null) {
       try {
@@ -1991,5 +1999,43 @@ public class QTestUtil {
         org.apache.hadoop.util.StringUtils.stringifyException(e) + "\n" +
         (command != null ? " running " + command : "") +
         (debugHint != null ? debugHint : ""));
+  }
+
+  public static void addTestsToSuiteFromQfileNames(
+    String qFileNamesFile,
+    Set<String> qFilesToExecute,
+    TestSuite suite,
+    Object setup,
+    SuiteAddTestFunctor suiteAddTestCallback) {
+    try {
+      File qFileNames = new File(qFileNamesFile);
+      FileReader fr = new FileReader(qFileNames.getCanonicalFile());
+      BufferedReader br = new BufferedReader(fr);
+      String fName = null;
+
+      while ((fName = br.readLine()) != null) {
+        if (fName.isEmpty() || fName.trim().equals("")) {
+          continue;
+        }
+
+        int eIdx = fName.indexOf('.');
+
+        if (eIdx == -1) {
+          continue;
+        }
+
+        String tName = fName.substring(0, eIdx);
+
+        if (qFilesToExecute.isEmpty() || qFilesToExecute.contains(fName)) {
+          suiteAddTestCallback.addTestToSuite(suite, setup, tName);
+        }
+      }
+      br.close();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      Assert.fail("Unexpected exception " + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
   }
 }

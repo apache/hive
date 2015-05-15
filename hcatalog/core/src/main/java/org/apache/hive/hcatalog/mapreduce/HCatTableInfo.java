@@ -21,10 +21,13 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /**
@@ -109,6 +112,15 @@ public class HCatTableInfo implements Serializable {
    */
   public HCatSchema getPartitionColumns() {
     return partitionColumns;
+  }
+
+  /**
+   * @return HCatSchema with all columns (i.e. data and partition columns).
+   */
+  public HCatSchema getAllColumns() {
+    List<HCatFieldSchema> allColumns = Lists.newArrayList(dataColumns.getFields());
+    allColumns.addAll(partitionColumns.getFields());
+    return new HCatSchema(allColumns);
   }
 
   /**

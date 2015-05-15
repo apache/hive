@@ -30,7 +30,6 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
   protected float loadFactor;
   protected int writeBuffersSize;
-  protected long memUsage;
 
   protected int metricPutConflict;
   protected int largestNumberOfSteps;
@@ -52,7 +51,7 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   public VectorMapJoinFastHashTable(
-        int initialCapacity, float loadFactor, int writeBuffersSize, long memUsage) {
+        int initialCapacity, float loadFactor, int writeBuffersSize) {
 
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
@@ -65,6 +64,5 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
     this.loadFactor = loadFactor;
     this.writeBuffersSize = writeBuffersSize;
-    this.memUsage = memUsage;
   }
 }

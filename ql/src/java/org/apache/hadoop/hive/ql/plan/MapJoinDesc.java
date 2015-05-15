@@ -67,7 +67,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private boolean isBucketMapJoin;
 
   // Hash table memory usage allowed; used in case of non-staged mapjoin.
-  private float hashtableMemoryUsage;
+  private float hashtableMemoryUsage;   // This is a percentage value between 0 and 1
   protected boolean genJoinKeys = true;
 
   private boolean isHybridHashJoin;

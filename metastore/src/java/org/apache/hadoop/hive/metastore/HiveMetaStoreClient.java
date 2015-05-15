@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -153,6 +152,8 @@ import org.apache.thrift.transport.TTransportException;
  * Hive Metastore Client.
  * The public implementation of IMetaStoreClient. Methods not inherited from IMetaStoreClient
  * are not public and can change. Hence this is marked as unstable.
+ * For users who require retry mechanism when the connection between metastore and client is
+ * broken, RetryingMetaStoreClient class should be used.
  */
 @Public
 @Unstable
@@ -307,6 +308,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throw new MetaException("For direct MetaStore DB connections, we don't support retries" +
           " at the client level.");
     } else {
+      close();
       // Swap the first element of the metastoreUris[] with a random element from the rest
       // of the array. Rationale being that this method will generally be called when the default
       // connection has died and the default connection is likely to be the first array element.
@@ -491,7 +493,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         client.shutdown();
       }
     } catch (TException e) {
-      LOG.error("Unable to shutdown local metastore client", e);
+      LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
     }
     // Transport would have got closed via client.shutdown(), so we dont need this, but
     // just in case, we make this call.

@@ -123,6 +123,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month
@@ -151,6 +152,7 @@ positive
 pow
 power
 printf
+quarter
 radians
 rand
 rank
@@ -326,6 +328,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month

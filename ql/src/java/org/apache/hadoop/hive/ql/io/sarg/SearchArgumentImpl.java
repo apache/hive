@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -54,15 +60,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import parquet.filter2.predicate.FilterApi;
 import parquet.filter2.predicate.FilterPredicate;
@@ -116,55 +116,12 @@ final class SearchArgumentImpl implements SearchArgument {
     }
 
     @Override
-    public Object getLiteral(FileFormat format) {
-      // To get around a kryo 2.22 bug while deserialize a Timestamp into Date
-      // (https://github.com/EsotericSoftware/kryo/issues/88)
-      // When we see a Date, convert back into Timestamp
-      if (literal instanceof java.util.Date) {
-        return new Timestamp(((java.util.Date) literal).getTime());
-      }
-
-      switch (format) {
-        case ORC:
-          // adapt base type to what orc needs
-          if (literal instanceof Integer) {
-            return ((Number) literal).longValue();
-          }
-          return literal;
-        case PARQUET:
-          return literal;
-        default:
-          throw new RuntimeException(
-            "File format " + format + "is not support to build search arguments");
-      }
+    public Object getLiteral() {
+      return literal;
     }
 
     @Override
-    public List<Object> getLiteralList(FileFormat format) {
-      switch (format) {
-        case ORC:
-          return getOrcLiteralList();
-        case PARQUET:
-          return getParquetLiteralList();
-        default:
-          throw new RuntimeException("File format is not support to build search arguments");
-      }
-    }
-
-    private List<Object> getOrcLiteralList() {
-      // no need to cast
-      if (literalList == null || literalList.size() == 0 || !(literalList.get(0) instanceof
-          Integer)) {
-        return literalList;
-      }
-      List<Object> result = new ArrayList<Object>(literalList.size());
-      for (Object o : literalList) {
-        result.add(((Number) o).longValue());
-      }
-      return result;
-    }
-
-    private List<Object> getParquetLiteralList() {
+    public List<Object> getLiteralList() {
       return literalList;
     }
 
@@ -350,13 +307,17 @@ final class SearchArgumentImpl implements SearchArgument {
       try {
         builder = leafFilterFactory
           .getLeafFilterBuilderByType(leaf.getType());
-        if (builder == null) return null;
+        if (builder == null) {
+          return null;
+        }
         if (isMultiLiteralsOperator(leaf.getOperator())) {
-          return builder.buildPredicate(leaf.getOperator(), leaf.getLiteralList(
-            PredicateLeaf.FileFormat.PARQUET), leaf.getColumnName());
+          return builder.buildPredicate(leaf.getOperator(),
+              leaf.getLiteralList(),
+              leaf.getColumnName());
         } else {
           return builder
-            .buildPredict(leaf.getOperator(), leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET),
+            .buildPredict(leaf.getOperator(),
+              leaf.getLiteral(),
               leaf.getColumnName());
         }
       } catch (Exception e) {

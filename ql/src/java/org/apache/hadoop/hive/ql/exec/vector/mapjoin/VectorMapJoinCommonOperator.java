@@ -132,6 +132,10 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   // to output batch scratch columns for the small table portion.
   protected VectorColumnSourceMapping smallTableMapping;
 
+  // These are the output columns for the small table and the outer small table keys.
+  protected int[] smallTableOutputVectorColumns;
+  protected int[] bigTableOuterKeyOutputVectorColumns;
+
   // These are the columns in the big and small table that are ByteColumnVector columns.
   // We create data buffers for these columns so we can copy strings into those columns by value.
   protected int[] bigTableByteColumnVectorColumns;
@@ -317,7 +321,10 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       projectionMapping.add(nextOutputColumn, batchColumnIndex, typeName);
 
       // Collect columns we copy from the big table batch to the overflow batch.
-      bigTableRetainedMapping.add(batchColumnIndex, batchColumnIndex, typeName);
+      if (!bigTableRetainedMapping.containsOutputColumn(batchColumnIndex)) {
+        // Tolerate repeated use of a big table column.
+        bigTableRetainedMapping.add(batchColumnIndex, batchColumnIndex, typeName);
+      }
 
       nextOutputColumn++;
     }
@@ -414,6 +421,9 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     bigTableOuterKeyMapping.finalize();
 
     smallTableMapping.finalize();
+
+    bigTableOuterKeyOutputVectorColumns = bigTableOuterKeyMapping.getOutputColumns();
+    smallTableOutputVectorColumns = smallTableMapping.getOutputColumns();
 
     // Which big table and small table columns are ByteColumnVector and need have their data buffer
     // to be manually reset for some join result processing?
@@ -744,10 +754,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     // Setup a scratch batch that will be used to play back big table rows that were spilled
     // to disk for the Hybrid Grace hash partitioning.
     spillReplayBatch = VectorizedBatchUtil.makeLike(batch);
-
-    // TEMPORARY -- Set this up for Hybrid Grace logic in MapJoinOperator.closeOp
-    hashMapRowGetters = new ReusableGetAdaptor[mapJoinTables.length];
-    smallTable = posSingleVectorMapJoinSmallTable;
   }
 
   protected void displayBatchColumns(VectorizedRowBatch batch, String batchName) {

@@ -2867,4 +2867,34 @@ public abstract class TestHiveMetaStore extends TestCase {
         ownerName, ownerType, createTime, functionType, resources);
     client.createFunction(func);
   }
+
+  public void testRetriableClientWithConnLifetime() throws Exception {
+
+    HiveConf conf = new HiveConf(hiveConf);
+    conf.setLong(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME.name(), 60);
+    long timeout = 65 * 1000; // Lets use a timeout more than the socket lifetime to simulate a reconnect
+
+    // Test a normal retriable client
+    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(conf, getHookLoader(), HiveMetaStoreClient.class.getName());
+    client.getAllDatabases();
+    client.close();
+
+    // Connect after the lifetime, there should not be any failures
+    client = RetryingMetaStoreClient.getProxy(conf, getHookLoader(), HiveMetaStoreClient.class.getName());
+    Thread.sleep(timeout);
+    client.getAllDatabases();
+    client.close();
+  }
+
+  private HiveMetaHookLoader getHookLoader() {
+    HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
+      @Override
+      public HiveMetaHook getHook(
+          org.apache.hadoop.hive.metastore.api.Table tbl)
+          throws MetaException {
+        return null;
+      }
+    };
+    return hookLoader;
+  }
 }

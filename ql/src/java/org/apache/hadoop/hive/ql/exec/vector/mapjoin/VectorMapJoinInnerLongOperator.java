@@ -124,6 +124,10 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
 
       batchCounter++;
 
+      // Do the per-batch setup for an inner join.
+
+      innerPerBatchSetup(batch);
+
       // For inner joins, we may apply the filter(s) now.
       for(VectorExpression ve : bigTableFilterExpressions) {
         ve.evaluate(batch);

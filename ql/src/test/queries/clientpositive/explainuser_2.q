@@ -1,4 +1,5 @@
 set hive.explain.user=true;
+set hive.metastore.aggregate.stats.cache.enabled=false;
 
 CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;
 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ant;
 
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileWriter;
@@ -453,6 +454,29 @@ public class QTestGenTask extends Task {
         hadoopVersion = "";
       }
 
+      File qFileNames = new File(outputDirectory, className + "QFileNames.txt");
+      String qFileNamesFile = qFileNames.getCanonicalPath();
+
+      if (qFileNames.exists()) {
+        if (!qFileNames.delete()) {
+          throw new Exception("Could not delete old query file names containing file " +
+            qFileNamesFile);
+        }
+      }
+      if (!qFileNames.createNewFile()) {
+        throw new Exception("Could not create query file names containing file " +
+          qFileNamesFile);
+      }
+
+      FileWriter fw = new FileWriter(qFileNames.getCanonicalFile());
+      BufferedWriter bw = new BufferedWriter(fw);
+
+      for (File qFile: qFiles) {
+        bw.write(qFile.getName());
+        bw.newLine();
+      }
+      bw.close();
+
       // For each of the qFiles generate the test
       System.out.println("hiveRootDir = " + hiveRootDir);
       VelocityContext ctx = new VelocityContext();
@@ -464,6 +488,7 @@ public class QTestGenTask extends Task {
       System.out.println("queryDir = " + strQueryDir);
       ctx.put("queryDir", strQueryDir);
       ctx.put("qfiles", qFiles);
+      ctx.put("qFileNamesFile", qFileNamesFile);
       ctx.put("qfilesMap", qFilesMap);
       if (resultsDir != null) {
         ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));

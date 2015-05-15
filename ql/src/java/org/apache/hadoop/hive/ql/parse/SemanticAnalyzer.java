@@ -222,6 +222,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
+  public static final String SUBQUERY_TAG_1 = "-subquery1";
+  public static final String SUBQUERY_TAG_2 = "-subquery2";
+
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
@@ -429,16 +432,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbexpr.setOpcode(QBExpr.Opcode.UNION);
       // query 1
       assert (ast.getChild(0) != null);
-      QBExpr qbexpr1 = new QBExpr(alias + "-subquery1");
-      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + "-subquery1",
-          alias + "-subquery1");
+      QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1,
+          alias + SUBQUERY_TAG_1);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
-      QBExpr qbexpr2 = new QBExpr(alias + "-subquery2");
-      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + "-subquery2",
-          alias + "-subquery2");
+      QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2,
+          alias + SUBQUERY_TAG_2);
       qbexpr.setQBExpr2(qbexpr2);
     }
       break;
@@ -1747,7 +1750,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           break;
         }
 
-        case HiveParser.TOK_LOCAL_DIR:
         case HiveParser.TOK_DIR: {
           // This is a dfs file
           String fname = stripQuotes(ast.getChild(0).getText());
@@ -1791,43 +1793,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ctx.setResDir(stagingPath);
             }
           }
-          qb.getMetaData().setDestForAlias(name, fname,
-              (ast.getToken().getType() == HiveParser.TOK_DIR));
 
-          CreateTableDesc localDirectoryDesc = new CreateTableDesc();
-          boolean localDirectoryDescIsSet = false;
+          boolean isDfsFile = true;
+          if (ast.getChildCount() >= 2 && ast.getChild(1).getText().toLowerCase().equals("local")) {
+            isDfsFile = false;
+          }
+          qb.getMetaData().setDestForAlias(name, fname, isDfsFile);
+
+          CreateTableDesc directoryDesc = new CreateTableDesc();
+          boolean directoryDescIsSet = false;
           int numCh = ast.getChildCount();
           for (int num = 1; num < numCh ; num++){
             ASTNode child = (ASTNode) ast.getChild(num);
             if (child != null) {
               if (storageFormat.fillStorageFormat(child)) {
-                localDirectoryDesc.setOutputFormat(storageFormat.getOutputFormat());
-                localDirectoryDesc.setSerName(storageFormat.getSerde());
-                localDirectoryDescIsSet = true;
+                directoryDesc.setOutputFormat(storageFormat.getOutputFormat());
+                directoryDesc.setSerName(storageFormat.getSerde());
+                directoryDescIsSet = true;
                 continue;
               }
               switch (child.getToken().getType()) {
                 case HiveParser.TOK_TABLEROWFORMAT:
                   rowFormatParams.analyzeRowFormat(child);
-                  localDirectoryDesc.setFieldDelim(rowFormatParams.fieldDelim);
-                  localDirectoryDesc.setLineDelim(rowFormatParams.lineDelim);
-                  localDirectoryDesc.setCollItemDelim(rowFormatParams.collItemDelim);
-                  localDirectoryDesc.setMapKeyDelim(rowFormatParams.mapKeyDelim);
-                  localDirectoryDesc.setFieldEscape(rowFormatParams.fieldEscape);
-                  localDirectoryDesc.setNullFormat(rowFormatParams.nullFormat);
-                  localDirectoryDescIsSet=true;
+                  directoryDesc.setFieldDelim(rowFormatParams.fieldDelim);
+                  directoryDesc.setLineDelim(rowFormatParams.lineDelim);
+                  directoryDesc.setCollItemDelim(rowFormatParams.collItemDelim);
+                  directoryDesc.setMapKeyDelim(rowFormatParams.mapKeyDelim);
+                  directoryDesc.setFieldEscape(rowFormatParams.fieldEscape);
+                  directoryDesc.setNullFormat(rowFormatParams.nullFormat);
+                  directoryDescIsSet=true;
                   break;
                 case HiveParser.TOK_TABLESERIALIZER:
                   ASTNode serdeChild = (ASTNode) child.getChild(0);
                   storageFormat.setSerde(unescapeSQLString(serdeChild.getChild(0).getText()));
-                  localDirectoryDesc.setSerName(storageFormat.getSerde());
-                  localDirectoryDescIsSet=true;
+                  directoryDesc.setSerName(storageFormat.getSerde());
+                  directoryDescIsSet=true;
                   break;
               }
             }
           }
-          if (localDirectoryDescIsSet){
-            qb.setLocalDirectoryDesc(localDirectoryDesc);
+          if (directoryDescIsSet){
+            qb.setDirectoryDesc(directoryDesc);
           }
           break;
         }
@@ -6040,7 +6046,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean enforceBucketing = false;
     boolean enforceSorting = false;
     ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
     ArrayList<Integer> sortOrders = new ArrayList<Integer>();
     boolean multiFileSpray = false;
@@ -6052,11 +6057,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       enforceBucketing = true;
       if (updating() || deleting()) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
-        partnColsNoConvert = getPartitionColsFromBucketColsForUpdateDelete(input, false);
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
-        partnColsNoConvert = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
-            false);
       }
     }
 
@@ -6068,7 +6070,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         partnCols = sortCols;
-        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
       }
     }
 
@@ -6104,12 +6105,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
-      ctx.setPartnCols(partnColsNoConvert);
       ctx.setTotalFiles(totalFiles);
     }
     return input;
   }
 
+  private void genPartnCols(String dest, Operator input, QB qb,
+      TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
+    boolean enforceBucketing = false;
+    boolean enforceSorting = false;
+    ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
+
+    if ((dest_tab.getNumBuckets() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+      enforceBucketing = true;
+      if (updating() || deleting()) {
+        partnColsNoConvert = getPartitionColsFromBucketColsForUpdateDelete(input, false);
+      } else {
+        partnColsNoConvert = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input,
+            false);
+      }
+    }
+
+    if ((dest_tab.getSortCols() != null) &&
+        (dest_tab.getSortCols().size() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
+      enforceSorting = true;
+      if (!enforceBucketing) {
+        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
+      }
+    }
+
+    if (enforceBucketing || enforceSorting) {
+      ctx.setPartnCols(partnColsNoConvert);
+    }
+  }
   /**
    * Check for HOLD_DDLTIME hint.
    *
@@ -6500,7 +6530,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
           table_desc = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat);
         } else {
-          table_desc = PlanUtils.getDefaultTableDesc(qb.getLLocalDirectoryDesc(), cols, colTypes);
+          table_desc = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
         }
       } else {
         table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
@@ -6552,6 +6582,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If this table is working with ACID semantics, turn off merging
     canBeMerged &= !destTableIsAcid;
+
+    // Generate the partition columns from the parent input
+    if (dest_type.intValue() == QBMetaData.DEST_TABLE
+        || dest_type.intValue() == QBMetaData.DEST_PARTITION) {
+      genPartnCols(dest, input, qb, table_desc, dest_tab, rsCtx);
+    }
 
     FileSinkDesc fileSinkDesc = new FileSinkDesc(
       queryTmpdir,
@@ -6788,7 +6824,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = tableFields.size() + (updating() ? 1 : 0); i < rowFields.size(); ++i) {
         TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
         ExprNodeDesc column = new ExprNodeColumnDesc(
-            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", false);
+            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", true);
         expressions.add(column);
       }
       // converted = true; // [TODO]: should we check & convert type to String and set it to true?
@@ -12033,7 +12069,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Even if the table is of Acid type, if we aren't working with an Acid compliant TxnManager
   // then return false.
-  private boolean isAcidTable(Table tab) {
+  public static boolean isAcidTable(Table tab) {
     if (tab == null) return false;
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
     String tableIsTransactional =

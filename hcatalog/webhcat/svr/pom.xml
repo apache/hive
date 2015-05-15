@@ -151,12 +151,13 @@
   </profiles>
 
   <build>
-      <resources>
-          <resource>
-              <targetPath>.</targetPath>
-              <directory>src/main/config</directory>
-          </resource>
-      </resources>
+    <resources>
+      <resource>
+        <targetPath>.</targetPath>
+        <directory>src/main/config</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

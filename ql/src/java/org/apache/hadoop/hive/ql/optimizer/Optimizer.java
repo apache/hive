@@ -62,11 +62,9 @@ public class Optimizer {
 
     transformations = new ArrayList<Transform>();
 
-    // If we are translating Calcite operators into Hive operators, we need
-    // additional postprocessing
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
-      transformations.add(new HiveOpConverterPostProc());
-    }
+    // Add the additional postprocessing transformations needed if
+    // we are translating Calcite operators into Hive operators.
+    transformations.add(new HiveOpConverterPostProc());
 
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
@@ -149,9 +147,7 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       transformations.add(new ReduceSinkDeDuplication());
     }
-    if(!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
-      transformations.add(new NonBlockingOpDeDupProc());
-    }
+    transformations.add(new NonBlockingOpDeDupProc());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)
         && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
       transformations.add(new IdentityProjectRemover());

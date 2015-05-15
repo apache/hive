@@ -77,8 +77,8 @@ public class VectorMapJoinFastLongHashSet
 
   public VectorMapJoinFastLongHashSet(
       boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-      int initialCapacity, float loadFactor, int writeBuffersSize, long memUsage) {
+      int initialCapacity, float loadFactor, int writeBuffersSize) {
     super(minMaxEnabled, isOuterJoin, hashTableKeyType,
-        initialCapacity, loadFactor, writeBuffersSize, memUsage);
+        initialCapacity, loadFactor, writeBuffersSize);
   }
 }

@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,29 +68,31 @@ public class ObjectContainer<ROW> {
     kryo = Utilities.runtimeSerializationKryo.get();
     try {
       setupOutput();
-    } catch (IOException e) {
+    } catch (IOException | HiveException e) {
       throw new RuntimeException("Failed to create temporary output file on disk", e);
     }
   }
 
-  private void setupOutput() throws IOException {
-    if (parentFile == null) {
-      parentFile = File.createTempFile("object-container", "");
-      if (parentFile.delete() && parentFile.mkdir()) {
-        parentFile.deleteOnExit();
-      }
-    }
-
-    if (tmpFile == null || input != null) {
-      tmpFile = File.createTempFile("ObjectContainer", ".tmp", parentFile);
-      LOG.info("ObjectContainer created temp file " + tmpFile.getAbsolutePath());
-      tmpFile.deleteOnExit();
-    }
-
+  private void setupOutput() throws IOException, HiveException {
     FileOutputStream fos = null;
     try {
+      if (parentFile == null) {
+        parentFile = File.createTempFile("object-container", "");
+        if (parentFile.delete() && parentFile.mkdir()) {
+          parentFile.deleteOnExit();
+        }
+      }
+
+      if (tmpFile == null || input != null) {
+        tmpFile = File.createTempFile("ObjectContainer", ".tmp", parentFile);
+        LOG.info("ObjectContainer created temp file " + tmpFile.getAbsolutePath());
+        tmpFile.deleteOnExit();
+      }
+
       fos = new FileOutputStream(tmpFile);
       output = new Output(fos);
+    } catch (IOException e) {
+      throw new HiveException(e);
     } finally {
       if (output == null && fos != null) {
         fos.close();

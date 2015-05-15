@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
@@ -167,8 +169,8 @@ public class HiveOpConverter {
       return visit((HiveSort) rn);
     } else if (rn instanceof HiveUnion) {
       return visit((HiveUnion) rn);
-    } else if (rn instanceof SortExchange) {
-      return visit((SortExchange) rn);
+    } else if (rn instanceof HiveSortExchange) {
+      return visit((HiveSortExchange) rn);
     } else if (rn instanceof HiveAggregate) {
       return visit((HiveAggregate) rn);
     }
@@ -329,8 +331,11 @@ public class HiveOpConverter {
       joinPredInfo = JoinPredicateInfo.constructJoinPredicateInfo((MultiJoin)joinRel);
     }
 
-    // 3. Extract join keys from condition
-    ExprNodeDesc[][] joinKeys = extractJoinKeys(joinPredInfo, joinRel.getInputs(), inputs);
+    // 3. Extract join key expressions from HiveSortExchange
+    ExprNodeDesc[][] joinExpressions = new ExprNodeDesc[inputs.length][];
+    for (int i = 0; i < inputs.length; i++) {
+      joinExpressions[i] = ((HiveSortExchange) joinRel.getInput(i)).getJoinExpressions();
+    }
 
     // 4.a Generate tags
     for (int tag=0; tag<children.size(); tag++) {
@@ -338,7 +343,7 @@ public class HiveOpConverter {
       reduceSinkOp.getConf().setTag(tag);
     }
     // 4.b Generate Join operator
-    JoinOperator joinOp = genJoin(joinRel, joinPredInfo, children, joinKeys);
+    JoinOperator joinOp = genJoin(joinRel, joinPredInfo, children, joinExpressions);
 
     // 5. TODO: Extract condition for non-equi join elements (if any) and
     // add it
@@ -520,7 +525,7 @@ public class HiveOpConverter {
     return inputs[0].clone(unionOp);
   }
 
-  OpAttr visit(SortExchange exchangeRel) throws SemanticException {
+  OpAttr visit(HiveSortExchange exchangeRel) throws SemanticException {
     OpAttr inputOpAf = dispatch(exchangeRel.getInput());
 
     if (LOG.isDebugEnabled()) {
@@ -532,13 +537,12 @@ public class HiveOpConverter {
     if (distribution.getType() != Type.HASH_DISTRIBUTED) {
       throw new SemanticException("Only hash distribution supported for LogicalExchange");
     }
-    ExprNodeDesc[] expressions = new ExprNodeDesc[distribution.getKeys().size()];
-    for (int i = 0; i < distribution.getKeys().size(); i++) {
-      int key = distribution.getKeys().get(i);
-      ColumnInfo colInfo = inputOpAf.inputs.get(0).getSchema().getSignature().get(key);
-      ExprNodeDesc column = new ExprNodeColumnDesc(colInfo);
-      expressions[i] = column;
+    ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getJoinKeys().size()];
+    for (int index = 0; index < exchangeRel.getJoinKeys().size(); index++) {
+      expressions[index] = convertToExprNode((RexNode) exchangeRel.getJoinKeys().get(index),
+          exchangeRel.getInput(), null, inputOpAf);
     }
+    exchangeRel.setJoinExpressions(expressions);
 
     ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0), expressions,
         -1, -1, Operation.NOT_ACID, strictMode);

@@ -151,6 +151,29 @@ public class TestScripts  {
     String actual = getTemplateResult(template, templateVariables);
     Approvals.verify(actual);
   }
+
+  @Test
+  public void testPrepHadoop1() throws Throwable {
+    Map<String, String> templateVariables = Maps.newHashMap();
+    templateVariables.put("repository", "https://svn.apache.org/repos/asf/hive/trunk");
+    templateVariables.put("repositoryName", "apache");
+    templateVariables.put("branch", "");
+    templateVariables.put("localDir", "/some/local/dir");
+    templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("buildTool", "maven");
+    templateVariables.put("antArgs", "-Dant=arg1");
+    templateVariables.put("buildTag", "build-1");
+    templateVariables.put("logDir", "/some/log/dir");
+    templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "true");
+    templateVariables.put("javaHome", "/usr/java/jdk1.7");
+    templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
+    templateVariables.put("repositoryType", "svn");
+    templateVariables.put("additionalProfiles", "hadoop-1");
+    String template = readResource("source-prep.vm");
+    String actual = getTemplateResult(template, templateVariables);
+    Approvals.verify(actual);
+  }
   @Test
   public void testPrepSvn() throws Throwable {
     Map<String, String> templateVariables = Maps.newHashMap();

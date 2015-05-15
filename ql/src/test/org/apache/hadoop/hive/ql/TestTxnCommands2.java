@@ -98,8 +98,8 @@ public class TestTxnCommands2 {
         d.destroy();
         d.close();
         d = null;
-        TxnDbUtil.cleanDb();
       }
+      TxnDbUtil.cleanDb();
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
@@ -142,6 +142,22 @@ public class TestTxnCommands2 {
     Assert.assertEquals("Bulk update2 failed", stringifyValues(updatedData2), rs2);
   }
 
+  /**
+   * https://issues.apache.org/jira/browse/HIVE-10151
+   */
+  @Test
+  public void testBucketizedInputFormat() throws Exception {
+    int[][] tableData = {{1,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=1) (a,b) " + makeValuesClause(tableData));
+
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) select a,b from " + Table.ACIDTBLPART + " where p = 1");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL);//no order by as it's just 1 row
+    Assert.assertEquals("Insert into " + Table.ACIDTBL + " didn't match:", stringifyValues(tableData), rs);
+
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) select a,b from " + Table.ACIDTBLPART + " where p = 1");
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);//no order by as it's just 1 row
+    Assert.assertEquals("Insert into " + Table.NONACIDORCTBL + " didn't match:", stringifyValues(tableData), rs2);
+  }
   @Test
   public void testInsertOverwriteWithSelfJoin() throws Exception {
     int[][] part1Data = {{1,7}};

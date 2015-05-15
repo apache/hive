@@ -35,7 +35,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
     random = new Random(47496);
 
     VectorMapJoinFastMultiKeyHashMap map =
-        new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+        new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -55,7 +55,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
   public void testPutGetMultiple() throws Exception {
     random = new Random(2990);
 
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -77,7 +77,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
   public void testGetNonExistent() throws Exception {
     random = new Random(16916);
 
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, LOAD_FACTOR, WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -101,7 +101,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
     random = new Random(26078);
 
     // Make sure the map does not expand; should be able to find space.
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, 1f, WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, CAPACITY, 1f, WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -126,7 +126,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
     random = new Random(22470);
 
     // Start with capacity 1; make sure we expand on every put.
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, 1, 0.0000001f, WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, 1, 0.0000001f, WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random);
     RandomByteArrayStream randomByteArrayValueStream = new RandomByteArrayStream(random);
@@ -147,7 +147,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
     random = new Random(5231);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random, 10);
 
@@ -178,7 +178,7 @@ public class TestVectorMapJoinFastMultiKeyHashMap extends CommonFastHashTable {
     random = new Random(46809);
 
     // Use a large capacity that doesn't require expansion, yet.
-    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, 0);
+    VectorMapJoinFastMultiKeyHashMap map = new VectorMapJoinFastMultiKeyHashMap(false, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE);
 
     RandomByteArrayStream randomByteArrayKeyStream = new RandomByteArrayStream(random, 10);
 

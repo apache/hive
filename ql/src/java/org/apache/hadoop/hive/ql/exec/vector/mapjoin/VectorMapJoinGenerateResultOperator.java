@@ -27,6 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashPartition;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
@@ -329,7 +331,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         }
         if (bigTableVectorCopyOuterKeys != null) {
           bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, overflowBatch, 0);
-          for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+          for (int column : bigTableOuterKeyOutputVectorColumns) {
             overflowBatch.cols[column].isRepeating = true;
           }
         }
@@ -345,7 +347,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         }
 
         if (bigTableVectorCopyOuterKeys != null) {
-          for (int column : bigTableOuterKeyMapping.getOutputColumns()) {
+          for (int column : bigTableOuterKeyOutputVectorColumns) {
             ColumnVector colVector = overflowBatch.cols[column];
             colVector.reset();
           }
@@ -449,7 +451,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
     int partitionId = hashTableResult.spillPartitionId();
 
-    HybridHashTableContainer ht = (HybridHashTableContainer) mapJoinTables[smallTable];
+    HybridHashTableContainer ht = (HybridHashTableContainer) mapJoinTables[posSingleVectorMapJoinSmallTable];
     HashPartition hp = ht.getHashPartitions()[partitionId];
 
     VectorMapJoinRowBytesContainer rowBytesContainer = hp.getMatchfileRowBytesContainer();
@@ -499,26 +501,34 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   }
 
   @Override
-  protected void reloadHashTable(HashPartition partition,
-      HybridHashTableContainer hybridHtContainer)
-          throws IOException, ClassNotFoundException, HiveException, SerDeException {
+  protected void reloadHashTable(byte pos, int partitionId)
+          throws IOException, HiveException, SerDeException, ClassNotFoundException {
 
-    // The super method will reload a hash table partition and
-    // put a single MapJoinBytesTableContainer into the currentSmallTable member.
-    super.reloadHashTable(partition, hybridHtContainer);
+    // The super method will reload a hash table partition of one of the small tables.
+    // Currently, for native vector map join it will only be one small table.
+    super.reloadHashTable(pos, partitionId);
+
+    MapJoinTableContainer smallTable = spilledMapJoinTables[pos];
 
     vectorMapJoinHashTable = VectorMapJoinOptimizedCreateHashTable.createHashTable(conf,
-        currentSmallTable);
+        smallTable);
     needHashTableSetup = true;
 
     LOG.info(CLASS_NAME + " reloadHashTable!");
   }
 
   @Override
-  protected void reProcessBigTable(HybridHashTableContainer.HashPartition partition)
-      throws HiveException, IOException {
+  protected void reProcessBigTable(int partitionId)
+      throws HiveException {
 
     LOG.info(CLASS_NAME + " reProcessBigTable enter...");
+
+    if (spillReplayBatch == null) {
+      // The process method was not called -- no big table rows.
+      return;
+    }
+
+    HashPartition partition = firstSmallTable.getHashPartitions()[partitionId];
 
     int rowCount = 0;
     int batchCount = 0;

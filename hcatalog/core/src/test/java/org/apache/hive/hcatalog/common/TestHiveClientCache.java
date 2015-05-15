@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.common;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -76,29 +76,28 @@ public class TestHiveClientCache {
 
   @Test
   public void testCacheHit() throws IOException, MetaException, LoginException {
-
     HiveClientCache cache = new HiveClientCache(1000);
-    HiveMetaStoreClient client = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client = cache.get(hiveConf);
     assertNotNull(client);
     client.close(); // close shouldn't matter
 
     // Setting a non important configuration should return the same client only
     hiveConf.setIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS, 10);
-    HiveMetaStoreClient client2 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
     assertNotNull(client2);
-    assertEquals(client, client2);
+    assertEquals(client.getUsers(), client2.getUsers());
     client2.close();
   }
 
   @Test
   public void testCacheMiss() throws IOException, MetaException, LoginException {
     HiveClientCache cache = new HiveClientCache(1000);
-    HiveMetaStoreClient client = cache.get(hiveConf);
+    IMetaStoreClient client = cache.get(hiveConf);
     assertNotNull(client);
 
     // Set different uri as it is one of the criteria deciding whether to return the same client or not
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, " "); // URIs are checked for string equivalence, even spaces make them different
-    HiveMetaStoreClient client2 = cache.get(hiveConf);
+    IMetaStoreClient client2 = cache.get(hiveConf);
     assertNotNull(client2);
     assertNotSame(client, client2);
   }
@@ -110,11 +109,11 @@ public class TestHiveClientCache {
   @Test
   public void testCacheExpiry() throws IOException, MetaException, LoginException, InterruptedException {
     HiveClientCache cache = new HiveClientCache(1);
-    HiveClientCache.CacheableHiveMetaStoreClient client = (HiveClientCache.CacheableHiveMetaStoreClient) cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client = cache.get(hiveConf);
     assertNotNull(client);
 
     Thread.sleep(2500);
-    HiveMetaStoreClient client2 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
     client.close();
     assertTrue(client.isClosed()); // close() after *expiry time* and *a cache access* should  have tore down the client
 
@@ -132,21 +131,21 @@ public class TestHiveClientCache {
   public void testMultipleThreadAccess() throws ExecutionException, InterruptedException {
     final HiveClientCache cache = new HiveClientCache(1000);
 
-    class GetHiveClient implements Callable<HiveMetaStoreClient> {
+    class GetHiveClient implements Callable<IMetaStoreClient> {
       @Override
-      public HiveMetaStoreClient call() throws IOException, MetaException, LoginException {
+      public IMetaStoreClient call() throws IOException, MetaException, LoginException {
         return cache.get(hiveConf);
       }
     }
 
     ExecutorService executor = Executors.newFixedThreadPool(2);
 
-    Callable<HiveMetaStoreClient> worker1 = new GetHiveClient();
-    Callable<HiveMetaStoreClient> worker2 = new GetHiveClient();
-    Future<HiveMetaStoreClient> clientFuture1 = executor.submit(worker1);
-    Future<HiveMetaStoreClient> clientFuture2 = executor.submit(worker2);
-    HiveMetaStoreClient client1 = clientFuture1.get();
-    HiveMetaStoreClient client2 = clientFuture2.get();
+    Callable<IMetaStoreClient> worker1 = new GetHiveClient();
+    Callable<IMetaStoreClient> worker2 = new GetHiveClient();
+    Future<IMetaStoreClient> clientFuture1 = executor.submit(worker1);
+    Future<IMetaStoreClient> clientFuture2 = executor.submit(worker2);
+    IMetaStoreClient client1 = clientFuture1.get();
+    IMetaStoreClient client2 = clientFuture2.get();
     assertNotNull(client1);
     assertNotNull(client2);
     assertNotSame(client1, client2);
@@ -155,9 +154,9 @@ public class TestHiveClientCache {
   @Test
   public void testCloseAllClients() throws IOException, MetaException, LoginException {
     final HiveClientCache cache = new HiveClientCache(1000);
-    HiveClientCache.CacheableHiveMetaStoreClient client1 = (HiveClientCache.CacheableHiveMetaStoreClient) cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client1 = cache.get(hiveConf);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, " "); // URIs are checked for string equivalence, even spaces make them different
-    HiveClientCache.CacheableHiveMetaStoreClient client2 = (HiveClientCache.CacheableHiveMetaStoreClient) cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
     cache.closeAllClientsQuietly();
     assertTrue(client1.isClosed());
     assertTrue(client2.isClosed());

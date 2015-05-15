@@ -2250,6 +2250,11 @@ public final class Utilities {
       }
     }
     JavaUtils.closeClassLoader(loader);
+//this loader is closed, remove it from cached registry loaders to avoid remove it again.
+    Registry reg = SessionState.getRegistry();
+    if(reg != null) {
+      reg.removeFromUDFLoaders(loader);
+    }
 
     loader = new URLClassLoader(newPath.toArray(new URL[0]));
     curThread.setContextClassLoader(loader);
@@ -3857,5 +3862,18 @@ public final class Utilities {
     String loggingLevel = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
     return conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) &&
       (loggingLevel.equalsIgnoreCase("PERFORMANCE") || loggingLevel.equalsIgnoreCase("VERBOSE"));
+  }
+
+  /**
+   * Strips Hive password details from configuration
+   */
+  public static void stripHivePasswordDetails(Configuration conf) {
+    // Strip out all Hive related password information from the JobConf
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.METASTOREPWD, "");
+    }
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "");
+    }
   }
 }

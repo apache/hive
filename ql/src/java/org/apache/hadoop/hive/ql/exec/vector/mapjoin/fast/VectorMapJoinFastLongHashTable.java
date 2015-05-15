@@ -270,8 +270,8 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public VectorMapJoinFastLongHashTable(
         boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-        int initialCapacity, float loadFactor, int writeBuffersSize, long memUsage) {
-    super(initialCapacity, loadFactor, writeBuffersSize, memUsage);
+        int initialCapacity, float loadFactor, int writeBuffersSize) {
+    super(initialCapacity, loadFactor, writeBuffersSize);
     this.isOuterJoin = isOuterJoin;
     this.hashTableKeyType = hashTableKeyType;
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.longTypeInfo };
