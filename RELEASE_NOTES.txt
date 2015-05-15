@@ -351,6 +351,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10612] - HIVE-10578 broke TestSQLStdHiveAccessControllerHS2 tests
     * [HIVE-10614] - schemaTool upgrade from 0.14.0 to 1.3.0 causes failure
     * [HIVE-10638] - HIVE-9736 introduces issues with Hadoop23Shims.checkFileAccess
+    * [HIVE-10715] - RAT failures - many files do not have ASF licenses
 
 
 ** Improvement
