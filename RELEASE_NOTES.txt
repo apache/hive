@@ -336,6 +336,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10542] - Full outer joins in tez produce incorrect results in certain cases
     * [HIVE-10543] - improve error message in MetaStoreAuthzAPIAuthorizerEmbedOnly
     * [HIVE-10544] - Beeline/Hive JDBC Driver fails in HTTP mode on Windows with java.lang.NoSuchFieldError: INSTANCE
+    * [HIVE-10548] - Remove dependency to s3 repository in root pom
     * [HIVE-10564] - webhcat should use webhcat-site.xml properties for controller job submission
     * [HIVE-10572] - Improve Hive service test to check empty string
     * [HIVE-10576] - add jar command does not work with Windows OS
@@ -345,10 +346,12 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10603] - increase default permgen space for HS2 on windows
     * [HIVE-10604] - update webhcat-default.xml with 1.2 version numbers
     * [HIVE-10607] - Combination of ReducesinkDedup + TopN optimization yields incorrect result if there are multiple GBY in reducer
+    * [HIVE-10609] - Vectorization : Q64 fails with ClassCastException
     * [HIVE-10610] - hive command fails to get hadoop version
     * [HIVE-10612] - HIVE-10578 broke TestSQLStdHiveAccessControllerHS2 tests
     * [HIVE-10614] - schemaTool upgrade from 0.14.0 to 1.3.0 causes failure
     * [HIVE-10638] - HIVE-9736 introduces issues with Hadoop23Shims.checkFileAccess
+    * [HIVE-10715] - RAT failures - many files do not have ASF licenses
 
 
 ** Improvement
@@ -444,6 +447,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10019] - Configure jenkins precommit jobs to run HMS upgrade tests
     * [HIVE-10222] - Upgrade Calcite dependency to newest version
     * [HIVE-10268] - Merge cbo branch into trunk
+    * [HIVE-10676] - Update Hive's README to mention spark, and to remove jdk1.6
 
 
 ** Test
