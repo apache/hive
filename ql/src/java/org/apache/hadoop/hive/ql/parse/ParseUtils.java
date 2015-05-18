@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -229,5 +229,41 @@ public final class ParseUtils {
     return className;
   }
 
+  public static boolean containsTokenOfType(ASTNode root, Integer ... tokens) {
+      final Set<Integer> tokensToMatch = new HashSet<Integer>();
+      for (Integer tokenTypeToMatch : tokens) {
+          tokensToMatch.add(tokenTypeToMatch);
+        }
 
+        return ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
+          @Override
+          public boolean apply(ASTNode node) {
+              return tokensToMatch.contains(node.getType());
+            }
+        });
+    }
+
+    public static boolean containsTokenOfType(ASTNode root, PTFUtils.Predicate<ASTNode> predicate) {
+      Queue<ASTNode> queue = new ArrayDeque<ASTNode>();
+
+      // BFS
+      queue.add(root);
+      while (!queue.isEmpty())  {
+        ASTNode current = queue.remove();
+        // If the predicate matches, then return true.
+        // Otherwise visit the next set of nodes that haven't been seen.
+        if (predicate.apply(current)) {
+          return true;
+        } else {
+          // Guard because ASTNode.getChildren.iterator returns null if no children available (bug).
+          if (current.getChildCount() > 0) {
+            for (Node child : current.getChildren()) {
+              queue.add((ASTNode) child);
+            }
+          }
+        }
+      }
+
+      return false;
+    }
 }
