@@ -350,16 +350,8 @@ public class MapWork extends BaseWork {
   public Set<Operator<?>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
 
-    Map<String, ArrayList<String>> pa = getPathToAliases();
-    if (pa != null) {
-      for (List<String> ls : pa.values()) {
-        for (String a : ls) {
-          Operator<?> op = getAliasToWork().get(a);
-          if (op != null ) {
-            opSet.add(op);
-          }
-        }
-      }
+    for (Operator<?> op : getAliasToWork().values()) {
+      opSet.add(op);
     }
     return opSet;
   }

@@ -128,6 +128,53 @@ STAGE PLANS:
 
   Stage: Stage-1
     Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key} {value}
+                  1 {value}
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0, _col1, _col7
+                Position of Big Table: 0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                BucketMapJoin: true
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2
+                          columns.types int:string:string
+                          escape.delim \
+                          hive.serialization.extend.nesting.levels true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
 
@@ -255,6 +302,53 @@ STAGE PLANS:
 
   Stage: Stage-1
     Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: b
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (key is not null and (ds = '2008-04-08')) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key} {value}
+                  1 {value}
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0, _col1, _col7
+                Position of Big Table: 1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                BucketMapJoin: true
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2
+                          columns.types int:string:string
+                          escape.delim \
+                          hive.serialization.extend.nesting.levels true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
 

@@ -49,6 +49,31 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: invites2
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: (ds = '2011-09-01') (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Reduce Output Operator
+                key expressions: '2011-09-01' (type: string)
+                sort order: +
+                Map-reduce partition columns: '2011-09-01' (type: string)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: foo (type: int)
+          TableScan
+            alias: invites
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: (ds = '2011-09-01') (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Reduce Output Operator
+                key expressions: '2011-09-01' (type: string)
+                sort order: +
+                Map-reduce partition columns: '2011-09-01' (type: string)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                value expressions: bar (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:

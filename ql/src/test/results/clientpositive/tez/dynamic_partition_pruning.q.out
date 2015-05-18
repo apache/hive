@@ -2721,6 +2721,19 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: ds (type: string)
+                      sort order: +
+                      Map-reduce partition columns: ds (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -4903,6 +4916,31 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      condition expressions:
+                        0 
+                        1 
+                      keys:
+                        0 ds (type: string)
+                        1 ds (type: string)
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: '13' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '13' (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Map 2 
             Map Operator Tree:
                 TableScan
