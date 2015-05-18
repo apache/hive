@@ -233,7 +233,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   protected HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  private final HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
   protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -294,7 +294,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /** Not thread-safe. */
   final ASTSearcher astSearcher = new ASTSearcher();
-  
+
   protected AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc tableDesc;
 
@@ -1421,7 +1421,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * This is phase1 of supporting specifying schema in insert statement
    * insert into foo(z,y) select a,b from bar;
-   * @see #handleInsertStatementSpec(java.util.List, String, RowResolver, RowResolver, QB, ASTNode) 
+   * @see #handleInsertStatementSpec(java.util.List, String, RowResolver, RowResolver, QB, ASTNode)
    * @throws SemanticException
    */
   private void handleInsertStatementSpecPhase1(ASTNode ast, QBParseInfo qbp, Phase1Ctx ctx_1) throws SemanticException {
@@ -3880,14 +3880,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * create table source (a int, b int);
    * create table target (x int, y int, z int);
    * insert into target(z,x) select * from source
-   * 
+   *
    * Once the * is resolved to 'a,b', this list needs to rewritten to 'b,null,a' so that it looks
    * as if the original query was written as
    * insert into target select b, null, a from source
-   * 
+   *
    * if target schema is not specified, this is no-op
-   * 
-   * @see #handleInsertStatementSpecPhase1(ASTNode, QBParseInfo, org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx) 
+   *
+   * @see #handleInsertStatementSpecPhase1(ASTNode, QBParseInfo, org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx)
    * @throws SemanticException
    */
   private void handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
@@ -3919,7 +3919,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Table target = qb.getMetaData().getDestTableForAlias(dest);
     Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
     if(target == null && partition == null) {
-      throw new SemanticException(generateErrorMessage(selExprList, 
+      throw new SemanticException(generateErrorMessage(selExprList,
         "No table/partition found in QB metadata for dest='" + dest + "'"));
     }
     ArrayList<ExprNodeDesc> new_col_list = new ArrayList<ExprNodeDesc>();
@@ -8581,7 +8581,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     RowResolver outputRR = inputRR.duplicate();
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(colList, columnNames, true), 
+        new SelectDesc(colList, columnNames, true),
         outputRR.getRowSchema(), input), outputRR);
     output.setColumnExprMap(columnExprMap);
     return output;
@@ -8742,7 +8742,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // see if there are any distinct expressions
-  private boolean distinctExprsExists(QB qb) {
+  protected static boolean distinctExprsExists(QB qb) {
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>();
@@ -8997,9 +8997,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (leftmap.size() != rightmap.size()) {
       throw new SemanticException("Schema of both sides of union should match.");
     }
-    
+
     RowResolver unionoutRR = new RowResolver();
-    
+
     Iterator<Map.Entry<String, ColumnInfo>> lIter = leftmap.entrySet().iterator();
     Iterator<Map.Entry<String, ColumnInfo>> rIter = rightmap.entrySet().iterator();
     while (lIter.hasNext()) {
@@ -9008,7 +9008,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo lInfo = lEntry.getValue();
       ColumnInfo rInfo = rEntry.getValue();
 
-      String field = lEntry.getKey(); // use left alias (~mysql, postgresql) 
+      String field = lEntry.getKey(); // use left alias (~mysql, postgresql)
       // try widening conversion, otherwise fail union
       TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
           rInfo.getType());
@@ -9158,7 +9158,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Iterator<ColumnInfo> oIter = origInputFieldMap.values().iterator();
     Iterator<ColumnInfo> uIter = fieldMap.values().iterator();
-    
+
     List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
     boolean needsCast = false;
     while (oIter.hasNext()) {

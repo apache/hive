@@ -379,7 +379,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     // Now check QB in more detail. canHandleQbForCbo returns null if query can
     // be handled.
-    String msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage);
+    String msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage, qb);
     if (msg == null) {
       return true;
     }
@@ -408,11 +408,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *         2. Nested Subquery will return false for qbToChk.getIsQuery()
    */
   static String canHandleQbForCbo(QueryProperties queryProperties, HiveConf conf,
-      boolean topLevelQB, boolean verbose) {
+      boolean topLevelQB, boolean verbose, QB qb) {
     boolean isInTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
     boolean isStrictTest = isInTest
         && !conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict");
-    boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest;
+    boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest || distinctExprsExists(qb);
 
     if (!isStrictTest && hasEnoughJoins && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy() && !queryProperties.hasSortBy()
@@ -2711,7 +2711,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 0. Check if we can handle the SubQuery;
       // canHandleQbForCbo returns null if the query can be handled.
-      String reason = canHandleQbForCbo(queryProperties, conf, false, LOG.isDebugEnabled());
+      String reason = canHandleQbForCbo(queryProperties, conf, false, LOG.isDebugEnabled(), qb);
       if (reason != null) {
         String msg = "CBO can not handle Sub Query";
         if (LOG.isDebugEnabled()) {
