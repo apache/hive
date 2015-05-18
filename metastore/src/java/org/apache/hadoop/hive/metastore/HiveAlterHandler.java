@@ -175,8 +175,8 @@ public class HiveAlterHandler implements AlterHandler {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        Path databasePath = constructRenamedPath(
-            wh.getDefaultDatabasePath(newt.getDbName()), srcPath);
+        Database db = msdb.getDatabase(newt.getDbName());
+        Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
         destPath = new Path(databasePath, newt.getTableName());
         destFs = wh.getFs(destPath);
 
