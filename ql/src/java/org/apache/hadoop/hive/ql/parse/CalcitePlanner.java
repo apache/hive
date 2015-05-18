@@ -145,6 +145,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4Join
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
@@ -853,6 +854,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       hepPlanner.setRoot(rootRel);
 
+      calciteOptimizedPlan = hepPlanner.findBestExp();
+
+      // run rule to fix windowing issue when it is done over
+      // aggregation columns (HIVE-10627)
+      hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+      hepPgmBldr.addRuleInstance(HiveWindowingFixRule.INSTANCE);
+      hepPlanner = new HepPlanner(hepPgmBldr.build());
+      hepPlanner.registerMetadataProviders(list);
+      cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+      hepPlanner.setRoot(calciteOptimizedPlan);
       calciteOptimizedPlan = hepPlanner.findBestExp();
 
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
