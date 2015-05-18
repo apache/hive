@@ -18,6 +18,7 @@
 package org.apache.hive.spark.client;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,14 +35,14 @@ class JobContextImpl implements JobContext {
   private final JavaSparkContext sc;
   private final ThreadLocal<MonitorCallback> monitorCb;
   private final Map<String, List<JavaFutureAction<?>>> monitoredJobs;
-  private final List<String> addedJars;
+  private final Set<String> addedJars;
   private final File localTmpDir;
 
   public JobContextImpl(JavaSparkContext sc, File localTmpDir) {
     this.sc = sc;
     this.monitorCb = new ThreadLocal<MonitorCallback>();
     monitoredJobs = new ConcurrentHashMap<String, List<JavaFutureAction<?>>>();
-    addedJars = new CopyOnWriteArrayList<String>();
+    addedJars = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     this.localTmpDir = localTmpDir;
   }
 
@@ -64,7 +65,7 @@ class JobContextImpl implements JobContext {
   }
 
   @Override
-  public List<String> getAddedJars() {
+  public Set<String> getAddedJars() {
     return addedJars;
   }
 

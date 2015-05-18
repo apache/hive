@@ -57,7 +57,7 @@ public interface JobContext {
   /**
    * Return all added jar path which added through AddJarJob.
    */
-  List<String> getAddedJars();
+  Set<String> getAddedJars();
 
   /**
    * Returns a local tmp dir specific to the context
