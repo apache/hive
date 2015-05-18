@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -447,6 +448,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public void closeOp(boolean abort) throws HiveException {
     recordCounter.set(numRows);
     super.closeOp(abort);
+    IOContext.clear();
   }
 
   // Find context for current input file
@@ -454,28 +456,37 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public void cleanUpInputFileChangedOp() throws HiveException {
     super.cleanUpInputFileChangedOp();
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
-    Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
-    if (isLogInfoEnabled) {
-      StringBuilder builder = new StringBuilder();
-      for (MapOpCtx context : contexts.values()) {
-        if (builder.length() > 0) {
-          builder.append(", ");
+    // While cache HadoopRDD, Hive don't need to read data from disk with RecordReader,
+    // so currentInputPath is not initialized either. Hive would use the first opCtxMap
+    // for serde and row inspect here, as we already make sure in SparkRDDCachingResolver
+    // that all paths in this MapWork can share the same operator context.
+    if (fpath == null) {
+      Map<Operator<?>, MapOpCtx> opCtxMap1 = opCtxMap.values().iterator().next();
+      currentCtxs = opCtxMap1.values().toArray(new MapOpCtx[opCtxMap1.size()]);
+    } else {
+      String nominalPath = getNominalPath(fpath);
+      Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
+      if (isLogInfoEnabled) {
+        StringBuilder builder = new StringBuilder();
+        for (MapOpCtx context : contexts.values()) {
+          if (builder.length() > 0) {
+            builder.append(", ");
+          }
+          builder.append(context.alias);
         }
-        builder.append(context.alias);
+        if (isLogDebugEnabled) {
+          LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
+        }
       }
-      if (isLogDebugEnabled) {
-        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
+      // Add alias, table name, and partitions to hadoop conf so that their
+      // children will inherit these
+      for (Entry<Operator<?>, MapOpCtx> entry : contexts.entrySet()) {
+        Operator<?> operator = entry.getKey();
+        MapOpCtx context = entry.getValue();
+        operator.setInputContext(nominalPath, context.tableName, context.partName);
       }
+      currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
     }
-    // Add alias, table name, and partitions to hadoop conf so that their
-    // children will inherit these
-    for (Entry<Operator<?>, MapOpCtx> entry : contexts.entrySet()) {
-      Operator<?> operator = entry.getKey();
-      MapOpCtx context = entry.getValue();
-      operator.setInputContext(nominalPath, context.tableName, context.partName);
-    }
-    currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
   }
 
   private Path normalizePath(String onefile, boolean schemaless) {

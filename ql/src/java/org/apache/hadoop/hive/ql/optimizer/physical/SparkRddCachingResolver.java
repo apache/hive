@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +34,15 @@ import java.util.UUID;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -47,6 +52,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcNewInputFormat;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -58,6 +64,10 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.InputFormat;
 import parquet.hadoop.ParquetInputFormat;
 
@@ -143,16 +153,49 @@ public class SparkRddCachingResolver implements PhysicalPlanResolver {
             allSparkWork.add(sparkWork);
             for (MapWork mapWork : sparkWork.getAllMapWork()) {
               boolean add = true;
+
+              // If MapWork scan multi files, Hive should only cache RDD data while these multi files share
+              // the same deserializer, since the filename information would be lost in cached RDD.
+              Set<String> deserSet = Sets.newHashSet();
+              for (Map.Entry<String, ArrayList<String>> entry : mapWork.getPathToAliases().entrySet()) {
+                String onefile = entry.getKey();
+                PartitionDesc pd = mapWork.getPathToPartitionInfo().get(onefile);
+                String partDeserializer = pd.getDeserializerClassName();
+                deserSet.add(partDeserializer);
+              }
+              if (deserSet.size() > 1) {
+                add = false;
+              }
+
               for (Operator operator : mapWork.getWorks()) {
                 if (operator instanceof TableScanOperator) {
                   TableScanOperator tsop = (TableScanOperator) operator;
-                  Table table = tsop.getConf().getTableMetadata();
-                  long rawDataSize = StatsUtils.getRawDataSize(table);
-                  long threshold = HiveConf.getLongVar(hiveConf, HiveConf.ConfVars.SPARK_DYNAMIC_RDD_CACHING_THRESHOLD);
-                  // If rawDataSize is not collected or rawDataSize is beyond the threshold, we should not cache this table.
-                  if (rawDataSize == 0 || rawDataSize > threshold) {
+
+                  // The VirtualColumn information would be lost in cached RDD, we should not enable RDD caching
+                  // while query try to scan table with virtual columns.
+                  if(tsop.getConf().hasVirtualCols()) {
                     add = false;
                     break;
+                  }
+                  Table table = tsop.getConf().getTableMetadata();
+                  if (table == null) {
+                    add = false;
+                    break;
+                  } else {
+                    // For bucket table, reading file name may required for further operation, as caching RDD would lose
+                    // current reading file information, we should not enable RDD caching in this case.
+                    if (table.getNumBuckets() > 0) {
+                      add = false;
+                      break;
+                    }
+
+                    long rawDataSize = StatsUtils.getRawDataSize(table);
+                    long threshold = HiveConf.getLongVar(hiveConf, HiveConf.ConfVars.SPARK_DYNAMIC_RDD_CACHING_THRESHOLD);
+                    // If rawDataSize is not collected or rawDataSize is beyond the threshold, we should not cache this table.
+                    if (rawDataSize == 0 || rawDataSize > threshold) {
+                      add = false;
+                      break;
+                    }
                   }
                 }
               }
@@ -325,6 +368,56 @@ public class SparkRddCachingResolver implements PhysicalPlanResolver {
       }
     }
     return result;
+  }
+
+  // Return the mapping for table descriptor to the expected table OI
+  /**
+   * Traverse all the partitions for a table, and get the OI for the table.
+   * Note that a conversion is required if any of the partition OI is different
+   * from the table OI. For eg. if the query references table T (partitions P1, P2),
+   * and P1's schema is same as T, whereas P2's scheme is different from T, conversion
+   * might be needed for both P1 and P2, since SettableOI might be needed for T
+   */
+  private Map<TableDesc, StructObjectInspector> getConvertedOI(MapWork mapWork, Configuration hconf)
+    throws HiveException {
+    Map<TableDesc, StructObjectInspector> tableDescOI =
+      new HashMap<TableDesc, StructObjectInspector>();
+    Set<TableDesc> identityConverterTableDesc = new HashSet<TableDesc>();
+    try {
+      Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
+
+      for (String onefile : mapWork.getPathToAliases().keySet()) {
+        PartitionDesc pd = mapWork.getPathToPartitionInfo().get(onefile);
+        TableDesc tableDesc = pd.getTableDesc();
+        Deserializer partDeserializer = pd.getDeserializer(hconf);
+        StructObjectInspector partRawRowObjectInspector =
+          (StructObjectInspector) partDeserializer.getObjectInspector();
+
+        StructObjectInspector tblRawRowObjectInspector = tableDescOI.get(tableDesc);
+        if ((tblRawRowObjectInspector == null) ||
+          (identityConverterTableDesc.contains(tableDesc))) {
+          Deserializer tblDeserializer = tableDesc.getDeserializer(hconf);
+          tblRawRowObjectInspector =
+            (StructObjectInspector) ObjectInspectorConverters.getConvertedOI(
+              partRawRowObjectInspector,
+              tblDeserializer.getObjectInspector(), oiSettableProperties);
+
+          if (identityConverterTableDesc.contains(tableDesc)) {
+            if (!partRawRowObjectInspector.equals(tblRawRowObjectInspector)) {
+              identityConverterTableDesc.remove(tableDesc);
+            }
+          }
+          else if (partRawRowObjectInspector.equals(tblRawRowObjectInspector)) {
+            identityConverterTableDesc.add(tableDesc);
+          }
+
+          tableDescOI.put(tableDesc, tblRawRowObjectInspector);
+        }
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return tableDescOI;
   }
 
   /**
