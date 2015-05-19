@@ -280,7 +280,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     // validate the plan
     sem.validate();
 
-    QueryPlan plan = new QueryPlan(query, sem, 0L, testName, null);
+    QueryPlan plan = new QueryPlan(query, sem, 0L, testName, null, null);
 
     return new ReturnInfo(tree, sem, plan);
   }

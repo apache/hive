@@ -145,9 +145,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1@ds=1
 POSTHOOK: Output: default@outputtbl1@ds=2
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).values EXPRESSION []
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION []
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
