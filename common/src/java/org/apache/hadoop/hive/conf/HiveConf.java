@@ -2059,6 +2059,11 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_DYNAMIC_RDD_CACHING("hive.spark.dynamic.rdd.caching", true,
+      "When dynamic rdd caching is enabled, Hive would find all the possible shared rdd, cache and reuse it in the" +
+       "generated Spark job finally."),
+    SPARK_DYNAMIC_RDD_CACHING_THRESHOLD("hive.spark.dynamic.rdd.caching.threshold", 100 * 1024 * 1024L,
+      "Maximum table rawDataSize which Hive may try to cache dynamically, default is 100MB."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),

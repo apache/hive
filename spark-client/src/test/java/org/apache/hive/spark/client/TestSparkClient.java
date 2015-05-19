@@ -319,7 +319,7 @@ public class TestSparkClient {
         public void call(Integer l) throws Exception {
 
         }
-      }), null, null);
+      }), null);
 
       future.get(TIMEOUT, TimeUnit.SECONDS);
 
@@ -380,7 +380,7 @@ public class TestSparkClient {
       counters.createCounter("group2", "counter2");
 
       jc.monitor(jc.sc().parallelize(Arrays.asList(1, 2, 3, 4, 5), 5).foreachAsync(this),
-          counters, null);
+          counters);
 
       return null;
     }

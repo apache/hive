@@ -163,8 +163,6 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         // Create a new SparkWork for all the small tables of this work
         SparkWork parentWork =
             new SparkWork(physicalContext.conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        // copy cloneToWork to ensure RDD cache still works
-        parentWork.setCloneToWork(sparkWork.getCloneToWork());
 
         dependencyGraph.get(targetWork).add(parentWork);
         dependencyGraph.put(parentWork, new ArrayList<SparkWork>());

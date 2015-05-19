@@ -52,16 +52,14 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   private JobMetricsListener jobMetricsListener;
   private SparkCounters sparkCounters;
   private JavaFutureAction<Void> future;
-  private Set<Integer> cachedRDDIds;
 
   public LocalSparkJobStatus(JavaSparkContext sparkContext, int jobId,
       JobMetricsListener jobMetricsListener, SparkCounters sparkCounters,
-      Set<Integer> cachedRDDIds, JavaFutureAction<Void> future) {
+      JavaFutureAction<Void> future) {
     this.sparkContext = sparkContext;
     this.jobId = jobId;
     this.jobMetricsListener = jobMetricsListener;
     this.sparkCounters = sparkCounters;
-    this.cachedRDDIds = cachedRDDIds;
     this.future = future;
   }
 
@@ -141,11 +139,6 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   @Override
   public void cleanup() {
     jobMetricsListener.cleanup(jobId);
-    if (cachedRDDIds != null) {
-      for (Integer cachedRDDId: cachedRDDIds) {
-        sparkContext.sc().unpersistRDD(cachedRDDId, false);
-      }
-    }
   }
 
   private Map<String, Long> combineJobLevelMetrics(Map<String, List<TaskMetrics>> jobMetric) {

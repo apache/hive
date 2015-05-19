@@ -136,7 +136,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     // As we always use foreach action to submit RDD graph, it would only trigger one job.
     int jobId = future.jobIds().get(0);
     LocalSparkJobStatus sparkJobStatus = new LocalSparkJobStatus(
-      sc, jobId, jobMetricsListener, sparkCounters, plan.getCachedRDDIds(), future);
+      sc, jobId, jobMetricsListener, sparkCounters, future);
     return new LocalSparkJobRef(Integer.toString(jobId), hiveConf,  sparkJobStatus, sc);
   }
 

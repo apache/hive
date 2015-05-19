@@ -88,6 +88,7 @@ public class SparkPlan {
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    LOG.info("print generated spark rdd graph:\n" + SparkUtilities.rddGraphToString(finalRDD));
     return finalRDD;
   }
 
@@ -236,14 +237,6 @@ public class SparkPlan {
   public void addTran(SparkTran tran) {
     rootTrans.add(tran);
     leafTrans.add(tran);
-  }
-
-  public void addCachedRDDId(int rddId) {
-    cachedRDDIds.add(rddId);
-  }
-
-  public Set<Integer> getCachedRDDIds() {
-    return cachedRDDIds;
   }
 
   /**

@@ -128,7 +128,6 @@ public class SplitSparkWorkResolver implements PhysicalPlanResolver {
         sparkWork.connect(gpw, clonedParentWork, sparkWork.getEdgeProperty(gpw, parentWork));
       }
       sparkWork.connect(clonedParentWork, childWork, clonedEdgeProperty);
-      sparkWork.getCloneToWork().put(clonedParentWork, parentWork);
     }
 
     sparkWork.remove(parentWork);

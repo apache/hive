@@ -47,7 +47,7 @@ public interface JobContext {
    * @return The job (unmodified).
    */
   <T> JavaFutureAction<T> monitor(
-    JavaFutureAction<T> job, SparkCounters sparkCounters, Set<Integer> cachedRDDIds);
+    JavaFutureAction<T> job, SparkCounters sparkCounters);
 
   /**
    * Return a map from client job Id to corresponding JavaFutureActions.
