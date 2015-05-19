@@ -21,10 +21,13 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.SetUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -260,6 +263,25 @@ public class LineageInfo implements Serializable {
     public String toString() {
       return tabAlias + ":" + column;
     }
+
+    @Override
+    public int hashCode() {
+      return (column != null ? column.hashCode() : 7)
+        + (tabAlias != null ? tabAlias.hashCode() : 11);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof BaseColumnInfo)) {
+        return false;
+      }
+      BaseColumnInfo ci = (BaseColumnInfo) obj;
+      return (column == null ? ci.column == null : column.equals(ci.column))
+        && (tabAlias == null ? ci.tabAlias == null : tabAlias.equals(ci.tabAlias));
+    }
   }
 
   public static class TableAliasInfo implements Serializable {
@@ -310,6 +332,25 @@ public class LineageInfo implements Serializable {
     @Override
     public String toString() {
       return table.getDbName() + "." + table.getTableName() + "(" + alias + ")";
+    }
+
+    @Override
+    public int hashCode() {
+      return (alias != null ? alias.hashCode() : 7)
+        + (table != null ? table.hashCode() : 11);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof TableAliasInfo)) {
+        return false;
+      }
+      TableAliasInfo tabAlias = (TableAliasInfo) obj;
+      return StringUtils.equals(alias, tabAlias.alias)
+        && (table == null ? tabAlias.table == null : table.equals(tabAlias.table));
     }
   }
 
@@ -383,6 +424,61 @@ public class LineageInfo implements Serializable {
     @Override
     public String toString() {
       return "[" + type + "]" + baseCols;
+    }
+  }
+
+  /**
+   * This class tracks the predicate information for an operator.
+   */
+  public static class Predicate {
+
+    /**
+     * Expression string for the predicate.
+     */
+    private String expr;
+
+    /**
+     * The set of base columns that the predicate depends on.
+     */
+    private Set<BaseColumnInfo> baseCols = new LinkedHashSet<BaseColumnInfo>();
+
+    /**
+     * @return the expr
+     */
+    public String getExpr() {
+      return expr;
+    }
+
+    /**
+     * @param expr the expr to set
+     */
+    public void setExpr(String expr) {
+      this.expr = expr;
+    }
+
+    /**
+     * @return the baseCols
+     */
+    public Set<BaseColumnInfo> getBaseCols() {
+      return baseCols;
+    }
+
+    @Override
+    public int hashCode() {
+      return baseCols.hashCode() + (expr != null ? expr.hashCode() : 11);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof Predicate)) {
+        return false;
+      }
+      Predicate cond = (Predicate) obj;
+      return StringUtils.equals(cond.expr, expr)
+        && SetUtils.isEqualSet(cond.baseCols, baseCols);
     }
   }
 

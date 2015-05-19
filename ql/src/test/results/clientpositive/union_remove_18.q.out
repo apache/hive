@@ -191,18 +191,18 @@ POSTHOOK: Output: default@outputtbl1@ds=13
 POSTHOOK: Output: default@outputtbl1@ds=17
 POSTHOOK: Output: default@outputtbl1@ds=18
 POSTHOOK: Output: default@outputtbl1@ds=28
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1

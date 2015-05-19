@@ -148,10 +148,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_part13@ds=2010-03-03/hr=22
 POSTHOOK: Output: default@nzhang_part13@ds=2010-03-03/hr=33
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions nzhang_part13
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@nzhang_part13
