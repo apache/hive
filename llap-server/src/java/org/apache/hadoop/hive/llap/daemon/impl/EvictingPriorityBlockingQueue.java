@@ -49,19 +49,19 @@ public class EvictingPriorityBlockingQueue<E> {
     }
   }
 
-  public boolean isEmpty() {
+  public synchronized boolean isEmpty() {
     return deque.isEmpty();
   }
 
-  public E peek() {
+  public synchronized E peek() {
     return deque.peek();
   }
 
-  public E take() throws InterruptedException {
+  public synchronized E take() throws InterruptedException {
     return deque.take();
   }
 
-  public void remove(E e) {
+  public synchronized void remove(E e) {
     deque.remove(e);
   }
 }

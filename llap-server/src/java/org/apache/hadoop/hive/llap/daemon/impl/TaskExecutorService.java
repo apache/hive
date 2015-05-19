@@ -18,9 +18,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -30,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -66,7 +65,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
-  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
 
@@ -76,7 +74,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   private final ListeningExecutorService executorService;
   private final EvictingPriorityBlockingQueue<TaskRunnerCallable> waitQueue;
   private final ListeningExecutorService waitQueueExecutorService;
-  private final Map<String, TaskRunnerCallable> idToTaskMap;
   private final BlockingQueue<TaskRunnerCallable> preemptionQueue;
   private final boolean enablePreemption;
   private final ThreadPoolExecutor threadPoolExecutor;
@@ -91,7 +88,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         new SynchronousQueue<Runnable>(), // direct hand-off
         new ThreadFactoryBuilder().setNameFormat(TASK_EXECUTOR_THREAD_NAME_FORMAT).build());
     this.executorService = MoreExecutors.listeningDecorator(threadPoolExecutor);
-    this.idToTaskMap = new ConcurrentHashMap<>();
     this.preemptionQueue = new PriorityBlockingQueue<>(numExecutors,
         new PreemptionQueueComparator());
     this.enablePreemption = enablePreemption;
@@ -114,8 +110,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     @Override
     public void run() {
       try {
-        if (waitQueue.isEmpty()) {
-          synchronized (waitLock) {
+
+        synchronized (waitLock) {
+          while (waitQueue.isEmpty()) {
             waitLock.wait();
           }
         }
@@ -140,8 +137,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
             waitQueue.remove(task);
           }
 
-          if (waitQueue.isEmpty()) {
-            synchronized (waitLock) {
+          synchronized (waitLock) {
+            while (waitQueue.isEmpty()) {
               waitLock.wait();
             }
           }
@@ -172,8 +169,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
     TaskRunnerCallable evictedTask = waitQueue.offer(task);
     if (evictedTask == null) {
-      if (isDebugEnabled) {
-        LOG.debug(task.getRequestId() + " added to wait queue.");
+      if (isInfoEnabled) {
+        LOG.info(task.getRequestId() + " added to wait queue.");
       }
 
       synchronized (waitLock) {
@@ -192,8 +189,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     boolean scheduled = false;
     try {
       ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
-      FutureCallback<TaskRunner2Result> wrappedCallback =
-          new InternalCompletionListener(task.getCallback());
+      FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(task);
       Futures.addCallback(future, wrappedCallback);
 
       if (isInfoEnabled) {
@@ -203,11 +199,10 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
       // to the tasks are not ready yet, the task is eligible for pre-emptable.
       if (enablePreemption && !task.canFinish()) {
-        if (isDebugEnabled) {
-          LOG.debug(task.getRequestId() + " is not finishable and pre-emption is enabled."
-              + "Adding it to pre-emption queue.");
+        if (isInfoEnabled) {
+          LOG.info(task.getRequestId() + " is not finishable. Adding it to pre-emption queue.");
         }
-        addTaskToPreemptionList(task);
+        preemptionQueue.add(task);
       }
 
       numSlotsAvailable.decrementAndGet();
@@ -216,21 +211,18 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
       if (enablePreemption && task.canFinish() && !preemptionQueue.isEmpty()) {
 
-        if (isTraceEnabled) {
-          LOG.trace("idToTaskMap: " + idToTaskMap.keySet());
+        if (isDebugEnabled) {
           LOG.trace("preemptionQueue: " + preemptionQueue);
         }
 
-        TaskRunnerCallable pRequest = preemptionQueue.peek();
+        TaskRunnerCallable pRequest = preemptionQueue.remove();
+        if (pRequest != null && !pRequest.isCompleted() && !pRequest.isKillInvoked()) {
 
-        // if some task completes, it will remove itself from pre-emption lists, making this null.
-        // if it happens bail out and schedule it again as a free slot will be available.
-        if (pRequest != null) {
-
-          if (isDebugEnabled) {
-            LOG.debug("Kill task invoked for " + pRequest.getRequestId() + " due to pre-emption");
+          if (isInfoEnabled) {
+            LOG.info("Kill task invoked for " + pRequest.getRequestId() + " due to pre-emption");
           }
 
+          pRequest.setKillInvoked();
           pRequest.killTask();
         }
       }
@@ -239,46 +231,37 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     return scheduled;
   }
 
-  private synchronized void removeTaskFromPreemptionList(TaskRunnerCallable pRequest,
-      String requestId) {
-    idToTaskMap.remove(requestId);
-    preemptionQueue.remove(pRequest);
-  }
-
-  private synchronized void addTaskToPreemptionList(TaskRunnerCallable task) {
-    idToTaskMap.put(task.getRequestId(), task);
-    preemptionQueue.add(task);
-  }
-
   private final class InternalCompletionListener implements
       FutureCallback<TaskRunner2Result> {
-    private TaskRunnerCallable.TaskRunnerCallback wrappedCallback;
+    private TaskRunnerCallable task;
 
-    public InternalCompletionListener(TaskRunnerCallable.TaskRunnerCallback wrappedCallback) {
-      this.wrappedCallback = wrappedCallback;
+    public InternalCompletionListener(TaskRunnerCallable task) {
+      this.task = task;
     }
 
     @Override
     public void onSuccess(TaskRunner2Result result) {
-      wrappedCallback.onSuccess(result);
+      task.setCompleted();
+      task.getCallback().onSuccess(result);
       updatePreemptionListAndNotify(result.getEndReason());
     }
 
     @Override
     public void onFailure(Throwable t) {
-      wrappedCallback.onFailure(t);
+      task.setCompleted();
+      task.getCallback().onFailure(t);
       updatePreemptionListAndNotify(null);
+      LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));
     }
 
     private void updatePreemptionListAndNotify(EndReason reason) {
       // if this task was added to pre-emption list, remove it
-      String taskId = wrappedCallback.getRequestId();
-      TaskRunnerCallable task = idToTaskMap.get(taskId);
-      String state = reason == null ? "FAILED" : reason.name();
-      if (enablePreemption && task != null) {
-        removeTaskFromPreemptionList(task, taskId);
-        if (isDebugEnabled) {
-          LOG.debug(task.getRequestId() + " request " + state + "! Removed from preemption list.");
+      if (enablePreemption) {
+        String state = reason == null ? "FAILED" : reason.name();
+        preemptionQueue.remove(task.getRequest());
+        if (isInfoEnabled) {
+          LOG.info(TaskRunnerCallable.getTaskIdentifierString(task.getRequest())
+              + " request " + state + "! Removed from preemption list.");
         }
       }
 
@@ -324,16 +307,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       executorService.shutdownNow();
       waitQueueExecutorService.shutdownNow();
     }
-  }
-
-  @VisibleForTesting
-  public int getPreemptionListSize() {
-    return preemptionQueue.size();
-  }
-
-  @VisibleForTesting
-  public TaskRunnerCallable getPreemptionTask() {
-    return preemptionQueue.peek();
   }
 
   @VisibleForTesting
