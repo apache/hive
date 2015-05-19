@@ -76,6 +76,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   private transient sampleDesc sampleDescr;
   //Is this a filter that should perform a comparison for sorted searches
   private boolean isSortedFilter;
+  private transient boolean isGenerated;
 
   public FilterDesc() {
   }
@@ -136,6 +137,19 @@ public class FilterDesc extends AbstractOperatorDesc {
 
   public void setSortedFilter(boolean isSortedFilter) {
     this.isSortedFilter = isSortedFilter;
+  }
+
+  /**
+   * Some filters are generated or implied, which means it is not in the query.
+   * It is added by the analyzer. For example, when we do an inner join, we add
+   * filters to exclude those rows with null join key values.
+   */
+  public boolean isGenerated() {
+    return isGenerated;
+  }
+
+  public void setGenerated(boolean isGenerated) {
+    this.isGenerated = isGenerated;
   }
 
   @Override

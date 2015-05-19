@@ -257,5 +257,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_l1
-POSTHOOK: Lineage: dest_l1.key EXPRESSION [(src1)t1.FieldSchema(name:key, type:string, comment:default), (src1)t1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_l1.value EXPRESSION [(src)p1.FieldSchema(name:value, type:string, comment:default), (src)p1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_l1.key EXPRESSION [(src1)t1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_l1.value EXPRESSION [(src)p1.FieldSchema(name:value, type:string, comment:default), ]

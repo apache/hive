@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -48,6 +49,7 @@ public class HookContext {
   private Set<ReadEntity> inputs;
   private Set<WriteEntity> outputs;
   private LineageInfo linfo;
+  private Index depMap;
   private UserGroupInformation ugi;
   private HookType hookType;
   final private Map<String, ContentSummary> inputPathToContentSummary;
@@ -64,8 +66,10 @@ public class HookContext {
     outputs = queryPlan.getOutputs();
     ugi = Utils.getUGI();
     linfo= null;
+    depMap = null;
     if(SessionState.get() != null){
       linfo = SessionState.get().getLineageState().getLineageInfo();
+      depMap = SessionState.get().getLineageState().getIndex();
     }
     this.ipAddress = ipAddress;
     this.userName = userName;
@@ -121,6 +125,14 @@ public class HookContext {
 
   public void setLinfo(LineageInfo linfo) {
     this.linfo = linfo;
+  }
+
+  public Index getIndex() {
+    return depMap;
+  }
+
+  public void setIndex(Index depMap) {
+    this.depMap = depMap;
   }
 
   public UserGroupInformation getUgi() {

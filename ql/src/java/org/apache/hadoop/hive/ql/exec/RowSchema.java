@@ -49,6 +49,15 @@ public class RowSchema implements Serializable {
     return signature;
   }
 
+  public ColumnInfo getColumnInfo(String internalName) {
+    for (ColumnInfo columnInfo: this.signature) {
+      if (columnInfo.getInternalName().equals(internalName)) {
+        return columnInfo;
+      }
+    }
+    return null;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof RowSchema) || (obj == null)) {
