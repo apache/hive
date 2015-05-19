@@ -27,8 +27,8 @@ import java.util.Comparator;
  * returned back. If the queue is not full, new element will be added to queue and null is returned.
  */
 public class EvictingPriorityBlockingQueue<E> {
-  private PriorityBlockingDeque<E> deque;
-  private Comparator<E> comparator;
+  private final PriorityBlockingDeque<E> deque;
+  private final Comparator<E> comparator;
 
   public EvictingPriorityBlockingQueue(Comparator<E> comparator, int maxSize) {
     this.deque = new PriorityBlockingDeque<>(comparator, maxSize);

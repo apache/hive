@@ -67,7 +67,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
-  private final String[] localDirsBase;
   private final Map<String, String> localEnv = new HashMap<>();
   private final long memoryPerExecutor;
   private final LlapDaemonExecutorMetrics metrics;
@@ -87,7 +86,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
-    this.localDirsBase = localDirsBase;
     this.localAddress = localAddress;
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);

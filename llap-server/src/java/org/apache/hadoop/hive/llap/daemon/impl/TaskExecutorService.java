@@ -71,9 +71,13 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   // some object to lock upon. Used by task scheduler to notify wait queue scheduler of new items
   // to wait queue
   private final Object waitLock;
+  // Thread pool for actual execution of work.
   private final ListeningExecutorService executorService;
   private final EvictingPriorityBlockingQueue<TaskRunnerCallable> waitQueue;
+  // Thread pool for taking entities off the wait queue.
   private final ListeningExecutorService waitQueueExecutorService;
+  // Thread pool for callbacks on completion of execution of a work unit.
+  private final ListeningExecutorService executionCompletionExecutorService;
   private final BlockingQueue<TaskRunnerCallable> preemptionQueue;
   private final boolean enablePreemption;
   private final ThreadPoolExecutor threadPoolExecutor;
@@ -94,9 +98,14 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     this.numSlotsAvailable = new AtomicInteger(numExecutors);
 
     // single threaded scheduler for tasks from wait queue to executor threads
-    ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
+    ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT).build());
     this.waitQueueExecutorService = MoreExecutors.listeningDecorator(wes);
+
+    ExecutorService executionCompletionExecutorServiceRaw = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ExecutionCompletionThread #%d")
+            .build());
+    executionCompletionExecutorService = MoreExecutors.listeningDecorator(executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
     Futures.addCallback(future, new WaitQueueWorkerCallback());
   }
@@ -125,8 +134,12 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           // if the task cannot finish and if no slots are available then don't schedule it.
           // TODO: Event notifications that change canFinish state should notify waitLock
           synchronized (waitLock) {
+            // KKK Is this a tight loop when there's only finishable tasks available ?
             if (!task.canFinish() && numSlotsAvailable.get() == 0) {
               waitLock.wait();
+              // Another task at a higher priority may have come in during the wait. Lookup the
+              // queue again to pick up the task at the highest priority.
+              continue;
             }
           }
 
@@ -190,7 +203,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     try {
       ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
       FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(task);
-      Futures.addCallback(future, wrappedCallback);
+      // Callback on a separate thread so that when a task completes, the thread in the main queue
+      // is actually available for execution and will not potentially result in a RejectedExecution
+      Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
 
       if (isInfoEnabled) {
         LOG.info(task.getRequestId() + " scheduled for execution.");
@@ -216,13 +231,15 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         }
 
         TaskRunnerCallable pRequest = preemptionQueue.remove();
-        if (pRequest != null && !pRequest.isCompleted() && !pRequest.isKillInvoked()) {
+        if (pRequest != null) {
 
           if (isInfoEnabled) {
-            LOG.info("Kill task invoked for " + pRequest.getRequestId() + " due to pre-emption");
+            LOG.info("Invoking kill task for {} due to pre-emption.", pRequest.getRequestId());
           }
 
-          pRequest.setKillInvoked();
+          // The task will either be killed or is already in the process of completing, which will
+          // trigger the next scheduling run, or result in available slots being higher than 0,
+          // which will cause the scheduler loop to continue.
           pRequest.killTask();
         }
       }
@@ -241,14 +258,12 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     @Override
     public void onSuccess(TaskRunner2Result result) {
-      task.setCompleted();
       task.getCallback().onSuccess(result);
       updatePreemptionListAndNotify(result.getEndReason());
     }
 
     @Override
     public void onFailure(Throwable t) {
-      task.setCompleted();
       task.getCallback().onFailure(t);
       updatePreemptionListAndNotify(null);
       LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));
@@ -282,23 +297,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
             " service gracefully");
       }
-      executorService.shutdown();
-      try {
-        if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
-          executorService.shutdownNow();
-        }
-      } catch (InterruptedException e) {
-        executorService.shutdownNow();
-      }
-
-      waitQueueExecutorService.shutdown();
-      try {
-        if (!waitQueueExecutorService.awaitTermination(1, TimeUnit.MINUTES)) {
-          waitQueueExecutorService.shutdownNow();
-        }
-      } catch (InterruptedException e) {
-        waitQueueExecutorService.shutdownNow();
-      }
+      shutdownExecutor(waitQueueExecutorService);
+      shutdownExecutor(executorService);
+      shutdownExecutor(executionCompletionExecutorService);
     } else {
       if (isDebugEnabled) {
         LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
@@ -306,6 +307,17 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       }
       executorService.shutdownNow();
       waitQueueExecutorService.shutdownNow();
+    }
+  }
+
+  private void shutdownExecutor(ExecutorService executorService) {
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
+        executorService.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      executorService.shutdownNow();
     }
   }
 
