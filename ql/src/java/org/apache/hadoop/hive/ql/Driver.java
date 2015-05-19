@@ -443,8 +443,10 @@ public class Driver implements CommandProcessor {
       // to avoid returning sensitive data
       String queryStr = HookUtils.redactLogString(conf, command);
 
+      String operationName = ctx.getExplain() ?
+        HiveOperation.EXPLAIN.getOperationName() : SessionState.get().getCommandType();
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-          SessionState.get().getCommandType());
+        operationName);
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
