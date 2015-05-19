@@ -1930,6 +1930,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (Path p : newFiles) {
           insertData.addToFilesAdded(p.toString());
         }
+      } else {
+        insertData.setFilesAdded(new ArrayList<String>());
       }
       FireEventRequest rqst = new FireEventRequest(true, data);
       rqst.setDbName(tbl.getDbName());
