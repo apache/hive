@@ -102,8 +102,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
-  private AtomicBoolean isCompleted;
-  private AtomicBoolean killInvoked;
+  private final AtomicBoolean isCompleted = new AtomicBoolean(false);
+  private final AtomicBoolean killInvoked = new AtomicBoolean(false);
 
   TaskRunnerCallable(LlapDaemonProtocolProtos.SubmitWorkRequestProto request, Configuration conf,
       ExecutionContext executionContext, Map<String, String> envMap,
@@ -133,24 +133,6 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.metrics = metrics;
     this.requestId = getTaskAttemptId(request);
     this.killedTaskHandler = killedTaskHandler;
-    this.isCompleted = new AtomicBoolean(false);
-    this.killInvoked = new AtomicBoolean(false);
-  }
-
-  public void setCompleted() {
-    isCompleted.set(true);
-  }
-
-  public boolean isCompleted() {
-    return isCompleted.get();
-  }
-
-  public boolean isKillInvoked() {
-    return killInvoked.get();
-  }
-
-  public void setKillInvoked() {
-    killInvoked.set(true);
   }
 
   @Override
@@ -226,6 +208,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       if (result.isContainerShutdownRequested()) {
         LOG.warn("Unexpected container shutdown requested while running task. Ignoring");
       }
+      isCompleted.set(true);
       return result;
 
     } finally {
@@ -242,21 +225,38 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   /**
    * Attempt to kill a running task. If the task has not started running, it will not start.
    * If it's already running, a kill request will be sent to it.
-   *
+   * <p/>
    * The AM will be informed about the task kill.
    */
   public void killTask() {
-    synchronized (this) {
-      LOG.info("Killing task with id {}, taskRunnerSetup={}", taskSpec.getTaskAttemptID(), (taskRunner != null));
-      if (taskRunner != null) {
-        killtimerWatch.start();
-        LOG.info("Issuing kill to task {}" + taskSpec.getTaskAttemptID());
-        taskRunner.killTask();
-        shouldRunTask = false;
+    if (!isCompleted.get()) {
+      if (!killInvoked.getAndSet(true)) {
+        synchronized (this) {
+          LOG.info("Kill task requested for id={}, taskRunnerSetup={}", taskSpec.getTaskAttemptID(),
+              (taskRunner != null));
+          if (taskRunner != null) {
+            killtimerWatch.start();
+            LOG.info("Issuing kill to task {}", taskSpec.getTaskAttemptID());
+            boolean killed = taskRunner.killTask();
+            if (killed) {
+              // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
+              reportTaskKilled();
+            } else {
+              LOG.info("Kill request for task {} did not complete because the task is already complete",
+                  taskSpec.getTaskAttemptID());
+            }
+            shouldRunTask = false;
+          }
+        }
+      } else {
+        // This should not happen.
+        LOG.warn("Ignoring kill request for task {} since a previous kill request was processed",
+            taskSpec.getTaskAttemptID());
       }
+    } else {
+      LOG.info("Ignoring kill request for task {} since it's already complete",
+          taskSpec.getTaskAttemptID());
     }
-    // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
-    reportTaskKilled();
   }
 
   /**
@@ -382,6 +382,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     // via a kill message when a task kill is requested by the daemon.
     @Override
     public void onSuccess(TaskRunner2Result result) {
+      isCompleted.set(true);
       switch(result.getEndReason()) {
         // Only the KILLED case requires a message to be sent out to the AM.
         case SUCCESS:
@@ -424,6 +425,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     @Override
     public void onFailure(Throwable t) {
+      isCompleted.set(true);
       LOG.error("TezTaskRunner execution failed for : " + getTaskIdentifierString(request), t);
       // TODO HIVE-10236 Report a fatal error over the umbilical
       taskRunnerCallable.shutdown();
