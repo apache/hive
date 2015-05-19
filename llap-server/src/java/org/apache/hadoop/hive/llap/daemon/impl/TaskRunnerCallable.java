@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
@@ -101,6 +102,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
+  private AtomicBoolean isCompleted;
+  private AtomicBoolean killInvoked;
 
   TaskRunnerCallable(LlapDaemonProtocolProtos.SubmitWorkRequestProto request, Configuration conf,
       ExecutionContext executionContext, Map<String, String> envMap,
@@ -130,6 +133,24 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.metrics = metrics;
     this.requestId = getTaskAttemptId(request);
     this.killedTaskHandler = killedTaskHandler;
+    this.isCompleted = new AtomicBoolean(false);
+    this.killInvoked = new AtomicBoolean(false);
+  }
+
+  public void setCompleted() {
+    isCompleted.set(true);
+  }
+
+  public boolean isCompleted() {
+    return isCompleted.get();
+  }
+
+  public boolean isKillInvoked() {
+    return killInvoked.get();
+  }
+
+  public void setKillInvoked() {
+    killInvoked.set(true);
   }
 
   @Override
@@ -342,21 +363,19 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return new TaskRunnerCallback(request, this);
   }
 
+  public SubmitWorkRequestProto getRequest() {
+    return request;
+  }
+
   final class TaskRunnerCallback implements FutureCallback<TaskRunner2Result> {
 
     private final LlapDaemonProtocolProtos.SubmitWorkRequestProto request;
     private final TaskRunnerCallable taskRunnerCallable;
-    private final String requestId;
 
     TaskRunnerCallback(LlapDaemonProtocolProtos.SubmitWorkRequestProto request,
         TaskRunnerCallable taskRunnerCallable) {
       this.request = request;
       this.taskRunnerCallable = taskRunnerCallable;
-      this.requestId = getTaskIdentifierString(request);
-    }
-
-    public String getRequestId() {
-      return requestId;
     }
 
     // Errors are handled on the way over. FAIL/SUCCESS is informed via regular heartbeats. Killed
