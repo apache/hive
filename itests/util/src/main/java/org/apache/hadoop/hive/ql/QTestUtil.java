@@ -733,14 +733,12 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearKeysCreatedInTests();
 
-    if (clusterType != MiniClusterType.encrypted) {
-      // allocate and initialize a new conf since a test can
-      // modify conf by using 'set' commands
-      conf = new HiveConf (Driver.class);
-      initConf();
-      // renew the metastore since the cluster type is unencrypted
-      db = Hive.get(conf);  // propagate new conf to meta store
-    }
+    // allocate and initialize a new conf since a test can
+    // modify conf by using 'set' commands
+    conf = new HiveConf(Driver.class);
+    initConf();
+    // renew the metastore since the cluster type is unencrypted
+    db = Hive.get(conf);  // propagate new conf to meta store
 
     setup.preTest(conf);
   }
