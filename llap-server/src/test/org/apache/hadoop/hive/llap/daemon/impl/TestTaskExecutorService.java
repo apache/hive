@@ -25,6 +25,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
@@ -52,15 +53,17 @@ public class TestTaskExecutorService {
 
     public MockRequest(LlapDaemonProtocolProtos.SubmitWorkRequestProto requestProto,
         boolean canFinish, int workTime) {
-      super(requestProto, conf, new ExecutionContextImpl("localhost"), null, null, cred, 0, null,
-          null, null, null, mock(KilledTaskHandler.class));
+      super(requestProto, mock(QueryFragmentInfo.class), conf,
+          new ExecutionContextImpl("localhost"), null, cred, 0, null, null, null,
+          mock(KilledTaskHandler.class), mock(
+          FragmentCompletionHandler.class));
       this.workTime = workTime;
       this.canFinish = canFinish;
     }
 
     @Override
     protected TaskRunner2Result callInternal() {
-      System.out.println(requestId + " is executing..");
+      System.out.println(super.getRequestId() + " is executing..");
       try {
         Thread.sleep(workTime);
       } catch (InterruptedException e) {

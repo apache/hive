@@ -108,6 +108,11 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     executionCompletionExecutorService = MoreExecutors.listeningDecorator(executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
     Futures.addCallback(future, new WaitQueueWorkerCallback());
+
+    LOG.info("TaskExecutorService started with parameters: "
+            + "numExecutors=" + numExecutors
+            + ", waitQueueSize=" + waitQueueSize
+            + ", enablePreemption=" + enablePreemption);
   }
 
   /**
@@ -134,11 +139,20 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           // if the task cannot finish and if no slots are available then don't schedule it.
           // TODO: Event notifications that change canFinish state should notify waitLock
           synchronized (waitLock) {
-            // KKK Is this a tight loop when there's only finishable tasks available ?
-            if (!task.canFinish() && numSlotsAvailable.get() == 0) {
-              waitLock.wait();
+            boolean shouldWait = false;
+            if (task.canFinish()) {
+              if (numSlotsAvailable.get() == 0 && preemptionQueue.isEmpty()) {
+                shouldWait = true;
+              }
+            } else {
+              if (numSlotsAvailable.get() == 0) {
+                shouldWait = true;
+              }
+            }
+            if (shouldWait) {
               // Another task at a higher priority may have come in during the wait. Lookup the
               // queue again to pick up the task at the highest priority.
+              waitLock.wait();
               continue;
             }
           }
@@ -174,7 +188,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     @Override
     public void onFailure(Throwable t) {
-      LOG.error("Wait queue scheduler worker exited with failure!");
+      LOG.error("Wait queue scheduler worker exited with failure!", t);
     }
   }
 
@@ -237,7 +251,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         if (pRequest != null) {
 
           if (isInfoEnabled) {
-            LOG.info("Invoking kill task for {} due to pre-emption.", pRequest.getRequestId());
+            LOG.info("Invoking kill task for {} due to pre-emption to run {}",
+                pRequest.getRequestId(), task.getRequestId());
           }
 
           // The task will either be killed or is already in the process of completing, which will
