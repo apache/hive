@@ -66,6 +66,7 @@ message FragmentRuntimeInfo {
   optional int32 within_dag_priority = 3;
   optional int64 dag_start_time = 4;
   optional int64 first_attempt_start_time = 5;
+  optional int64 current_attempt_start_time = 6;
 }
 
 enum SourceStateProto {

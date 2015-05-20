@@ -282,6 +282,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     sb.append(", completedTaskCount=").append(fragmentRuntimeInfo.getNumSelfAndUpstreamCompletedTasks());
     sb.append(", dagStartTime=").append(fragmentRuntimeInfo.getDagStartTime());
     sb.append(", firstAttemptStartTime=").append(fragmentRuntimeInfo.getFirstAttemptStartTime());
+    sb.append(", currentAttemptStartTime=").append(fragmentRuntimeInfo.getCurrentAttemptStartTime());
     sb.append("}");
     return sb.toString();
   }

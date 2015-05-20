@@ -442,4 +442,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   public long getFirstAttemptStartTime() {
     return request.getFragmentRuntimeInfo().getFirstAttemptStartTime();
   }
+
+  public long getCurrentAttemptStartTime() {
+    return request.getFragmentRuntimeInfo().getCurrentAttemptStartTime();
+  }
+
 }

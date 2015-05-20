@@ -160,6 +160,7 @@ public class SourceStateTracker {
     builder.setDagStartTime(taskCommunicatorContext.getDagStartTime());
     builder.setWithinDagPriority(priority);
     builder.setFirstAttemptStartTime(taskCommunicatorContext.getFirstAttemptStartTime(vertexName, fragmentNumber));
+    builder.setCurrentAttemptStartTime(System.currentTimeMillis());
     return builder.build();
   }
 
