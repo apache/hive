@@ -135,7 +135,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           // TODO: Event notifications that change canFinish state should notify waitLock
           synchronized (waitLock) {
             // KKK Is this a tight loop when there's only finishable tasks available ?
-            if (!task.canFinish() || numSlotsAvailable.get() == 0) {
+            if (!task.canFinish() && numSlotsAvailable.get() == 0) {
               waitLock.wait();
               // Another task at a higher priority may have come in during the wait. Lookup the
               // queue again to pick up the task at the highest priority.
