@@ -186,6 +186,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         LOG.info(task.getRequestId() + " added to wait queue.");
       }
 
+      if (isDebugEnabled) {
+        LOG.debug("Wait Queue: {}", waitQueue);
+      }
       synchronized (waitLock) {
         waitLock.notify();
       }
@@ -227,7 +230,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       if (enablePreemption && task.canFinish() && !preemptionQueue.isEmpty()) {
 
         if (isDebugEnabled) {
-          LOG.trace("preemptionQueue: " + preemptionQueue);
+          LOG.debug("Preemption Queue: " + preemptionQueue);
         }
 
         TaskRunnerCallable pRequest = preemptionQueue.remove();
@@ -334,10 +337,16 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         return 1;
       }
 
-      if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
-        return 1;
-      } else if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
+      if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
         return -1;
+      } else if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
+        return 1;
+      }
+
+      if (o1.getFirstAttemptStartTime() < o2.getFirstAttemptStartTime()) {
+        return -1;
+      } else if (o1.getFirstAttemptStartTime() > o2.getFirstAttemptStartTime()) {
+        return 1;
       }
       return 0;
     }

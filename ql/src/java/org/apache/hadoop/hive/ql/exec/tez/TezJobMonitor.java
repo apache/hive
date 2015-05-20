@@ -75,14 +75,14 @@ import jline.TerminalFactory;
 public class TezJobMonitor {
 
   private static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final int MIN_TERMINAL_WIDTH = 92;
+  private static final int MIN_TERMINAL_WIDTH = 94;
   private static final int COLUMN_1_WIDTH = 16;
   private static final int SEPARATOR_WIDTH = MIN_TERMINAL_WIDTH;
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and separator width accordingly
-  private static final String HEADER_FORMAT = "%16s%10s %11s  %5s  %9s  %7s  %7s  %6s  %6s  ";
-  private static final String VERTEX_FORMAT = "%-16s%10s %11s  %5s  %9s  %7s  %7s  %6s  %6s  ";
+  private static final String HEADER_FORMAT = "%16s%10s %13s  %5s  %9s  %7s  %7s  %6s  %6s  ";
+  private static final String VERTEX_FORMAT = "%-16s%10s %13s  %5s  %9s  %7s  %7s  %6s  %6s  ";
   private static final String FOOTER_FORMAT = "%-15s  %-30s %-4s  %-25s";
   private static final String HEADER = String.format(HEADER_FORMAT,
       "VERTICES", "MODE", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");

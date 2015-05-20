@@ -64,4 +64,9 @@ public class EvictingPriorityBlockingQueue<E> {
   public synchronized void remove(E e) {
     deque.remove(e);
   }
+
+  @Override
+  public synchronized String toString() {
+    return deque.toString();
+  }
 }
