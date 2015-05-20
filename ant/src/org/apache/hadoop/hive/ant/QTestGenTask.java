@@ -455,7 +455,7 @@ public class QTestGenTask extends Task {
       }
 
       File qFileNames = new File(outputDirectory, className + "QFileNames.txt");
-      String qFileNamesFile = qFileNames.getCanonicalPath();
+      String qFileNamesFile = qFileNames.toURI().getPath();
 
       if (qFileNames.exists()) {
         if (!qFileNames.delete()) {
