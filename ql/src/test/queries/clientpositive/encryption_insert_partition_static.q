@@ -5,8 +5,8 @@ set hive.enforce.bucketing=true;
 -- SORT_QUERY_RESULTS
 
 -- init
-drop table IF EXISTS encryptedTable;
-drop table IF EXISTS unencryptedTable;
+drop table IF EXISTS encryptedTable PURGE;
+drop table IF EXISTS unencryptedTable PURGE;
 
 create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
@@ -57,6 +57,6 @@ insert into table unencryptedTable partition
 select * from unencryptedTable order by key;
 
 -- clean up
-drop table encryptedTable;
+drop table encryptedTable PURGE;
 CRYPTO DELETE_KEY --keyName key_1;
-drop table unencryptedTable;
+drop table unencryptedTable PURGE;

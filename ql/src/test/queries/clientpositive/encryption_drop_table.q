@@ -1,6 +1,6 @@
 -- SORT_QUERY_RESULTS;
 
--- we're setting this so that TestNegaiveCliDriver.vm doesn't stop processing after ALTER TABLE fails;
+-- we're setting this so that TestNegaiveCliDriver.vm doesn't stop processing after DROP TABLE fails;
 
 set hive.cli.errors.ignore=true;
 
@@ -11,10 +11,8 @@ CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.
 
 INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
 SHOW TABLES;
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table;
+DROP TABLE default.encrypted_table;
 SHOW TABLES;
-
-DROP TABLE encrypted_table PURGE;
-
+DROP TABLE default.encrypted_table PURGE;
+SHOW TABLES;
 CRYPTO DELETE_KEY --keyName key_128;
-

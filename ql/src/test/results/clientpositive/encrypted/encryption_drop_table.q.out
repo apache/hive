@@ -30,22 +30,27 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 encrypted_table
 src
-PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
-PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: query: DROP TABLE default.encrypted_table
+PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for default.encrypted_table failed to move data due to: '/build/ql/test/data/warehouse/default/encrypted_table can't be moved from an encryption zone.' See hive log file for details.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop table because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 encrypted_table
 src
-PREHOOK: query: DROP TABLE encrypted_table PURGE
+PREHOOK: query: DROP TABLE default.encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: DROP TABLE encrypted_table PURGE
+POSTHOOK: query: DROP TABLE default.encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+src
