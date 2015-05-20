@@ -248,7 +248,6 @@ public class HiveSchemaHelper {
         // if this is a valid executable command then add it to the buffer
         if (!isNonExecCommand(currentCommand)) {
           currentCommand = cleanseCommand(currentCommand);
-
           if (isNestedScript(currentCommand)) {
             // if this is a nested sql script then flatten it
             String currScript = getScriptName(currentCommand);
