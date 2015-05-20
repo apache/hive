@@ -36,19 +36,6 @@ CREATE TABLE "CDS" (
 
 
 --
--- Name: COLUMNS_OLD; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE TABLE "COLUMNS_OLD" (
-    "SD_ID" bigint NOT NULL,
-    "COMMENT" character varying(256) DEFAULT NULL::character varying,
-    "COLUMN_NAME" character varying(128) NOT NULL,
-    "TYPE_NAME" character varying(4000) NOT NULL,
-    "INTEGER_IDX" bigint NOT NULL
-);
-
-
---
 -- Name: COLUMNS_V2; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -623,14 +610,6 @@ ALTER TABLE ONLY "COLUMNS_V2"
 
 
 --
--- Name: COLUMNS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
---
-
-ALTER TABLE ONLY "COLUMNS_OLD"
-    ADD CONSTRAINT "COLUMNS_pkey" PRIMARY KEY ("SD_ID", "COLUMN_NAME");
-
-
---
 -- Name: DATABASE_PARAMS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -959,13 +938,6 @@ CREATE INDEX "BUCKETING_COLS_N49" ON "BUCKETING_COLS" USING btree ("SD_ID");
 
 
 --
--- Name: COLUMNS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "COLUMNS_N49" ON "COLUMNS_OLD" USING btree ("SD_ID");
-
-
---
 -- Name: DATABASE_PARAMS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1232,14 +1204,6 @@ ALTER TABLE ONLY "SKEWED_VALUES"
 
 ALTER TABLE ONLY "BUCKETING_COLS"
     ADD CONSTRAINT "BUCKETING_COLS_SD_ID_fkey" FOREIGN KEY ("SD_ID") REFERENCES "SDS"("SD_ID") DEFERRABLE;
-
-
---
--- Name: COLUMNS_SD_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
---
-
-ALTER TABLE ONLY "COLUMNS_OLD"
-    ADD CONSTRAINT "COLUMNS_SD_ID_fkey" FOREIGN KEY ("SD_ID") REFERENCES "SDS"("SD_ID") DEFERRABLE;
 
 
 --
