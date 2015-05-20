@@ -98,7 +98,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private volatile long startTime;
   private volatile String threadName;
   private LlapDaemonExecutorMetrics metrics;
-  protected String requestId;
+  private final String requestId;
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
@@ -335,7 +335,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   @Override
   public String toString() {
-    return requestId;
+    return requestId + " {canFinish: " + canFinish() +
+        " vertexParallelism: " + getVertexParallelism() +
+        " firstAttemptStartTime: " + getFirstAttemptStartTime() + "}";
   }
 
   @Override
@@ -469,5 +471,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   private String getTaskAttemptId(SubmitWorkRequestProto request) {
     return request.getFragmentSpec().getTaskAttemptIdString();
+  }
+
+  public long getFirstAttemptStartTime() {
+    return request.getFragmentRuntimeInfo().getFirstAttemptStartTime();
   }
 }
